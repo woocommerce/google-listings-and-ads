@@ -1,9 +1,23 @@
 <?php
 /**
- * Plugin Name: google-for-woocommerce
+ * Plugin Name: Google for WooCommerce
+ * Plugin URL: https://woocommerce.com/
+ * Description:
+ * Version:
+ * Author: Automattic
+ * Author URI: https://woocommerce.com/
+ * Text Domain: google-for-woocommerce
+ * Requires at least: 5.3
+ * Requires PHP: 7:0
+ *
+ * WC requires at least: 4.3
+ * WC tested up to: 4.6
+ * Woo:
  *
  * @package WooCommerce\Admin
  */
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Register the JS.
