@@ -21,4 +21,4 @@ _Replace this with a good description of your changes & reasoning._
 
 #### Changelog Note:
 
-> (Optional) Enter a summary of all changes on this Pull Request. 
+> (Optional) Enter a summary of all changes in this Pull Request to appear in the changelog if it's accepted. 
