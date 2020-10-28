@@ -2,9 +2,9 @@
 /**
  * Plugin Name: Google for WooCommerce
  * Plugin URL: https://woocommerce.com/
- * Description:
- * Version:
- * Author: Automattic
+ * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
+ * Version: 0.1
+ * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-for-woocommerce
  * Requires at least: 5.3
