@@ -52,10 +52,15 @@ function add_extension_register_script() {
 	wp_register_style(
 		'google-for-woocommerce',
 		plugins_url( '/js/build/index.css', __FILE__ ),
-		// Add any dependencies styles may have, such as wp-components.
+		defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
 		array(),
 		filemtime( dirname( __FILE__ ) . '/js/build/index.css' )
 	);
+
+	// Load WC Admin styles before our own styles
+	if ( defined( 'WC_ADMIN_APP' ) ) {
+		wp_enqueue_style( WC_ADMIN_APP );
+	}
 
 	wp_enqueue_script( 'google-for-woocommerce' );
 	wp_enqueue_style( 'google-for-woocommerce' );
