@@ -17,6 +17,8 @@
  * @package WooCommerce\Admin
  */
 
+use Automattic\WooCommerce\Admin\Loader;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -24,15 +26,19 @@ defined( 'ABSPATH' ) || exit;
  */
 function add_extension_register_script() {
 
-	if ( ! class_exists( 'Automattic\WooCommerce\Admin\Loader' ) || ! \Automattic\WooCommerce\Admin\Loader::is_admin_page() ) {
+	if ( ! class_exists( Loader::class ) || ! Loader::is_admin_page() ) {
 		return;
 	}
 
 	$script_path       = '/js/build/index.js';
 	$script_asset_path = dirname( __FILE__ ) . '/js/build/index.asset.php';
 	$script_asset      = file_exists( $script_asset_path )
-		? require( $script_asset_path )
-		: array( 'dependencies' => array(), 'version' => filemtime( $script_path ) );
+		? require $script_asset_path
+		: [
+			'dependencies' => [],
+			'version'      => filemtime( $script_path ),
+		];
+
 	$script_url = plugins_url( $script_path, __FILE__ );
 
 	wp_register_script(
