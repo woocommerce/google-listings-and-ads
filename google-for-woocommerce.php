@@ -26,9 +26,10 @@ defined( 'ABSPATH' ) || exit;
  */
 function add_extension_register_script() {
 
+	/* This if statement will need to be adjusted later. Simply disabled for now
 	if ( ! class_exists( Loader::class ) || ! Loader::is_admin_page() ) {
 		return;
-	}
+	}*/
 
 	$script_path       = '/js/build/index.js';
 	$script_asset_path = dirname( __FILE__ ) . '/js/build/index.asset.php';
