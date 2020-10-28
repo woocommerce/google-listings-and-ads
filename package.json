@@ -4,8 +4,13 @@
 	"license": "GPL-3.0-or-later",
 	"version": "0.1.0",
 	"description": "google-for-woocommerce",
+	"repository": {
+		"type": "git",
+		"url": "git@github.com:woocommerce/google-for-woocommerce.git"
+	},
 	"scripts": {
-		"build": "wp-scripts build",
+		"build": "NODE_ENV=production wp-scripts build",
+		"dev": "NODE_ENV=development wp-scripts build",
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"format:js": "wp-scripts format-js",
@@ -23,5 +28,8 @@
 		"@wordpress/scripts": "^12.2.1",
 		"@woocommerce/eslint-plugin": "^1.0.0-beta.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0"
+	},
+	"dependencies": {
+		"@woocommerce/tracks": "^1.0.0"
 	}
 }

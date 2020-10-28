@@ -2,9 +2,9 @@
 /**
  * Plugin Name: Google for WooCommerce
  * Plugin URL: https://woocommerce.com/
- * Description:
- * Version:
- * Author: Automattic
+ * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
+ * Version: 0.1
+ * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-for-woocommerce
  * Requires at least: 5.3
@@ -53,10 +53,15 @@ function add_extension_register_script() {
 	wp_register_style(
 		'google-for-woocommerce',
 		plugins_url( '/js/build/index.css', __FILE__ ),
-		// Add any dependencies styles may have, such as wp-components.
+		defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
 		array(),
 		filemtime( dirname( __FILE__ ) . '/js/build/index.css' )
 	);
+
+	// Load WC Admin styles before our own styles
+	if ( defined( 'WC_ADMIN_APP' ) ) {
+		wp_enqueue_style( WC_ADMIN_APP );
+	}
 
 	wp_enqueue_script( 'google-for-woocommerce' );
 	wp_enqueue_style( 'google-for-woocommerce' );
