@@ -25,11 +25,12 @@ defined( 'ABSPATH' ) || exit;
  * Register the JS.
  */
 function add_extension_register_script() {
-
-	/* This if statement will need to be adjusted later. Simply disabled for now
+	/*
+	This if statement will need to be adjusted later. Simply disabled for now
 	if ( ! class_exists( Loader::class ) || ! Loader::is_admin_page() ) {
 		return;
-	}*/
+	}
+	*/
 
 	$script_path       = '/js/build/index.js';
 	$script_asset_path = dirname( __FILE__ ) . '/js/build/index.asset.php';
@@ -68,3 +69,44 @@ function add_extension_register_script() {
 }
 
 add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );
+
+/**
+ * Add Google Menu item under Marketing
+ *
+ * @param array $items
+ *
+ * @return array
+ */
+function add_menu_items( $items ) {
+	$items[] = array(
+		'id'         => 'google-connect',
+		'title'      => __( 'Google', 'google-for-woocommerce' ),
+		'path'       => '/google/connect',
+		'capability' => 'manage_woocommerce',
+	);
+
+	return $items;
+}
+
+add_filter( 'woocommerce_marketing_menu_items', 'add_menu_items' );
+
+/**
+ * Fix sub-menu paths. wc_admin_register_page() gets it wrong.
+ */
+function fix_menu_paths() {
+
+	global $submenu;
+
+	if ( ! isset( $submenu['woocommerce-marketing'] ) ) {
+		return;
+	}
+
+	foreach ( $submenu['woocommerce-marketing'] as &$item ) {
+		// The "slug" (aka the path) is the third item in the array.
+		if ( 0 === strpos( $item[2], 'wc-admin' ) ) {
+			$item[2] = 'admin.php?page=' . $item[2];
+		}
+	}
+}
+
+add_action( 'admin_menu', 'fix_menu_paths' );
