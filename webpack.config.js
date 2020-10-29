@@ -39,5 +39,5 @@ module.exports = {
 	output: {
 		...defaultConfig.output,
 		path: path.resolve( process.cwd(), 'js/build' ),
-	}
+	},
 };
