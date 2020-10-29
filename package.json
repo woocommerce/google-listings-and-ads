@@ -25,9 +25,11 @@
 		"test:unit": "wp-scripts test-unit-js"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^12.2.1",
 		"@woocommerce/eslint-plugin": "^1.0.0-beta.0",
-		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0"
+		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
+		"@wordpress/scripts": "^12.2.1",
+		"prettier": "npm:wp-prettier@^2.0.5",
+		"stylelint-config-wordpress": "^17.0.0"
 	},
 	"dependencies": {
 		"@woocommerce/tracks": "^1.0.0"

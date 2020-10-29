@@ -1,0 +1,8 @@
+build
+build-module
+coverage
+languages
+node_modules
+vendor
+legacy
+tests
