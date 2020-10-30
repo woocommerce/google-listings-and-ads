@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
 
 /**
  * Internal dependencies
@@ -13,6 +12,6 @@ describe( 'Hello component', () => {
 	it( 'should return greetings with name', () => {
 		const { getByText } = render( <Hello name="John" /> );
 
-		expect( getByText( 'Hello, John!' ) ).toBeInTheDocument();
+		expect( getByText( 'Hello, John!' ) ).toBeTruthy();
 	} );
 } );

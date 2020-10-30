@@ -26,7 +26,6 @@
 		"test:unit:watch": "wp-scripts test-unit-js --watch"
 	},
 	"devDependencies": {
-		"@testing-library/jest-dom": "^5.11.5",
 		"@testing-library/react": "^11.1.0",
 		"@woocommerce/eslint-plugin": "^1.0.0-beta.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
