@@ -22,9 +22,12 @@
 		"packages-update": "wp-scripts packages-update",
 		"start": "wp-scripts start",
 		"test:e2e": "wp-scripts test-e2e",
-		"test:unit": "wp-scripts test-unit-js"
+		"test:unit": "wp-scripts test-unit-js",
+		"test:unit:watch": "wp-scripts test-unit-js --watch"
 	},
 	"devDependencies": {
+		"@testing-library/jest-dom": "^5.11.5",
+		"@testing-library/react": "^11.1.0",
 		"@woocommerce/eslint-plugin": "^1.0.0-beta.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
 		"@wordpress/scripts": "^12.2.1",
