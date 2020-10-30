@@ -16,34 +16,52 @@ trait SourceHelper {
 	use PluginHelper;
 
 	/**
-	 * Normalize a source path with a given file extension.
+	 * The file extension for the source.
 	 *
-	 * @param string $path           The path to normalize.
-	 * @param string $file_extension The file extension for the soure.
+	 * @var string
+	 */
+	protected $file_extension;
+
+	/**
+	 * Convert a file path to a URI for a source.
+	 *
+	 * @param string $path The source file path.
 	 *
 	 * @return string
 	 */
-	protected function normalize_source_path( string $path, string $file_extension ): string {
-		$path = ltrim( $path, '/\\' );
-		$path = $this->maybe_add_extension( $path, $file_extension );
-		$path = trailingslashit( $this->get_root_dir() ) . $path;
+	protected function get_uri_from_path( string $path ): string {
+		$path = $this->normalize_source_path( $path );
+		$path = str_replace( $this->get_root_dir(), '', $path );
 
-		return $this->maybe_add_minimized_extension( $path, $file_extension );
+		return $this->get_plugin_url( $path );
+	}
+
+	/**
+	 * Normalize a source path with a given file extension.
+	 *
+	 * @param string $path The path to normalize.
+	 *
+	 * @return string
+	 */
+	protected function normalize_source_path( string $path ): string {
+		$path = ltrim( $path, '/' );
+		$path = $this->maybe_add_extension( $path );
+		$path = "{$this->get_root_dir()}/{$path}";
+
+		return $this->maybe_add_minimized_extension( $path );
 	}
 
 	/**
 	 * Possibly add an extension to a path.
 	 *
-	 * @param string $path      Path where an extension may be needed.
-	 * @param string $extension Extension to use.
+	 * @param string $path Path where an extension may be needed.
 	 *
 	 * @return string
 	 */
-	protected function maybe_add_extension( string $path, string $extension ): string {
+	protected function maybe_add_extension( string $path ): string {
 		$detected_extension = pathinfo( $path, PATHINFO_EXTENSION );
-
-		if ( $extension !== $detected_extension ) {
-			$path .= ".{$extension}";
+		if ( $this->file_extension !== $detected_extension ) {
+			$path .= ".{$this->file_extension}";
 		}
 
 		return $path;
@@ -52,13 +70,12 @@ trait SourceHelper {
 	/**
 	 * Possibly add a minimized extension to a path.
 	 *
-	 * @param string $path      Path where a minimized extension may be needed.
-	 * @param string $extension The normal file extension.
+	 * @param string $path Path where a minimized extension may be needed.
 	 *
 	 * @return string
 	 */
-	protected function maybe_add_minimized_extension( string $path, string $extension ): string {
-		$minimized_path = str_replace( ".{$extension}", ".min.{$extension}", $path );
+	protected function maybe_add_minimized_extension( string $path ): string {
+		$minimized_path = str_replace( ".{$this->file_extension}", ".min.{$this->file_extension}", $path );
 
 		// Validate that at least one version of the file exists.
 		$path_readable      = is_readable( $path );
