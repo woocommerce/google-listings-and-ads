@@ -49,4 +49,13 @@ trait PluginHelper {
 	protected function get_plugin_url( string $path = '' ): string {
 		return plugins_url( $path, $this->get_main_file() );
 	}
+
+	/**
+	 * Get the plugin version.
+	 *
+	 * @return string
+	 */
+	protected function get_version(): string {
+		return '0.1.0';
+	}
 }
