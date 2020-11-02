@@ -2,6 +2,10 @@
 
 A native integration with Google that will allow merchants to easily display their products across Google’s network.
 
+## Prerequisites
+
+WordPress 5.3+ and WooCommerce 4.0+
+
 ## Development
 
 After cloning the repo, install dependencies:
@@ -20,9 +24,23 @@ Now you can build the files using one of these commands:
 There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json file directly](https://github.com/woocommerce/google-for-woocommerce/blob/trunk/package.json#L11) to see all):
 
  - `npm run lint:js` : Run eslint over the javascript files
- - `npm run lint:css` : Run eslint over the javascript files
+ - `npm run lint:css` : Run stylelint over the javascript files
  - `npm run test:unit` : Run the JS test suite
  - `npm run test:unit:watch` : Run the JS test suite, watch for changes
+
+## WordPress Code Standards
+
+After running `composer install` to install PHP dependencies you can use the following command to run php code standards checks:
+
+ - `./vendor/bin/phpcs`
+
+## PHPUnit
+
+After running `composer install` to install PHP dependencies you can use the following command run php unit tests:
+
+ - `./vendor/bin/phpunit`
+
+(Installation process TBC)
 
 ## Please treat this repo as public
 
