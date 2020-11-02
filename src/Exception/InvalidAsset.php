@@ -28,4 +28,15 @@ class InvalidAsset extends LogicException implements GoogleForWCException {
 			)
 		);
 	}
+
+	/**
+	 * Return an instance of the exception when an asset handle is invalid.
+	 *
+	 * @param string $handle The invalid handle.
+	 *
+	 * @return static
+	 */
+	public static function invalid_handle( string $handle ) {
+		return new static( sprintf( 'The asset handle "%s" is invalid.', $handle ) );
+	}
 }
