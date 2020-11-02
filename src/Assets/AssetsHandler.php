@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
  *
  * @package Automattic\WooCommerce\GoogleForWC\Assets
  */
-final class AssetsHandler implements Registerable {
+final class AssetsHandler implements Registerable, AssetsHandlerInterface {
 
 	/**
 	 * Assets known to this asset handler.
@@ -65,7 +65,7 @@ final class AssetsHandler implements Registerable {
 	/**
 	 * Enqueue all assets known to this asset handler.
 	 */
-	public function enqueue() {
+	public function enqueue(): void {
 		foreach ( $this->assets as $asset_object ) {
 			$asset_object->enqueue();
 		}
