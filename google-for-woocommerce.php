@@ -18,8 +18,40 @@
  */
 
 use Automattic\WooCommerce\Admin\Loader;
+use Automattic\WooCommerce\GoogleForWC\Container;
+use Automattic\WooCommerce\GoogleForWC\GoogleForWC\Autoloader;
+use Automattic\WooCommerce\GoogleForWC\PluginFactory;
+use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
+
+// Load and initialize the autoloader.
+require_once __DIR__ . '/src/Autoloader.php';
+if ( ! Autoloader::init() ) {
+	return;
+}
+
+// Hook much of our plugin after WooCommerce is loaded.
+add_action(
+	'woocommerce_loaded',
+	function () {
+		PluginFactory::instance()->register();
+	}
+);
+
+/**
+ * Get out main container object.
+ *
+ * @return ContainerInterface
+ */
+function google_for_wc_get_container() : ContainerInterface {
+	static $container = null;
+	if ( null === $container ) {
+		$container = new Container();
+	}
+
+	return $container;
+}
 
 /**
  * Register the JS.
