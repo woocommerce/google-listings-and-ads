@@ -26,6 +26,7 @@ final class AssetsHandler implements Registerable, AssetsHandlerInterface {
 	 * @param Asset $asset Asset to add.
 	 */
 	public function add( Asset $asset ): void {
+		$this->validate_handle_not_exists( $asset->get_handle() );
 		$this->assets[ $asset->get_handle() ] = $asset;
 	}
 
@@ -81,6 +82,19 @@ final class AssetsHandler implements Registerable, AssetsHandlerInterface {
 	protected function validate_handle_exists( string $handle ): void {
 		if ( ! array_key_exists( $handle, $this->assets ) ) {
 			throw InvalidAsset::invalid_handle( $handle );
+		}
+	}
+
+	/**
+	 * Validate that a given asset handle does not already exist.
+	 *
+	 * @param string $handle
+	 *
+	 * @throws InvalidAsset When the handle exists.
+	 */
+	protected function validate_handle_not_exists( string $handle ): void {
+		if ( array_key_exists( $handle, $this->assets ) ) {
+			throw InvalidAsset::handle_exists( $handle );
 		}
 	}
 }
