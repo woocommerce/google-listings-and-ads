@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\Internal\DependencyManagement\ContainerException;
-use Automattic\WooCommerce\Internal\DependencyManagement\Definition;
 use Automattic\WooCommerce\Internal\DependencyManagement\ExtendedContainer as WCExtendedContainer;
 use Automattic\WooCommerce\Utilities\StringUtil;
+use Automattic\WooCommerce\Vendor\League\Container\Definition\Definition;
 use Automattic\WooCommerce\Vendor\League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
 

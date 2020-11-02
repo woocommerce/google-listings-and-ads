@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleForWC\Infrastructure;
 
+use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandlerInterface;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -84,6 +85,13 @@ final class GoogleForWCPlugin implements Plugin {
 				$this->register_services();
 			},
 			20
+		);
+
+		add_action(
+			'init',
+			function() {
+				$this->container->get( AssetsHandlerInterface::class )->register();
+			}
 		);
 	}
 

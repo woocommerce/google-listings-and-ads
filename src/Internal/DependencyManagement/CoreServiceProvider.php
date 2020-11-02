@@ -3,9 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandler;
+use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleForWC\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleForWC\Menu\GoogleConnect;
+use Automattic\WooCommerce\GoogleForWC\Pages\ConnectAccount;
 
 /**
  * Class CoreServiceProvider
@@ -18,8 +21,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Service::class       => [],
-		GoogleConnect::class => [],
+		Service::class                => [],
+		AssetsHandlerInterface::class => [
+			'concrete' => AssetsHandler::class,
+		],
+		GoogleConnect::class          => [],
+		ConnectAccount::class         => [
+			'args' => [ AssetsHandlerInterface::class ],
+		],
 	];
 
 	/**
@@ -31,7 +40,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register(): void {
 		foreach ( $this->provides as $class => $arguments ) {
-			if ( interface_exists( $class ) ) {
+			if ( interface_exists( $class ) && empty( $arguments ) ) {
 				continue;
 			}
 
@@ -45,10 +54,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 				}
 			}
 
-			$definition = $this->share( $class );
-			if ( ! empty( $arguments ) ) {
-				$definition->addArguments( $arguments );
-			}
+			$definition = $this->share( $class, $arguments['concrete'] ?? null );
+			$definition->addArguments( $arguments['args'] ?? [] );
 
 			foreach ( $implements as $interface ) {
 				$definition->addTag( $interface );
