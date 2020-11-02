@@ -53,13 +53,6 @@ trait ScriptHelper {
 	protected $localizations = [];
 
 	/**
-	 * The file extension for the script.
-	 *
-	 * @var string
-	 */
-	protected $file_extension = 'js';
-
-	/**
 	 * ScriptHelper constructor.
 	 *
 	 * @param string $handle       The script handle.
@@ -76,11 +69,12 @@ trait ScriptHelper {
 		string $version = '',
 		bool $in_footer = false
 	) {
-		$this->handle       = $handle;
-		$this->uri          = $this->get_uri_from_path( $uri );
-		$this->dependencies = $dependencies;
-		$this->version      = $version ?: $this->get_version();
-		$this->in_footer    = $in_footer;
+		$this->handle         = $handle;
+		$this->uri            = $this->get_uri_from_path( $uri );
+		$this->dependencies   = $dependencies;
+		$this->version        = $version ?: $this->get_version();
+		$this->in_footer      = $in_footer;
+		$this->file_extension = 'js';
 	}
 
 	/**
@@ -102,7 +96,7 @@ trait ScriptHelper {
 	 *
 	 * @return Closure
 	 */
-	protected function get_register_closure() {
+	protected function get_register_closure(): Closure {
 		return function() {
 			if ( wp_script_is( $this->handle, 'registered' ) ) {
 				return;
@@ -123,7 +117,7 @@ trait ScriptHelper {
 	 *
 	 * @return Closure
 	 */
-	protected function get_enqueue_closure() {
+	protected function get_enqueue_closure(): Closure {
 		return function() {
 			if ( ! wp_script_is( $this->handle, 'registered' ) ) {
 				throw InvalidAsset::asset_not_registered( $this->handle );
@@ -142,7 +136,7 @@ trait ScriptHelper {
 	 *
 	 * @return Closure
 	 */
-	protected function get_dequeue_closure() {
+	protected function get_dequeue_closure(): Closure {
 		return function() {
 			wp_dequeue_script( $this->handle );
 		};
