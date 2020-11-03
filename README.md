@@ -5,13 +5,15 @@ A native integration with Google that will allow merchants to easily display the
 ## Prerequisites (TBC)
 
  - WordPress 5.3+
- - WooCommerce 4.0+
+ - WooCommerce 4.5+
  - PHP 7.0+
 
-To be confirmed...
- - PHP 7.0 is EOL, PHP 7.2 is recommended
- - We are exploring using dependency injection containers (building off those available in WooCommerce 4.7)
- - Version support in Woo generally is being reassessed
+Some considerations...
+ - PHP 7.2 is recommended but [Woo still supports 7.0](https://docs.woocommerce.com/document/update-php-wordpress/)
+ - We're considering using new 7.1+ syntax
+ - We're considering using dependency injection containers (building off those available in WooCommerce 4.7)
+ - We're building using more modern React UI elements (WP 5.3) which was only bumped to be the minimum for WC 4.5
+ - Note - full Launch is estimated to not be until April 5, 2021
 
 ## Development
 
