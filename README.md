@@ -2,9 +2,16 @@
 
 A native integration with Google that will allow merchants to easily display their products across Google’s network.
 
-## Prerequisites
+## Prerequisites (TBC)
 
-WordPress 5.3+ and WooCommerce 4.0+
+ - WordPress 5.3+
+ - WooCommerce 4.0+
+ - PHP 7.0+
+
+To be confirmed...
+ - PHP 7.0 is EOL, PHP 7.2 is recommended
+ - We are exploring using dependency injection containers (building off those available in WooCommerce 4.7)
+ - Version support in Woo generally is being reassessed
 
 ## Development
 
