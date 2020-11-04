@@ -51,6 +51,22 @@ After running `composer install` to install PHP dependencies you can use the fol
 
 (Installation process TBC)
 
+## E2E Testing
+
+E2E testing uses [@wordpress/env](https://www.npmjs.com/package/@wordpress/env) which requires [Docker](https://www.docker.com/).
+
+To start running E2E test, make sure Docker is running in your machine, and run the following:
+
+`npm run wp-env start` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8888 (Username: admin, Password: password).
+
+To stop the container:
+
+`npm run wp-env stop`
+
+To delete the container (this will **delete everything** in the WordPress container): 
+
+`npm run wp-env destroy`
+
 ## Please treat this repo as public
 
 * Avoid posting any private or sensitive information
