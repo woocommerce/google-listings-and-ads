@@ -1,6 +1,6 @@
-# Google for WooCommerce
+# Google Listings & Ads
 
-A native integration with Google that will allow merchants to easily display their products across Google’s network.
+A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
 ## Prerequisites (TBC)
 
