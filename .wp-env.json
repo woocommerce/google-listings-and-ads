@@ -1,0 +1,7 @@
+{
+	"core": null,
+	"plugins": [ 
+		"https://downloads.wordpress.org/plugin/woocommerce.4.6.1.zip",
+		"." 
+	]
+}
