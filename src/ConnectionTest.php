@@ -93,13 +93,17 @@ class ConnectionTest {
 
 				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect to Google Merchant Center</a></p>
 
+				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Merchant Center</a></p>
+
+				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a></p>
+
 				<p>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 						<?php wp_nonce_field( 'wcs-google-mc-proxy' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-google-mc-proxy" type="hidden" />
 						<label>
-							Merchant ID <input name="merchant_id" type="text" />
+							Merchant ID <input name="merchant_id" type="text" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 						</label>
 						<button class="button">Send proxied request to Google Merchant Center</button>
 					</form>
@@ -175,11 +179,9 @@ class ConnectionTest {
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'connection/test';
-			$args = array(
-				'headers' => array(
-					'Authorization' => self::get_auth_header(),
-				),
-			);
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+			];
 
 			self::$response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
 
@@ -193,20 +195,13 @@ class ConnectionTest {
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
-
-			error_log( var_export(admin_url( 'admin.php?page=connection-test-admin-page' ), true ) );
-
-
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connect';
-			$args = array(
-				'headers' => array(
-					'Authorization' => self::get_auth_header(),
-				),
-				'body'    => array(
-					'service'   => 'google-mc',
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'body'    => [
 					'returnUrl' => admin_url( 'admin.php?page=connection-test-admin-page' ),
-				),
-			);
+				],
+			];
 
 			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
 
@@ -226,28 +221,50 @@ class ConnectionTest {
 			}
 		}
 
+		if ( 'wcs-google-mc-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-disconnect' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'method'  => 'DELETE',
+			];
+
+			self::$response = 'DELETE ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_get( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {
+			try {
+				self::$response = 'Proxied request > get merchant ID' . "\n";
+
+				$service  = self::mc_service();
+				$accounts = $service->accounts->authinfo();
+
+				if ( ! empty( $accounts->getAccountIdentifiers() ) ) {
+					foreach ( $accounts->getAccountIdentifiers() as $account ) {
+						self::$response .= sprintf( "Merchant ID: %s\n", $account->getMerchantId() );
+
+						$_GET['merchant_id'] = $account->getMerchantId();
+					}
+				}
+			} catch ( Exception $e ) {
+				self::$response .= 'Error: ' . $e->getMessage();
+			}
+		}
+
 		if ( 'wcs-google-mc-proxy' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-proxy' ) ) {
 			try {
-				// Override HTTP client so we can add our custom authentication header.
-				$client = new \Google\Client();
-				$client->setHttpClient(
-					new \GuzzleHttp\Client(
-						[
-							'headers' => [
-								'Authorization' => self::get_auth_header(),
-							],
-						]
-					)
-				);
+				$merchant_id = ! empty( $_GET['merchant_id'] ) ? absint( $_GET['merchant_id'] ) : '12345';
+				$service     = self::mc_service();
+				$products    = $service->products->listProducts( $merchant_id );
 
-				$merchantId = ! empty( $_GET['merchant_id'] ) ? absint( $_GET['merchant_id'] ) : '12345';
-				$rootUrl    = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-mc';
-
-				self::$response = 'Proxied request to ' . $rootUrl . ' > get products for merchant ' . $merchantId . "\n";
-
-				// Pass our proxied rootUrl to the service.
-				$service  = new \Google_Service_ShoppingContent( $client, $rootUrl );
-				$products = $service->products->listProducts( $merchantId );
+				self::$response = 'Proxied request > get products for merchant ' . $merchant_id . "\n";
 
 				if ( empty( $products->getResources() ) ) {
 					self::$response .= 'No products found';
@@ -258,13 +275,43 @@ class ConnectionTest {
 						self::$response .= sprintf( "%s %s\n", $product->getId(), $product->getTitle() );
 					}
 					if ( ! empty( $products->getNextPageToken() ) ) {
-						$products = $service->products->listProducts( $merchantId, [ 'pageToken' => $products->getNextPageToken() ] );
+						$products = $service->products->listProducts( $merchant_id, [ 'pageToken' => $products->getNextPageToken() ] );
 					}
 				}
-			} catch ( \Exception $e ) {
+			} catch ( Exception $e ) {
 				self::$response .= 'Error: ' . $e->getMessage();
 			}
 		}
+	}
+
+	/**
+	 * Get Merchant Center service (with proxied URL).
+	 *
+	 * @return Google_Service_ShoppingContent
+	 */
+	private static function mc_service() {
+		$root_url = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-mc';
+		return new \Google_Service_ShoppingContent( self::google_client(), $root_url );
+	}
+
+	/**
+	 * Get Google client (with custom authentication header).
+	 *
+	 * @return Google\Client
+	 */
+	private static function google_client() {
+		$client = new \Google\Client();
+		$client->setHttpClient(
+			new \GuzzleHttp\Client(
+				[
+					'headers' => [
+						'Authorization' => self::get_auth_header(),
+					],
+				]
+			)
+		);
+
+		return $client;
 	}
 
 	/**
