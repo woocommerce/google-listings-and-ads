@@ -229,9 +229,9 @@ class ConnectionTest {
 		if ( 'wcs-google-mc-proxy' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-proxy' ) ) {
 			try {
 				// Override HTTP client so we can add our custom authentication header.
-				$client = new Google\Client();
+				$client = new \Google\Client();
 				$client->setHttpClient(
-					new GuzzleHttp\Client(
+					new \GuzzleHttp\Client(
 						[
 							'headers' => [
 								'Authorization' => self::get_auth_header(),
@@ -246,7 +246,7 @@ class ConnectionTest {
 				self::$response = 'Proxied request to ' . $rootUrl . ' > get products for merchant ' . $merchantId . "\n";
 
 				// Pass our proxied rootUrl to the service.
-				$service  = new Google_Service_ShoppingContent( $client, $rootUrl );
+				$service  = new \Google_Service_ShoppingContent( $client, $rootUrl );
 				$products = $service->products->listProducts( $merchantId );
 
 				if ( empty( $products->getResources() ) ) {
@@ -261,7 +261,7 @@ class ConnectionTest {
 						$products = $service->products->listProducts( $merchantId, [ 'pageToken' => $products->getNextPageToken() ] );
 					}
 				}
-			} catch ( Exception $e ) {
+			} catch ( \Exception $e ) {
 				self::$response .= 'Error: ' . $e->getMessage();
 			}
 		}
