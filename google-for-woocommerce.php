@@ -18,8 +18,16 @@
  */
 
 use Automattic\WooCommerce\Admin\Loader;
+use Automattic\WooCommerce\GoogleForWC\GoogleForWC\Autoloader;
+use Automattic\WooCommerce\GoogleForWC\GoogleForWC\ConnectionTest;
 
 defined( 'ABSPATH' ) || exit;
+
+// Load and initialize the autoloader.
+require_once __DIR__ . '/src/Autoloader.php';
+if ( ! Autoloader::init() ) {
+	return;
+}
 
 /**
  * Register the JS.
@@ -110,3 +118,40 @@ function fix_menu_paths() {
 }
 
 add_action( 'admin_menu', 'fix_menu_paths' );
+
+/**
+ * Jetpack-config will initialize the modules on "plugins_loaded" with priority 2,
+ * so this code needs to be run before that.
+ */
+add_action(
+	'plugins_loaded',
+	function() {
+		$jetpack_config = new Automattic\Jetpack\Config();
+		$jetpack_config->ensure(
+			'connection',
+			array(
+				'slug' => 'connection-test',
+				'name' => __( 'Connection Test', 'connection-test' ),
+			)
+		);
+	},
+	1
+);
+
+/**
+ * Initialize plugin after WooCommerce has a chance to initialize its packages.
+ */
+add_action(
+	'plugins_loaded',
+	function() {
+		if ( class_exists( 'WooCommerce' ) ) {
+
+			if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
+				define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'http://localhost:5000' );
+			}
+
+			require_once __DIR__ . '/src/ConnectionTest.php';
+			ConnectionTest::init();
+		}
+	},
+);
