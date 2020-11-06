@@ -253,7 +253,7 @@ class ConnectionTest {
 						$_GET['merchant_id'] = $account->getMerchantId();
 					}
 				}
-			} catch ( Exception $e ) {
+			} catch ( \Exception $e ) {
 				self::$response .= 'Error: ' . $e->getMessage();
 			}
 		}
@@ -278,7 +278,7 @@ class ConnectionTest {
 						$products = $service->products->listProducts( $merchant_id, [ 'pageToken' => $products->getNextPageToken() ] );
 					}
 				}
-			} catch ( Exception $e ) {
+			} catch ( \Exception $e ) {
 				self::$response .= 'Error: ' . $e->getMessage();
 			}
 		}
