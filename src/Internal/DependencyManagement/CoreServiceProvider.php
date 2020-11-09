@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
+use Automattic\WooCommerce\GoogleListingsAndAds\Pages\TrackerSnapshot;
 
 /**
  * Class CoreServiceProvider
@@ -29,6 +30,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ConnectAccount::class         => [
 			'args' => [ AssetsHandlerInterface::class ],
 		],
+		TrackerSnapshot::class        => [],
 	];
 
 	/**

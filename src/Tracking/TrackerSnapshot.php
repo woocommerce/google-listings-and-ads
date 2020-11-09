@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleForWC\Tracking;
 
+use Automattic\WooCommerce\GoogleForWC\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleForWC\PluginHelper;
@@ -12,7 +13,7 @@ use Automattic\WooCommerce\GoogleForWC\PluginHelper;
  *
  * @package Automattic\WooCommerce\GoogleForWC\Tracking
  */
-class TrackerSnapshot implements Service, Registerable {
+class TrackerSnapshot implements Service, Registerable, Conditional {
 
 	use PluginHelper;
 
@@ -21,19 +22,25 @@ class TrackerSnapshot implements Service, Registerable {
 	 */
 	const EXTENSION_NAME = 'woogle';
 
+	/**
+	 * Not needed if allow_tracking is disabled.
+	 *
+	 * @return bool Whether the object is needed.
+	 */
+	public static function is_needed(): bool {
+		return 'yes' === get_option( 'woocommerce_allow_tracking', 'no' );
+	}
 
 	/**
 	 * Hook extension tracker data into the WC tracker data.
 	 */
 	public function register(): void {
-		if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-			add_filter(
-				'woocommerce_tracker_data',
-				[ $this, 'add_snapshot_data' ],
-				10,
-				1
-			);
-		}
+		add_filter(
+			'woocommerce_tracker_data',
+			[ $this, 'include_snapshot_data' ],
+			10,
+			1
+		);
 	}
 
 	/**
@@ -43,7 +50,7 @@ class TrackerSnapshot implements Service, Registerable {
 	 *
 	 * @return array The updated array of tracker data.
 	 */
-	private function add_snapshot_data( $data = [] ) {
+	private function include_snapshot_data( $data = [] ) {
 		if ( ! isset( $data['extensions'] ) ) {
 			$data['extensions'] = [];
 		}
@@ -65,4 +72,5 @@ class TrackerSnapshot implements Service, Registerable {
 			'version' => $this->get_version(),
 		];
 	}
+
 }
