@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Infrastructure;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
 /**
  * Registerable interface.
  *
  * Used to designate an object that can be registered.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Infrastructure
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
 interface Registerable {
 

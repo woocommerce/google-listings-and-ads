@@ -1,11 +1,11 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Infrastructure;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
 /**
  * Interface Plugin
  *
- * @package Automattic\WooCommerce\GoogleForWC\Infrastructure
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
 interface Plugin extends Activateable, Deactivateable, Registerable {}

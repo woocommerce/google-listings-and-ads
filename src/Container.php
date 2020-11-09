@@ -3,11 +3,11 @@
  * Container class file.
  */
 
-namespace Automattic\WooCommerce\GoogleForWC;
+namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
-use Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement\CoreServiceProvider;
-use Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement\ExtendedContainer;
-use Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement\ServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\CoreServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ExtendedContainer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ServiceProvider;
 use Automattic\WooCommerce\Vendor\League\Container\Container as LeagueContainer;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;

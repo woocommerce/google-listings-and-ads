@@ -1,15 +1,15 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Assets;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
-use Automattic\WooCommerce\GoogleForWC\Exception\InvalidURI;
-use Automattic\WooCommerce\GoogleForWC\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidURI;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
  * Trait SourceHelper
  *
- * @package Automattic\WooCommerce\GoogleForWC\Assets
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
 trait SourceHelper {
 

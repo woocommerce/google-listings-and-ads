@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Exception;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Exception;
 
 use InvalidArgumentException;
 
 /**
  * InvalidService class.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Exception
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
 class InvalidService extends InvalidArgumentException implements GoogleForWCException {
 

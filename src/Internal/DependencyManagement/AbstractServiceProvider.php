@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\Internal\DependencyManagement\AbstractServiceProvider as WCAbstractServiceProvider;
 
 /**
  * Class AbstractServiceProvider
  *
- * @package Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement
  */
 abstract class AbstractServiceProvider extends WCAbstractServiceProvider {
 

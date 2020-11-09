@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Infrastructure;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
 /**
  * Conditional interface.
@@ -10,7 +10,7 @@ namespace Automattic\WooCommerce\GoogleForWC\Infrastructure;
  * determine whether an object needs to be instantiated. This prevents needless instantiation of
  * objects that won't be used in the current request.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Infrastructure
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
 interface Conditional {
 

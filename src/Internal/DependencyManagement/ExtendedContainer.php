@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\Internal\DependencyManagement\ContainerException;
 use Automattic\WooCommerce\Internal\DependencyManagement\ExtendedContainer as WCExtendedContainer;
@@ -13,7 +13,7 @@ use Psr\Container\ContainerInterface;
 /**
  * ExtendedContainer class.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement
  */
 class ExtendedContainer extends WCExtendedContainer {
 

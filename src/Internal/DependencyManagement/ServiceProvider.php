@@ -1,15 +1,15 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandler;
-use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 
 /**
  * Class ServiceProvider
  *
- * @package Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement
  */
 class ServiceProvider extends AbstractServiceProvider {
 

@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: Google for WooCommerce
+ * Plugin Name: Google Listings and Ads
  * Plugin URL: https://woocommerce.com/
  * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
- * Version: 0.1
+ * Version: 0.1.0
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
- * Text Domain: google-for-woocommerce
+ * Text Domain: google-listings-and-ads
  * Requires at least: 5.3
- * Requires PHP: 7:0
+ * Requires PHP: 7:1
  *
  * WC requires at least: 4.3
  * WC tested up to: 4.6
@@ -18,9 +18,9 @@
  */
 
 use Automattic\WooCommerce\Admin\Loader;
-use Automattic\WooCommerce\GoogleForWC\Container;
-use Automattic\WooCommerce\GoogleForWC\GoogleForWC\Autoloader;
-use Automattic\WooCommerce\GoogleForWC\PluginFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Container;
+use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -44,7 +44,7 @@ add_action(
  *
  * @return ContainerInterface
  */
-function google_for_wc_get_container() : ContainerInterface {
+function woogle_get_container() : ContainerInterface {
 	static $container = null;
 	if ( null === $container ) {
 		$container = new Container();
@@ -76,7 +76,7 @@ function add_extension_register_script() {
 	$script_url = plugins_url( $script_path, __FILE__ );
 
 	wp_register_script(
-		'google-for-woocommerce',
+		'google-listings-and-ads',
 		$script_url,
 		$script_asset['dependencies'],
 		$script_asset['version'],
@@ -84,7 +84,7 @@ function add_extension_register_script() {
 	);
 
 	wp_register_style(
-		'google-for-woocommerce',
+		'google-listings-and-ads',
 		plugins_url( '/js/build/index.css', __FILE__ ),
 		defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
 		array(),
@@ -96,8 +96,8 @@ function add_extension_register_script() {
 		wp_enqueue_style( WC_ADMIN_APP );
 	}
 
-	wp_enqueue_script( 'google-for-woocommerce' );
-	wp_enqueue_style( 'google-for-woocommerce' );
+	wp_enqueue_script( 'google-listings-and-ads' );
+	wp_enqueue_style( 'google-listings-and-ads' );
 }
 
 add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );

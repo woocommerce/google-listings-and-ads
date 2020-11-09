@@ -1,15 +1,15 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Infrastructure;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
-use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Psr\Container\ContainerInterface;
 
 /**
  * Class GoogleForWCPlugin
  *
- * @package Automattic\WooCommerce\GoogleForWC\Infrastructure
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
 final class GoogleForWCPlugin implements Plugin {
 

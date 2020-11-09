@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Assets;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Conditional;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 
 /**
  * Class BaseAdminAsset
  *
- * @package Automattic\WooCommerce\GoogleForWC\Assets
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
 abstract class AdminBaseAsset extends BaseAsset implements Conditional {
 

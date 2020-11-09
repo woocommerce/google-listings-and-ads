@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC;
+namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 /**
  * Trait PluginHelper
  *
  * Helper functions that are useful throughout the plugin.
  *
- * @package Automattic\WooCommerce\GoogleForWC
+ * @package Automattic\WooCommerce\GoogleListingsAndAds
  */
 trait PluginHelper {
 
@@ -36,7 +36,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_main_filename(): string {
-		return 'google-for-woocommerce.php';
+		return 'google-listings-and-ads.php';
 	}
 
 	/**

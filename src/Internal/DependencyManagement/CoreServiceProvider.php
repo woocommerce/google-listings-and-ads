@@ -1,19 +1,19 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandler;
-use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Conditional;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleForWC\Menu\GoogleConnect;
-use Automattic\WooCommerce\GoogleForWC\Pages\ConnectAccount;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
 
 /**
  * Class CoreServiceProvider
  *
- * @package Automattic\WooCommerce\GoogleForWC\Internal\DependencyManagement
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement
  */
 class CoreServiceProvider extends AbstractServiceProvider {
 

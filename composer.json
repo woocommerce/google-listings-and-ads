@@ -1,5 +1,5 @@
 {
-    "name": "woocommerce/google-for-woocommerce",
+    "name": "woocommerce/google-listings-and-ads",
     "type": "wordpress-plugin",
     "require": {
         "php": ">=7.1",
@@ -13,7 +13,7 @@
     "license": "GPL-3.0",
     "autoload": {
         "psr-4": {
-            "Automattic\\WooCommerce\\GoogleForWC\\": "src/"
+            "Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/"
         }
     },
     "config": {

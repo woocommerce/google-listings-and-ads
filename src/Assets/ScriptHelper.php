@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Assets;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
-use Automattic\WooCommerce\GoogleForWC\Exception\InvalidAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
 use Closure;
 
 trait ScriptHelper {

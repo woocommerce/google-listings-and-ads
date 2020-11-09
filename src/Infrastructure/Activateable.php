@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Infrastructure;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
 /**
  * Something that can be activated.

@@ -1,16 +1,16 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Assets;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 
 /**
  * Asset interface.
  *
  * An asset is something that can be enqueued by WordPress.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Assets
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
 interface Asset extends Registerable {
 

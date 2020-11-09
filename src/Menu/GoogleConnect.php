@@ -1,15 +1,15 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Menu;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
  * Class GoogleConnect
  *
- * @package Automattic\WooCommerce\GoogleForWC\Menu
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
 class GoogleConnect implements Service, Registerable {
 
@@ -42,7 +42,7 @@ class GoogleConnect implements Service, Registerable {
 	protected function add_items( array $items ): array {
 		$items[] = [
 			'id'         => 'google-connect',
-			'title'      => __( 'Google', 'google-for-woocommerce' ),
+			'title'      => __( 'Google', 'google-listings-and-ads' ),
 			'path'       => '/google/connect',
 			'capability' => 'manage_woocommerce',
 		];

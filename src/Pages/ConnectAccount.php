@@ -1,21 +1,21 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Pages;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Pages;
 
-use Automattic\WooCommerce\GoogleForWC\Assets\AdminScriptAsset;
-use Automattic\WooCommerce\GoogleForWC\Assets\Asset;
-use Automattic\WooCommerce\GoogleForWC\Assets\AssetsAwareness;
-use Automattic\WooCommerce\GoogleForWC\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\AdminConditional;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Conditional;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
  * Class ConnectAccount
  *
- * @package Automattic\WooCommerce\GoogleForWC\Pages
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Pages
  */
 class ConnectAccount implements Service, Registerable, Conditional {
 
