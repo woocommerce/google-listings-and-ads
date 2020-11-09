@@ -50,7 +50,7 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 	 *
 	 * @return array The updated array of tracker data.
 	 */
-	private function include_snapshot_data( $data = [] ) {
+	public function include_snapshot_data( $data = [] ) {
 		if ( ! isset( $data['extensions'] ) ) {
 			$data['extensions'] = [];
 		}
