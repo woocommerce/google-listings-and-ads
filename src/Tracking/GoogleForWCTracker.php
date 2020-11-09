@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleForWC\PluginHelper;
  * Class to add Google Listings and Ads data to the WC Tracker snapshot.
  *
  */
-class GoogleForWcTracking {
+class GoogleForWCTracker {
 
 	use PluginHelper;
 
@@ -22,12 +22,11 @@ class GoogleForWcTracking {
 	 * Hook extension tracker data into the WC tracker data.
 	 */
 	public function init() {
-		add_filter(
-			'woocommerce_tracker_data',
-			function ( $data ) {
-				return $this->add_data( $data );
-			}
-		);
+		if ( 'yes' !== get_option( 'woocommerce_allow_tracking', 'no' ) ) {
+			return;
+		}
+
+		add_filter( 'woocommerce_tracker_data', [ $this, 'add_snapshot_data' ], 10, 1 );
 	}
 
 	/**
@@ -37,7 +36,7 @@ class GoogleForWcTracking {
 	 *
 	 * @return array The updated array of tracker data.
 	 */
-	private function add_data( $data = [] ) {
+	private function add_snapshot_data( $data = [] ) {
 		if ( ! isset( $data['extensions'] ) ) {
 			$data['extensions'] = [];
 		}
@@ -48,6 +47,7 @@ class GoogleForWcTracking {
 
 		return $data;
 	}
+
 	/**
 	 * Get general extension and settings data for the extension.
 	 *
@@ -55,7 +55,7 @@ class GoogleForWcTracking {
 	 */
 	private function get_settings() {
 		return [
-			'database_version => $this->get_version()
+			'database_version' => $this->get_version(),
 		];
 	}
 }
