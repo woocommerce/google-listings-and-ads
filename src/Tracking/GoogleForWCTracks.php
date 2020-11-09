@@ -14,7 +14,7 @@ class GoogleForWCTracks {
 	use PluginHelper;
 
 	/**
-	 * Tracks event name prefix.
+	 * Tracks event name prefix (should end with '_').
 	 */
 	const PREFIX = 'woogle_';
 
@@ -44,5 +44,4 @@ class GoogleForWCTracks {
 		$full_event_name = self::PREFIX . $event_name;
 		WC_Tracks::record_event( $full_event_name, $properties );
 	}
-}
 }
