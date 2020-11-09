@@ -3,13 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleForWC\Tracking;
 
+use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleForWC\PluginHelper;
 
 /**
- * Class to add Google Listings and Ads data to the WC Tracker snapshot.
+ * Include Google Listings and Ads data in the WC Tracker snapshot.
  *
+ * @package Automattic\WooCommerce\GoogleForWC\Tracking
  */
-class GoogleForWCTracker {
+class TrackerSnapshot implements Service, Registerable {
 
 	use PluginHelper;
 
@@ -18,15 +21,19 @@ class GoogleForWCTracker {
 	 */
 	const EXTENSION_NAME = 'woogle';
 
+
 	/**
 	 * Hook extension tracker data into the WC tracker data.
 	 */
-	public function init() {
-		if ( 'yes' !== get_option( 'woocommerce_allow_tracking', 'no' ) ) {
-			return;
+	public function register(): void {
+		if ( 'yes' === get_option( 'woocommerce_allow_tracking', 'no' ) ) {
+			add_filter(
+				'woocommerce_tracker_data',
+				[ $this, 'add_snapshot_data' ],
+				10,
+				1
+			);
 		}
-
-		add_filter( 'woocommerce_tracker_data', [ $this, 'add_snapshot_data' ], 10, 1 );
 	}
 
 	/**
@@ -55,7 +62,7 @@ class GoogleForWCTracker {
 	 */
 	private function get_settings() {
 		return [
-			'database_version' => $this->get_version(),
+			'version' => $this->get_version(),
 		];
 	}
 }

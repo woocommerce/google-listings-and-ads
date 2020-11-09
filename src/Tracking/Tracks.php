@@ -10,7 +10,7 @@ use WC_Site_Tracking;
 /**
  * Tracks implementation for Google Listings and Ads.
  */
-class GoogleForWCTracks {
+class Tracks {
 	use PluginHelper;
 
 	/**
