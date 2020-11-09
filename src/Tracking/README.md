@@ -18,3 +18,5 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 ### Tracking events
 
 All event names are prefixed by `wcadmin_woogle_`.
+
+* `extension_loaded` - DEMO when the extension is loaded
