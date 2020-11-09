@@ -61,6 +61,8 @@ Make sure Docker is running in your machine, and run the following:
 
 `npm run wp-env start` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8888 (development environment) and http://localhost:8888 (test environment) (Username: admin, Password: password).
 
+`npm run test-e2e:initialize` - This will run the [initialize.sh](/tests/e2e/initialize.sh) script to initialize the WooCommerce store for the test environment.
+
 Run E2E testing:
 
 - `npm run test-e2e` to just run the tests one time, quick and headless.
