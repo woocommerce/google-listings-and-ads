@@ -13,4 +13,8 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
   * WordPress.com account connection status
   * Google Merchant center account connection status
   
-<!-- TODO: add more tracking information --> 
+<!-- TODO: add more tracking information -->
+ 
+### Tracking events
+
+All event names are prefixed by `wcadmin_woogle_`.
