@@ -23,6 +23,7 @@
 		"start": "wp-scripts start",
 		"test-e2e": "wp-scripts test-e2e",
 		"test-e2e:watch": "npm run test-e2e -- --watch",
+		"test-e2e:initialize": ". ./tests/e2e/initialize.sh",
 		"test-unit": "wp-scripts test-unit-js",
 		"test-unit:watch": "npm run test-unit -- --watch",
 		"wp-env": "wp-env"
