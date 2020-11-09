@@ -9,20 +9,17 @@ use WC_Site_Tracking;
 
 /**
  * Tracks implementation for Google Listings and Ads.
+ *
+ * @package Automattic\WooCommerce\GoogleForWC\Tracking
  */
-class Tracks {
+class Tracks implements TracksInterface {
+
 	use PluginHelper;
 
 	/**
 	 * Tracks event name prefix (should end with '_').
 	 */
 	const PREFIX = 'woogle_';
-
-	/**
-	 * Constructor.
-	 */
-	public function __construct() {
-	}
 
 	/**
 	 * Record an event in Tracks - this is the preferred way to record events from PHP.
@@ -40,7 +37,7 @@ class Tracks {
 			self::PREFIX . '_version'    => $this->get_version(),
 		);
 
-		$properties = array_merge( $base_properties, $properties );
+		$properties      = array_merge( $base_properties, $properties );
 		$full_event_name = self::PREFIX . $event_name;
 		WC_Tracks::record_event( $full_event_name, $properties );
 	}
