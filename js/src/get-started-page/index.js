@@ -22,6 +22,7 @@ const GetStartedPage = ( { query } ) => {
 			<Button isSecondary onClick={ onClick }>
 				{ __( 'Tracks demo button', 'woogle' ) }
 			</Button>
+			<em> - only works after <code>npm run build</code></em>
 		</div>
 	);
 };
