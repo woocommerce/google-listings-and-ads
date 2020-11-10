@@ -41,12 +41,28 @@ abstract class BaseAsset implements Asset {
 	protected $handle;
 
 	/**
+	 * The full URI to the asset.
+	 *
+	 * @var string
+	 */
+	protected $uri;
+
+	/**
 	 * Get the handle of the asset. The handle serves as the ID within WordPress.
 	 *
 	 * @return string
 	 */
 	public function get_handle(): string {
 		return $this->handle;
+	}
+
+	/**
+	 * Get the URI for the asset.
+	 *
+	 * @return string
+	 */
+	public function get_uri(): string {
+		return $this->uri;
 	}
 
 	/**
