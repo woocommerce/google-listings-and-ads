@@ -20,3 +20,14 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 All event names are prefixed by `wcadmin_woogle_`.
 
 * `extension_loaded` - DEMO when the extension is loaded
+
+
+<!-- -- >
+## Developer Info
+All new tracking info should be updated in this readme.
+
+New snapshot data for **WC Tracker** should be hooked into `Tracking\Events\TrackerSnapshot::include_snapshot_data()`.
+
+New **Tracks** events should be created in `Tracking\Events\Events` (implementing `Tracking\Events\TracksEventInterface`, using `Tracking\Events\EventHelper`), and need to be registered in `Tracking\Events\EventTracking::$events`.
+
+ /Dev Info -->

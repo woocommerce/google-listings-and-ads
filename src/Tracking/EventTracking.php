@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleForWC\Tracking;
 
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleForWC\Tracking\Events\TracksEventInterface;
-use WC_Site_Tracking;
+
 
 /**
- * Include Google Listings and Ads data in the WC Tracker snapshot.
+ * Wire up the Google Listings and Ads events to Tracks.
+ * Add all new events to `$events`.
  *
  * @package Automattic\WooCommerce\GoogleForWC\Tracking
  */
@@ -23,7 +23,7 @@ class EventTracking implements Service, Registerable {
 	private static $tracks;
 
 	/**
-	 * @var string[] Individual events classes to laod
+	 * @var string[] Individual events classes to load.
 	 */
 	protected $events = [
 		Events\Loaded::class,
