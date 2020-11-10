@@ -91,13 +91,16 @@ function add_extension_register_script() {
 		filemtime( dirname( __FILE__ ) . '/js/build/index.css' )
 	);
 
-	// Load WC Admin styles before our own styles
-	if ( defined( 'WC_ADMIN_APP' ) ) {
-		wp_enqueue_style( WC_ADMIN_APP );
-	}
+	if ( wc_admin_is_registered_page() ) {
 
-	wp_enqueue_script( 'google-listings-and-ads' );
-	wp_enqueue_style( 'google-listings-and-ads' );
+		// Load WC Admin styles before our own styles
+		if ( defined( 'WC_ADMIN_APP' ) ) {
+			wp_enqueue_style( WC_ADMIN_APP );
+		}
+
+		wp_enqueue_script( 'google-listings-and-ads' );
+		wp_enqueue_style( 'google-listings-and-ads' );
+	}
 }
 
 add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );
