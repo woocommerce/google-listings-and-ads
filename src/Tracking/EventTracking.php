@@ -35,7 +35,9 @@ class EventTracking implements Service, Registerable {
 	public function register(): void {
 		add_action(
 			'admin_init',
-			[ $this, 'register_events' ]
+			function() {
+				$this->register_events();
+			}
 		);
 	}
 

@@ -37,9 +37,9 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 	public function register(): void {
 		add_filter(
 			'woocommerce_tracker_data',
-			[ $this, 'include_snapshot_data' ],
-			10,
-			1
+			function( $data ) {
+				return $this->include_snapshot_data( $data );
+			}
 		);
 	}
 
@@ -50,7 +50,7 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 	 *
 	 * @return array The updated array of tracker data.
 	 */
-	public function include_snapshot_data( $data = [] ) {
+	protected function include_snapshot_data( $data = [] ): array {
 		if ( ! isset( $data['extensions'] ) ) {
 			$data['extensions'] = [];
 		}
@@ -67,7 +67,7 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 	 *
 	 * @return array
 	 */
-	private function get_settings() {
+	protected function get_settings(): array {
 		return [
 			'version' => $this->get_version(),
 		];
