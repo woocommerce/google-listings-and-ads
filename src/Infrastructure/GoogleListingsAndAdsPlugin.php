@@ -7,11 +7,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Psr\Container\ContainerInterface;
 
 /**
- * Class GoogleForWCPlugin
+ * Class GoogleListingsAndAdsPlugin
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
-final class GoogleForWCPlugin implements Plugin {
+final class GoogleListingsAndAdsPlugin implements Plugin {
 
 	/**
 	 * The hook for registering our plugin's services.
@@ -31,7 +31,7 @@ final class GoogleForWCPlugin implements Plugin {
 	private $registered_services;
 
 	/**
-	 * GoogleForWCPlugin constructor.
+	 * GoogleListingsAndAdsPlugin constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */

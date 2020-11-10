@@ -8,4 +8,4 @@ use Throwable;
 /**
  * This interface is used for all of our exceptions so that we can easily catch only our own exceptions.
  */
-interface GoogleForWCException extends Throwable {}
+interface GoogleListingsAndAdsException extends Throwable {}

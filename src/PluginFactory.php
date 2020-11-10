@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\GoogleForWCPlugin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\GoogleListingsAndAdsPlugin;
 
 /**
  * PluginFactory class.
@@ -17,12 +17,12 @@ final class PluginFactory {
 	/**
 	 * Get the instance of the Plugin object.
 	 *
-	 * @return GoogleForWCPlugin
+	 * @return GoogleListingsAndAdsPlugin
 	 */
 	public static function instance() {
 		static $plugin = null;
 		if ( null === $plugin ) {
-			$plugin = new GoogleForWCPlugin( woogle_get_container() );
+			$plugin = new GoogleListingsAndAdsPlugin( woogle_get_container() );
 		}
 
 		return $plugin;

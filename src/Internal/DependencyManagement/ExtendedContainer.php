@@ -22,7 +22,7 @@ class ExtendedContainer extends WCExtendedContainer {
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'Automattic\\WooCommerce\\GoogleForWC\\';
+	protected $namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\';
 
 	/**
 	 * Array of classes that are allowed despite not being part of the namespace.

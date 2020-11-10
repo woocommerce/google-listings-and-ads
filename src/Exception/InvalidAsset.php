@@ -10,7 +10,7 @@ use LogicException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
-class InvalidAsset extends LogicException implements GoogleForWCException {
+class InvalidAsset extends LogicException implements GoogleListingsAndAdsException {
 
 	/**
 	 * Return an instance of the exception when an asset attempts to be enqueued without first being

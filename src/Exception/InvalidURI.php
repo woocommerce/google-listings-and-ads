@@ -10,7 +10,7 @@ use InvalidArgumentException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
-class InvalidURI extends InvalidArgumentException implements GoogleForWCException {
+class InvalidURI extends InvalidArgumentException implements GoogleListingsAndAdsException {
 
 	/**
 	 * Create a new exception for an unreadable asset.

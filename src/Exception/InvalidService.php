@@ -10,7 +10,7 @@ use InvalidArgumentException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
-class InvalidService extends InvalidArgumentException implements GoogleForWCException {
+class InvalidService extends InvalidArgumentException implements GoogleListingsAndAdsException {
 
 	/**
 	 * Create a new instance of the exception for a service class name that is
