@@ -8,7 +8,7 @@ import { addFilter } from '@wordpress/hooks';
  * Internal dependencies
  */
 import './index.scss';
-import ConnectAccountPage from './connect-account-page';
+import GetStartedPage from './get-started-page';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -19,11 +19,11 @@ addFilter(
 			{
 				breadcrumbs: [
 					[ '', wcSettings.woocommerceTranslation ],
-					['/marketing', __( 'Marketing', 'google-for-woocommerce' ) ],
-					__( 'Connect', 'google-for-woocommerce' ) ],
-				title: __( 'Connect', 'google-for-woocommerce' ),
-				container: ConnectAccountPage,
-				path: '/google/connect',
+					['/marketing', __( 'Marketing', 'google-listings-and-ads' ) ],
+					__( 'Google Listings & Ads', 'google-listings-and-ads' ) ],
+				title: __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				container: GetStartedPage,
+				path: '/google/start',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];

@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import './index.scss';
 
-const ConnectAccountPage = ( { query } ) => {
+const GetStartedPage = ( { query } ) => {
 
 	return (
 		<div>
@@ -17,4 +17,4 @@ const ConnectAccountPage = ( { query } ) => {
 	);
 };
 
-export default ConnectAccountPage;
+export default GetStartedPage;

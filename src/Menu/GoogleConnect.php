@@ -41,9 +41,9 @@ class GoogleConnect implements Service, Registerable {
 	 */
 	protected function add_items( array $items ): array {
 		$items[] = [
-			'id'         => 'google-connect',
+			'id'         => 'google-start',
 			'title'      => __( 'Google', 'google-listings-and-ads' ),
-			'path'       => '/google/connect',
+			'path'       => '/google/start',
 			'capability' => 'manage_woocommerce',
 		];
 
