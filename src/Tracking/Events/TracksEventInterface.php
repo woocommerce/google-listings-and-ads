@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 
 /**
@@ -10,12 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
-interface TracksEventInterface {
-
-	/**
-	 * Initialize the tracking class with various hooks.
-	 */
-	public function register();
+interface TracksEventInterface extends Registerable {
 
 	/**
 	 * Set the Tracks object that will be used for tracking.
