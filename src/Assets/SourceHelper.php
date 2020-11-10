@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidURI;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
@@ -73,6 +73,7 @@ trait SourceHelper {
 	 * @param string $path Path where a minimized extension may be needed.
 	 *
 	 * @return string
+	 * @throws InvalidAsset When no asset can be found.
 	 */
 	protected function maybe_add_minimized_extension( string $path ): string {
 		$minimized_path = str_replace( ".{$this->file_extension}", ".min.{$this->file_extension}", $path );
@@ -81,7 +82,7 @@ trait SourceHelper {
 		$path_readable      = is_readable( $path );
 		$minimized_readable = is_readable( $minimized_path );
 		if ( ! $path_readable && ! $minimized_readable ) {
-			InvalidURI::asset_path( $path );
+			throw InvalidAsset::invalid_path( $path );
 		}
 
 		// If we only have one available, return the available one no matter what.
