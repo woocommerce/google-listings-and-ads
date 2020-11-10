@@ -16,6 +16,11 @@
             "Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Automattic\\WooCommerce\\GoogleListingsAndAds\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "platform": {
             "php": "7.4"
