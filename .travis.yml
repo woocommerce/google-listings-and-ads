@@ -1,0 +1,61 @@
+language: php
+sudo: false
+dist: trusty
+
+notifications:
+  email: false
+
+# Safelist (only test pushes/merges with these branches)
+branches:
+  only:
+    - trunk
+    - develop
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+# Test supported versions of PHP, WP and WC and the WC master branch.
+php:
+  - 7.1
+  - 7.2
+  - 7.3
+
+env:
+  global:
+    - WP_DIR=/tmp/wordpress
+    - WP_CORE_DIR="${WP_DIR}/src"
+    - WP_TESTS_DIR="${WP_DIR}/tests/phpunit"
+    - WP_LATEST=5.5
+  matrix:
+    - WP_VERSION="${WP_LATEST}" WC_VERSION=master
+    - WP_VERSION="${WP_LATEST}" WC_VERSION=4.7.0-rc.1
+    - WP_VERSION=5.4 WC_VERSION=4.7.0-rc.1
+    - WP_VERSION=5.3 WC_VERSION=4.7.0-rc.1
+
+# Additional tests
+matrix:
+  fast_finish: true
+  include:
+    - name: "Coding standard check"
+      php: 7.3
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=phpcs WP_MULTISITE=0
+
+before_script:
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - |
+    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ]; then
+      phpenv config-rm xdebug.ini
+    else
+      echo "xdebug.ini does not exist"
+    fi
+  - nvm install 10
+#  - bash tests/install/install-wp-tests.sh
+
+script:
+#  - tests/run_tests.sh
+#  - WP_MULTISITE=1 tests/run_tests.sh
+  - if [[ "${WP_TRAVISCI}" == "phpcs" ]]; then vendor/bin/phpcs; fi
+
+before_install:
+  - composer self-update --1
