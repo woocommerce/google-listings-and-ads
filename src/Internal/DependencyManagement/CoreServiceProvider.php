@@ -9,8 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
-use Automattic\WooCommerce\GoogleListingsAndAds\Pages\EventTracking;
-use Automattic\WooCommerce\GoogleListingsAndAds\Pages\TrackerSnapshot;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 
 /**
  * Class CoreServiceProvider

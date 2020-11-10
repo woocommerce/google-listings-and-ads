@@ -1,18 +1,18 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Tracking;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleForWC\Tracking\Events\TracksEventInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\TracksEventInterface;
 
 
 /**
  * Wire up the Google Listings and Ads events to Tracks.
  * Add all new events to `$events`.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Tracking
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
 class EventTracking implements Service, Registerable {
 	/**

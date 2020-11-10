@@ -1,16 +1,16 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Tracking;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 
-use Automattic\WooCommerce\GoogleForWC\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WC_Tracks;
 use WC_Site_Tracking;
 
 /**
  * Tracks implementation for Google Listings and Ads.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Tracking
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
 class Tracks implements TracksInterface {
 

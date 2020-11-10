@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Tracking\Events;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
 
-use Automattic\WooCommerce\GoogleForWC\Tracking\TracksInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 
 /**
  * Interface describing an event tracker class.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Tracking
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
 interface TracksEventInterface {
 

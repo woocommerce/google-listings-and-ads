@@ -1,17 +1,17 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Tracking;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Conditional;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Registerable;
-use Automattic\WooCommerce\GoogleForWC\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleForWC\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
  * Include Google Listings and Ads data in the WC Tracker snapshot.
  *
- * @package Automattic\WooCommerce\GoogleForWC\Tracking
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
 class TrackerSnapshot implements Service, Registerable, Conditional {
 
