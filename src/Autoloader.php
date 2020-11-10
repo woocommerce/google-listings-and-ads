@@ -3,7 +3,7 @@
  * Includes the composer Autoloader used for packages and classes in the src/ directory.
  */
 
-namespace Automattic\WooCommerce\GoogleForWC\GoogleForWC;
+namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -48,7 +48,7 @@ class Autoloader {
 	protected static function missing_autoloader() {
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log(  // phpcs:ignore
-				esc_html__( 'Your installation of Google for WooCommerce is incomplete. If you installed WooCommerce from GitHub, please refer to this document to set up your development environment: https://github.com/woocommerce/woocommerce/wiki/How-to-set-up-WooCommerce-development-environment', 'google-for-woocommerce' )
+				esc_html__( 'Your installation of Google for WooCommerce is incomplete. If you installed WooCommerce from GitHub, please refer to this document to set up your development environment: https://github.com/woocommerce/woocommerce/wiki/How-to-set-up-WooCommerce-development-environment', 'google-listings-and-ads' )
 			);
 		}
 		add_action(
@@ -60,7 +60,7 @@ class Autoloader {
 						<?php
 						printf(
 							/* translators: 1: is a link to a support document. 2: closing link */
-							esc_html__( 'Your installation of WooCommerce is incomplete. If you installed WooCommerce from GitHub, %1$splease refer to this document%2$s to set up your development environment.', 'google-for-woocommerce' ),
+							esc_html__( 'Your installation of WooCommerce is incomplete. If you installed WooCommerce from GitHub, %1$splease refer to this document%2$s to set up your development environment.', 'google-listings-and-ads' ),
 							'<a href="' . esc_url( 'https://github.com/woocommerce/woocommerce/wiki/How-to-set-up-WooCommerce-development-environment' ) . '" target="_blank" rel="noopener noreferrer">',
 							'</a>'
 						);
