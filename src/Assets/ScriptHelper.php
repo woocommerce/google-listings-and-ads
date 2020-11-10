@@ -69,12 +69,12 @@ trait ScriptHelper {
 		string $version = '',
 		bool $in_footer = false
 	) {
+		$this->file_extension = 'js';
 		$this->handle         = $handle;
 		$this->uri            = $this->get_uri_from_path( $uri );
 		$this->dependencies   = $dependencies;
 		$this->version        = $version ?: $this->get_version();
 		$this->in_footer      = $in_footer;
-		$this->file_extension = 'js';
 	}
 
 	/**
