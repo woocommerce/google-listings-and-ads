@@ -9,6 +9,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 
 /**
  * Class CoreServiceProvider
@@ -22,12 +26,23 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		Service::class                => [],
+
+		// Interfaces with concrete mappings.
 		AssetsHandlerInterface::class => [
 			'concrete' => AssetsHandler::class,
 		],
+		TracksInterface::class        => [
+			'concrete' => Tracks::class,
+		],
+
+		// Regular service classes.
 		GoogleConnect::class          => [],
 		ConnectAccount::class         => [
 			'args' => [ AssetsHandlerInterface::class ],
+		],
+		TrackerSnapshot::class        => [],
+		EventTracking::class          => [
+			'args' => [ TracksInterface::class ],
 		],
 	];
 

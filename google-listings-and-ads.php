@@ -100,6 +100,9 @@ function add_extension_register_script() {
 
 		wp_enqueue_script( 'google-listings-and-ads' );
 		wp_enqueue_style( 'google-listings-and-ads' );
+		
+		// Demo tracks event
+		do_action( 'woogle_extension_loaded' );
 	}
 }
 
