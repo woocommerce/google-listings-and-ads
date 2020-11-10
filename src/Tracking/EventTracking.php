@@ -16,6 +16,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\TracksEventInter
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
 class EventTracking implements Service, Registerable {
+
+	use ValidateInterface;
+
 	/**
 	 * The tracks object.
 	 *
@@ -58,7 +61,7 @@ class EventTracking implements Service, Registerable {
 	 */
 	protected function register_events() {
 		foreach ( $this->events as $class ) {
-//			self::validate_class( $class, Event_Tracker_Interface::class );
+			$this->validate_interface( $class, TracksEventInterface::class );
 
 			/** @var TracksEventInterface $instance */
 			$instance = new $class();
