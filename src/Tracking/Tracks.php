@@ -34,7 +34,7 @@ class Tracks implements TracksInterface {
 
 		// Include base properties.
 		$base_properties = array(
-			self::PREFIX . '_version'    => $this->get_version(),
+			self::PREFIX . 'version'    => $this->get_version(),
 		);
 
 		$properties      = array_merge( $base_properties, $properties );

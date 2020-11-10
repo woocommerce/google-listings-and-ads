@@ -2,20 +2,18 @@
 
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleForWC\Tracking\Events;
-
-use Automattic\WooCommerce\GoogleForWC\PluginHelper;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
 
 /**
  * This class adds actions to track when the extension is loaded.
  *
  * DEMO CLASS
  *
- * @package Automattic\WooCommerce\GoogleForWC\Tracking
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
 class Loaded implements TracksEventInterface {
 
-	use EventHelper, PluginHelper;
+	use EventHelper;
 
 	/**
 	 * Register the tracking class.
@@ -28,6 +26,6 @@ class Loaded implements TracksEventInterface {
 	 * Track when the extension is first installed.
 	 */
 	public function track_loaded() {
-		$this->record_event( 'extension_loaded', [ 'version' => $this->get_version() ] );
+		$this->record_event( 'extension_loaded' );
 	}
 }
