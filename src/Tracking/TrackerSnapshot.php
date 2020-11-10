@@ -55,7 +55,7 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 			$data['extensions'] = [];
 		}
 
-		$data['extensions'][self::EXTENSION_NAME] = [
+		$data['extensions'][ self::EXTENSION_NAME ] = [
 			'settings' => $this->get_settings(),
 		];
 

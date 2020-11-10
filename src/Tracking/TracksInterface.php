@@ -14,7 +14,7 @@ interface TracksInterface {
 	 * Record an event in Tracks - this is the preferred way to record events from PHP.
 	 *
 	 * @param string $event_name The name of the event.
-	 * @param array $properties Custom properties to send with the event.
+	 * @param array  $properties Custom properties to send with the event.
 	 */
 	public function record_event( $event_name, $properties = [] );
 }
