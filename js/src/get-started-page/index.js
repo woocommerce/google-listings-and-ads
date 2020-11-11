@@ -1,19 +1,11 @@
 /**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-
-/**
  * Internal dependencies
  */
 import './index.scss';
+import Faqs from './faqs';
 
-const GetStartedPage = ( { query } ) => {
-	return (
-		<div>
-			Hello World!
-		</div>
-	);
+const GetStartedPage = () => {
+	return <Faqs></Faqs>;
 };
 
 export default GetStartedPage;
