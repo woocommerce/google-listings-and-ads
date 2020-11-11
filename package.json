@@ -1,12 +1,12 @@
 {
-	"name": "google-for-woocommerce",
-	"title": "google-for-woocommerce",
+	"name": "google-listings-and-ads",
+	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
 	"version": "0.1.0",
-	"description": "google-for-woocommerce",
+	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
-		"url": "git@github.com:woocommerce/google-for-woocommerce.git"
+		"url": "git@github.com:woocommerce/google-listings-and-ads.git"
 	},
 	"scripts": {
 		"build": "NODE_ENV=production wp-scripts build",

@@ -30,7 +30,7 @@ Now you can build the files using one of these commands:
 
 ## Helper Scripts
 
-There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json file directly](https://github.com/woocommerce/google-for-woocommerce/blob/trunk/package.json#L11) to see all):
+There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json file directly](https://github.com/woocommerce/google-listings-and-ads/blob/trunk/package.json#L11) to see all):
 
  - `npm run lint:js` : Run eslint over the javascript files
  - `npm run lint:css` : Run stylelint over the javascript files
