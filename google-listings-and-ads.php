@@ -21,6 +21,7 @@ use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -107,3 +108,39 @@ function add_extension_register_script() {
 }
 
 add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );
+
+/**
+ * Jetpack-config will initialize the modules on "plugins_loaded" with priority 2,
+ * so this code needs to be run before that.
+ */
+add_action(
+	'plugins_loaded',
+	function() {
+		$jetpack_config = new Automattic\Jetpack\Config();
+		$jetpack_config->ensure(
+			'connection',
+			array(
+				'slug' => 'connection-test',
+				'name' => __( 'Connection Test', 'google-listings-and-ads' ),
+			)
+		);
+	},
+	1
+);
+
+/**
+ * Initialize plugin after WooCommerce has a chance to initialize its packages.
+ */
+add_action(
+	'plugins_loaded',
+	function() {
+		if ( class_exists( 'WooCommerce' ) ) {
+
+			if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
+				define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'http://localhost:5000' );
+			}
+
+			ConnectionTest::init();
+		}
+	},
+);
