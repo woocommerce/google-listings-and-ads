@@ -17,6 +17,7 @@
  * @package WooCommerce\Admin
  */
 
+use Automattic\Jetpack\Config;
 use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
@@ -115,7 +116,11 @@ add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );
 add_action(
 	'plugins_loaded',
 	function() {
-		$jetpack_config = new Automattic\Jetpack\Config();
+		if ( ! class_exists( Config::class ) ) {
+			return;
+		}
+
+		$jetpack_config = new Config();
 		$jetpack_config->ensure(
 			'connection',
 			array(
@@ -133,7 +138,7 @@ add_action(
 add_action(
 	'plugins_loaded',
 	function() {
-		if ( class_exists( 'WooCommerce' ) ) {
+		if ( class_exists( WooCommerce::class ) ) {
 
 			if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
 				define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'http://localhost:5000' );
@@ -141,5 +146,5 @@ add_action(
 
 			ConnectionTest::init();
 		}
-	},
+	}
 );
