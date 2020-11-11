@@ -50,6 +50,7 @@ before_script:
       echo "xdebug.ini does not exist"
     fi
   - nvm install 10
+  - composer update
 #  - bash tests/install/install-wp-tests.sh
 
 script:
