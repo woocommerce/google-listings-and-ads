@@ -40,6 +40,15 @@ trait PluginHelper {
 	}
 
 	/**
+	 * Get the plugin slug.
+	 *
+	 * @return string
+	 */
+	protected function get_slug(): string {
+		return 'woogle';
+	}
+
+	/**
 	 * Get the plugin URL, possibly with an added path.
 	 *
 	 * @param string $path
@@ -51,7 +60,7 @@ trait PluginHelper {
 	}
 
 	/**
-	 * Get the plugin version.
+	 * Get the plugin slug.
 	 *
 	 * @return string
 	 */

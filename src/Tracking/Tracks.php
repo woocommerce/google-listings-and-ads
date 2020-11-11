@@ -17,11 +17,6 @@ class Tracks implements TracksInterface {
 	use PluginHelper;
 
 	/**
-	 * Tracks event name prefix (should end with '_').
-	 */
-	const PREFIX = 'woogle_';
-
-	/**
 	 * Record an event in Tracks - this is the preferred way to record events from PHP.
 	 *
 	 * @param string $event_name The name of the event.
@@ -34,11 +29,11 @@ class Tracks implements TracksInterface {
 
 		// Include base properties.
 		$base_properties = [
-			self::PREFIX . 'version' => $this->get_version(),
+			$this->get_slug() . '_' . 'version' => $this->get_version(),
 		];
 
 		$properties      = array_merge( $base_properties, $properties );
-		$full_event_name = self::PREFIX . $event_name;
+		$full_event_name = $this->get_slug() . '_' . $event_name;
 		WC_Tracks::record_event( $full_event_name, $properties );
 	}
 }
