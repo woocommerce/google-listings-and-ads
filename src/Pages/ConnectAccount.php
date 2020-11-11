@@ -36,9 +36,7 @@ class ConnectAccount implements Service, Registerable, Conditional {
 	 * @return Asset[]
 	 */
 	protected function get_assets(): array {
-		return [
-			new AdminScriptAsset( 'gfw-connect-account-page', 'js/build/index' ),
-		];
+		return [];
 	}
 
 	/**
