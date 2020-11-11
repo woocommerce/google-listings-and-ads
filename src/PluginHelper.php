@@ -60,7 +60,7 @@ trait PluginHelper {
 	}
 
 	/**
-	 * Get the plugin slug.
+	 * Get the plugin version.
 	 *
 	 * @return string
 	 */
