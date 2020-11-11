@@ -1,1 +1,7 @@
 // Add styles here.
+@import './css/wp-base-styles';
+
+// Import Gutenberg components that aren't already imported in the lowest WC Admin version we support
+@import 'node_modules/@wordpress/components/src/button/style'; // required for tab-panel
+@import 'node_modules/@wordpress/components/src/tab-panel/style'; //required until X
+@import 'node_modules/@wordpress/components/src/panel/style'; //required until X
