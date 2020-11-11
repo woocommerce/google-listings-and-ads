@@ -37,7 +37,7 @@ final class Container implements ContainerInterface {
 	 * @var string[]
 	 */
 	private $service_providers = [
-		// ServiceProvider::class,
+		// Uncomment if necessary: ServiceProvider::class,
 		CoreServiceProvider::class,
 	];
 

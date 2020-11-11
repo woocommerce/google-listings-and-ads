@@ -29,7 +29,7 @@ class Tracks implements TracksInterface {
 
 		// Include base properties.
 		$base_properties = [
-			$this->get_slug() . '_' . 'version' => $this->get_version(),
+			$this->get_slug() . '_version' => $this->get_version(),
 		];
 
 		$properties      = array_merge( $base_properties, $properties );
