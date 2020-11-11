@@ -88,7 +88,6 @@ function add_extension_register_script() {
 		'google-listings-and-ads',
 		plugins_url( '/js/build/index.css', __FILE__ ),
 		defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-		array(),
 		filemtime( dirname( __FILE__ ) . '/js/build/index.css' )
 	);
 
