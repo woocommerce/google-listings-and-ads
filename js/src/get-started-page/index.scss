@@ -1,1 +1,6 @@
-// Add styles here.
+.get-started-page {
+    .components-card, 
+    .components-panel {
+        margin-bottom: calc(var(--main-gap) * 1.5);
+    }
+}
