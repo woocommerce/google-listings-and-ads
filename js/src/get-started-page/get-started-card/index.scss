@@ -23,10 +23,17 @@
         }
 
         .flex-item-image {
+            text-align: right;
+            margin-left: calc(var(--main-gap) * 2);
             margin-bottom: -4px;
 
             @include break-large() {
                 margin-top: calc(var(--main-gap) * 1.5);
+            }
+
+            svg {
+                width: 100%;
+                height: 100%;
             }
         }
     }
