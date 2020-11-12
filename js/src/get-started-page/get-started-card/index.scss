@@ -1,0 +1,18 @@
+.get-started-card {
+    .flex-item-text {
+        margin: 0 calc(var(--main-gap) * 2);
+
+        .title {
+            margin-bottom: calc(var(--main-gap) / 2);
+        }
+
+        .description {
+            margin-bottom: var(--main-gap);
+        }
+    }
+
+    .flex-item-image {
+        margin-top: calc(var(--main-gap) * 1.5);
+        margin-bottom: -4px;
+    }
+}
