@@ -80,16 +80,11 @@
 		</properties>
 	</rule>
 
-	<!-- Check all PHP files in directory tree by default. -->
+	<!-- Check the main PHP file and everything in src/ -->
 	<arg name="extensions" value="php"/>
-	<file>.</file>
+	<file>./src</file>
+	<file>./google-listings-and-ads.php</file>
 
 	<!-- Show progress and sniff codes in all reports -->
 	<arg value="ps"/>
-
-	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
-	<exclude-pattern>./libraries/*</exclude-pattern>
-	<exclude-pattern>./tests/*</exclude-pattern>
-	<exclude-pattern>./js/build/*</exclude-pattern>
 </ruleset>

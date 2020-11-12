@@ -18,11 +18,6 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 	use PluginHelper;
 
 	/**
-	 * Extension name to use for WC Tracker snapshot data.
-	 */
-	const EXTENSION_NAME = 'woogle';
-
-	/**
 	 * Not needed if allow_tracking is disabled.
 	 *
 	 * @return bool Whether the object is needed.
@@ -55,7 +50,7 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 			$data['extensions'] = [];
 		}
 
-		$data['extensions'][ self::EXTENSION_NAME ] = [
+		$data['extensions'][ $this->get_slug() ] = [
 			'settings' => $this->get_settings(),
 		];
 
