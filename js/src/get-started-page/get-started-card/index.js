@@ -42,7 +42,7 @@ const GetStartedCard = () => {
 					</Button>
 				</FlexBlock>
 				<FlexItem className="flex-item-image">
-					<GoogleShoppingImage></GoogleShoppingImage>
+					<GoogleShoppingImage viewBox="0 0 416 394"></GoogleShoppingImage>
 				</FlexItem>
 			</Flex>
 		</Card>
