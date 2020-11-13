@@ -6,8 +6,6 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\CoreServiceProvider;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ExtendedContainer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container as LeagueContainer;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
