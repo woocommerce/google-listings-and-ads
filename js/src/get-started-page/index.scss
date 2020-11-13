@@ -1,4 +1,7 @@
 .get-started-page {
+    max-width: 1032px;
+    margin: 0 auto;
+    
     .components-card, 
     .components-panel {
         margin-bottom: calc(var(--main-gap) * 1.5);
