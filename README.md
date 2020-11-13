@@ -79,6 +79,10 @@ To delete the Docker container (this will **delete everything** in the WordPress
 
 `npm run wp-env destroy`
 
+## Docs
+
+* [Usage Tracking](./src/Tracking/README.md)
+
 ## Please treat this repo as public
 
 * Avoid posting any private or sensitive information
