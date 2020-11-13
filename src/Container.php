@@ -8,7 +8,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\CoreServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ExtendedContainer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ServiceProvider;
-use Automattic\WooCommerce\Vendor\League\Container\Container as LeagueContainer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container as LeagueContainer;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -54,7 +54,7 @@ final class Container implements ContainerInterface {
 	 * @param LeagueContainer|null $container
 	 */
 	public function __construct( ?LeagueContainer $container = null ) {
-		$this->container = $container ?? new ExtendedContainer();
+		$this->container = $container ?? new LeagueContainer();
 		$this->container->share( ContainerInterface::class, $this );
 
 		foreach ( $this->service_providers as $service_provider_class ) {
