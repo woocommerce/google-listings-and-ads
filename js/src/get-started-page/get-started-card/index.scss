@@ -1,40 +1,40 @@
-@import '../../index.scss';
+@import "../../index.scss";
 
 .get-started-card {
-    .components-flex {
-        flex-direction: column;
-        align-items: flex-end;
+	.components-flex {
+		flex-direction: column;
+		align-items: flex-end;
 
-        @include break-large() {
-            flex-direction: row;
-            align-items: center;
-        }
+		@include break-large() {
+			flex-direction: row;
+			align-items: center;
+		}
 
-        .flex-item-text {
-            margin: calc(var(--main-gap) * 2);
+		.flex-item-text {
+			margin: calc(var(--main-gap) * 2);
 
-            .title {
-                margin-bottom: calc(var(--main-gap) / 2);
-            }
+			.title {
+				margin-bottom: calc(var(--main-gap) / 2);
+			}
 
-            .description {
-                margin-bottom: var(--main-gap);
-            }
-        }
+			.description {
+				margin-bottom: var(--main-gap);
+			}
+		}
 
-        .flex-item-image {
-            text-align: right;
-            margin-left: calc(var(--main-gap) * 2);
-            margin-bottom: -4px;
+		.flex-item-image {
+			text-align: right;
+			margin-left: calc(var(--main-gap) * 2);
+			margin-bottom: -4px;
 
-            @include break-large() {
-                margin-top: calc(var(--main-gap) * 1.5);
-            }
+			@include break-large() {
+				margin-top: calc(var(--main-gap) * 1.5);
+			}
 
-            svg {
-                width: 100%;
-                height: 100%;
-            }
-        }
-    }
+			svg {
+				width: 100%;
+				height: 100%;
+			}
+		}
+	}
 }
