@@ -11,7 +11,7 @@
 			align-items: center;
 		}
 
-		.flex-item-text {
+		.text {
 			margin: calc(var(--main-gap) * 2);
 
 			.title {
@@ -23,7 +23,7 @@
 			}
 		}
 
-		.flex-item-image {
+		.image {
 			text-align: right;
 			margin-left: calc(var(--main-gap) * 2);
 			margin-bottom: -4px;
