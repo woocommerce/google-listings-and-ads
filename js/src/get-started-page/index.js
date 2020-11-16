@@ -7,7 +7,7 @@ import GetStartedCard from './get-started-card';
 
 const GetStartedPage = () => {
 	return (
-		<div className="get-started-page">
+		<div className="woocommerce-marketing-google-get-started-page">
 			<GetStartedCard />
 			<Faqs></Faqs>
 		</div>

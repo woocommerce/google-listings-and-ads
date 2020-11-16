@@ -22,7 +22,7 @@ const GetStartedCard = () => {
 	const handleClick = () => {};
 
 	return (
-		<Card className="get-started-card">
+		<Card className="woocommerce-marketing-google-get-started-card">
 			<Flex>
 				<FlexBlock className="motivation-text">
 					<Text variant="title.medium" className="title">
