@@ -1,5 +1,4 @@
 <?php
-
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
@@ -11,9 +10,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
-class Loaded implements TracksEventInterface {
-
-	use EventHelper;
+class Loaded extends BaseEvent {
 
 	/**
 	 * Register the tracking class.

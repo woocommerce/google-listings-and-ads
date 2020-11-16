@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\Internal\DependencyManagement\AbstractServiceProvider as WCAbstractServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\ServiceProvider\AbstractServiceProvider as LeagueProvider;
 
 /**
  * Class AbstractServiceProvider
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement
  */
-abstract class AbstractServiceProvider extends WCAbstractServiceProvider {
+abstract class AbstractServiceProvider extends LeagueProvider {
 
 	/**
 	 * Array of classes provided by this container.

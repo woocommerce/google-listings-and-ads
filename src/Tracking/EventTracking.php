@@ -6,8 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\BaseEvent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\TracksEventInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * Wire up the Google Listings and Ads events to Tracks.
@@ -20,11 +21,11 @@ class EventTracking implements Service, Registerable {
 	use ValidateInterface;
 
 	/**
-	 * The tracks object.
+	 * The container object.
 	 *
-	 * @var TracksInterface
+	 * @var ContainerInterface
 	 */
-	protected $tracks;
+	protected $container;
 
 	/**
 	 * Individual events classes to load.
@@ -38,10 +39,10 @@ class EventTracking implements Service, Registerable {
 	/**
 	 * EventTracking constructor.
 	 *
-	 * @param TracksInterface $tracks The tracks interface object.
+	 * @param ContainerInterface $container The tracks interface object.
 	 */
-	public function __construct( TracksInterface $tracks ) {
-		$this->tracks = $tracks;
+	public function __construct( ContainerInterface $container ) {
+		$this->container = $container;
 	}
 
 	/**
@@ -57,16 +58,14 @@ class EventTracking implements Service, Registerable {
 	}
 
 	/**
-	 * Register all of our event tracking
+	 * Register all of our event tracking classes.
 	 */
 	protected function register_events() {
 		foreach ( $this->events as $class ) {
-			$this->validate_interface( $class, TracksEventInterface::class );
-
-			/** @var TracksEventInterface $instance */
-			$instance = new $class();
+			/** @var BaseEvent $instance */
+			$instance = $this->container->get( $class );
+			$this->validate_instanceof( $instance, BaseEvent::class );
 			$instance->register();
-			$instance->set_tracks( $this->tracks );
 		}
 	}
 }

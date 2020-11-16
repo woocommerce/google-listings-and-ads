@@ -21,3 +21,7 @@ wp-cli.local.yml
 
 # Composer
 /vendor/
+
+# Files allowed to be overridden with a local version
+phpcs.xml
+phpunit.xml

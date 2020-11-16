@@ -24,4 +24,18 @@ trait ValidateInterface {
 			throw InvalidClass::should_implement( $class, $interface );
 		}
 	}
+
+	/**
+	 * Validate that an object is an instance of an interface.
+	 *
+	 * @param object $object    The object to validate.
+	 * @param string $interface The interface name.
+	 *
+	 * @throws InvalidClass When the given object does not implement the interface.
+	 */
+	protected function validate_instanceof( $object, string $interface ) {
+		if ( ! $object instanceof $interface ) {
+			throw InvalidClass::should_implement( get_class( $object ), $interface );
+		}
+	}
 }
