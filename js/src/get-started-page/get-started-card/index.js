@@ -24,7 +24,7 @@ const GetStartedCard = () => {
 	return (
 		<Card className="get-started-card">
 			<Flex>
-				<FlexBlock className="text">
+				<FlexBlock className="motivation-text">
 					<Text variant="title.medium" className="title">
 						{ __(
 							'List your products on Google Shopping, for free',
@@ -41,7 +41,7 @@ const GetStartedCard = () => {
 						{ __( 'Get started', 'google-listings-and-ads' ) }
 					</Button>
 				</FlexBlock>
-				<FlexItem className="image">
+				<FlexItem className="motivation-image">
 					<GoogleShoppingImage viewBox="0 0 416 394"></GoogleShoppingImage>
 				</FlexItem>
 			</Flex>
