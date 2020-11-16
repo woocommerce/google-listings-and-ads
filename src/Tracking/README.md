@@ -27,6 +27,10 @@ All new tracking info should be updated in this readme.
 
 New snapshot data for **WC Tracker** should be hooked into `Tracking\Events\TrackerSnapshot::include_snapshot_data()`.
 
-New **Tracks** events should be created in `Tracking\Events\Events` (implementing `Tracking\Events\TracksEventInterface`, using `Tracking\Events\EventHelper`), and need to be registered in `Tracking\Events\EventTracking::$events`.
+New **Tracks** events should be created in `Tracking\Events\Events` (extending `Tracking\Events\BaseEvent`), and need to be registered in `Tracking\Events\EventTracking::$events`. They should also be registered in the `Internal\DependencyManagement\CoreServiceProvider` class:
+
+```php
+$this->conditionally_share_with_tags( Loaded::class );
+```
 
  /Dev Info -->
