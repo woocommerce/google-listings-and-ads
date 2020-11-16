@@ -1,17 +1,15 @@
 /**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-
-/**
  * Internal dependencies
  */
 import './index.scss';
+import Faqs from './faqs';
+import GetStartedCard from './get-started-card';
 
-const GetStartedPage = ( { query } ) => {
+const GetStartedPage = () => {
 	return (
-		<div>
-			Hello World!
+		<div className="woocommerce-marketing-google-get-started-page">
+			<GetStartedCard />
+			<Faqs></Faqs>
 		</div>
 	);
 };

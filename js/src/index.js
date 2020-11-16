@@ -19,13 +19,17 @@ addFilter(
 			{
 				breadcrumbs: [
 					[ '', wcSettings.woocommerceTranslation ],
-					['/marketing', __( 'Marketing', 'google-listings-and-ads' ) ],
-					__( 'Google Listings & Ads', 'google-listings-and-ads' ) ],
+					[
+						'/marketing',
+						__( 'Marketing', 'google-listings-and-ads' ),
+					],
+					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				],
 				title: __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				container: GetStartedPage,
 				path: '/google/start',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 		];
-	},
+	}
 );
