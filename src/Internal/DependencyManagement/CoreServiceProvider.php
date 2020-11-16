@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
@@ -63,8 +64,13 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
 
+		// Set up inflector for tracks classes.
+		$this->getLeagueContainer()
+			 ->inflector( TracksAwareInterface::class )
+			 ->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
+
 		// Share other classes.
-		$this->conditionally_share_with_tags( Loaded::class, TracksInterface::class );
+		$this->conditionally_share_with_tags( Loaded::class );
 	}
 
 	/**
