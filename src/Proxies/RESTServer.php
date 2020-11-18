@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use WP_REST_Server;
 
 /**
@@ -44,7 +45,7 @@ class RESTServer {
 
 		// Set default args for route options.
 		$defaults = [
-			'methods'  => $this->server::READABLE,
+			'methods'  => TransportMethods::READABLE,
 			'callback' => null,
 			'args'     => [],
 		];
