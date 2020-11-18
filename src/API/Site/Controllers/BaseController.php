@@ -31,12 +31,7 @@ abstract class BaseController implements Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_action(
-			'rest_api_init',
-			function() {
-				$this->register_routes();
-			}
-		);
+		$this->register_routes();
 	}
 
 	/**
