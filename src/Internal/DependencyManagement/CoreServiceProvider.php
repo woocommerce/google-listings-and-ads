@@ -16,7 +16,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -49,8 +48,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register(): void {
-		$this->conditionally_share_with_tags( TracksProxy::class );
-
 		// Share our interfaces, possibly with concrete objects.
 		$this->share_interface( AssetsHandlerInterface::class, AssetsHandler::class );
 		$this->share_interface(

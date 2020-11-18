@@ -6,13 +6,14 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\CoreServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ProxyServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container as LeagueContainer;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
- * PSR11 compliant dependency injection container for WooCommerce.
+ * PSR11 compliant dependency injection container for Google Listings and Ads.
  *
  * Classes in the `src` directory should specify dependencies from that directory via constructor arguments
  * with type hints. If an instance of the container itself is needed, the type hint to use is
@@ -35,6 +36,7 @@ final class Container implements ContainerInterface {
 	 * @var string[]
 	 */
 	private $service_providers = [
+		ProxyServiceProvider::class,
 		CoreServiceProvider::class,
 	];
 
