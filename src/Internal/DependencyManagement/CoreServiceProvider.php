@@ -74,16 +74,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Add an interface to the container.
-	 *
-	 * @param string      $interface The interface to add.
-	 * @param string|null $concrete  (Optional) The concrete object.
-	 */
-	protected function share_interface( string $interface, $concrete = null ) {
-		$this->getLeagueContainer()->share( $interface, $concrete );
-	}
-
-	/**
 	 * Maybe share a class and add interfaces as tags.
 	 *
 	 * This will also check any classes that implement the Conditional interface and only add them if
@@ -102,22 +92,5 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		}
 
 		$this->share_with_tags( $class, ...$arguments );
-	}
-
-	/**
-	 * Share a class and add interfaces as tags.
-	 *
-	 * @param string $class        The class name to add.
-	 * @param mixed  ...$arguments Constructor arguments for the class.
-	 *
-	 * @return DefinitionInterface
-	 */
-	protected function share_with_tags( string $class, ...$arguments ): DefinitionInterface {
-		$definition = $this->getLeagueContainer()->share( $class )->addArguments( $arguments );
-		foreach ( class_implements( $class ) as $interface ) {
-			$definition->addTag( $interface );
-		}
-
-		return $definition;
 	}
 }
