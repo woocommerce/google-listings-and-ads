@@ -23,10 +23,10 @@ class RESTServer {
 	/**
 	 * RESTServer constructor.
 	 *
-	 * @param WP_REST_Server $server
+	 * @param WP_REST_Server|null $server
 	 */
-	public function __construct( WP_REST_Server $server ) {
-		$this->server = $server;
+	public function __construct( ?WP_REST_Server $server = null ) {
+		$this->server = $server ?? rest_get_server();
 	}
 
 	/**
@@ -35,15 +35,23 @@ class RESTServer {
 	 * @param string $namespace The route namespace.
 	 * @param string $route     The route.
 	 * @param array  $args      Arguments for the route.
-	 * @param bool   $override  (Optional) Whether to override existing routes.
 	 */
-	public function register_route( string $namespace, string $route, array $args, bool $override = false ): void {
+	public function register_route( string $namespace, string $route, array $args ): void {
 		// Clean up namespace and route.
 		$namespace  = trim( $namespace, '/' );
 		$route      = trim( $route, '/' );
 		$full_route = "/{$namespace}/{$route}";
+		$this->server->register_route( $namespace, $full_route, $this->prepare_route_args( $args ) );
+	}
 
-		// Set default args for route options.
+	/**
+	 * Prepare the route arguments.
+	 *
+	 * @param array $args The route args to prepare.
+	 *
+	 * @return array Prepared args.
+	 */
+	protected function prepare_route_args( array $args ): array {
 		$defaults = [
 			'methods'  => TransportMethods::READABLE,
 			'callback' => null,
@@ -62,6 +70,6 @@ class RESTServer {
 			$group['args'] = array_merge( $common_args, $group['args'] );
 		}
 
-		$this->server->register_route( $namespace, $full_route, $args, $override );
+		return $args;
 	}
 }
