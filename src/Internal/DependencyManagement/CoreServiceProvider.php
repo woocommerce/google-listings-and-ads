@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -38,6 +39,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Loaded::class                 => true,
 		AssetsHandlerInterface::class => true,
 		TracksInterface::class        => true,
+		RESTControllers::class        => true,
 	];
 
 	/**
@@ -60,6 +62,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( ConnectAccount::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 
 		// Set up inflector for tracks classes.
 		$this->getLeagueContainer()
