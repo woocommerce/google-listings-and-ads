@@ -16,6 +16,8 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	/**
 	 * Array of classes provided by this container.
 	 *
+	 * Keys should be the class name, and the value can be anything (like `true`).
+	 *
 	 * @var array
 	 */
 	protected $provides = [];
@@ -30,6 +32,19 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	 */
 	public function provides( string $service ): bool {
 		return array_key_exists( $service, $this->provides );
+	}
+
+	/**
+	 * Use the register method to register items with the container via the
+	 * protected $this->leagueContainer property or the `getLeagueContainer` method
+	 * from the ContainerAwareTrait.
+	 *
+	 * @return void
+	 */
+	public function register() {
+		foreach( $this->provides as $class => $provided ) {
+			$this->share( $class );
+		}
 	}
 
 	/**

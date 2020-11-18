@@ -22,17 +22,4 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		RESTServer::class => true,
 		Tracks::class     => true,
 	];
-
-	/**
-	 * Use the register method to register items with the container via the
-	 * protected $this->leagueContainer property or the `getLeagueContainer` method
-	 * from the ContainerAwareTrait.
-	 *
-	 * @return void
-	 */
-	public function register() {
-		foreach( $this->provides as $class => $provided ) {
-			$this->share( $class );
-		}
-	}
 }
