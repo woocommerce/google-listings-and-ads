@@ -110,6 +110,11 @@ class ConnectionTest {
 						<button class="button">Send proxied request to Google Merchant Center</button>
 					</form>
 				</p>
+
+				<p>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
+				</p>
 			<?php } ?>
 
 			<?php if ( ! empty( self::$response ) ) { ?>
@@ -283,6 +288,43 @@ class ConnectionTest {
 			} catch ( \Exception $e ) {
 				self::$response .= 'Error: ' . $e->getMessage();
 			}
+		}
+
+		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/tos/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'body'    => [
+					'email' => 'john@doe.email',
+				],
+			];
+
+			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_post( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'wcs-check-tos' === $_GET['action'] && check_admin_referer( 'wcs-check-tos' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/tos/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+			];
+
+			self::$response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_get( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
 		}
 	}
 
