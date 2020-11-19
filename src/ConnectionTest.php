@@ -71,13 +71,13 @@ class ConnectionTest {
 			<h2>Connection Test</h2>
 
 			<?php if ( $blog_token ) { ?>
-				<p>Site is connected. Blog token:</p>
-				<pre><?php var_dump( $blog_token ); ?></pre>
+				<p>Site is connected.</p>
+				<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
 			<?php } ?>
 
 			<?php if ( $user_token ) { ?>
-				<p>Connected as an authenticated user. User token:</p>
-				<pre><?php var_dump( $user_token ); ?></pre>
+				<p>Connected as an authenticated user.</p>
+				<!--<pre><?php var_dump( $user_token ); ?></pre>-->
 			<?php } ?>
 
 			<?php if ( ! $blog_token || ! $user_token ) { ?>
@@ -88,19 +88,22 @@ class ConnectionTest {
 				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect' ), $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
 			<?php } ?>
 
-			<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test WCS API</a></p>
+			<p>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test WCS API</a>
+				<?php if ( $blog_token && $user_token ) { ?>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-auth-test' ), $url ), 'wcs-auth-test' ) ); ?>">Test WCS API with an authenticated request</a>
+				<?php } ?>
+			</p>
 
 			<?php if ( $blog_token && $user_token ) { ?>
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-auth-test' ), $url ), 'wcs-auth-test' ) ); ?>">Test WCS API with an authenticated request</a></p>
-
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect to Google Merchant Center</a></p>
-
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Merchant Center</a></p>
-
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a></p>
+				<p>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect to Google Merchant Center</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Merchant Center</a>
+				</p>
 
 				<p>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
 						<?php wp_nonce_field( 'wcs-google-mc-proxy' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-google-mc-proxy" type="hidden" />
