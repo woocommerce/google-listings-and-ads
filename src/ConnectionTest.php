@@ -56,6 +56,7 @@ class ConnectionTest {
 		$manager    = new Manager( 'connection-test' );
 		$blog_token = $manager->get_access_token();
 		$user_token = $manager->get_access_token( get_current_user_id() );
+		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
 		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
 
 		if ( ! empty( $_GET['google-mc'] ) && 'connected' === $_GET['google-mc'] ) {
@@ -71,13 +72,13 @@ class ConnectionTest {
 			<h2>Connection Test</h2>
 
 			<?php if ( $blog_token ) { ?>
-				<p>Site is connected. Blog token:</p>
-				<pre><?php var_dump( $blog_token ); ?></pre>
+				<p>Site is connected. ID: <?php echo \Jetpack_Options::get_option( 'id' ); ?></p>
+				<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
 			<?php } ?>
 
 			<?php if ( $user_token ) { ?>
-				<p>Connected as an authenticated user. User token:</p>
-				<pre><?php var_dump( $user_token ); ?></pre>
+				<p>Connected as an authenticated user. ID: <?php echo $user_data['ID']; ?></p>
+				<!--<pre><?php var_dump( $user_token ); ?></pre>-->
 			<?php } ?>
 
 			<?php if ( ! $blog_token || ! $user_token ) { ?>
@@ -88,19 +89,22 @@ class ConnectionTest {
 				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect' ), $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
 			<?php } ?>
 
-			<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test WCS API</a></p>
+			<p>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test WCS API</a>
+				<?php if ( $blog_token && $user_token ) { ?>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-auth-test' ), $url ), 'wcs-auth-test' ) ); ?>">Test WCS API with an authenticated request</a>
+				<?php } ?>
+			</p>
 
 			<?php if ( $blog_token && $user_token ) { ?>
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-auth-test' ), $url ), 'wcs-auth-test' ) ); ?>">Test WCS API with an authenticated request</a></p>
-
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect to Google Merchant Center</a></p>
-
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Merchant Center</a></p>
-
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a></p>
+				<p>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect to Google Merchant Center</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Merchant Center</a>
+				</p>
 
 				<p>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
 						<?php wp_nonce_field( 'wcs-google-mc-proxy' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-google-mc-proxy" type="hidden" />
@@ -109,6 +113,11 @@ class ConnectionTest {
 						</label>
 						<button class="button">Send proxied request to Google Merchant Center</button>
 					</form>
+				</p>
+
+				<p>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
 				</p>
 			<?php } ?>
 
@@ -283,6 +292,43 @@ class ConnectionTest {
 			} catch ( \Exception $e ) {
 				self::$response .= 'Error: ' . $e->getMessage();
 			}
+		}
+
+		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/tos/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'body'    => [
+					'email' => 'john@doe.email',
+				],
+			];
+
+			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_post( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'wcs-check-tos' === $_GET['action'] && check_admin_referer( 'wcs-check-tos' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/tos/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+			];
+
+			self::$response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_get( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
 		}
 	}
 
