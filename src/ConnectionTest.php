@@ -77,7 +77,7 @@ class ConnectionTest {
 			<?php } ?>
 
 			<?php if ( $user_token ) { ?>
-				<p>Connected as an authenticated user. ID: <?php echo $user_data['ID']; ?></pre></p>
+				<p>Connected as an authenticated user. ID: <?php echo $user_data['ID']; ?></p>
 				<!--<pre><?php var_dump( $user_token ); ?></pre>-->
 			<?php } ?>
 
