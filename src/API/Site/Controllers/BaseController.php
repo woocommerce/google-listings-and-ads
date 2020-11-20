@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 
 /**
@@ -12,6 +13,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site
  */
 abstract class BaseController implements Registerable {
+
+	use PluginHelper;
 
 	/**
 	 * @var RESTServer
@@ -50,11 +53,7 @@ abstract class BaseController implements Registerable {
 	 * @return string
 	 */
 	protected function get_namespace(): string {
-		$namespace = str_replace( __NAMESPACE__, '', static::class );
-		$namespace = str_replace( '\\', '/', $namespace );
-		$namespace = strtolower( $namespace );
-
-		return $namespace;
+		return "wc/{$this->get_slug()}";
 	}
 
 	/**
