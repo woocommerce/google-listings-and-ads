@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\GoogleConnectController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Psr\Container\ContainerInterface;
@@ -14,6 +16,8 @@ use Psr\Container\ContainerInterface;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site
  */
 class RESTControllers implements Service, Registerable {
+
+	use ValidateInterface;
 
 	/**
 	 * Our container object.
@@ -57,7 +61,10 @@ class RESTControllers implements Service, Registerable {
 	 */
 	protected function register_controllers(): void {
 		foreach ( $this->controllers as $controller ) {
-			$this->container->get( $controller )->register();
+			/** @var BaseController $controller */
+			$controller = $this->container->get( $controller );
+			$this->validate_instanceof( $controller, BaseController::class );
+			$controller->register();
 		}
 	}
 }
