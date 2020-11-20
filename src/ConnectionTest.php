@@ -56,6 +56,7 @@ class ConnectionTest {
 		$manager    = new Manager( 'connection-test' );
 		$blog_token = $manager->get_access_token();
 		$user_token = $manager->get_access_token( get_current_user_id() );
+		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
 		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
 
 		if ( ! empty( $_GET['google-mc'] ) && 'connected' === $_GET['google-mc'] ) {
@@ -71,12 +72,12 @@ class ConnectionTest {
 			<h2>Connection Test</h2>
 
 			<?php if ( $blog_token ) { ?>
-				<p>Site is connected.</p>
+				<p>Site is connected. ID: <?php echo \Jetpack_Options::get_option( 'id' ); ?></p>
 				<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
 			<?php } ?>
 
 			<?php if ( $user_token ) { ?>
-				<p>Connected as an authenticated user.</p>
+				<p>Connected as an authenticated user. ID: <?php echo $user_data['ID']; ?></pre></p>
 				<!--<pre><?php var_dump( $user_token ); ?></pre>-->
 			<?php } ?>
 
