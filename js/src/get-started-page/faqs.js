@@ -5,8 +5,16 @@ import { Panel, PanelBody, PanelRow } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
+import { recordEvent } from '@woocommerce/tracks';
 
 const Faqs = () => {
+	const handleToggle = ( id ) => ( isOpened ) => {
+		recordEvent( 'gla_get_started_faq', {
+			id,
+			action: isOpened ? 'expand' : 'collapse',
+		} );
+	};
+
 	return (
 		<Panel
 			header={ __(
@@ -20,6 +28,7 @@ const Faqs = () => {
 					'google-listings-and-ads'
 				) }
 				initialOpen={ false }
+				onToggle={ handleToggle( 'what-is-google-merchant-center' ) }
 			>
 				<PanelRow>
 					<div>
@@ -47,6 +56,7 @@ const Faqs = () => {
 					'google-listings-and-ads'
 				) }
 				initialOpen={ false }
+				onToggle={ handleToggle( 'how-do-i-get-my-products' ) }
 			>
 				<PanelRow>
 					{ __(
@@ -61,6 +71,7 @@ const Faqs = () => {
 					'google-listings-and-ads'
 				) }
 				initialOpen={ false }
+				onToggle={ handleToggle( 'what-do-i-need-to-do' ) }
 			>
 				<PanelRow>
 					<div>
