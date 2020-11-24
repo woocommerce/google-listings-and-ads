@@ -15,14 +15,14 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { ReactComponent as GoogleShoppingImage } from './image.svg';
-import './index.scss';
+import { cardClass } from './css';
 
 const GetStartedCard = () => {
 	// TODO: add event handler for clicking Get started button.
 	const handleClick = () => {};
 
 	return (
-		<Card className="woocommerce-marketing-google-get-started-card">
+		<Card className={ cardClass }>
 			<Flex>
 				<FlexBlock className="motivation-text">
 					<Text variant="title.medium" className="title">

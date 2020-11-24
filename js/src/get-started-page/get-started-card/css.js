@@ -8,7 +8,7 @@ import { css } from '@emotion/css';
  */
 import breakpoints from '../../utils/breakpoint-values';
 
-export default css`
+export const cardClass = css`
 	.components-flex {
 		flex-direction: column;
 		align-items: flex-end;
