@@ -39,6 +39,9 @@
 		"stylelint-config-wordpress": "^17.0.0"
 	},
 	"dependencies": {
+		"@emotion/css": "^11.0.0",
+		"@emotion/react": "^11.1.1",
+		"@emotion/styled": "^11.0.0",
 		"@woocommerce/components": "^5.1.2",
 		"@woocommerce/tracks": "^1.0.0",
 		"@wordpress/base-styles": "^3.2.0",
