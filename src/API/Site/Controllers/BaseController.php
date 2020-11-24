@@ -43,7 +43,7 @@ abstract class BaseController implements Registerable {
 	 * @param string $route The route name.
 	 * @param array  $args  The arguments for the route.
 	 */
-	protected function register_route( string $route, array $args ) {
+	protected function register_route( string $route, array $args ): void {
 		$this->server->register_route( $this->get_namespace(), $route, $args );
 	}
 
