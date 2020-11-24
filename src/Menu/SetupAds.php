@@ -25,6 +25,7 @@ class SetupAds implements Service, Registerable {
 						'title'  => __( 'Ads Setup Wizard', 'woocommerce-admin' ),
 						'parent' => '',
 						'path'   => '/setup-ads',
+						'id'     => 'setups-ads',
 					)
 				);
 			}

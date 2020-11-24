@@ -25,6 +25,7 @@ class SetupMerchantCenter implements Service, Registerable {
 						'title'  => __( 'MC Setup Wizard', 'woocommerce-admin' ),
 						'parent' => '',
 						'path'   => '/setup-mc',
+						'id'     => 'setups-mc',
 					)
 				);
 			}
