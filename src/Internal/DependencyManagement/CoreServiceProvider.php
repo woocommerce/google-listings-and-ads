@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
@@ -32,6 +34,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		Service::class                => true,
 		GetStarted::class             => true,
+		SetupMerchantCenter::class    => true,
+		SetupAds::class               => true,
 		ConnectAccount::class         => true,
 		TrackerSnapshot::class        => true,
 		EventTracking::class          => true,
@@ -59,6 +63,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share our regular service classes.
 		$this->conditionally_share_with_tags( GetStarted::class );
+		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
+		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( ConnectAccount::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );

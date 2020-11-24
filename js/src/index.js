@@ -9,6 +9,8 @@ import { addFilter } from '@wordpress/hooks';
  */
 import './index.scss';
 import GetStartedPage from './get-started-page';
+import SetupMC from './setup-mc';
+import SetupAds from './setup-ads';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -29,6 +31,22 @@ addFilter(
 				container: GetStartedPage,
 				path: '/google/start',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+			},
+			{
+				breadcrumbs: [
+					[ '', wcSettings.woocommerceTranslation ],
+					[ '/setup-mc', __( 'Setup Merchant Center', 'google-listings-and-ads' ) ],
+				],
+				container: SetupMC,
+				path: '/setup-mc',
+			},
+			{
+				breadcrumbs: [
+					[ '', wcSettings.woocommerceTranslation ],
+					[ '/setup-ads', __( 'Setup Google Ads', 'google-listings-and-ads' ) ],
+				],
+				container: SetupAds,
+				path: '/setup-ads',
 			},
 		];
 	}
