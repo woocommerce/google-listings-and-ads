@@ -17,7 +17,7 @@ trait WPErrorTrait {
 	 *
 	 * @param mixed|WP_Error $maybe_error
 	 *
-	 * @throws WPError when the object is a WP_Error.
+	 * @throws WPError When the object is a WP_Error.
 	 */
 	protected function check_for_wp_error( $maybe_error ) {
 		if ( ! $maybe_error instanceof WP_Error ) {

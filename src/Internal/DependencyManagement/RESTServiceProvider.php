@@ -16,6 +16,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
  */
 class RESTServiceProvider extends AbstractServiceProvider {
 
+	/**
+	 * Array of classes provided by this container.
+	 *
+	 * Keys should be the class name, and the value can be anything (like `true`).
+	 *
+	 * @var array
+	 */
 	protected $provides = [
 		GoogleConnectController::class  => true,
 		JetpackConnectController::class => true,

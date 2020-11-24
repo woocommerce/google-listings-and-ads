@@ -28,7 +28,7 @@ class WPError extends RuntimeException implements GoogleListingsAndAdsException 
 		$string_code = '';
 		if ( ! is_numeric( $code ) ) {
 			$string_code = $code;
-			$code = 0;
+			$code        = 0;
 		}
 
 		return new static(
