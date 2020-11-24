@@ -45,7 +45,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_slug(): string {
-		return 'woogle';
+		return 'gla';
 	}
 
 	/**
