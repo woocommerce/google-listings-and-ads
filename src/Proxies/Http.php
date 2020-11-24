@@ -30,10 +30,10 @@ class Http {
 	/**
 	 * Http constructor.
 	 *
-	 * @param WP_Http $http
+	 * @param WP_Http|null $http The WP_Http object.
 	 */
-	public function __construct( WP_Http $http ) {
-		$this->http = $http;
+	public function __construct( ?WP_Http $http = null ) {
+		$this->http = $http ?? new WP_Http();
 	}
 
 	/**
