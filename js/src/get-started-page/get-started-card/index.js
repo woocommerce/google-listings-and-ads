@@ -37,7 +37,7 @@ const GetStartedCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
-					<Button isPrimary onClick={ handleClick }>
+					<Button isPrimary onClick={ handleClick } href="admin.php?page=wc-admin&path=%2Fsetup-mc">
 						{ __( 'Get started', 'google-listings-and-ads' ) }
 					</Button>
 				</FlexBlock>
