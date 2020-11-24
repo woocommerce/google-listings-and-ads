@@ -7,11 +7,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
- * Class GoogleConnect
+ * Class GetStarted
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class GoogleConnect implements Service, Registerable {
+class GetStarted implements Service, Registerable {
 
 	/**
 	 * Register a service.
