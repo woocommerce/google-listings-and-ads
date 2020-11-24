@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\GoogleConnectController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\JetpackConnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 
@@ -15,8 +17,21 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 class RESTServiceProvider extends AbstractServiceProvider {
 
 	protected $provides = [
-		GoogleConnectController::class => true,
+		GoogleConnectController::class  => true,
+		JetpackConnectController::class => true,
 	];
+
+	/**
+	 * Use the register method to register items with the container via the
+	 * protected $this->leagueContainer property or the `getLeagueContainer` method
+	 * from the ContainerAwareTrait.
+	 *
+	 * @return void
+	 */
+	public function register() {
+		$this->share( GoogleConnectController::class );
+		$this->share( JetpackConnectController::class, Manager::class );
+	}
 
 	/**
 	 * Share a class.

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\GoogleConnectController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\JetpackConnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -33,6 +34,7 @@ class RESTControllers implements Service, Registerable {
 	 */
 	protected $controllers = [
 		GoogleConnectController::class,
+		JetpackConnectController::class,
 	];
 
 	/**
