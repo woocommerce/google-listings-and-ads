@@ -6,3 +6,4 @@ node_modules
 vendor
 legacy
 tests
+*.js
