@@ -42,7 +42,7 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	 * @return void
 	 */
 	public function register() {
-		foreach( $this->provides as $class => $provided ) {
+		foreach ( $this->provides as $class => $provided ) {
 			$this->share( $class );
 		}
 	}
@@ -79,6 +79,9 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	/**
 	 * Share a class.
 	 *
+	 * Shared classes will always return the same instance of the class when the class is requested
+	 * from the container.
+	 *
 	 * @param string $class        The class name to add.
 	 * @param mixed  ...$arguments Constructor arguments for the class.
 	 *
@@ -86,5 +89,17 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	 */
 	protected function share( string $class, ...$arguments ): DefinitionInterface {
 		return $this->getLeagueContainer()->share( $class )->addArguments( $arguments );
+	}
+
+	/**
+	 * Add a class.
+	 *
+	 * @param string $class    The class name to add.
+	 * @param mixed  $concrete (Optional) A concrete instance of the class.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function add( string $class, $concrete = null ): DefinitionInterface {
+		return $this->getLeagueContainer()->add( $class, $concrete );
 	}
 }
