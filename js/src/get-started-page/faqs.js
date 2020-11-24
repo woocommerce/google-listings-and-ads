@@ -15,6 +15,13 @@ const Faqs = () => {
 		} );
 	};
 
+	const handleLinkClick = ( id ) => ( event ) => {
+		recordEvent( 'gla_get_started_faq_link_clicked', {
+			id,
+			href: event.currentTarget.href,
+		} );
+	};
+
 	return (
 		<Panel
 			header={ __(
@@ -43,6 +50,9 @@ const Faqs = () => {
 										type="external"
 										href="https://www.google.com/retail/solutions/merchant-center/"
 										target="_blank"
+										onClick={ handleLinkClick(
+											'what-is-google-merchant-center'
+										) }
 									/>
 								),
 							}
@@ -86,6 +96,9 @@ const Faqs = () => {
 										type="external"
 										href="https://support.google.com/merchants/answer/6363310"
 										target="_blank"
+										onClick={ handleLinkClick(
+											'what-do-i-need-to-do'
+										) }
 									/>
 								),
 							}
