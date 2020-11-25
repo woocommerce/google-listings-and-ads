@@ -21,6 +21,14 @@ All event names are prefixed by `wcadmin_woogle_`.
 
 * `extension_loaded` - DEMO when the extension is loaded
 
+* `gla_get_started_faq` - Clinking on getting started page faq item to collapse or expand it
+  * `id`: (faq identifier)
+  * `action`: (`expand`|`collapse`)
+
+* `gla_get_started_faq_link_clicked` - Clinking on a text link within FAQ item
+  * `id`: (faq identifier)
+  * `href`
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
