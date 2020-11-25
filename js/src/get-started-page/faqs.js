@@ -14,10 +14,10 @@ const recordToggleEvent = ( id, isOpened ) => {
 	} );
 };
 
-const recordLinkClickEvent = ( id, event ) => {
+const recordLinkClickEvent = ( id, href ) => {
 	recordEvent( 'gla_get_started_faq_link_clicked', {
 		id,
-		href: event.currentTarget.href,
+		href,
 	} );
 };
 
@@ -27,7 +27,7 @@ const Faqs = () => {
 	};
 
 	const getLinkClickHandler = ( id ) => ( event ) => {
-		recordLinkClickEvent( id, event );
+		recordLinkClickEvent( id, event.currentTarget.href );
 	};
 
 	return (
