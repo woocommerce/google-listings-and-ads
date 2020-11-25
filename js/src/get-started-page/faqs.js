@@ -7,19 +7,27 @@ import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { recordEvent } from '@woocommerce/tracks';
 
+const recordToggleEvent = ( id, isOpened ) => {
+	recordEvent( 'gla_get_started_faq', {
+		id,
+		action: isOpened ? 'expand' : 'collapse',
+	} );
+};
+
+const recordLinkClickEvent = ( id, event ) => {
+	recordEvent( 'gla_get_started_faq_link_clicked', {
+		id,
+		href: event.currentTarget.href,
+	} );
+};
+
 const Faqs = () => {
-	const handleToggle = ( id ) => ( isOpened ) => {
-		recordEvent( 'gla_get_started_faq', {
-			id,
-			action: isOpened ? 'expand' : 'collapse',
-		} );
+	const getPanelToggleHandler = ( id ) => ( isOpened ) => {
+		recordToggleEvent( id, isOpened );
 	};
 
-	const handleLinkClick = ( id ) => ( event ) => {
-		recordEvent( 'gla_get_started_faq_link_clicked', {
-			id,
-			href: event.currentTarget.href,
-		} );
+	const getLinkClickHandler = ( id ) => ( event ) => {
+		recordLinkClickEvent( id, event );
 	};
 
 	return (
@@ -35,7 +43,9 @@ const Faqs = () => {
 					'google-listings-and-ads'
 				) }
 				initialOpen={ false }
-				onToggle={ handleToggle( 'what-is-google-merchant-center' ) }
+				onToggle={ getPanelToggleHandler(
+					'what-is-google-merchant-center'
+				) }
 			>
 				<PanelRow>
 					<div>
@@ -50,7 +60,7 @@ const Faqs = () => {
 										type="external"
 										href="https://www.google.com/retail/solutions/merchant-center/"
 										target="_blank"
-										onClick={ handleLinkClick(
+										onClick={ getLinkClickHandler(
 											'what-is-google-merchant-center'
 										) }
 									/>
@@ -66,7 +76,7 @@ const Faqs = () => {
 					'google-listings-and-ads'
 				) }
 				initialOpen={ false }
-				onToggle={ handleToggle( 'how-do-i-get-my-products' ) }
+				onToggle={ getPanelToggleHandler( 'how-do-i-get-my-products' ) }
 			>
 				<PanelRow>
 					{ __(
@@ -81,7 +91,7 @@ const Faqs = () => {
 					'google-listings-and-ads'
 				) }
 				initialOpen={ false }
-				onToggle={ handleToggle( 'what-do-i-need-to-do' ) }
+				onToggle={ getPanelToggleHandler( 'what-do-i-need-to-do' ) }
 			>
 				<PanelRow>
 					<div>
@@ -96,7 +106,7 @@ const Faqs = () => {
 										type="external"
 										href="https://support.google.com/merchants/answer/6363310"
 										target="_blank"
-										onClick={ handleLinkClick(
+										onClick={ getLinkClickHandler(
 											'what-do-i-need-to-do'
 										) }
 									/>
