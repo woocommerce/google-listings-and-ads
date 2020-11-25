@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\ServiceProvider\AbstractServiceProvider as LeagueProvider;
 
 /**
@@ -14,6 +15,8 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 
 	/**
 	 * Array of classes provided by this container.
+	 *
+	 * Keys should be the class name, and the value can be anything (like `true`).
 	 *
 	 * @var array
 	 */
@@ -29,5 +32,74 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	 */
 	public function provides( string $service ): bool {
 		return array_key_exists( $service, $this->provides );
+	}
+
+	/**
+	 * Use the register method to register items with the container via the
+	 * protected $this->leagueContainer property or the `getLeagueContainer` method
+	 * from the ContainerAwareTrait.
+	 *
+	 * @return void
+	 */
+	public function register() {
+		foreach ( $this->provides as $class => $provided ) {
+			$this->share( $class );
+		}
+	}
+
+	/**
+	 * Add an interface to the container.
+	 *
+	 * @param string      $interface The interface to add.
+	 * @param string|null $concrete  (Optional) The concrete class.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function share_interface( string $interface, $concrete = null ): DefinitionInterface {
+		return $this->getLeagueContainer()->share( $interface, $concrete );
+	}
+
+	/**
+	 * Share a class and add interfaces as tags.
+	 *
+	 * @param string $class        The class name to add.
+	 * @param mixed  ...$arguments Constructor arguments for the class.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function share_with_tags( string $class, ...$arguments ): DefinitionInterface {
+		$definition = $this->share( $class, ...$arguments );
+		foreach ( class_implements( $class ) as $interface ) {
+			$definition->addTag( $interface );
+		}
+
+		return $definition;
+	}
+
+	/**
+	 * Share a class.
+	 *
+	 * Shared classes will always return the same instance of the class when the class is requested
+	 * from the container.
+	 *
+	 * @param string $class        The class name to add.
+	 * @param mixed  ...$arguments Constructor arguments for the class.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function share( string $class, ...$arguments ): DefinitionInterface {
+		return $this->getLeagueContainer()->share( $class )->addArguments( $arguments );
+	}
+
+	/**
+	 * Add a class.
+	 *
+	 * @param string $class    The class name to add.
+	 * @param mixed  $concrete (Optional) A concrete instance of the class.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function add( string $class, $concrete = null ): DefinitionInterface {
+		return $this->getLeagueContainer()->add( $class, $concrete );
 	}
 }

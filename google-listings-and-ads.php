@@ -10,8 +10,8 @@
  * Requires at least: 5.3
  * Requires PHP: 7.1
  *
- * WC requires at least: 4.7
- * WC tested up to: 4.7
+ * WC requires at least: 4.5
+ * WC tested up to: 4.8
  * Woo:
  *
  * @package WooCommerce\Admin

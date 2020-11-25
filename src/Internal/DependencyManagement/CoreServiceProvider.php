@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -16,7 +17,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -39,6 +39,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Loaded::class                 => true,
 		AssetsHandlerInterface::class => true,
 		TracksInterface::class        => true,
+		RESTControllers::class        => true,
 	];
 
 	/**
@@ -49,8 +50,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register(): void {
-		$this->conditionally_share_with_tags( TracksProxy::class );
-
 		// Share our interfaces, possibly with concrete objects.
 		$this->share_interface( AssetsHandlerInterface::class, AssetsHandler::class );
 		$this->share_interface(
@@ -63,6 +62,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( ConnectAccount::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 
 		// Set up inflector for tracks classes.
 		$this->getLeagueContainer()
@@ -71,16 +71,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
-	}
-
-	/**
-	 * Add an interface to the container.
-	 *
-	 * @param string      $interface The interface to add.
-	 * @param string|null $concrete  (Optional) The concrete object.
-	 */
-	protected function share_interface( string $interface, $concrete = null ) {
-		$this->getLeagueContainer()->share( $interface, $concrete );
 	}
 
 	/**
@@ -102,22 +92,5 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		}
 
 		$this->share_with_tags( $class, ...$arguments );
-	}
-
-	/**
-	 * Share a class and add interfaces as tags.
-	 *
-	 * @param string $class        The class name to add.
-	 * @param mixed  ...$arguments Constructor arguments for the class.
-	 *
-	 * @return DefinitionInterface
-	 */
-	protected function share_with_tags( string $class, ...$arguments ): DefinitionInterface {
-		$definition = $this->getLeagueContainer()->share( $class )->addArguments( $arguments );
-		foreach ( class_implements( $class ) as $interface ) {
-			$definition->addTag( $interface );
-		}
-
-		return $definition;
 	}
 }
