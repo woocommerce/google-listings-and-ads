@@ -32,7 +32,24 @@ const requestToHandle = ( request ) => {
 	return wcHandleMap[ request ];
 };
 
-module.exports = {
+const newRules = defaultRules = defaultConfig.module.rules;
+const sassRules = defaultRules.length - 1;
+const sassLoader = defaultConfig.module.rules[sassRules].use.length - 1;
+
+newRules[sassRules].use[sassLoader].options.sassOptions = {
+	includePaths: [
+		'js/src/css/abstracts',
+	],
+};
+
+newRules[sassRules].use[sassLoader].options.prependData =
+	'@import "_colors"; ' +
+	'@import "_variables"; ' +
+	'@import "_mixins"; ' +
+	'@import "_breakpoints"; ';
+
+
+const webpackConfig = {
 	...defaultConfig,
 	plugins: [
 		...defaultConfig.plugins.filter(
@@ -52,4 +69,10 @@ module.exports = {
 		...defaultConfig.output,
 		path: path.resolve( process.cwd(), 'js/build' ),
 	},
+	module: {
+		...defaultConfig.module,
+		rules: newRules,
+	},
 };
+
+module.exports = webpackConfig;
