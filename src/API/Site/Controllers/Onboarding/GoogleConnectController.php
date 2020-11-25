@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\PermissionsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use WP_Error;
@@ -18,8 +17,6 @@ use WP_REST_Response;
  */
 class GoogleConnectController extends BaseController {
 
-	use PermissionsTrait;
-
 	/**
 	 * Register rest routes with WordPress.
 	 */
@@ -32,9 +29,7 @@ class GoogleConnectController extends BaseController {
 					'callback'            => function( WP_REST_Request $request ) {
 						return $this->google_connect( $request );
 					},
-					'permission_callback' => function() {
-						return $this->can_manage();
-					},
+					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => [],
 			]
