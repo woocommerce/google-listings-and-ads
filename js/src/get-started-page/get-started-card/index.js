@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { ReactComponent as GoogleShoppingImage } from './image.svg';
-import { cardClass } from './css';
+import { cardClass } from './get-started-card.styles';
 
 const GetStartedCard = () => {
 	// TODO: add event handler for clicking Get started button.
