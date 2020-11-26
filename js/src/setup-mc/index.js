@@ -1,4 +1,4 @@
-const SetupMC = ( props ) => {
+const SetupMC = () => {
 	return <p>Setup Merchant Center</p>;
 };
 

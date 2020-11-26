@@ -1,4 +1,4 @@
-const SetupAds = ( props ) => {
+const SetupAds = () => {
 	return <p>Setup Google Ads</p>;
 };
 
