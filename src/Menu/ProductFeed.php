@@ -1,0 +1,34 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+
+/**
+ * Class ProductFeed
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
+ */
+class ProductFeed implements Service, Registerable {
+
+	/**
+	 * Register a service.
+	 */
+	public function register(): void {
+		add_action(
+			'admin_menu',
+			function() {
+				wc_admin_register_page(
+					array(
+						'title'  => __( 'Product Feed', 'google-listings-and-ads' ),
+						'parent' => '',
+						'path'   => '/google/product-feed',
+						'id'     => 'google-product-feed',
+					)
+				);
+			}
+		);
+	}
+}

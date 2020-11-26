@@ -5,14 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\MenuFixesTrait;
 
 /**
- * Class GetStarted
+ * Class Dashboard
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class GetStarted implements Service, Registerable {
+class Dashboard implements Service, Registerable {
 
 	use MenuFixesTrait;
 
@@ -44,9 +43,9 @@ class GetStarted implements Service, Registerable {
 	 */
 	protected function add_items( array $items ): array {
 		$items[] = [
-			'id'         => 'google-start',
-			'title'      => __( 'Google', 'google-listings-and-ads' ),
-			'path'       => '/google/start',
+			'id'         => 'google-dashboard',
+			'title'      => __( 'Google (Dashboard)', 'google-listings-and-ads' ),
+			'path'       => '/google/dashboard',
 			'capability' => 'manage_woocommerce',
 		];
 
