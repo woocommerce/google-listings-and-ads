@@ -22,7 +22,7 @@ class SetupAds implements Service, Registerable {
 			function() {
 				wc_admin_register_page(
 					array(
-						'title'  => __( 'Ads Setup Wizard', 'woocommerce-admin' ),
+						'title'  => __( 'Ads Setup Wizard', 'google-listings-and-ads' ),
 						'parent' => '',
 						'path'   => '/google/setup-ads',
 						'id'     => 'google-setup-ads',
