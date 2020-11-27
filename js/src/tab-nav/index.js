@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { NavigableMenu } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
 
@@ -13,25 +14,25 @@ import './index.scss';
 const tabs = [
 	{
 		name: 'dashboard',
-		title: 'Dashboard',
+		title: __( 'Dashboard', 'google-listings-and-ads' ),
 		className: 'tab-dashboard',
 		path: '/google/dashboard',
 	},
 	{
 		name: 'analytics',
-		title: 'Analytics',
+		title: __( 'Analytics', 'google-listings-and-ads' ),
 		className: 'tab-analytics',
 		path: '/google/analytics',
 	},
 	{
 		name: 'product-feed',
-		title: 'Product Feed',
+		title: __( 'Product Feed', 'google-listings-and-ads' ),
 		className: 'tab-product-fee',
 		path: '/google/product-feed',
 	},
 	{
 		name: 'settings',
-		title: 'Settings',
+		title: __( 'Settings', 'google-listings-and-ads' ),
 		className: 'tab-settings',
 		path: '/google/settings',
 	},
