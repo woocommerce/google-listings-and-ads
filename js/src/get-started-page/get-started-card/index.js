@@ -2,7 +2,6 @@
  * External dependencies
  */
 import {
-	Button,
 	Card,
 	Flex,
 	FlexItem,
@@ -10,6 +9,8 @@ import {
 	__experimentalText as Text,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { Link } from '@woocommerce/components';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -37,9 +38,16 @@ const GetStartedCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
-					<Button isPrimary onClick={ handleClick }>
+					<Link
+						className={ classnames(
+							'components-button',
+							'is-primary'
+						) }
+						onClick={ handleClick }
+						href="admin.php?page=wc-admin&path=/google/setup-mc"
+					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
-					</Button>
+					</Link>
 				</FlexBlock>
 				<FlexItem className="motivation-image">
 					<GoogleShoppingImage viewBox="0 0 416 394"></GoogleShoppingImage>

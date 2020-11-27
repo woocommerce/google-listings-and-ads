@@ -5,13 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\MenuFixesTrait;
 
 /**
- * Class GoogleConnect
+ * Class GetStarted
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class GoogleConnect implements Service, Registerable {
+class GetStarted implements Service, Registerable {
+
+	use MenuFixesTrait;
 
 	/**
 	 * Register a service.
@@ -48,23 +51,5 @@ class GoogleConnect implements Service, Registerable {
 		];
 
 		return $items;
-	}
-
-	/**
-	 * Fix sub-menu paths. wc_admin_register_page() gets it wrong.
-	 */
-	protected function fix_menu_paths() {
-		global $submenu;
-
-		if ( ! isset( $submenu['woocommerce-marketing'] ) ) {
-			return;
-		}
-
-		foreach ( $submenu['woocommerce-marketing'] as &$item ) {
-			// The "slug" (aka the path) is the third item in the array.
-			if ( 0 === strpos( $item[2], 'wc-admin' ) ) {
-				$item[2] = 'admin.php?page=' . $item[2];
-			}
-		}
 	}
 }
