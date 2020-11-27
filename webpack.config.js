@@ -16,6 +16,7 @@ const requestToExternal = ( request ) => {
 	}
 	const wcDepMap = {
 		'@woocommerce/components': [ 'wc', 'components' ],
+		'@woocommerce/navigation': [ 'wc', 'navigation' ],
 	};
 	if ( wcDepMap[ request ] ) {
 		return wcDepMap[ request ];
@@ -25,6 +26,7 @@ const requestToExternal = ( request ) => {
 const requestToHandle = ( request ) => {
 	const wcHandleMap = {
 		'@woocommerce/components': 'wc-components',
+		'@woocommerce/navigation': 'wc-navigation',
 	};
 	if ( wcHandleMap[ request ] ) {
 		return wcHandleMap[ request ];
