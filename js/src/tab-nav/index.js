@@ -16,25 +16,25 @@ const tabs = [
 		name: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
 		className: 'tab-dashboard',
-		path: '/google/dashboard',
+		path: '%2Fgoogle%2Fdashboard',
 	},
 	{
 		name: 'analytics',
 		title: __( 'Analytics', 'google-listings-and-ads' ),
 		className: 'tab-analytics',
-		path: '/google/analytics',
+		path: '%2Fgoogle%2Fanalytics',
 	},
 	{
 		name: 'product-feed',
 		title: __( 'Product Feed', 'google-listings-and-ads' ),
 		className: 'tab-product-fee',
-		path: '/google/product-feed',
+		path: '%2Fgoogle%2Fproduct-feed',
 	},
 	{
 		name: 'settings',
 		title: __( 'Settings', 'google-listings-and-ads' ),
 		className: 'tab-settings',
-		path: '/google/settings',
+		path: '%2Fgoogle%2Fsettings',
 	},
 ];
 
