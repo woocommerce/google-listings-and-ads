@@ -32,23 +32,6 @@ const requestToHandle = ( request ) => {
 	return wcHandleMap[ request ];
 };
 
-const newRules = defaultRules = defaultConfig.module.rules;
-const sassRules = defaultRules.length - 1;
-const sassLoader = defaultConfig.module.rules[sassRules].use.length - 1;
-
-newRules[sassRules].use[sassLoader].options.sassOptions = {
-	includePaths: [
-		'js/src/css/abstracts',
-	],
-};
-
-newRules[sassRules].use[sassLoader].options.prependData =
-	'@import "_colors"; ' +
-	'@import "_variables"; ' +
-	'@import "_mixins"; ' +
-	'@import "_breakpoints"; ';
-
-
 const webpackConfig = {
 	...defaultConfig,
 	plugins: [
@@ -69,10 +52,33 @@ const webpackConfig = {
 		...defaultConfig.output,
 		path: path.resolve( process.cwd(), 'js/build' ),
 	},
-	module: {
-		...defaultConfig.module,
-		rules: newRules,
-	},
 };
+
+const sassTest = /\.(sc|sa)ss$/;
+const updatedSassOptions = {
+	sourceMap: process.env.NODE_ENV === 'production',
+	sassOptions: {
+		includePaths: [ 'js/src/css/abstracts' ],
+	},
+	prependData:
+		'@import "_colors"; ' +
+		'@import "_variables"; ' +
+		'@import "_mixins"; ' +
+		'@import "_breakpoints"; ',
+};
+
+// Update sass-loader config to prepend imports automatically
+// like wc-admin, without rebuilding entire Rule config
+webpackConfig.module.rules.forEach( ( { test, use }, ruleIndex ) => {
+	if ( test.toString() === sassTest.toString() ) {
+		use.forEach( ( { loader }, loaderIndex ) => {
+			if ( loader === require.resolve( 'sass-loader' ) ) {
+				webpackConfig.module.rules[ ruleIndex ].use[
+					loaderIndex
+				].options = updatedSassOptions;
+			}
+		} );
+	}
+} );
 
 module.exports = webpackConfig;
