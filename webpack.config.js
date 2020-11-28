@@ -14,21 +14,22 @@ const requestToExternal = ( request ) => {
 	if ( bundled.includes( request ) ) {
 		return false;
 	}
+
 	const wcDepMap = {
 		'@woocommerce/components': [ 'wc', 'components' ],
+		'@woocommerce/navigation': [ 'wc', 'navigation' ],
 	};
-	if ( wcDepMap[ request ] ) {
-		return wcDepMap[ request ];
-	}
+
+	return wcDepMap[ request ];
 };
 
 const requestToHandle = ( request ) => {
 	const wcHandleMap = {
 		'@woocommerce/components': 'wc-components',
+		'@woocommerce/navigation': 'wc-navigation',
 	};
-	if ( wcHandleMap[ request ] ) {
-		return wcHandleMap[ request ];
-	}
+
+	return wcHandleMap[ request ];
 };
 
 module.exports = {
