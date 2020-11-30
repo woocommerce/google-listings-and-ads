@@ -39,13 +39,7 @@ addFilter(
 			{
 				breadcrumbs: [
 					[ '', wcSettings.woocommerceTranslation ],
-					[
-						'/google/setup-mc',
-						__(
-							'Setup Merchant Center',
-							'google-listings-and-ads'
-						),
-					],
+					__( 'Setup Merchant Center', 'google-listings-and-ads' ),
 				],
 				container: SetupMC,
 				path: '/google/setup-mc',
@@ -53,10 +47,7 @@ addFilter(
 			{
 				breadcrumbs: [
 					[ '', wcSettings.woocommerceTranslation ],
-					[
-						'/google/setup-ads',
-						__( 'Setup Google Ads', 'google-listings-and-ads' ),
-					],
+					__( 'Setup Google Ads', 'google-listings-and-ads' ),
 				],
 				container: SetupAds,
 				path: '/google/setup-ads',
