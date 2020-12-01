@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -15,6 +17,22 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class SettingsController extends BaseController {
+
+	/**
+	 * @var OptionsInterface
+	 */
+	protected $options;
+
+	/**
+	 * BaseController constructor.
+	 *
+	 * @param RESTServer       $server
+	 * @param OptionsInterface $options
+	 */
+	public function __construct( RESTServer $server, OptionsInterface $options ) {
+		parent::__construct( $server );
+		$this->options = $options;
+	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -44,27 +62,52 @@ class SettingsController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_settings_endpoint_read_callback(): callable {
-		return function( WP_REST_Request $request ) {
-			// todo: replace this placeholder with real logic.
-			return [];
+		return function() {
+			$data   = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			$schema = $this->get_settings_schema();
+			$items  = [];
+			foreach ( $schema as $key => $property ) {
+				$items[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
+			}
+
+			return $items;
 		};
 	}
 
-
+	/**
+	 * Get a callback for editing the settings endpoint.
+	 *
+	 * @return callable
+	 */
 	protected function get_settings_endpoint_edit_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			// todo: replace this placeholder with real logic.
-			return [];
+			$schema  = $this->get_settings_schema();
+			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			foreach ( $schema as $key => $property ) {
+				$options[ $key ] = $request->get_param( $key ) ?? $options[ $key ] ?? $property['default'] ?? null;
+			}
+
+			$this->options->update( OptionsInterface::MERCHANT_CENTER, $options );
+
+			return [
+				'status'  => 'success',
+				'message' => __( 'Merchant Center Settings successfully updated.', '' ),
+			];
 		};
 	}
 
-
+	/**
+	 * Get the schema for request items.
+	 *
+	 * @return array
+	 */
 	public function get_item_schema(): array {
 		$properties = $this->get_settings_schema();
 		array_walk(
 			$properties,
 			function( &$value ) {
 				unset(
+					$value['default'],
 					$value['items'],
 					$value['validate_callback'],
 					$value['sanitize_callback']
@@ -96,6 +139,7 @@ class SettingsController extends BaseController {
 				'items'             => [
 					'type' => 'string',
 				],
+				'default'           => [],
 			],
 			'shipping'                => [
 				'type'              => 'string',
@@ -121,6 +165,47 @@ class SettingsController extends BaseController {
 				'description'       => __( 'Estimated shipping time (in days).', '' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'website_live'            => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether the store website is live.', '' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'checkout_process_secure' => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether the checkout process is complete and secure.', '' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'payment_methods_visible' => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether the payment methods are visible on the website.', '' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'refund_tos_visible'      => [
+				'type'              => 'boolean',
+				'description'       => __(
+					'Whether the refund policy and terms of service are visible on the website.',
+					''
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'contact_info_visible'    => [
+				'type'              => 'boolean',
+				'description'       => __(
+					'Whether the phone number, email, and/or address are visible on the website.',
+					''
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
 			],
 		];
 	}
