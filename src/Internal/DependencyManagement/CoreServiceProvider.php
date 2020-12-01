@@ -73,7 +73,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			TracksInterface::class,
 			$this->share_with_tags( Tracks::class, TracksProxy::class )
 		);
-		$this->share_with_tags( OptionsInterface::class, Options::class );
+		$this->share_interface( OptionsInterface::class, Options::class );
 
 		// Share our regular service classes.
 		$this->conditionally_share_with_tags( GetStarted::class );
