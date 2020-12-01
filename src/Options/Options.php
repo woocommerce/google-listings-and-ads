@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidOption;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -13,8 +14,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
 final class Options implements OptionsInterface, Service {
-
-	const MERCHANT_CENTER = 'merchant_center';
 
 	private const VALID_OPTIONS = [
 		self::MERCHANT_CENTER => true,

@@ -10,6 +10,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface OptionsInterface {
 
+	const MERCHANT_CENTER = 'merchant_center';
+
 	/**
 	 * Get an option.
 	 *
