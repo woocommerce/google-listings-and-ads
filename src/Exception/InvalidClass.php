@@ -29,4 +29,22 @@ class InvalidClass extends LogicException implements GoogleListingsAndAdsExcepti
 			)
 		);
 	}
+
+	/**
+	 * Create a new instance of the exception when a class should override a method but does not.
+	 *
+	 * @param string $class  The class name.
+	 * @param string $method The method name.
+	 *
+	 * @return static
+	 */
+	public static function should_override( string $class, string $method ) {
+		return new static(
+			sprintf(
+				'The class "%s" must override the "%s()" method.',
+				$class,
+				$method
+			)
+		);
+	}
 }
