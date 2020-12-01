@@ -1,0 +1,13 @@
+@import "node_modules/@wordpress/base-styles/colors";
+
+.gla-issues-table-card {
+	.woocommerce-card__header {
+		border-bottom: 1px solid $gray-400;
+
+		.woocommerce-card__title-wrapper > .woocommerce-card__title {
+			padding: 3px 0;
+			font-size: 0.9375rem;
+			font-weight: 600;
+		}
+	}
+}

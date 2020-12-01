@@ -8,6 +8,7 @@ import GridiconHelpOutline from 'gridicons/dist/help-outline';
  */
 import TabNav from '../tab-nav';
 import Summaries from './summaries';
+import IssuesTableCard from './issues-table-card';
 import './index.scss';
 
 /* TODO: The last updated date and time need to come from backend API. */
@@ -23,6 +24,7 @@ const ProductFeed = () => {
 				<GridiconHelpOutline size={ 16 } />
 			</div>
 			<Summaries />
+			<IssuesTableCard />
 		</div>
 	);
 };
