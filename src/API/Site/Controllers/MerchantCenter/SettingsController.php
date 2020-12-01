@@ -91,7 +91,7 @@ class SettingsController extends BaseController {
 
 			return [
 				'status'  => 'success',
-				'message' => __( 'Merchant Center Settings successfully updated.', '' ),
+				'message' => __( 'Merchant Center Settings successfully updated.', 'google-listings-and-ads' ),
 			];
 		};
 	}
@@ -133,7 +133,7 @@ class SettingsController extends BaseController {
 			// todo: consider including an enum of valid countries.
 			'countries'               => [
 				'type'              => 'array',
-				'description'       => __( 'Countries in which products are available.', '' ),
+				'description'       => __( 'Countries in which products are available.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'items'             => [
@@ -145,7 +145,7 @@ class SettingsController extends BaseController {
 				'type'              => 'string',
 				'description'       => __(
 					'Whether shipping is set up automatically by the plugin or manually in the Merchant Center.',
-					''
+					'google-listings-and-ads'
 				),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
@@ -156,33 +156,33 @@ class SettingsController extends BaseController {
 			],
 			'estimated_shipping_rate' => [
 				'type'              => 'string',
-				'description'       => __( 'Estimated flat shipping rate (USD)', '' ),
+				'description'       => __( 'Estimated flat shipping rate (USD)', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'estimated_shipping_days' => [
 				'type'              => 'integer',
-				'description'       => __( 'Estimated shipping time (in days).', '' ),
+				'description'       => __( 'Estimated shipping time (in days).', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'website_live'            => [
 				'type'              => 'boolean',
-				'description'       => __( 'Whether the store website is live.', '' ),
+				'description'       => __( 'Whether the store website is live.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
 			],
 			'checkout_process_secure' => [
 				'type'              => 'boolean',
-				'description'       => __( 'Whether the checkout process is complete and secure.', '' ),
+				'description'       => __( 'Whether the checkout process is complete and secure.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
 			],
 			'payment_methods_visible' => [
 				'type'              => 'boolean',
-				'description'       => __( 'Whether the payment methods are visible on the website.', '' ),
+				'description'       => __( 'Whether the payment methods are visible on the website.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
@@ -191,7 +191,7 @@ class SettingsController extends BaseController {
 				'type'              => 'boolean',
 				'description'       => __(
 					'Whether the refund policy and terms of service are visible on the website.',
-					''
+					'google-listings-and-ads'
 				),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
@@ -201,7 +201,7 @@ class SettingsController extends BaseController {
 				'type'              => 'boolean',
 				'description'       => __(
 					'Whether the phone number, email, and/or address are visible on the website.',
-					''
+					'google-listings-and-ads'
 				),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
