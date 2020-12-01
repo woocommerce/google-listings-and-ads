@@ -1,14 +1,16 @@
 /**
  * External dependencies
  */
-import { TableCard } from '@woocommerce/components';
+import { TableCard, Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import EditProductLink from '../edit-product-link';
 import WarningIcon from '../warning-icon';
+import HelpPopover from '../help-popover';
 import './index.scss';
 
 const headers = [
@@ -57,7 +59,28 @@ const IssuesTableCard = () => {
 	return (
 		<div className="gla-issues-table-card">
 			<TableCard
-				title={ __( 'Issues to Resolve', 'google-listings-and-ads' ) }
+				title={
+					<>
+						{ __( 'Issues to Resolve', 'google-listings-and-ads' ) }
+						<HelpPopover>
+							{ createInterpolateElement(
+								__(
+									'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
+									'google-listings-and-ads'
+								),
+								{
+									link: (
+										<Link
+											type="external"
+											href="https://support.google.com/merchants/answer/6363310"
+											target="_blank"
+										/>
+									),
+								}
+							) }
+						</HelpPopover>
+					</>
+				}
 				showMenu={ false }
 				headers={ headers }
 				rows={ rows }
