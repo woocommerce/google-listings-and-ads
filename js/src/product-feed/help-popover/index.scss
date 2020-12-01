@@ -1,0 +1,20 @@
+@import "node_modules/@wordpress/base-styles/variables";
+
+.help-popover {
+	font-weight: normal;
+	font-size: $default-font-size;
+	line-height: $default-line-height;
+
+	button {
+		display: flex;
+		align-items: center;
+		border: none;
+		background: none;
+		padding: 1px;
+	}
+
+	.components-popover__content {
+		text-align: left;
+		padding: $grid-unit-20;
+	}
+}
