@@ -59,6 +59,7 @@ const ProductFeedTableCard = () => {
 						{ __( 'Product Feed', 'google-listings-and-ads' ) }
 						<Button
 							isSecondary
+							isSmall
 							disabled={ selectedRows.size === 0 }
 							title={ __(
 								'Select one or more products',
