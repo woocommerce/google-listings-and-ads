@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { NavigableMenu } from '@wordpress/components';
+import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
@@ -53,22 +54,35 @@ const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
 	);
 };
 
+const marketingMenu = document.querySelector(
+	'#toplevel_page_woocommerce-marketing'
+);
+const dashboardMenu = marketingMenu.querySelector(
+	"a[href='admin.php?page=wc-admin&path=/google/dashboard']"
+).parentElement;
+
 const TabNav = ( props ) => {
 	const { initialName } = props;
 	const activeClass = 'is-active';
 
+	useEffect( () => {
+		// Highlight the wp-admin dashboard menu
+		marketingMenu.classList.add( 'current', 'wp-has-current-submenu' );
+		dashboardMenu.classList.add( 'current' );
+	} );
+
 	return (
-		<div className="gla-page-tabs-component">
+		<div className="gla-tab-nav">
 			<NavigableMenu
 				role="tablist"
 				orientation="horizontal"
-				className="components-tab-panel__tabs"
+				className="gla-tab-nav__tabs"
 			>
 				{ tabs.map( ( tab ) => (
 					<TabLink
 						className={ classnames(
 							'components-button',
-							'components-tab-panel__tabs-item',
+							'gla-tab-nav__tabs-item',
 							tab.className,
 							{
 								[ activeClass ]: tab.name === initialName,
