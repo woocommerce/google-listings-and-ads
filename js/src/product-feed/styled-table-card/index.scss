@@ -13,4 +13,12 @@
 			font-weight: 600;
 		}
 	}
+
+	.woocommerce-card__body {
+		.woocommerce-table__table {
+			.components-base-control__field {
+				margin-bottom: 0;
+			}
+		}
+	}
 }
