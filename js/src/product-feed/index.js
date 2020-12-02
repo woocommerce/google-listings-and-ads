@@ -5,6 +5,7 @@ import TabNav from '../tab-nav';
 import Summaries from './summaries';
 import IssuesTableCard from './issues-table-card';
 import ProductStatusHelpPopover from './product-status-help-popover';
+import ProductFeedTableCard from './product-feed-table-card';
 import './index.scss';
 
 /* TODO: The last updated date and time need to come from backend API. */
@@ -19,8 +20,11 @@ const ProductFeed = () => {
 				Last updated: { lastUpdatedDateTime.toLocaleString() }
 				<ProductStatusHelpPopover />
 			</div>
-			<Summaries />
+			<div className="gla-product-feed__summaries">
+				<Summaries />
+			</div>
 			<IssuesTableCard />
+			<ProductFeedTableCard />
 		</div>
 	);
 };
