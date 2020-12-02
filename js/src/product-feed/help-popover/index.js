@@ -28,7 +28,12 @@ const HelpPopover = ( props ) => {
 				<GridiconHelpOutline size={ 16 }></GridiconHelpOutline>
 			</button>
 			{ showPopover && (
-				<Popover onClose={ handlePopoverClose }>{ children }</Popover>
+				<Popover
+					focusOnMount="container"
+					onClose={ handlePopoverClose }
+				>
+					{ children }
+				</Popover>
 			) }
 		</div>
 	);
