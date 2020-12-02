@@ -134,6 +134,19 @@ class ConnectionTest {
 				</p>
 
 				<p>
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers' ), $url ), 'wcs-ads-customers' ) ); ?>">Get Customers from Google Ads</a>
+						<?php wp_nonce_field( 'wcs-ads-campaign' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-ads-campaign" type="hidden" />
+						<label>
+							Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+						</label>
+						<button class="button">Get Campaigns from Google Ads</button>
+					</form>
+				</p>
+
+				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
 				</p>
@@ -339,6 +352,57 @@ class ConnectionTest {
 			} catch ( \Exception $e ) {
 				self::$response .= 'Error: ' . $e->getMessage();
 			}
+		}
+
+		if ( 'wcs-ads-customers' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads/v6/customers:listAccessibleCustomers';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+			];
+
+			self::$response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_get( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			$json = json_decode( wp_remote_retrieve_body( $response ), true );
+			if ( $json && is_array( $json['resourceNames' ] ) ) {
+				foreach( $json['resourceNames'] as $customer ) {
+					$_GET['customer_id'] = absint( str_replace( 'customers/', '', $customer ) );
+				}
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'wcs-ads-campaign' === $_GET['action'] && check_admin_referer( 'wcs-ads-campaign' ) ) {
+			$id   = ! empty( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] ) : '12345';
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads/v6/customers/' . $id . '/googleAds:search';
+			$args = [
+				'headers' => [
+					'Authorization' => self::get_auth_header(),
+					'Content-Type'  => 'application/json',
+				],
+				'body'    => wp_json_encode(
+					[
+						'pageSize' => 10000,
+						'query'    => 'SELECT campaign.id, campaign.name FROM campaign ORDER BY campaign.id',
+					]
+				),
+			];
+
+			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_post( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
