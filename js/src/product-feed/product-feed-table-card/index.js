@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { CheckboxControl, Button, Tooltip } from '@wordpress/components';
+import { CheckboxControl, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -57,23 +57,20 @@ const ProductFeedTableCard = () => {
 				title={
 					<>
 						{ __( 'Product Feed', 'google-listings-and-ads' ) }
-						<Tooltip
-							text={ __(
+						<Button
+							isSecondary
+							disabled={ selectedRows.size === 0 }
+							title={ __(
 								'Select one or more products',
 								'google-listings-and-ads'
 							) }
+							onClick={ handleEditVisibilityClick }
 						>
-							<Button
-								isSecondary
-								disabled={ selectedRows.size === 0 }
-								onClick={ handleEditVisibilityClick }
-							>
-								{ __(
-									'Edit channel visibility',
-									'google-listings-and-ads'
-								) }
-							</Button>
-						</Tooltip>
+							{ __(
+								'Edit channel visibility',
+								'google-listings-and-ads'
+							) }
+						</Button>
 					</>
 				}
 				headers={ [
