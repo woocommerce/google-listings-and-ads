@@ -47,7 +47,7 @@ add_action(
  *
  * @return ContainerInterface
  */
-function woogle_get_container() : ContainerInterface {
+function woogle_get_container(): ContainerInterface {
 	static $container = null;
 	if ( null === $container ) {
 		$container = new Container();
