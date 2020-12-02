@@ -19,17 +19,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 class RESTServiceProvider extends AbstractServiceProvider {
 
 	/**
-	 * Array of classes provided by this container.
+	 * Returns a boolean if checking whether this provider provides a specific
+	 * service or returns an array of provided services if no argument passed.
 	 *
-	 * Keys should be the class name, and the value can be anything (like `true`).
+	 * @param string $service
 	 *
-	 * @var array
+	 * @return boolean
 	 */
-	protected $provides = [
-		GoogleConnectController::class  => true,
-		JetpackConnectController::class => true,
-		SettingsController::class       => true,
-	];
+	public function provides( string $service ): bool {
+		return 'rest_controller' === $service;
+	}
 
 	/**
 	 * Use the register method to register items with the container via the
@@ -55,6 +54,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 * @return DefinitionInterface
 	 */
 	protected function share( string $class, ...$arguments ): DefinitionInterface {
-		return parent::share( $class, RESTServer::class, ...$arguments );
+		return parent::share( $class, RESTServer::class, ...$arguments )->addTag( 'rest_controller' );
 	}
 }

@@ -29,17 +29,6 @@ class RESTControllers implements Service, Registerable {
 	protected $container;
 
 	/**
-	 * Array of controller classes to register.
-	 *
-	 * @var string[]
-	 */
-	protected $controllers = [
-		GoogleConnectController::class,
-		JetpackConnectController::class,
-		SettingsController::class,
-	];
-
-	/**
 	 * RESTControllers constructor.
 	 *
 	 * @param ContainerInterface $container
@@ -64,9 +53,9 @@ class RESTControllers implements Service, Registerable {
 	 * Register our individual rest controllers.
 	 */
 	protected function register_controllers(): void {
-		foreach ( $this->controllers as $controller ) {
-			/** @var BaseController $controller */
-			$controller = $this->container->get( $controller );
+		/** @var BaseController[] $controllers */
+		$controllers = $this->container->get( 'rest_controller' );
+		foreach ( $controllers as $controller ) {
 			$this->validate_instanceof( $controller, BaseController::class );
 			$controller->register();
 		}
