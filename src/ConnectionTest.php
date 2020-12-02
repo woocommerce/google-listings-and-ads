@@ -63,6 +63,10 @@ class ConnectionTest {
 			self::$response .= 'Google Merchant Center connected successfully.';
 		}
 
+		if ( ! empty( $_GET['google-manager'] ) && 'connected' === $_GET['google-manager'] ) {
+			self::$response .= 'Successfully connected a Google Manager account.';
+		}
+
 		if ( ! empty( $_GET['google'] ) && 'failed' === $_GET['google'] ) {
 			self::$response .= 'Failed to connect to Google.';
 		}
@@ -99,6 +103,18 @@ class ConnectionTest {
 			</p>
 
 			<?php if ( $blog_token && $user_token ) { ?>
+				<p>
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<?php wp_nonce_field( 'wcs-google-manager' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-google-manager" type="hidden" />
+						<label>
+							Manager ID <input name="manager_id" type="text" value="<?php echo ! empty( $_GET['manager_id'] ) ? intval( $_GET['manager_id'] ) : ''; ?>" />
+						</label>
+						<button class="button">Connect Google Manager Account</button>
+					</form>
+				</p>
+
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
@@ -205,6 +221,35 @@ class ConnectionTest {
 			}
 
 			self::$response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'wcs-google-manager' === $_GET['action'] && check_admin_referer( 'wcs-google-manager' ) ) {
+			$id   = ! empty( $_GET['manager_id'] ) ? absint( $_GET['manager_id'] ) : 1;
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-manager';
+			$args = [
+				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'body'    => [
+					'returnUrl' => admin_url( 'admin.php?page=connection-test-admin-page' ),
+					'managerId' => $id,
+				],
+			];
+
+			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_post( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
+
+			$json = json_decode( wp_remote_retrieve_body( $response ), true );
+
+			if ( $json && isset( $json['oauthUrl'] ) ) {
+				wp_redirect( $json['oauthUrl'] ); // phpcs:ignore WordPress.Security.SafeRedirect
+				exit;
+			}
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
