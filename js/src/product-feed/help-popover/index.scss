@@ -13,8 +13,8 @@
 		padding: 1px;
 	}
 
-	.components-popover__content {
+	.components-popover__content > div {
 		text-align: left;
-		padding: $grid-unit-20;
+		margin: $grid-unit-20;
 	}
 }
