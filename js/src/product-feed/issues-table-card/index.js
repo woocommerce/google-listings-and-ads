@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { TableCard, Link } from '@woocommerce/components';
+import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -11,7 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import EditProductLink from '../edit-product-link';
 import WarningIcon from '../warning-icon';
 import HelpPopover from '../help-popover';
-import './index.scss';
+import StyledTableCard from '../styled-table-card';
 
 const headers = [
 	{
@@ -58,7 +58,7 @@ const rows = [
 const IssuesTableCard = () => {
 	return (
 		<div className="gla-issues-table-card">
-			<TableCard
+			<StyledTableCard
 				title={
 					<>
 						{ __( 'Issues to Resolve', 'google-listings-and-ads' ) }

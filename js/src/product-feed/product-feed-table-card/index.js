@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { TableCard } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
@@ -9,8 +8,8 @@ import { CheckboxControl, Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import StyledTableCard from '../styled-table-card';
 import EditProductLink from '../edit-product-link';
-import './index.scss';
 
 // TODO: data should be coming from backend API.
 // Also, i18n for the display labels too.
@@ -54,7 +53,7 @@ const ProductFeedTableCard = () => {
 
 	return (
 		<div className="gla-product-feed-table-card">
-			<TableCard
+			<StyledTableCard
 				title={
 					<>
 						{ __( 'Product Feed', 'google-listings-and-ads' ) }
