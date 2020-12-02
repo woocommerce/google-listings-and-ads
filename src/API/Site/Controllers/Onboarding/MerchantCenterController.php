@@ -45,16 +45,4 @@ class MerchantCenterController extends BaseController {
 			];
 		};
 	}
-
-	/**
-	 * Get a callback for the update settings endpoint.
-	 *
-	 * @return callable
-	 */
-	protected function get_settings_endpoint_update_callback(): callable {
-		return function( WP_REST_Request $request ) {
-			// todo: replace this placeholder with real logic.
-			return [];
-		};
-	}
 }
