@@ -40,7 +40,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	public function register() {
 		$this->share( GoogleConnectController::class );
 		$this->share( JetpackConnectController::class, Manager::class );
-		$this->share( SettingsController::class, OptionsInterface::class );
+		$this->share_with_options( SettingsController::class );
 	}
 
 	/**
@@ -55,5 +55,17 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function share( string $class, ...$arguments ): DefinitionInterface {
 		return parent::share( $class, RESTServer::class, ...$arguments )->addTag( 'rest_controller' );
+	}
+
+	/**
+	 * Share a class with the OptionsInterface object provided.
+	 *
+	 * @param string $class        The class name to add.
+	 * @param mixed  ...$arguments Constructor arguments for the class.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function share_with_options( string $class, ...$arguments ): DefinitionInterface {
+		return $this->share( $class, OptionsInterface::class, ...$arguments );
 	}
 }
