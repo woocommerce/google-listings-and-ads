@@ -89,6 +89,8 @@ class ConnectionTest {
 				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect' ), $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
 			<?php } ?>
 
+			<p>WCS Server: <?php echo defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL : 'http://localhost:5000'; ?></p>
+
 			<p>
 				<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test WCS API</a>
 				<?php if ( $blog_token && $user_token ) { ?>
