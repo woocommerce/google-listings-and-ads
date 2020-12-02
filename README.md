@@ -2,6 +2,13 @@
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
+## Project Management
+
+ - [Sprint board](https://github.com/woocommerce/google-listings-and-ads/projects/1)
+ - [Issue breakdown by integration area project board](https://github.com/woocommerce/google-listings-and-ads/projects/2)
+ - [Estimated timings](https://docs.google.com/spreadsheets/d/19rSXGrTzZHB5pWegQ_mG9FehbglggcBdxr2JlS2aZNs/edit#gid=0)
+ - [Slidedeck on cycles for reference](https://docs.google.com/presentation/d/1uNyLwYfquI_QNsiRc5b6V9e1QYfNI1aobqY_fU5gfio/edit#slide=id.ga05d0b5191_0_27)
+
 ## Prerequisites (TBC)
 
  - WordPress 5.3+
