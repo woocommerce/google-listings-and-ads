@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\GoogleConnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\JetpackConnectController;
@@ -41,6 +42,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( GoogleConnectController::class );
 		$this->share( JetpackConnectController::class, Manager::class );
 		$this->share_with_options( SettingsController::class );
+		$this->share( ConnectionController::class );
 	}
 
 	/**
