@@ -10,6 +10,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
+use Google\Client;
 
 /**
  * Main class for Connection Test.
@@ -345,20 +346,10 @@ class ConnectionTest {
 	/**
 	 * Get Google client (with custom authentication header).
 	 *
-	 * @return Google\Client
+	 * @return Client
 	 */
-	private static function google_client() {
-		$client = new \Google\Client();
-		$client->setHttpClient(
-			new \GuzzleHttp\Client(
-				[
-					'headers' => [
-						'Authorization' => self::get_auth_header(),
-					],
-				]
-			)
-		);
-
+	private static function google_client(): Client {
+		$client = woogle_get_container()->get( Client::class );
 		return $client;
 	}
 
@@ -371,7 +362,7 @@ class ConnectionTest {
 		$manager = new Manager( 'connection-test' );
 		$token   = $manager->get_access_token();
 
-		list( $token_key, $token_secret ) = explode( '.', $token->secret );
+		[ $token_key, $token_secret ] = explode( '.', $token->secret );
 
 		$token_key = sprintf( '%s:%d:%d', $token_key, defined( 'JETPACK__API_VERSION' ) ? JETPACK__API_VERSION : 1, $token->external_user_id );
 		$time_diff = (int) \Jetpack_Options::get_option( 'time_diff' );
