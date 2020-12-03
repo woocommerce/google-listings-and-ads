@@ -94,6 +94,8 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	/**
 	 * Add a class.
 	 *
+	 * Classes will return a new instance of the class when the class is requested from the container.
+	 *
 	 * @param string $class    The class name to add.
 	 * @param mixed  $concrete (Optional) A concrete instance of the class.
 	 *
