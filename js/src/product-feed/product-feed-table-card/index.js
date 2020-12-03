@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
+import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -11,25 +12,27 @@ import { CheckboxControl, Button } from '@wordpress/components';
 import StyledTableCard from '../styled-table-card';
 import EditProductLink from '../edit-product-link';
 
-// TODO: data should be coming from backend API.
-// Also, i18n for the display labels too.
-const data = [
-	{
-		id: 123,
-		title: 'Pink marble tee',
-		visibility: 'Sync and show',
-		status: 'Not synced',
-	},
-	{
-		id: 456,
-		title: 'Brown socks',
-		visibility: 'Sync and show',
-		status: 'Not synced',
-	},
-];
-
 const ProductFeedTableCard = () => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
+	const { orderby, order } = getQuery();
+
+	// TODO: data should be coming from backend API,
+	// using the above orderby and order as parameter.
+	// Also, i18n for the display labels too.
+	const data = [
+		{
+			id: 123,
+			title: 'Pink marble tee',
+			visibility: 'Sync and show',
+			status: 'Not synced',
+		},
+		{
+			id: 456,
+			title: 'Brown socks',
+			visibility: 'Sync and show',
+			status: 'Not synced',
+		},
+	];
 
 	// TODO: what happens upon clicking the Edit Visibility button.
 	const handleEditVisibilityClick = () => {};
@@ -49,6 +52,10 @@ const ProductFeedTableCard = () => {
 			selectedRows.delete( productId );
 			setSelectedRows( new Set( selectedRows ) );
 		}
+	};
+
+	const handleSort = ( key, direction ) => {
+		onQueryChange( 'sort' )( key, direction );
 	};
 
 	return (
@@ -91,6 +98,9 @@ const ProductFeedTableCard = () => {
 						label: __( 'Product Title', 'google-listings-and-ads' ),
 						isLeftAligned: true,
 						required: true,
+						isSortable: true,
+						defaultSort: orderby === 'productTitle',
+						defaultOrder: orderby === 'productTitle' && order,
 					},
 					{
 						key: 'channelVisibility',
@@ -99,11 +109,17 @@ const ProductFeedTableCard = () => {
 							'google-listings-and-ads'
 						),
 						isLeftAligned: true,
+						isSortable: true,
+						defaultSort: orderby === 'channelVisibility',
+						defaultOrder: orderby === 'channelVisibility' && order,
 					},
 					{
 						key: 'status',
 						label: __( 'Status', 'google-listings-and-ads' ),
 						isLeftAligned: true,
+						isSortable: true,
+						defaultSort: orderby === 'status',
+						defaultOrder: orderby === 'status' && order,
 					},
 					{ key: 'action', label: '', required: true },
 				] }
@@ -137,6 +153,7 @@ const ProductFeedTableCard = () => {
 						value: data.length,
 					},
 				] }
+				onSort={ handleSort }
 			/>
 		</div>
 	);
