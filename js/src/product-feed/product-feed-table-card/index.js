@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -12,12 +13,20 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 import StyledTableCard from '../styled-table-card';
 import EditProductLink from '../edit-product-link';
 
+const recordTableHeaderToggleEvent = ( report, column, status ) => {
+	recordEvent( 'gla_table_header_toggle', {
+		report,
+		column,
+		status,
+	} );
+};
+
 const ProductFeedTableCard = () => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
-	const { orderby, order } = getQuery();
+	const query = getQuery();
 
 	// TODO: data should be coming from backend API,
-	// using the above orderby and order as parameter.
+	// using the above query (e.g. orderby, order and page) as parameter.
 	// Also, i18n for the display labels too.
 	const data = [
 		{
@@ -33,6 +42,9 @@ const ProductFeedTableCard = () => {
 			status: 'Not synced',
 		},
 	];
+
+	// TODO: total should be coming from API response above.
+	const total = data.length;
 
 	// TODO: what happens upon clicking the Edit Visibility button.
 	const handleEditVisibilityClick = () => {};
@@ -54,8 +66,9 @@ const ProductFeedTableCard = () => {
 		}
 	};
 
-	const handleSort = ( key, direction ) => {
-		onQueryChange( 'sort' )( key, direction );
+	const handleColumnsChange = ( shown, toggled ) => {
+		const status = shown.includes( toggled ) ? 'on' : 'off';
+		recordTableHeaderToggleEvent( 'product-feed', toggled, status );
 	};
 
 	return (
@@ -99,8 +112,6 @@ const ProductFeedTableCard = () => {
 						isLeftAligned: true,
 						required: true,
 						isSortable: true,
-						defaultSort: orderby === 'productTitle',
-						defaultOrder: orderby === 'productTitle' && order,
 					},
 					{
 						key: 'channelVisibility',
@@ -110,16 +121,12 @@ const ProductFeedTableCard = () => {
 						),
 						isLeftAligned: true,
 						isSortable: true,
-						defaultSort: orderby === 'channelVisibility',
-						defaultOrder: orderby === 'channelVisibility' && order,
 					},
 					{
 						key: 'status',
 						label: __( 'Status', 'google-listings-and-ads' ),
 						isLeftAligned: true,
 						isSortable: true,
-						defaultSort: orderby === 'status',
-						defaultOrder: orderby === 'status' && order,
 					},
 					{ key: 'action', label: '', required: true },
 				] }
@@ -145,15 +152,17 @@ const ProductFeedTableCard = () => {
 						},
 					];
 				} ) }
-				totalRows={ data.length }
-				rowsPerPage={ 10 }
+				totalRows={ total }
+				rowsPerPage={ parseInt( query.per_page, 10 ) || 25 }
 				summary={ [
 					{
 						label: __( 'products', 'google-listings-and-ads' ),
-						value: data.length,
+						value: total,
 					},
 				] }
-				onSort={ handleSort }
+				query={ query }
+				onQueryChange={ onQueryChange }
+				onColumnsChange={ handleColumnsChange }
 			/>
 		</div>
 	);
