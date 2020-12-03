@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { format as formatDate } from '@wordpress/date';
+
+/**
  * Internal dependencies
  */
 import TabNav from '../tab-nav';
@@ -16,8 +21,8 @@ const ProductFeed = () => {
 		<div className="gla-product-feed">
 			<TabNav initialName="product-feed" />
 			<div className="gla-product-feed__last-updated">
-				{ /* TODO: Find the right WC way to format it. */ }
-				Last updated: { lastUpdatedDateTime.toLocaleString() }
+				Last updated:{ ' ' }
+				{ formatDate( 'Y-m-d H:i:s', lastUpdatedDateTime ) }
 				<ProductStatusHelpPopover />
 			</div>
 			<div className="gla-product-feed__summaries">
