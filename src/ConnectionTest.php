@@ -134,7 +134,6 @@ class ConnectionTest {
 	 * Handle actions.
 	 */
 	public static function do_actions() {
-
 		if ( ! isset( $_GET['action'] ) ) {
 			return;
 		}
@@ -336,7 +335,7 @@ class ConnectionTest {
 	/**
 	 * Get Merchant Center service (with proxied URL).
 	 *
-	 * @return Google_Service_ShoppingContent
+	 * @return \Google_Service_ShoppingContent
 	 */
 	private static function mc_service() {
 		$root_url = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-mc';
