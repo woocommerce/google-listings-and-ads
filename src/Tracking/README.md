@@ -21,13 +21,18 @@ All event names are prefixed by `wcadmin_woogle_`.
 
 * `extension_loaded` - DEMO when the extension is loaded
 
-* `gla_get_started_faq` - Clinking on getting started page faq item to collapse or expand it
+* `gla_get_started_faq` - Clicking on getting started page faq item to collapse or expand it
   * `id`: (faq identifier)
   * `action`: (`expand`|`collapse`)
 
-* `gla_get_started_faq_link_clicked` - Clinking on a text link within FAQ item
+* `gla_get_started_faq_link_clicked` - Clicking on a text link within FAQ item
   * `id`: (faq identifier)
   * `href`
+
+* `gla_table_header_toggle` - Toggling display of table columns
+  * `report`: name of the report table
+  * `column`: name of the column
+  * `status`: : (`on`|`off`)
 
 <!-- -- >
 ## Developer Info
