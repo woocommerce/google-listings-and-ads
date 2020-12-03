@@ -67,13 +67,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 			]
 		);
 
-		$this->share( GoogleClient::class )->addMethodCall(
-			'setHttpClient',
-			[
-//				$this->getLeagueContainer()->get( ClientInterface::class ),
-				ClientInterface::class
-			]
-		);
+		$this->share( GoogleClient::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
 	}
 
 	/**

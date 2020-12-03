@@ -139,8 +139,9 @@ class ConnectionTest {
 			return;
 		}
 
+		$manager = woogle_get_container()->get( Manager::class );
+
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
-			$manager = new Manager( 'connection-test' );
 			$manager->enable_plugin(); // Mark the plugin connection as enabled, in case it was disabled earlier.
 
 			// Register the site to wp.com.
@@ -168,7 +169,6 @@ class ConnectionTest {
 		}
 
 		if ( 'disconnect' === $_GET['action'] && check_admin_referer( 'disconnect' ) ) {
-			$manager = new Manager( 'connection-test' );
 			$manager->remove_connection();
 
 			$redirect = admin_url( 'admin.php?page=connection-test-admin-page' );
