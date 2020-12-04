@@ -248,6 +248,7 @@ class ConnectionTest {
 				'body'    => [
 					'returnUrl' => admin_url( 'admin.php?page=connection-test-admin-page' ),
 					'managerId' => $id,
+					'countries' => 'US,CA',
 				],
 			];
 
