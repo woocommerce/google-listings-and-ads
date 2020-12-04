@@ -116,6 +116,10 @@ class ConnectionTest {
 				</p>
 
 				<p>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-create' ), $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
+				</p>
+
+				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
 				</p>
@@ -263,6 +267,33 @@ class ConnectionTest {
 				wp_redirect( $json['oauthUrl'] ); // phpcs:ignore WordPress.Security.SafeRedirect
 				exit;
 			}
+		}
+
+		if ( 'wcs-google-ads-create' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-create' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/US/create-customer';
+			$args = [
+				'headers' => [
+					'Authorization' => self::get_auth_header(),
+					'Content-Type'  => 'application/json',
+				],
+				'body'    => wp_json_encode(
+					[
+						'descriptive_name' => 'Connection test account at ' . date( 'Y-m-d h:i:s' ),
+			            'currency_code'    => 'USD',
+        	    		'time_zone'        => 'America/New_York',
+					]
+				),
+			];
+
+			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_post( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
