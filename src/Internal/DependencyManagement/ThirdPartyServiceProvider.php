@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Config;
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google\Client as GoogleClient;
@@ -45,7 +46,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$jetpack_id = "{$this->get_slug()}-connection";
+		$jetpack_id = 'connection-test';
 		$this->share( Manager::class )->addArgument( $jetpack_id );
 
 		$this->share( Config::class )->addMethodCall(
@@ -53,21 +54,34 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 			[
 				'connection',
 				[
-					'slug' => "{$jetpack_id}-test",
+					'slug' => $jetpack_id,
 					'name' => __( 'Connection Test', 'google-listings-and-ads' ),
 				],
 			]
 		);
 
-		$this->share_interface( ClientInterface::class, GuzzleClient::class )->addArgument(
-			[
-				'headers' => [
-					'Authorization' => $this->generate_guzzle_auth_header(),
-				],
-			]
-		);
+		$this->share_interface( ClientInterface::class, GuzzleClient::class )
+			->addArgument( $this->get_guzzle_arguments() );
 
 		$this->share( GoogleClient::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
+	}
+
+	/**
+	 * Get arguments for the Guzzle client.
+	 *
+	 * @return array Array of arguments for the client.
+	 */
+	protected function get_guzzle_arguments(): array {
+		try {
+			$auth_header = $this->generate_guzzle_auth_header();
+			return [
+				'headers' => [
+					'Authorization' => $auth_header,
+				],
+			];
+		} catch ( WPError $error ) {
+			return [];
+		}
 	}
 
 	/**
@@ -75,7 +89,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @return string
 	 */
-	protected function generate_guzzle_auth_header() {
+	protected function generate_guzzle_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
 		$token   = $manager->get_access_token( false, false, false );
