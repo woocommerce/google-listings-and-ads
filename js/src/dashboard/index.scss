@@ -1,0 +1,19 @@
+.gla-dashboard {
+	.gla-dashboard__performance {
+		display: flex;
+		flex-direction: column;
+		gap: var(--main-gap);
+
+		@include break-medium() {
+			flex-direction: row;
+		}
+
+		.woocommerce-summary__item-container {
+			margin: 0;
+		}
+
+		.components-card {
+			flex: 1;
+		}
+	}
+}

@@ -11,6 +11,7 @@ import { Button } from '@wordpress/components';
 import TabNav from '../tab-nav';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummaryCard from './summary-card';
+import './index.scss';
 
 const Dashboard = () => {
 	// TODO: this data should come from backend API.
@@ -38,44 +39,46 @@ const Dashboard = () => {
 	};
 
 	return (
-		<div>
+		<div className="gla-dashboard">
 			<TabNav initialName="dashboard" />
 			<AppDateRangeFilterPicker />
 			<Button isPrimary>View Analytics</Button>
-			<SummaryCard
-				title={ __(
-					'Performance (Free Listing)',
-					'woocommerce-admin'
-				) }
-			>
-				<SummaryNumber
-					label={ __( 'Net Sales', 'google-listings-and-ads' ) }
-					value={ data.freeListing.netSales.value }
-					delta={ data.freeListing.netSales.delta }
-				/>
-				<SummaryNumber
-					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-					value={ data.freeListing.totalSpend.value }
-					delta={ data.freeListing.totalSpend.delta }
-				/>
-			</SummaryCard>
-			<SummaryCard
-				title={ __(
-					'Performance (Paid Campaigns)',
-					'woocommerce-admin'
-				) }
-			>
-				<SummaryNumber
-					label={ __( 'Net Sales', 'google-listings-and-ads' ) }
-					value={ data.paidCampaigns.netSales.value }
-					delta={ data.paidCampaigns.netSales.delta }
-				/>
-				<SummaryNumber
-					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-					value={ data.paidCampaigns.totalSpend.value }
-					delta={ data.paidCampaigns.totalSpend.delta }
-				/>
-			</SummaryCard>
+			<div className="gla-dashboard__performance">
+				<SummaryCard
+					title={ __(
+						'Performance (Free Listing)',
+						'woocommerce-admin'
+					) }
+				>
+					<SummaryNumber
+						label={ __( 'Net Sales', 'google-listings-and-ads' ) }
+						value={ data.freeListing.netSales.value }
+						delta={ data.freeListing.netSales.delta }
+					/>
+					<SummaryNumber
+						label={ __( 'Total Spend', 'google-listings-and-ads' ) }
+						value={ data.freeListing.totalSpend.value }
+						delta={ data.freeListing.totalSpend.delta }
+					/>
+				</SummaryCard>
+				<SummaryCard
+					title={ __(
+						'Performance (Paid Campaigns)',
+						'woocommerce-admin'
+					) }
+				>
+					<SummaryNumber
+						label={ __( 'Net Sales', 'google-listings-and-ads' ) }
+						value={ data.paidCampaigns.netSales.value }
+						delta={ data.paidCampaigns.netSales.delta }
+					/>
+					<SummaryNumber
+						label={ __( 'Total Spend', 'google-listings-and-ads' ) }
+						value={ data.paidCampaigns.totalSpend.value }
+						delta={ data.paidCampaigns.totalSpend.delta }
+					/>
+				</SummaryCard>
+			</div>
 		</div>
 	);
 };
