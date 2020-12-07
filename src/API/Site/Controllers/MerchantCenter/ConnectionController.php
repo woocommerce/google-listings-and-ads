@@ -33,15 +33,44 @@ class ConnectionController extends BaseController {
 			'mc/connect',
 			[
 				[
-					'methods' => TransportMethods::READABLE,
+					'methods'              => TransportMethods::READABLE,
+					'callback'             => $this->get_connect_callback(),
+					'permissions_callback' => $this->get_permission_callback(),
 				],
+				'schema' => $this->get_connection_schema(),
 			]
 		);
 	}
 
-	protected function get_connection_schema() {
-		return [
+	/**
+	 * Get the callback function for the connection request.
+	 *
+	 * @return callable
+	 */
+	protected function get_connect_callback(): callable {
+		return function() {
+			return [
+				'url' => 'https://example.com',
+			];
+		};
+	}
 
+	/**
+	 * @return array
+	 */
+	protected function get_connection_schema(): array {
+		return [
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'plugins',
+			'type'       => 'object',
+			'properties' => [
+				'connectAction' => [
+					'description' => __( 'Action that should be completed after connection.', '' ),
+					'type'        => 'string',
+					'context'     => [ 'view', 'edit' ],
+					'readonly'    => true,
+				],
+			],
 		];
 	}
 }
