@@ -41,8 +41,10 @@ const Dashboard = () => {
 	return (
 		<div className="gla-dashboard">
 			<TabNav initialName="dashboard" />
-			<AppDateRangeFilterPicker />
-			<Button isPrimary>View Analytics</Button>
+			<div className="gla-dashboard__filter">
+				<AppDateRangeFilterPicker />
+				<Button isPrimary>View Analytics</Button>
+			</div>
 			<div className="gla-dashboard__performance">
 				<SummaryCard
 					title={ __(

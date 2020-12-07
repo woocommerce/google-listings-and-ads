@@ -1,4 +1,24 @@
 .gla-dashboard {
+	.gla-dashboard__filter {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		margin-bottom: var(--main-gap);
+
+		@include break-medium() {
+			flex-direction: row;
+			justify-content: space-between;
+		}
+
+		.woocommerce-filters-filter {
+			margin-bottom: calc(var(--main-gap) / 2);
+
+			@include break-medium() {
+				margin-bottom: 0;
+			}
+		}
+	}
+
 	.gla-dashboard__performance {
 		display: flex;
 		flex-direction: column;
