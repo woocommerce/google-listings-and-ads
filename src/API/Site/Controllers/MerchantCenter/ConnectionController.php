@@ -65,7 +65,7 @@ class ConnectionController extends BaseController {
 			'type'       => 'object',
 			'properties' => [
 				'connectAction' => [
-					'description' => __( 'Action that should be completed after connection.', '' ),
+					'description' => __( 'Action that should be completed after connection.', 'google-listings-and-ads' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit' ],
 					'readonly'    => true,
