@@ -134,7 +134,7 @@ class ConnectionTest {
 	 * Handle actions.
 	 */
 	public static function do_actions() {
-		if ( ! isset( $_GET['action'] ) ) {
+		if ( ! isset( $_GET['page'], $_GET['action'] ) || 'connection-test-admin-page' !== $_GET['page'] ) {
 			return;
 		}
 
