@@ -10,7 +10,7 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import StyledTableCard from '../styled-table-card';
+import StyledTableCard from '../../components/styled-table-card';
 import EditProductLink from '../edit-product-link';
 
 const recordTableHeaderToggleEvent = ( report, column, status ) => {
