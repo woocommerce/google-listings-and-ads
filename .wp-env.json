@@ -5,8 +5,8 @@
 		"https://downloads.wordpress.org/plugin/wordpress-importer.latest-stable.zip",
 		"https://github.com/WP-API/Basic-Auth/archive/master.zip",
 		"."
-  ],
-  "themes": [
+	],
+	"themes": [
 		"https://downloads.wordpress.org/theme/storefront.latest-stable.zip"
 	]
 }
