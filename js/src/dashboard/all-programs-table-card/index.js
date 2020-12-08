@@ -8,6 +8,8 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import StyledTableCard from '../../components/styled-table-card';
+import RemoveProgramButton from './remove-program-button';
+import EditProgramLink from './edit-program-link';
 import './index.scss';
 
 const headers = [
@@ -37,12 +39,14 @@ const AllProgramsTableCard = () => {
 	// TODO: data from backend API.
 	const data = [
 		{
+			id: 123,
 			title: 'Google Shopping Free Listings',
 			spend: 'Free',
 			numberOfProducts: 497,
 			active: true,
 		},
 		{
+			id: 456,
 			title: 'Smart Shopping Campaign 1',
 			spend: '$200.00',
 			numberOfProducts: 133,
@@ -75,8 +79,10 @@ const AllProgramsTableCard = () => {
 					{ display: el.spend },
 					{ display: el.numberOfProducts },
 					{ display: el.active },
-					{ display: '' },
-					{ display: '' },
+					{
+						display: <RemoveProgramButton programId={ el.id } />,
+					},
+					{ display: <EditProgramLink programId={ el.id } /> },
 				];
 			} ) }
 			totalRows={ data.length }

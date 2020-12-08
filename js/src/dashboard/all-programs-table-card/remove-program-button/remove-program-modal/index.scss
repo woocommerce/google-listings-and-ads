@@ -1,0 +1,17 @@
+.gla-remove-program-modal {
+	.gla-remove-program-modal__footer {
+		display: flex;
+		flex-direction: column-reverse;
+		gap: calc(var(--main-gap) / 2);
+		margin-top: calc(var(--main-gap));
+
+		@include break-mobile() {
+			flex-direction: row;
+			justify-content: flex-end;
+		}
+
+		button {
+			justify-content: center;
+		}
+	}
+}
