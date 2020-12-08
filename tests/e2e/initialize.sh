@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "Activating storefront theme..."
+npm run wp-env run tests-cli "wp theme activate storefront"
+
 echo "Adding basic WooCommerce settings..."
 npm run wp-env run tests-cli 'wp option set woocommerce_store_address "60 29th Street"'
 npm run wp-env run tests-cli 'wp option set woocommerce_store_address_2 "#343"'
