@@ -32,7 +32,10 @@ All event names are prefixed by `wcadmin_woogle_`.
 * `gla_table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table
   * `column`: name of the column
-  * `status`: : (`on`|`off`)
+  * `status`: (`on`|`off`)
+
+* `gla_tooltip_viewed` - Viewing tooltip
+  * `id`: (tooltip identifier)
 
 <!-- -- >
 ## Developer Info
