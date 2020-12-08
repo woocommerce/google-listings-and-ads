@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import HelpPopover from '../help-popover';
+import HelpPopover from '../../components/help-popover';
 import './index.scss';
 
 const ProductStatusHelpPopover = () => {
