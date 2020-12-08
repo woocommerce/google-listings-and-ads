@@ -21,9 +21,18 @@ use Psr\Container\ContainerInterface;
 class ConnectionTest {
 
 	/**
-	 * Static-only class.
+	 * @var ContainerInterface
 	 */
-	private function __construct() {}
+	protected $container;
+
+	/**
+	 * ConnectionTest constructor.
+	 *
+	 * @param ContainerInterface $container
+	 */
+	public function __construct( ContainerInterface $container ) {
+		$this->container = $container;
+	}
 
 	/**
 	 * Store response from an API request.
