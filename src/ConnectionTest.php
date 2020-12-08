@@ -11,6 +11,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
 use Google\Client;
+use Google_Service_ShoppingContent;
+use Jetpack_Options;
+use Psr\Container\ContainerInterface;
 
 /**
  * Main class for Connection Test.
@@ -54,7 +57,8 @@ class ConnectionTest {
 	 * Render the admin page.
 	 */
 	public static function admin_page() {
-		$manager    = new Manager( 'connection-test' );
+		/** @var Manager $manager */
+		$manager    = woogle_get_container()->get( Manager::class );
 		$blog_token = $manager->get_access_token();
 		$user_token = $manager->get_access_token( get_current_user_id() );
 		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
@@ -138,6 +142,7 @@ class ConnectionTest {
 			return;
 		}
 
+		/** @var Manager $manager */
 		$manager = woogle_get_container()->get( Manager::class );
 
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
@@ -338,8 +343,9 @@ class ConnectionTest {
 	 * @return \Google_Service_ShoppingContent
 	 */
 	private static function mc_service() {
-		$root_url = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-mc';
-		return new \Google_Service_ShoppingContent( self::google_client(), $root_url );
+		/** @var Google_Service_ShoppingContent $service */
+		$service = woogle_get_container()->get( Google_Service_ShoppingContent::class );
+		return $service;
 	}
 
 	/**
@@ -358,7 +364,8 @@ class ConnectionTest {
 	 * @return string Authorization header.
 	 */
 	private static function get_auth_header() {
-		$manager = new Manager( 'connection-test' );
+		/** @var Manager $manager */
+		$manager = woogle_get_container()->get( Manager::class );
 		$token   = $manager->get_access_token();
 
 		[ $token_key, $token_secret ] = explode( '.', $token->secret );
