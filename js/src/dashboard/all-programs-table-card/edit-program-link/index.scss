@@ -1,0 +1,9 @@
+// The ".woocommerce-table__item > a:only-child" is to override the "display: block".
+.edit-program-link,
+.woocommerce-table__item > a:only-child {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	text-decoration: none;
+	fill: #0073aa;
+}
