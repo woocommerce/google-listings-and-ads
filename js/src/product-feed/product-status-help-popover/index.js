@@ -18,7 +18,7 @@ const ProductStatusHelpPopover = () => {
 
 	return (
 		<div className="gla-product-status-help-popover">
-			<HelpPopover>
+			<HelpPopover id="product-status">
 				<p>
 					{ createInterpolateElement(
 						__(
