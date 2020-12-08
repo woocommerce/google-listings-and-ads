@@ -1,9 +1,12 @@
 {
 	"core": null,
-	"plugins": [ 
+	"plugins": [
 		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip",
 		"https://downloads.wordpress.org/plugin/wordpress-importer.latest-stable.zip",
 		"https://github.com/WP-API/Basic-Auth/archive/master.zip",
-		"." 
+		"."
+  ],
+  "themes": [
+		"https://downloads.wordpress.org/theme/storefront.latest-stable.zip"
 	]
 }
