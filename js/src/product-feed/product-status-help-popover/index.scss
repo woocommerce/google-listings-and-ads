@@ -1,6 +1,3 @@
-@import "node_modules/@wordpress/base-styles/mixins";
-@import "node_modules/@wordpress/base-styles/breakpoints";
-
 .gla-product-status-help-popover {
 	.components-popover__content {
 		@include break-medium() {
