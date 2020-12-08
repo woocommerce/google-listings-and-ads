@@ -11,7 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import EditProductLink from '../../components/edit-product-link';
 import HelpPopover from '../../components/help-popover';
 import StyledTableCard from '../../components/styled-table-card';
-import WarningIcon from '../warning-icon';
+import WarningIcon from '../../components/warning-icon';
 
 const headers = [
 	{
