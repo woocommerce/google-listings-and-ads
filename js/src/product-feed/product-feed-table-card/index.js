@@ -10,8 +10,8 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
+import EditProductLink from '../../components/edit-product-link';
 import StyledTableCard from '../../components/styled-table-card';
-import EditProductLink from '../edit-product-link';
 
 const recordTableHeaderToggleEvent = ( report, column, status ) => {
 	recordEvent( 'gla_table_header_toggle', {

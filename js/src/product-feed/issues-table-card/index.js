@@ -8,9 +8,9 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import EditProductLink from '../../components/edit-product-link';
 import HelpPopover from '../../components/help-popover';
 import StyledTableCard from '../../components/styled-table-card';
-import EditProductLink from '../edit-product-link';
 import WarningIcon from '../warning-icon';
 
 const headers = [
