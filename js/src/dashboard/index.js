@@ -11,6 +11,7 @@ import { Button } from '@wordpress/components';
 import TabNav from '../tab-nav';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummaryCard from './summary-card';
+import AllProgramsTableCard from './all-programs-table-card';
 import './index.scss';
 
 const Dashboard = () => {
@@ -80,6 +81,9 @@ const Dashboard = () => {
 						delta={ data.paidCampaigns.totalSpend.delta }
 					/>
 				</SummaryCard>
+			</div>
+			<div className="gla-dashboard__programs">
+				<AllProgramsTableCard />
 			</div>
 		</div>
 	);
