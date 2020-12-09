@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Google\Client;
@@ -36,6 +37,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Client::class                         => true,
 		Google_Service_ShoppingContent::class => true,
 		GuzzleClient::class                   => true,
+		Proxy::class                          => true,
 	];
 
 	/**
@@ -47,8 +49,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register() {
 		$this->register_guzzle();
-		$this->add( Client::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
-		$this->add( Google_Service_ShoppingContent::class, Client::class, $this->get_connect_server_url_root() );
+		$this->register_google_classes();
+		$this->add( Proxy::class, $this->getLeagueContainer() );
 	}
 
 	/**
@@ -61,7 +63,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			try {
 				$auth_header = $this->generate_guzzle_auth_header();
 				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
-			} catch ( WPError $error ) {
+			} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 				// Don't do anything with the error here.
 			}
 
@@ -72,6 +74,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			ClientInterface::class,
 			$this->getLeagueContainer()->share( GuzzleClient::class, $callback )
 		);
+	}
+
+	/**
+	 * Register the various Google classes we use.
+	 */
+	protected function register_google_classes() {
+		$this->add( Client::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
+		$this->add( Google_Service_ShoppingContent::class, Client::class, $this->get_connect_server_url_root() );
 	}
 
 	/**
@@ -135,7 +145,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return string
 	 */
 	protected function get_connect_server_url_root(): string {
-		$url = defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL
+		$url = defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' )
+			? WOOCOMMERCE_CONNECT_SERVER_URL
 			: 'https://api.woocommerce.com/';
 		$url = rtrim( $url, '/' );
 

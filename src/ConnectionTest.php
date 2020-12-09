@@ -10,6 +10,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Google\Client;
 use Google_Service_ShoppingContent;
 use Jetpack_Options;
@@ -265,21 +266,13 @@ class ConnectionTest {
 		}
 
 		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {
-			try {
-				self::$response = 'Proxied request > get merchant ID' . "\n";
+			self::$response = 'Proxied request > get merchant ID' . "\n";
 
-				$service  = self::mc_service();
-				$accounts = $service->accounts->authinfo();
-
-				if ( ! empty( $accounts->getAccountIdentifiers() ) ) {
-					foreach ( $accounts->getAccountIdentifiers() as $account ) {
-						self::$response .= sprintf( "Merchant ID: %s\n", $account->getMerchantId() );
-
-						$_GET['merchant_id'] = $account->getMerchantId();
-					}
-				}
-			} catch ( \Exception $e ) {
-				self::$response .= 'Error: ' . $e->getMessage();
+			/** @var Proxy $proxy */
+			$proxy = woogle_get_container()->get( Proxy::class );
+			foreach ( $proxy->get_merchant_ids() as $id ) {
+				self::$response .= sprintf( "Merchant ID: %s\n", $id );
+				$_GET['merchant_id'] = $id;
 			}
 		}
 
