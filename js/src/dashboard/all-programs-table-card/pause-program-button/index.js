@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import PauseProgramModal from './pause-program-modal';
-import './index.scss';
 
 const PauseProgramButton = ( props ) => {
 	const { programId } = props;
@@ -24,7 +23,7 @@ const PauseProgramButton = ( props ) => {
 	};
 
 	return (
-		<span className="gla-pause-program-button">
+		<>
 			<Button isTertiary isLink onClick={ handleClick }>
 				{ __( 'Pause', 'google-listings-and-ads' ) }
 			</Button>
@@ -34,7 +33,7 @@ const PauseProgramButton = ( props ) => {
 					onRequestClose={ handleModalRequestClose }
 				/>
 			) }
-		</span>
+		</>
 	);
 };
 

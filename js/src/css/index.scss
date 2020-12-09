@@ -14,4 +14,16 @@
 			background-color: darken($color: $alert-red, $amount: 10%);
 		}
 	}
+
+	&.is-link.is-destructive:focus {
+		color: $alert-red;
+
+		&:not(:disabled) {
+			color: $alert-red;
+		}
+	}
+
+	&.is-link {
+		text-decoration: none;
+	}
 }

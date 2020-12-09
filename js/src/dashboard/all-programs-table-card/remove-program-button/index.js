@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import RemoveProgramModal from './remove-program-modal';
-import './index.scss';
 
 const RemoveProgramButton = ( props ) => {
 	const { programId } = props;
@@ -24,7 +23,7 @@ const RemoveProgramButton = ( props ) => {
 	};
 
 	return (
-		<span className="gla-remove-program-button">
+		<>
 			<Button isDestructive isTertiary isLink onClick={ handleClick }>
 				{ __( 'Remove', 'google-listings-and-ads' ) }
 			</Button>
@@ -34,7 +33,7 @@ const RemoveProgramButton = ( props ) => {
 					onRequestClose={ handleModalRequestClose }
 				/>
 			) }
-		</span>
+		</>
 	);
 };
 
