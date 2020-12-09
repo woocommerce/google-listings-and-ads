@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { Button, Modal } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import './index.scss';
+import AppModal from '../../../../components/app-modal';
 
 const PauseProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
@@ -24,34 +24,31 @@ const PauseProgramModal = ( props ) => {
 	};
 
 	return (
-		<Modal
+		<AppModal
 			title={ __( 'Before you pause…', 'google-listings-and-ads' ) }
-			className="gla-pause-program-modal"
+			buttons={ [
+				<Button key="1" isSecondary onClick={ handleKeepActiveClick }>
+					{ __( 'Keep Active', 'google-listings-and-ads' ) }
+				</Button>,
+				<Button key="2" isPrimary onClick={ handlePauseCampaignClick }>
+					{ __( 'Pause Campaign', 'google-listings-and-ads' ) }
+				</Button>,
+			] }
 			onRequestClose={ onRequestClose }
 		>
-			<div>
-				<p>
-					{ __(
-						'Results typically improve with time with Google’s Smart Shopping campaigns. If you pause, your products won’t be shown to people looking for what you offer.',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<p>
-					{ __(
-						'Pausing a Smart Shopping campaign will result in the loss of any optimisations learned from those campaigns.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</div>
-			<div className="gla-pause-program-modal__footer">
-				<Button isSecondary onClick={ handleKeepActiveClick }>
-					{ __( 'Keep Active', 'google-listings-and-ads' ) }
-				</Button>
-				<Button isPrimary onClick={ handlePauseCampaignClick }>
-					{ __( 'Pause Campaign', 'google-listings-and-ads' ) }
-				</Button>
-			</div>
-		</Modal>
+			<p>
+				{ __(
+					'Results typically improve with time with Google’s Smart Shopping campaigns. If you pause, your products won’t be shown to people looking for what you offer.',
+					'google-listings-and-ads'
+				) }
+			</p>
+			<p>
+				{ __(
+					'Pausing a Smart Shopping campaign will result in the loss of any optimisations learned from those campaigns.',
+					'google-listings-and-ads'
+				) }
+			</p>
+		</AppModal>
 	);
 };
 

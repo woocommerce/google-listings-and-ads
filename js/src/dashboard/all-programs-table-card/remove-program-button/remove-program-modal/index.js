@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { Button, Modal } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import './index.scss';
+import AppModal from '../../../../components/app-modal';
 
 const RemoveProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
@@ -24,38 +24,40 @@ const RemoveProgramModal = ( props ) => {
 	};
 
 	return (
-		<Modal
+		<AppModal
 			title={ __( 'Permanently Remove?', 'google-listings-and-ads' ) }
-			className="gla-remove-program-modal"
-			onRequestClose={ onRequestClose }
-		>
-			<div>
-				<p>
-					{ __(
-						'Results typically improve with time with Google’s Smart Shopping campaigns. Removing a Smart Shopping campaign will result in the loss of any optimisations learned from those campaigns.',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<p>
-					{ __(
-						'Once a campaign is removed, it cannot be re-enabled.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</div>
-			<div className="gla-remove-program-modal__footer">
-				<Button isSecondary onClick={ handleKeepCampaignClick }>
-					{ __( 'Keep Campaign', 'google-listings-and-ads' ) }
-				</Button>
+			buttons={ [
 				<Button
+					key="keep"
+					isSecondary
+					onClick={ handleKeepCampaignClick }
+				>
+					{ __( 'Keep Campaign', 'google-listings-and-ads' ) }
+				</Button>,
+				<Button
+					key="remove"
 					isPrimary
 					isDestructive
 					onClick={ handleRemoveCampaignClick }
 				>
 					{ __( 'Remove Campaign', 'google-listings-and-ads' ) }
-				</Button>
-			</div>
-		</Modal>
+				</Button>,
+			] }
+			onRequestClose={ onRequestClose }
+		>
+			<p>
+				{ __(
+					'Results typically improve with time with Google’s Smart Shopping campaigns. Removing a Smart Shopping campaign will result in the loss of any optimisations learned from those campaigns.',
+					'google-listings-and-ads'
+				) }
+			</p>
+			<p>
+				{ __(
+					'Once a campaign is removed, it cannot be re-enabled.',
+					'google-listings-and-ads'
+				) }
+			</p>
+		</AppModal>
 	);
 };
 
