@@ -3,6 +3,7 @@
  */
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -25,7 +26,7 @@ const RemoveProgramButton = ( props ) => {
 	return (
 		<span className="gla-remove-program-button">
 			<Button isDestructive isTertiary isLink onClick={ handleClick }>
-				Remove
+				{ __( 'Remove', 'google-listings-and-ads' ) }
 			</Button>
 			{ isOpen && (
 				<RemoveProgramModal
