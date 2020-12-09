@@ -11,6 +11,7 @@ import StyledTableCard from '../../components/styled-table-card';
 import RemoveProgramButton from './remove-program-button';
 import EditProgramLink from './edit-program-link';
 import './index.scss';
+import PauseProgramButton from './pause-program-button';
 
 const headers = [
 	{
@@ -32,6 +33,7 @@ const headers = [
 		label: __( 'Active', 'google-listings-and-ads' ),
 	},
 	{ key: 'remove', label: '', required: true },
+	{ key: 'pause-resume', label: '', required: true },
 	{ key: 'edit', label: '', required: true },
 ];
 
@@ -78,9 +80,16 @@ const AllProgramsTableCard = () => {
 					{ display: el.title },
 					{ display: el.spend },
 					{ display: el.numberOfProducts },
-					{ display: el.active },
+					{ display: el.active ? 'Active' : 'Paused' },
 					{
 						display: <RemoveProgramButton programId={ el.id } />,
+					},
+					{
+						display: el.active ? (
+							<PauseProgramButton programId={ el.id } />
+						) : (
+							''
+						),
 					},
 					{ display: <EditProgramLink programId={ el.id } /> },
 				];
