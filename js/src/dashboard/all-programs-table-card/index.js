@@ -10,8 +10,9 @@ import { Button } from '@wordpress/components';
 import StyledTableCard from '../../components/styled-table-card';
 import RemoveProgramButton from './remove-program-button';
 import EditProgramLink from './edit-program-link';
-import './index.scss';
 import PauseProgramButton from './pause-program-button';
+import ResumeProgramButton from './resume-program-button';
+import './index.scss';
 
 const headers = [
 	{
@@ -32,8 +33,8 @@ const headers = [
 		key: 'active',
 		label: __( 'Active?', 'google-listings-and-ads' ),
 	},
-	{ key: 'remove', label: '', required: true },
 	{ key: 'pause-resume', label: '', required: true },
+	{ key: 'remove', label: '', required: true },
 	{ key: 'edit', label: '', required: true },
 ];
 
@@ -52,7 +53,7 @@ const AllProgramsTableCard = () => {
 			title: 'Smart Shopping Campaign 1',
 			spend: '$200.00',
 			numberOfProducts: 133,
-			active: true,
+			active: false,
 		},
 	];
 
@@ -82,14 +83,14 @@ const AllProgramsTableCard = () => {
 					{ display: el.numberOfProducts },
 					{ display: el.active ? 'Active' : 'Paused' },
 					{
-						display: <RemoveProgramButton programId={ el.id } />,
-					},
-					{
 						display: el.active ? (
 							<PauseProgramButton programId={ el.id } />
 						) : (
-							''
+							<ResumeProgramButton programId={ el.id } />
 						),
+					},
+					{
+						display: <RemoveProgramButton programId={ el.id } />,
 					},
 					{ display: <EditProgramLink programId={ el.id } /> },
 				];
