@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppModal from '../../../../components/app-modal';
+import AppModal from '../../../components/app-modal';
 
 const RemoveProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
