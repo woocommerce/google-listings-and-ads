@@ -30,7 +30,7 @@ const headers = [
 	},
 	{
 		key: 'active',
-		label: __( 'Active', 'google-listings-and-ads' ),
+		label: __( 'Active?', 'google-listings-and-ads' ),
 	},
 	{ key: 'remove', label: '', required: true },
 	{ key: 'pause-resume', label: '', required: true },
