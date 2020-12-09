@@ -1,0 +1,26 @@
+$button-color: #949494;
+
+.help-popover {
+	font-weight: normal;
+	font-size: $default-font-size;
+	line-height: $default-line-height;
+
+	button {
+		display: flex;
+		align-items: center;
+		border: none;
+		background: none;
+		padding: 1px;
+		fill: $button-color;
+		cursor: pointer;
+
+		&:hover {
+			fill: darken($color: $button-color, $amount: 20%);
+		}
+	}
+
+	.components-popover__content > div {
+		text-align: left;
+		margin: $grid-unit-20;
+	}
+}

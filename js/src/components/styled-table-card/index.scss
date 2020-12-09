@@ -1,0 +1,22 @@
+.gla-styled-table-card {
+	.woocommerce-card__header {
+		border-bottom: 1px solid $gray-400;
+
+		.woocommerce-card__title-wrapper > .woocommerce-card__title {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 3px 0;
+			font-size: 0.9375rem;
+			font-weight: 600;
+		}
+	}
+
+	.woocommerce-card__body {
+		.woocommerce-table__table {
+			.components-base-control__field {
+				margin-bottom: 0;
+			}
+		}
+	}
+}
