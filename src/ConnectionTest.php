@@ -116,7 +116,16 @@ class ConnectionTest {
 				</p>
 
 				<p>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-create' ), $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-create' ), $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
+						<?php wp_nonce_field( 'wcs-google-ads-link' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-google-ads-link" type="hidden" />
+						<label>
+							Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+						</label>
+						<button class="button">Link Google Ads customer to a Merchant Account</button>
+					</form>
 				</p>
 
 				<p>
@@ -282,6 +291,32 @@ class ConnectionTest {
 						'descriptive_name' => 'Connection test account at ' . date( 'Y-m-d h:i:s' ),
 			            'currency_code'    => 'USD',
         	    		'time_zone'        => 'America/New_York',
+					]
+				),
+			];
+
+			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_post( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				self::$response .= $response->get_error_message();
+				return;
+			}
+
+			self::$response .= wp_remote_retrieve_body( $response );
+		}
+
+		if ( 'wcs-google-ads-link' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-link' ) ) {
+			$id   = ! empty( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] ) : '12345';
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/link-customer';
+			$args = [
+				'headers' => [
+					'Authorization' => self::get_auth_header(),
+					'Content-Type'  => 'application/json',
+				],
+				'body'    => wp_json_encode(
+					[
+						'client_customer' => $id,
 					]
 				),
 			];
