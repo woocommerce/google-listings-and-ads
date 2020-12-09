@@ -10,6 +10,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Google\Client;
 use Google_Service_ShoppingContent;
@@ -277,27 +278,18 @@ class ConnectionTest {
 		}
 
 		if ( 'wcs-google-mc-proxy' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-proxy' ) ) {
-			try {
-				$merchant_id = ! empty( $_GET['merchant_id'] ) ? absint( $_GET['merchant_id'] ) : '12345';
-				$service     = self::mc_service();
-				$products    = $service->products->listProducts( $merchant_id );
+			/** @var Merchant $merchant */
+			$merchant = woogle_get_container()->get( Merchant::class );
 
-				self::$response = 'Proxied request > get products for merchant ' . $merchant_id . "\n";
+			self::$response = "Proxied request > get products for merchant {$merchant->get_id()}\n";
 
-				if ( empty( $products->getResources() ) ) {
-					self::$response .= 'No products found';
-				}
+			$products = $merchant->get_products();
+			if ( empty( $products ) ){
+				self::$response .= 'No products found';
+			}
 
-				while ( ! empty( $products->getResources() ) ) {
-					foreach ( $products->getResources() as $product ) {
-						self::$response .= sprintf( "%s %s\n", $product->getId(), $product->getTitle() );
-					}
-					if ( ! empty( $products->getNextPageToken() ) ) {
-						$products = $service->products->listProducts( $merchant_id, [ 'pageToken' => $products->getNextPageToken() ] );
-					}
-				}
-			} catch ( \Exception $e ) {
-				self::$response .= 'Error: ' . $e->getMessage();
+			foreach ( $products as $product ) {
+				self::$response .= "{$product->getId()} {$product->getTitle()}\n";
 			}
 		}
 

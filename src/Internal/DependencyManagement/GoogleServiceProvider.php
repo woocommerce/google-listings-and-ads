@@ -4,9 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Client;
 use Google_Service_ShoppingContent;
 use GuzzleHttp\Client as GuzzleClient;
@@ -38,6 +40,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Google_Service_ShoppingContent::class => true,
 		GuzzleClient::class                   => true,
 		Proxy::class                          => true,
+		Merchant::class                       => true,
 	];
 
 	/**
@@ -51,6 +54,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_guzzle();
 		$this->register_google_classes();
 		$this->add( Proxy::class, $this->getLeagueContainer() );
+
+		// todo: replace the merchant ID with a stored option.
+		$this->add(
+			Merchant::class,
+			$this->getLeagueContainer(),
+			new PositiveInteger( absint( $_GET['merchant_id'] ?? 12345 ) ) // phpcs:ignore WordPress.Security.NonceVerification
+		);
 	}
 
 	/**
