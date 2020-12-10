@@ -59,6 +59,7 @@ const IssuesTableCard = () => {
 	return (
 		<div className="gla-issues-table-card">
 			<StyledTableCard
+				showMenu={ false }
 				title={
 					<>
 						{ __( 'Issues to Resolve', 'google-listings-and-ads' ) }
@@ -81,7 +82,6 @@ const IssuesTableCard = () => {
 						</HelpPopover>
 					</>
 				}
-				showMenu={ false }
 				headers={ headers }
 				rows={ rows }
 				totalRows={ rows.length }

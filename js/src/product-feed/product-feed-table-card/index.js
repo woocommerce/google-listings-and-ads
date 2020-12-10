@@ -5,21 +5,12 @@ import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
 import { getQuery, onQueryChange } from '@woocommerce/navigation';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import EditProductLink from '../../components/edit-product-link';
 import StyledTableCard from '../../components/styled-table-card';
-
-const recordTableHeaderToggleEvent = ( report, column, status ) => {
-	recordEvent( 'gla_table_header_toggle', {
-		report,
-		column,
-		status,
-	} );
-};
 
 const ProductFeedTableCard = () => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
@@ -66,14 +57,10 @@ const ProductFeedTableCard = () => {
 		}
 	};
 
-	const handleColumnsChange = ( shown, toggled ) => {
-		const status = shown.includes( toggled ) ? 'on' : 'off';
-		recordTableHeaderToggleEvent( 'product-feed', toggled, status );
-	};
-
 	return (
 		<div className="gla-product-feed-table-card">
 			<StyledTableCard
+				trackEventReportId="product-feed"
 				title={
 					<>
 						{ __( 'Product Feed', 'google-listings-and-ads' ) }
@@ -162,7 +149,6 @@ const ProductFeedTableCard = () => {
 				] }
 				query={ query }
 				onQueryChange={ onQueryChange }
-				onColumnsChange={ handleColumnsChange }
 			/>
 		</div>
 	);

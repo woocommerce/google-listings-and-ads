@@ -62,6 +62,7 @@ const AllProgramsTableCard = () => {
 
 	return (
 		<StyledTableCard
+			trackEventReportId="all-programs"
 			className="gla-all-programs-table-card"
 			title={
 				<div className="gla-all-programs-table-card__header">
