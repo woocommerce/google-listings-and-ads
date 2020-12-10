@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { Link } from '@woocommerce/components';
-import GridiconExternal from 'gridicons/dist/external';
 
 /**
  * Internal dependencies
@@ -22,7 +21,7 @@ const EditProgramLink = ( props ) => {
 			target="_blank"
 			className="edit-program-link"
 		>
-			Edit <GridiconExternal size={ 12 } />
+			Edit
 		</Link>
 	);
 };
