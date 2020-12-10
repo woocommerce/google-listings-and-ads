@@ -7,7 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppModal from '../../../components/app-modal';
+import AppModal from '../../../../components/app-modal';
+import './index.scss';
 
 const PauseProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
@@ -25,6 +26,7 @@ const PauseProgramModal = ( props ) => {
 
 	return (
 		<AppModal
+			className="gla-pause-program-modal"
 			title={ __( 'Before you pause…', 'google-listings-and-ads' ) }
 			buttons={ [
 				<Button key="1" isSecondary onClick={ handleKeepActiveClick }>
