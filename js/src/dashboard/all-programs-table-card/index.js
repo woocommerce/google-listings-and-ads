@@ -33,9 +33,7 @@ const headers = [
 		label: __( 'Number of Products', 'google-listings-and-ads' ),
 		isSortable: true,
 	},
-	{ key: 'pause-resume', label: '', required: true },
-	{ key: 'remove', label: '', required: true },
-	{ key: 'edit', label: '', required: true },
+	{ key: 'actions', label: '', required: true },
 ];
 
 const AllProgramsTableCard = () => {
@@ -86,16 +84,18 @@ const AllProgramsTableCard = () => {
 					{ display: el.spend },
 					{ display: el.numberOfProducts },
 					{
-						display: el.active ? (
-							<PauseProgramButton programId={ el.id } />
-						) : (
-							<ResumeProgramButton programId={ el.id } />
+						display: (
+							<div className="program-actions">
+								<EditProgramLink programId={ el.id } />
+								{ el.active ? (
+									<PauseProgramButton programId={ el.id } />
+								) : (
+									<ResumeProgramButton programId={ el.id } />
+								) }
+								<RemoveProgramButton programId={ el.id } />
+							</div>
 						),
 					},
-					{
-						display: <RemoveProgramButton programId={ el.id } />,
-					},
-					{ display: <EditProgramLink programId={ el.id } /> },
 				];
 			} ) }
 			totalRows={ data.length }
