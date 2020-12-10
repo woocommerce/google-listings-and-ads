@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { SummaryNumber } from '@woocommerce/components';
+import { SummaryNumber, Link } from '@woocommerce/components';
 import { Button } from '@wordpress/components';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -44,7 +45,9 @@ const Dashboard = () => {
 			<TabNav initialName="dashboard" />
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker />
-				<Button isPrimary>View Analytics</Button>
+				<Link href={ getNewPath( null, '/google/analytics' ) }>
+					<Button isPrimary>View Analytics</Button>
+				</Link>
 			</div>
 			<div className="gla-dashboard__performance">
 				<SummaryCard
