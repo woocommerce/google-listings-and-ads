@@ -4,26 +4,3 @@
 
 // Import Gutenberg components that aren't already imported in the lowest WC Admin version we support
 @import "./shared/gutenberg-components.scss";
-
-.components-button {
-	// hack to make primary destructive button.
-	&.is-primary.is-destructive {
-		background-color: $alert-red;
-
-		&:hover {
-			background-color: darken($color: $alert-red, $amount: 10%);
-		}
-	}
-
-	&.is-link.is-destructive:focus {
-		color: $alert-red;
-
-		&:not(:disabled) {
-			color: $alert-red;
-		}
-	}
-
-	&.is-link {
-		text-decoration: none;
-	}
-}
