@@ -1,4 +1,4 @@
-# StyledTableCard
+# AppTableCard
 
 Renders a TableCard component with additional styling, and record `gla_table_header_toggle` [track event](../../../../src/Tracking) upon toggling column visibility when `trackEventReportId` is supplied via props.
 

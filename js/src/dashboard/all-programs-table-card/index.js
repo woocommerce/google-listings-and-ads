@@ -8,7 +8,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import StyledTableCard from '../../components/styled-table-card';
+import AppTableCard from '../../components/app-table-card';
 import RemoveProgramButton from './remove-program-button';
 import EditProgramLink from './edit-program-link';
 import PauseProgramButton from './pause-program-button';
@@ -62,7 +62,7 @@ const AllProgramsTableCard = () => {
 	const handleAddPaidCampaignClick = () => {};
 
 	return (
-		<StyledTableCard
+		<AppTableCard
 			trackEventReportId="all-programs"
 			className="gla-all-programs-table-card"
 			title={

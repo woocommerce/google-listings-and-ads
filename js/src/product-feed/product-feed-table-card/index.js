@@ -10,7 +10,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import EditProductLink from '../../components/edit-product-link';
-import StyledTableCard from '../../components/styled-table-card';
+import AppTableCard from '../../components/app-table-card';
 
 const ProductFeedTableCard = () => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
@@ -59,7 +59,7 @@ const ProductFeedTableCard = () => {
 
 	return (
 		<div className="gla-product-feed-table-card">
-			<StyledTableCard
+			<AppTableCard
 				trackEventReportId="product-feed"
 				title={
 					<>

@@ -9,7 +9,7 @@ import { TableCard } from '@woocommerce/components';
 import recordColumnToggleEvent from './recordColumnToggleEvent';
 import './index.scss';
 
-const StyledTableCard = ( props ) => {
+const AppTableCard = ( props ) => {
 	const { trackEventReportId, onColumnsChange = () => {}, ...rest } = props;
 
 	const handleColumnsChange = ( shown, toggled ) => {
@@ -21,10 +21,10 @@ const StyledTableCard = ( props ) => {
 	};
 
 	return (
-		<div className="gla-styled-table-card">
+		<div className="gla-app-table-card">
 			<TableCard onColumnsChange={ handleColumnsChange } { ...rest } />
 		</div>
 	);
 };
 
-export default StyledTableCard;
+export default AppTableCard;
