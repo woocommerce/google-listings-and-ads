@@ -7,7 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppModal from '../../../components/app-modal';
+import AppModal from '../../../../components/app-modal';
+import './index.scss';
 
 const RemoveProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
@@ -25,6 +26,7 @@ const RemoveProgramModal = ( props ) => {
 
 	return (
 		<AppModal
+			className="gla-remove-program-modal"
 			title={ __( 'Permanently Remove?', 'google-listings-and-ads' ) }
 			buttons={ [
 				<Button
