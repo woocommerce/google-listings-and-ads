@@ -13,11 +13,11 @@ const FullScreen = ( props ) => {
 
 	useEffect( () => {
 		document.body.classList.add( 'woocommerce-admin-full-screen' );
-		document.body.classList.add( 'gla-full-screen' );
+		document.body.classList.add( 'app-full-screen' );
 
 		return () => {
 			document.body.classList.remove( 'woocommerce-admin-full-screen' );
-			document.body.classList.remove( 'gla-full-screen' );
+			document.body.classList.remove( 'app-full-screen' );
 		};
 	}, [] );
 
