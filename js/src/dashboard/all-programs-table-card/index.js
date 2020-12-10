@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
+import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -20,18 +21,17 @@ const headers = [
 		label: __( 'Title', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
+		isSortable: true,
 	},
 	{
 		key: 'spend',
 		label: __( 'Spend', 'google-listings-and-ads' ),
+		isSortable: true,
 	},
 	{
 		key: 'numberOfProducts',
 		label: __( 'Number of Products', 'google-listings-and-ads' ),
-	},
-	{
-		key: 'active',
-		label: __( 'Active?', 'google-listings-and-ads' ),
+		isSortable: true,
 	},
 	{ key: 'pause-resume', label: '', required: true },
 	{ key: 'remove', label: '', required: true },
@@ -39,7 +39,10 @@ const headers = [
 ];
 
 const AllProgramsTableCard = () => {
+	const query = getQuery();
+
 	// TODO: data from backend API.
+	// using the above query (e.g. orderby, order and page) as parameter.
 	const data = [
 		{
 			id: 123,
@@ -82,7 +85,6 @@ const AllProgramsTableCard = () => {
 					{ display: el.title },
 					{ display: el.spend },
 					{ display: el.numberOfProducts },
-					{ display: el.active ? 'Active' : 'Paused' },
 					{
 						display: el.active ? (
 							<PauseProgramButton programId={ el.id } />
@@ -98,6 +100,8 @@ const AllProgramsTableCard = () => {
 			} ) }
 			totalRows={ data.length }
 			rowsPerPage={ 10 }
+			query={ query }
+			onQueryChange={ onQueryChange }
 		/>
 	);
 };
