@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -21,7 +22,7 @@ const EditProgramLink = ( props ) => {
 			target="_blank"
 			className="edit-program-link"
 		>
-			Edit
+			{ __( 'Edit', 'google-listings-and-ads' ) }
 		</Link>
 	);
 };
