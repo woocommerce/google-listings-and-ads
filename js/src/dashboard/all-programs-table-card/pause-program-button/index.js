@@ -24,7 +24,7 @@ const PauseProgramButton = ( props ) => {
 
 	return (
 		<>
-			<Button isTertiary isLink onClick={ handleClick }>
+			<Button isLink onClick={ handleClick }>
 				{ __( 'Pause', 'google-listings-and-ads' ) }
 			</Button>
 			{ isOpen && (

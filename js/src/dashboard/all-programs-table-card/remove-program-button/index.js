@@ -24,7 +24,7 @@ const RemoveProgramButton = ( props ) => {
 
 	return (
 		<>
-			<Button isDestructive isTertiary isLink onClick={ handleClick }>
+			<Button isDestructive isLink onClick={ handleClick }>
 				{ __( 'Remove', 'google-listings-and-ads' ) }
 			</Button>
 			{ isOpen && (

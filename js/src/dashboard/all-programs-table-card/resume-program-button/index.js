@@ -11,7 +11,7 @@ const ResumeProgramButton = ( props ) => {
 	const handleClick = () => {};
 
 	return (
-		<Button isTertiary isLink onClick={ handleClick }>
+		<Button isLink onClick={ handleClick }>
 			{ __( 'Resume', 'google-listings-and-ads' ) }
 		</Button>
 	);
