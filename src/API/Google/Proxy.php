@@ -51,4 +51,8 @@ class Proxy {
 			return $ids;
 		}
 	}
+
+	public function check_tos_accepted() {
+
+	}
 }
