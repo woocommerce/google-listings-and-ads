@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Client;
 use Google_Service_ShoppingContent;
@@ -59,7 +60,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add(
 			Merchant::class,
 			$this->getLeagueContainer(),
-			new PositiveInteger( absint( $_GET['merchant_id'] ?? 12345 ) ) // phpcs:ignore WordPress.Security.NonceVerification
+			$this->get_merchant_id()
 		);
 	}
 
@@ -161,5 +162,19 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$url = rtrim( $url, '/' );
 
 		return "{$url}/google/google-mc";
+	}
+
+	/**
+	 * Get the merchant ID to use for requests.
+	 *
+	 * @return PositiveInteger
+	 */
+	protected function get_merchant_id(): PositiveInteger {
+		/** @var Options $options */
+		$options     = $this->getLeagueContainer()->get( Options::class );
+		$default     = $_GET['merchant_id'] ?? 12345; // phpcs:ignore WordPress.Security
+		$merchant_id = intval( $options->get( Options::MERCHANT_ID, $default ) );
+
+		return new PositiveInteger( $merchant_id );
 	}
 }

@@ -17,6 +17,7 @@ final class Options implements OptionsInterface, Service {
 
 	private const VALID_OPTIONS = [
 		self::MERCHANT_CENTER => true,
+		self::MERCHANT_ID     => true,
 	];
 
 	/**
