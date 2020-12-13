@@ -1,4 +1,10 @@
 .app-full-screen {
+	margin-top: -46px;
+
+	@include break-medium() {
+		margin-top: -32px;
+	}
+
 	.woocommerce-layout__primary {
 		margin: 0;
 
