@@ -10,7 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import EditProductLink from '../../components/edit-product-link';
 import HelpPopover from '../../components/help-popover';
-import StyledTableCard from '../../components/styled-table-card';
+import AppTableCard from '../../components/app-table-card';
 import WarningIcon from '../../components/warning-icon';
 
 const headers = [
@@ -58,7 +58,8 @@ const rows = [
 const IssuesTableCard = () => {
 	return (
 		<div className="gla-issues-table-card">
-			<StyledTableCard
+			<AppTableCard
+				showMenu={ false }
 				title={
 					<>
 						{ __( 'Issues to Resolve', 'google-listings-and-ads' ) }
@@ -81,7 +82,6 @@ const IssuesTableCard = () => {
 						</HelpPopover>
 					</>
 				}
-				showMenu={ false }
 				headers={ headers }
 				rows={ rows }
 				totalRows={ rows.length }
