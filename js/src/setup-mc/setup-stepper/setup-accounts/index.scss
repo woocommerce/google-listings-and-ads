@@ -1,7 +1,8 @@
 .gla-setup-accounts {
-	margin: 0 var(--main-gap);
+	max-width: 1032px;
+	margin: auto;
 
-	.header {
+	header.gla-setup-accounts__header {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -28,5 +29,20 @@
 			font-weight: 400;
 			margin: 0;
 		}
+	}
+
+	.gla-setup-accounts__connect-account {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+
+		span {
+			font-size: 14px;
+			font-weight: 600;
+		}
+	}
+
+	.actions {
+		text-align: right;
 	}
 }
