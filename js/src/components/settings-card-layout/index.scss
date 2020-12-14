@@ -1,0 +1,32 @@
+section.settings-card-layout {
+	display: flex;
+	flex-direction: row;
+	gap: var(--main-gap);
+	margin-bottom: var(--large-gap);
+
+	header {
+		width: 33%;
+		padding-top: var(--large-gap);
+
+		h1 {
+			font-size: 16px;
+			font-style: normal;
+			font-weight: 600;
+			margin-bottom: 8px;
+			padding: 0;
+		}
+
+		p {
+			margin-top: 0;
+		}
+	}
+
+	.woocommerce-card.settings-card {
+		flex: 1;
+		margin-bottom: 0;
+
+		.woocommerce-card__body {
+			padding: var(--large-gap);
+		}
+	}
+}
