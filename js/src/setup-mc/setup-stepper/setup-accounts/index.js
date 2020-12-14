@@ -10,8 +10,12 @@ import { __ } from '@wordpress/i18n';
 import SettingsCardLayout from '../../../components/settings-card-layout';
 import './index.scss';
 
-const SetupAccounts = () => {
-	const handleContinueClick = () => {};
+const SetupAccounts = ( props ) => {
+	const { onContinue = () => {} } = props;
+
+	// TODO: set Continue button disabled to false when all three accounts are connected,
+	// which we can only know by calling backend API.
+	const isContinueButtonDisabled = true;
 
 	return (
 		<div className="gla-setup-accounts">
@@ -90,7 +94,11 @@ const SetupAccounts = () => {
 				</div>
 			</SettingsCardLayout>
 			<div className="actions">
-				<Button isPrimary onClick={ handleContinueClick }>
+				<Button
+					isPrimary
+					disabled={ isContinueButtonDisabled }
+					onClick={ onContinue }
+				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
 				</Button>
 			</div>
