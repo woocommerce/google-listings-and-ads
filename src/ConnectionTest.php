@@ -294,62 +294,28 @@ class ConnectionTest {
 		}
 
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/tos/google-mc';
-			$args = [
-				'headers' => [ 'Authorization' => self::get_auth_header() ],
-				'body'    => [
-					'email' => 'john@doe.email',
-				],
-			];
+			/** @var Proxy $proxy */
+			$proxy    = woogle_get_container()->get( Proxy::class );
+			$result = $proxy->mark_tos_accepted( 'john.doe@example.com' );
 
-			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
-				return;
-			}
-
-			self::$response .= wp_remote_retrieve_body( $response );
+			self::$response .= sprintf(
+				"Attempting to accept Tos. Successful? %s<br>Response body: %s",
+				$result->accepted() ? 'Yes' : 'No',
+				$result->message()
+			);
 		}
 
 		if ( 'wcs-check-tos' === $_GET['action'] && check_admin_referer( 'wcs-check-tos' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/tos/google-mc';
-			$args = [
-				'headers' => [ 'Authorization' => self::get_auth_header() ],
-			];
+			/** @var Proxy $proxy */
+			$proxy    = woogle_get_container()->get( Proxy::class );
+			$accepted = $proxy->check_tos_accepted();
 
-			self::$response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_get( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
-				return;
-			}
-
-			self::$response .= wp_remote_retrieve_body( $response );
+			self::$response .= sprintf(
+				"Tos Accepted? %s<br>Response body: %s",
+				$accepted->accepted() ? 'Yes' : 'No',
+				$accepted->message()
+			);
 		}
-	}
-
-	/**
-	 * Get Merchant Center service (with proxied URL).
-	 *
-	 * @return \Google_Service_ShoppingContent
-	 */
-	private static function mc_service() {
-		/** @var Google_Service_ShoppingContent $service */
-		$service = woogle_get_container()->get( Google_Service_ShoppingContent::class );
-		return $service;
-	}
-
-	/**
-	 * Get Google client (with custom authentication header).
-	 *
-	 * @return Client
-	 */
-	private static function google_client(): Client {
-		$client = woogle_get_container()->get( Client::class );
-		return $client;
 	}
 
 	/**
