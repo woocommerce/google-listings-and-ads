@@ -31,18 +31,6 @@
 		}
 	}
 
-	.gla-setup-accounts__connect-account {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: calc(var(--main-gap) / 2);
-
-		span {
-			font-size: 14px;
-			font-weight: 600;
-		}
-	}
-
 	.actions {
 		text-align: right;
 	}
