@@ -9,7 +9,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Google\Client;
 use Google_Service_ShoppingContent;
 use GuzzleHttp\Client as GuzzleClient;
@@ -42,6 +44,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		GuzzleClient::class                   => true,
 		Proxy::class                          => true,
 		Merchant::class                       => true,
+		'connect_server_root'                 => true,
 	];
 
 	/**
@@ -56,12 +59,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_google_classes();
 		$this->add( Proxy::class, $this->getLeagueContainer() );
 
-		// todo: replace the merchant ID with a stored option.
 		$this->add(
 			Merchant::class,
 			$this->getLeagueContainer(),
 			$this->get_merchant_id()
 		);
+
+		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
 	}
 
 	/**
@@ -70,6 +74,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function register_guzzle() {
 		$callback = function() {
 			$handler_stack = HandlerStack::create();
+			$handler_stack->remove('http_errors');
 
 			try {
 				$auth_header = $this->generate_guzzle_auth_header();
@@ -81,10 +86,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
 		};
 
-		$this->share_interface(
-			ClientInterface::class,
-			$this->getLeagueContainer()->share( GuzzleClient::class, $callback )
-		);
+		$client_definition = new Definition( GuzzleClient::class, $callback );
+		$this->share_interface( ClientInterface::class, $client_definition );
+		$this->share_interface( GuzzleClient::class, $client_definition );
 	}
 
 	/**
@@ -92,7 +96,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function register_google_classes() {
 		$this->add( Client::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
-		$this->add( Google_Service_ShoppingContent::class, Client::class, $this->get_connect_server_url_root() );
+		$this->add(
+			Google_Service_ShoppingContent::class,
+			Client::class,
+			$this->get_connect_server_url_root( 'google-mc' )
+		);
 	}
 
 	/**
@@ -153,15 +161,19 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Get the root Url for the connect server.
 	 *
+	 * @param string $path (Optional) A path relative to the root to include.
+	 *
 	 * @return string
 	 */
-	protected function get_connect_server_url_root(): string {
+	protected function get_connect_server_url_root( string $path = '' ): string {
 		$url = defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' )
 			? WOOCOMMERCE_CONNECT_SERVER_URL
 			: 'https://api.woocommerce.com/';
 		$url = rtrim( $url, '/' );
 
-		return "{$url}/google/google-mc";
+		$path = '/' . trim( $path, '/' );
+
+		return "{$url}/google${path}";
 	}
 
 	/**
@@ -171,7 +183,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function get_merchant_id(): PositiveInteger {
 		/** @var Options $options */
-		$options     = $this->getLeagueContainer()->get( Options::class );
+		$options     = $this->getLeagueContainer()->get( OptionsInterface::class );
 		$default     = $_GET['merchant_id'] ?? 12345; // phpcs:ignore WordPress.Security
 		$merchant_id = intval( $options->get( Options::MERCHANT_ID, $default ) );
 
