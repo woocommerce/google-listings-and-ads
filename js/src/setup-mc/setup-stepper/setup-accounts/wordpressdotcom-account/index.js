@@ -11,7 +11,7 @@ import Section from '../../../../wcdl/section';
 import Subsection from '../../../../wcdl/subsection';
 import ContentButtonLayout from '../content-button-layout';
 
-const ConnectWordPressDotComAccount = () => {
+const WordPressDotComAccount = () => {
 	// TODO: call backend API upon clicking Connect button.
 	const handleConnectClick = () => {};
 
@@ -40,4 +40,4 @@ const ConnectWordPressDotComAccount = () => {
 	);
 };
 
-export default ConnectWordPressDotComAccount;
+export default WordPressDotComAccount;

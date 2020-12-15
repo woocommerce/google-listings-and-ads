@@ -7,8 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import ConnectWordPressDotComAccount from './connect-wordpressdotcom-account';
-import ConnectGoogleAccount from './connect-google-account';
+import WordPressDotComAccount from './wordpressdotcom-account';
+import GoogleAccount from './google-account';
 import GoogleMCAccount from './google-mc-account';
 import './index.scss';
 
@@ -35,8 +35,8 @@ const SetupAccounts = ( props ) => {
 					) }
 				</p>
 			</header>
-			<ConnectWordPressDotComAccount />
-			<ConnectGoogleAccount />
+			<WordPressDotComAccount />
+			<GoogleAccount />
 			<GoogleMCAccount />
 			<div className="actions">
 				<Button

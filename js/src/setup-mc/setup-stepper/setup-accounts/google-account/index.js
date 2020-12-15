@@ -11,7 +11,7 @@ import Section from '../../../../wcdl/section';
 import Subsection from '../../../../wcdl/subsection';
 import ContentButtonLayout from '../content-button-layout';
 
-const ConnectGoogleAccount = () => {
+const GoogleAccount = () => {
 	// TODO: call backend API upon clicking Connect button.
 	const handleConnectClick = () => {};
 
@@ -40,4 +40,4 @@ const ConnectGoogleAccount = () => {
 	);
 };
 
-export default ConnectGoogleAccount;
+export default GoogleAccount;
