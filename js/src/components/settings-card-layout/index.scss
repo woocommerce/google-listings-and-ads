@@ -1,12 +1,19 @@
 section.settings-card-layout {
 	display: flex;
-	flex-direction: row;
-	gap: var(--main-gap);
-	margin-bottom: var(--large-gap);
+	flex-direction: column;
+	margin-bottom: calc(var(--large-gap) * 2);
+
+	@include break-small() {
+		flex-direction: row;
+		gap: var(--main-gap);
+		margin-bottom: var(--large-gap);
+	}
 
 	header {
-		width: 33%;
-		padding-top: var(--large-gap);
+		@include break-small() {
+			width: 33%;
+			padding-top: var(--large-gap);
+		}
 
 		h1 {
 			font-size: 16px;
@@ -17,7 +24,11 @@ section.settings-card-layout {
 		}
 
 		p {
-			margin-top: 0;
+			margin: 0 0 var(--large-gap) 0;
+
+			@include break-small() {
+				margin: 0;
+			}
 		}
 	}
 
