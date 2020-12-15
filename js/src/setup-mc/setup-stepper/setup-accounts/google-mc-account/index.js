@@ -1,45 +1,47 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import Section from '../../../../wcdl/section';
-import Subsection from '../../../../wcdl/subsection';
-import ContentButtonLayout from '../content-button-layout';
+import DisabledDiv from '../../../../components/disabled-div';
+import CreateAccountCard from './create-account-card';
+import ConnectMCCard from './connect-mc-card';
+import DisabledCard from './disabled-card';
 
-const GoogleMCAccount = () => {
-	// TODO: call backend API upon clicking Connect button.
-	const handleConnectClick = () => {};
+const GoogleMCAccount = ( props ) => {
+	const { disabled } = props;
+
+	// TODO: check whether user already has MC Account.
+	const hasMCAccount = true;
+
+	let card;
+	if ( disabled ) {
+		card = <DisabledCard />;
+	} else if ( hasMCAccount ) {
+		card = <ConnectMCCard />;
+	} else {
+		card = <CreateAccountCard />;
+	}
 
 	return (
-		<Section
-			title={ __(
-				'Google Merchant Center account',
-				'google-listings-and-ads'
-			) }
-			description={ __(
-				'WooCommerce products synced to your Merchant Center product feed will allow you to list your products on Google.',
-				'google-listings-and-ads'
-			) }
-		>
-			<Section.Card>
-				<ContentButtonLayout>
-					<Subsection.Title>
-						{ __(
-							'Connect your Merchant Center',
-							'google-listings-and-ads'
-						) }
-					</Subsection.Title>
-					<Button isSecondary onClick={ handleConnectClick }>
-						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</Button>
-				</ContentButtonLayout>
-			</Section.Card>
-		</Section>
+		<DisabledDiv disabled={ disabled }>
+			<Section
+				title={ __(
+					'Google Merchant Center account',
+					'google-listings-and-ads'
+				) }
+				description={ __(
+					'WooCommerce products synced to your Merchant Center product feed will allow you to list your products on Google.',
+					'google-listings-and-ads'
+				) }
+			>
+				{ card }
+			</Section>
+		</DisabledDiv>
 	);
 };
 
