@@ -7,8 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import Section from '../../../../wcdl/section';
 import Subsection from '../../../../wcdl/subsection';
-import SettingsCardLayout from '../../../../components/settings-card-layout';
 import ContentButtonLayout from '../content-button-layout';
 
 const GoogleMCAccount = () => {
@@ -16,7 +16,7 @@ const GoogleMCAccount = () => {
 	const handleConnectClick = () => {};
 
 	return (
-		<SettingsCardLayout
+		<Section
 			title={ __(
 				'Google Merchant Center account',
 				'google-listings-and-ads'
@@ -26,18 +26,20 @@ const GoogleMCAccount = () => {
 				'google-listings-and-ads'
 			) }
 		>
-			<ContentButtonLayout>
-				<Subsection.Title>
-					{ __(
-						'Connect your Merchant Center',
-						'google-listings-and-ads'
-					) }
-				</Subsection.Title>
-				<Button isSecondary onClick={ handleConnectClick }>
-					{ __( 'Connect', 'google-listings-and-ads' ) }
-				</Button>
-			</ContentButtonLayout>
-		</SettingsCardLayout>
+			<Section.Card>
+				<ContentButtonLayout>
+					<Subsection.Title>
+						{ __(
+							'Connect your Merchant Center',
+							'google-listings-and-ads'
+						) }
+					</Subsection.Title>
+					<Button isSecondary onClick={ handleConnectClick }>
+						{ __( 'Connect', 'google-listings-and-ads' ) }
+					</Button>
+				</ContentButtonLayout>
+			</Section.Card>
+		</Section>
 	);
 };
 

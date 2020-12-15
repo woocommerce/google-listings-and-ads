@@ -1,4 +1,4 @@
-section.settings-card-layout {
+.wcdl-section {
 	display: flex;
 	flex-direction: column;
 	margin-bottom: calc(var(--large-gap) * 2);
@@ -29,15 +29,6 @@ section.settings-card-layout {
 			@include break-small() {
 				margin: 0;
 			}
-		}
-	}
-
-	.woocommerce-card.settings-card {
-		flex: 1;
-		margin-bottom: 0;
-
-		.woocommerce-card__body {
-			padding: var(--large-gap);
 		}
 	}
 }
