@@ -1,0 +1,5 @@
+.gla_disabled_div {
+	&.gla_disabled_div__disabled {
+		filter: opacity(0.5);
+	}
+}
