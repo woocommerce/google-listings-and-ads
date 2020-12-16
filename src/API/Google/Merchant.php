@@ -47,7 +47,7 @@ class Merchant {
 	 *
 	 * @return int
 	 */
-	public function get_id() {
+	public function get_id(): int {
 		return $this->id->get();
 	}
 
