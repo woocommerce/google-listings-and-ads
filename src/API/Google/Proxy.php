@@ -69,7 +69,7 @@ class Proxy {
 
 			return new TosAccepted( 200 === $result->getStatusCode(), $result->getBody()->getContents() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e );
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
 			return new TosAccepted( false, $e->getMessage() );
 		}
@@ -103,6 +103,8 @@ class Proxy {
 				$result->getBody()->getContents() ?? $result->getReasonPhrase()
 			);
 		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
 			return new TosAccepted( false, $e->getMessage() );
 		}
 	}
