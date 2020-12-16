@@ -43,7 +43,7 @@ class Connection {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
-			$result = $client->get(
+			$result = $client->post(
 				$this->get_connection_url(),
 				[
 					'body' => json_encode( [ 'returnUrl' => $return_url ] ),
