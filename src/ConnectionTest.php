@@ -13,12 +13,15 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 
 /**
  * Main class for Connection Test.
  */
-class ConnectionTest {
+class ConnectionTest implements Service, Registerable {
 
 	/**
 	 * @var ContainerInterface
@@ -35,50 +38,67 @@ class ConnectionTest {
 	}
 
 	/**
+	 * Register a service.
+	 */
+	public function register(): void {
+		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
+			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'http://localhost:5000' );
+		}
+
+		add_action(
+			'admin_menu',
+			function() {
+				$this->register_admin_menu();
+			}
+		);
+
+		add_action(
+			'admin_init',
+			function() {
+				$this->handle_actions();
+			}
+		);
+	}
+
+	/**
 	 * Store response from an API request.
 	 *
 	 * @var string
 	 */
-	public static $response = '';
-
-	/**
-	 * Initialize class.
-	 */
-	public static function init() {
-		add_action( 'admin_menu', array( __CLASS__, 'admin_menu' ) );
-		add_action( 'admin_init', array( __CLASS__, 'do_actions' ) );
-	}
+	protected $response = '';
 
 	/**
 	 * Add menu entries
 	 */
-	public static function admin_menu() {
+	protected function register_admin_menu() {
 		add_menu_page(
 			'Connection Test',
 			'Connection Test',
 			'manage_options',
 			'connection-test-admin-page',
-			array( __CLASS__, 'admin_page' )
+			function() {
+				$this->render_admin_page();
+			}
 		);
 	}
 
 	/**
 	 * Render the admin page.
 	 */
-	public static function admin_page() {
+	protected function render_admin_page() {
 		/** @var Manager $manager */
-		$manager    = woogle_get_container()->get( Manager::class );
+		$manager    = $this->container->get( Manager::class );
 		$blog_token = $manager->get_access_token();
 		$user_token = $manager->get_access_token( get_current_user_id() );
 		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
 		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
 
 		if ( ! empty( $_GET['google-mc'] ) && 'connected' === $_GET['google-mc'] ) {
-			self::$response .= 'Google Merchant Center connected successfully.';
+			$this->response .= 'Google Merchant Center connected successfully.';
 		}
 
 		if ( ! empty( $_GET['google'] ) && 'failed' === $_GET['google'] ) {
-			self::$response .= 'Failed to connect to Google.';
+			$this->response .= 'Failed to connect to Google.';
 		}
 
 		?>
@@ -86,7 +106,7 @@ class ConnectionTest {
 			<h2>Connection Test</h2>
 
 			<?php if ( $blog_token ) { ?>
-				<p>Site is connected. ID: <?php echo \Jetpack_Options::get_option( 'id' ); ?></p>
+				<p>Site is connected. ID: <?php echo Jetpack_Options::get_option( 'id' ); ?></p>
 				<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
 			<?php } ?>
 
@@ -116,7 +136,7 @@ class ConnectionTest {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
 				</p>
 
-				<p>
+				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
 						<?php wp_nonce_field( 'wcs-google-mc-proxy' ); ?>
@@ -127,7 +147,7 @@ class ConnectionTest {
 						</label>
 						<button class="button">Send proxied request to Google Merchant Center</button>
 					</form>
-				</p>
+				</div>
 
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
@@ -135,8 +155,8 @@ class ConnectionTest {
 				</p>
 			<?php } ?>
 
-			<?php if ( ! empty( self::$response ) ) { ?>
-				<pre><?php echo wp_kses_post( self::$response ); ?></pre>
+			<?php if ( ! empty( $this->response ) ) { ?>
+				<pre><?php echo wp_kses_post( $this->response ); ?></pre>
 			<?php } ?>
 
 		</div>
@@ -146,13 +166,13 @@ class ConnectionTest {
 	/**
 	 * Handle actions.
 	 */
-	public static function do_actions() {
+	protected function handle_actions() {
 		if ( ! isset( $_GET['page'], $_GET['action'] ) || 'connection-test-admin-page' !== $_GET['page'] ) {
 			return;
 		}
 
 		/** @var Manager $manager */
-		$manager = woogle_get_container()->get( Manager::class );
+		$manager = $this->container->get( Manager::class );
 
 		if ( 'connect' === $_GET['action'] && check_admin_referer( 'connect' ) ) {
 			$manager->enable_plugin(); // Mark the plugin connection as enabled, in case it was disabled earlier.
@@ -162,7 +182,7 @@ class ConnectionTest {
 				$result = $manager->register();
 
 				if ( is_wp_error( $result ) ) {
-					self::$response .= $result->get_error_message();
+					$this->response .= $result->get_error_message();
 					return;
 				}
 			}
@@ -191,37 +211,37 @@ class ConnectionTest {
 
 		if ( 'wcs-test' === $_GET['action'] && check_admin_referer( 'wcs-test' ) ) {
 			$url            = WOOCOMMERCE_CONNECT_SERVER_URL;
-			self::$response = 'GET ' . $url . "\n";
+			$this->response = 'GET ' . $url . "\n";
 
 			$response = wp_remote_get( $url );
 			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
+				$this->response .= $response->get_error_message();
 				return;
 			}
 
-			self::$response .= wp_remote_retrieve_body( $response );
+			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'connection/test';
 			$args = [
-				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'headers' => [ 'Authorization' => $this->get_auth_header() ],
 			];
 
-			self::$response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
+			$this->response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
 
 			$response = wp_remote_get( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
+				$this->response .= $response->get_error_message();
 				return;
 			}
 
-			self::$response .= wp_remote_retrieve_body( $response );
+			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
 			/** @var Connection $connection */
-			$connection = woogle_get_container()->get( Connection::class );
+			$connection = $this->container->get( Connection::class );
 			$redirect_url = $connection->connect( admin_url( 'admin.php?page=connection-test-admin-page' ) );
 
 			if ( ! empty( $redirect_url ) ) {
@@ -232,44 +252,44 @@ class ConnectionTest {
 
 		if ( 'wcs-google-mc-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-disconnect' ) ) {
 			/** @var Connection $connection */
-			$connection = woogle_get_container()->get( Connection::class );
+			$connection = $this->container->get( Connection::class );
 			$response = $connection->disconnect();
-			self::$response .= $response;
+			$this->response .= $response;
 		}
 
 		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {
-			self::$response = 'Proxied request > get merchant ID' . "\n";
+			$this->response = 'Proxied request > get merchant ID' . "\n";
 
 			/** @var Proxy $proxy */
-			$proxy = woogle_get_container()->get( Proxy::class );
+			$proxy = $this->container->get( Proxy::class );
 			foreach ( $proxy->get_merchant_ids() as $id ) {
-				self::$response .= sprintf( "Merchant ID: %s\n", $id );
+				$this->response .= sprintf( "Merchant ID: %s\n", $id );
 				$_GET['merchant_id'] = $id;
 			}
 		}
 
 		if ( 'wcs-google-mc-proxy' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-proxy' ) ) {
 			/** @var Merchant $merchant */
-			$merchant = woogle_get_container()->get( Merchant::class );
+			$merchant = $this->container->get( Merchant::class );
 
-			self::$response = "Proxied request > get products for merchant {$merchant->get_id()}\n";
+			$this->response = "Proxied request > get products for merchant {$merchant->get_id()}\n";
 
 			$products = $merchant->get_products();
 			if ( empty( $products ) ){
-				self::$response .= 'No products found';
+				$this->response .= 'No products found';
 			}
 
 			foreach ( $products as $product ) {
-				self::$response .= "{$product->getId()} {$product->getTitle()}\n";
+				$this->response .= "{$product->getId()} {$product->getTitle()}\n";
 			}
 		}
 
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
 			/** @var Proxy $proxy */
-			$proxy    = woogle_get_container()->get( Proxy::class );
+			$proxy    = $this->container->get( Proxy::class );
 			$result = $proxy->mark_tos_accepted( 'john.doe@example.com' );
 
-			self::$response .= sprintf(
+			$this->response .= sprintf(
 				"Attempting to accept Tos. Successful? %s<br>Response body: %s",
 				$result->accepted() ? 'Yes' : 'No',
 				$result->message()
@@ -278,10 +298,10 @@ class ConnectionTest {
 
 		if ( 'wcs-check-tos' === $_GET['action'] && check_admin_referer( 'wcs-check-tos' ) ) {
 			/** @var Proxy $proxy */
-			$proxy    = woogle_get_container()->get( Proxy::class );
+			$proxy    = $this->container->get( Proxy::class );
 			$accepted = $proxy->check_tos_accepted();
 
-			self::$response .= sprintf(
+			$this->response .= sprintf(
 				"Tos Accepted? %s<br>Response body: %s",
 				$accepted->accepted() ? 'Yes' : 'No',
 				$accepted->message()
@@ -294,15 +314,15 @@ class ConnectionTest {
 	 *
 	 * @return string Authorization header.
 	 */
-	private static function get_auth_header() {
+	private function get_auth_header(): string {
 		/** @var Manager $manager */
-		$manager = woogle_get_container()->get( Manager::class );
+		$manager = $this->container->get( Manager::class );
 		$token   = $manager->get_access_token();
 
 		[ $token_key, $token_secret ] = explode( '.', $token->secret );
 
 		$token_key = sprintf( '%s:%d:%d', $token_key, defined( 'JETPACK__API_VERSION' ) ? JETPACK__API_VERSION : 1, $token->external_user_id );
-		$time_diff = (int) \Jetpack_Options::get_option( 'time_diff' );
+		$time_diff = (int) Jetpack_Options::get_option( 'time_diff' );
 		$timestamp = time() + $time_diff;
 		$nonce     = wp_generate_password( 10, false );
 

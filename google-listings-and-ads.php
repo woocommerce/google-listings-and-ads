@@ -121,17 +121,3 @@ add_action(
 	},
 	1
 );
-
-/**
- * Initialize plugin after WooCommerce has a chance to initialize its packages.
- */
-add_action(
-	'woocommerce_loaded',
-	function() {
-		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
-			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'http://localhost:5000' );
-		}
-
-		ConnectionTest::init();
-	}
-);
