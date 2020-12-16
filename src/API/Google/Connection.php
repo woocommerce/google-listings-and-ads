@@ -50,7 +50,7 @@ class Connection {
 				]
 			);
 
-			$body = json_decode( $result->getBody()->getContents() );
+			$body = json_decode( $result->getBody()->getContents(), true );
 			if ( ! isset( $body['oauthUrl'] ) ) {
 				throw new Exception( 'Did not receive oauthUrl value.' );
 			}
