@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\Jetpack\Config;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
@@ -25,6 +26,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
+		Config::class  => true,
 		Manager::class => true,
 	];
 
@@ -36,6 +38,18 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->share( Manager::class )->addArgument( "{$this->get_slug()}-connection" );
+		$jetpack_id = 'connection-test';
+		$this->share( Manager::class )->addArgument( $jetpack_id );
+
+		$this->share( Config::class )->addMethodCall(
+			'ensure',
+			[
+				'connection',
+				[
+					'slug' => $jetpack_id,
+					'name' => __( 'Connection Test', 'google-listings-and-ads' ),
+				],
+			]
+		);
 	}
 }

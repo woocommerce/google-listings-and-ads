@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\GoogleConnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\JetpackConnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
@@ -26,16 +27,6 @@ class RESTControllers implements Service, Registerable {
 	 * @var ContainerInterface
 	 */
 	protected $container;
-
-	/**
-	 * Array of controller classes to register.
-	 *
-	 * @var string[]
-	 */
-	protected $controllers = [
-		GoogleConnectController::class,
-		JetpackConnectController::class,
-	];
 
 	/**
 	 * RESTControllers constructor.
@@ -62,9 +53,9 @@ class RESTControllers implements Service, Registerable {
 	 * Register our individual rest controllers.
 	 */
 	protected function register_controllers(): void {
-		foreach ( $this->controllers as $controller ) {
-			/** @var BaseController $controller */
-			$controller = $this->container->get( $controller );
+		/** @var BaseController[] $controllers */
+		$controllers = $this->container->get( 'rest_controller' );
+		foreach ( $controllers as $controller ) {
 			$this->validate_instanceof( $controller, BaseController::class );
 			$controller->register();
 		}

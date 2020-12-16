@@ -21,12 +21,12 @@ class ProductFeed implements Service, Registerable {
 			'admin_menu',
 			function() {
 				wc_admin_register_page(
-					array(
+					[
 						'title'  => __( 'Product Feed', 'google-listings-and-ads' ),
 						'parent' => '',
 						'path'   => '/google/product-feed',
 						'id'     => 'google-product-feed',
-					)
+					]
 				);
 			}
 		);

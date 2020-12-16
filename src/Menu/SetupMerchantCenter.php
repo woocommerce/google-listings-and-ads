@@ -21,12 +21,12 @@ class SetupMerchantCenter implements Service, Registerable {
 			'admin_menu',
 			function() {
 				wc_admin_register_page(
-					array(
+					[
 						'title'  => __( 'MC Setup Wizard', 'google-listings-and-ads' ),
 						'parent' => '',
 						'path'   => '/google/setup-mc',
 						'id'     => 'google-setup-mc',
-					)
+					]
 				);
 			}
 		);

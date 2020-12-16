@@ -21,12 +21,12 @@ class Settings implements Service, Registerable {
 			'admin_menu',
 			function() {
 				wc_admin_register_page(
-					array(
+					[
 						'title'  => __( 'Settings', 'google-listings-and-ads' ),
 						'parent' => '',
 						'path'   => '/google/settings',
 						'id'     => 'google-settings',
-					)
+					]
 				);
 			}
 		);
