@@ -89,9 +89,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
 		};
 
-		$client_definition = new Definition( GuzzleClient::class, $callback );
-		$this->share_interface( GuzzleClient::class, $client_definition );
-		$this->share_interface( ClientInterface::class, $client_definition );
+		$this->share_interface( GuzzleClient::class, new Definition( GuzzleClient::class, $callback ) );
+		$this->share_interface( ClientInterface::class, new Definition( GuzzleClient::class, $callback ) );
 	}
 
 	/**
