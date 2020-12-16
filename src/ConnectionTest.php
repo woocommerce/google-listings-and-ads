@@ -10,11 +10,9 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
-use Google\Client;
-use Google_Service_ShoppingContent;
-use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -222,48 +220,21 @@ class ConnectionTest {
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
-			$args = [
-				'headers' => [ 'Authorization' => self::get_auth_header() ],
-				'body'    => [
-					'returnUrl' => admin_url( 'admin.php?page=connection-test-admin-page' ),
-				],
-			];
+			/** @var Connection $connection */
+			$connection = woogle_get_container()->get( Connection::class );
+			$redirect_url = $connection->connect( admin_url( 'admin.php?page=connection-test-admin-page' ) );
 
-			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
-				return;
-			}
-
-			self::$response .= wp_remote_retrieve_body( $response );
-
-			$json = json_decode( wp_remote_retrieve_body( $response ), true );
-
-			if ( $json && isset( $json['oauthUrl'] ) ) {
-				wp_redirect( $json['oauthUrl'] ); // phpcs:ignore WordPress.Security.SafeRedirect
+			if ( ! empty( $redirect_url ) ) {
+				wp_redirect( $redirect_url ); // phpcs:ignore WordPress.Security.SafeRedirect
 				exit;
 			}
 		}
 
 		if ( 'wcs-google-mc-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-disconnect' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
-			$args = [
-				'headers' => [ 'Authorization' => self::get_auth_header() ],
-				'method'  => 'DELETE',
-			];
-
-			self::$response = 'DELETE ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_get( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
-				return;
-			}
-
-			self::$response .= wp_remote_retrieve_body( $response );
+			/** @var Connection $connection */
+			$connection = woogle_get_container()->get( Connection::class );
+			$response = $connection->disconnect();
+			self::$response .= $response;
 		}
 
 		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {

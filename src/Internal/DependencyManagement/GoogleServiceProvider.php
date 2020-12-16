@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
@@ -45,6 +46,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Proxy::class                          => true,
 		Merchant::class                       => true,
 		'connect_server_root'                 => true,
+		Connection::class                     => true,
 	];
 
 	/**
@@ -58,6 +60,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_guzzle();
 		$this->register_google_classes();
 		$this->add( Proxy::class, $this->getLeagueContainer() );
+		$this->add( Connection::class, $this->getLeagueContainer() );
 
 		$this->add(
 			Merchant::class,
@@ -74,7 +77,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function register_guzzle() {
 		$callback = function() {
 			$handler_stack = HandlerStack::create();
-			$handler_stack->remove('http_errors');
+			$handler_stack->remove( 'http_errors' );
 
 			try {
 				$auth_header = $this->generate_guzzle_auth_header();
