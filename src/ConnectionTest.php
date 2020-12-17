@@ -137,7 +137,7 @@ class ConnectionTest implements Service, Registerable {
 			</p>
 
 			<?php if ( $blog_token && $user_token ) { ?>
-				<p>
+				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 						<?php wp_nonce_field( 'wcs-google-manager' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
@@ -147,9 +147,9 @@ class ConnectionTest implements Service, Registerable {
 						</label>
 						<button class="button">Connect Google Manager Account</button>
 					</form>
-				</p>
+				</div>
 
-				<p>
+				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-create' ), $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
 						<?php wp_nonce_field( 'wcs-google-ads-link' ); ?>
@@ -160,7 +160,7 @@ class ConnectionTest implements Service, Registerable {
 						</label>
 						<button class="button">Link Google Ads customer to a Merchant Account</button>
 					</form>
-				</p>
+				</div>
 
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
@@ -180,7 +180,7 @@ class ConnectionTest implements Service, Registerable {
 					</form>
 				</div>
 
-				<p>
+				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers' ), $url ), 'wcs-ads-customers' ) ); ?>">Get Customers from Google Ads</a>
 						<?php wp_nonce_field( 'wcs-ads-campaign' ); ?>
@@ -191,7 +191,7 @@ class ConnectionTest implements Service, Registerable {
 						</label>
 						<button class="button">Get Campaigns from Google Ads</button>
 					</form>
-				</p>
+				</div>
 
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
