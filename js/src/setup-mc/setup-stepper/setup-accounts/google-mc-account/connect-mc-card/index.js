@@ -20,7 +20,11 @@ const CreateMCCard = () => {
 		setValue( optionValue );
 	};
 
+	// TOOD: call API to connect existing merchant center.
 	const handleConnectClick = () => {};
+
+	// TOOD: call API to create new merchant center.
+	const handleCreateNewClick = () => {};
 
 	return (
 		<Section.Card>
@@ -41,6 +45,14 @@ const CreateMCCard = () => {
 					</Button>
 				</ContentButtonLayout>
 			</Section.Card.Body>
+			<Section.Card.Footer>
+				<Button isLink onClick={ handleCreateNewClick }>
+					{ __(
+						'Or, create a new Merchant Center account',
+						'google-listings-and-ads'
+					) }
+				</Button>
+			</Section.Card.Footer>
 		</Section.Card>
 	);
 };
