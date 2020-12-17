@@ -13,7 +13,7 @@ import ConnectMCCard from './connect-mc-card';
 import DisabledCard from './disabled-card';
 
 const GoogleMCAccount = ( props ) => {
-	const { disabled } = props;
+	const { disabled = false } = props;
 
 	// TODO: check whether user already has MC Account.
 	const hasMCAccount = true;
