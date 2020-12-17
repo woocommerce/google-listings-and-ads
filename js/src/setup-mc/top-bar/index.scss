@@ -1,7 +1,7 @@
 .gla-setup-mc-top-bar {
 	display: flex;
 	align-items: stretch;
-	height: 64px;
+	min-height: 64px;
 	background-color: #fff;
 	box-shadow: 0 -1px 0 0 #ccc inset;
 
@@ -14,13 +14,15 @@
 	.title {
 		align-self: center;
 		flex: 1;
-		font-size: 20px;
+		font-size: 16px;
 		font-weight: 400;
 		line-height: 28px;
 		letter-spacing: 0;
 	}
 
-	.help-button {
-		height: 100%;
+	.actions {
+		.components-button {
+			height: 100%;
+		}
 	}
 }

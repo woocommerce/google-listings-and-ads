@@ -29,11 +29,12 @@ const TopBar = () => {
 					'google-listings-and-ads'
 				) }
 			</span>
-			<AppIconButton
-				className="help-button"
-				icon={ <GridiconHelpOutline /> }
-				text={ __( 'Help', 'google-listings-and-ads' ) }
-			/>
+			<div className="actions">
+				<AppIconButton
+					icon={ <GridiconHelpOutline /> }
+					text={ __( 'Help', 'google-listings-and-ads' ) }
+				/>
+			</div>
 		</div>
 	);
 };
