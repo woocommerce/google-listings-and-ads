@@ -4,7 +4,7 @@
 import './index.scss';
 
 const DisabledDiv = ( props ) => {
-	const { disabled, children } = props;
+	const { disabled = true, children } = props;
 
 	return (
 		<div

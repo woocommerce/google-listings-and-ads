@@ -33,7 +33,7 @@ const TopBar = () => {
 				className="help-button"
 				icon={ <GridiconHelpOutline /> }
 				text={ __( 'Help', 'google-listings-and-ads' ) }
-			></AppIconButton>
+			/>
 		</div>
 	);
 };
