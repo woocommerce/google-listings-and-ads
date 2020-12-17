@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Google\Client;
 use Google_Service_ShoppingContent;
@@ -165,9 +166,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @param string $path (Optional) A path relative to the root to include.
 	 *
-	 * @return string
+	 * @return RawArgument
 	 */
-	protected function get_connect_server_url_root( string $path = '' ): string {
+	protected function get_connect_server_url_root( string $path = '' ): RawArgument {
 		$url = defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' )
 			? WOOCOMMERCE_CONNECT_SERVER_URL
 			: 'https://api.woocommerce.com/';
@@ -175,7 +176,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$path = '/' . trim( $path, '/' );
 
-		return "{$url}/google${path}";
+		return new RawArgument( "{$url}/google${path}" );
 	}
 
 	/**
