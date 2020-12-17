@@ -5,11 +5,15 @@
 		margin-top: -32px;
 	}
 
-	.woocommerce-layout__primary {
-		margin: 0;
+	.woocommerce-layout.woocommerce-layout__show-app-banner {
+		padding-top: 0;
 
-		.woocommerce-layout__main {
-			padding: 0;
+		.woocommerce-layout__primary {
+			margin: 0;
+
+			.woocommerce-layout__main {
+				padding: 0;
+			}
 		}
 	}
 }
