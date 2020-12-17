@@ -24,17 +24,19 @@ const WordPressDotComAccount = () => {
 			) }
 		>
 			<Section.Card>
-				<ContentButtonLayout>
-					<Subsection.Title>
-						{ __(
-							'Connect your WordPress.com account',
-							'google-listings-and-ads'
-						) }
-					</Subsection.Title>
-					<Button isSecondary onClick={ handleConnectClick }>
-						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</Button>
-				</ContentButtonLayout>
+				<Section.Card.Body>
+					<ContentButtonLayout>
+						<Subsection.Title>
+							{ __(
+								'Connect your WordPress.com account',
+								'google-listings-and-ads'
+							) }
+						</Subsection.Title>
+						<Button isSecondary onClick={ handleConnectClick }>
+							{ __( 'Connect', 'google-listings-and-ads' ) }
+						</Button>
+					</ContentButtonLayout>
+				</Section.Card.Body>
 			</Section.Card>
 		</Section>
 	);

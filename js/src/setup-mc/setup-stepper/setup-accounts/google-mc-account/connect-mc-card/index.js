@@ -24,21 +24,23 @@ const CreateMCCard = () => {
 
 	return (
 		<Section.Card>
-			<Subsection.Title>
-				{ __(
-					'Connect your Merchant Center',
-					'google-listings-and-ads'
-				) }
-			</Subsection.Title>
-			<ContentButtonLayout>
-				<MerchantCenterSelectControl
-					value={ value }
-					onChange={ handleSelectChange }
-				/>
-				<Button isSecondary onClick={ handleConnectClick }>
-					{ __( 'Connect', 'google-listings-and-ads' ) }
-				</Button>
-			</ContentButtonLayout>
+			<Section.Card.Body>
+				<Subsection.Title>
+					{ __(
+						'Connect your Merchant Center',
+						'google-listings-and-ads'
+					) }
+				</Subsection.Title>
+				<ContentButtonLayout>
+					<MerchantCenterSelectControl
+						value={ value }
+						onChange={ handleSelectChange }
+					/>
+					<Button isSecondary onClick={ handleConnectClick }>
+						{ __( 'Connect', 'google-listings-and-ads' ) }
+					</Button>
+				</ContentButtonLayout>
+			</Section.Card.Body>
 		</Section.Card>
 	);
 };

@@ -24,17 +24,19 @@ const GoogleAccount = () => {
 			) }
 		>
 			<Section.Card>
-				<ContentButtonLayout>
-					<Subsection.Title>
-						{ __(
-							'Connect your Google account',
-							'google-listings-and-ads'
-						) }
-					</Subsection.Title>
-					<Button isSecondary onClick={ handleConnectClick }>
-						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</Button>
-				</ContentButtonLayout>
+				<Section.Card.Body>
+					<ContentButtonLayout>
+						<Subsection.Title>
+							{ __(
+								'Connect your Google account',
+								'google-listings-and-ads'
+							) }
+						</Subsection.Title>
+						<Button isSecondary onClick={ handleConnectClick }>
+							{ __( 'Connect', 'google-listings-and-ads' ) }
+						</Button>
+					</ContentButtonLayout>
+				</Section.Card.Body>
 			</Section.Card>
 		</Section>
 	);
