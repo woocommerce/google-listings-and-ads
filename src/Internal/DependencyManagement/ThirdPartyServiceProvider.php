@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\Jetpack\Config;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -44,7 +45,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 		$this->share( Config::class )->addMethodCall(
 			'ensure',
 			[
-				'connection',
+				new RawArgument( 'connection' ),
 				[
 					'slug' => $jetpack_id,
 					'name' => __( 'Connection Test', 'google-listings-and-ads' ),
