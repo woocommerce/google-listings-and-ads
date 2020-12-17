@@ -14,17 +14,19 @@ import ContentButtonLayout from '../../content-button-layout';
 const DisabledCard = () => {
 	return (
 		<Section.Card>
-			<ContentButtonLayout>
-				<Subsection.Title>
-					{ __(
-						'Connect your Merchant Center',
-						'google-listings-and-ads'
-					) }
-				</Subsection.Title>
-				<Button isSecondary disabled>
-					{ __( 'Connect', 'google-listings-and-ads' ) }
-				</Button>
-			</ContentButtonLayout>
+			<Section.Card.Body>
+				<ContentButtonLayout>
+					<Subsection.Title>
+						{ __(
+							'Connect your Merchant Center',
+							'google-listings-and-ads'
+						) }
+					</Subsection.Title>
+					<Button isSecondary disabled>
+						{ __( 'Connect', 'google-listings-and-ads' ) }
+					</Button>
+				</ContentButtonLayout>
+			</Section.Card.Body>
 		</Section.Card>
 	);
 };

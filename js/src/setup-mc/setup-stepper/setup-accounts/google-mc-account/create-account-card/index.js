@@ -16,17 +16,19 @@ const CreateAccountCard = () => {
 
 	return (
 		<Section.Card>
-			<ContentButtonLayout>
-				<Subsection.Title>
-					{ __(
-						'Create your Google Merchant Center account',
-						'google-listings-and-ads'
-					) }
-				</Subsection.Title>
-				<Button isSecondary onClick={ handleCreateAccountClick }>
-					{ __( 'Create Account', 'google-listings-and-ads' ) }
-				</Button>
-			</ContentButtonLayout>
+			<Section.Card.Body>
+				<ContentButtonLayout>
+					<Subsection.Title>
+						{ __(
+							'Create your Google Merchant Center account',
+							'google-listings-and-ads'
+						) }
+					</Subsection.Title>
+					<Button isSecondary onClick={ handleCreateAccountClick }>
+						{ __( 'Create Account', 'google-listings-and-ads' ) }
+					</Button>
+				</ContentButtonLayout>
+			</Section.Card.Body>
 		</Section.Card>
 	);
 };
