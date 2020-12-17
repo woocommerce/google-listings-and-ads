@@ -98,7 +98,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( ! empty( $_GET['google-manager'] ) && 'connected' === $_GET['google-manager'] ) {
-			self::$response .= 'Successfully connected a Google Manager account.';
+			$this->response .= 'Successfully connected a Google Manager account.';
 		}
 
 		if ( ! empty( $_GET['google'] ) && 'failed' === $_GET['google'] ) {
@@ -287,7 +287,7 @@ class ConnectionTest implements Service, Registerable {
 			$id   = ! empty( $_GET['manager_id'] ) ? absint( $_GET['manager_id'] ) : 1;
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-manager';
 			$args = [
-				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'headers' => [ 'Authorization' => $this->get_auth_header() ],
 				'body'    => [
 					'returnUrl' => admin_url( 'admin.php?page=connection-test-admin-page' ),
 					'managerId' => $id,
@@ -295,15 +295,15 @@ class ConnectionTest implements Service, Registerable {
 				],
 			];
 
-			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
 
 			$response = wp_remote_post( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
+				$this->response .= $response->get_error_message();
 				return;
 			}
 
-			self::$response .= wp_remote_retrieve_body( $response );
+			$this->response .= wp_remote_retrieve_body( $response );
 
 			$json = json_decode( wp_remote_retrieve_body( $response ), true );
 
@@ -317,27 +317,27 @@ class ConnectionTest implements Service, Registerable {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/US/create-customer';
 			$args = [
 				'headers' => [
-					'Authorization' => self::get_auth_header(),
+					'Authorization' => $this->get_auth_header(),
 					'Content-Type'  => 'application/json',
 				],
 				'body'    => wp_json_encode(
 					[
 						'descriptive_name' => 'Connection test account at ' . date( 'Y-m-d h:i:s' ),
-			            'currency_code'    => 'USD',
-        	    		'time_zone'        => 'America/New_York',
+						'currency_code'    => 'USD',
+						'time_zone'        => 'America/New_York',
 					]
 				),
 			];
 
-			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
 
 			$response = wp_remote_post( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
+				$this->response .= $response->get_error_message();
 				return;
 			}
 
-			self::$response .= wp_remote_retrieve_body( $response );
+			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-ads-link' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-link' ) ) {
@@ -345,7 +345,7 @@ class ConnectionTest implements Service, Registerable {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/link-customer';
 			$args = [
 				'headers' => [
-					'Authorization' => self::get_auth_header(),
+					'Authorization' => $this->get_auth_header(),
 					'Content-Type'  => 'application/json',
 				],
 				'body'    => wp_json_encode(
@@ -355,15 +355,15 @@ class ConnectionTest implements Service, Registerable {
 				),
 			];
 
-			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
 
 			$response = wp_remote_post( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
+				$this->response .= $response->get_error_message();
 				return;
 			}
 
-			self::$response .= wp_remote_retrieve_body( $response );
+			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
@@ -414,14 +414,14 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-ads-customers' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers' ) ) {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads/v6/customers:listAccessibleCustomers';
 			$args = [
-				'headers' => [ 'Authorization' => self::get_auth_header() ],
+				'headers' => [ 'Authorization' => $this->get_auth_header() ],
 			];
 
-			self::$response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
+			$this->response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
 
 			$response = wp_remote_get( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
+				$this->response .= $response->get_error_message();
 				return;
 			}
 
@@ -432,7 +432,7 @@ class ConnectionTest implements Service, Registerable {
 				}
 			}
 
-			self::$response .= wp_remote_retrieve_body( $response );
+			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-ads-campaign' === $_GET['action'] && check_admin_referer( 'wcs-ads-campaign' ) ) {
@@ -440,7 +440,7 @@ class ConnectionTest implements Service, Registerable {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads/v6/customers/' . $id . '/googleAds:search';
 			$args = [
 				'headers' => [
-					'Authorization' => self::get_auth_header(),
+					'Authorization' => $this->get_auth_header(),
 					'Content-Type'  => 'application/json',
 				],
 				'body'    => wp_json_encode(
@@ -451,15 +451,15 @@ class ConnectionTest implements Service, Registerable {
 				),
 			];
 
-			self::$response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
+			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
 
 			$response = wp_remote_post( $url, $args );
 			if ( is_wp_error( $response ) ) {
-				self::$response .= $response->get_error_message();
+				$this->response .= $response->get_error_message();
 				return;
 			}
 
-			self::$response .= wp_remote_retrieve_body( $response );
+			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
