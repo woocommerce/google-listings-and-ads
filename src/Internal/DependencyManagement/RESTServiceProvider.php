@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\GoogleConnectController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\JetpackConnectController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 
@@ -17,16 +19,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 class RESTServiceProvider extends AbstractServiceProvider {
 
 	/**
-	 * Array of classes provided by this container.
+	 * Returns a boolean if checking whether this provider provides a specific
+	 * service or returns an array of provided services if no argument passed.
 	 *
-	 * Keys should be the class name, and the value can be anything (like `true`).
+	 * @param string $service
 	 *
-	 * @var array
+	 * @return boolean
 	 */
-	protected $provides = [
-		GoogleConnectController::class  => true,
-		JetpackConnectController::class => true,
-	];
+	public function provides( string $service ): bool {
+		return 'rest_controller' === $service;
+	}
 
 	/**
 	 * Use the register method to register items with the container via the
@@ -36,8 +38,9 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->share( GoogleConnectController::class );
 		$this->share( JetpackConnectController::class, Manager::class );
+		$this->share_with_options( SettingsController::class );
+		$this->share( ConnectionController::class );
 	}
 
 	/**
@@ -51,6 +54,18 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 * @return DefinitionInterface
 	 */
 	protected function share( string $class, ...$arguments ): DefinitionInterface {
-		return parent::share( $class, RESTServer::class, ...$arguments );
+		return parent::share( $class, RESTServer::class, ...$arguments )->addTag( 'rest_controller' );
+	}
+
+	/**
+	 * Share a class with the OptionsInterface object provided.
+	 *
+	 * @param string $class        The class name to add.
+	 * @param mixed  ...$arguments Constructor arguments for the class.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function share_with_options( string $class, ...$arguments ): DefinitionInterface {
+		return $this->share( $class, OptionsInterface::class, ...$arguments );
 	}
 }

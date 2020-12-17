@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\PermissionsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -49,9 +48,7 @@ class JetpackConnectController extends BaseController {
 					'callback'            => function() {
 						return [ 'active' => $this->is_jetpack_connected() ];
 					},
-					'permission_callback' => function() {
-						return $this->can_manage();
-					},
+					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
 		);

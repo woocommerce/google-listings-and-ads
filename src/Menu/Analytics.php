@@ -21,12 +21,12 @@ class Analytics implements Service, Registerable {
 			'admin_menu',
 			function() {
 				wc_admin_register_page(
-					array(
+					[
 						'title'  => __( 'Analytics', 'google-listings-and-ads' ),
 						'parent' => 'woocommerce-marketing',
 						'path'   => '/google/analytics',
 						'id'     => 'google-analytics',
-					)
+					]
 				);
 			}
 		);

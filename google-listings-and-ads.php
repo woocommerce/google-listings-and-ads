@@ -22,7 +22,6 @@ use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
-use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -38,7 +37,8 @@ add_action(
 	'woocommerce_loaded',
 	function () {
 		PluginFactory::instance()->register();
-	}
+	},
+	1
 );
 
 /**
@@ -46,7 +46,7 @@ add_action(
  *
  * @return ContainerInterface
  */
-function woogle_get_container() : ContainerInterface {
+function woogle_get_container(): ContainerInterface {
 	static $container = null;
 	if ( null === $container ) {
 		$container = new Container();
@@ -116,35 +116,7 @@ add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );
 add_action(
 	'plugins_loaded',
 	function() {
-		if ( ! class_exists( Config::class ) ) {
-			return;
-		}
-
-		$jetpack_config = new Config();
-		$jetpack_config->ensure(
-			'connection',
-			array(
-				'slug' => 'connection-test',
-				'name' => __( 'Connection Test', 'google-listings-and-ads' ),
-			)
-		);
+		woogle_get_container()->get( Config::class );
 	},
 	1
-);
-
-/**
- * Initialize plugin after WooCommerce has a chance to initialize its packages.
- */
-add_action(
-	'plugins_loaded',
-	function() {
-		if ( class_exists( WooCommerce::class ) ) {
-
-			if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
-				define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'http://localhost:5000' );
-			}
-
-			ConnectionTest::init();
-		}
-	}
 );

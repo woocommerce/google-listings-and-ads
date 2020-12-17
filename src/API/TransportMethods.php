@@ -15,33 +15,33 @@ interface TransportMethods {
 	 *
 	 * @var string
 	 */
-	const READABLE = 'GET';
+	public const READABLE = 'GET';
 
 	/**
 	 * Alias for POST transport method.
 	 *
 	 * @var string
 	 */
-	const CREATABLE = 'POST';
+	public const CREATABLE = 'POST';
 
 	/**
 	 * Alias for POST, PUT, PATCH transport methods together.
 	 *
 	 * @var string
 	 */
-	const EDITABLE = 'POST, PUT, PATCH';
+	public const EDITABLE = 'POST, PUT, PATCH';
 
 	/**
 	 * Alias for DELETE transport method.
 	 *
 	 * @var string
 	 */
-	const DELETABLE = 'DELETE';
+	public const DELETABLE = 'DELETE';
 
 	/**
 	 * Alias for GET, POST, PUT, PATCH & DELETE transport methods together.
 	 *
 	 * @var string
 	 */
-	const ALLMETHODS = 'GET, POST, PUT, PATCH, DELETE';
+	public const ALLMETHODS = 'GET, POST, PUT, PATCH, DELETE';
 }

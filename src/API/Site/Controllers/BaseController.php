@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\PermissionsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -14,7 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
  */
 abstract class BaseController implements Registerable {
 
-	use PluginHelper;
+	use PluginHelper, PermissionsTrait;
 
 	/**
 	 * @var RESTServer
@@ -54,6 +55,17 @@ abstract class BaseController implements Registerable {
 	 */
 	protected function get_namespace(): string {
 		return "wc/{$this->get_slug()}";
+	}
+
+	/**
+	 * Get the callback to determine the route's permissions.
+	 *
+	 * @return callable
+	 */
+	protected function get_permission_callback(): callable {
+		return function() {
+			return $this->can_manage();
+		};
 	}
 
 	/**

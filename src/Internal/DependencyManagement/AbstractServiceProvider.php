@@ -94,12 +94,14 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	/**
 	 * Add a class.
 	 *
-	 * @param string $class    The class name to add.
-	 * @param mixed  $concrete (Optional) A concrete instance of the class.
+	 * Classes will return a new instance of the class when the class is requested from the container.
+	 *
+	 * @param string $class        The class name to add.
+	 * @param mixed  ...$arguments Constructor arguments for the class.
 	 *
 	 * @return DefinitionInterface
 	 */
-	protected function add( string $class, $concrete = null ): DefinitionInterface {
-		return $this->getLeagueContainer()->add( $class, $concrete );
+	protected function add( string $class, ...$arguments ): DefinitionInterface {
+		return $this->getLeagueContainer()->add( $class )->addArguments( $arguments );
 	}
 }
