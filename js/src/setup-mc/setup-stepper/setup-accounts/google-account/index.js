@@ -3,13 +3,13 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import DisabledDiv from '../../../../components/disabled-div';
 
 /**
  * Internal dependencies
  */
 import Section from '../../../../wcdl/section';
 import Subsection from '../../../../wcdl/subsection';
+import DisabledDiv from '../../../../components/disabled-div';
 import ContentButtonLayout from '../content-button-layout';
 
 const GoogleAccount = ( props ) => {
@@ -36,7 +36,11 @@ const GoogleAccount = ( props ) => {
 									'google-listings-and-ads'
 								) }
 							</Subsection.Title>
-							<Button isSecondary onClick={ handleConnectClick }>
+							<Button
+								isSecondary
+								disabled={ disabled }
+								onClick={ handleConnectClick }
+							>
 								{ __( 'Connect', 'google-listings-and-ads' ) }
 							</Button>
 						</ContentButtonLayout>
