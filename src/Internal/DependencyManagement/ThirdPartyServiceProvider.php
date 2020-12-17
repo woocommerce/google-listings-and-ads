@@ -39,7 +39,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$jetpack_id = 'connection-test';
+		$jetpack_id = new RawArgument( 'connection-test' );
 		$this->share( Manager::class )->addArgument( $jetpack_id );
 
 		$this->share( Config::class )->addMethodCall(
@@ -47,7 +47,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 			[
 				new RawArgument( 'connection' ),
 				[
-					'slug' => $jetpack_id,
+					'slug' => $jetpack_id->getValue(),
 					'name' => __( 'Connection Test', 'google-listings-and-ads' ),
 				],
 			]
