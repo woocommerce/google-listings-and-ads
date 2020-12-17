@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Button, SelectControl } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -10,19 +10,11 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '../../../../../wcdl/section';
 import Subsection from '../../../../../wcdl/subsection';
+import MerchantCenterSelectControl from '../../../../../components/merchant-center-select-control';
 import ContentButtonLayout from '../../content-button-layout';
 
 const CreateMCCard = () => {
 	const [ value, setValue ] = useState();
-
-	// TODO: list of merchant center accounts that can be connected.
-	// This should come from backend API.
-	const options = [
-		{
-			value: 123,
-			label: 'Test MC account',
-		},
-	];
 
 	const handleSelectChange = ( optionValue ) => {
 		setValue( optionValue );
@@ -39,9 +31,8 @@ const CreateMCCard = () => {
 				) }
 			</Subsection.Title>
 			<ContentButtonLayout>
-				<SelectControl
+				<MerchantCenterSelectControl
 					value={ value }
-					options={ options }
 					onChange={ handleSelectChange }
 				/>
 				<Button isSecondary onClick={ handleConnectClick }>
