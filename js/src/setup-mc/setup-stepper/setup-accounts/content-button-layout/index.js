@@ -4,9 +4,14 @@
 import './index.scss';
 
 const ContentButtonLayout = ( props ) => {
-	const { children } = props;
+	const { className, ...rest } = props;
 
-	return <div className="gla-content-button-layout">{ children }</div>;
+	return (
+		<div
+			className={ `gla-content-button-layout ${ className }` }
+			{ ...rest }
+		/>
+	);
 };
 
 export default ContentButtonLayout;

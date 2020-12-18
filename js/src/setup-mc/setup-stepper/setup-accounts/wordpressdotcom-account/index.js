@@ -8,8 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '../../../../wcdl/section';
-import Subsection from '../../../../wcdl/subsection';
-import ContentButtonLayout from '../content-button-layout';
+import TitleButtonLayout from '../title-button-layout';
 
 const WordPressDotComAccount = () => {
 	// TODO: call backend API upon clicking Connect button.
@@ -25,17 +24,17 @@ const WordPressDotComAccount = () => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<ContentButtonLayout>
-						<Subsection.Title>
-							{ __(
-								'Connect your WordPress.com account',
-								'google-listings-and-ads'
-							) }
-						</Subsection.Title>
-						<Button isSecondary onClick={ handleConnectClick }>
-							{ __( 'Connect', 'google-listings-and-ads' ) }
-						</Button>
-					</ContentButtonLayout>
+					<TitleButtonLayout
+						title={ __(
+							'Connect your WordPress.com account',
+							'google-listings-and-ads'
+						) }
+						button={
+							<Button isSecondary onClick={ handleConnectClick }>
+								{ __( 'Connect', 'google-listings-and-ads' ) }
+							</Button>
+						}
+					/>
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>

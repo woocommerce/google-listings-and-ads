@@ -4,9 +4,11 @@
 import './index.scss';
 
 const Title = ( props ) => {
-	const { children } = props;
+	const { className, ...rest } = props;
 
-	return <div className="wcdl-subsection-title">{ children }</div>;
+	return (
+		<div className={ `wcdl-subsection-title ${ className }` } { ...rest } />
+	);
 };
 
 export default Title;

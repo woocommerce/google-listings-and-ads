@@ -8,26 +8,32 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '../../../../../wcdl/section';
-import Subsection from '../../../../../wcdl/subsection';
-import ContentButtonLayout from '../../content-button-layout';
+import TitleButtonLayout from '../../title-button-layout';
 
 const CreateAccountCard = () => {
+	// TODO: call API to create account.
 	const handleCreateAccountClick = () => {};
 
 	return (
 		<Section.Card>
 			<Section.Card.Body>
-				<ContentButtonLayout>
-					<Subsection.Title>
-						{ __(
-							'Create your Google Merchant Center account',
-							'google-listings-and-ads'
-						) }
-					</Subsection.Title>
-					<Button isSecondary onClick={ handleCreateAccountClick }>
-						{ __( 'Create Account', 'google-listings-and-ads' ) }
-					</Button>
-				</ContentButtonLayout>
+				<TitleButtonLayout
+					title={ __(
+						'Create your Google Merchant Center account',
+						'google-listings-and-ads'
+					) }
+					button={
+						<Button
+							isSecondary
+							onClick={ handleCreateAccountClick }
+						>
+							{ __(
+								'Create Account',
+								'google-listings-and-ads'
+							) }
+						</Button>
+					}
+				></TitleButtonLayout>
 			</Section.Card.Body>
 		</Section.Card>
 	);

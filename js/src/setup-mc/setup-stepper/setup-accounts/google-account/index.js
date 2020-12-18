@@ -8,9 +8,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '../../../../wcdl/section';
-import Subsection from '../../../../wcdl/subsection';
 import DisabledDiv from '../../../../components/disabled-div';
-import ContentButtonLayout from '../content-button-layout';
+import TitleButtonLayout from '../title-button-layout';
 
 const GoogleAccount = ( props ) => {
 	const { disabled = false } = props;
@@ -29,21 +28,24 @@ const GoogleAccount = ( props ) => {
 			>
 				<Section.Card>
 					<Section.Card.Body>
-						<ContentButtonLayout>
-							<Subsection.Title>
-								{ __(
-									'Connect your Google account',
-									'google-listings-and-ads'
-								) }
-							</Subsection.Title>
-							<Button
-								isSecondary
-								disabled={ disabled }
-								onClick={ handleConnectClick }
-							>
-								{ __( 'Connect', 'google-listings-and-ads' ) }
-							</Button>
-						</ContentButtonLayout>
+						<TitleButtonLayout
+							title={ __(
+								'Connect your Google account',
+								'google-listings-and-ads'
+							) }
+							button={
+								<Button
+									isSecondary
+									disabled={ disabled }
+									onClick={ handleConnectClick }
+								>
+									{ __(
+										'Connect',
+										'google-listings-and-ads'
+									) }
+								</Button>
+							}
+						/>
 					</Section.Card.Body>
 				</Section.Card>
 			</Section>
