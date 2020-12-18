@@ -9,10 +9,10 @@ import { Button } from '@wordpress/components';
 import './index.scss';
 
 const AppIconButton = ( props ) => {
-	const { icon, text, className = '' } = props;
+	const { icon, text, className = '', ...rest } = props;
 
 	return (
-		<Button className={ `app-icon-button ${ className }` }>
+		<Button className={ `app-icon-button ${ className }` } { ...rest }>
 			<div>{ icon }</div>
 			{ text }
 		</Button>
