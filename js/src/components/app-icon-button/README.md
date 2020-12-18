@@ -1,6 +1,6 @@
 # AppIconButton
 
-Make an Icon Button with icon on top and text at the bottom.
+Make an Icon Button with icon on top and text at the bottom. This is essentially a wrapper around the `@wordpress/components` [Button](https://github.com/WordPress/gutenberg/tree/master/packages/components/src/button) component.
 
 ## Usage
 
@@ -12,6 +12,8 @@ Make an Icon Button with icon on top and text at the bottom.
 ```
 
 ## API
+
+Same as [Button](https://github.com/WordPress/gutenberg/tree/master/packages/components/src/button) API, with the following special props.
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
