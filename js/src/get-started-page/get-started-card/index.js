@@ -11,6 +11,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -44,7 +45,7 @@ const GetStartedCard = () => {
 							'is-primary'
 						) }
 						onClick={ handleClick }
-						href="admin.php?page=wc-admin&path=/google/setup-mc"
+						href={ getNewPath( {}, '/google/setup-mc' ) }
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
 					</Link>
