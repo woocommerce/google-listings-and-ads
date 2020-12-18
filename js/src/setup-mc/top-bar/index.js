@@ -18,7 +18,7 @@ const TopBar = () => {
 		<div className="gla-setup-mc-top-bar">
 			<Link
 				className="back-button"
-				href={ getNewPath( {}, '/google/dashboard' ) }
+				href={ getNewPath( {}, '/google/start' ) }
 				type="wc-admin"
 			>
 				<GridiconChevronLeft />
@@ -30,6 +30,7 @@ const TopBar = () => {
 				) }
 			</span>
 			<div className="actions">
+				{ /* TODO: click and navigate to where? */ }
 				<AppIconButton
 					icon={ <GridiconHelpOutline /> }
 					text={ __( 'Help', 'google-listings-and-ads' ) }
