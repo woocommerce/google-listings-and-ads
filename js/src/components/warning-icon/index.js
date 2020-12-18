@@ -9,7 +9,7 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
 import './index.scss';
 
 const WarningIcon = () => {
-	return <GridiconNoticeOutline className="gla-warning-icon" size={ 18 } />;
+	return <GridiconNoticeOutline className="app-warning-icon" size={ 18 } />;
 };
 
 export default WarningIcon;

@@ -21,7 +21,7 @@ const AppTableCard = ( props ) => {
 	};
 
 	return (
-		<div className="gla-app-table-card">
+		<div className="app-table-card">
 			<TableCard onColumnsChange={ handleColumnsChange } { ...rest } />
 		</div>
 	);

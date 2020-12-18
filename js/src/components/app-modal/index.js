@@ -12,10 +12,10 @@ const AppModal = ( props ) => {
 	const { buttons = [], className, children, ...rest } = props;
 
 	return (
-		<Modal className={ `gla-app-modal ${ className }` } { ...rest }>
+		<Modal className={ `app-modal ${ className }` } { ...rest }>
 			{ children }
 			{ buttons.length >= 1 && (
-				<div className="gla-app-modal__footer">{ buttons }</div>
+				<div className="app-modal__footer">{ buttons }</div>
 			) }
 		</Modal>
 	);
