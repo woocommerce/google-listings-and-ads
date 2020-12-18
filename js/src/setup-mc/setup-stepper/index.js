@@ -8,6 +8,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { recordSetupMCEvent } from '../../utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import './index.scss';
@@ -17,6 +18,7 @@ const SetupStepper = () => {
 	const [ step, setStep ] = useState( 'first' );
 
 	const handleSetupAccountsContinue = () => {
+		recordSetupMCEvent( 'step1_continue' );
 		setStep( 'second' );
 	};
 

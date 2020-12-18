@@ -15,8 +15,9 @@ import './index.scss';
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 
-	// TODO: set Continue button disabled to false when all three accounts are connected,
-	// which we can only know by calling backend API.
+	// TODO: call backend API to check and set the following to true/false.
+	const isGoogleAccountDisabled = true;
+	const isGoogleMCAccountDisabled = true;
 	const isContinueButtonDisabled = true;
 
 	return (
@@ -36,8 +37,8 @@ const SetupAccounts = ( props ) => {
 				</p>
 			</header>
 			<WordPressDotComAccount />
-			<GoogleAccount />
-			<GoogleMCAccount />
+			<GoogleAccount disabled={ isGoogleAccountDisabled } />
+			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
 			<div className="actions">
 				<Button
 					isPrimary
