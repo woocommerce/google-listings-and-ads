@@ -8,16 +8,11 @@ import { Card as WPCard } from '@wordpress/components';
  */
 import Body from './body';
 import Footer from './footer';
-import './index.scss';
 
 const Card = ( props ) => {
 	const { children } = props;
 
-	return (
-		<WPCard className="wcdl-section-card" size="none">
-			{ children }
-		</WPCard>
-	);
+	return <WPCard size="none">{ children }</WPCard>;
 };
 
 Card.Body = Body;
