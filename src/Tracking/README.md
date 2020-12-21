@@ -37,6 +37,10 @@ All event names are prefixed by `wcadmin_woogle_`.
 * `gla_tooltip_viewed` - Viewing tooltip
   * `id`: (tooltip identifier)
 
+* `gla_setup_mc` - Setup Merchant Center
+  * `target`: button ID
+  * `trigger`: action (e.g. `click`)
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.

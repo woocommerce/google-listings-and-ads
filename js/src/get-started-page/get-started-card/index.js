@@ -11,16 +11,19 @@ import {
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { recordSetupMCEvent } from '../../utils/recordEvent';
 import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import './index.scss';
 
 const GetStartedCard = () => {
-	// TODO: add event handler for clicking Get started button.
-	const handleClick = () => {};
+	const handleClick = () => {
+		recordSetupMCEvent( 'get_started' );
+	};
 
 	return (
 		<Card className="woocommerce-marketing-google-get-started-card">
@@ -43,8 +46,8 @@ const GetStartedCard = () => {
 							'components-button',
 							'is-primary'
 						) }
+						href={ getNewPath( {}, '/google/setup-mc' ) }
 						onClick={ handleClick }
-						href="admin.php?page=wc-admin&path=/google/setup-mc"
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
 					</Link>

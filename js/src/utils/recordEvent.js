@@ -10,3 +10,10 @@ export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 		status,
 	} );
 };
+
+export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
+	recordEvent( 'gla_setup_mc', {
+		target,
+		trigger,
+	} );
+};
