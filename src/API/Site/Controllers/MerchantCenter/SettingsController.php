@@ -85,25 +85,7 @@ class SettingsController extends BaseOptionsController {
 	 * @return array
 	 */
 	public function get_item_schema(): array {
-		$properties = $this->get_settings_schema();
-		array_walk(
-			$properties,
-			function( &$value ) {
-				unset(
-					$value['default'],
-					$value['items'],
-					$value['validate_callback'],
-					$value['sanitize_callback']
-				);
-			}
-		);
-
-		return [
-			'$schema'    => 'http://json-schema.org/draft-04/schema#',
-			'title'      => 'merchant_center_settings',
-			'type'       => 'object',
-			'properties' => $properties,
-		];
+		return $this->prepare_item_schema( $this->get_settings_schema(), 'merchant_center_settings' );
 	}
 
 	/**
