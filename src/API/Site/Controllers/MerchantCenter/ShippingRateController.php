@@ -6,6 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
+use Exception;
+use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -17,6 +22,23 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class ShippingRateController extends BaseOptionsController {
+
+	/**
+	 * @var ISO3166DataProvider
+	 */
+	protected $iso;
+
+	/**
+	 * BaseController constructor.
+	 *
+	 * @param RESTServer          $server
+	 * @param OptionsInterface    $options
+	 * @param ISO3166DataProvider $iso
+	 */
+	public function __construct( RESTServer $server, OptionsInterface $options, ISO3166DataProvider $iso ) {
+		parent::__construct( $server, $options );
+		$this->iso = $iso;
+	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -34,13 +56,14 @@ class ShippingRateController extends BaseOptionsController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_create_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_rate_schema(),
 				],
 				'schema' => $this->get_item_schema(),
 			]
 		);
 
 		$this->register_route(
-			'mc/settings/shipping/(?P<country>[\w-]+)',
+			'mc/settings/shipping/(?P<iso_code>\w+)',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
@@ -60,8 +83,8 @@ class ShippingRateController extends BaseOptionsController {
 		return function() {
 			$rates = $this->get_shipping_rates_option();
 			$items = [];
-			foreach ( $rates as $country => $details ) {
-				$items[ $country ] = $this->prepare_item_for_response( $details );
+			foreach ( $rates as $iso => $details ) {
+				$items[ $iso ] = $this->prepare_item_for_response( $details );
 			}
 
 			return $items;
@@ -73,7 +96,7 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function get_read_rate_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			$country = $request->get_param( 'country' );
+			$country = $request->get_param( 'iso_code' );
 			$rates   = $this->get_shipping_rates_option();
 			if ( ! array_key_exists( $country, $rates ) ) {
 				return new WP_REST_Response(
@@ -96,21 +119,34 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function get_create_rate_callback(): callable {
 		return function( WP_REST_Request $request ) {
+			$country = $request->get_param( 'country' );
 			$schema  = $this->get_rate_schema();
 			$rates   = $this->get_shipping_rates_option();
-			$country = $this->slugify_country( $request->get_param( 'country' ) );
-			$rate    = $rates[ $country ] ?? [];
-			foreach ( $schema as $key => $property ) {
-				$rate[ $key ] = $request->get_param( $key ) ?? $rate[ $key ] ?? $property['default'] ?? null;
+
+			try {
+				$iso  = $this->get_country_iso_code( $country );
+				$rate = $rates[ $iso ] ?? [];
+				foreach ( $schema as $key => $property ) {
+					$rate[ $key ] = $request->get_param( $key ) ?? $rate[ $key ] ?? $property['default'] ?? null;
+				}
+
+				$rates[ $iso ] = $rate;
+				$this->options->update( OptionsInterface::SHIPPING_RATES, $rates );
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully added rate for country.', 'google-listings-and-ads' ),
+				];
+			} catch ( OutOfBoundsException $e ) {
+				return $this->error_from_exception(
+					$e,
+					'gla_invalid_country',
+					[
+						'status'  => 400,
+						'country' => $country,
+					]
+				);
 			}
-
-			$rates[ $country ] = $rate;
-			$this->options->update( OptionsInterface::SHIPPING_RATES, $rates );
-
-			return [
-				'status'  => 'success',
-				'message' => __( 'Successfully added rate for country.', 'google-listings-and-ads' ),
-			];
 		};
 	}
 
@@ -145,12 +181,12 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function get_rate_schema(): array {
 		return [
-			// todo: consider including an enum of valid countries.
 			'country'  => [
 				'type'              => 'string',
 				'description'       => __( 'Country in which the shipping rate applies.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
+				'validate_callback' => $this->get_country_validate_callback(),
+				'required'          => true,
 			],
 			'currency' => [
 				'type'              => 'string',
@@ -164,6 +200,7 @@ class ShippingRateController extends BaseOptionsController {
 				'description'       => __( 'The shipping rate.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
 			],
 		];
 	}
@@ -182,7 +219,67 @@ class ShippingRateController extends BaseOptionsController {
 	 *
 	 * @return string
 	 */
-	protected function slugify_country( string $country ): string {
-		return strtolower( str_replace( [ '_', ' ' ], '-', $country ) );
+	protected function get_country_iso_code( string $country ): string {
+		$data = $this->get_country_data( $country );
+
+		return $data['alpha2'];
+	}
+
+	/**
+	 * @param string $country_name
+	 *
+	 * @return array
+	 * @throws OutOfBoundsException When the country name cannot be found.
+	 */
+	protected function get_country_data( string $country_name ): array {
+		return $this->iso->name( $country_name );
+	}
+
+	/**
+	 * Validate that a country is valid.
+	 *
+	 * @param string $country The country name.
+	 *
+	 * @throws OutOfBoundsException When the country name cannot be found.
+	 */
+	protected function validate_country( string $country ): void {
+		$this->iso->name( $country );
+	}
+
+	/**
+	 * Get a callable function for validating that a provided country is recognized.
+	 *
+	 * @return callable
+	 */
+	protected function get_country_validate_callback(): callable {
+		return function( $value ) {
+			try {
+				$this->validate_country( $value );
+
+				return true;
+			} catch ( Exception $e ) {
+				return $this->error_from_exception(
+					$e,
+					'gla_invalid_country',
+					[
+						'status'  => 400,
+						'country' => $value,
+					]
+				);
+			}
+		};
+	}
+
+	/**
+	 * Create a WP_Error from an exception.
+	 *
+	 * @param Exception $e
+	 * @param string    $code
+	 * @param array     $data
+	 *
+	 * @return WP_Error
+	 */
+	protected function error_from_exception( Exception $e, string $code, array $data = [] ): WP_Error {
+		return new WP_Error( $code, $e->getMessage(), $data );
 	}
 }

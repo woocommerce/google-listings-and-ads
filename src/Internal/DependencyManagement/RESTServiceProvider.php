@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 
 /**
  * Class RESTServiceProvider
@@ -42,7 +43,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( JetpackConnectController::class, Manager::class );
 		$this->share_with_options( SettingsController::class );
 		$this->share( ConnectionController::class );
-		$this->share_with_options( ShippingRateController::class );
+		$this->share_with_options( ShippingRateController::class, ISO3166DataProvider::class );
 	}
 
 	/**
