@@ -38,11 +38,11 @@
   "scripts": {
     "post-install-cmd": [
       "Google\\Task\\Composer::cleanup",
-      "sh ./bin/prefix-vendor-namespaces.sh"
+      "php ./bin/prefix-vendor-namespace.php"
     ],
     "post-update-cmd": [
       "Google\\Task\\Composer::cleanup",
-      "sh ./bin/prefix-vendor-namespaces.sh"
+      "php ./bin/prefix-vendor-namespace.php"
     ]
   },
   "extra": {
