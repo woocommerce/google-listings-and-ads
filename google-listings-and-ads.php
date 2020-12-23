@@ -42,7 +42,7 @@ add_action(
 );
 
 /**
- * Get out main container object.
+ * Get our main container object.
  *
  * @return ContainerInterface
  */
