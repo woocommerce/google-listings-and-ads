@@ -20,7 +20,12 @@ const SetupStepper = () => {
 
 	const handleSetupAccountsContinue = () => {
 		recordSetupMCEvent( 'step1_continue' );
-		setStep( 'second' );
+		setStep( 2 );
+	};
+
+	const handleChooseAudienceContinue = () => {
+		recordSetupMCEvent( 'step2_continue' );
+		setStep( 3 );
 	};
 
 	return (
@@ -46,7 +51,11 @@ const SetupStepper = () => {
 						'Choose your audience',
 						'google-listings-and-ads'
 					),
-					content: <ChooseAudience />,
+					content: (
+						<ChooseAudience
+							onContinue={ handleChooseAudienceContinue }
+						/>
+					),
 				},
 				{
 					key: 3,
