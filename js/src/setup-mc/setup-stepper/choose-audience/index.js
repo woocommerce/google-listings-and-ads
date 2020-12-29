@@ -1,17 +1,39 @@
 /**
  * External dependencies
  */
-import { Link } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
+import { useState } from '@wordpress/element';
+import { Link, SearchListControl } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import Section from '../../../wcdl/section';
+import Subsection from '../../../wcdl/subsection';
 import StepContentHeader from '../components/step-content-header';
 import './index.scss';
 
-const ChooseAudience = () => {
+const ChooseAudience = ( props ) => {
+	const { onContinue } = props;
+	const [ selected, setSelected ] = useState( [] );
+
+	// TODO: list of countries, from backend API.
+	const list = [
+		{
+			id: 1,
+			name: 'Australia',
+		},
+		{
+			id: 2,
+			name: 'United States of America',
+		},
+	];
+
+	const handleListControlChange = ( items ) => {
+		setSelected( items );
+	};
+
 	return (
 		<div className="gla-choose-audience">
 			<StepContentHeader
@@ -48,9 +70,48 @@ const ChooseAudience = () => {
 				}
 			>
 				<Section.Card>
-					<Section.Card.Body>TODO:</Section.Card.Body>
+					<Section.Card.Body>
+						<Subsection>
+							<Subsection.Title>
+								{ __(
+									'Site language',
+									'google-listings-and-ads'
+								) }
+							</Subsection.Title>
+							<Subsection.Body>
+								{ __( 'English', 'google-listings-and-ads' ) }
+							</Subsection.Body>
+						</Subsection>
+						<Subsection.Title>
+							{ __(
+								'Show my product listings to customers from these countries:',
+								'google-listings-and-ads'
+							) }
+						</Subsection.Title>
+						<SearchListControl
+							messages={ {
+								search: __(
+									'Search for countries:',
+									'google-listings-and-ads'
+								),
+								selected: () =>
+									__(
+										'Selected countries:',
+										'google-listings-and-ads'
+									),
+							} }
+							list={ list }
+							selected={ selected }
+							onChange={ handleListControlChange }
+						></SearchListControl>
+					</Section.Card.Body>
 				</Section.Card>
 			</Section>
+			<div className="actions">
+				<Button isPrimary onClick={ onContinue }>
+					{ __( 'Continue', 'google-listings-and-ads' ) }
+				</Button>
+			</div>
 		</div>
 	);
 };
