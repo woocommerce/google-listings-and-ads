@@ -15,7 +15,7 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import TabNav from '../tab-nav';
 import AppDateRangeFilterPicker from '../dashboard/app-date-range-filter-picker';
-import AllProgramsTableCard from '../dashboard/all-programs-table-card';
+import CompareProgramsTableCard from './compare-programs-table-card';
 import '../dashboard/index.scss';
 
 /**
@@ -176,7 +176,7 @@ const ProgramsAnalytics = () => {
 				/>
 			</div>
 			<div className="gla-dashboard__programs">
-				<AllProgramsTableCard />
+				<CompareProgramsTableCard />
 			</div>
 		</div>
 	);
