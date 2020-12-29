@@ -11,11 +11,12 @@ import { useState } from '@wordpress/element';
 import { recordSetupMCEvent } from '../../utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
+import ChooseAudience from './choose-audience';
 import './index.scss';
 
 const SetupStepper = () => {
 	// TODO: get the user's current step from API backend.
-	const [ step, setStep ] = useState( 'first' );
+	const [ step, setStep ] = useState( 2 );
 
 	const handleSetupAccountsContinue = () => {
 		recordSetupMCEvent( 'step1_continue' );
@@ -28,12 +29,11 @@ const SetupStepper = () => {
 			currentStep={ step }
 			steps={ [
 				{
-					key: 'first',
+					key: 1,
 					label: __(
 						'Set up your accounts',
 						'google-listings-and-ads'
 					),
-					description: 'Step item description',
 					content: (
 						<SetupAccounts
 							onContinue={ handleSetupAccountsContinue }
@@ -41,12 +41,19 @@ const SetupStepper = () => {
 					),
 				},
 				{
-					key: 'second',
+					key: 2,
+					label: __(
+						'Choose your audience',
+						'google-listings-and-ads'
+					),
+					content: <ChooseAudience />,
+				},
+				{
+					key: 3,
 					label: __(
 						'Configure your free listings',
 						'google-listings-and-ads'
 					),
-					description: 'Step item description',
 					content: <SetupFreeListings />,
 				},
 			] }
