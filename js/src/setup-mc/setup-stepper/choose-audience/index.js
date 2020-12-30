@@ -14,6 +14,7 @@ import Section from '../../../wcdl/section';
 import Subsection from '../../../wcdl/subsection';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
+import StepContentFooter from '../components/step-content-footer';
 import './index.scss';
 
 const ChooseAudience = ( props ) => {
@@ -100,11 +101,11 @@ const ChooseAudience = ( props ) => {
 						</Section.Card.Body>
 					</Section.Card>
 				</Section>
-				<div className="actions">
+				<StepContentFooter>
 					<Button isPrimary onClick={ onContinue }>
 						{ __( 'Continue', 'google-listings-and-ads' ) }
 					</Button>
-				</div>
+				</StepContentFooter>
 			</StepContent>
 		</div>
 	);

@@ -12,7 +12,7 @@ import GoogleAccount from './google-account';
 import GoogleMCAccount from './google-mc-account';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
-import './index.scss';
+import StepContentFooter from '../components/step-content-footer';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
@@ -23,33 +23,31 @@ const SetupAccounts = ( props ) => {
 	const isContinueButtonDisabled = true;
 
 	return (
-		<div className="gla-setup-accounts">
-			<StepContent>
-				<StepContentHeader
-					step={ __( 'STEP ONE', 'google-listings-and-ads' ) }
-					title={ __(
-						'Set up your accounts',
-						'google-listings-and-ads'
-					) }
-					description={ __(
-						'Connect your Wordpress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.',
-						'google-listings-and-ads'
-					) }
-				/>
-				<WordPressDotComAccount />
-				<GoogleAccount disabled={ isGoogleAccountDisabled } />
-				<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
-				<div className="actions">
-					<Button
-						isPrimary
-						disabled={ isContinueButtonDisabled }
-						onClick={ onContinue }
-					>
-						{ __( 'Continue', 'google-listings-and-ads' ) }
-					</Button>
-				</div>
-			</StepContent>
-		</div>
+		<StepContent>
+			<StepContentHeader
+				step={ __( 'STEP ONE', 'google-listings-and-ads' ) }
+				title={ __(
+					'Set up your accounts',
+					'google-listings-and-ads'
+				) }
+				description={ __(
+					'Connect your Wordpress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.',
+					'google-listings-and-ads'
+				) }
+			/>
+			<WordPressDotComAccount />
+			<GoogleAccount disabled={ isGoogleAccountDisabled } />
+			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
+			<StepContentFooter>
+				<Button
+					isPrimary
+					disabled={ isContinueButtonDisabled }
+					onClick={ onContinue }
+				>
+					{ __( 'Continue', 'google-listings-and-ads' ) }
+				</Button>
+			</StepContentFooter>
+		</StepContent>
 	);
 };
 
