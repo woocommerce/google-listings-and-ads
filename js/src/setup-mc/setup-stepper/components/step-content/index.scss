@@ -1,4 +1,9 @@
 .gla-step-content {
-	max-width: 1032px;
-	margin: auto;
+	display: flex;
+	justify-content: center;
+
+	.gla-step-content__container {
+		max-width: 1032px;
+		margin: var(--large-gap);
+	}
 }
