@@ -3,12 +3,13 @@
  */
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { Link, SearchListControl } from '@woocommerce/components';
+import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import AppCountryMultiSelect from '../../../components/app-country-multi-select';
 import Section from '../../../wcdl/section';
 import Subsection from '../../../wcdl/subsection';
 import StepContentHeader from '../components/step-content-header';
@@ -17,18 +18,6 @@ import './index.scss';
 const ChooseAudience = ( props ) => {
 	const { onContinue } = props;
 	const [ selected, setSelected ] = useState( [] );
-
-	// TODO: list of countries, from backend API.
-	const list = [
-		{
-			id: 1,
-			name: 'Australia',
-		},
-		{
-			id: 2,
-			name: 'United States of America',
-		},
-	];
 
 	const handleListControlChange = ( items ) => {
 		setSelected( items );
@@ -88,22 +77,18 @@ const ChooseAudience = ( props ) => {
 								'google-listings-and-ads'
 							) }
 						</Subsection.Title>
-						<SearchListControl
-							messages={ {
-								search: __(
-									'Search for countries:',
-									'google-listings-and-ads'
-								),
-								selected: () =>
-									__(
-										'Selected countries:',
-										'google-listings-and-ads'
-									),
-							} }
-							list={ list }
-							selected={ selected }
-							onChange={ handleListControlChange }
-						></SearchListControl>
+						<div className="input">
+							<AppCountryMultiSelect
+								value={ selected }
+								onChange={ handleListControlChange }
+							/>
+						</div>
+						<Subsection.HelperText>
+							{ __(
+								'Can’t find a country? Only supported countries are listed.',
+								'google-listings-and-ads'
+							) }
+						</Subsection.HelperText>
 					</Section.Card.Body>
 				</Section.Card>
 			</Section>
