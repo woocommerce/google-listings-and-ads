@@ -1,12 +1,13 @@
 $button-color: #949494;
 
 .help-popover {
+	display: inline-flex;
 	font-weight: normal;
 	font-size: $default-font-size;
 	line-height: $default-line-height;
 
 	button {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
 		border: none;
 		background: none;
