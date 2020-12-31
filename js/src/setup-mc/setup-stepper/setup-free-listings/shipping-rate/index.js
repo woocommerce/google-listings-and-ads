@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
-import { useState } from '@wordpress/element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,6 +11,8 @@ import { useState } from '@wordpress/element';
 import Section from '../../../../wcdl/section';
 import './index.scss';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
+import RadioHelperText from '../../../../wcdl/radio-helper-text';
+import VerticalGapLayout from '../components/vertical-gap-layout';
 
 const ShippingRate = () => {
 	// TODO:
@@ -46,28 +48,46 @@ const ShippingRate = () => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<AppRadioContentControl
-						label={ __(
-							'I have a fairly simple shipping setup and I can estimate flat shipping rates.',
-							'google-listings-and-ads'
-						) }
-						value="simple"
-						selected={ selected }
-						onChange={ handleOptionSelected }
-					>
-						TODO
-					</AppRadioContentControl>
-					<AppRadioContentControl
-						label={ __(
-							'I have a more complex shipping setup and I cannot estimate flat shipping rates.',
-							'google-listings-and-ads'
-						) }
-						value="complex"
-						selected={ selected }
-						onChange={ handleOptionSelected }
-					>
-						TODO
-					</AppRadioContentControl>
+					<VerticalGapLayout>
+						<AppRadioContentControl
+							label={ __(
+								'I have a fairly simple shipping setup and I can estimate flat shipping rates.',
+								'google-listings-and-ads'
+							) }
+							value="simple"
+							selected={ selected }
+							onChange={ handleOptionSelected }
+						>
+							TODO
+						</AppRadioContentControl>
+						<AppRadioContentControl
+							label={ __(
+								'I have a more complex shipping setup and I cannot estimate flat shipping rates.',
+								'google-listings-and-ads'
+							) }
+							value="complex"
+							selected={ selected }
+							onChange={ handleOptionSelected }
+						>
+							<RadioHelperText>
+								{ createInterpolateElement(
+									__(
+										' I’ll set this up manually in <link>Google Merchant Center</link>. I understand that if I don’t set this up, my products will be disapproved.',
+										'google-listings-and-ads'
+									),
+									{
+										link: (
+											<Link
+												type="external"
+												href="https://www.google.com/retail/solutions/merchant-center/"
+												target="_blank"
+											/>
+										),
+									}
+								) }
+							</RadioHelperText>
+						</AppRadioContentControl>
+					</VerticalGapLayout>
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>

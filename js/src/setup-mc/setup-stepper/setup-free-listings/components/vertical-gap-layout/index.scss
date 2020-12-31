@@ -1,0 +1,5 @@
+.gla-vertical-gap-layout {
+	display: flex;
+	flex-direction: column;
+	gap: calc(var(--large-gap) / 2);
+}
