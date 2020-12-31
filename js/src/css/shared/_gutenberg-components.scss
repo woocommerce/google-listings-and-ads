@@ -24,3 +24,8 @@
 		text-decoration: none;
 	}
 }
+
+// hack to fix radio button selected style bug caused by woocommerce-admin.
+.components-radio-control__input[type=radio]:checked::before {
+	border: none;
+}
