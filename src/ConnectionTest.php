@@ -15,6 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
+use Google_Service_ShoppingContent as ShoppingService;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 
@@ -197,6 +199,21 @@ class ConnectionTest implements Service, Registerable {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
 				</p>
+
+                <div>
+                    <form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<?php wp_nonce_field( 'wcs-sync-product' ); ?>
+                        <input name="page" value="connection-test-admin-page" type="hidden" />
+                        <input name="action" value="wcs-sync-product" type="hidden" />
+                        <label>
+                            Merchant ID <input name="merchant_id" type="text" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+                        </label>
+                        <label>
+                            Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
+                        </label>
+                        <button class="button">Sync Product with Google Merchant Center</button>
+                    </form>
+                </div>
 			<?php } ?>
 
 			<?php if ( ! empty( $this->response ) ) { ?>
@@ -484,6 +501,24 @@ class ConnectionTest implements Service, Registerable {
 				$accepted->accepted() ? 'Yes' : 'No',
 				$accepted->message()
 			);
+		}
+
+		if ( 'wcs-sync-product' === $_GET['action'] && check_admin_referer( 'wcs-sync-product' ) ) {
+			$id      = ! empty( $_GET['product_id'] ) ? absint( $_GET['product_id'] ) : '12345';
+			$product = new WCProductAdapter( [ 'wc_product_id' => $id ] );
+
+			/** @var Merchant $merchant */
+            $merchant = $this->container->get( Merchant::class );
+            /** @var ShoppingService $service */
+            $service = $this->container->get( ShoppingService::class );
+
+			try {
+			    $product = $service->products->insert( $merchant->get_id(), $product );
+
+				$this->response = sprintf( 'Product %s successfully submitted to Google.', $product->getId() );
+			} catch (\Google_Exception $exception) {
+				$this->response = 'Error submitting product to Google: ' . $exception->getMessage();
+			}
 		}
 	}
 

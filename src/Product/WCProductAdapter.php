@@ -23,18 +23,26 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	protected $WC_product;
 
 	/**
+	 * @var bool Whether tax is excluded from product price
+	 */
+	protected $tax_excluded;
+
+	/**
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $array Used to seed this object's properties.
 	 * @return void
 	 */
 	public function mapTypes( $array ) {
-		parent::mapTypes( $array );
-
 		if ( ! empty( $array['wc_product_id'] ) ) {
-			$this->WC_product = new \WC_Product( $array['wc_product_id'] );
+			$this->WC_product = wc_get_product( $array['wc_product_id'] );
 			$this->map_woocommerce_product();
+
+			// Google doesn't expect this field, so it's best to remove it
+			unset( $array['wc_product_id'] );
 		}
+
+		parent::mapTypes( $array );
 	}
 
 	/**
@@ -43,29 +51,24 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	 * @return void
 	 */
 	protected function map_woocommerce_product() {
-
-
-		// store currency
-		$currency = get_woocommerce_currency();
-
 		$dimension_unit = get_option( 'woocommerce_dimension_unit' );
 		$weight_unit    = get_option( 'woocommerce_weight_unit' );
+
+		// set target country
+		$base_country = WC()->countries->get_base_country();
+		$this->setTargetCountry( $base_country );
+
+		// tax is excluded from price in US and CA
+		$this->tax_excluded = in_array( $base_country, array( 'US', 'CA' ), true );
 
 		$this->setChannel( self::CHANNEL_ONLINE );
 
 		// todo: this is temporary, modify or remove this when the GTIN, MPN etc. functionalities are implemented.
 		$this->setIdentifierExists( false );
 
-		// set target country
-		$base_country = WC()->countries->get_base_country();
-		$this->setTargetCountry( $base_country );
-
 		// todo: maybe set this using the site locale?
 		// set content language
 		$this->setContentLanguage( 'en' );
-
-		// tax is excluded from price in US and CA
-		$tax_excluded = in_array( $base_country, array( 'US', 'CA' ), true );
 
 		// set general product attributes
 		$this->map_wc_general_attributes();
@@ -83,8 +86,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 		$this->map_wc_shipping_weight( $weight_unit );
 
 		// set price
-		$this->map_wc_product_price( $currency, $tax_excluded );
-
+		$this->map_wc_prices();
 	}
 
 	/**
@@ -93,15 +95,20 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	 * @return void
 	 */
 	protected function map_wc_general_attributes() {
-		$this->setOfferId( $this->WC_product->get_sku() ?? $this->WC_product->get_id() );
+		$offer_id = $this->WC_product->get_sku() ?? $this->WC_product->get_id();
+		$this->setOfferId( $offer_id );
+
 		$this->setTitle( $this->WC_product->get_title() );
 		$this->setDescription( $this->WC_product->get_description() );
 		$this->setLink( $this->WC_product->get_permalink() );
 
+		// set item group id for variations and variable products
 		if ( $this->is_variation() ) {
 			$parent_product    = wc_get_product( $this->WC_product->get_parent_id() );
 			$parent_product_id = $parent_product->get_sku() ?? $parent_product->get_id();
 			$this->setItemGroupId( $parent_product_id );
+		} elseif ( $this->is_variable() ) {
+			$this->setItemGroupId( $offer_id );
 		}
 	}
 
@@ -213,46 +220,99 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	}
 
 	/**
-	 * Map the prices (base and sale price) for the WooCommerce product.
-	 *
-	 * @param string $currency
-	 * @param bool   $tax_excluded
+	 * Map the prices (base and sale price) for the product.
 	 *
 	 * @return void
 	 */
-	protected function map_wc_product_price( string $currency, bool $tax_excluded ) {
+	protected function map_wc_prices() {
+		$this->map_wc_product_price( $this->WC_product );
+
+		if ( $this->is_variable() ) {
+			// use the cheapest child price for the main product
+			$this->maybe_map_wc_children_prices();
+		}
+	}
+
+	/**
+	 * Map the prices of the item according to its child products.
+	 *
+	 * @return void
+	 */
+	protected function maybe_map_wc_children_prices() {
+		if ( ! $this->WC_product->has_child() ) {
+			return;
+		}
+
+		$current_price = '' === $this->WC_product->get_regular_price() ?
+			null :
+			wc_get_price_including_tax( $this->WC_product, [ 'price' => $this->WC_product->get_regular_price() ] );
+
+		$children = $this->WC_product->get_children();
+		foreach ( $children as $child ) {
+			$child_product = wc_get_product( $child );
+			if ( ! $child_product ) {
+				continue;
+			}
+			if ( $child_product instanceof \WC_Product_Variation ) {
+				$child_is_visible = $child_product->variation_is_visible();
+			} else {
+				$child_is_visible = $child_product->is_visible();
+			}
+			if ( ! $child_is_visible ) {
+				continue;
+			}
+
+			$child_price = '' === $child_product->get_regular_price() ?
+				null :
+				wc_get_price_including_tax( $child_product, [ 'price' => $child_product->get_regular_price() ] );
+
+			if ( ( 0 === (int) $current_price ) && ( (int) $child_price > 0 ) ) {
+				$this->map_wc_product_price( $child_product );
+			} elseif ( ( $child_price > 0 ) && ( $child_price < $current_price ) ) {
+				$this->map_wc_product_price( $child_product );
+			}
+		}
+	}
+
+	/**
+	 * Map the prices (base and sale price) for a given WooCommerce product.
+	 *
+	 * @param \WC_Product $product
+	 *
+	 * @return void
+	 */
+	protected function map_wc_product_price( \WC_Product $product ) {
 		// set regular price
-		$regular_price = $this->WC_product->get_regular_price();
+		$regular_price = $product->get_regular_price();
 		if ( '' !== $regular_price ) {
-			$price = $tax_excluded ?
-				wc_get_price_excluding_tax( $this->WC_product->get_id(), [ 'price' => $regular_price ] ) :
-				wc_get_price_including_tax( $this->WC_product->get_id(), [ 'price' => $regular_price ] );
+			$price = $this->tax_excluded ?
+				wc_get_price_excluding_tax( $product, [ 'price' => $regular_price ] ) :
+				wc_get_price_including_tax( $product, [ 'price' => $regular_price ] );
 
 			$this->setPrice( new \Google_Service_ShoppingContent_Price( [
-				'currency' => $currency,
+				'currency' => get_woocommerce_currency(),
 				'value' => $price,
 			] ) );
 		}
 		// set sale price
-		$this->map_wc_sale_price( $currency, $tax_excluded );
+		$this->map_wc_product_sale_price( $product );
 	}
 
 	/**
-	 * Map the sale price and sale effective date for the WooCommerce product.
+	 * Map the sale price and sale effective date for a given WooCommerce product.
 	 *
-	 * @param string $currency
-	 * @param bool   $tax_excluded
+	 * @param \WC_Product $product
 	 *
 	 * @return void
 	 */
-	protected function map_wc_sale_price( string $currency, bool $tax_excluded ) {
+	protected function map_wc_product_sale_price( \WC_Product $product ) {
 		// Grab the sale price of the base product. Some plugins (Dyanmic
 		// pricing as an example) filter the active price, but not the sale
 		// price. If the active price < the regular price treat it as a sale
 		// price.
-		$regular_price = $this->WC_product->get_regular_price();
-		$sale_price   = $this->WC_product->get_sale_price();
-		$active_price = $this->WC_product->get_price();
+		$regular_price = $product->get_regular_price();
+		$sale_price    = $product->get_sale_price();
+		$active_price  = $product->get_price();
 		if ( ( empty( $sale_price ) && $active_price < $regular_price ) ||
 		     ( ! empty( $sale_price ) && $active_price < $sale_price ) ) {
 			$sale_price = $active_price;
@@ -260,20 +320,20 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 
 		// set sale price and sale effective date if any
 		if ( '' !== $sale_price ) {
-			$sale_price = $tax_excluded ?
-				wc_get_price_excluding_tax( $this->WC_product->get_id(), [ 'price' => $sale_price ] ) :
-				wc_get_price_including_tax( $this->WC_product->get_id(), [ 'price' => $sale_price ] );
+			$sale_price = $this->tax_excluded ?
+				wc_get_price_excluding_tax( $product, [ 'price' => $sale_price ] ) :
+				wc_get_price_including_tax( $product, [ 'price' => $sale_price ] );
 
 			// If the sale price dates no longer apply, make sure we don't include a sale price.
 			$now                 = new \WC_DateTime();
-			$sale_price_end_date = $this->WC_product->get_date_on_sale_to();
+			$sale_price_end_date = $product->get_date_on_sale_to();
 			if ( empty( $sale_price_end_date ) || $sale_price_end_date >= $now ) {
 				$this->setSalePrice( new \Google_Service_ShoppingContent_Price( [
-					'currency' => $currency,
+					'currency' => get_woocommerce_currency(),
 					'value' => $sale_price,
 				] ) );
 
-				$this->setSalePriceEffectiveDate( $this->get_wc_sale_price_effective_date() );
+				$this->setSalePriceEffectiveDate( $this->get_wc_product_sale_price_effective_date( $product ) );
 			}
 		}
 	}
@@ -281,11 +341,13 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	/**
 	 * Return the sale effective dates for the WooCommerce product.
 	 *
+	 * @param \WC_Product $product
+	 *
 	 * @return string
 	 */
-	protected function get_wc_sale_price_effective_date(): string {
-		$start_date = $this->WC_product->get_date_on_sale_from();
-		$end_date   = $this->WC_product->get_date_on_sale_to();
+	protected function get_wc_product_sale_price_effective_date( \WC_Product $product ): string {
+		$start_date = $product->get_date_on_sale_from();
+		$end_date   = $product->get_date_on_sale_to();
 
 		$now = new \WC_DateTime();
 		// if we have a sale end date in the future, but no start date, set the start date to now()
@@ -321,5 +383,14 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	 */
 	protected function is_variation(): bool {
 		return $this->WC_product instanceof \WC_Product_Variation;
+	}
+
+	/**
+	 * Return whether the WooCommerce product is a variable.
+	 *
+	 * @return bool
+	 */
+	protected function is_variable(): bool {
+		return $this->WC_product instanceof \WC_Product_Variable;
 	}
 }
