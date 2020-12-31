@@ -2,19 +2,26 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
+import StepContentFooter from '../components/step-content-footer';
 import { ReactComponent as GoogleFreeListingImage } from './google-free-listing.svg';
 import ShippingRate from './shipping-rate';
 import PreLaunchChecklist from './pre-launch-checklist';
 import './index.scss';
 
 const SetupFreeListings = () => {
-	// TODO:
+	// TODO: check form values and make button disabled/enabled.
+	const isCompleteSetupButtonDisabled = true;
+
+	// TODO: call backend API.
+	const onCompleteSetupClick = () => {};
+
 	return (
 		<div className="gla-setup-free-listings">
 			<div className="hero">
@@ -47,6 +54,15 @@ const SetupFreeListings = () => {
 			<StepContent>
 				<ShippingRate />
 				<PreLaunchChecklist />
+				<StepContentFooter>
+					<Button
+						isPrimary
+						disabled={ isCompleteSetupButtonDisabled }
+						onClick={ onCompleteSetupClick }
+					>
+						{ __( 'Complete setup', 'google-listings-and-ads' ) }
+					</Button>
+				</StepContentFooter>
 			</StepContent>
 		</div>
 	);
