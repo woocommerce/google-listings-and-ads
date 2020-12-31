@@ -64,7 +64,6 @@ const PreLaunchChecklist = () => {
 					>
 						{ ( { getInputProps } ) => (
 							<VerticalGapLayout>
-								{ console.log( getInputProps( 'aaa' ) ) }
 								<CheckboxControl
 									label={ __(
 										'My store website is live.',
