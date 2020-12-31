@@ -11,7 +11,7 @@ const Section = ( props ) => {
 		<section className="wcdl-section">
 			<header>
 				<h1>{ title }</h1>
-				<p>{ description }</p>
+				{ description }
 			</header>
 			<div className="wcdl-section__body">{ children }</div>
 		</section>

@@ -22,14 +22,6 @@
 			margin-bottom: 8px;
 			padding: 0;
 		}
-
-		p {
-			margin: 0 0 var(--large-gap) 0;
-
-			@include break-small() {
-				margin: 0;
-			}
-		}
 	}
 
 	.wcdl-section__body {
