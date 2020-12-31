@@ -10,6 +10,7 @@ import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import { ReactComponent as GoogleFreeListingImage } from './google-free-listing.svg';
 import ShippingRate from './shipping-rate';
+import PreLaunchChecklist from './pre-launch-checklist';
 import './index.scss';
 
 const SetupFreeListings = () => {
@@ -45,6 +46,7 @@ const SetupFreeListings = () => {
 			</div>
 			<StepContent>
 				<ShippingRate />
+				<PreLaunchChecklist />
 			</StepContent>
 		</div>
 	);
