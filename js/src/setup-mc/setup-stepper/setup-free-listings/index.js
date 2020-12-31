@@ -6,8 +6,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import { ReactComponent as GoogleFreeListingImage } from './google-free-listing.svg';
+import ShippingRate from './shipping-rate';
 import './index.scss';
 
 const SetupFreeListings = () => {
@@ -41,6 +43,9 @@ const SetupFreeListings = () => {
 				/>
 				<GoogleFreeListingImage viewBox="0 0 720 319"></GoogleFreeListingImage>
 			</div>
+			<StepContent>
+				<ShippingRate />
+			</StepContent>
 		</div>
 	);
 };
