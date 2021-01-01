@@ -17,6 +17,7 @@ import Hero from './hero';
 const SetupFreeListings = () => {
 	// TODO: initial values for the form.
 	const initialValues = {
+		shippingRateOption: null,
 		checkWebsiteLive: false,
 		checkCheckoutProcess: false,
 		checkPaymentMethods: false,
@@ -58,7 +59,7 @@ const SetupFreeListings = () => {
 
 					return (
 						<StepContent>
-							<ShippingRate />
+							<ShippingRate formProps={ formProps } />
 							<PreLaunchChecklist formProps={ formProps } />
 							<StepContentFooter>
 								<Button

@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
-import { useState, createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -14,13 +14,10 @@ import AppRadioContentControl from '../../../../components/app-radio-content-con
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 
-const ShippingRate = () => {
-	// TODO:
-	const [ selected, setSelected ] = useState( '' );
-
-	const handleOptionSelected = ( option ) => {
-		setSelected( option );
-	};
+const ShippingRate = ( props ) => {
+	const {
+		formProps: { getInputProps },
+	} = props;
 
 	return (
 		<Section
@@ -50,24 +47,22 @@ const ShippingRate = () => {
 				<Section.Card.Body>
 					<VerticalGapLayout>
 						<AppRadioContentControl
+							{ ...getInputProps( 'shippingRateOption' ) }
 							label={ __(
 								'I have a fairly simple shipping setup and I can estimate flat shipping rates.',
 								'google-listings-and-ads'
 							) }
 							value="simple"
-							selected={ selected }
-							onChange={ handleOptionSelected }
 						>
 							TODO
 						</AppRadioContentControl>
 						<AppRadioContentControl
+							{ ...getInputProps( 'shippingRateOption' ) }
 							label={ __(
 								'I have a more complex shipping setup and I cannot estimate flat shipping rates.',
 								'google-listings-and-ads'
 							) }
 							value="complex"
-							selected={ selected }
-							onChange={ handleOptionSelected }
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(
