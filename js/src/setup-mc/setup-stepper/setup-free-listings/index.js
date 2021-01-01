@@ -11,6 +11,7 @@ import { Form } from '@woocommerce/components';
 import StepContent from '../components/step-content';
 import StepContentFooter from '../components/step-content-footer';
 import ShippingRate from './shipping-rate';
+import ShippingTime from './shipping-time';
 import PreLaunchChecklist from './pre-launch-checklist';
 import Hero from './hero';
 
@@ -60,6 +61,7 @@ const SetupFreeListings = () => {
 					return (
 						<StepContent>
 							<ShippingRate formProps={ formProps } />
+							<ShippingTime formProps={ formProps } />
 							<PreLaunchChecklist formProps={ formProps } />
 							<StepContentFooter>
 								<Button
