@@ -13,7 +13,6 @@ import StepContentFooter from '../components/step-content-footer';
 import ShippingRate from './shipping-rate';
 import PreLaunchChecklist from './pre-launch-checklist';
 import Hero from './hero';
-import './index.scss';
 
 const SetupFreeListings = () => {
 	// TODO: initial values for the form.
