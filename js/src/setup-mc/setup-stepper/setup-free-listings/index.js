@@ -17,11 +17,11 @@ import Hero from './hero';
 const SetupFreeListings = () => {
 	// TODO: initial values for the form.
 	const initialValues = {
-		check1: false,
-		check2: false,
-		check3: false,
-		check4: false,
-		check5: false,
+		checkWebsiteLive: false,
+		checkCheckoutProcess: false,
+		checkPaymentMethods: false,
+		checkPolicy: false,
+		checkContacts: false,
 	};
 
 	const handleValidate = () => {
@@ -49,11 +49,11 @@ const SetupFreeListings = () => {
 					const isCompleteSetupDisabled =
 						Object.keys( errors ).length >= 1 ||
 						! (
-							values.check1 &&
-							values.check2 &&
-							values.check3 &&
-							values.check4 &&
-							values.check5
+							values.checkWebsiteLive &&
+							values.checkCheckoutProcess &&
+							values.checkPaymentMethods &&
+							values.checkPolicy &&
+							values.checkContacts
 						);
 
 					return (

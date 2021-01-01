@@ -63,7 +63,7 @@ const PreLaunchChecklist = ( props ) => {
 													'google-listings-and-ads'
 												) }
 											</span>
-											<HelpPopover id="check1">
+											<HelpPopover id="checkWebsiteLive">
 												{ __(
 													'Ensure your store website and products are online and accessible to your customers.',
 													'google-listings-and-ads'
@@ -71,7 +71,7 @@ const PreLaunchChecklist = ( props ) => {
 											</HelpPopover>
 										</span>
 									}
-									{ ...getInputProps( 'check1' ) }
+									{ ...getInputProps( 'checkWebsiteLive' ) }
 								/>
 							</div>
 							<CheckboxControl
@@ -83,7 +83,7 @@ const PreLaunchChecklist = ( props ) => {
 												'google-listings-and-ads'
 											) }
 										</span>
-										<HelpPopover id="check2">
+										<HelpPopover id="checkCheckoutProcess">
 											<p>
 												{ __(
 													'Ensure customers are able to successfully add items to the cart and fully complete the checkout process.',
@@ -111,7 +111,7 @@ const PreLaunchChecklist = ( props ) => {
 										</HelpPopover>
 									</span>
 								}
-								{ ...getInputProps( 'check2' ) }
+								{ ...getInputProps( 'checkCheckoutProcess' ) }
 							/>
 							<CheckboxControl
 								label={
@@ -122,7 +122,7 @@ const PreLaunchChecklist = ( props ) => {
 												'google-listings-and-ads'
 											) }
 										</span>
-										<HelpPopover id="check3">
+										<HelpPopover id="checkPaymentMethods">
 											{ __(
 												'Ensure customers have at least one valid payment method, such as credit card, direct bank transfer, or cash on delivery.',
 												'google-listings-and-ads'
@@ -130,7 +130,7 @@ const PreLaunchChecklist = ( props ) => {
 										</HelpPopover>
 									</span>
 								}
-								{ ...getInputProps( 'check3' ) }
+								{ ...getInputProps( 'checkPaymentMethods' ) }
 							/>
 							<CheckboxControl
 								label={
@@ -141,7 +141,7 @@ const PreLaunchChecklist = ( props ) => {
 												'google-listings-and-ads'
 											) }
 										</span>
-										<HelpPopover id="check4">
+										<HelpPopover id="checkPolicy">
 											{ __(
 												'Your site must provide a clear and conspicuous return policy and billing terms to customers.',
 												'google-listings-and-ads'
@@ -149,7 +149,7 @@ const PreLaunchChecklist = ( props ) => {
 										</HelpPopover>
 									</span>
 								}
-								{ ...getInputProps( 'check4' ) }
+								{ ...getInputProps( 'checkPolicy' ) }
 							/>
 							<CheckboxControl
 								label={
@@ -160,7 +160,7 @@ const PreLaunchChecklist = ( props ) => {
 												'google-listings-and-ads'
 											) }
 										</span>
-										<HelpPopover id="check5">
+										<HelpPopover id="checkContacts">
 											{ __(
 												'Your website must display sufficient and accurate contact information to your customers, including a telephone number and/or email.',
 												'google-listings-and-ads'
@@ -168,7 +168,7 @@ const PreLaunchChecklist = ( props ) => {
 										</HelpPopover>
 									</span>
 								}
-								{ ...getInputProps( 'check5' ) }
+								{ ...getInputProps( 'checkContacts' ) }
 							/>
 						</VerticalGapLayout>
 					</Section.Card.Body>
