@@ -16,7 +16,7 @@ import './index.scss';
 
 const SetupStepper = () => {
 	// TODO: get the user's current step from API backend.
-	const [ step, setStep ] = useState( 2 );
+	const [ step, setStep ] = useState( 3 );
 
 	const handleSetupAccountsContinue = () => {
 		recordSetupMCEvent( 'step1_continue' );
