@@ -16,7 +16,13 @@ import Hero from './hero';
 
 const SetupFreeListings = () => {
 	// TODO: initial values for the form.
-	const initialValues = {};
+	const initialValues = {
+		check1: false,
+		check2: false,
+		check3: false,
+		check4: false,
+		check5: false,
+	};
 
 	const handleValidate = () => {
 		const errors = {};
@@ -38,16 +44,26 @@ const SetupFreeListings = () => {
 				onSubmitCallback={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
-					const { errors, handleSubmit } = formProps;
+					const { values, errors, handleSubmit } = formProps;
+
+					const isCompleteSetupDisabled =
+						Object.keys( errors ).length >= 1 ||
+						! (
+							values.check1 &&
+							values.check2 &&
+							values.check3 &&
+							values.check4 &&
+							values.check5
+						);
 
 					return (
 						<StepContent>
 							<ShippingRate />
-							<PreLaunchChecklist />
+							<PreLaunchChecklist formProps={ formProps } />
 							<StepContentFooter>
 								<Button
 									isPrimary
-									disabled={ Object.keys( errors ).length }
+									disabled={ isCompleteSetupDisabled }
 									onClick={ handleSubmit }
 								>
 									{ __(
