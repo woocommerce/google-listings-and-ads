@@ -12,6 +12,7 @@ import StepContent from '../components/step-content';
 import StepContentFooter from '../components/step-content-footer';
 import ShippingRate from './shipping-rate';
 import ShippingTime from './shipping-time';
+import TaxRate from './tax-rate';
 import PreLaunchChecklist from './pre-launch-checklist';
 import Hero from './hero';
 
@@ -19,12 +20,18 @@ const SetupFreeListings = () => {
 	// TODO: initial values for the form.
 	const initialValues = {
 		shippingRateOption: null,
+		shippingTimeOption: null,
+		taxRateOption: null,
 		checkWebsiteLive: false,
 		checkCheckoutProcess: false,
 		checkPaymentMethods: false,
 		checkPolicy: false,
 		checkContacts: false,
 	};
+
+	// TODO: call backend API and display tax rate section
+	// only when users selected US in the list of countries.
+	const displayTaxRate = true;
 
 	const handleValidate = () => {
 		const errors = {};
@@ -62,6 +69,9 @@ const SetupFreeListings = () => {
 						<StepContent>
 							<ShippingRate formProps={ formProps } />
 							<ShippingTime formProps={ formProps } />
+							{ displayTaxRate && (
+								<TaxRate formProps={ formProps } />
+							) }
 							<PreLaunchChecklist formProps={ formProps } />
 							<StepContentFooter>
 								<Button
