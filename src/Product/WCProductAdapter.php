@@ -2,6 +2,16 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use DateInterval;
+use Google_Service_ShoppingContent_Price;
+use Google_Service_ShoppingContent_Product;
+use Google_Service_ShoppingContent_ProductShippingDimension;
+use Google_Service_ShoppingContent_ProductShippingWeight;
+use WC_DateTime;
+use WC_Product;
+use WC_Product_Variable;
+use WC_Product_Variation;
+
 /**
  * Class WCProductAdapter
  *
@@ -9,7 +19,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
+class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	const AVAILABILITY_IN_STOCK = 'in stock';
 	const AVAILABILITY_OUT_OF_STOCK = 'out of stock';
 
@@ -18,7 +28,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	const CHANNEL_ONLINE = 'online';
 
 	/**
-	 * @var \WC_Product WooCommerce product object
+	 * @var WC_Product WooCommerce product object
 	 */
 	protected $WC_product;
 
@@ -51,8 +61,8 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	 * @return void
 	 */
 	protected function map_woocommerce_product() {
-		$dimension_unit = get_option( 'woocommerce_dimension_unit' );
-		$weight_unit    = get_option( 'woocommerce_weight_unit' );
+		$dimension_unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
+		$weight_unit    = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
 
 		// set target country
 		$base_country = WC()->countries->get_base_country();
@@ -60,6 +70,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 
 		// tax is excluded from price in US and CA
 		$this->tax_excluded = in_array( $base_country, array( 'US', 'CA' ), true );
+		$this->tax_excluded = apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded );
 
 		$this->setChannel( self::CHANNEL_ONLINE );
 
@@ -99,7 +110,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 		$this->setOfferId( $offer_id );
 
 		$this->setTitle( $this->WC_product->get_title() );
-		$this->setDescription( $this->WC_product->get_description() );
+		$this->setDescription( $this->get_wc_product_description() );
 		$this->setLink( $this->WC_product->get_permalink() );
 
 		// set item group id for variations and variable products
@@ -110,6 +121,32 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 		} elseif ( $this->is_variable() ) {
 			$this->setItemGroupId( $offer_id );
 		}
+	}
+
+	/**
+	 * Get the description for the WooCommerce product.
+	 *
+	 * @return string
+	 */
+	protected function get_wc_product_description() {
+		$description = $this->WC_product->get_description() ?? $this->WC_product->get_short_description();
+
+		// prepend the parent product description to the variation product
+		if ( $this->is_variation() && ! empty( $this->WC_product->get_parent_id() ) ) {
+			$parent_product     = wc_get_product( $this->WC_product->get_parent_id() );
+			$parent_description = $parent_product->get_description() ?? $parent_product->get_short_description();
+			$new_line           = ! empty( $description ) && ! empty( $parent_description ) ? PHP_EOL : '';
+			$description        = $parent_description . $new_line . $description;
+		}
+
+		// Strip out invalid unicode.
+		$description = preg_replace(
+			'/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u',
+			'',
+			$description
+		);
+
+		return wp_strip_all_tags( $description );
 	}
 
 	/**
@@ -183,15 +220,15 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 		$height = wc_get_dimension( (float) $height, $unit );
 
 		if ( $length > 0 && $width > 0 && $height > 0 ) {
-			$this->setShippingLength( new \Google_Service_ShoppingContent_ProductShippingDimension([
+			$this->setShippingLength( new Google_Service_ShoppingContent_ProductShippingDimension([
 				'unit' => $unit,
 				'value' => $length,
 			]) );
-			$this->setShippingWidth( new \Google_Service_ShoppingContent_ProductShippingDimension([
+			$this->setShippingWidth( new Google_Service_ShoppingContent_ProductShippingDimension([
 				'unit' => $unit,
 				'value' => $width,
 			]) );
-			$this->setShippingHeight( new \Google_Service_ShoppingContent_ProductShippingDimension([
+			$this->setShippingHeight( new Google_Service_ShoppingContent_ProductShippingDimension([
 				'unit' => $unit,
 				'value' => $height,
 			]) );
@@ -206,14 +243,13 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	 * @return void
 	 */
 	protected function map_wc_shipping_weight( $unit = 'g' ) {
-
 		// Use g if the unit isn't supported.
 		if ( ! in_array( $unit, [ 'g', 'lbs', 'oz' ], true ) ) {
 			$unit = 'g';
 		}
 
 		$weight = wc_get_weight( $this->WC_product->get_weight(), $unit );
-		$this->setShippingWeight( new \Google_Service_ShoppingContent_ProductShippingWeight( [
+		$this->setShippingWeight( new Google_Service_ShoppingContent_ProductShippingWeight( [
 			'unit' => $unit,
 			'value' => $weight,
 		] ) );
@@ -253,12 +289,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 			if ( ! $child_product ) {
 				continue;
 			}
-			if ( $child_product instanceof \WC_Product_Variation ) {
-				$child_is_visible = $child_product->variation_is_visible();
-			} else {
-				$child_is_visible = $child_product->is_visible();
-			}
-			if ( ! $child_is_visible ) {
+			if ( ! self::is_wc_product_visible( $child_product ) ) {
 				continue;
 			}
 
@@ -275,13 +306,28 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	}
 
 	/**
+	 * Whether the given WooCommerce product is visible in store.
+	 *
+	 * @param WC_Product $WC_product
+	 *
+	 * @return bool
+	 */
+	protected static function is_wc_product_visible( WC_Product $WC_product ): bool {
+		if ( $WC_product instanceof WC_Product_Variation ) {
+			return $WC_product->variation_is_visible();
+		}
+
+		return $WC_product->is_visible();
+	}
+
+	/**
 	 * Map the prices (base and sale price) for a given WooCommerce product.
 	 *
-	 * @param \WC_Product $product
+	 * @param WC_Product $product
 	 *
 	 * @return void
 	 */
-	protected function map_wc_product_price( \WC_Product $product ) {
+	protected function map_wc_product_price( WC_Product $product ) {
 		// set regular price
 		$regular_price = $product->get_regular_price();
 		if ( '' !== $regular_price ) {
@@ -289,7 +335,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 				wc_get_price_excluding_tax( $product, [ 'price' => $regular_price ] ) :
 				wc_get_price_including_tax( $product, [ 'price' => $regular_price ] );
 
-			$this->setPrice( new \Google_Service_ShoppingContent_Price( [
+			$this->setPrice( new Google_Service_ShoppingContent_Price( [
 				'currency' => get_woocommerce_currency(),
 				'value' => $price,
 			] ) );
@@ -301,11 +347,11 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	/**
 	 * Map the sale price and sale effective date for a given WooCommerce product.
 	 *
-	 * @param \WC_Product $product
+	 * @param WC_Product $product
 	 *
 	 * @return void
 	 */
-	protected function map_wc_product_sale_price( \WC_Product $product ) {
+	protected function map_wc_product_sale_price( WC_Product $product ) {
 		// Grab the sale price of the base product. Some plugins (Dyanmic
 		// pricing as an example) filter the active price, but not the sale
 		// price. If the active price < the regular price treat it as a sale
@@ -325,10 +371,10 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 				wc_get_price_including_tax( $product, [ 'price' => $sale_price ] );
 
 			// If the sale price dates no longer apply, make sure we don't include a sale price.
-			$now                 = new \WC_DateTime();
+			$now                 = new WC_DateTime();
 			$sale_price_end_date = $product->get_date_on_sale_to();
 			if ( empty( $sale_price_end_date ) || $sale_price_end_date >= $now ) {
-				$this->setSalePrice( new \Google_Service_ShoppingContent_Price( [
+				$this->setSalePrice( new Google_Service_ShoppingContent_Price( [
 					'currency' => get_woocommerce_currency(),
 					'value' => $sale_price,
 				] ) );
@@ -341,15 +387,15 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	/**
 	 * Return the sale effective dates for the WooCommerce product.
 	 *
-	 * @param \WC_Product $product
+	 * @param WC_Product $product
 	 *
 	 * @return string
 	 */
-	protected function get_wc_product_sale_price_effective_date( \WC_Product $product ): string {
+	protected function get_wc_product_sale_price_effective_date( WC_Product $product ): string {
 		$start_date = $product->get_date_on_sale_from();
 		$end_date   = $product->get_date_on_sale_to();
 
-		$now = new \WC_DateTime();
+		$now = new WC_DateTime();
 		// if we have a sale end date in the future, but no start date, set the start date to now()
 		if ( ! empty( $end_date ) &&
 		     $end_date > $now &&
@@ -370,7 +416,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 		     empty( $end_date )
 		) {
 			$end_date = clone $start_date;
-			$end_date->add( new \DateInterval( 'P1D' ) );
+			$end_date->add( new DateInterval( 'P1D' ) );
 		}
 
 		return sprintf( '%s/%s', (string) $start_date, (string) $end_date);
@@ -382,7 +428,7 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	 * @return bool
 	 */
 	protected function is_variation(): bool {
-		return $this->WC_product instanceof \WC_Product_Variation;
+		return $this->WC_product instanceof WC_Product_Variation;
 	}
 
 	/**
@@ -391,6 +437,6 @@ class WCProductAdapter extends \Google_Service_ShoppingContent_Product {
 	 * @return bool
 	 */
 	protected function is_variable(): bool {
-		return $this->WC_product instanceof \WC_Product_Variable;
+		return $this->WC_product instanceof WC_Product_Variable;
 	}
 }
