@@ -74,10 +74,12 @@ const PreLaunchChecklist = () => {
 										<CheckboxControl
 											label={
 												<span className="gla-pre-launch-checklist__checkbox_popover">
-													{ __(
-														'My store website is live.',
-														'google-listings-and-ads'
-													) }
+													<span className="checkbox-label">
+														{ __(
+															'My store website is live.',
+															'google-listings-and-ads'
+														) }
+													</span>
 													<HelpPopover id="check1">
 														{ __(
 															'Ensure your store website and products are online and accessible to your customers.',
@@ -92,10 +94,12 @@ const PreLaunchChecklist = () => {
 									<CheckboxControl
 										label={
 											<span className="gla-pre-launch-checklist__checkbox_popover">
-												{ __(
-													'I have a complete and secure checkout process.',
-													'google-listings-and-ads'
-												) }
+												<span className="checkbox-label">
+													{ __(
+														'I have a complete and secure checkout process.',
+														'google-listings-and-ads'
+													) }
+												</span>
 												<HelpPopover id="check2">
 													<p>
 														{ __(
@@ -129,10 +133,12 @@ const PreLaunchChecklist = () => {
 									<CheckboxControl
 										label={
 											<span className="gla-pre-launch-checklist__checkbox_popover">
-												{ __(
-													'My payment methods are visible on my website.',
-													'google-listings-and-ads'
-												) }
+												<span className="checkbox-label">
+													{ __(
+														'My payment methods are visible on my website.',
+														'google-listings-and-ads'
+													) }
+												</span>
 												<HelpPopover id="check3">
 													{ __(
 														'Ensure customers have at least one valid payment method, such as credit card, direct bank transfer, or cash on delivery.',
@@ -146,10 +152,12 @@ const PreLaunchChecklist = () => {
 									<CheckboxControl
 										label={
 											<span className="gla-pre-launch-checklist__checkbox_popover">
-												{ __(
-													'My refund policy and terms of service are visible on my online store.',
-													'google-listings-and-ads'
-												) }
+												<span className="checkbox-label">
+													{ __(
+														'My refund policy and terms of service are visible on my online store.',
+														'google-listings-and-ads'
+													) }
+												</span>
 												<HelpPopover id="check4">
 													{ __(
 														'Your site must provide a clear and conspicuous return policy and billing terms to customers.',
@@ -163,10 +171,12 @@ const PreLaunchChecklist = () => {
 									<CheckboxControl
 										label={
 											<span className="gla-pre-launch-checklist__checkbox_popover">
-												{ __(
-													'My store’s phone number, email and/or address are visible on my website.',
-													'google-listings-and-ads'
-												) }
+												<span className="checkbox-label">
+													{ __(
+														'My store’s phone number, email and/or address are visible on my website.',
+														'google-listings-and-ads'
+													) }
+												</span>
 												<HelpPopover id="check5">
 													{ __(
 														'Your website must display sufficient and accurate contact information to your customers, including a telephone number and/or email.',

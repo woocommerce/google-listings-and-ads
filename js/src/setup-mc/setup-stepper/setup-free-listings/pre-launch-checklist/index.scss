@@ -1,6 +1,11 @@
 .gla-pre-launch-checklist {
 	.gla-pre-launch-checklist__checkbox_popover {
-		display: inline-flex;
-		gap: calc(var(--main-gap) / 2);
+		.checkbox-label {
+			margin-right: calc(var(--main-gap) / 2);
+		}
+
+		.help-popover {
+			vertical-align: text-bottom;
+		}
 	}
 }
