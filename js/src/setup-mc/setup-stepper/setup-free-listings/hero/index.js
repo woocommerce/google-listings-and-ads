@@ -14,7 +14,7 @@ const Hero = () => {
 	return (
 		<div className="gla-setup-free-listing-hero">
 			<StepContentHeader
-				className="hero__header"
+				className="hero-text"
 				step={ __( 'STEP THREE', 'google-listings-and-ads' ) }
 				title={ __(
 					'Configure your product listings',
@@ -37,7 +37,9 @@ const Hero = () => {
 					</div>
 				}
 			/>
-			<GoogleFreeListingImage viewBox="0 0 720 319"></GoogleFreeListingImage>
+			<div className="hero-image">
+				<GoogleFreeListingImage viewBox="0 0 720 319"></GoogleFreeListingImage>
+			</div>
 		</div>
 	);
 };

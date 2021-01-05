@@ -3,20 +3,31 @@
 	flex-direction: column;
 	align-items: center;
 	background-color: #fff;
-	padding-top: var(--large-gap);
+	padding: var(--large-gap);
+	padding-bottom: 0;
 
-	.hero__header {
+	.hero-text {
 		max-width: unset;
 		margin-bottom: 0;
+
+		.subtitle {
+			font-size: 16px;
+			font-weight: 600;
+			padding: 0;
+		}
+
+		.body {
+			font-size: 14px;
+			margin-bottom: var(--main-gap);
+		}
 	}
 
-	.subtitle {
-		font-size: 16px;
-		font-weight: 600;
-		padding: 0;
-	}
+	.hero-image {
+		margin-bottom: -4px;
 
-	.body {
-		font-size: 14px;
+		svg {
+			width: 100%;
+			height: 100%;
+		}
 	}
 }
