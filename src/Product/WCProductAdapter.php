@@ -78,32 +78,20 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 		$this->setIdentifierExists( false );
 
 		// todo: maybe set this using the site locale?
-		// set content language
 		$this->setContentLanguage( 'en' );
 
-		// set general product attributes
-		$this->map_wc_general_attributes();
-
-		// set full size product image
-		$this->map_wc_product_image( self::IMAGE_SIZE_FULL );
-
-		// set availability
-		$this->map_wc_availability();
-
-		// set shipping dimensions
-		$this->map_wc_shipping_dimensions( $dimension_unit );
-
-		// set shipping weight
-		$this->map_wc_shipping_weight( $weight_unit );
-
-		// set price
-		$this->map_wc_prices();
+		$this->map_wc_general_attributes()
+			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
+			 ->map_wc_availability()
+			 ->map_wc_shipping_dimensions( $dimension_unit )
+			 ->map_wc_shipping_weight( $weight_unit )
+			 ->map_wc_prices();
 	}
 
 	/**
 	 * Map the general WooCommerce product attributes.
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_general_attributes() {
 		$offer_id = $this->wc_product->get_sku() ?? $this->wc_product->get_id();
@@ -121,6 +109,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 		} elseif ( $this->is_variable() ) {
 			$this->setItemGroupId( $offer_id );
 		}
+
+		return $this;
 	}
 
 	/**
@@ -154,7 +144,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 *
 	 * @param string $image_size
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_product_image( string $image_size ) {
 		$image_id          = $this->wc_product->get_image_id();
@@ -189,17 +179,21 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 		// Uniquify the set of additional images
 		$gallery_image_links = array_unique( $gallery_image_links, SORT_REGULAR );
 		$this->setAdditionalImageLinks( $gallery_image_links );
+
+		return $this;
 	}
 
 	/**
 	 * Map the general WooCommerce product attributes.
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_availability() {
 		// todo: include 'preorder' status (maybe a new field for products / or using an extension?)
 		$availability = $this->wc_product->is_in_stock() ? self::AVAILABILITY_IN_STOCK : self::AVAILABILITY_OUT_OF_STOCK;
 		$this->setAvailability( $availability );
+
+		return $this;
 	}
 
 	/**
@@ -207,7 +201,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 *
 	 * @param string $unit
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_shipping_dimensions( $unit = 'cm' ) {
 		$length = $this->wc_product->get_length();
@@ -248,6 +242,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 				)
 			);
 		}
+
+		return $this;
 	}
 
 	/**
@@ -255,7 +251,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 *
 	 * @param string $unit
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_shipping_weight( $unit = 'g' ) {
 		// Use g if the unit isn't supported.
@@ -272,12 +268,14 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 				]
 			)
 		);
+
+		return $this;
 	}
 
 	/**
 	 * Map the prices (base and sale price) for the product.
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_prices() {
 		$this->map_wc_product_price( $this->wc_product );
@@ -286,16 +284,18 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 			// use the cheapest child price for the main product
 			$this->maybe_map_wc_children_prices();
 		}
+
+		return $this;
 	}
 
 	/**
 	 * Map the prices of the item according to its child products.
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function maybe_map_wc_children_prices() {
 		if ( ! $this->wc_product->has_child() ) {
-			return;
+			return $this;
 		}
 
 		$current_price = '' === $this->wc_product->get_regular_price() ?
@@ -322,6 +322,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 				$this->map_wc_product_price( $child_product );
 			}
 		}
+
+		return $this;
 	}
 
 	/**
@@ -344,7 +346,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 *
 	 * @param WC_Product $product
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_product_price( WC_Product $product ) {
 		// set regular price
@@ -365,6 +367,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 		}
 		// set sale price
 		$this->map_wc_product_sale_price( $product );
+
+		return $this;
 	}
 
 	/**
@@ -372,7 +376,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 *
 	 * @param WC_Product $product
 	 *
-	 * @return void
+	 * @return $this
 	 */
 	protected function map_wc_product_sale_price( WC_Product $product ) {
 		// Grab the sale price of the base product. Some plugins (Dynamic
@@ -409,6 +413,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 				$this->setSalePriceEffectiveDate( $this->get_wc_product_sale_price_effective_date( $product ) );
 			}
 		}
+
+		return $this;
 	}
 
 	/**
