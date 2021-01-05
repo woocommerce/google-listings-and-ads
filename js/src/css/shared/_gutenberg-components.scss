@@ -29,3 +29,8 @@
 .components-radio-control__input[type=radio]:checked::before {
 	border: none;
 }
+
+// hack to fix InputControl suffix's empty right margin.
+.components-input-control__suffix {
+	margin-right: 8px;
+}
