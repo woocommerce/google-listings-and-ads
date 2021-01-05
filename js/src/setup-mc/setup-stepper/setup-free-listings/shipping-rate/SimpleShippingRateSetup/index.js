@@ -10,6 +10,7 @@ import { CheckboxControl } from '@wordpress/components';
 import AppInputControl from '../../../../../components/app-input-control';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
 import CountriesPriceInput from './countries-price-input';
+import AddRateButton from './add-rate-button';
 import './index.scss';
 
 const formKeys = {
@@ -46,18 +47,24 @@ const SimpleShippingRateSetup = ( props ) => {
 		<div className="gla-simple-shipping-rate-setup">
 			<VerticalGapLayout>
 				<div className="countries-price">
-					{ values[ formKeys.rows ].map( ( el, idx ) => {
-						return (
-							<div key={ idx } className="countries-price-input">
-								<CountriesPriceInput
-									value={ el }
-									onChange={ handleCountriesPriceChange(
-										idx
-									) }
-								/>
-							</div>
-						);
-					} ) }
+					<VerticalGapLayout>
+						{ values[ formKeys.rows ].map( ( el, idx ) => {
+							return (
+								<div
+									key={ idx }
+									className="countries-price-input"
+								>
+									<CountriesPriceInput
+										value={ el }
+										onChange={ handleCountriesPriceChange(
+											idx
+										) }
+									/>
+								</div>
+							);
+						} ) }
+						<AddRateButton />
+					</VerticalGapLayout>
 				</div>
 				<CheckboxControl
 					label={ __(
