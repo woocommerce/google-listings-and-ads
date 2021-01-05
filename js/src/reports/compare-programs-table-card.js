@@ -4,8 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
-import { Link } from '@woocommerce/components';
-import { getNewPath, getQuery, onQueryChange } from '@woocommerce/navigation';
+import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -188,13 +187,7 @@ const CompareProgramsTableCard = () => {
 					{ display: row.conversions },
 					{ display: row.clicks },
 					{ display: row.impressions },
-					{
-						display: (
-                            <Link href={ getNewPath( null, `/google/reports/items-sold/${ row.id }` ) }>
-                                { row.itemsSold }
-                            </Link>
-						),
-                    },
+					{ display: row.itemsSold },
 					{ display: row.netSales },
 					{ display: row.totalSpend },
 				];
