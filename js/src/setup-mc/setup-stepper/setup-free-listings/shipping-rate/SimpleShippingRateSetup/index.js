@@ -69,7 +69,9 @@ const SimpleShippingRateSetup = ( props ) => {
 							);
 						} ) }
 						{ actualCountryCount < expectedCountryCount && (
-							<AddRateButton />
+							<div className="add-rate-button">
+								<AddRateButton />
+							</div>
 						) }
 					</VerticalGapLayout>
 				</div>
