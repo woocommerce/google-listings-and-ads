@@ -7,6 +7,8 @@ use Automattic\Jetpack\Config;
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,8 +29,9 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Config::class  => true,
-		Manager::class => true,
+		Config::class              => true,
+		Manager::class             => true,
+		ISO3166DataProvider::class => true,
 	];
 
 	/**
@@ -52,5 +55,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 				],
 			]
 		);
+
+		$this->share_interface( ISO3166DataProvider::class, ISO3166::class );
 	}
 }
