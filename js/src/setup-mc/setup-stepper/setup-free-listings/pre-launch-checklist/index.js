@@ -52,7 +52,7 @@ const PreLaunchChecklist = ( props ) => {
 			>
 				<Section.Card>
 					<Section.Card.Body>
-						<VerticalGapLayout>
+						<VerticalGapLayout size="large">
 							<div className="gla-pre-launch-checklist__checkbox_popover">
 								<CheckboxControl
 									label={

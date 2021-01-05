@@ -44,7 +44,7 @@ const ShippingTime = ( props ) => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<VerticalGapLayout>
+					<VerticalGapLayout size="large">
 						<AppRadioContentControl
 							{ ...getInputProps( 'shippingTimeOption' ) }
 							label={ __(

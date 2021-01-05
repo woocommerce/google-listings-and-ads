@@ -47,7 +47,7 @@ const TaxRate = ( props ) => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<VerticalGapLayout>
+					<VerticalGapLayout size="large">
 						<AppRadioContentControl
 							{ ...getInputProps( 'taxRateOption' ) }
 							label={ __(

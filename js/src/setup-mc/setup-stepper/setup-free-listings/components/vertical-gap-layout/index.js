@@ -4,11 +4,13 @@
 import './index.scss';
 
 const VerticalGapLayout = ( props ) => {
-	const { className = '', ...rest } = props;
+	const { className = '', size = '', ...rest } = props;
 
 	return (
 		<div
-			className={ `gla-vertical-gap-layout ${ className }` }
+			className={ `gla-vertical-gap-layout ${
+				size === 'large' ? 'gla-vertical-gap-layout__large' : ''
+			} ${ className }` }
 			{ ...rest }
 		/>
 	);
