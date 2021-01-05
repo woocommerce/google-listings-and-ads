@@ -18,7 +18,7 @@ import './index.scss';
 const headers = [
 	{
 		key: 'title',
-		label: __( 'Title', 'google-listings-and-ads' ),
+		label: __( 'Program', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
 		isSortable: true,
