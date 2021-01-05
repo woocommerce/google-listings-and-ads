@@ -38,7 +38,7 @@ const SimpleShippingRateSetup = ( props ) => {
 								'I offer free shipping for products priced over',
 								'google-listings-and-ads'
 							) }
-							suffix="USD"
+							suffix={ __( 'USD', 'google-listings-and-ads' ) }
 							{ ...getInputProps( formKeys.priceOver ) }
 						/>
 					</div>
