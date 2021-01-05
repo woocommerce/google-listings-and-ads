@@ -8,7 +8,7 @@ const More = ( props ) => {
 	const { count } = props;
 
 	if ( count === 0 ) {
-		return <span>hi</span>;
+		return null;
 	}
 
 	return createInterpolateElement(
