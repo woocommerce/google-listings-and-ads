@@ -32,7 +32,7 @@ const performanceMetrics = new Map( [
 	[ 'totalSpend', __( 'Total Spend', 'google-listings-and-ads' ) ],
 ] );
 
-const ProgramsAnalytics = () => {
+const ProgramsReports = () => {
 	// TODO: this data should come from backend API.
 	const data = {
 		conversions: {
@@ -141,7 +141,7 @@ const ProgramsAnalytics = () => {
 
 	return (
 		<div className="gla-dashboard">
-			<TabNav initialName="analytics" />
+			<TabNav initialName="reports" />
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker />
 				<FilterPicker
@@ -149,7 +149,7 @@ const ProgramsAnalytics = () => {
 					query={ getQuery() }
 				/>
 			</div>
-			<div className="gla-analytics__performance">
+			<div className="gla-reports__performance">
 				<SummaryList>
 					{ () => {
 						return Array.from(
@@ -182,4 +182,4 @@ const ProgramsAnalytics = () => {
 	);
 };
 
-export default ProgramsAnalytics;
+export default ProgramsReports;

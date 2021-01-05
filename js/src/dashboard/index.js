@@ -45,8 +45,8 @@ const Dashboard = () => {
 			<TabNav initialName="dashboard" />
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker />
-				<Link href={ getNewPath( null, '/google/analytics' ) }>
-					<Button isPrimary>View Analytics</Button>
+				<Link href={ getNewPath( null, '/google/reports' ) }>
+					<Button isPrimary>View Reports</Button>
 				</Link>
 			</div>
 			<div className="gla-dashboard__performance">

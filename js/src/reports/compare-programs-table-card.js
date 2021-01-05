@@ -190,7 +190,7 @@ const CompareProgramsTableCard = () => {
 					{ display: row.impressions },
 					{
 						display: (
-                            <Link href={ getNewPath( null, `/google/analytics/items-sold/${ row.id }` ) }>
+                            <Link href={ getNewPath( null, `/google/reports/items-sold/${ row.id }` ) }>
                                 { row.itemsSold }
                             </Link>
 						),
