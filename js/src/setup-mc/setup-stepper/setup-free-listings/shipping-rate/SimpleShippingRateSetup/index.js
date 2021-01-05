@@ -9,21 +9,51 @@ import { CheckboxControl } from '@wordpress/components';
  */
 import AppInputControl from '../../../../../components/app-input-control';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
+import CountriesPriceInput from './countries-price-input';
 import './index.scss';
 
 const formKeys = {
+	rows: 'shippingRateOption-rows',
 	freeShipping: 'shippingRateOption-freeShipping',
 	priceOver: 'shippingRateOption-freeShipping-priceOver',
 };
 
 const SimpleShippingRateSetup = ( props ) => {
 	const {
-		formProps: { getInputProps, values },
+		formProps: { getInputProps, values, setValue },
 	} = props;
+
+	// TODO: call backend API to get the selected countries
+	// from Step 2 Choose Your Audience.
+	const audienceCountries = [
+		{
+			key: 'AUS',
+			label: 'Australia',
+		},
+		{
+			key: 'USA',
+			label: 'United States of America',
+		},
+	];
+
+	const handleCountriesPriceChange = ( idx ) => ( countriesPrice ) => {
+		const newValues = [ ...values[ formKeys.rows ] ];
+		newValues[ idx ] = countriesPrice;
+		setValue( formKeys.rows, newValues );
+	};
 
 	return (
 		<div className="gla-simple-shipping-rate-setup">
 			<VerticalGapLayout>
+				{ values[ formKeys.rows ].map( ( el, idx ) => {
+					return (
+						<CountriesPriceInput
+							key={ idx }
+							value={ el }
+							onChange={ handleCountriesPriceChange( idx ) }
+						/>
+					);
+				} ) }
 				<CheckboxControl
 					label={ __(
 						'I also offer free shipping for all countries for products over a certain price.',

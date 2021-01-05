@@ -18,8 +18,25 @@ import Hero from './hero';
 
 const SetupFreeListings = () => {
 	// TODO: initial values for the form.
+	// the shippingRateOption-rows.countries should have all the countries
+	// selected in Step 2 Choose Your Audience.
 	const initialValues = {
 		shippingRateOption: null,
+		'shippingRateOption-rows': [
+			{
+				countries: [
+					{
+						key: 'AUS',
+						label: 'Australia',
+					},
+					{
+						key: 'USA',
+						label: 'United States of America',
+					},
+				],
+				price: '20',
+			},
+		],
 		'shippingRateOption-freeShipping': false,
 		'shippingRateOption-freeShipping-priceOver': '',
 		shippingTimeOption: null,
