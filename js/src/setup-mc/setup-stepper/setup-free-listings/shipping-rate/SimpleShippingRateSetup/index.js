@@ -45,15 +45,20 @@ const SimpleShippingRateSetup = ( props ) => {
 	return (
 		<div className="gla-simple-shipping-rate-setup">
 			<VerticalGapLayout>
-				{ values[ formKeys.rows ].map( ( el, idx ) => {
-					return (
-						<CountriesPriceInput
-							key={ idx }
-							value={ el }
-							onChange={ handleCountriesPriceChange( idx ) }
-						/>
-					);
-				} ) }
+				<div className="countries-price">
+					{ values[ formKeys.rows ].map( ( el, idx ) => {
+						return (
+							<div key={ idx } className="countries-price-input">
+								<CountriesPriceInput
+									value={ el }
+									onChange={ handleCountriesPriceChange(
+										idx
+									) }
+								/>
+							</div>
+						);
+					} ) }
+				</div>
 				<CheckboxControl
 					label={ __(
 						'I also offer free shipping for all countries for products over a certain price.',
@@ -62,7 +67,7 @@ const SimpleShippingRateSetup = ( props ) => {
 					{ ...getInputProps( formKeys.freeShipping ) }
 				/>
 				{ values[ formKeys.freeShipping ] && (
-					<div className="price-input">
+					<div className="price-over-input">
 						<AppInputControl
 							label={ __(
 								'I offer free shipping for products priced over',

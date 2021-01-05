@@ -1,7 +1,15 @@
 .gla-simple-shipping-rate-setup {
 	margin-top: calc(var(--main-gap) / 2);
 
-	.price-input {
+	.countries-price {
+		margin-bottom: calc(var(--main-gap) / 2);
+
+		.countries-price-input {
+			max-width: 300px;
+		}
+	}
+
+	.price-over-input {
 		max-width: 300px;
 	}
 }
