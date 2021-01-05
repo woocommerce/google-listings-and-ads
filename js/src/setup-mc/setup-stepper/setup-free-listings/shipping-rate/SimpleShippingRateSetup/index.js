@@ -37,6 +37,11 @@ const SimpleShippingRateSetup = ( props ) => {
 		},
 	];
 
+	const expectedCountryCount = audienceCountries.length;
+	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
+		return acc + cur.countries.length;
+	}, 0 );
+
 	const handleCountriesPriceChange = ( idx ) => ( countriesPrice ) => {
 		const newValues = [ ...values[ formKeys.rows ] ];
 		newValues[ idx ] = countriesPrice;
@@ -63,7 +68,9 @@ const SimpleShippingRateSetup = ( props ) => {
 								</div>
 							);
 						} ) }
-						<AddRateButton />
+						{ actualCountryCount < expectedCountryCount && (
+							<AddRateButton />
+						) }
 					</VerticalGapLayout>
 				</div>
 				<CheckboxControl
