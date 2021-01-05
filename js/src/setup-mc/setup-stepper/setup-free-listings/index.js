@@ -20,6 +20,8 @@ const SetupFreeListings = () => {
 	// TODO: initial values for the form.
 	const initialValues = {
 		shippingRateOption: null,
+		'shippingRateOption-freeShipping': false,
+		'shippingRateOption-freeShipping-priceOver': '',
 		shippingTimeOption: null,
 		taxRateOption: null,
 		checkWebsiteLive: false,

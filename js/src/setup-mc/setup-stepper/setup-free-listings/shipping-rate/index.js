@@ -9,15 +9,15 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import Section from '../../../../wcdl/section';
-import './index.scss';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import VerticalGapLayout from '../components/vertical-gap-layout';
+import SimpleShippingRateSetup from './SimpleShippingRateSetup';
+import './index.scss';
 
 const ShippingRate = ( props ) => {
-	const {
-		formProps: { getInputProps },
-	} = props;
+	const { formProps } = props;
+	const { getInputProps } = formProps;
 
 	return (
 		<Section
@@ -45,7 +45,7 @@ const ShippingRate = ( props ) => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<VerticalGapLayout>
+					<VerticalGapLayout size="large">
 						<AppRadioContentControl
 							{ ...getInputProps( 'shippingRateOption' ) }
 							label={ __(
@@ -54,7 +54,7 @@ const ShippingRate = ( props ) => {
 							) }
 							value="simple"
 						>
-							TODO
+							<SimpleShippingRateSetup formProps={ formProps } />
 						</AppRadioContentControl>
 						<AppRadioContentControl
 							{ ...getInputProps( 'shippingRateOption' ) }
