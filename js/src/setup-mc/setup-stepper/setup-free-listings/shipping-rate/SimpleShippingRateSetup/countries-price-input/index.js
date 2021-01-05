@@ -8,6 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import AppInputControl from '../../../../../../components/app-input-control';
+import EditRateButton from './edit-rate-button';
 import More from './more';
 import './index.scss';
 
@@ -26,20 +27,29 @@ const CountriesPriceInput = ( props ) => {
 	};
 
 	return (
-		<div className="countries-price-input">
+		<div className="gla-countries-price-input">
 			<AppInputControl
-				label={ createInterpolateElement(
-					__(
-						`Shipping rate for <countries /><more />`,
-						'google-listings-and-ads'
-					),
-					{
-						countries: (
-							<strong>{ first5countries.join( ', ' ) }</strong>
-						),
-						more: <More count={ remainingCount } />,
-					}
-				) }
+				label={
+					<div className="label">
+						<div>
+							{ createInterpolateElement(
+								__(
+									`Shipping rate for <countries /><more />`,
+									'google-listings-and-ads'
+								),
+								{
+									countries: (
+										<strong>
+											{ first5countries.join( ', ' ) }
+										</strong>
+									),
+									more: <More count={ remainingCount } />,
+								}
+							) }
+						</div>
+						<EditRateButton value={ value } />
+					</div>
+				}
 				suffix={ __( 'USD', 'google-listings-and-ads' ) }
 				value={ price }
 				onChange={ handleChange }
