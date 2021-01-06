@@ -205,9 +205,7 @@ class ConnectionTest implements Service, Registerable {
 						<?php wp_nonce_field( 'wcs-sync-product' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-sync-product" type="hidden" />
-						<label>
-							Merchant ID <input name="merchant_id" type="text" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-						</label>
+						<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 						<label>
 							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
 						</label>

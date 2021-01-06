@@ -2,6 +2,7 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use DateInterval;
 use Google_Service_ShoppingContent_Price;
 use Google_Service_ShoppingContent_Product;
@@ -41,16 +42,21 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 * Initialize this object's properties from an array.
 	 *
 	 * @param array $array Used to seed this object's properties.
+	 *
 	 * @return void
+	 *
+	 * @throws InvalidValue When a WooCommerce product is not provided or it is invalid.
 	 */
 	public function mapTypes( $array ) {
-		if ( ! empty( $array['wc_product_id'] ) ) {
-			$this->wc_product = wc_get_product( $array['wc_product_id'] );
-			$this->map_woocommerce_product();
-
-			// Google doesn't expect this field, so it's best to remove it
-			unset( $array['wc_product_id'] );
+		if ( empty( $array['wc_product'] ) || ! $array['wc_product'] instanceof WC_Product ) {
+			throw InvalidValue::not_instance_of( WC_Product::class, 'wc_product' );
 		}
+
+		$this->wc_product = $array['wc_product'];
+		$this->map_woocommerce_product();
+
+		// Google doesn't expect this field, so it's best to remove it
+		unset( $array['wc_product'] );
 
 		parent::mapTypes( $array );
 	}
@@ -94,8 +100,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 * @return $this
 	 */
 	protected function map_wc_general_attributes() {
-		$offer_id = $this->wc_product->get_sku() ?? $this->wc_product->get_id();
-		$this->setOfferId( $offer_id );
+		$this->setOfferId( $this->wc_product->get_id() );
 
 		$this->setTitle( $this->wc_product->get_title() );
 		$this->setDescription( $this->get_wc_product_description() );
@@ -103,11 +108,10 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 
 		// set item group id for variations and variable products
 		if ( $this->is_variation() ) {
-			$parent_product    = wc_get_product( $this->wc_product->get_parent_id() );
-			$parent_product_id = $parent_product->get_sku() ?? $parent_product->get_id();
-			$this->setItemGroupId( $parent_product_id );
+			$parent_product = wc_get_product( $this->wc_product->get_parent_id() );
+			$this->setItemGroupId( $parent_product->get_id() );
 		} elseif ( $this->is_variable() ) {
-			$this->setItemGroupId( $offer_id );
+			$this->setItemGroupId( $this->wc_product->get_id() );
 		}
 
 		return $this;
