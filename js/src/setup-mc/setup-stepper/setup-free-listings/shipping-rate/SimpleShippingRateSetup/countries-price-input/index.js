@@ -47,7 +47,7 @@ const CountriesPriceInput = ( props ) => {
 								}
 							) }
 						</div>
-						<EditRateButton value={ value } />
+						<EditRateButton rate={ value } />
 					</div>
 				}
 				suffix={ __( 'USD', 'google-listings-and-ads' ) }
