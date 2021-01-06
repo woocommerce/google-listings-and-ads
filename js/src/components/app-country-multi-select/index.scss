@@ -7,6 +7,9 @@
 	// CSS hacks to fix the input UI.
 	&.woocommerce-select-control {
 		.components-base-control {
+			// remove the coded height 56px that is causing UI problem.
+			height: unset;
+
 			.woocommerce-select-control__control-input,
 			.woocommerce-select-control__tags {
 				margin: 0;
