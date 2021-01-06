@@ -12,6 +12,15 @@
 		}
 	}
 
+	// hack to fix tertiary destructive button.
+	&.is-tertiary.is-destructive {
+		box-shadow: none;
+
+		&:hover:not(:disabled) {
+			box-shadow: none;
+		}
+	}
+
 	&.is-link.is-destructive:focus {
 		color: $alert-red;
 
