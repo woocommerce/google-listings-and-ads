@@ -8,10 +8,10 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import AppInputControl from '../../../../../../components/app-input-control';
-import EditRateButton from './edit-rate-button';
-import More from './more';
-import './index.scss';
+import More from '../../../components/more';
 import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
+import EditRateButton from './edit-rate-button';
+import './index.scss';
 
 const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;

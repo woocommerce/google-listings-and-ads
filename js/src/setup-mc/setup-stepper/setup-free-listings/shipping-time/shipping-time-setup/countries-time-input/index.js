@@ -8,10 +8,10 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import AppInputControl from '../../../../../../components/app-input-control';
-import More from './more';
+import More from '../../../components/more';
+import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
-import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 
 const CountriesTimeInput = ( props ) => {
 	const { value, onChange } = props;
