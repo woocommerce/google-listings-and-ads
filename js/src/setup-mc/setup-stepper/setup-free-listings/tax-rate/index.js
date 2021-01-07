@@ -56,7 +56,12 @@ const TaxRate = ( props ) => {
 							) }
 							value="yes"
 						>
-							TODO
+							<RadioHelperText>
+								{ __(
+									'Google’s estimated tax rates will automatically be applied to my product listings.',
+									'google-listings-and-ads'
+								) }
+							</RadioHelperText>
 						</AppRadioContentControl>
 						<AppRadioContentControl
 							{ ...getInputProps( 'taxRateOption' ) }
@@ -69,7 +74,7 @@ const TaxRate = ( props ) => {
 							<RadioHelperText>
 								{ createInterpolateElement(
 									__(
-										' I’ll set my tax rates up manually in <link>Google Merchant Center</link>. I understand that if I don’t set this up, my products will be disapproved.',
+										'I’ll set my tax rates up manually in <link>Google Merchant Center</link>. I understand that if I don’t set this up, my products will be disapproved.',
 										'google-listings-and-ads'
 									),
 									{
