@@ -15,8 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
-use Google_Service_ShoppingContent as ShoppingService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 
@@ -210,6 +210,24 @@ class ConnectionTest implements Service, Registerable {
 							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
 						</label>
 						<button class="button">Sync Product with Google Merchant Center</button>
+					</form>
+				</div>
+				<div>
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<?php wp_nonce_field( 'wcs-sync-all-products' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-sync-all-products" type="hidden" />
+                        <input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+						<button class="button">Sync All Products with Google Merchant Center</button>
+					</form>
+				</div>
+				<div>
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<?php wp_nonce_field( 'wcs-delete-synced-products' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-delete-synced-products" type="hidden" />
+                        <input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+						<button class="button">Delete All Synced Products from Google Merchant Center</button>
 					</form>
 				</div>
 			<?php } ?>
@@ -503,19 +521,67 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-sync-product' === $_GET['action'] && check_admin_referer( 'wcs-sync-product' ) ) {
 			$id      = ! empty( $_GET['product_id'] ) ? absint( $_GET['product_id'] ) : '12345';
-			$product = new WCProductAdapter( [ 'wc_product_id' => $id ] );
+			$product = wc_get_product( $id );
 
-			/** @var Merchant $merchant */
-			$merchant = $this->container->get( Merchant::class );
-			/** @var ShoppingService $service */
-			$service = $this->container->get( ShoppingService::class );
+			/** @var ProductSyncer $product_syncer */
+			$product_syncer = $this->container->get( ProductSyncer::class );
 
 			try {
-				$product = $service->products->insert( $merchant->get_id(), $product );
+				$product_syncer->update( $product );
 
-				$this->response = sprintf( 'Product %s successfully submitted to Google.', $product->getId() );
-			} catch ( \Google_Exception $exception ) {
+				$this->response = sprintf( 'Product successfully submitted to Google.' );
+			} catch ( ProductSyncerException $exception ) {
 				$this->response = 'Error submitting product to Google: ' . $exception->getMessage();
+			}
+		}
+
+		if ( 'wcs-sync-all-products' === $_GET['action'] && check_admin_referer( 'wcs-sync-all-products' ) ) {
+			/** @var ProductSyncer $product_syncer */
+			$product_syncer = $this->container->get( ProductSyncer::class );
+
+			try {
+				$products = wc_get_products(
+					[
+						'limit' => -1,
+					]
+				);
+
+				$result = $product_syncer->update_many( $products );
+
+				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_updated_products() ) ) . "\n";
+				if ( ! empty( $result->get_invalid_products() ) ) {
+					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
+					foreach ($result->get_invalid_products() as  $invalid_product) {
+						$this->response .= sprintf( '%s: %s', $invalid_product->get_product_id(), $invalid_product->get_errors() ) . "\n";
+					}
+				}
+			} catch ( ProductSyncerException $exception ) {
+				$this->response = 'Error submitting products to Google: ' . $exception->getMessage();
+			}
+		}
+
+		if ( 'wcs-delete-synced-products' === $_GET['action'] && check_admin_referer( 'wcs-delete-synced-products' ) ) {
+			/** @var ProductSyncer $product_syncer */
+			$product_syncer = $this->container->get( ProductSyncer::class );
+
+			try {
+				$products = wc_get_products(
+					[
+						'limit' => -1,
+					]
+				);
+
+				$result = $product_syncer->delete_many( $products );
+
+				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_deleted_product_ids() ) ) . "\n";
+				if ( ! empty( $result->get_invalid_products() ) ) {
+					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
+					foreach ($result->get_invalid_products() as  $invalid_product) {
+						$this->response .= sprintf( '%s: %s', $invalid_product->get_product_id(), $invalid_product->get_errors() ) . "\n";
+					}
+				}
+			} catch ( ProductSyncerException $exception ) {
+				$this->response = 'Error deleting products from Google: ' . $exception->getMessage();
 			}
 		}
 	}

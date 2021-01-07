@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
@@ -20,6 +21,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
@@ -57,6 +61,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		TrackerSnapshot::class        => true,
 		Tracks::class                 => true,
 		TracksInterface::class        => true,
+		ProductSyncer::class          => true,
+		ProductMetaHandler::class     => true,
 	];
 
 	/**
@@ -88,6 +94,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
+
+		$this->share( ProductMetaHandler::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class );
+		$this->share( ProductSyncer::class, GoogleProductService::class, ProductMetaHandler::class, ProductHelper::class );
 
 		// Set up inflector for tracks classes.
 		$this->getLeagueContainer()
