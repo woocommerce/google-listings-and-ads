@@ -56,26 +56,6 @@ const SetupFreeListings = () => {
 						key: 'USA',
 						label: 'United States of America',
 					},
-					{
-						key: 'A',
-						label: 'United States of America',
-					},
-					{
-						key: 'S',
-						label: 'United States of America',
-					},
-					{
-						key: 'D',
-						label: 'United States of America',
-					},
-					{
-						key: 'F',
-						label: 'United States of America',
-					},
-					{
-						key: 'G',
-						label: 'United States of America',
-					},
 				],
 				time: '20',
 			},
