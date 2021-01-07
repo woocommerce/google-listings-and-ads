@@ -12,11 +12,11 @@ import Section from '../../../../wcdl/section';
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
 import VerticalGapLayout from '../components/vertical-gap-layout';
+import ShippingTimeSetup from './shipping-time-setup';
 
 const ShippingTime = ( props ) => {
-	const {
-		formProps: { getInputProps },
-	} = props;
+	const { formProps } = props;
+	const { getInputProps } = formProps;
 
 	return (
 		<Section
@@ -53,7 +53,7 @@ const ShippingTime = ( props ) => {
 							) }
 							value="simple"
 						>
-							TODO
+							<ShippingTimeSetup formProps={ formProps } />
 						</AppRadioContentControl>
 						<AppRadioContentControl
 							{ ...getInputProps( 'shippingTimeOption' ) }

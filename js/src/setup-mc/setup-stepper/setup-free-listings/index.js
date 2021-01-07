@@ -40,6 +40,42 @@ const SetupFreeListings = () => {
 		'shippingRateOption-freeShipping': false,
 		'shippingRateOption-freeShipping-priceOver': '',
 		shippingTimeOption: null,
+		'shippingTimeOption-rows': [
+			{
+				countries: [
+					{
+						key: 'AUS',
+						label: 'Australia',
+					},
+					{
+						key: 'USA',
+						label: 'United States of America',
+					},
+					{
+						key: 'A',
+						label: 'United States of America',
+					},
+					{
+						key: 'S',
+						label: 'United States of America',
+					},
+					{
+						key: 'D',
+						label: 'United States of America',
+					},
+					{
+						key: 'F',
+						label: 'United States of America',
+					},
+					{
+						key: 'G',
+						label: 'United States of America',
+					},
+				],
+				time: '20',
+			},
+		],
+		'shippingTimeOption-allowGoogleDataCollection': false,
 		taxRateOption: null,
 		checkWebsiteLive: false,
 		checkCheckoutProcess: false,
