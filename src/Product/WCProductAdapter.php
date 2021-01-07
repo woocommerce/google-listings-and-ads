@@ -83,8 +83,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 		// todo: this is temporary, modify or remove this when the GTIN, MPN etc. functionalities are implemented.
 		$this->setIdentifierExists( false );
 
-		// todo: maybe set this using the site locale?
-		$this->setContentLanguage( 'en' );
+		$content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
+		$this->setContentLanguage( $content_language );
 
 		$this->map_wc_general_attributes()
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
