@@ -19,7 +19,7 @@ const formKeys = {
 	priceOver: 'shippingRateOption-freeShipping-priceOver',
 };
 
-const SimpleShippingRateSetup = ( props ) => {
+const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values, setValue },
 	} = props;
@@ -53,7 +53,7 @@ const SimpleShippingRateSetup = ( props ) => {
 	};
 
 	return (
-		<div className="gla-simple-shipping-rate-setup">
+		<div className="gla-shipping-rate-setup">
 			<VerticalGapLayout>
 				<div className="countries-price">
 					<VerticalGapLayout>
@@ -103,4 +103,4 @@ const SimpleShippingRateSetup = ( props ) => {
 	);
 };
 
-export default SimpleShippingRateSetup;
+export default ShippingRateSetup;

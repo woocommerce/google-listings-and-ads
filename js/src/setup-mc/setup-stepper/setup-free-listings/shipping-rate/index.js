@@ -12,7 +12,7 @@ import Section from '../../../../wcdl/section';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import VerticalGapLayout from '../components/vertical-gap-layout';
-import SimpleShippingRateSetup from './SimpleShippingRateSetup';
+import ShippingRateSetup from './shipping-rate-setup';
 import './index.scss';
 
 const ShippingRate = ( props ) => {
@@ -54,7 +54,7 @@ const ShippingRate = ( props ) => {
 							) }
 							value="simple"
 						>
-							<SimpleShippingRateSetup formProps={ formProps } />
+							<ShippingRateSetup formProps={ formProps } />
 						</AppRadioContentControl>
 						<AppRadioContentControl
 							{ ...getInputProps( 'shippingRateOption' ) }
