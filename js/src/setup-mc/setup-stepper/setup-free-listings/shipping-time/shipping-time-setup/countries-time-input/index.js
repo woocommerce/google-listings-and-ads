@@ -11,11 +11,13 @@ import AppInputControl from '../../../../../../components/app-input-control';
 import More from './more';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
+import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 
 const CountriesTimeInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, time } = value;
 
+	const audienceCountries = useGetAudienceCountries();
 	const first5countries = countries.slice( 0, 5 ).map( ( c ) => c.label );
 	const remainingCount = countries.length - first5countries.length;
 
@@ -40,7 +42,13 @@ const CountriesTimeInput = ( props ) => {
 								{
 									countries: (
 										<strong>
-											{ first5countries.join( ', ' ) }
+											{ audienceCountries.length ===
+											countries.length
+												? __(
+														`all countries`,
+														'google-listings-and-ads'
+												  )
+												: first5countries.join( ', ' ) }
 										</strong>
 									),
 									more: <More count={ remainingCount } />,

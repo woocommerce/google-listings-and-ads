@@ -10,6 +10,7 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import VerticalGapLayout from '../../components/vertical-gap-layout';
+import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
 import AddTimeButton from './add-time-button';
 import CountriesTimeInput from './countries-time-input';
 
@@ -23,23 +24,7 @@ const ShippingTimeSetup = ( props ) => {
 		formProps: { getInputProps, values, setValue },
 	} = props;
 
-	// TODO: call backend API to get the selected countries
-	// from Step 2 Choose Your Audience.
-	const audienceCountries = [
-		{
-			key: 'AUS',
-			label: 'Australia',
-		},
-		{
-			key: 'CHN',
-			label: 'China',
-		},
-		{
-			key: 'USA',
-			label: 'United States of America',
-		},
-	];
-
+	const audienceCountries = useGetAudienceCountries();
 	const expectedCountryCount = audienceCountries.length;
 	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
 		return acc + cur.countries.length;

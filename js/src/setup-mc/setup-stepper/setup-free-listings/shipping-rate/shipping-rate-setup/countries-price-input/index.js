@@ -11,11 +11,13 @@ import AppInputControl from '../../../../../../components/app-input-control';
 import EditRateButton from './edit-rate-button';
 import More from './more';
 import './index.scss';
+import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 
 const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, price } = value;
 
+	const audienceCountries = useGetAudienceCountries();
 	const first5countries = countries.slice( 0, 5 ).map( ( c ) => c.label );
 	const remainingCount = countries.length - first5countries.length;
 
@@ -40,7 +42,13 @@ const CountriesPriceInput = ( props ) => {
 								{
 									countries: (
 										<strong>
-											{ first5countries.join( ', ' ) }
+											{ audienceCountries.length ===
+											countries.length
+												? __(
+														`all countries`,
+														'google-listings-and-ads'
+												  )
+												: first5countries.join( ', ' ) }
 										</strong>
 									),
 									more: <More count={ remainingCount } />,

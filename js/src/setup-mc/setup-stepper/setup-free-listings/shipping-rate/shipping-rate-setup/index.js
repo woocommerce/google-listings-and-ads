@@ -11,6 +11,7 @@ import AppInputControl from '../../../../../components/app-input-control';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
 import CountriesPriceInput from './countries-price-input';
 import AddRateButton from './add-rate-button';
+import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
 import './index.scss';
 
 const formKeys = {
@@ -24,23 +25,7 @@ const ShippingRateSetup = ( props ) => {
 		formProps: { getInputProps, values, setValue },
 	} = props;
 
-	// TODO: call backend API to get the selected countries
-	// from Step 2 Choose Your Audience.
-	const audienceCountries = [
-		{
-			key: 'AUS',
-			label: 'Australia',
-		},
-		{
-			key: 'CHN',
-			label: 'China',
-		},
-		{
-			key: 'USA',
-			label: 'United States of America',
-		},
-	];
-
+	const audienceCountries = useGetAudienceCountries();
 	const expectedCountryCount = audienceCountries.length;
 	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
 		return acc + cur.countries.length;
