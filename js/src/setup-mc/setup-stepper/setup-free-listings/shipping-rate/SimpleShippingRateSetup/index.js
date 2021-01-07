@@ -32,6 +32,10 @@ const SimpleShippingRateSetup = ( props ) => {
 			label: 'Australia',
 		},
 		{
+			key: 'CHN',
+			label: 'China',
+		},
+		{
 			key: 'USA',
 			label: 'United States of America',
 		},
