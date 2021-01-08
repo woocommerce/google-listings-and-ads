@@ -316,7 +316,9 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function get_country_code_sanitize_callback(): callable {
 		return function( $value ) {
-			return strtoupper( $value );
+			return is_array( $value )
+				? array_map( 'strtoupper', $value )
+				: strtoupper( $value );
 		};
 	}
 
@@ -328,16 +330,20 @@ class ShippingRateController extends BaseOptionsController {
 	protected function get_country_code_validate_callback(): callable {
 		return function( $value ) {
 			try {
-				$this->validate_country_code( $value );
+				// This is used for individual strings and an array of strings.
+				$value = (array) $value;
+				foreach ( $value as $item ) {
+					$this->validate_country_code( $item );
+				}
 
 				return true;
-			} catch ( Exception $e ) {
+			} catch ( Throwable $e ) {
 				return $this->error_from_exception(
 					$e,
 					'gla_invalid_country',
 					[
 						'status'  => 400,
-						'country' => $value,
+						'country' => $item,
 					]
 				);
 			}
