@@ -46,7 +46,13 @@ class Proxy {
 			$accounts = $service->accounts->authinfo();
 
 			foreach ( $accounts->getAccountIdentifiers() as $account ) {
-				$ids[] = $account->getMerchantID();
+
+				$id = $account->getMerchantID();
+
+				// $id can be NULL if it is a Multi Client Account (MCA)
+				if ( $id ) {
+					$ids[] = $id;
+				}
 			}
 
 			return $ids;

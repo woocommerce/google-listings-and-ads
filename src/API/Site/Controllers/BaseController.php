@@ -69,6 +69,36 @@ abstract class BaseController implements Registerable {
 	}
 
 	/**
+	 * Prepare an item schema for sending to the API.
+	 *
+	 * @param array  $properties   Array of raw properties.
+	 * @param string $schema_title Schema title.
+	 *
+	 * @return array
+	 */
+	protected function prepare_item_schema( array $properties, string $schema_title ): array {
+		array_walk(
+			$properties,
+			function( &$value ) {
+				unset(
+					$value['default'],
+					$value['items'],
+					$value['validate_callback'],
+					$value['sanitize_callback']
+				);
+			}
+		);
+
+		return [
+			'$schema'              => 'http://json-schema.org/draft-04/schema#',
+			'title'                => $schema_title,
+			'type'                 => 'object',
+			'additionalProperties' => false,
+			'properties'           => $properties,
+		];
+	}
+
+	/**
 	 * Register rest routes with WordPress.
 	 */
 	abstract protected function register_routes(): void;

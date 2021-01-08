@@ -10,7 +10,9 @@ import { __ } from '@wordpress/i18n';
 import WordPressDotComAccount from './wordpressdotcom-account';
 import GoogleAccount from './google-account';
 import GoogleMCAccount from './google-mc-account';
-import './index.scss';
+import StepContent from '../components/step-content';
+import StepContentHeader from '../components/step-content-header';
+import StepContentFooter from '../components/step-content-footer';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
@@ -21,25 +23,22 @@ const SetupAccounts = ( props ) => {
 	const isContinueButtonDisabled = true;
 
 	return (
-		<div className="gla-setup-accounts">
-			<header className="gla-setup-accounts__header">
-				<p className="step">
-					{ __( 'STEP ONE', 'google-listings-and-ads' ) }
-				</p>
-				<h1>
-					{ __( 'Set up your accounts', 'google-listings-and-ads' ) }
-				</h1>
-				<p className="description">
-					{ __(
-						'Connect your Wordpress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.',
-						'google-listings-and-ads'
-					) }
-				</p>
-			</header>
+		<StepContent>
+			<StepContentHeader
+				step={ __( 'STEP ONE', 'google-listings-and-ads' ) }
+				title={ __(
+					'Set up your accounts',
+					'google-listings-and-ads'
+				) }
+				description={ __(
+					'Connect your Wordpress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.',
+					'google-listings-and-ads'
+				) }
+			/>
 			<WordPressDotComAccount />
 			<GoogleAccount disabled={ isGoogleAccountDisabled } />
 			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
-			<div className="actions">
+			<StepContentFooter>
 				<Button
 					isPrimary
 					disabled={ isContinueButtonDisabled }
@@ -47,8 +46,8 @@ const SetupAccounts = ( props ) => {
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
 				</Button>
-			</div>
-		</div>
+			</StepContentFooter>
+		</StepContent>
 	);
 };
 

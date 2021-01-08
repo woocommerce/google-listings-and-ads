@@ -3,10 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,23 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class SettingsController extends BaseController {
-
-	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
-
-	/**
-	 * BaseController constructor.
-	 *
-	 * @param RESTServer       $server
-	 * @param OptionsInterface $options
-	 */
-	public function __construct( RESTServer $server, OptionsInterface $options ) {
-		parent::__construct( $server );
-		$this->options = $options;
-	}
+class SettingsController extends BaseOptionsController {
 
 	/**
 	 * Register rest routes with WordPress.
@@ -102,25 +85,7 @@ class SettingsController extends BaseController {
 	 * @return array
 	 */
 	public function get_item_schema(): array {
-		$properties = $this->get_settings_schema();
-		array_walk(
-			$properties,
-			function( &$value ) {
-				unset(
-					$value['default'],
-					$value['items'],
-					$value['validate_callback'],
-					$value['sanitize_callback']
-				);
-			}
-		);
-
-		return [
-			'$schema'    => 'http://json-schema.org/draft-04/schema#',
-			'title'      => 'merchant_center_settings',
-			'type'       => 'object',
-			'properties' => $properties,
-		];
+		return $this->prepare_item_schema( $this->get_settings_schema(), 'merchant_center_settings' );
 	}
 
 	/**
