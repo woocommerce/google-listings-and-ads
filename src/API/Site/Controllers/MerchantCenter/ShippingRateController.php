@@ -138,37 +138,21 @@ class ShippingRateController extends BaseOptionsController {
 	protected function get_create_rate_callback(): callable {
 		return function( WP_REST_Request $request ) {
 			$iso = $request->get_param( 'country_code' );
-			try {
-				$schema = $this->get_rate_schema();
-				$rates  = $this->get_shipping_rates_option();
-				$rate   = $rates[ $iso ] ?? [];
-				foreach ( $schema as $key => $property ) {
-					$rate[ $key ] = $request->get_param( $key ) ?? $rate[ $key ] ?? $property['default'] ?? null;
-				}
+			$this->update_shipping_rates_option(
+				$this->process_new_rate(
+					$this->get_shipping_rates_option(),
+					$iso,
+					$request->get_params()
+				)
+			);
 
-				// todo: translate the country using WC_Countries class
-				$rate['country'] = $this->iso->alpha2( $iso )['name'];
-
-				$rates[ $iso ] = $rate;
-				$this->update_shipping_rates_option( $rates );
-
-				return new WP_REST_Response(
-					[
-						'status'  => 'success',
-						'message' => __( 'Successfully added rate for country.', 'google-listings-and-ads' ),
-					],
-					201
-				);
-			} catch ( OutOfBoundsException $e ) {
-				return $this->error_from_exception(
-					$e,
-					'gla_invalid_country',
-					[
-						'status'       => 400,
-						'country_code' => $iso,
-					]
-				);
-			}
+			return new WP_REST_Response(
+				[
+					'status'  => 'success',
+					'message' => __( 'Successfully added rate for country.', 'google-listings-and-ads' ),
+				],
+				201
+			);
 		};
 	}
 
@@ -371,5 +355,28 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function error_from_exception( Exception $e, string $code, array $data = [] ): WP_Error {
 		return new WP_Error( $code, $e->getMessage(), $data );
+	}
+
+	/**
+	 * Process a new rate and add it to the other rates.
+	 *
+	 * @param array  $all_rates Array of all rates.
+	 * @param string $rate_key  The rate key.
+	 * @param array  $raw_data  Raw data to process.
+	 *
+	 * @return array
+	 */
+	protected function process_new_rate( array $all_rates, string $rate_key, array $raw_data ): array {
+		$schema = $this->get_rate_schema();
+		$rate   = $all_rates[ $rate_key ] ?? [];
+		foreach ( $schema as $key => $property ) {
+			$rate[ $key ] = $raw_data[ $key ] ?? $rate[ $key ] ?? $property['default'] ?? null;
+		}
+
+		// todo: translate the country using WC_Countries class
+		$rate['country']        = $this->iso->alpha2( $rate_key )['name'];
+		$all_rates[ $rate_key ] = $rate;
+
+		return $all_rates;
 	}
 }
