@@ -2,8 +2,8 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchDeleteProductProductResponse;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchUpdateProductProductResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchDeleteProductResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchUpdateProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Google_Exception;
@@ -69,7 +69,7 @@ class ProductSyncer implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchUpdateProductProductResponse Containing both the synced and invalid products.
+	 * @return BatchUpdateProductResponse Containing both the synced and invalid products.
 	 *
 	 * @throws ProductSyncerException If there are any errors while syncing with Google.
 	 */
@@ -99,7 +99,7 @@ class ProductSyncer implements Service {
 			}
 		}
 
-		return new BatchUpdateProductProductResponse( $updated_products, $invalid_products );
+		return new BatchUpdateProductResponse( $updated_products, $invalid_products );
 	}
 
 	/**
@@ -126,7 +126,7 @@ class ProductSyncer implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchDeleteProductProductResponse Containing both the deleted and invalid products.
+	 * @return BatchDeleteProductResponse Containing both the deleted and invalid products.
 	 *
 	 * @throws ProductSyncerException If there are any errors while syncing with Google.
 	 */
@@ -156,7 +156,7 @@ class ProductSyncer implements Service {
 			}
 		}
 
-		return new BatchDeleteProductProductResponse( $deleted_product_ids, $invalid_products );
+		return new BatchDeleteProductResponse( $deleted_product_ids, $invalid_products );
 	}
 
 	/**

@@ -37,7 +37,7 @@ class InvalidValue extends LogicException implements GoogleListingsAndAdsExcepti
 	}
 
 	/**
-	 * Create a new instance of the exception when a value is not instance of a given class.
+	 * Create a new instance of the exception when a value is not an instance of a given class.
 	 *
 	 * @param string $class_name The name of the class that the value must be an instance of.
 	 * @param string $key        The name of the value.

@@ -9,7 +9,7 @@ use Google_Service_ShoppingContent_Product as GoogleProduct;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-class BatchGetProductProductResponse implements BatchProductResponse {
+class BatchGetProductResponse implements BatchProductResponse {
 
 	/**
 	 * @var GoogleProduct[]
@@ -42,9 +42,9 @@ class BatchGetProductProductResponse implements BatchProductResponse {
 	/**
 	 * @param GoogleProduct[]|null $products
 	 *
-	 * @return BatchGetProductProductResponse
+	 * @return BatchGetProductResponse
 	 */
-	public function set_products( $products ): BatchGetProductProductResponse {
+	public function set_products( $products ): BatchGetProductResponse {
 		$this->products = $products;
 
 		return $this;
@@ -60,9 +60,9 @@ class BatchGetProductProductResponse implements BatchProductResponse {
 	/**
 	 * @param array|null $errors
 	 *
-	 * @return BatchGetProductProductResponse
+	 * @return BatchGetProductResponse
 	 */
-	public function set_errors( $errors ): BatchGetProductProductResponse {
+	public function set_errors( $errors ): BatchGetProductResponse {
 		$this->errors = $errors;
 
 		return $this;

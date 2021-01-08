@@ -7,7 +7,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-class BatchDeleteProductProductResponse implements BatchProductResponse {
+class BatchDeleteProductResponse implements BatchProductResponse {
 
 	/**
 	 * @var string[]|null Google product IDs that were successfully deleted.
@@ -40,9 +40,9 @@ class BatchDeleteProductProductResponse implements BatchProductResponse {
 	/**
 	 * @param string[] $deleted_product_ids
 	 *
-	 * @return BatchDeleteProductProductResponse
+	 * @return BatchDeleteProductResponse
 	 */
-	public function set_deleted_product_ids( $deleted_product_ids ): BatchDeleteProductProductResponse {
+	public function set_deleted_product_ids( $deleted_product_ids ): BatchDeleteProductResponse {
 		$this->deleted_product_ids = $deleted_product_ids;
 
 		return $this;
@@ -58,9 +58,9 @@ class BatchDeleteProductProductResponse implements BatchProductResponse {
 	/**
 	 * @param InvalidProductEntry[] $invalid_products
 	 *
-	 * @return BatchDeleteProductProductResponse
+	 * @return BatchDeleteProductResponse
 	 */
-	public function set_invalid_products( $invalid_products ): BatchDeleteProductProductResponse {
+	public function set_invalid_products( $invalid_products ): BatchDeleteProductResponse {
 		$this->invalid_products = $invalid_products;
 
 		return $this;

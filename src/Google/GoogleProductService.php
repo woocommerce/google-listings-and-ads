@@ -87,33 +87,33 @@ class GoogleProductService implements Service {
 	/**
 	 * @param GoogleProduct[] $products
 	 *
-	 * @return BatchGetProductProductResponse
+	 * @return BatchGetProductResponse
 	 *
 	 * @throws InvalidValue If any of the provided products are invalid.
 	 */
-	public function get_batch( array $products ): BatchGetProductProductResponse {
+	public function get_batch( array $products ): BatchGetProductResponse {
 		return $this->custom_batch( $products, self::METHOD_GET );
 	}
 
 	/**
 	 * @param GoogleProduct[] $products
 	 *
-	 * @return BatchUpdateProductProductResponse
+	 * @return BatchUpdateProductResponse
 	 *
 	 * @throws InvalidValue If any of the provided products are invalid.
 	 */
-	public function insert_batch( array $products ): BatchUpdateProductProductResponse {
+	public function insert_batch( array $products ): BatchUpdateProductResponse {
 		return $this->custom_batch( $products, self::METHOD_INSERT );
 	}
 
 	/**
 	 * @param GoogleProduct[] $products
 	 *
-	 * @return BatchDeleteProductProductResponse
+	 * @return BatchDeleteProductResponse
 	 *
 	 * @throws InvalidValue If any of the provided products are invalid.
 	 */
-	public function delete_batch( array $products ): BatchDeleteProductProductResponse {
+	public function delete_batch( array $products ): BatchDeleteProductResponse {
 		return $this->custom_batch( $products, self::METHOD_DELETE );
 	}
 
@@ -183,13 +183,13 @@ class GoogleProductService implements Service {
 
 		switch ( $method ) {
 			case self::METHOD_INSERT:
-				$response = new BatchUpdateProductProductResponse( $result_products, $errors );
+				$response = new BatchUpdateProductResponse( $result_products, $errors );
 				break;
 			case self::METHOD_DELETE:
-				$response = new BatchDeleteProductProductResponse( $result_products, $errors );
+				$response = new BatchDeleteProductResponse( $result_products, $errors );
 				break;
 			default:
-				$response = new BatchGetProductProductResponse( $result_products, $errors );
+				$response = new BatchGetProductResponse( $result_products, $errors );
 		}
 
 		return $response;
