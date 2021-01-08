@@ -59,7 +59,7 @@ class ShippingRateController extends BaseOptionsController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_rate_schema(),
 				],
-				'schema' => $this->get_item_schema(),
+				'schema' => $this->get_item_schema_callback(),
 			]
 		);
 
@@ -72,7 +72,7 @@ class ShippingRateController extends BaseOptionsController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_batch_schema(),
 				],
-				'schema' => $this->get_batch_item_schema(),
+				'schema' => $this->get_batch_item_schema_callback(),
 			]
 		);
 
@@ -90,6 +90,7 @@ class ShippingRateController extends BaseOptionsController {
 					'callback'            => $this->get_delete_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				'schema' => $this->get_item_schema_callback(),
 			]
 		);
 	}
@@ -255,6 +256,28 @@ class ShippingRateController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the callback to obtain the item schema.
+	 *
+	 * @return callable
+	 */
+	protected function get_item_schema_callback(): callable {
+		return function() {
+			return $this->get_item_schema();
+		};
+	}
+
+	/**
+	 * Get the callback to obtain the batch item schema.
+	 *
+	 * @return callable
+	 */
+	protected function get_batch_item_schema_callback(): callable {
+		return function() {
+			return $this->get_batch_item_schema();
+		};
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function get_rate_schema(): array {
@@ -298,6 +321,11 @@ class ShippingRateController extends BaseOptionsController {
 	protected function get_batch_schema(): array {
 		$schema = $this->get_rate_schema();
 		unset( $schema['country'], $schema['country_code'] );
+
+		// Context is always edit for batches.
+		foreach ( $schema as $key => &$value ) {
+			$value['context'] = [ 'edit' ];
+		}
 
 		$schema['country_codes'] = [
 			'type'              => 'array',
