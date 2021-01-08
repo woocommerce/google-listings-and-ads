@@ -33,7 +33,7 @@ class ProductHelper implements Service {
 	 * @return string
 	 */
 	public function get_synced_google_product_id( WC_Product $product ) {
-		return $this->meta_handler->get( $product->get_id(), ProductMetaHandler::KEY_GOOGLE_ID );
+		return $this->meta_handler->get_google_id( $product->get_id() );
 	}
 
 	/**
@@ -42,8 +42,8 @@ class ProductHelper implements Service {
 	 * @return string
 	 */
 	public function is_product_synced( WC_Product $product ) {
-		$synced_at = $this->meta_handler->get( $product->get_id(), ProductMetaHandler::KEY_SYNCED_AT );
-		$google_id = $this->meta_handler->get( $product->get_id(), ProductMetaHandler::KEY_GOOGLE_ID );
+		$synced_at = $this->meta_handler->get_synced_at( $product->get_id() );
+		$google_id = $this->meta_handler->get_google_id( $product->get_id() );
 
 		return ! empty( $synced_at ) && ! empty( $google_id );
 	}

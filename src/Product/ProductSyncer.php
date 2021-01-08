@@ -164,16 +164,16 @@ class ProductSyncer implements Service {
 	 * @param GoogleProduct $google_product
 	 */
 	protected function update_metas( int $wc_product_id, GoogleProduct $google_product ) {
-		$this->meta_handler->update( $wc_product_id, ProductMetaHandler::KEY_SYNCED_AT, time() );
-		$this->meta_handler->update( $wc_product_id, ProductMetaHandler::KEY_GOOGLE_ID, $google_product->getId() );
+		$this->meta_handler->update_synced_at( $wc_product_id, time() );
+		$this->meta_handler->update_google_id( $wc_product_id, $google_product->getId() );
 	}
 
 	/**
 	 * @param int $wc_product_id WooCommerce product ID
 	 */
 	protected function delete_metas( int $wc_product_id ) {
-		$this->meta_handler->delete( $wc_product_id, ProductMetaHandler::KEY_SYNCED_AT );
-		$this->meta_handler->delete( $wc_product_id, ProductMetaHandler::KEY_GOOGLE_ID );
+		$this->meta_handler->delete_synced_at( $wc_product_id );
+		$this->meta_handler->delete_google_id( $wc_product_id );
 	}
 
 	/**
