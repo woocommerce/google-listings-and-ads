@@ -14,6 +14,7 @@ interface OptionsInterface {
 	public const MERCHANT_CENTER   = 'merchant_center';
 	public const MERCHANT_ID       = 'merchant_id';
 	public const SHIPPING_RATES    = 'shipping_rates';
+	public const SHIPPING_TIMES    = 'shipping_times';
 
 	/**
 	 * Get an option.
