@@ -147,7 +147,7 @@ class ShippingRateController extends BaseOptionsController {
 				}
 
 				// todo: translate the country using WC_Countries class
-				$rate['country'] = $this->iso->alpha2( $iso )['country'];
+				$rate['country'] = $this->iso->alpha2( $iso )['name'];
 
 				$rates[ $iso ] = $rate;
 				$this->update_shipping_rates_option( $rates );
