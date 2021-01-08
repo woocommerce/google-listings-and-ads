@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
+use Throwable;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -187,6 +188,33 @@ class ShippingRateController extends BaseOptionsController {
 			$country_codes = $request->get_param( 'country_codes' );
 			$currency      = $request->get_param( 'currency' );
 			$rate          = $request->get_param( 'rate' );
+
+			$rates = $this->get_shipping_rates_option();
+			foreach ( $country_codes as $country_code ) {
+				$rates = $this->process_new_rate(
+					$rates,
+					$country_code,
+					[
+						'country_code' => $country_code,
+						'currency'     => $currency,
+						'rate'         => $rate,
+					]
+				);
+			}
+
+			$this->update_shipping_rates_option( $rates );
+
+			return new WP_REST_Response(
+				[
+					'status'  => 'success',
+					'message' => sprintf(
+						/* translators: %s is a placeholder for comma-separated countries in ISO 3166-1 alpha-2 format. */
+						__( 'Successfully added rate for countries: %s.', 'google-listings-and-ads' ),
+						join( ',', $country_codes )
+					),
+				],
+				201
+			);
 		};
 	}
 
@@ -262,13 +290,15 @@ class ShippingRateController extends BaseOptionsController {
 		unset( $schema['country'], $schema['country_code'] );
 
 		$schema['country_codes'] = [
-			'type'        => 'array',
-			'description' => __( 'Array of country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
-			'context'     => [ 'edit' ],
-			'minItems'    => 1,
-			'required'    => true,
-			'uniqueItems' => true,
-			'items'       => [
+			'type'              => 'array',
+			'description'       => __( 'Array of country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+			'context'           => [ 'edit' ],
+			'sanitize_callback' => $this->get_country_code_sanitize_callback(),
+			'validate_callback' => $this->get_country_code_validate_callback(),
+			'minItems'          => 1,
+			'required'          => true,
+			'uniqueItems'       => true,
+			'items'             => [
 				'type' => 'string',
 			],
 		];
