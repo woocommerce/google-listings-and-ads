@@ -15,23 +15,39 @@ import ChooseAudience from './choose-audience';
 import './index.scss';
 
 const SetupStepper = () => {
-	// TODO: get the user's current step from API backend.
-	const [ step, setStep ] = useState( 3 );
+	// TODO: get the user's saved step from API backend.
+	const [ savedStep, setSavedStep ] = useState( 2 );
+
+	// pageStep is used to control the current step
+	// that the user is seeing.
+	// pageStep should always be <= maxStep.
+	//
+	// TODO: the two useStates here should be refactored later
+	// when we integrate with API backend later.
+	const [ pageStep, setPageStep ] = useState( savedStep );
 
 	const handleSetupAccountsContinue = () => {
 		recordSetupMCEvent( 'step1_continue' );
-		setStep( 2 );
+		setPageStep( 2 );
+		setSavedStep( Math.max( savedStep, 2 ) );
 	};
 
 	const handleChooseAudienceContinue = () => {
 		recordSetupMCEvent( 'step2_continue' );
-		setStep( 3 );
+		setPageStep( 3 );
+		setSavedStep( Math.max( savedStep, 3 ) );
+	};
+
+	const handleStepClick = ( key ) => {
+		if ( key <= savedStep ) {
+			setPageStep( key );
+		}
 	};
 
 	return (
 		<Stepper
 			className="gla-setup-stepper"
-			currentStep={ step }
+			currentStep={ pageStep }
 			steps={ [
 				{
 					key: 1,
@@ -44,6 +60,7 @@ const SetupStepper = () => {
 							onContinue={ handleSetupAccountsContinue }
 						/>
 					),
+					onClick: handleStepClick,
 				},
 				{
 					key: 2,
@@ -56,6 +73,7 @@ const SetupStepper = () => {
 							onContinue={ handleChooseAudienceContinue }
 						/>
 					),
+					onClick: handleStepClick,
 				},
 				{
 					key: 3,
@@ -64,6 +82,7 @@ const SetupStepper = () => {
 						'google-listings-and-ads'
 					),
 					content: <SetupFreeListings />,
+					onClick: handleStepClick,
 				},
 			] }
 		/>
