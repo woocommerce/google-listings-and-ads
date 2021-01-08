@@ -64,6 +64,19 @@ class ShippingRateController extends BaseOptionsController {
 		);
 
 		$this->register_route(
+			'mc/settings/shipping/batch',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_batch_create_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_batch_schema(),
+				],
+				'schema' => $this->get_batch_item_schema(),
+			]
+		);
+
+		$this->register_route(
 			'mc/settings/shipping/(?P<country_code>\w+)',
 			[
 				[
@@ -76,18 +89,6 @@ class ShippingRateController extends BaseOptionsController {
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->get_delete_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-				],
-			]
-		);
-
-		$this->register_route(
-			'mc/settings/shipping/batch',
-			[
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->get_batch_create_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_batch_schema(),
 				],
 			]
 		);
@@ -242,6 +243,15 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function get_item_schema(): array {
 		return $this->prepare_item_schema( $this->get_rate_schema(), 'shipping_rates' );
+	}
+
+	/**
+	 * Get the schema for batch shipping rates.
+	 *
+	 * @return array
+	 */
+	protected function get_batch_item_schema(): array {
+		return $this->prepare_item_schema( $this->get_batch_schema(), 'batch_shipping_rates' );
 	}
 
 	/**
