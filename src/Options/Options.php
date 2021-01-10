@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidOption;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,9 +16,12 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Options implements OptionsInterface, Service {
 
+	use PluginHelper;
+
 	private const VALID_OPTIONS = [
 		self::MERCHANT_CENTER => true,
 		self::MERCHANT_ID     => true,
+		self::SHIPPING_RATES  => true,
 	];
 
 	/**
@@ -37,6 +41,7 @@ final class Options implements OptionsInterface, Service {
 	 */
 	public function get( string $name, $default = null ) {
 		$this->validate_option_key( $name );
+		$name = $this->prefix_name( $name );
 		if ( ! array_key_exists( $name, $this->options ) ) {
 			$this->options[ $name ] = get_option( $name, $default );
 		}
@@ -54,6 +59,7 @@ final class Options implements OptionsInterface, Service {
 	 */
 	public function update( string $name, $value ): bool {
 		$this->validate_option_key( $name );
+		$name                   = $this->prefix_name( $name );
 		$this->options[ $name ] = $value;
 
 		return update_option( $name, $value );
@@ -68,6 +74,7 @@ final class Options implements OptionsInterface, Service {
 	 */
 	public function delete( string $name ): bool {
 		$this->validate_option_key( $name );
+		$name = $this->prefix_name( $name );
 		unset( $this->options[ $name ] );
 
 		return delete_option( $name );
@@ -84,5 +91,16 @@ final class Options implements OptionsInterface, Service {
 		if ( ! array_key_exists( $name, self::VALID_OPTIONS ) ) {
 			throw InvalidOption::invalid_name( $name );
 		}
+	}
+
+	/**
+	 * Prefix an option name with the plugin prefix.
+	 *
+	 * @param string $name
+	 *
+	 * @return string
+	 */
+	protected function prefix_name( string $name ): string {
+		return "{$this->get_slug()}_{$name}";
 	}
 }

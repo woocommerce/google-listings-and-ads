@@ -1,0 +1,20 @@
+.app-country-multi-select {
+	// don't show the default magnifier icon.
+	i.material-icons-outlined {
+		display: none;
+	}
+
+	// CSS hacks to fix the input UI.
+	&.woocommerce-select-control {
+		.components-base-control {
+			.woocommerce-select-control__control-input,
+			.woocommerce-select-control__tags {
+				margin: 0;
+			}
+
+			.woocommerce-tag {
+				max-height: 24px;
+			}
+		}
+	}
+}
