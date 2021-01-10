@@ -27,11 +27,11 @@ import './index.scss';
  * @type {Map<string, string>}
  */
 const performanceMetrics = new Map( [
+	[ 'netSales', __( 'Net Sales', 'google-listings-and-ads' ) ],
+	[ 'itemsSold', __( 'Items Sold', 'google-listings-and-ads' ) ],
 	[ 'conversions', __( 'Conversions', 'google-listings-and-ads' ) ],
 	[ 'clicks', __( 'Clicks', 'google-listings-and-ads' ) ],
 	[ 'impressions', __( 'Impressions', 'google-listings-and-ads' ) ],
-	[ 'itemsSold', __( 'Items Sold', 'google-listings-and-ads' ) ],
-	[ 'netSales', __( 'Net Sales', 'google-listings-and-ads' ) ],
 	[ 'totalSpend', __( 'Total Spend', 'google-listings-and-ads' ) ],
 ] );
 

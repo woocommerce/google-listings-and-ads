@@ -143,6 +143,16 @@ const CompareProgramsTableCard = () => {
                     isSortable: true,
                 },
                 {
+                    key: 'netSales',
+                    label: __( 'Net Sales', 'google-listings-and-ads' ),
+                    isSortable: true,
+                },
+                {
+                    key: 'itemsSold',
+                    label: __( 'Items Sold', 'google-listings-and-ads' ),
+                    isSortable: true,
+                },
+                {
                     key: 'conversions',
                     label: __( 'Conversions', 'google-listings-and-ads' ),
                     isSortable: true,
@@ -155,16 +165,6 @@ const CompareProgramsTableCard = () => {
                 {
                     key: 'impressions',
                     label: __( 'Impressions', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-                {
-                    key: 'itemsSold',
-                    label: __( 'Items Sold', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-                {
-                    key: 'netSales',
-                    label: __( 'Net Sales', 'google-listings-and-ads' ),
                     isSortable: true,
                 },
                 {
@@ -184,11 +184,11 @@ const CompareProgramsTableCard = () => {
 						),
 					},
 					{ display: row.title },
+					{ display: row.netSales },
+					{ display: row.itemsSold },
 					{ display: row.conversions },
 					{ display: row.clicks },
 					{ display: row.impressions },
-					{ display: row.itemsSold },
-					{ display: row.netSales },
 					{ display: row.totalSpend },
 				];
 			} ) }
