@@ -17,7 +17,56 @@ import AppTableCard from '../components/app-table-card';
  */
 const CompareProgramsTableCard = () => {
     const [ selectedRows, setSelectedRows ] = useState( new Set() );
-	const query = getQuery();
+    const query = getQuery();
+    // TODO: DRY ProgramsReports~performanceMetrics one API is settled.
+    const availableMetrics = [
+        {
+            key: 'netSales',
+            label: __( 'Net Sales', 'google-listings-and-ads' ),
+            isSortable: true,
+        },
+        {
+            key: 'itemsSold',
+            label: __( 'Items Sold', 'google-listings-and-ads' ),
+            isSortable: true,
+        },
+        {
+            key: 'conversions',
+            label: __( 'Conversions', 'google-listings-and-ads' ),
+            isSortable: true,
+        },
+        {
+            key: 'clicks',
+            label: __( 'Clicks', 'google-listings-and-ads' ),
+            isSortable: true,
+        },
+        {
+            key: 'impressions',
+            label: __( 'Impressions', 'google-listings-and-ads' ),
+            isSortable: true,
+        },
+        {
+            key: 'spend',
+            label: __( 'Spend', 'google-listings-and-ads' ),
+            isSortable: true,
+        },
+    ];
+
+    const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
+    /**
+     * Creates an array of cells for
+     * {@link module:app-table-card.Props.rows} -> {@link module:@woocommerce/components#TableCard.Props.rows},
+     * for a given row.
+     *
+     * Creates a cell for every ~availableMetrics item, displays `"Unavailable"`, when the data is `null`.
+     *
+     * @param {Object} row Row of data for programs table.
+     *
+     * @returns {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
+     */
+    const rowRenderer = ( row ) => availableMetrics.map( ( metric ) => {
+        return { display: row[ metric.key ] === null ? unavailable : row[ metric.key ] };
+    });
 
 	// TODO: data should be coming from backend API,
 	// using the above query (e.g. orderby, order and page) as parameter.
@@ -31,7 +80,7 @@ const CompareProgramsTableCard = () => {
             impressions: 14339,
             itemsSold: 1033,
             netSales: "$2,527.91",
-            totalSpend: "$300",
+            spend: "$300",
             compare: false,
 		},
 		{
@@ -42,7 +91,7 @@ const CompareProgramsTableCard = () => {
             impressions: 43359,
             itemsSold: 456,
             netSales: "$6,204.16",
-            totalSpend: "$200",
+            spend: "$200",
             compare: false,
 		},
 		{
@@ -53,18 +102,18 @@ const CompareProgramsTableCard = () => {
             impressions: 92771,
             itemsSold: 877,
             netSales: "$2,091.05",
-            totalSpend: "$100",
+            spend: "$100",
             compare: false,
 		},
 		{
 			id: 147,
 			title: 'Google Free Listings',
-            conversions: 89,
+            conversions: null,
             clicks: 5626,
             impressions: 23340,
-            itemsSold: 120,
-            netSales: "$96.73",
-            totalSpend: "$0",
+            itemsSold: null,
+            netSales: null,
+            spend: "$0",
             compare: false,
 		},
     ];
@@ -142,37 +191,7 @@ const CompareProgramsTableCard = () => {
                     required: true,
                     isSortable: true,
                 },
-                {
-                    key: 'netSales',
-                    label: __( 'Net Sales', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-                {
-                    key: 'itemsSold',
-                    label: __( 'Items Sold', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-                {
-                    key: 'conversions',
-                    label: __( 'Conversions', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-                {
-                    key: 'clicks',
-                    label: __( 'Clicks', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-                {
-                    key: 'impressions',
-                    label: __( 'Impressions', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-                {
-                    key: 'totalSpend',
-                    label: __( 'Spend', 'google-listings-and-ads' ),
-                    isSortable: true,
-                },
-            ] }
+            ].concat( availableMetrics ) }
 			rows={ data.map( ( row ) => {
 				return [
 					{
@@ -184,13 +203,7 @@ const CompareProgramsTableCard = () => {
 						),
 					},
 					{ display: row.title },
-					{ display: row.netSales },
-					{ display: row.itemsSold },
-					{ display: row.conversions },
-					{ display: row.clicks },
-					{ display: row.impressions },
-					{ display: row.totalSpend },
-				];
+				].concat( rowRenderer( row ) );
 			} ) }
 			totalRows={ data.length }
 			rowsPerPage={ 10 }
