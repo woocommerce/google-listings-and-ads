@@ -8,6 +8,8 @@ import {
 	Chart,
 	FilterPicker,
 } from '@woocommerce/components';
+import { Tooltip } from '@wordpress/components';
+import GridiconInfoOutline from 'gridicons/dist/info-outline';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
@@ -17,6 +19,7 @@ import TabNav from '../tab-nav';
 import AppDateRangeFilterPicker from '../dashboard/app-date-range-filter-picker';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import '../dashboard/index.scss';
+import './index.scss';
 
 /**
  * Available metrics and their human-readable labels.
@@ -39,6 +42,7 @@ const ProgramsReports = () => {
 			value: '4,102',
 			delta: -2.21,
 			label: 'Conversions',
+			missingFreeListingsData: true,
 		},
 		clicks: {
 			value: '14,135',
@@ -54,11 +58,13 @@ const ProgramsReports = () => {
 			value: '6,928',
 			delta: 0.35,
 			label: 'itemsSold',
+			missingFreeListingsData: true,
 		},
 		netSales: {
 			value: '$10,802.93',
 			delta: 5.35,
 			label: 'Net Sales',
+			missingFreeListingsData: true,
 		},
 		totalSpend: {
 			value: '$600.00',
@@ -155,16 +161,45 @@ const ProgramsReports = () => {
 						return Array.from(
 							performanceMetrics,
 							( [ key, label ] ) => {
-								return (
-									<SummaryNumber
-										key={ key }
-										label={ label }
-										value={ data[ key ].value }
-										delta={ data[ key ].delta }
-									/>
-								);
+								// Show only available data.
+								// Until ~Q4 2021, free listings, may not have all metrics.
+								if( data[ key ] ){
+									let markedLabel = label;
+									// Until ~Q4 2021, metrics for all programs, may lack data for free listings.
+									if( data[ key ].missingFreeListingsData ) {
+										const infoText =  __(
+											'This data is available for paid campaigns only.',
+											'google-listings-and-ads'
+										);
+										markedLabel = (
+											<div className="gla-reports__metric-label">
+												{ label }
+												<Tooltip
+													text={ infoText }
+												>
+													<span>
+														<GridiconInfoOutline
+															className="gla-reports__metric-infoicon"
+															role="img"
+															aria-label={ infoText }
+															size={ 16 }
+														/>
+													</span>
+												</Tooltip>
+											</div>
+										);
+									}
+									return (
+										<SummaryNumber
+											key={ key }
+											label={ markedLabel }
+											value={ data[ key ].value }
+											delta={ data[ key ].delta }
+										/>
+									);
+								}
 							}
-						);
+						).filter( e => e ); // Ignore undefined elements.
 					} }
 				</SummaryList>
 				<Chart
