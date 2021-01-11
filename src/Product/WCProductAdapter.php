@@ -464,7 +464,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 *
 	 * @return bool
 	 */
-	protected function is_variation(): bool {
+	public function is_variation(): bool {
 		return $this->wc_product instanceof WC_Product_Variation;
 	}
 
@@ -473,7 +473,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 *
 	 * @return bool
 	 */
-	protected function is_variable(): bool {
+	public function is_variable(): bool {
 		return $this->wc_product instanceof WC_Product_Variable;
 	}
 }

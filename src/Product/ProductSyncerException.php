@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ProductSyncerException
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class ProductSyncerException extends Exception implements GoogleListingsAndAdsException {
 }
