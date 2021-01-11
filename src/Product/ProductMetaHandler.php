@@ -29,6 +29,8 @@ class ProductMetaHandler implements Service {
 	 * @param string $name
 	 * @param mixed  $arguments
 	 *
+	 * @return mixed
+	 *
 	 * @throws BadMethodCallException If the method that's called doesn't exist.
 	 * @throws InvalidMeta            If the meta key is invalid.
 	 */
@@ -46,8 +48,14 @@ class ProductMetaHandler implements Service {
 			throw new BadMethodCallException( sprintf( 'The method %s does not exist in class ProductMetaHandler', $function_name ) );
 		}
 
-		$arguments['key'] = $key;
-		call_user_func_array( [ $this, $method ], $arguments );
+		// set the value as the third argument if method is `update`
+		if ( 'update' === $method ) {
+			$arguments[2] = $arguments[1];
+		}
+		// set the key as the second argument
+		$arguments[1] = $key;
+
+		return call_user_func_array( [ $this, $method ], $arguments );
 	}
 
 	/**
