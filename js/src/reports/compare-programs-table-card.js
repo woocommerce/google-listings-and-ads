@@ -157,7 +157,7 @@ const CompareProgramsTableCard = ( props ) => {
 			className="gla-all-programs-table-card"
 			title={
 				<>
-					{ __( 'All Programs', 'google-listings-and-ads' ) }
+					{ __( 'Programs', 'google-listings-and-ads' ) }
                     <Button
                         isSecondary
                         isSmall
