@@ -11,6 +11,10 @@ export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 	} );
 };
 
+export const recordTableSortEvent = ( report, column, direction ) => {
+	recordEvent( 'gla_table_sort', { report, column, direction } );
+};
+
 export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_mc', {
 		target,

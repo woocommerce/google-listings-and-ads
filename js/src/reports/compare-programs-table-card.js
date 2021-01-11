@@ -151,7 +151,7 @@ const CompareProgramsTableCard = () => {
 
 	return (
 		<AppTableCard
-			trackEventReportId="all-programs"
+			trackEventReportId="compare-programs"
 			className="gla-all-programs-table-card"
 			title={
 				<>
