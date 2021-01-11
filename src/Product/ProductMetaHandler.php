@@ -33,8 +33,7 @@ class ProductMetaHandler implements Service {
 	 * @throws InvalidMeta            If the meta key is invalid.
 	 */
 	public function __call( $name, $arguments ) {
-		$matches       = [];
-		$found_matches = preg_match( '/^([a-z]+)\_([\w\d]+)$/i', $name, $matches );
+		$found_matches = preg_match( '/^([a-z]+)_([\w\d]+)$/i', $name, $matches );
 
 		if ( ! $found_matches ) {
 			throw new BadMethodCallException( sprintf( 'The method %s does not exist in class ProductMetaHandler', $name ) );
@@ -43,12 +42,12 @@ class ProductMetaHandler implements Service {
 		list( $function_name, $method, $key ) = $matches;
 
 		// validate the method
-		if ( ! in_array( $method, [ 'udpate', 'delete', 'get' ], true ) ) {
+		if ( ! in_array( $method, [ 'update', 'delete', 'get' ], true ) ) {
 			throw new BadMethodCallException( sprintf( 'The method %s does not exist in class ProductMetaHandler', $function_name ) );
 		}
 
 		$arguments['key'] = $key;
-		call_user_func( [ $this, $method ], $arguments );
+		call_user_func_array( [ $this, $method ], $arguments );
 	}
 
 	/**

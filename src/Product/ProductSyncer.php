@@ -46,11 +46,11 @@ class ProductSyncer implements Service {
 	}
 
 	/**
-	 * Uploads a WooCommerce product to Google.
+	 * Uploads a WooCommerce product to Google Merchant Center.
 	 *
 	 * @param WC_Product $product
 	 *
-	 * @throws ProductSyncerException If there are any errors while syncing with Google.
+	 * @throws ProductSyncerException If there are any errors while syncing products with Google Merchant Center.
 	 */
 	public function update( WC_Product $product ) {
 		$google_product = ProductHelper::generate_adapted_product( $product );
@@ -65,15 +65,20 @@ class ProductSyncer implements Service {
 	}
 
 	/**
-	 * Uploads an array of WooCommerce products to Google.
+	 * Uploads an array of WooCommerce products to Google Merchant Center.
 	 *
 	 * @param WC_Product[] $products
 	 *
 	 * @return BatchUpdateProductResponse Containing both the synced and invalid products.
 	 *
-	 * @throws ProductSyncerException If there are any errors while syncing with Google.
+	 * @throws ProductSyncerException If there are any errors while syncing products with Google Merchant Center.
 	 */
 	public function update_many( array $products ) {
+		// return empty response if no products provided
+		if ( empty( $products ) ) {
+			return new BatchUpdateProductResponse( [], [] );
+		}
+
 		$updated_products = [];
 		$invalid_products = [];
 
@@ -103,17 +108,17 @@ class ProductSyncer implements Service {
 	}
 
 	/**
-	 * Uploads a WooCommerce product to Google.
+	 * Deletes a WooCommerce product from Google Merchant Center.
 	 *
 	 * @param WC_Product $product
 	 *
-	 * @throws ProductSyncerException If there are any errors while syncing with Google.
+	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete( WC_Product $product ) {
 		$google_product = ProductHelper::generate_adapted_product( $product );
 
 		try {
-			$this->google_service->insert( $google_product );
+			$this->google_service->delete( $google_product );
 
 			$this->delete_metas( $product->get_id() );
 		} catch ( Google_Exception $exception ) {
@@ -122,25 +127,31 @@ class ProductSyncer implements Service {
 	}
 
 	/**
-	 * Uploads an array of WooCommerce products to Google.
+	 * Deletes an array of WooCommerce products from Google Merchant Center.
 	 *
 	 * @param WC_Product[] $products
 	 *
 	 * @return BatchDeleteProductResponse Containing both the deleted and invalid products.
 	 *
-	 * @throws ProductSyncerException If there are any errors while syncing with Google.
+	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete_many( array $products ) {
 		$deleted_product_ids = [];
 		$invalid_products    = [];
 
 		$products = ProductHelper::expand_variations( $products );
-		foreach ( array_chunk( $products, GoogleProductService::BATCH_SIZE ) as $products ) {
-			// filter the synced products
-			$synced_products = array_filter( $products, [ $this->product_helper, 'is_product_synced' ] );
 
+		// filter the synced products
+		$synced_products = array_filter( $products, [ $this->product_helper, 'is_product_synced' ] );
+
+		// return empty response if no synced product found
+		if ( empty( $synced_products ) ) {
+			return new BatchDeleteProductResponse( [], [] );
+		}
+
+		foreach ( array_chunk( $synced_products, GoogleProductService::BATCH_SIZE ) as $products_batch ) {
 			// fetch the Google/WooCommerce product ID map
-			$products_id_map     = $this->generate_id_map( $synced_products );
+			$products_id_map     = $this->generate_id_map( $products_batch );
 			$google_products_ids = array_keys( $products_id_map );
 
 			try {

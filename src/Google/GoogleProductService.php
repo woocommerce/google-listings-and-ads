@@ -92,6 +92,9 @@ class GoogleProductService implements Service {
 	 * @throws InvalidValue If any of the provided products are invalid.
 	 */
 	public function get_batch( array $products ): BatchGetProductResponse {
+		if ( empty( $products ) ) {
+			return new BatchGetProductResponse( [], [] );
+		}
 		return $this->custom_batch( $products, self::METHOD_GET );
 	}
 
@@ -103,6 +106,9 @@ class GoogleProductService implements Service {
 	 * @throws InvalidValue If any of the provided products are invalid.
 	 */
 	public function insert_batch( array $products ): BatchUpdateProductResponse {
+		if ( empty( $products ) ) {
+			return new BatchUpdateProductResponse( [], [] );
+		}
 		return $this->custom_batch( $products, self::METHOD_INSERT );
 	}
 
@@ -114,6 +120,9 @@ class GoogleProductService implements Service {
 	 * @throws InvalidValue If any of the provided products are invalid.
 	 */
 	public function delete_batch( array $products ): BatchDeleteProductResponse {
+		if ( empty( $products ) ) {
+			return new BatchDeleteProductResponse( [], [] );
+		}
 		return $this->custom_batch( $products, self::METHOD_DELETE );
 	}
 
@@ -156,7 +165,7 @@ class GoogleProductService implements Service {
 	 *
 	 * @return BatchProductResponse
 	 */
-	protected function parse_batch_responses( $responses, $products, $method ) {
+	protected function parse_batch_responses( GoogleBatchResponse $responses, array $products, string $method ) {
 		$result_products = [];
 		$errors          = [];
 
