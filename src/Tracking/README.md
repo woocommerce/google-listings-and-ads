@@ -17,27 +17,32 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 
 ### Tracking events
 
-All event names are prefixed by `wcadmin_woogle_`.
+All event names are prefixed by `wcadmin_gla_`.
 
 * `extension_loaded` - DEMO when the extension is loaded
 
-* `gla_get_started_faq` - Clicking on getting started page faq item to collapse or expand it
+* `get_started_faq` - Clicking on getting started page faq item to collapse or expand it
   * `id`: (faq identifier)
   * `action`: (`expand`|`collapse`)
 
-* `gla_get_started_faq_link_clicked` - Clicking on a text link within FAQ item
+* `get_started_faq_link_clicked` - Clicking on a text link within FAQ item
   * `id`: (faq identifier)
   * `href`
 
-* `gla_table_header_toggle` - Toggling display of table columns
-  * `report`: name of the report table
+* `table_header_toggle` - Toggling display of table columns
+  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"` )
   * `column`: name of the column
   * `status`: (`on`|`off`)
 
-* `gla_tooltip_viewed` - Viewing tooltip
+* `gla_table_sort` - Sorting table
+  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"` )
+  * `column`: name of the column
+  * `direction`: (`asc`|`desc`)
+
+* `tooltip_viewed` - Viewing tooltip
   * `id`: (tooltip identifier)
 
-* `gla_setup_mc` - Setup Merchant Center
+* `setup_mc` - Setup Merchant Center
   * `target`: button ID
   * `trigger`: action (e.g. `click`)
 
