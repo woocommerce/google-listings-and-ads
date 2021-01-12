@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\TaskListTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
  * Class CompleteSetup
@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\TaskListTrait;
  */
 class CompleteSetup implements Service, Registerable {
 
+	use PluginHelper;
 	use TaskListTrait;
 
 	/**
@@ -36,7 +37,7 @@ class CompleteSetup implements Service, Registerable {
 		);
 
 		register_deactivation_hook(
-			__FILE__,
+			$this->get_main_file(),
 			function() {
 				$this->remove_task();
 			}
@@ -48,16 +49,16 @@ class CompleteSetup implements Service, Registerable {
 	 */
 	protected function register_task(): void {
 		$script_path       = '/js/build/task-complete-setup.js';
-		$script_asset_path = GLA_PATH . '/js/build/task-complete-setup.asset.php';
+		$script_asset_path = "{$this->get_root_dir()}/js/build/task-complete-setup.asset.php";
 
 		$script_asset = file_exists( $script_asset_path )
-		? require $script_asset_path
-		: [
-			'dependencies' => [],
-			'version'      => filemtime( GLA_PATH . $script_path ),
-		];
+			? require $script_asset_path
+			: [
+				'dependencies' => [],
+				'version'      => filemtime( "{$this->get_root_dir()}/js/build/task-complete-setup.js" ),
+			];
 
-		$script_url = plugins_url( $script_path, GLA_FILE );
+		$script_url = $this->get_plugin_url( $script_path );
 
 		wp_register_script(
 			'gla-task-complete-setup',
