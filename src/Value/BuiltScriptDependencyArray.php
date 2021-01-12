@@ -40,6 +40,11 @@ class BuiltScriptDependencyArray extends ArrayWithRequiredKeys implements ValueI
 		return $this->data['version'];
 	}
 
+	/**
+	 * Get the array of dependencies from the dependency array.
+	 *
+	 * @return array
+	 */
 	public function get_dependencies(): array {
 		return $this->data['dependencies'];
 	}
