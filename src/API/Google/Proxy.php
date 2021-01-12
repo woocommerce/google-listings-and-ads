@@ -62,6 +62,87 @@ class Proxy {
 	}
 
 	/**
+	 * Get Ads IDs associated with the connected Google account.
+	 *
+	 * @return int[]
+	 */
+	public function get_ads_account_ids(): array {
+		$ids = [];
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->get( $this->get_ads_url( 'customers:listAccessibleCustomers' ) );
+
+			$accounts = json_decode( $result->getBody()->getContents(), true );
+			if ( $accounts && is_array( $accounts['resourceNames'] ) ) {
+				foreach ( $accounts['resourceNames'] as $account ) {
+					$ids[] = absint( str_replace( 'customers/', '', $account ) );
+				}
+			}
+
+			return $ids;
+		} catch ( Exception $e ) {
+			return $ids;
+		}
+	}
+
+	/**
+	 * Create a new Google Ads account.
+	 *
+	 * @param array $params Request paramaters.
+	 *
+	 * @return json|string
+	 */
+	public function create_ads_account( array $params ) {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_ads_manager_url( 'US/create-customer' ),
+				[
+					'body' => json_encode( $params ),
+				]
+			);
+
+			return json_decode( $result->getBody()->getContents(), true );
+		} catch ( Exception $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			return $e->getMessage();
+		}
+	}
+
+	/**
+	 * Link an existing Google Ads account.
+	 *
+	 * @param int $id Existing account ID.
+	 *
+	 * @return json|string
+	 */
+	public function link_ads_account( int $id ) {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_ads_manager_url( 'link-customer' ),
+				[
+					'body' => json_encode(
+						[
+							'client_customer' => $id,
+						]
+					),
+				]
+			);
+
+			return json_decode( $result->getBody()->getContents(), true );
+		} catch ( Exception $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			return $e->getMessage();
+		}
+	}
+
+	/**
 	 * Determine whether the TOS have been accepted.
 	 *
 	 * @return TosAccepted
@@ -122,5 +203,29 @@ class Proxy {
 	 */
 	protected function get_tos_url(): string {
 		return $this->container->get( 'connect_server_root' ) . 'tos/google-mc';
+	}
+
+	/**
+	 * Get the ads endpoint URL
+	 *
+	 * @param string $name Resource name.
+	 *
+	 * @return string
+	 */
+	protected function get_ads_url( string $name = '' ): string {
+		$url = $this->container->get( 'connect_server_root' ) . 'google-ads/v6';
+		return $name ? trailingslashit( $url ) . $name : $url;
+	}
+
+	/**
+	 * Get the ads manager endpoint URL
+	 *
+	 * @param string $name Resource name.
+	 *
+	 * @return string
+	 */
+	protected function get_ads_manager_url( string $name = '' ): string {
+		$url = $this->container->get( 'connect_server_root' ) . 'manager';
+		return $name ? trailingslashit( $url ) . $name : $url;
 	}
 }
