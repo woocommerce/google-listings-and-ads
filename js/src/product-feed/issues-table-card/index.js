@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -12,6 +11,7 @@ import EditProductLink from '../../components/edit-product-link';
 import HelpPopover from '../../components/help-popover';
 import AppTableCard from '../../components/app-table-card';
 import WarningIcon from '../../components/warning-icon';
+import TrackedExternalLink from '../../components/tracked-external-link';
 
 const headers = [
 	{
@@ -71,10 +71,9 @@ const IssuesTableCard = () => {
 								),
 								{
 									link: (
-										<Link
-											type="external"
+										<TrackedExternalLink
+											id="product-feed:issues-to-resolve"
 											href="https://support.google.com/merchants/answer/6363310"
-											target="_blank"
 										/>
 									),
 								}

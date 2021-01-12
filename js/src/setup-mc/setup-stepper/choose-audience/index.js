@@ -3,7 +3,6 @@
  */
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import AppCountryMultiSelect from '../../../components/app-country-multi-select';
 import Section from '../../../wcdl/section';
 import Subsection from '../../../wcdl/subsection';
+import TrackedExternalLink from '../../../components/tracked-external-link';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
@@ -50,16 +50,15 @@ const ChooseAudience = ( props ) => {
 								) }
 							</p>
 							<p>
-								<Link
-									type="external"
+								<TrackedExternalLink
+									id="setup-mc:audience"
 									href="https://docs.woocommerce.com/documentation/plugins/woocommerce/getting-started/shipping/core-shipping-options/"
-									target="_blank"
 								>
 									{ __(
 										'Read more',
 										'google-listings-and-ads'
 									) }
-								</Link>
+								</TrackedExternalLink>
 							</p>
 						</div>
 					}

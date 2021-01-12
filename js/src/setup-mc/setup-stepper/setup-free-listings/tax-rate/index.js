@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -11,6 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import Section from '../../../../wcdl/section';
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
+import TrackedExternalLink from '../../../../components/tracked-external-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 
 const TaxRate = ( props ) => {
@@ -34,13 +34,12 @@ const TaxRate = ( props ) => {
 					</p>
 					<p>
 						{ /* TODO: Link to read more on shipping rate. */ }
-						<Link
-							type="external"
+						<TrackedExternalLink
+							id="setup-mc:tax-rate"
 							href="https://docs.woocommerce.com/"
-							target="_blank"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
-						</Link>
+						</TrackedExternalLink>
 					</p>
 				</div>
 			}
@@ -79,10 +78,9 @@ const TaxRate = ( props ) => {
 									),
 									{
 										link: (
-											<Link
-												type="external"
+											<TrackedExternalLink
+												id="setup-mc:tax-rate-manual"
 												href="https://www.google.com/retail/solutions/merchant-center/"
-												target="_blank"
 											/>
 										),
 									}

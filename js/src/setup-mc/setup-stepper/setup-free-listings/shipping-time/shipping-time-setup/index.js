@@ -4,11 +4,11 @@
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import TrackedExternalLink from '../../../../../components/tracked-external-link';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
 import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
 import AddTimeButton from './add-time-button';
@@ -71,10 +71,9 @@ const ShippingTimeSetup = ( props ) => {
 						),
 						{
 							link: (
-								<Link
-									type="external"
+								<TrackedExternalLink
+									id="setup-mc:shipping-time-allow-google-data-collection"
 									href="https://www.google.com/retail/solutions/merchant-center/"
-									target="_blank"
 								/>
 							),
 						}
