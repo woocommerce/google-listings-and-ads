@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
@@ -12,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\TaskList
  */
-class CompleteSetup implements Service, Registerable {
+class CompleteSetup implements Deactivateable, Service, Registerable {
 
 	use PluginHelper;
 	use TaskListTrait;
@@ -83,9 +84,11 @@ class CompleteSetup implements Service, Registerable {
 	}
 
 	/**
-	 * Remove task list item on deactivation
+	 * Deactivate the service.
+	 *
+	 * @return void
 	 */
-	protected function remove_task(): void {
+	public function deactivate(): void {
 		// argument matches the task "key" property
 		do_action(
 			'remove_woocommerce_extended_task_list_item',
