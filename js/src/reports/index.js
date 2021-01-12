@@ -150,7 +150,9 @@ const ProgramsReports = () => {
 		<div className="gla-dashboard">
 			<TabNav initialName="reports" />
 			<div className="gla-dashboard__filter">
-				<AppDateRangeFilterPicker />
+				<AppDateRangeFilterPicker
+					trackEventReportId={ trackEventReportId }
+				/>
 				<FilterPicker
 					config={ programsFilterConfig }
 					query={ getQuery() }

@@ -30,14 +30,18 @@ All event names are prefixed by `wcadmin_gla_`.
   * `href`
 
 * `table_header_toggle` - Toggling display of table columns
-  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"` )
+  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
   * `column`: name of the column
   * `status`: (`on`|`off`)
 
 * `gla_table_sort` - Sorting table
-  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"` )
+  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
   * `column`: name of the column
   * `direction`: (`asc`|`desc`)
+
+* `datepicker_update` - Changing datepicker
+  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
+  * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
 
 * `tooltip_viewed` - Viewing tooltip
   * `id`: (tooltip identifier)

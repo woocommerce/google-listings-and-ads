@@ -45,7 +45,9 @@ const Dashboard = () => {
 		<div className="gla-dashboard">
 			<TabNav initialName="dashboard" />
 			<div className="gla-dashboard__filter">
-				<AppDateRangeFilterPicker />
+				<AppDateRangeFilterPicker
+					trackEventReportId={ trackEventReportId }
+				/>
 				<Link href={ getNewPath( null, '/google/reports' ) }>
 					<Button isPrimary>View Reports</Button>
 				</Link>

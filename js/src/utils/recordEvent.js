@@ -15,6 +15,10 @@ export const recordTableSortEvent = ( report, column, direction ) => {
 	recordEvent( 'gla_table_sort', { report, column, direction } );
 };
 
+export const recordDatepickerUpdateEvent = ( data ) => {
+	recordEvent( 'gla_datepicker_update', data );
+};
+
 export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_mc', {
 		target,
