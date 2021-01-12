@@ -46,4 +46,11 @@ class ConnectAccount implements Service, Registerable, Conditional {
 		$this->register_assets();
 		$this->enqueue_assets();
 	}
+
+	/**
+	 * Set up the array of assets.
+	 */
+	protected function setup_assets(): void {
+		// TODO: Implement setup_assets() method.
+	}
 }

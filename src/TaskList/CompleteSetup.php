@@ -62,12 +62,10 @@ class CompleteSetup implements Deactivateable, Service, Registerable {
 	}
 
 	/**
-	 * Get the array of known assets.
-	 *
-	 * @return Asset[]
+	 * Set up assets in the array of Assets.
 	 */
-	protected function get_assets(): array {
-		$script = new AdminScriptWithBuiltDependenciesAsset(
+	protected function setup_assets() {
+		$this->assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-task-complete-setup',
 			'js/build/task-complete-setup',
 			"{$this->get_root_dir()}/js/build/task-complete-setup.asset.php",
@@ -77,17 +75,12 @@ class CompleteSetup implements Deactivateable, Service, Registerable {
 					'version'      => filemtime( "{$this->get_root_dir()}/js/build/task-complete-setup.js" ),
 				]
 			)
-		);
-		$script->add_localization(
+		) )->add_localization(
 			'glaTaskData',
 			[
 				'isComplete' => $this->options->get( OptionsInterface::MC_SETUP_COMPLETE, false ),
 			]
 		);
-
-		return [
-			$script,
-		];
 	}
 
 	/**
