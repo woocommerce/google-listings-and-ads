@@ -71,7 +71,7 @@ class CompleteSetup implements Service, Registerable {
 			'isComplete' => get_option( 'gla_mc_setup_complete', false ),
 		];
 
-		wp_localize_script( 'gla-task-complete-setup', 'taskData', $client_data );
+		wp_localize_script( 'gla-task-complete-setup', 'glaTaskData', $client_data );
 		wp_enqueue_script( 'gla-task-complete-setup' );
 
 		// argument matches the task "key" property

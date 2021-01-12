@@ -18,7 +18,7 @@ addFilter(
 			{
 				key: 'gla_complete_setup',
 				title: __( 'Setup Google Listings & Ads', 'google-listings-and-ads' ),
-				completed: taskData.isComplete,
+				completed: glaTaskData.isComplete,
 				onClick: () => {
 					// Redirect to the GLA get started page.
 					getHistory().push( getNewPath( {}, '/google/start' ) );
