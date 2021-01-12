@@ -39,6 +39,7 @@ const Dashboard = () => {
 			},
 		},
 	};
+	const trackEventReportId = 'all-programs';
 
 	return (
 		<div className="gla-dashboard">
@@ -86,7 +87,9 @@ const Dashboard = () => {
 				</SummaryCard>
 			</div>
 			<div className="gla-dashboard__programs">
-				<AllProgramsTableCard />
+				<AllProgramsTableCard
+					trackEventReportId={ trackEventReportId }
+				/>
 			</div>
 		</div>
 	);

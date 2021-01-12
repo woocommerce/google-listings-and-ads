@@ -36,7 +36,13 @@ const headers = [
 	{ key: 'actions', label: '', required: true },
 ];
 
-const AllProgramsTableCard = () => {
+/**
+ * All programs table.
+ * @see AppTableCard
+ *
+ * @param {Object} [props] Properties to be forwarded to AppTableCard.
+ */
+const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 
 	// TODO: data from backend API.
@@ -63,7 +69,6 @@ const AllProgramsTableCard = () => {
 
 	return (
 		<AppTableCard
-			trackEventReportId="all-programs"
 			className="gla-all-programs-table-card"
 			title={
 				<div className="gla-all-programs-table-card__header">
@@ -102,6 +107,7 @@ const AllProgramsTableCard = () => {
 			rowsPerPage={ 10 }
 			query={ query }
 			onQueryChange={ onQueryChange }
+			{...props}
 		/>
 	);
 };

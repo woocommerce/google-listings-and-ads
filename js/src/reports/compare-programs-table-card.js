@@ -14,8 +14,11 @@ import AppTableCard from '../components/app-table-card';
 /**
  * All programs table, with compare feature.
  * @see AllProgramsTableCard
+ * @see AppTableCard
+ *
+ * @param {Object} [props] Properties to be forwarded to AppTableCard.
  */
-const CompareProgramsTableCard = () => {
+const CompareProgramsTableCard = ( props ) => {
     const [ selectedRows, setSelectedRows ] = useState( new Set() );
     const query = getQuery();
     // TODO: DRY ProgramsReports~performanceMetrics one API is settled.
@@ -151,7 +154,6 @@ const CompareProgramsTableCard = () => {
 
 	return (
 		<AppTableCard
-			trackEventReportId="compare-programs"
 			className="gla-all-programs-table-card"
 			title={
 				<>
@@ -208,7 +210,8 @@ const CompareProgramsTableCard = () => {
 			totalRows={ data.length }
 			rowsPerPage={ 10 }
 			query={ query }
-			onQueryChange={ onQueryChange }
+            onQueryChange={ onQueryChange }
+            { ...props }
 		/>
 	);
 };

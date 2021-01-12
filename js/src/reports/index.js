@@ -144,6 +144,7 @@ const ProgramsReports = () => {
 			},
 		],
 	};
+	const trackEventReportId = 'compare-programs';
 
 	return (
 		<div className="gla-dashboard">
@@ -211,7 +212,9 @@ const ProgramsReports = () => {
 				/>
 			</div>
 			<div className="gla-dashboard__programs">
-				<CompareProgramsTableCard />
+				<CompareProgramsTableCard
+					trackEventReportId={ trackEventReportId }
+				/>
 			</div>
 		</div>
 	);
