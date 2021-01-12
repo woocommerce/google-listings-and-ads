@@ -26,6 +26,12 @@ use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
+define( 'GLA_NAME', __( 'Google Listings and Ads', 'google-listings-and-ads' ) );
+define( 'GLA_SLUG', 'google-listings-and-ads' );
+define( 'GLA_VERSION', '0.1.0' ); // WRCS: DEFINED_VERSION.
+define( 'GLA_FILE', __FILE__ );
+define( 'GLA_PATH', dirname( __FILE__ ) );
+
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
 if ( ! Autoloader::init() ) {
