@@ -144,7 +144,7 @@ const ProgramsReports = () => {
 			},
 		],
 	};
-	const trackEventReportId = 'compare-programs';
+	const trackEventReportId = 'reports-programs';
 
 	return (
 		<div className="gla-dashboard">

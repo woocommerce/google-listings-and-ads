@@ -39,7 +39,7 @@ const Dashboard = () => {
 			},
 		},
 	};
-	const trackEventReportId = 'all-programs';
+	const trackEventReportId = 'dashboard';
 
 	return (
 		<div className="gla-dashboard">
