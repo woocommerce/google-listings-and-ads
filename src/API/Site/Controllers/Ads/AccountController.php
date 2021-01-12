@@ -44,7 +44,7 @@ class AccountController extends BaseController {
 				[
 					'methods'              => TransportMethods::READABLE,
 					'callback'             => $this->get_accounts_callback(),
-					'permissions_callback' => $this->get_permission_callback(),
+					'permission_callback'  => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_accounts_schema(),
 			]
@@ -56,7 +56,7 @@ class AccountController extends BaseController {
 				[
 					'methods'              => TransportMethods::CREATABLE,
 					'callback'             => $this->get_create_account_callback(),
-					'permissions_callback' => $this->get_permission_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 					'args'                 => $this->create_accounts_schema(),
 				],
 			]
@@ -68,7 +68,7 @@ class AccountController extends BaseController {
 				[
 					'methods'              => TransportMethods::CREATABLE,
 					'callback'             => $this->get_link_account_callback(),
-					'permissions_callback' => $this->get_permission_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
 		);
