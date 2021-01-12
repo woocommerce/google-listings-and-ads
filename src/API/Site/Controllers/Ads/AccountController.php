@@ -42,9 +42,9 @@ class AccountController extends BaseController {
 			'ads/accounts',
 			[
 				[
-					'methods'              => TransportMethods::READABLE,
-					'callback'             => $this->get_accounts_callback(),
-					'permission_callback'  => $this->get_permission_callback(),
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_accounts_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_accounts_schema(),
 			]
@@ -54,10 +54,10 @@ class AccountController extends BaseController {
 			'ads/accounts',
 			[
 				[
-					'methods'              => TransportMethods::CREATABLE,
-					'callback'             => $this->get_create_account_callback(),
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_create_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                 => $this->create_accounts_schema(),
+					'args'                => $this->create_accounts_schema(),
 				],
 			]
 		);
@@ -66,8 +66,8 @@ class AccountController extends BaseController {
 			'ads/accounts/(?P<id>\d+)',
 			[
 				[
-					'methods'              => TransportMethods::CREATABLE,
-					'callback'             => $this->get_link_account_callback(),
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_link_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
