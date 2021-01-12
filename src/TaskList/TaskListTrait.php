@@ -19,13 +19,6 @@ trait TaskListTrait {
 	 * @return bool
 	 */
 	protected function should_register_tasks(): bool {
-		if (
-			! class_exists( 'Automattic\WooCommerce\Admin\Loader' ) ||
-			! Loader::is_admin_page() ||
-			! Onboarding::should_show_tasks()
-		) {
-			return false;
-		}
-		return true;
+		return class_exists( Loader::class ) && Loader::is_admin_page() && Onboarding::should_show_tasks();
 	}
 }
