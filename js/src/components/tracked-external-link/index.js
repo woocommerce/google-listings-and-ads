@@ -8,6 +8,14 @@ import { Link } from '@woocommerce/components';
  */
 import { recordExternalLinkClickEvent } from '../../utils/recordEvent';
 
+/**
+ * A component that wraps around `@woocommerce/components` `Link` component.
+ * Upon clicking on the link, it will call `recordExternalLinkClickEvent` with `id` and `href` parameters.
+ *
+ * You should always provide `id` and `href` props.
+ *
+ * @param {*} props Link props, plus an `id` prop that will be used in calling `recordExternalLinkClickEvent`.
+ */
 const TrackedExternalLink = ( props ) => {
 	const { id, href, onClick = () => {}, ...rest } = props;
 
