@@ -1,6 +1,8 @@
 # AppTableCard
 
-Renders a TableCard component with additional styling, and record `gla_table_header_toggle` [track event](../../../../src/Tracking) upon toggling column visibility when `trackEventReportId` is supplied via props.
+Renders a TableCard component with additional styling, and record [track event](../../../../src/Tracking) when `trackEventReportId` is supplied via props.
+ - `gla_table_header_toggle` upon toggling column visibility,
+ - `gla_table_sort` upon sorting table by column,
 
 ## Usage
 
@@ -12,4 +14,4 @@ Same as [TableCard](https://woocommerce.github.io/woocommerce-admin/#/components
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| trackEventReportId | Report ID to be used in `gla_table_header_toggle` track event. If this is not supplied, the track event will not be called. | string | - |
+| trackEventReportId | Report ID to be used in track events. If this is not supplied, the track event will not be called. | string | - |
