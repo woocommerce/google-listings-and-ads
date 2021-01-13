@@ -5,10 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Psr\Container\ContainerInterface;
 use WP_REST_Request;
@@ -24,16 +24,12 @@ defined( 'ABSPATH' ) || exit;
 class ShippingRateController extends BaseOptionsController {
 
 	use ControllerTrait;
+	use CountryCodeTrait;
 
 	/**
 	 * @var ContainerInterface
 	 */
 	protected $container;
-
-	/**
-	 * @var ISO3166DataProvider
-	 */
-	protected $iso;
 
 	/**
 	 * BaseController constructor.
@@ -236,60 +232,6 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function update_shipping_rates_option( array $rates ): bool {
 		return $this->options->update( OptionsInterface::SHIPPING_RATES, $rates );
-	}
-
-	/**
-	 * Validate that a country is valid.
-	 *
-	 * @param string $country The alpha2 country code.
-	 *
-	 * @throws OutOfBoundsException When the country code cannot be found.
-	 */
-	protected function validate_country_code( string $country ): void {
-		$this->iso->alpha2( $country );
-	}
-
-	/**
-	 * Get the callback to sanitize the country code.
-	 *
-	 * Necessary because strtoupper() will trigger warnings when extra parameters are passed to it.
-	 *
-	 * @return callable
-	 */
-	protected function get_country_code_sanitize_callback(): callable {
-		return function( $value ) {
-			return is_array( $value )
-				? array_map( 'strtoupper', $value )
-				: strtoupper( $value );
-		};
-	}
-
-	/**
-	 * Get a callable function for validating that a provided country code is recognized.
-	 *
-	 * @return callable
-	 */
-	protected function get_country_code_validate_callback(): callable {
-		return function( $value ) {
-			try {
-				// This is used for individual strings and an array of strings.
-				$value = (array) $value;
-				foreach ( $value as $item ) {
-					$this->validate_country_code( $item );
-				}
-
-				return true;
-			} catch ( Throwable $e ) {
-				return $this->error_from_exception(
-					$e,
-					'gla_invalid_country',
-					[
-						'status'  => 400,
-						'country' => $item,
-					]
-				);
-			}
-		};
 	}
 
 	/**
