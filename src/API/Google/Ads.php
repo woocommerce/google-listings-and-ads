@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V6\Resources\Campaign;
+use Google\ApiCore\PagedListResponse;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -56,17 +57,28 @@ class Ads {
 	 * @return Campaign[]
 	 */
 	public function get_campaigns(): array {
-		/** @var GoogleAdsClient $client */
-		$client = $this->container->get( GoogleAdsClient::class );
-		$args   = [ 'headers' => $this->container->get( 'headers' ) ];
-		$query  = 'SELECT campaign.id, campaign.name FROM campaign ORDER BY campaign.id';
-		$rows   = $client->getGoogleAdsServiceClient()->search( $this->get_id(), $query, $args );
-		$return = [];
+		$return   = [];
+		$response = $this->query( 'SELECT campaign.id, campaign.name FROM campaign ORDER BY campaign.id' );
 
-		foreach ( $rows->iterateAllElements() as $row ) {
+		foreach ( $response->iterateAllElements() as $row ) {
 			$return[] = $row->getCampaign();
 		}
 
 		return $return;
+	}
+
+	/**
+	 * Run a Google Ads Query.
+	 *
+	 * @param string $query Query to run.
+	 *
+	 * @return PagedListResponse
+	 */
+	public function query( string $query ): PagedListResponse {
+		/** @var GoogleAdsClient $client */
+		$client = $this->container->get( GoogleAdsClient::class );
+		$args   = [ 'headers' => $this->container->get( 'headers' ) ];
+
+		return $client->getGoogleAdsServiceClient()->search( $this->get_id(), $query, $args );
 	}
 }
