@@ -26,6 +26,8 @@ use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
+define( 'GLA_VERSION', '0.1.0' ); // WRCS: DEFINED_VERSION.
+
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
 if ( ! Autoloader::init() ) {
