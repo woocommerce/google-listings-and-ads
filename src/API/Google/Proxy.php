@@ -220,18 +220,6 @@ class Proxy {
 	}
 
 	/**
-	 * Get the ads endpoint URL
-	 *
-	 * @param string $name Resource name.
-	 *
-	 * @return string
-	 */
-	protected function get_ads_url( string $name = '' ): string {
-		$url = $this->container->get( 'connect_server_root' ) . 'google-ads/v6';
-		return $name ? trailingslashit( $url ) . $name : $url;
-	}
-
-	/**
 	 * Get the ads manager endpoint URL
 	 *
 	 * @param string $name Resource name.
