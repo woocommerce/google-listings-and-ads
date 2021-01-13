@@ -20,6 +20,7 @@ import AppDateRangeFilterPicker from '../dashboard/app-date-range-filter-picker'
 import CompareProgramsTableCard from './compare-programs-table-card';
 import '../dashboard/index.scss';
 import './index.scss';
+import { programsFilterConfig } from './filter-config';
 
 /**
  * Available metrics and their human-readable labels.
@@ -125,25 +126,6 @@ const ProgramsReports = () => {
 		},
 	];
 
-	const programsFilterConfig = {
-		label: __( 'Show', 'google-listings-and-ads' ),
-		staticParams: [ 'period' ],
-		param: 'programs',
-		filters: [
-			{
-				label: __( 'All Google programs', 'google-listings-and-ads' ),
-				value: 'all',
-			},
-			{
-				label: __( 'Single program', 'google-listings-and-ads' ),
-				value: 'single',
-			},
-			{
-				label: __( 'Comparison', 'google-listings-and-ads' ),
-				value: 'comparison',
-			},
-		],
-	};
 	const trackEventReportId = 'reports-programs';
 
 	return (
