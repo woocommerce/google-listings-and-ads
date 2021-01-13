@@ -166,6 +166,7 @@ class ConnectionTest implements Service, Registerable {
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-status' ), $url ), 'wcs-google-mc-status' ) ); ?>">Google Account Status</a>
 				</p>
 
 				<div>
@@ -396,6 +397,24 @@ class ConnectionTest implements Service, Registerable {
 			$connection = $this->container->get( Connection::class );
 			$response = $connection->disconnect();
 			$this->response .= $response;
+		}
+
+		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => $this->get_auth_header() ],
+				'method'  => 'GET',
+			];
+
+			$this->response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_get( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				$this->response .= $response->get_error_message();
+				return;
+			}
+
+			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {
