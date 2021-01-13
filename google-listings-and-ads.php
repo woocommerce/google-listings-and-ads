@@ -32,6 +32,14 @@ if ( ! Autoloader::init() ) {
 	return;
 }
 
+// Register activation hook
+register_activation_hook(
+	__FILE__,
+	function () {
+		PluginFactory::instance()->activate();
+	},
+);
+
 // Hook much of our plugin after WooCommerce is loaded.
 add_action(
 	'woocommerce_loaded',
@@ -39,6 +47,14 @@ add_action(
 		PluginFactory::instance()->register();
 	},
 	1
+);
+
+// Register deactivation hook
+register_deactivation_hook(
+	__FILE__,
+	function () {
+		PluginFactory::instance()->deactivate();
+	},
 );
 
 /**
