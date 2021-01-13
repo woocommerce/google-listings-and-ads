@@ -106,7 +106,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function register_ads_client() {
 		$callback = function() {
-			$url   = preg_replace( '/^https?:\/\//', '', $this->get_connect_server_url_root( 'google-ads' )->getValue() );
 			$oauth = ( new OAuth2TokenBuilder() )
 				->withClientId( 'clientid' )
 				->withClientSecret( 'clientsecret' )
@@ -116,7 +115,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			return ( new GoogleAdsClientBuilder() )
 				->withDeveloperToken( 'developertoken' )
 				->withOAuth2Credential( $oauth )
-				->withEndpoint( $url )
+				->withEndpoint( $this->get_connect_server_endpoint() )
 				->withTransport( 'rest' )
 				->build();
 		};
@@ -207,6 +206,17 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$path = '/' . trim( $path, '/' );
 
 		return new RawArgument( "{$url}/google${path}" );
+	}
+
+	/**
+	 * Get the connect server endpoint in the format `domain:port/path`
+	 *
+	 * @return string
+	 */
+	protected function get_connect_server_endpoint(): string {
+		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google-ads' )->getValue() );
+		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
+		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
 	}
 
 	/**
