@@ -9,7 +9,7 @@ import { Spinner } from '@woocommerce/components';
 import './index.scss';
 
 /**
- * Display a centered spinner with margin.
+ * Display a centered spinner.
  */
 const AppSpinner = () => {
 	return (
