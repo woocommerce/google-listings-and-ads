@@ -10,10 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
-use Exception;
 use Psr\Container\ContainerInterface;
-use Throwable;
-use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -293,19 +290,6 @@ class ShippingRateController extends BaseOptionsController {
 				);
 			}
 		};
-	}
-
-	/**
-	 * Create a WP_Error from an exception.
-	 *
-	 * @param Exception $e
-	 * @param string    $code
-	 * @param array     $data
-	 *
-	 * @return WP_Error
-	 */
-	protected function error_from_exception( Exception $e, string $code, array $data = [] ): WP_Error {
-		return new WP_Error( $code, $e->getMessage(), $data );
 	}
 
 	/**
