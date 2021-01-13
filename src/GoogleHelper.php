@@ -23,6 +23,7 @@ trait GoogleHelper {
 	 * @return array
 	 */
 	protected function get_mc_supported_countries() {
+		// phpcs:disable Squiz.PHP.CommentedOutCode.Found
 		return [
 			// 'DZ' => 'DZD', // Algeria
 			// 'AO' => 'AOA', // Angola
@@ -119,5 +120,6 @@ trait GoogleHelper {
 			// 'ZM' => 'ZMW', // Zambia
 			// 'ZW' => 'USD', // Zimbabwe
 		];
+		// phpcs:enable
 	}
 }
