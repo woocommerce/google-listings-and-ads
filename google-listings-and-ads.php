@@ -22,6 +22,7 @@ use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -101,6 +102,17 @@ function add_extension_register_script() {
 		true
 	);
 
+	$connection = woogle_get_container()->get( Connection::class );
+
+	wp_localize_script(
+		'google-listings-and-ads',
+		'glaSettings',
+		[
+			'googleConnectUrl' => wp_nonce_url( add_query_arg( [ 'gla-connect-google' => '1' ] ), 'gla-connect-google' ),
+			'jetpackConnectUrl' => wp_nonce_url( add_query_arg( [ 'gla-connect-jetpack' => '1' ] ), 'gla-connect-jetpack' ),
+		]
+	);
+
 	wp_register_style(
 		'google-listings-and-ads',
 		plugins_url( '/js/build/index.css', __FILE__ ),
@@ -124,6 +136,39 @@ function add_extension_register_script() {
 }
 
 add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );
+
+
+add_action( 'admin_init', 'maybe_handle_connection' );
+
+function maybe_handle_connection() {
+
+		if ( ! is_admin() ) {
+			return;
+		}
+
+	if ( isset( $_GET['gla-connect-jetpack'] ) && check_admin_referer( 'gla-connect-jetpack' ) ) {
+
+			$gla_connect_jetpack_param = sanitize_text_field( wp_unslash( $_GET['gla-connect-jetpack'] ) );
+
+			error_log( var_export( $gla_connect_jetpack_param, true ));
+
+			return;
+		}
+
+	if ( isset( $_GET['gla-connect-google'] ) && check_admin_referer( 'gla-connect-google' ) ) {
+
+			$gla_connect_jetpack_param = sanitize_text_field( wp_unslash( $_GET['gla-connect-google'] ) );
+
+			$redirect = $connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) );
+
+			error_log( var_export( $redirect, true ));
+
+			return;
+		}
+
+
+}
+
 
 /**
  * Jetpack-config will initialize the modules on "plugins_loaded" with priority 2,
