@@ -12,6 +12,11 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 import AppTableCard from '../components/app-table-card';
 
 /**
+ * Mocked API calls
+ */
+import { mockedListingsData, availableMetrics } from './mocked-programs-data';
+
+/**
  * All programs table, with compare feature.
  * @see AllProgramsTableCard
  * @see AppTableCard
@@ -21,8 +26,9 @@ import AppTableCard from '../components/app-table-card';
 const CompareProgramsTableCard = ( props ) => {
     const [ selectedRows, setSelectedRows ] = useState( new Set() );
     const query = getQuery();
+
     // TODO: DRY ProgramsReports~performanceMetrics one API is settled.
-    const availableMetrics = [
+    const metricsHeaders = [
         {
             key: 'netSales',
             label: __( 'Net Sales', 'google-listings-and-ads' ),
@@ -54,6 +60,12 @@ const CompareProgramsTableCard = ( props ) => {
             isSortable: true,
         },
     ];
+    // Fetch the set of available metrics.
+    const availableMetricsSet = new Set( availableMetrics() );
+    // Use labels and the order of columns defined here, but removed unavailable ones.
+    const availableMetricHeaders = metricsHeaders.filter( metric => {
+        return availableMetricsSet.has( metric.key );
+    })
 
     const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
     /**
@@ -61,65 +73,20 @@ const CompareProgramsTableCard = ( props ) => {
      * {@link module:app-table-card.Props.rows} -> {@link module:@woocommerce/components#TableCard.Props.rows},
      * for a given row.
      *
-     * Creates a cell for every ~availableMetrics item, displays `"Unavailable"`, when the data is `null`.
+     * Creates a cell for every ~availableMetricHeaders item, displays `"Unavailable"`, when the data is `null`.
      *
      * @param {Object} row Row of data for programs table.
      *
      * @returns {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
      */
-    const rowRenderer = ( row ) => availableMetrics.map( ( metric ) => {
+    const rowRenderer = ( row ) => availableMetricHeaders.map( ( metric ) => {
         return { display: row[ metric.key ] === null ? unavailable : row[ metric.key ] };
     });
 
 	// TODO: data should be coming from backend API,
 	// using the above query (e.g. orderby, order and page) as parameter.
 	// Also, i18n for the title and numbers formatting.
-	const data = [
-		{
-			id: 123,
-			title: 'Google Smart Shopping: Fall',
-            conversions: 540,
-            clicks: 4152,
-            impressions: 14339,
-            itemsSold: 1033,
-            netSales: "$2,527.91",
-            spend: "$300",
-            compare: false,
-		},
-		{
-			id: 456,
-			title: 'Google Smart Shopping: Core',
-            conversions: 357,
-            clicks: 1374,
-            impressions: 43359,
-            itemsSold: 456,
-            netSales: "$6,204.16",
-            spend: "$200",
-            compare: false,
-		},
-		{
-			id: 789,
-			title: 'Google Smart Shopping: Black Friday',
-            conversions: 426,
-            clicks: 3536,
-            impressions: 92771,
-            itemsSold: 877,
-            netSales: "$2,091.05",
-            spend: "$100",
-            compare: false,
-		},
-		{
-			id: 147,
-			title: 'Google Free Listings',
-            conversions: null,
-            clicks: 5626,
-            impressions: 23340,
-            itemsSold: null,
-            netSales: null,
-            spend: "$0",
-            compare: false,
-		},
-    ];
+	const data = mockedListingsData();
 
 	// TODO: what happens upon clicking the "Compare" button.
 	const compareSelected = () => {};
@@ -193,7 +160,7 @@ const CompareProgramsTableCard = ( props ) => {
                     required: true,
                     isSortable: true,
                 },
-            ].concat( availableMetrics ) }
+            ].concat( availableMetricHeaders ) }
 			rows={ data.map( ( row ) => {
 				return [
 					{

@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getProgramLabels } from './mocked-programs-data.json';
+import { getProgramLabels } from './mocked-programs-data';
 
 export const programsFilterConfig = {
     label: __( 'Show', 'google-listings-and-ads' ),
