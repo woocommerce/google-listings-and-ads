@@ -10,6 +10,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
@@ -477,23 +478,15 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
 			try {
-				$googleAdsClient       = $this->get_ads_client();
-				$customerServiceClient = $googleAdsClient->getCustomerServiceClient();
+				/** @var Proxy $proxy */
+				$proxy = $this->container->get( Proxy::class );
+				$accounts = $proxy->get_ads_account_ids();
 
-				$args = [
-					'headers' => [ 'Authorization' => $this->get_auth_header() ],
-				];
-
-				// Issues a request for listing all accessible customers.
-				$accessibleCustomers = $customerServiceClient->listAccessibleCustomers( $args );
-				$this->response .= 'Total results: ' . count( $accessibleCustomers->getResourceNames() ) . PHP_EOL;
-
-				// Iterates over all accessible customers' resource names and prints them.
-				foreach ( $accessibleCustomers->getResourceNames() as $resourceName ) {
-					$this->response     .= sprintf( "Customer resource name: '%s'%s", $resourceName, PHP_EOL );
-					$_GET['customer_id'] = absint( str_replace( 'customers/', '', $resourceName ) );
+				$this->response .= 'Total accounts: ' . count( $accounts ) . "\n";
+				foreach ( $accounts as $id ) {
+					$this->response .= sprintf( "Ads ID: %d\n", $id );
+					$_GET['customer_id'] = $id;
 				}
-
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
@@ -501,31 +494,20 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-campaign-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-campaign-lib' ) ) {
 			try {
-				$id  = ! empty( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] ) : '12345';
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
 
-				$googleAdsClient        = $this->get_ads_client();
-				$googleAdsServiceClient = $googleAdsClient->getGoogleAdsServiceClient();
+				$this->response = "Proxied request > get ad campaigns {$ads->get_id()}\n";
 
-				// Creates a query that retrieves all campaigns.
-				$query = 'SELECT campaign.id, campaign.name FROM campaign ORDER BY campaign.id';
-
-				$args = [
-					'headers' => [ 'Authorization' => $this->get_auth_header() ],
-				];
-
-				// Issues a search request.
-				$response = $googleAdsServiceClient->search( $id, $query, $args );
-
-				// Output details for each campaign.
-				foreach ( $response->iterateAllElements() as $googleAdsRow ) {
-					$this->response .= sprintf(
-						"Campaign with ID %d and name '%s' was found.%s",
-						$googleAdsRow->getCampaign()->getId(),
-						$googleAdsRow->getCampaign()->getName(),
-						PHP_EOL
-					);
+				$campaigns = $ads->get_campaigns();
+				if ( empty( $campaigns ) ){
+					$this->response .= 'No campaigns found';
+				} else {
+					$this->response .= 'Total campaigns: ' . count( $campaigns ) . "\n";
+					foreach ( $campaigns as $campaign ) {
+						$this->response .= "{$campaign->getId()} {$campaign->getName()}\n";
+					}
 				}
-
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
