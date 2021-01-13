@@ -32,6 +32,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class CoreServiceProvider
@@ -97,7 +98,13 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
-		$this->share( ProductSyncer::class, GoogleProductService::class, ProductMetaHandler::class, ProductHelper::class );
+		$this->share(
+			ProductSyncer::class,
+			GoogleProductService::class,
+			ProductMetaHandler::class,
+			ProductHelper::class,
+			ValidatorInterface::class
+		);
 
 		// Set up inflector for tracks classes.
 		$this->getLeagueContainer()

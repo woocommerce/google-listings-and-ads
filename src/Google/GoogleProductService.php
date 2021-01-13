@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Google_Service_ShoppingContent as GoogleShoppingService;
+use Google_Service_ShoppingContent_Error as GoogleError;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Google_Service_ShoppingContent_ProductsCustomBatchRequest as GoogleBatchRequest;
 use Google_Service_ShoppingContent_ProductsCustomBatchRequestEntry as GoogleBatchRequestEntry;
@@ -54,7 +55,7 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param string $product_id
+	 * @param string $product_id Google product ID.
 	 *
 	 * @return GoogleProduct
 	 */
@@ -76,16 +77,16 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param GoogleProduct $product
+	 * @param string $product_id Google product ID.
 	 */
-	public function delete( GoogleProduct $product ) {
+	public function delete( string $product_id ) {
 		$merchant_id = $this->merchant->get_id();
 
-		$this->shopping_service->products->delete( $merchant_id, $product );
+		$this->shopping_service->products->delete( $merchant_id, $product_id );
 	}
 
 	/**
-	 * @param GoogleProduct[] $products
+	 * @param BatchProductRequestEntry[] $products
 	 *
 	 * @return BatchGetProductResponse
 	 *
@@ -99,7 +100,7 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param GoogleProduct[] $products
+	 * @param BatchProductRequestEntry[] $products
 	 *
 	 * @return BatchUpdateProductResponse
 	 *
@@ -113,7 +114,7 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param GoogleProduct[] $products
+	 * @param BatchProductRequestEntry[] $products
 	 *
 	 * @return BatchDeleteProductResponse
 	 *
@@ -127,45 +128,44 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param GoogleProduct[]|string[] $products an array of products (if inserting) or IDs (if deleting or getting)
-	 * @param string                   $method
+	 * @param BatchProductRequestEntry[] $products
+	 * @param string                     $method
 	 *
 	 * @return BatchProductResponse
 	 *
 	 * @throws InvalidValue If any of the products' type is invalid for the batch method.
 	 */
-	protected function custom_batch( array $products, string $method ) {
+	protected function custom_batch( array $products, string $method ): BatchProductResponse {
 		$merchant_id     = $this->merchant->get_id();
 		$request_entries = [];
-		foreach ( $products as $index => $product ) {
-			$this->validate_batch_method_product( $method, $product );
+		foreach ( $products as $product_entry ) {
+			$this->validate_batch_method_product( $method, $product_entry->get_product() );
 
 			$request_entry = new GoogleBatchRequestEntry(
 				[
-					'batchId'    => $index,
+					'batchId'    => $product_entry->get_wc_product_id(),
 					'merchantId' => $merchant_id,
 					'method'     => $method,
 				]
 			);
 
 			$product_key                   = self::METHOD_INSERT === $method ? 'product' : 'product_id';
-			$request_entry[ $product_key ] = $product;
+			$request_entry[ $product_key ] = $product_entry->get_product();
 			$request_entries[]             = $request_entry;
 		}
 
 		$responses = $this->shopping_service->products->custombatch( new GoogleBatchRequest( [ 'entries' => $request_entries ] ) );
 
-		return $this->parse_batch_responses( $responses, $products, $method );
+		return $this->parse_batch_responses( $responses, $method );
 	}
 
 	/**
-	 * @param GoogleBatchResponse      $responses
-	 * @param GoogleProduct[]|string[] $products an array of products or IDs
-	 * @param string                   $method
+	 * @param GoogleBatchResponse $responses
+	 * @param string              $method
 	 *
 	 * @return BatchProductResponse
 	 */
-	protected function parse_batch_responses( GoogleBatchResponse $responses, array $products, string $method ) {
+	protected function parse_batch_responses( GoogleBatchResponse $responses, string $method ): BatchProductResponse {
 		$result_products = [];
 		$errors          = [];
 
@@ -173,20 +173,14 @@ class GoogleProductService implements Service {
 		 * @var GoogleBatchResponseEntry $response
 		 */
 		foreach ( $responses as $response ) {
-			$product    = $products[ $response->batchId ];
-			$product_id = $product;
-			if ( $product instanceof GoogleProduct ) {
-				$product_id = $product->getId();
-			}
+			// WooCommerce product ID is provided and returned as batchId
+			$product_id = $response->batchId;
 
 			if ( empty( $response->getErrors() ) ) {
+				// the Google product object if the method is `get` or `insert` or the deleted product ID if the method is `delete`.
 				$result_products[] = $response->getProduct() ?? $product_id;
 			} else {
-				if ( in_array( $method, [ self::METHOD_INSERT, self::METHOD_DELETE ], true ) ) {
-					$errors[] = new InvalidProductEntry( $product_id, $response->getErrors()->getErrors() );
-				} else {
-					$errors[] = $response->getErrors()->getErrors();
-				}
+				$errors[] = new InvalidProductEntry( $product_id, self::get_batch_response_error_messages( $response ) );
 			}
 		}
 
@@ -216,5 +210,19 @@ class GoogleProductService implements Service {
 		} elseif ( in_array( $method, [ self::METHOD_GET, self::METHOD_DELETE ], true ) && ! is_string( $product ) ) {
 			throw InvalidValue::not_string( 'product' );
 		}
+	}
+
+	/**
+	 * @param GoogleBatchResponseEntry $batch_response_entry
+	 *
+	 * @return array
+	 */
+	protected static function get_batch_response_error_messages( GoogleBatchResponseEntry $batch_response_entry ): array {
+		return array_map(
+			function ( GoogleError $error ) {
+				return $error->getMessage();
+			},
+			$batch_response_entry->getErrors()->getErrors()
+		);
 	}
 }

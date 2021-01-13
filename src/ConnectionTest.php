@@ -552,7 +552,7 @@ class ConnectionTest implements Service, Registerable {
 				if ( ! empty( $result->get_invalid_products() ) ) {
 					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
 					foreach ($result->get_invalid_products() as  $invalid_product) {
-						$this->response .= sprintf( '%s: %s', $invalid_product->get_product_id(), $invalid_product->get_errors() ) . "\n";
+						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
 			} catch ( ProductSyncerException $exception ) {
@@ -577,7 +577,7 @@ class ConnectionTest implements Service, Registerable {
 				if ( ! empty( $result->get_invalid_products() ) ) {
 					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
 					foreach ($result->get_invalid_products() as  $invalid_product) {
-						$this->response .= sprintf( '%s: %s', $invalid_product->get_product_id(), $invalid_product->get_errors() ) . "\n";
+						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
 			} catch ( ProductSyncerException $exception ) {

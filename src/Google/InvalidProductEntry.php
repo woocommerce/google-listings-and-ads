@@ -2,6 +2,8 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use Symfony\Component\Validator\ConstraintViolationListInterface;
+
 /**
  * Class InvalidProductEntry
  *
@@ -62,6 +64,22 @@ class InvalidProductEntry {
 	 */
 	public function set_errors( $errors ): InvalidProductEntry {
 		$this->errors = $errors;
+
+		return $this;
+	}
+
+	/**
+	 * @param ConstraintViolationListInterface $violations
+	 *
+	 * @return InvalidProductEntry
+	 */
+	public function map_validation_violations( ConstraintViolationListInterface $violations ): InvalidProductEntry {
+		$validation_errors = [];
+		foreach ( $violations as $violation ) {
+			$validation_errors[] = sprintf( '[%s] %s', $violation->getPropertyPath(), $violation->getMessage() );
+		}
+
+		$this->set_errors( $validation_errors );
 
 		return $this;
 	}

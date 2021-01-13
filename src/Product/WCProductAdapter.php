@@ -3,11 +3,16 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
+use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
 use Google_Service_ShoppingContent_Price;
 use Google_Service_ShoppingContent_Product;
 use Google_Service_ShoppingContent_ProductShippingDimension;
 use Google_Service_ShoppingContent_ProductShippingWeight;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
@@ -20,7 +25,7 @@ use WC_Product_Variation;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class WCProductAdapter extends Google_Service_ShoppingContent_Product {
+class WCProductAdapter extends Google_Service_ShoppingContent_Product implements Validatable {
 	public const AVAILABILITY_IN_STOCK     = 'in stock';
 	public const AVAILABILITY_OUT_OF_STOCK = 'out of stock';
 
@@ -475,5 +480,42 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product {
 	 */
 	public function is_variable(): bool {
 		return $this->wc_product instanceof WC_Product_Variable;
+	}
+
+	/**
+	 * @param ClassMetadata $metadata
+	 */
+	public static function load_validator_metadata( ClassMetadata $metadata ) {
+		$metadata->addPropertyConstraint( 'offerId', new Assert\NotBlank() );
+		$metadata->addPropertyConstraint( 'title', new Assert\NotBlank() );
+		$metadata->addPropertyConstraint( 'description', new Assert\NotBlank() );
+		$metadata->addPropertyConstraint( 'link', new Assert\Url() );
+		$metadata->addPropertyConstraint( 'imageLink', new Assert\Url() );
+		$metadata->addPropertyConstraint( 'additionalImageLinks', new Assert\All( [ 'constraints' => [ new Assert\Url() ] ] ) );
+		$metadata->addGetterConstraint( 'price', new Assert\NotNull() );
+		$metadata->addGetterConstraint( 'price', new GooglePriceConstraint() );
+		$metadata->addGetterConstraint( 'salePrice', new GooglePriceConstraint() );
+		$metadata->addConstraint( new Assert\Callback( 'validate_item_group_id' ) );
+	}
+
+	/**
+	 * Used by the validator to check if the variable/variation product has an itemGroupId
+	 *
+	 * @param ExecutionContextInterface $context
+	 * @param mixed                     $payload
+	 */
+	public function validate_item_group_id( ExecutionContextInterface $context, $payload ) {
+		if ( ( $this->is_variable() || $this->is_variation() ) && empty( $this->getItemGroupId() ) ) {
+			$context->buildViolation( 'ItemGroupId needs to be set for variable products.' )
+					->atPath( 'itemGroupId' )
+					->addViolation();
+		}
+	}
+
+	/**
+	 * @return WC_Product
+	 */
+	public function get_wc_product(): WC_Product {
+		return $this->wc_product;
 	}
 }
