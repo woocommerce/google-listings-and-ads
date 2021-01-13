@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -17,12 +18,19 @@ defined( 'ABSPATH' ) || exit;
 class ConnectionController extends BaseController {
 
 	/**
+	 * @var Connection
+	 */
+	protected $connection;
+
+	/**
 	 * BaseController constructor.
 	 *
 	 * @param RESTServer $server
+	 * @param Connection $connection
 	 */
-	public function __construct( RESTServer $server ) {
+	public function __construct( RESTServer $server, Connection $connection ) {
 		parent::__construct( $server );
+		$this->connection = $connection;
 	}
 
 	/**
@@ -50,7 +58,7 @@ class ConnectionController extends BaseController {
 	protected function get_connect_callback(): callable {
 		return function() {
 			return [
-				'url' => 'https://example.com',
+				'url' => $this->connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) ),
 			];
 		};
 	}
@@ -64,7 +72,7 @@ class ConnectionController extends BaseController {
 			'title'      => 'plugins',
 			'type'       => 'object',
 			'properties' => [
-				'connectAction' => [
+				'url' => [
 					'description' => __( 'Action that should be completed after connection.', 'google-listings-and-ads' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit' ],
