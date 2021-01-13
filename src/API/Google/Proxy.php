@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Exception;
 use Google_Service_ShoppingContent as ShoppingContent;
+use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -71,15 +72,13 @@ class Proxy {
 	public function get_ads_account_ids(): array {
 		$ids = [];
 		try {
-			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->get( $this->get_ads_url( 'customers:listAccessibleCustomers' ) );
+			/** @var GoogleAdsClient $client */
+			$client    = $this->container->get( GoogleAdsClient::class );
+			$args      = [ 'headers' => $this->container->get( 'headers' ) ];
+			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers( $args );
 
-			$accounts = json_decode( $result->getBody()->getContents(), true );
-			if ( $accounts && is_array( $accounts['resourceNames'] ) ) {
-				foreach ( $accounts['resourceNames'] as $account ) {
-					$ids[] = absint( str_replace( 'customers/', '', $account ) );
-				}
+			foreach ( $customers->getResourceNames() as $name ) {
+				$ids[] = absint( str_replace( 'customers/', '', $name ) );
 			}
 
 			return $ids;
