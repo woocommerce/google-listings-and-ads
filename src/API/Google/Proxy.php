@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Exception;
 use Google_Service_ShoppingContent as ShoppingContent;
@@ -104,7 +106,13 @@ class Proxy {
 				]
 			);
 
-			return json_decode( $result->getBody()->getContents(), true );
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
+				return $this->update_ads_id( $response['resourceName'] );
+			}
+
+			return $response;
 		} catch ( Exception $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
@@ -134,7 +142,14 @@ class Proxy {
 				]
 			);
 
-			return json_decode( $result->getBody()->getContents(), true );
+			$response = json_decode( $result->getBody()->getContents(), true );
+			$name     = "customers/{$id}";
+
+			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
+				return $this->update_ads_id( $name );
+			}
+
+			return $response;
 		} catch ( Exception $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
@@ -227,5 +242,21 @@ class Proxy {
 	protected function get_ads_manager_url( string $name = '' ): string {
 		$url = $this->container->get( 'connect_server_root' ) . 'manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
+	}
+
+	/**
+	 * Update the Ads ID to use for requests.
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 */
+	protected function update_ads_id( string $name ): int {
+		$id = absint( str_replace( 'customers/', '', $name ) );
+
+		/** @var Options $options */
+		$options = $this->container->get( OptionsInterface::class );
+		$options->update( Options::ADS_ID, $id );
+		return $id;
 	}
 }
