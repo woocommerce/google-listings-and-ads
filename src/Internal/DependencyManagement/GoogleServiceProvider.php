@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
@@ -50,6 +51,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		GuzzleClient::class                   => true,
 		Proxy::class                          => true,
 		Merchant::class                       => true,
+		Ads::class                            => true,
 		'connect_server_root'                 => true,
 		'headers'                             => true,
 		Connection::class                     => true,
@@ -68,6 +70,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_google_classes();
 		$this->add( Proxy::class, $this->getLeagueContainer() );
 		$this->add( Connection::class, $this->getLeagueContainer() );
+
+		$this->add(
+			Ads::class,
+			$this->getLeagueContainer(),
+			$this->get_ads_id()
+		);
 
 		$this->add(
 			Merchant::class,
@@ -217,6 +225,20 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google-ads' )->getValue() );
 		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
 		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
+	}
+
+	/**
+	 * Get the ads ID to use for requests.
+	 *
+	 * @return PositiveInteger
+	 */
+	protected function get_ads_id(): PositiveInteger {
+		/** @var Options $options */
+		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
+		$default = $_GET['customer_id'] ?? 12345; // phpcs:ignore WordPress.Security
+		$ads_id  = intval( $options->get( Options::ADS_ID, $default ) );
+
+		return new PositiveInteger( $ads_id );
 	}
 
 	/**
