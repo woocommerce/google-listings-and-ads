@@ -2,10 +2,7 @@
  * External dependencies
  */
 import { Stepper } from '@woocommerce/components';
-import { OPTIONS_STORE_NAME } from '@woocommerce/data';
-import { useDispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -14,42 +11,26 @@ import { recordSetupMCEvent } from '../../utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from './choose-audience';
+import usePageStep from './usePageStep';
 import './index.scss';
 
 const SavedSetupStepper = ( props ) => {
 	const { savedStep } = props;
-	const { updateOptions } = useDispatch( OPTIONS_STORE_NAME );
-
-	// pageStep is used to control the current step
-	// that the user is seeing.
-	// pageStep should always be <= savedStep.
-	const [ pageStep, setPageStep ] = useState( savedStep );
+	const { pageStep, updatePageStep } = usePageStep( savedStep );
 
 	const handleSetupAccountsContinue = () => {
 		recordSetupMCEvent( 'step1_continue' );
-		setPageStep( '2' );
-
-		if ( parseInt( savedStep, 10 ) < 2 ) {
-			updateOptions( {
-				gla_setup_mc_saved_step: '2',
-			} );
-		}
+		updatePageStep( '2' );
 	};
 
 	const handleChooseAudienceContinue = () => {
 		recordSetupMCEvent( 'step2_continue' );
-		setPageStep( '3' );
-
-		if ( parseInt( savedStep, 10 ) < 3 ) {
-			updateOptions( {
-				gla_setup_mc_saved_step: 3,
-			} );
-		}
+		updatePageStep( '3' );
 	};
 
 	const handleStepClick = ( key ) => {
 		if ( parseInt( key, 10 ) <= parseInt( savedStep, 10 ) ) {
-			setPageStep( key );
+			updatePageStep( key );
 		}
 	};
 
