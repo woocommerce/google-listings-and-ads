@@ -15,7 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient as AdsClient;
+use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
 use Google\Client;
 use Google_Service_ShoppingContent;
@@ -76,7 +76,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
-		$this->getLeagueContainer()->add( 'headers', [ 'Authorization' => $this->generate_guzzle_auth_header() ] );
+		$this->getLeagueContainer()->add( 'headers', [ 'Authorization' => $this->generate_auth_header() ] );
 	}
 
 	/**
@@ -88,7 +88,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack->remove( 'http_errors' );
 
 			try {
-				$auth_header = $this->generate_guzzle_auth_header();
+				$auth_header = $this->generate_auth_header();
 				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
 			} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 				// Don't do anything with the error here.
@@ -153,11 +153,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Generate the authorization header for the Guzzle client.
+	 * Generate the authorization header for the GuzzleClient and GoogleAdsClient.
 	 *
 	 * @return string
 	 */
-	protected function generate_guzzle_auth_header(): string {
+	protected function generate_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
 		$token   = $manager->get_access_token( false, false, false );
