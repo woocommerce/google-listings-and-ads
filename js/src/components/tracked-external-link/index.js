@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import PropTypes from 'prop-types';
 import { Link } from '@woocommerce/components';
 
 /**
@@ -12,9 +13,7 @@ import { recordExternalLinkClickEvent } from '../../utils/recordEvent';
  * A component that wraps around `@woocommerce/components` `Link` component.
  * Upon clicking on the link, it will call `recordExternalLinkClickEvent` with `id` and `href` parameters.
  *
- * You should always provide `id` and `href` props.
- *
- * @param {*} props Link props, plus an `id` prop that will be used in calling `recordExternalLinkClickEvent`.
+ * @param {Object} props Link props, plus an `id` prop that will be used in calling `gla_external_link_click` track event.
  */
 const TrackedExternalLink = ( props ) => {
 	const { id, href, onClick = () => {}, ...rest } = props;
@@ -33,6 +32,13 @@ const TrackedExternalLink = ( props ) => {
 			onClick={ handleClick }
 		></Link>
 	);
+};
+
+TrackedExternalLink.propTypes = {
+	/**
+	 * The `id` field in the `gla_external_link_click` event property.
+	 */
+	id: PropTypes.string.isRequired,
 };
 
 export default TrackedExternalLink;
