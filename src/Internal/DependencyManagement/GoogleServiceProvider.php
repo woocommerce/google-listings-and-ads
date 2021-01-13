@@ -14,6 +14,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
+use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
+use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient as AdsClient;
+use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
 use Google\Client;
 use Google_Service_ShoppingContent;
 use GuzzleHttp\Client as GuzzleClient;
@@ -43,10 +46,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		Client::class                         => true,
 		Google_Service_ShoppingContent::class => true,
+		GoogleAdsClient::class                => true,
 		GuzzleClient::class                   => true,
 		Proxy::class                          => true,
 		Merchant::class                       => true,
 		'connect_server_root'                 => true,
+		'headers'                             => true,
 		Connection::class                     => true,
 	];
 
@@ -59,6 +64,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register() {
 		$this->register_guzzle();
+		$this->register_ads_client();
 		$this->register_google_classes();
 		$this->add( Proxy::class, $this->getLeagueContainer() );
 		$this->add( Connection::class, $this->getLeagueContainer() );
@@ -70,6 +76,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
+		$this->getLeagueContainer()->add( 'headers', [ 'Authorization' => $this->generate_guzzle_auth_header() ] );
 	}
 
 	/**
@@ -92,6 +99,29 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$this->share_interface( GuzzleClient::class, new Definition( GuzzleClient::class, $callback ) );
 		$this->share_interface( ClientInterface::class, new Definition( GuzzleClient::class, $callback ) );
+	}
+
+	/**
+	 * Register ads client.
+	 */
+	protected function register_ads_client() {
+		$callback = function() {
+			$url   = preg_replace( '/^https?:\/\//', '', $this->get_connect_server_url_root( 'google-ads' )->getValue() );
+			$oauth = ( new OAuth2TokenBuilder() )
+				->withClientId( 'clientid' )
+				->withClientSecret( 'clientsecret' )
+				->withRefreshToken( 'refreshtoken' )
+				->build();
+
+			return ( new GoogleAdsClientBuilder() )
+				->withDeveloperToken( 'developertoken' )
+				->withOAuth2Credential( $oauth )
+				->withEndpoint( $url )
+				->withTransport( 'rest' )
+				->build();
+		};
+
+		$this->share_interface( GoogleAdsClient::class, new Definition( GoogleAdsClient::class, $callback ) );
 	}
 
 	/**
