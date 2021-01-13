@@ -4,12 +4,14 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
+use Psr\Container\ContainerInterface;
 use Throwable;
 use WP_Error;
 use WP_REST_Request;
@@ -24,6 +26,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class ShippingRateController extends BaseOptionsController {
 
+	use ControllerTrait;
+
+	/**
+	 * @var ContainerInterface
+	 */
+	protected $container;
+
 	/**
 	 * @var ISO3166DataProvider
 	 */
@@ -32,13 +41,11 @@ class ShippingRateController extends BaseOptionsController {
 	/**
 	 * BaseController constructor.
 	 *
-	 * @param RESTServer          $server
-	 * @param OptionsInterface    $options
-	 * @param ISO3166DataProvider $iso
+	 * @param ContainerInterface $container
 	 */
-	public function __construct( RESTServer $server, OptionsInterface $options, ISO3166DataProvider $iso ) {
-		parent::__construct( $server, $options );
-		$this->iso = $iso;
+	public function __construct( ContainerInterface $container ) {
+		parent::__construct( $container->get( RESTServer::class ), $container->get( OptionsInterface::class ) );
+		$this->iso = $container->get( ISO3166DataProvider::class );
 	}
 
 	/**
@@ -57,22 +64,9 @@ class ShippingRateController extends BaseOptionsController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_create_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_rate_schema(),
+					'args'                => $this->get_item_schema(),
 				],
-				'schema' => $this->get_item_schema_callback(),
-			]
-		);
-
-		$this->register_route(
-			'mc/settings/shipping/batch',
-			[
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->get_batch_create_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_batch_schema(),
-				],
-				'schema' => $this->get_batch_item_schema_callback(),
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 
@@ -83,14 +77,14 @@ class ShippingRateController extends BaseOptionsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_read_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_rate_schema(),
+					'args'                => $this->get_item_schema(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->get_delete_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-				'schema' => $this->get_item_schema_callback(),
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
@@ -181,106 +175,9 @@ class ShippingRateController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the callback for creating items via batch.
-	 *
-	 * @return callable
-	 */
-	protected function get_batch_create_callback(): callable {
-		return function( WP_REST_Request $request ) {
-			$country_codes = $request->get_param( 'country_codes' );
-			$currency      = $request->get_param( 'currency' );
-			$rate          = $request->get_param( 'rate' );
-
-			$rates = $this->get_shipping_rates_option();
-			foreach ( $country_codes as $country_code ) {
-				$rates = $this->process_new_rate(
-					$rates,
-					$country_code,
-					[
-						'country_code' => $country_code,
-						'currency'     => $currency,
-						'rate'         => $rate,
-					]
-				);
-			}
-
-			$this->update_shipping_rates_option( $rates );
-
-			return new WP_REST_Response(
-				[
-					'status'  => 'success',
-					'message' => sprintf(
-						/* translators: %s is a placeholder for comma-separated countries in ISO 3166-1 alpha-2 format. */
-						__( 'Successfully added rate for countries: %s.', 'google-listings-and-ads' ),
-						join( ',', $country_codes )
-					),
-				],
-				201
-			);
-		};
-	}
-
-	/**
-	 * Prepare an item to be returned as a response.
-	 *
-	 * @param array $item_data The raw item data.
-	 *
-	 * @return array
-	 */
-	protected function prepare_item_for_response( array $item_data ): array {
-		$prepared = [];
-		$schema   = $this->get_rate_schema();
-		foreach ( $schema as $key => $property ) {
-			$prepared[ $key ] = $item_data[ $key ] ?? $property['default'] ?? null;
-		}
-
-		return $prepared;
-	}
-
-	/**
-	 * Get the schema for shipping rates.
-	 *
 	 * @return array
 	 */
 	protected function get_item_schema(): array {
-		return $this->prepare_item_schema( $this->get_rate_schema(), 'shipping_rates' );
-	}
-
-	/**
-	 * Get the schema for batch shipping rates.
-	 *
-	 * @return array
-	 */
-	protected function get_batch_item_schema(): array {
-		return $this->prepare_item_schema( $this->get_batch_schema(), 'batch_shipping_rates' );
-	}
-
-	/**
-	 * Get the callback to obtain the item schema.
-	 *
-	 * @return callable
-	 */
-	protected function get_item_schema_callback(): callable {
-		return function() {
-			return $this->get_item_schema();
-		};
-	}
-
-	/**
-	 * Get the callback to obtain the batch item schema.
-	 *
-	 * @return callable
-	 */
-	protected function get_batch_item_schema_callback(): callable {
-		return function() {
-			return $this->get_batch_item_schema();
-		};
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function get_rate_schema(): array {
 		return [
 			'country'      => [
 				'type'        => 'string',
@@ -314,34 +211,14 @@ class ShippingRateController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the schema for a batch request.
+	 * Get the item schema name for the controller.
 	 *
-	 * @return array
+	 * Used for building the API response schema.
+	 *
+	 * @return string
 	 */
-	protected function get_batch_schema(): array {
-		$schema = $this->get_rate_schema();
-		unset( $schema['country'], $schema['country_code'] );
-
-		// Context is always edit for batches.
-		foreach ( $schema as $key => &$value ) {
-			$value['context'] = [ 'edit' ];
-		}
-
-		$schema['country_codes'] = [
-			'type'              => 'array',
-			'description'       => __( 'Array of country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
-			'context'           => [ 'edit' ],
-			'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-			'validate_callback' => $this->get_country_code_validate_callback(),
-			'minItems'          => 1,
-			'required'          => true,
-			'uniqueItems'       => true,
-			'items'             => [
-				'type' => 'string',
-			],
-		];
-
-		return $schema;
+	protected function get_item_schema_name(): string {
+		return 'shipping_rates';
 	}
 
 	/**
@@ -441,8 +318,10 @@ class ShippingRateController extends BaseOptionsController {
 	 * @return array
 	 */
 	protected function process_new_rate( array $all_rates, string $rate_key, array $raw_data ): array {
-		$schema = $this->get_rate_schema();
-		$rate   = $all_rates[ $rate_key ] ?? [];
+		// Specifically call the schema method from this class.
+		$schema = self::get_item_schema();
+
+		$rate = $all_rates[ $rate_key ] ?? [];
 		foreach ( $schema as $key => $property ) {
 			$rate[ $key ] = $raw_data[ $key ] ?? $rate[ $key ] ?? $property['default'] ?? null;
 		}
