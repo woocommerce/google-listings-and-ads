@@ -26,11 +26,21 @@ use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
+define( 'GLA_VERSION', '0.1.0' ); // WRCS: DEFINED_VERSION.
+
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
 if ( ! Autoloader::init() ) {
 	return;
 }
+
+// Register activation hook
+register_activation_hook(
+	__FILE__,
+	function () {
+		PluginFactory::instance()->activate();
+	},
+);
 
 // Hook much of our plugin after WooCommerce is loaded.
 add_action(
@@ -39,6 +49,14 @@ add_action(
 		PluginFactory::instance()->register();
 	},
 	1
+);
+
+// Register deactivation hook
+register_deactivation_hook(
+	__FILE__,
+	function () {
+		PluginFactory::instance()->deactivate();
+	},
 );
 
 /**

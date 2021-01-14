@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
@@ -42,6 +43,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		Analytics::class              => true,
 		AssetsHandlerInterface::class => true,
+		CompleteSetup::class          => true,
 		ConnectAccount::class         => true,
 		Dashboard::class              => true,
 		EventTracking::class          => true,
@@ -88,6 +90,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
 
 		// Set up inflector for tracks classes.
 		$this->getLeagueContainer()

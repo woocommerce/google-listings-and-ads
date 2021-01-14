@@ -32,6 +32,12 @@ trait AssetsAwareness {
 	 * @return Asset[]
 	 */
 	protected function get_assets(): array {
+		static $needs_setup = true;
+		if ( $needs_setup ) {
+			$this->setup_assets();
+			$needs_setup = false;
+		}
+
 		return $this->assets;
 	}
 
@@ -63,4 +69,9 @@ trait AssetsAwareness {
 	protected function enqueue_asset( $handle ): void {
 		$this->assets_handler->enqueue_handle( $handle );
 	}
+
+	/**
+	 * Set up the array of assets.
+	 */
+	abstract protected function setup_assets(): void;
 }

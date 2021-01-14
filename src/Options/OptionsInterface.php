@@ -9,11 +9,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
 interface OptionsInterface {
-
-	public const MERCHANT_CENTER = 'merchant_center';
-	public const MERCHANT_ID     = 'merchant_id';
-	public const SHIPPING_RATES  = 'shipping_rates';
-	public const ADS_ID          = 'ads_id';
+	public const MC_SETUP_COMPLETE = 'mc_setup_complete';
+	public const MERCHANT_CENTER   = 'merchant_center';
+	public const MERCHANT_ID       = 'merchant_id';
+	public const SHIPPING_RATES    = 'shipping_rates';
+	public const ADS_ID            = 'ads_id';
 
 	/**
 	 * Get an option.
