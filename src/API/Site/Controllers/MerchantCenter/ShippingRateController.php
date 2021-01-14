@@ -32,6 +32,13 @@ class ShippingRateController extends BaseOptionsController {
 	protected $container;
 
 	/**
+	 * The base for routes in this controller.
+	 *
+	 * @var string
+	 */
+	protected $route_base = 'mc/shipping/rates';
+
+	/**
 	 * ShippingRateController constructor.
 	 *
 	 * @param ContainerInterface $container
@@ -46,7 +53,7 @@ class ShippingRateController extends BaseOptionsController {
 	 */
 	protected function register_routes(): void {
 		$this->register_route(
-			'mc/settings/shipping',
+			$this->route_base,
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
@@ -64,7 +71,7 @@ class ShippingRateController extends BaseOptionsController {
 		);
 
 		$this->register_route(
-			'mc/settings/shipping/(?P<country_code>\w+)',
+			"{$this->route_base}/(?P<country_code>\\w+)",
 			[
 				[
 					'methods'             => TransportMethods::READABLE,

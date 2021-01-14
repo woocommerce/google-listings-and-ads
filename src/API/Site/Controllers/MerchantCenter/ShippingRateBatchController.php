@@ -21,7 +21,7 @@ class ShippingRateBatchController extends ShippingRateController {
 	 */
 	protected function register_routes(): void {
 		$this->register_route(
-			'mc/settings/shipping/batch',
+			"{$this->route_base}/batch",
 			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
@@ -48,7 +48,7 @@ class ShippingRateBatchController extends ShippingRateController {
 			$responses = [];
 			$errors    = [];
 			foreach ( $country_codes as $country_code ) {
-				$new_request = new WP_REST_Request( 'POST', "/{$this->get_namespace()}/mc/settings/shipping" );
+				$new_request = new WP_REST_Request( 'POST', "/{$this->get_namespace()}/{$this->route_base}" );
 				$new_request->set_body_params(
 					[
 						'country_code' => $country_code,
