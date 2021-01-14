@@ -10,8 +10,8 @@ import { CheckboxControl } from '@wordpress/components';
  */
 
 import HelpPopover from '../../../../components/help-popover';
+import AppDocumentationLink from '../../../../components/app-documentation-link';
 import Section from '../../../../wcdl/section';
-import TrackedExternalLink from '../../../../components/tracked-external-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import './index.scss';
 
@@ -36,15 +36,16 @@ const PreLaunchChecklist = ( props ) => {
 						</p>
 						<p>
 							{ /* TODO: Link to read more on Google Merchant requirements. */ }
-							<TrackedExternalLink
-								id="setup-mc:checklist-requirements"
+							<AppDocumentationLink
+								context="setup-mc-checklist"
+								linkId="checklist-requirements"
 								href="https://www.google.com/"
 							>
 								{ __(
 									'Read Google Merchant requirements',
 									'google-listings-and-ads'
 								) }
-							</TrackedExternalLink>
+							</AppDocumentationLink>
 						</p>
 					</div>
 				}
@@ -98,8 +99,9 @@ const PreLaunchChecklist = ( props ) => {
 													),
 													{
 														link: (
-															<TrackedExternalLink
-																id="setup-mc:checkCheckoutProcess"
+															<AppDocumentationLink
+																context="setup-mc-checklist"
+																linkId="check-checkout-process"
 																href="https://www.google.com/retail/solutions/merchant-center/"
 															/>
 														),

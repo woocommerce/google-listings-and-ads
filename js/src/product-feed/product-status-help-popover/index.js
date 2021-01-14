@@ -7,8 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import AppDocumentationLink from '../../components/app-documentation-link';
 import HelpPopover from '../../components/help-popover';
-import TrackedExternalLink from '../../components/tracked-external-link';
 import './index.scss';
 
 const ProductStatusHelpPopover = () => {
@@ -99,8 +99,9 @@ const ProductStatusHelpPopover = () => {
 						),
 						{
 							link: (
-								<TrackedExternalLink
-									id="product-feed:product-sync-statuses"
+								<AppDocumentationLink
+									context="product-feed"
+									linkId="product-sync-statuses"
 									href="https://support.google.com/merchants/answer/160491"
 								/>
 							),

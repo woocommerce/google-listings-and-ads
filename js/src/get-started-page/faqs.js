@@ -9,7 +9,7 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import TrackedExternalLink from '../components/tracked-external-link';
+import AppDocumentationLink from '../components/app-documentation-link';
 
 const recordToggleEvent = ( id, isOpened ) => {
 	recordEvent( 'gla_get_started_faq', {
@@ -49,8 +49,9 @@ const Faqs = () => {
 							),
 							{
 								link: (
-									<TrackedExternalLink
-										id="faqs:what-is-google-merchant-center"
+									<AppDocumentationLink
+										context="faqs"
+										linkId="what-is-google-merchant-center"
 										href="https://www.google.com/retail/solutions/merchant-center/"
 									/>
 								),
@@ -91,8 +92,9 @@ const Faqs = () => {
 							),
 							{
 								link: (
-									<TrackedExternalLink
-										id="faqs:what-do-i-need-to-do"
+									<AppDocumentationLink
+										context="faqs"
+										linkId="what-do-i-need-to-do"
 										href="https://support.google.com/merchants/answer/6363310"
 									/>
 								),

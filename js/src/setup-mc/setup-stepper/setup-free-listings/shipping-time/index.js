@@ -10,7 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import Section from '../../../../wcdl/section';
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
-import TrackedExternalLink from '../../../../components/tracked-external-link';
+import AppDocumentationLink from '../../../../components/app-documentation-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import ShippingTimeSetup from './shipping-time-setup';
 
@@ -31,12 +31,13 @@ const ShippingTime = ( props ) => {
 					</p>
 					<p>
 						{ /* TODO: Link to read more on shipping rate. */ }
-						<TrackedExternalLink
-							id="setup-mc:shipping-time"
+						<AppDocumentationLink
+							context="setup-mc-shipping-time"
+							linkId="shipping-time-read-more"
 							href="https://docs.woocommerce.com/"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
-						</TrackedExternalLink>
+						</AppDocumentationLink>
 					</p>
 				</div>
 			}
@@ -70,8 +71,9 @@ const ShippingTime = ( props ) => {
 									),
 									{
 										link: (
-											<TrackedExternalLink
-												id="setup-mc:shipping-time-manual"
+											<AppDocumentationLink
+												context="setup-mc-shipping-time"
+												linkId="shipping-time-manual"
 												href="https://www.google.com/retail/solutions/merchant-center/"
 											/>
 										),

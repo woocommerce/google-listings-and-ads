@@ -11,7 +11,7 @@ import EditProductLink from '../../components/edit-product-link';
 import HelpPopover from '../../components/help-popover';
 import AppTableCard from '../../components/app-table-card';
 import WarningIcon from '../../components/warning-icon';
-import TrackedExternalLink from '../../components/tracked-external-link';
+import AppDocumentationLink from '../../components/app-documentation-link';
 
 const headers = [
 	{
@@ -71,8 +71,9 @@ const IssuesTableCard = () => {
 								),
 								{
 									link: (
-										<TrackedExternalLink
-											id="product-feed:issues-to-resolve"
+										<AppDocumentationLink
+											context="product-feed"
+											linkId="issues-to-resolve"
 											href="https://support.google.com/merchants/answer/6363310"
 										/>
 									),

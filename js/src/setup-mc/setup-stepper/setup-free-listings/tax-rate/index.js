@@ -10,7 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import Section from '../../../../wcdl/section';
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
-import TrackedExternalLink from '../../../../components/tracked-external-link';
+import AppDocumentationLink from '../../../../components/app-documentation-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 
 const TaxRate = ( props ) => {
@@ -34,12 +34,13 @@ const TaxRate = ( props ) => {
 					</p>
 					<p>
 						{ /* TODO: Link to read more on shipping rate. */ }
-						<TrackedExternalLink
-							id="setup-mc:tax-rate"
+						<AppDocumentationLink
+							context="setup-mc-tax-rate"
+							linkId="tax-rate-read-more"
 							href="https://docs.woocommerce.com/"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
-						</TrackedExternalLink>
+						</AppDocumentationLink>
 					</p>
 				</div>
 			}
@@ -78,8 +79,9 @@ const TaxRate = ( props ) => {
 									),
 									{
 										link: (
-											<TrackedExternalLink
-												id="setup-mc:tax-rate-manual"
+											<AppDocumentationLink
+												context="setup-mc-tax-rate"
+												linkId="tax-rate-manual"
 												href="https://www.google.com/retail/solutions/merchant-center/"
 											/>
 										),

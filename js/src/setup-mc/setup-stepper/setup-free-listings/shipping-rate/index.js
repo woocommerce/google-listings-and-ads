@@ -10,7 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import Section from '../../../../wcdl/section';
 import AppRadioContentControl from '../../../../components/app-radio-content-control';
 import RadioHelperText from '../../../../wcdl/radio-helper-text';
-import TrackedExternalLink from '../../../../components/tracked-external-link';
+import AppDocumentationLink from '../../../../components/app-documentation-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import ShippingRateSetup from './shipping-rate-setup';
 import './index.scss';
@@ -32,12 +32,13 @@ const ShippingRate = ( props ) => {
 					</p>
 					<p>
 						{ /* TODO: Link to read more on shipping rate. */ }
-						<TrackedExternalLink
-							id="setup-mc:shipping-rate"
+						<AppDocumentationLink
+							context="setup-mc-shipping-rate"
+							linkId="shipping-rate-read-more"
 							href="https://docs.woocommerce.com/"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
-						</TrackedExternalLink>
+						</AppDocumentationLink>
 					</p>
 				</div>
 			}
@@ -71,10 +72,11 @@ const ShippingRate = ( props ) => {
 									),
 									{
 										link: (
-											<TrackedExternalLink
-												id="setup-mc:shipping-rate-manual"
+											<AppDocumentationLink
+												context="setup-mc-shipping-rate"
+												linkId="shipping-rate-manual"
 												href="https://www.google.com/retail/solutions/merchant-center/"
-											></TrackedExternalLink>
+											/>
 										),
 									}
 								) }

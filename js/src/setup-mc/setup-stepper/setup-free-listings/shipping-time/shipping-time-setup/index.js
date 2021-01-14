@@ -8,7 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import TrackedExternalLink from '../../../../../components/tracked-external-link';
+import AppDocumentationLink from '../../../../../components/app-documentation-link';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
 import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
 import AddTimeButton from './add-time-button';
@@ -71,8 +71,9 @@ const ShippingTimeSetup = ( props ) => {
 						),
 						{
 							link: (
-								<TrackedExternalLink
-									id="setup-mc:shipping-time-allow-google-data-collection"
+								<AppDocumentationLink
+									context="setup-mc-shipping-time"
+									linkId="shipping-time-allow-google-data-collection"
 									href="https://www.google.com/retail/solutions/merchant-center/"
 								/>
 							),
