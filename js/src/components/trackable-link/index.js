@@ -13,7 +13,7 @@ import recordEvent from '../../utils/recordEvent';
  * A component that wraps around `@woocommerce/components` `Link` component.
  * Upon clicking on the link, it will call `recordEvent` with `eventName` and `eventProps` parameters.
  *
- * @param {Object} props Link props, plus an `id` prop that will be used in calling `gla_external_link_click` track event.
+ * @param {Object} props All the Link props, plus `eventName` and `eventProps`.
  */
 const TrackableLink = ( props ) => {
 	const { eventName, eventProps, onClick = () => {}, ...rest } = props;
