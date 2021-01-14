@@ -32,6 +32,13 @@ class ShippingTimeController extends BaseOptionsController {
 	protected $container;
 
 	/**
+	 * The base for routes in this controller.
+	 *
+	 * @var string
+	 */
+	protected $route_base = 'mc/shipping/times';
+
+	/**
 	 * ShippingTimeController constructor.
 	 *
 	 * @param ContainerInterface $container
@@ -46,7 +53,7 @@ class ShippingTimeController extends BaseOptionsController {
 	 */
 	protected function register_routes(): void {
 		$this->register_route(
-			'mc/shipping/times',
+			$this->route_base,
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
