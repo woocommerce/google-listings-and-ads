@@ -1,9 +1,12 @@
 /**
  * External dependencies
  */
-import { OPTIONS_STORE_NAME } from '@woocommerce/data';
-import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
+import useDispatchOptions from '../../hooks/useDispatchOptions';
 
 /**
  * @typedef {Object} UsePageStepResult
@@ -21,12 +24,11 @@ import { useState } from '@wordpress/element';
  * @return {UsePageStepResult} usePageStepResult.
  */
 const usePageStep = ( savedStep ) => {
-	const { updateOptions } = useDispatch( OPTIONS_STORE_NAME );
-
 	// pageStep is used to control the current step
 	// that the user is seeing.
 	// pageStep should always be <= savedStep.
 	const [ pageStep, setPageStep ] = useState( savedStep );
+	const { updateOptions } = useDispatchOptions();
 
 	const updatePageStep = ( step ) => {
 		setPageStep( step );

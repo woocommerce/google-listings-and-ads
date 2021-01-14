@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import AppSpinner from '../../components/app-spinner';
-import useGetOption from './useGetOption';
+import useGetOption from '../../hooks/useGetOption';
 import SavedSetupStepper from './saved-setup-stepper';
 import './index.scss';
 
