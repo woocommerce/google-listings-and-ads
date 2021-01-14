@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BatchSchemaTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use WP_REST_Request;
+use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
