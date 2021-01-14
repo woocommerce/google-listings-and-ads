@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import TrackedExternalLink from '../../../components/tracked-external-link';
+import TrackableLink from '../../../components/trackable-link';
 
 /**
  * Internal dependencies
@@ -20,13 +20,14 @@ const EditProgramLink = ( props ) => {
 	const url = `https://example.com/${ programId }`;
 
 	return (
-		<TrackedExternalLink
-			id="dashboard:edit-program"
+		<TrackableLink
+			eventName="gla_dashboard_edit_program_click"
+			eventProps={ { programId, url } }
 			href={ url }
 			className="edit-program-link"
 		>
 			{ __( 'Edit', 'google-listings-and-ads' ) }
-		</TrackedExternalLink>
+		</TrackableLink>
 	);
 };
 
