@@ -32,7 +32,7 @@ class ShippingRateController extends BaseOptionsController {
 	protected $container;
 
 	/**
-	 * BaseController constructor.
+	 * ShippingRateController constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
