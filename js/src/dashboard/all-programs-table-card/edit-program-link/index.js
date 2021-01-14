@@ -23,6 +23,8 @@ const EditProgramLink = ( props ) => {
 		<TrackableLink
 			eventName="gla_dashboard_edit_program_click"
 			eventProps={ { programId, url } }
+			type="external"
+			target="_blank"
 			href={ url }
 			className="edit-program-link"
 		>
