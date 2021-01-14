@@ -71,7 +71,7 @@ class ShippingRateController extends BaseOptionsController {
 		);
 
 		$this->register_route(
-			"{$this->route_base}/(?P<country_code>\\w+)",
+			"{$this->route_base}/(?P<country_code>\\w{2})",
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
