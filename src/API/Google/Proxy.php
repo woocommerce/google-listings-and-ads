@@ -12,6 +12,7 @@ use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
+use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -92,9 +93,9 @@ class Proxy {
 	 *
 	 * @param array $params Request paramaters.
 	 *
-	 * @return json|string
+	 * @return WP_REST_Response
 	 */
-	public function create_ads_account( array $params ) {
+	public function create_ads_account( array $params ): WP_REST_Response {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -108,14 +109,14 @@ class Proxy {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
-				return $this->update_ads_id( $response['resourceName'] );
+				return new WP_REST_Response( $this->update_ads_id( $response['resourceName'] ) );
 			}
 
-			return $response;
+			return new WP_REST_Response( $response, $result->getStatusCode() );
 		} catch ( Exception $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			return $e->getMessage();
+			return new WP_REST_Response( $e->getMessage(), 400 );
 		}
 	}
 
@@ -124,9 +125,9 @@ class Proxy {
 	 *
 	 * @param int $id Existing account ID.
 	 *
-	 * @return json|string
+	 * @return WP_REST_Response
 	 */
-	public function link_ads_account( int $id ) {
+	public function link_ads_account( int $id ): WP_REST_Response {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -145,14 +146,14 @@ class Proxy {
 			$name     = "customers/{$id}";
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
-				return $this->update_ads_id( $name );
+				return new WP_REST_Response( $this->update_ads_id( $name ) );
 			}
 
-			return $response;
+			return new WP_REST_Response( $response, $result->getStatusCode() );
 		} catch ( Exception $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			return $e->getMessage();
+			return new WP_REST_Response( $e->getMessage(), 400 );
 		}
 	}
 
