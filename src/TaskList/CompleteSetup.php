@@ -64,7 +64,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable {
 	/**
 	 * Set up assets in the array of Assets.
 	 */
-	protected function setup_assets() {
+	protected function setup_assets(): void {
 		$this->assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-task-complete-setup',
 			'js/build/task-complete-setup',
