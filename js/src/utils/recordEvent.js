@@ -18,11 +18,4 @@ export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	} );
 };
 
-export const recordExternalLinkClickEvent = ( id, href ) => {
-	recordEvent( 'gla_external_link_click', {
-		id,
-		href,
-	} );
-};
-
 export default recordEvent;
