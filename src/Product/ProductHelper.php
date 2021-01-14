@@ -69,8 +69,6 @@ class ProductHelper implements Service {
 		foreach ( $products as $product ) {
 			$all_products[] = $product;
 			if ( $product instanceof WC_Product_Variable ) {
-				$p1 = $product->get_regular_price();
-				$p2 = $product->get_price();
 				$all_products = array_merge( $all_products, $product->get_available_variations( 'objects' ) );
 			}
 		}
