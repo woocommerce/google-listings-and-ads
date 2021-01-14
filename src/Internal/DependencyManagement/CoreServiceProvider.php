@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
@@ -61,6 +62,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Dashboard::class              => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
+		GlobalSiteTag::class          => true,
 		Loaded::class                 => true,
 		SiteVerificationEvents::class => true,
 		OptionsInterface::class       => true,
@@ -116,6 +118,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
 
 		// Inbox Notes
