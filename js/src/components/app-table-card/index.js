@@ -22,7 +22,7 @@ import './index.scss';
  * @see module:@woocommerce/components#TableCard
  *
  * @param {Object} props
- * @param {String} [props.trackEventReportId] Report ID to be used in track events.
+ * @param {string} [props.trackEventReportId] Report ID to be used in track events.
  * 											If this is not supplied, the track event will not be called.
  */
 const AppTableCard = ( props ) => {
@@ -30,15 +30,18 @@ const AppTableCard = ( props ) => {
 	/**
 	 * Returns a function that records a track event before executing an original handler.
 	 *
-	 * @param {String} handlerName The name of the event handler.
+	 * @param {string} handlerName The name of the event handler.
 	 * @param {Function} recordEvent The function to record the event.
 	 *
-	 * @returns {decorateHandlerWithTrackEvent~decoratedHandler} Decorated handler.
+	 * @return {decoratedHandler} Decorated handler.
 	 */
-	const decorateHandlerWithTrackEvent = ( handlerName, recordEvent ) => {
+	function decorateHandlerWithTrackEvent( handlerName, recordEvent ) {
 		/**
 		 * Records track event with specified `trackEventReportId` and any args given,
 		 * then calls original handler if any.
+		 *
+		 * @function decoratedHandler
+		 * @param {...*} args Arguments to be forwarded to the original handler.
 		 */
 		return function decoratedHandler( ...args ) {
 			if ( trackEventReportId ) {
@@ -47,18 +50,25 @@ const AppTableCard = ( props ) => {
 
 			// Call the original handler if given.
 			const handler = props.handlerName;
-			if( handler ){
+			if ( handler ) {
 				handler( ...args );
 			}
-		}
+		};
 	}
 
 	return (
 		<div className="app-table-card">
 			<TableCard
-				onColumnsChange={ decorateHandlerWithTrackEvent( 'onColumnsChange', recordColumnToggleEvent) }
-				onSort={ decorateHandlerWithTrackEvent( 'onSort', recordTableSortEvent) }
-				{ ...rest } />
+				onColumnsChange={ decorateHandlerWithTrackEvent(
+					'onColumnsChange',
+					recordColumnToggleEvent
+				) }
+				onSort={ decorateHandlerWithTrackEvent(
+					'onSort',
+					recordTableSortEvent
+				) }
+				{ ...rest }
+			/>
 		</div>
 	);
 };

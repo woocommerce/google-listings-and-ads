@@ -29,9 +29,7 @@ const ProductFeed = () => {
 				<Summaries />
 			</div>
 			<IssuesTableCard />
-			<ProductFeedTableCard
-				trackEventReportId="product-feed"
-			/>
+			<ProductFeedTableCard trackEventReportId="product-feed" />
 		</div>
 	);
 };

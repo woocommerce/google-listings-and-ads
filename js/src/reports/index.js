@@ -21,10 +21,7 @@ import CompareProgramsTableCard from './compare-programs-table-card';
 import '../dashboard/index.scss';
 import './index.scss';
 import { programsFilterConfig } from './filter-config';
-/**
- * Mocked data
- */
-import metricsData from './mocked-metrics-data';
+import metricsData from './mocked-metrics-data'; // Mocked data
 
 /**
  * Available metrics and their human-readable labels.
@@ -115,28 +112,28 @@ const ProgramsReports = () => {
 					{ () => {
 						return Array.from(
 							performanceMetrics,
-							( [ key, label ] ) => {
+							function renderSingleMetric( [ key, label ] ) {
 								// Show only available data.
 								// Until ~Q4 2021, free listings, may not have all metrics.
-								if( data[ key ] ){
+								if ( data[ key ] ) {
 									let markedLabel = label;
 									// Until ~Q4 2021, metrics for all programs, may lack data for free listings.
-									if( data[ key ].missingFreeListingsData ) {
-										const infoText =  __(
+									if ( data[ key ].missingFreeListingsData ) {
+										const infoText = __(
 											'This data is available for paid campaigns only.',
 											'google-listings-and-ads'
 										);
 										markedLabel = (
 											<div className="gla-reports__metric-label">
 												{ label }
-												<Tooltip
-													text={ infoText }
-												>
+												<Tooltip text={ infoText }>
 													<span>
 														<GridiconInfoOutline
 															className="gla-reports__metric-infoicon"
 															role="img"
-															aria-label={ infoText }
+															aria-label={
+																infoText
+															}
 															size={ 16 }
 														/>
 													</span>
@@ -153,8 +150,9 @@ const ProgramsReports = () => {
 										/>
 									);
 								}
+								return undefined;
 							}
-						).filter( e => e ); // Ignore undefined elements.
+						).filter( Boolean ); // Ignore undefined elements.
 					} }
 				</SummaryList>
 				<Chart

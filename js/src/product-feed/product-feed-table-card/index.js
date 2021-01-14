@@ -12,9 +12,9 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 import EditProductLink from '../../components/edit-product-link';
 import AppTableCard from '../../components/app-table-card';
 
-
 /**
  * All programs table, with compare feature.
+ *
  * @see AppTableCard
  *
  * @param {Object} [props] Properties to be forwarded to AppTableCard.

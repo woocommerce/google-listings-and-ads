@@ -38,6 +38,7 @@ const headers = [
 
 /**
  * All programs table.
+ *
  * @see AppTableCard
  *
  * @param {Object} [props] Properties to be forwarded to AppTableCard.
@@ -107,7 +108,7 @@ const AllProgramsTableCard = ( props ) => {
 			rowsPerPage={ 10 }
 			query={ query }
 			onQueryChange={ onQueryChange }
-			{...props}
+			{ ...props }
 		/>
 	);
 };
