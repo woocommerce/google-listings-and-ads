@@ -10,53 +10,53 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 class BatchDeleteProductResponse implements BatchProductResponse {
 
 	/**
-	 * @var string[]|null Google product IDs that were successfully deleted.
+	 * @var BatchProductEntry[]|null Products that were successfully deleted.
 	 */
-	protected $deleted_product_ids;
+	protected $deleted_products;
 
 	/**
-	 * @var InvalidProductEntry[]|null
+	 * @var BatchInvalidProductEntry[]|null
 	 */
 	protected $invalid_products;
 
 	/**
 	 * BatchDeleteProductResponse constructor.
 	 *
-	 * @param string[]|null              $deleted_product_ids
-	 * @param InvalidProductEntry[]|null $invalid_products
+	 * @param BatchProductEntry[]|null        $deleted_product_ids
+	 * @param BatchInvalidProductEntry[]|null $invalid_products
 	 */
 	public function __construct( $deleted_product_ids = null, $invalid_products = null ) {
-		$this->deleted_product_ids = $deleted_product_ids;
-		$this->invalid_products    = $invalid_products;
+		$this->deleted_products = $deleted_product_ids;
+		$this->invalid_products = $invalid_products;
 	}
 
 	/**
-	 * @return string[]
+	 * @return BatchProductEntry[]
 	 */
-	public function get_deleted_product_ids() {
-		return $this->deleted_product_ids;
+	public function get_deleted_products() {
+		return $this->deleted_products;
 	}
 
 	/**
-	 * @param string[] $deleted_product_ids
+	 * @param BatchProductEntry[]|null $deleted_products
 	 *
 	 * @return BatchDeleteProductResponse
 	 */
-	public function set_deleted_product_ids( $deleted_product_ids ): BatchDeleteProductResponse {
-		$this->deleted_product_ids = $deleted_product_ids;
+	public function set_deleted_products( $deleted_products ): BatchDeleteProductResponse {
+		$this->deleted_products = $deleted_products;
 
 		return $this;
 	}
 
 	/**
-	 * @return InvalidProductEntry[]
+	 * @return BatchInvalidProductEntry[]
 	 */
 	public function get_invalid_products() {
 		return $this->invalid_products;
 	}
 
 	/**
-	 * @param InvalidProductEntry[] $invalid_products
+	 * @param BatchInvalidProductEntry[] $invalid_products
 	 *
 	 * @return BatchDeleteProductResponse
 	 */
@@ -70,7 +70,7 @@ class BatchDeleteProductResponse implements BatchProductResponse {
 	 * @return array|null
 	 */
 	public function get_products() {
-		return $this->get_deleted_product_ids();
+		return $this->get_deleted_products();
 	}
 
 	/**

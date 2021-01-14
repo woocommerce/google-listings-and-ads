@@ -5,16 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 /**
- * Class InvalidProductEntry
+ * Class BatchInvalidProductEntry
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-class InvalidProductEntry {
+class BatchInvalidProductEntry {
 
 	/**
 	 * @var int|null WooCommerce product ID.
 	 */
-	protected $product_id;
+	protected $wc_product_id;
 
 	/**
 	 * @var string[]|null
@@ -22,30 +22,30 @@ class InvalidProductEntry {
 	protected $errors;
 
 	/**
-	 * InvalidProductEntry constructor.
+	 * BatchInvalidProductEntry constructor.
 	 *
 	 * @param int|null      $product_id
 	 * @param string[]|null $errors
 	 */
 	public function __construct( $product_id = null, $errors = null ) {
-		$this->product_id = $product_id;
-		$this->errors     = $errors;
+		$this->wc_product_id = $product_id;
+		$this->errors        = $errors;
 	}
 
 	/**
 	 * @return int|null
 	 */
-	public function get_product_id() {
-		return $this->product_id;
+	public function get_wc_product_id() {
+		return $this->wc_product_id;
 	}
 
 	/**
-	 * @param int|null $product_id
+	 * @param int|null $wc_product_id
 	 *
-	 * @return InvalidProductEntry
+	 * @return BatchInvalidProductEntry
 	 */
-	public function set_product_id( $product_id ): InvalidProductEntry {
-		$this->product_id = $product_id;
+	public function set_wc_product_id( $wc_product_id ): BatchInvalidProductEntry {
+		$this->wc_product_id = $wc_product_id;
 
 		return $this;
 	}
@@ -60,9 +60,9 @@ class InvalidProductEntry {
 	/**
 	 * @param string[]|null $errors
 	 *
-	 * @return InvalidProductEntry
+	 * @return BatchInvalidProductEntry
 	 */
-	public function set_errors( $errors ): InvalidProductEntry {
+	public function set_errors( $errors ): BatchInvalidProductEntry {
 		$this->errors = $errors;
 
 		return $this;
@@ -71,9 +71,9 @@ class InvalidProductEntry {
 	/**
 	 * @param ConstraintViolationListInterface $violations
 	 *
-	 * @return InvalidProductEntry
+	 * @return BatchInvalidProductEntry
 	 */
-	public function map_validation_violations( ConstraintViolationListInterface $violations ): InvalidProductEntry {
+	public function map_validation_violations( ConstraintViolationListInterface $violations ): BatchInvalidProductEntry {
 		$validation_errors = [];
 		foreach ( $violations as $violation ) {
 			$validation_errors[] = sprintf( '[%s] %s', $violation->getPropertyPath(), $violation->getMessage() );

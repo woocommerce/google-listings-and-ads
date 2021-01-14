@@ -174,13 +174,12 @@ class GoogleProductService implements Service {
 		 */
 		foreach ( $responses as $response ) {
 			// WooCommerce product ID is provided and returned as batchId
-			$product_id = $response->batchId;
+			$wc_product_id = $response->batchId;
 
 			if ( empty( $response->getErrors() ) ) {
-				// the Google product object if the method is `get` or `insert` or the deleted product ID if the method is `delete`.
-				$result_products[] = $response->getProduct() ?? $product_id;
+				$result_products[] = new BatchProductEntry( $wc_product_id, $response->getProduct() );
 			} else {
-				$errors[] = new InvalidProductEntry( $product_id, self::get_batch_response_error_messages( $response ) );
+				$errors[] = new BatchInvalidProductEntry( $wc_product_id, self::get_batch_response_error_messages( $response ) );
 			}
 		}
 

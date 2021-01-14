@@ -3,10 +3,11 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchDeleteProductResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchUpdateProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\InvalidProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Google_Exception;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
@@ -71,7 +72,7 @@ class ProductSyncer implements Service {
 		$google_product = ProductHelper::generate_adapted_product( $product );
 
 		$validation_result = $this->validate_product( $google_product );
-		if ( $validation_result instanceof InvalidProductEntry ) {
+		if ( $validation_result instanceof BatchInvalidProductEntry ) {
 			throw new ProductSyncerException(
 				sprintf(
 					"Product with ID %s does not meet the Google Merchant Center requirements:\n%s",
@@ -108,7 +109,7 @@ class ProductSyncer implements Service {
 		foreach ( $products as $product ) {
 			$adapted_product   = ProductHelper::generate_adapted_product( $product );
 			$validation_result = $this->validate_product( $adapted_product );
-			if ( $validation_result instanceof InvalidProductEntry ) {
+			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$invalid_products[] = $validation_result;
 			} else {
 				$product_entries[] = new BatchProductRequestEntry( $product->get_id(), $adapted_product );
@@ -128,12 +129,7 @@ class ProductSyncer implements Service {
 				$invalid_products = array_merge( $invalid_products, $response->get_invalid_products() );
 
 				// update the meta data for the synced products
-				array_walk(
-					$updated_products,
-					function ( $updated_product ) {
-						$this->update_metas( $updated_product->getOfferId(), $updated_product );
-					}
-				);
+				array_walk( $updated_products, [ $this, 'update_batch_metas' ] );
 			} catch ( Google_Exception $exception ) {
 				throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
 			}
@@ -171,8 +167,8 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete_many( array $products ): BatchDeleteProductResponse {
-		$deleted_product_ids = [];
-		$invalid_products    = [];
+		$deleted_products = [];
+		$invalid_products = [];
 
 		$products = ProductHelper::expand_variations( $products );
 
@@ -189,16 +185,16 @@ class ProductSyncer implements Service {
 			try {
 				$response = $this->google_service->delete_batch( $product_entries );
 
-				$deleted_product_ids = array_merge( $deleted_product_ids, $response->get_deleted_product_ids() );
-				$invalid_products    = array_merge( $invalid_products, $response->get_invalid_products() );
+				$deleted_products = array_merge( $deleted_products, $response->get_deleted_products() );
+				$invalid_products = array_merge( $invalid_products, $response->get_invalid_products() );
 
-				array_walk( $deleted_product_ids, [ $this, 'delete_metas' ] );
+				array_walk( $deleted_products, [ $this, 'delete_batch_metas' ] );
 			} catch ( Google_Exception $exception ) {
 				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
 
-		return new BatchDeleteProductResponse( $deleted_product_ids, $invalid_products );
+		return new BatchDeleteProductResponse( $deleted_products, $invalid_products );
 	}
 
 	/**
@@ -207,7 +203,22 @@ class ProductSyncer implements Service {
 	 */
 	protected function update_metas( int $wc_product_id, GoogleProduct $google_product ) {
 		$this->meta_handler->update_synced_at( $wc_product_id, time() );
-		$this->meta_handler->update_google_id( $wc_product_id, $google_product->getId() );
+
+		// merge all google product ids
+		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
+		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
+		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getId() ] ) );
+		$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
+	}
+
+	/**
+	 * @param BatchProductEntry $product_entry
+	 */
+	protected function update_batch_metas( BatchProductEntry $product_entry ) {
+		$wc_product_id  = $product_entry->get_wc_product_id();
+		$google_product = $product_entry->get_google_product();
+
+		$this->update_metas( $wc_product_id, $google_product );
 	}
 
 	/**
@@ -215,7 +226,15 @@ class ProductSyncer implements Service {
 	 */
 	protected function delete_metas( int $wc_product_id ) {
 		$this->meta_handler->delete_synced_at( $wc_product_id );
-		$this->meta_handler->delete_google_id( $wc_product_id );
+		$this->meta_handler->delete_google_ids( $wc_product_id );
+	}
+
+	/**
+	 * @param BatchProductEntry $product_entry
+	 */
+	protected function delete_batch_metas( BatchProductEntry $product_entry ) {
+		$wc_product_id = $product_entry->get_wc_product_id();
+		$this->delete_metas( $wc_product_id );
 	}
 
 	/**
@@ -226,27 +245,38 @@ class ProductSyncer implements Service {
 	 * @return array
 	 */
 	protected function generate_delete_request_entries( array $products ): array {
-		return array_map(
-			function ( WC_Product $product ) {
-				return new BatchProductRequestEntry(
-					$product->get_id(),
-					$this->product_helper->get_synced_google_product_id( $product )
-				);
-			},
-			$products
-		);
+		$request_entries = [];
+		foreach ( $products as $product ) {
+			$google_ids = $this->product_helper->get_synced_google_product_ids( $product );
+			if ( empty( $google_ids ) ) {
+				continue;
+			}
+
+			$product_entries = array_map(
+				function ( string $google_id ) use ( $product ) {
+					return new BatchProductRequestEntry(
+						$product->get_id(),
+						$google_id
+					);
+				},
+				$google_ids
+			);
+			$request_entries = array_merge( $request_entries, $product_entries );
+		}
+
+		return $request_entries;
 	}
 
 	/**
 	 * @param WCProductAdapter $product
 	 *
-	 * @return InvalidProductEntry|true
+	 * @return BatchInvalidProductEntry|true
 	 */
 	protected function validate_product( WCProductAdapter $product ) {
 		$violations = $this->validator->validate( $product );
 
 		if ( 0 !== count( $violations ) ) {
-			$invalid_product = new InvalidProductEntry( $product->get_wc_product()->get_id() );
+			$invalid_product = new BatchInvalidProductEntry( $product->get_wc_product()->get_id() );
 			$invalid_product->map_validation_violations( $violations );
 
 			return $invalid_product;

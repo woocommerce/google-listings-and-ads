@@ -2,8 +2,6 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Google_Service_ShoppingContent_Product as GoogleProduct;
-
 /**
  * Class BatchUpdateProductResponse
  *
@@ -12,20 +10,20 @@ use Google_Service_ShoppingContent_Product as GoogleProduct;
 class BatchUpdateProductResponse implements BatchProductResponse {
 
 	/**
-	 * @var GoogleProduct[]
+	 * @var BatchProductEntry[]
 	 */
 	protected $updated_products;
 
 	/**
-	 * @var InvalidProductEntry[]
+	 * @var BatchInvalidProductEntry[]
 	 */
 	protected $invalid_products;
 
 	/**
 	 * BatchUpdateProductResponse constructor.
 	 *
-	 * @param GoogleProduct[]       $updated_products
-	 * @param InvalidProductEntry[] $invalid_products
+	 * @param BatchProductEntry[]        $updated_products
+	 * @param BatchInvalidProductEntry[] $invalid_products
 	 */
 	public function __construct( $updated_products = null, $invalid_products = null ) {
 		$this->updated_products = $updated_products;
@@ -33,14 +31,14 @@ class BatchUpdateProductResponse implements BatchProductResponse {
 	}
 
 	/**
-	 * @return GoogleProduct[]
+	 * @return BatchProductEntry[]
 	 */
 	public function get_updated_products() {
 		return $this->updated_products;
 	}
 
 	/**
-	 * @param GoogleProduct[] $updated_products
+	 * @param BatchProductEntry[] $updated_products
 	 *
 	 * @return BatchUpdateProductResponse
 	 */
@@ -51,14 +49,14 @@ class BatchUpdateProductResponse implements BatchProductResponse {
 	}
 
 	/**
-	 * @return InvalidProductEntry[]
+	 * @return BatchInvalidProductEntry[]
 	 */
 	public function get_invalid_products() {
 		return $this->invalid_products;
 	}
 
 	/**
-	 * @param InvalidProductEntry[] $invalid_products
+	 * @param BatchInvalidProductEntry[] $invalid_products
 	 *
 	 * @return BatchUpdateProductResponse
 	 */

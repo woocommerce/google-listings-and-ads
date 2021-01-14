@@ -30,10 +30,10 @@ class ProductHelper implements Service {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @return string
+	 * @return string[] An array of Google product IDs stored for each WooCommerce product
 	 */
-	public function get_synced_google_product_id( WC_Product $product ) {
-		return $this->meta_handler->get_google_id( $product->get_id() );
+	public function get_synced_google_product_ids( WC_Product $product ) {
+		return $this->meta_handler->get_google_ids( $product->get_id() );
 	}
 
 	/**
@@ -42,10 +42,10 @@ class ProductHelper implements Service {
 	 * @return string
 	 */
 	public function is_product_synced( WC_Product $product ) {
-		$synced_at = $this->meta_handler->get_synced_at( $product->get_id() );
-		$google_id = $this->meta_handler->get_google_id( $product->get_id() );
+		$synced_at  = $this->meta_handler->get_synced_at( $product->get_id() );
+		$google_ids = $this->meta_handler->get_google_ids( $product->get_id() );
 
-		return ! empty( $synced_at ) && ! empty( $google_id );
+		return ! empty( $synced_at ) && ! empty( $google_ids );
 	}
 
 	/**
@@ -69,6 +69,8 @@ class ProductHelper implements Service {
 		foreach ( $products as $product ) {
 			$all_products[] = $product;
 			if ( $product instanceof WC_Product_Variable ) {
+				$p1 = $product->get_regular_price();
+				$p2 = $product->get_price();
 				$all_products = array_merge( $all_products, $product->get_available_variations( 'objects' ) );
 			}
 		}

@@ -552,7 +552,7 @@ class ConnectionTest implements Service, Registerable {
 				if ( ! empty( $result->get_invalid_products() ) ) {
 					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
 					foreach ($result->get_invalid_products() as  $invalid_product) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
 			} catch ( ProductSyncerException $exception ) {
@@ -573,11 +573,11 @@ class ConnectionTest implements Service, Registerable {
 
 				$result = $product_syncer->delete_many( $products );
 
-				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_deleted_product_ids() ) ) . "\n";
+				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_deleted_products() ) ) . "\n";
 				if ( ! empty( $result->get_invalid_products() ) ) {
 					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
 					foreach ($result->get_invalid_products() as  $invalid_product) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
 			} catch ( ProductSyncerException $exception ) {

@@ -2,8 +2,6 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Google_Service_ShoppingContent_Product as GoogleProduct;
-
 /**
  * Class BatchGetProductResponse
  *
@@ -12,7 +10,7 @@ use Google_Service_ShoppingContent_Product as GoogleProduct;
 class BatchGetProductResponse implements BatchProductResponse {
 
 	/**
-	 * @var GoogleProduct[]
+	 * @var BatchProductEntry[]
 	 */
 	protected $products;
 
@@ -24,8 +22,8 @@ class BatchGetProductResponse implements BatchProductResponse {
 	/**
 	 * BatchGetProductResponse constructor.
 	 *
-	 * @param GoogleProduct[]|null $products
-	 * @param array|null           $errors
+	 * @param BatchProductEntry[]|null $products
+	 * @param array|null               $errors
 	 */
 	public function __construct( $products = null, $errors = null ) {
 		$this->products = $products;
@@ -33,14 +31,14 @@ class BatchGetProductResponse implements BatchProductResponse {
 	}
 
 	/**
-	 * @return GoogleProduct[]|null
+	 * @return BatchProductEntry[]|null
 	 */
 	public function get_products() {
 		return $this->products;
 	}
 
 	/**
-	 * @param GoogleProduct[]|null $products
+	 * @param BatchProductEntry[]|null $products
 	 *
 	 * @return BatchGetProductResponse
 	 */

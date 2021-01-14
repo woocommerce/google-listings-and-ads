@@ -14,16 +14,16 @@ use BadMethodCallException;
  * @method update_synced_at( int $product_id, $value )
  * @method delete_synced_at( int $product_id )
  * @method get_synced_at( int $product_id )
- * @method update_google_id( int $product_id, $value )
- * @method delete_google_id( int $product_id )
- * @method get_google_id( int $product_id )
+ * @method update_google_ids( int $product_id, array $value )
+ * @method delete_google_ids( int $product_id )
+ * @method get_google_ids( int $product_id ): array
  */
 class ProductMetaHandler implements Service {
 
 	protected const KEY_PREFIX = '_wc_gla_';
 
-	public const KEY_SYNCED_AT = 'synced_at';
-	public const KEY_GOOGLE_ID = 'google_id';
+	public const KEY_SYNCED_AT  = 'synced_at';
+	public const KEY_GOOGLE_IDS = 'google_ids';
 
 	/**
 	 * @param string $name
@@ -114,7 +114,7 @@ class ProductMetaHandler implements Service {
 	protected static function validate_meta_key( string $key ) {
 		$valid_keys = [
 			self::KEY_SYNCED_AT,
-			self::KEY_GOOGLE_ID,
+			self::KEY_GOOGLE_IDS,
 		];
 
 		if ( ! in_array( $key, $valid_keys, true ) ) {
