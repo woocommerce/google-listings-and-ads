@@ -24,3 +24,5 @@ export const recordExternalLinkClickEvent = ( id, href ) => {
 		href,
 	} );
 };
+
+export default recordEvent;
