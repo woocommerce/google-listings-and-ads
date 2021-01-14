@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCode
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use WP_REST_Request;
+use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -34,6 +35,30 @@ class ShippingTimeController extends BaseOptionsController {
 					'callback'            => $this->get_read_times_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_create_time_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_item_schema(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+
+		$this->register_route(
+			'mc/shipping/times/(?P<country_code>\w+)',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_read_time_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_item_schema(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->get_delete_time_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
@@ -45,9 +70,110 @@ class ShippingTimeController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_read_times_callback(): callable {
-		return function( WP_REST_Request $request ) {
-			return [];
+		return function() {
+			$times = $this->get_shipping_times_option();
+			$items = [];
+			foreach ( $times as $country_code => $details ) {
+				$items[ $country_code ] = $this->prepare_item_for_response( $details );
+			}
+
+			return $items;
 		};
+	}
+
+	/**
+	 * Get the callback function for reading a single time.
+	 *
+	 * @return callable
+	 */
+	protected function get_read_time_callback(): callable {
+		return function( WP_REST_Request $request ) {
+			$country = $request->get_param( 'country_code' );
+			$times   = $this->get_shipping_times_option();
+			if ( ! array_key_exists( $country, $times ) ) {
+				return new WP_REST_Response(
+					[
+						'message' => __( 'No time available.', 'google-listings-and-ads' ),
+						'country' => $country,
+					],
+					404
+				);
+			}
+
+			return $this->prepare_item_for_response( $times[ $country ] );
+		};
+	}
+
+	/**
+	 * Get the callback to crate a new time.
+	 *
+	 * @return callable
+	 */
+	protected function get_create_time_callback(): callable {
+		return function( WP_REST_Request $request ) {
+			$country_code           = $request->get_param( 'country_code' );
+			$times                  = $this->get_shipping_times_option();
+			$times[ $country_code ] = $this->process_new_time(
+				$times[ $country_code ] ?? [],
+				$request->get_params(),
+				$country_code
+			);
+
+			$this->update_shipping_times_option( $times );
+
+			return new WP_REST_Response(
+				[
+					'status'  => 'success',
+					'message' => __( 'Successfully added time for country.', 'google-listings-and-ads' ),
+				],
+				201
+			);
+		};
+	}
+
+	/**
+	 * Get the callback function for deleting a time.
+	 *
+	 * @return callable
+	 */
+	protected function get_delete_time_callback(): callable {
+		return function( WP_REST_Request $request ) {
+			$country_code = $request->get_param( 'country_code' );
+			$times        = $this->get_shipping_times_option();
+
+			unset( $times[ $country_code ] );
+			$this->update_shipping_times_option( $times );
+
+			return [
+				'status'  => 'success',
+				'message' => sprintf(
+					/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
+					__( 'Successfully deleted the time for country "%s".', 'google-listings-and-ads' ),
+					$country_code
+				),
+			];
+		};
+	}
+
+	/**
+	 * Process new data for a time option.
+	 *
+	 * @param array  $existing     Existing time data.
+	 * @param array  $new          New time data.
+	 * @param string $country_code The country code for the time.
+	 *
+	 * @return array
+	 */
+	protected function process_new_time( array $existing, array $new, string $country_code ): array {
+		$schema = $this->get_item_schema();
+		$time   = [];
+		foreach ( $schema as $key => $property ) {
+			$time[ $key ] = 'country' === $key
+				? $this->iso->alpha2( $country_code )['name']
+				: $new[ $key ] ?? $existing[ $key ] ?? $property['default'] ?? null;
+		}
+
+		return $time;
 	}
 
 	/**
@@ -57,6 +183,17 @@ class ShippingTimeController extends BaseOptionsController {
 	 */
 	protected function get_shipping_times_option(): array {
 		return $this->options->get( OptionsInterface::SHIPPING_TIMES, [] );
+	}
+
+	/**
+	 * Update the array of shipping times in the options object.
+	 *
+	 * @param array $times
+	 *
+	 * @return bool
+	 */
+	protected function update_shipping_times_option( array $times ): bool {
+		return $this->options->update( OptionsInterface::SHIPPING_TIMES, $times );
 	}
 
 	/**
