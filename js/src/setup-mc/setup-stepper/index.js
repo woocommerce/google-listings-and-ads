@@ -15,7 +15,7 @@ const SetupStepper = () => {
 		return <AppSpinner />;
 	}
 
-	return <SavedSetupStepper savedStep={ savedStep } />;
+	return <SavedSetupStepper savedStep={ savedStep || '1' } />;
 };
 
 export default SetupStepper;
