@@ -8,6 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerT
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
+use Psr\Container\ContainerInterface;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -22,6 +25,21 @@ class ShippingTimeController extends BaseOptionsController {
 
 	use ControllerTrait;
 	use CountryCodeTrait;
+
+	/**
+	 * @var ContainerInterface
+	 */
+	protected $container;
+
+	/**
+	 * ShippingTimeController constructor.
+	 *
+	 * @param ContainerInterface $container
+	 */
+	public function __construct( ContainerInterface $container ) {
+		parent::__construct( $container->get( RESTServer::class ), $container->get( OptionsInterface::class ) );
+		$this->iso = $container->get( ISO3166DataProvider::class );
+	}
 
 	/**
 	 * Register rest routes with WordPress.
