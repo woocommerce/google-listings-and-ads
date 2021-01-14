@@ -33,9 +33,9 @@ class ConnectionController extends BaseController {
 			'mc/connect',
 			[
 				[
-					'methods'              => TransportMethods::READABLE,
-					'callback'             => $this->get_connect_callback(),
-					'permissions_callback' => $this->get_permission_callback(),
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connect_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_connection_schema(),
 			]
