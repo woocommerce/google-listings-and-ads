@@ -149,7 +149,11 @@ class ShippingTimeController extends BaseOptionsController {
 			return new WP_REST_Response(
 				[
 					'status'  => 'success',
-					'message' => __( 'Successfully added time for country.', 'google-listings-and-ads' ),
+					'message' => sprintf(
+						/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
+						__( 'Successfully added time for country: "%s".', 'google-listings-and-ads' ),
+						$country_code
+					),
 				],
 				201
 			);
@@ -173,7 +177,7 @@ class ShippingTimeController extends BaseOptionsController {
 				'status'  => 'success',
 				'message' => sprintf(
 					/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
-					__( 'Successfully deleted the time for country "%s".', 'google-listings-and-ads' ),
+					__( 'Successfully deleted the time for country: "%s".', 'google-listings-and-ads' ),
 					$country_code
 				),
 			];

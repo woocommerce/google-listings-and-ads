@@ -146,7 +146,11 @@ class ShippingRateController extends BaseOptionsController {
 			return new WP_REST_Response(
 				[
 					'status'  => 'success',
-					'message' => __( 'Successfully added rate for country.', 'google-listings-and-ads' ),
+					'message' => sprintf(
+						/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
+						__( 'Successfully added rate for country: "%s".', 'google-listings-and-ads' ),
+						$iso
+					),
 				],
 				201
 			);
