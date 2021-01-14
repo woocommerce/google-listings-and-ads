@@ -40,7 +40,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Reports::class              => true,
+		Reports::class                => true,
 		AssetsHandlerInterface::class => true,
 		ConnectAccount::class         => true,
 		Dashboard::class              => true,
