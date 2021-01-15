@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
@@ -17,6 +18,8 @@ use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class WCProductAdapter
@@ -502,9 +505,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 * Used by the validator to check if the variable/variation product has an itemGroupId
 	 *
 	 * @param ExecutionContextInterface $context
-	 * @param mixed                     $payload
 	 */
-	public function validate_item_group_id( ExecutionContextInterface $context, $payload ) {
+	public function validate_item_group_id( ExecutionContextInterface $context ) {
 		if ( ( $this->is_variable() || $this->is_variation() ) && empty( $this->getItemGroupId() ) ) {
 			$context->buildViolation( 'ItemGroupId needs to be set for variable products.' )
 					->atPath( 'itemGroupId' )

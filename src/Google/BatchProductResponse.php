@@ -1,20 +1,47 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
- * Interface BatchProductResponse
+ * Class BatchProductResponse
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-interface BatchProductResponse {
+class BatchProductResponse {
 	/**
-	 * @return array|null
+	 * @var BatchProductEntry[] Products that were successfully updated, deleted or retrieved.
 	 */
-	public function get_products();
+	protected $products;
 
 	/**
-	 * @return array|null
+	 * @var BatchInvalidProductEntry[]
 	 */
-	public function get_errors();
+	protected $errors;
+
+	/**
+	 * BatchProductResponse constructor.
+	 *
+	 * @param BatchProductEntry[]        $products
+	 * @param BatchInvalidProductEntry[] $errors
+	 */
+	public function __construct( array $products, array $errors ) {
+		$this->products = $products;
+		$this->errors   = $errors;
+	}
+	/**
+	 * @return BatchProductEntry[]
+	 */
+	public function get_products(): array {
+		return $this->products;
+	}
+
+	/**
+	 * @return BatchInvalidProductEntry[]
+	 */
+	public function get_errors(): array {
+		return $this->errors;
+	}
 }

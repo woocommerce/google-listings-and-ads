@@ -1,12 +1,12 @@
 <?php
-
-// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Google\Exception as GoogleException;
 use Google_Service_ShoppingContent as GoogleShoppingService;
 use Google_Service_ShoppingContent_Error as GoogleError;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
@@ -14,6 +14,8 @@ use Google_Service_ShoppingContent_ProductsCustomBatchRequest as GoogleBatchRequ
 use Google_Service_ShoppingContent_ProductsCustomBatchRequestEntry as GoogleBatchRequestEntry;
 use Google_Service_ShoppingContent_ProductsCustomBatchResponse as GoogleBatchResponse;
 use Google_Service_ShoppingContent_ProductsCustomBatchResponseEntry as GoogleBatchResponseEntry;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class GoogleProductService
@@ -58,6 +60,8 @@ class GoogleProductService implements Service {
 	 * @param string $product_id Google product ID.
 	 *
 	 * @return GoogleProduct
+	 *
+	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function get( string $product_id ): GoogleProduct {
 		$merchant_id = $this->merchant->get_id();
@@ -69,6 +73,8 @@ class GoogleProductService implements Service {
 	 * @param GoogleProduct $product
 	 *
 	 * @return GoogleProduct
+	 *
+	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function insert( GoogleProduct $product ): GoogleProduct {
 		$merchant_id = $this->merchant->get_id();
@@ -78,6 +84,8 @@ class GoogleProductService implements Service {
 
 	/**
 	 * @param string $product_id Google product ID.
+	 *
+	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function delete( string $product_id ) {
 		$merchant_id = $this->merchant->get_id();
@@ -88,13 +96,14 @@ class GoogleProductService implements Service {
 	/**
 	 * @param BatchProductRequestEntry[] $products
 	 *
-	 * @return BatchGetProductResponse
+	 * @return BatchProductResponse
 	 *
 	 * @throws InvalidValue If any of the provided products are invalid.
+	 * @throws GoogleException If there are any Google API errors.
 	 */
-	public function get_batch( array $products ): BatchGetProductResponse {
+	public function get_batch( array $products ): BatchProductResponse {
 		if ( empty( $products ) ) {
-			return new BatchGetProductResponse( [], [] );
+			return new BatchProductResponse( [], [] );
 		}
 		return $this->custom_batch( $products, self::METHOD_GET );
 	}
@@ -102,13 +111,14 @@ class GoogleProductService implements Service {
 	/**
 	 * @param BatchProductRequestEntry[] $products
 	 *
-	 * @return BatchUpdateProductResponse
+	 * @return BatchProductResponse
 	 *
 	 * @throws InvalidValue If any of the provided products are invalid.
+	 * @throws GoogleException If there are any Google API errors.
 	 */
-	public function insert_batch( array $products ): BatchUpdateProductResponse {
+	public function insert_batch( array $products ): BatchProductResponse {
 		if ( empty( $products ) ) {
-			return new BatchUpdateProductResponse( [], [] );
+			return new BatchProductResponse( [], [] );
 		}
 		return $this->custom_batch( $products, self::METHOD_INSERT );
 	}
@@ -116,13 +126,14 @@ class GoogleProductService implements Service {
 	/**
 	 * @param BatchProductRequestEntry[] $products
 	 *
-	 * @return BatchDeleteProductResponse
+	 * @return BatchProductResponse
 	 *
 	 * @throws InvalidValue If any of the provided products are invalid.
+	 * @throws GoogleException If there are any Google API errors.
 	 */
-	public function delete_batch( array $products ): BatchDeleteProductResponse {
+	public function delete_batch( array $products ): BatchProductResponse {
 		if ( empty( $products ) ) {
-			return new BatchDeleteProductResponse( [], [] );
+			return new BatchProductResponse( [], [] );
 		}
 		return $this->custom_batch( $products, self::METHOD_DELETE );
 	}
@@ -133,7 +144,8 @@ class GoogleProductService implements Service {
 	 *
 	 * @return BatchProductResponse
 	 *
-	 * @throws InvalidValue If any of the products' type is invalid for the batch method.
+	 * @throws InvalidValue    If any of the products' type is invalid for the batch method.
+	 * @throws GoogleException If there are any Google API errors.
 	 */
 	protected function custom_batch( array $products, string $method ): BatchProductResponse {
 		$merchant_id     = $this->merchant->get_id();
@@ -156,16 +168,15 @@ class GoogleProductService implements Service {
 
 		$responses = $this->shopping_service->products->custombatch( new GoogleBatchRequest( [ 'entries' => $request_entries ] ) );
 
-		return $this->parse_batch_responses( $responses, $method );
+		return $this->parse_batch_responses( $responses );
 	}
 
 	/**
 	 * @param GoogleBatchResponse $responses
-	 * @param string              $method
 	 *
 	 * @return BatchProductResponse
 	 */
-	protected function parse_batch_responses( GoogleBatchResponse $responses, string $method ): BatchProductResponse {
+	protected function parse_batch_responses( GoogleBatchResponse $responses ): BatchProductResponse {
 		$result_products = [];
 		$errors          = [];
 
@@ -173,6 +184,7 @@ class GoogleProductService implements Service {
 		 * @var GoogleBatchResponseEntry $response
 		 */
 		foreach ( $responses as $response ) {
+			// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			// WooCommerce product ID is provided and returned as batchId
 			$wc_product_id = $response->batchId;
 
@@ -183,18 +195,7 @@ class GoogleProductService implements Service {
 			}
 		}
 
-		switch ( $method ) {
-			case self::METHOD_INSERT:
-				$response = new BatchUpdateProductResponse( $result_products, $errors );
-				break;
-			case self::METHOD_DELETE:
-				$response = new BatchDeleteProductResponse( $result_products, $errors );
-				break;
-			default:
-				$response = new BatchGetProductResponse( $result_products, $errors );
-		}
-
-		return $response;
+		return new BatchProductResponse( $result_products, $errors );
 	}
 
 	/**

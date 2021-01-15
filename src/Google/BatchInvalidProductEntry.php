@@ -1,8 +1,11 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Symfony\Component\Validator\ConstraintViolationListInterface;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class BatchInvalidProductEntry
@@ -12,60 +15,38 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 class BatchInvalidProductEntry {
 
 	/**
-	 * @var int|null WooCommerce product ID.
+	 * @var int WooCommerce product ID.
 	 */
 	protected $wc_product_id;
 
 	/**
-	 * @var string[]|null
+	 * @var string[]
 	 */
 	protected $errors;
 
 	/**
 	 * BatchInvalidProductEntry constructor.
 	 *
-	 * @param int|null      $product_id
-	 * @param string[]|null $errors
+	 * @param int      $wc_product_id
+	 * @param string[] $errors
 	 */
-	public function __construct( $product_id = null, $errors = null ) {
-		$this->wc_product_id = $product_id;
+	public function __construct( int $wc_product_id, $errors = [] ) {
+		$this->wc_product_id = $wc_product_id;
 		$this->errors        = $errors;
 	}
 
 	/**
-	 * @return int|null
+	 * @return int
 	 */
-	public function get_wc_product_id() {
+	public function get_wc_product_id(): int {
 		return $this->wc_product_id;
 	}
 
 	/**
-	 * @param int|null $wc_product_id
-	 *
-	 * @return BatchInvalidProductEntry
+	 * @return string[]
 	 */
-	public function set_wc_product_id( $wc_product_id ): BatchInvalidProductEntry {
-		$this->wc_product_id = $wc_product_id;
-
-		return $this;
-	}
-
-	/**
-	 * @return string[]|null
-	 */
-	public function get_errors() {
+	public function get_errors(): array {
 		return $this->errors;
-	}
-
-	/**
-	 * @param string[]|null $errors
-	 *
-	 * @return BatchInvalidProductEntry
-	 */
-	public function set_errors( $errors ): BatchInvalidProductEntry {
-		$this->errors = $errors;
-
-		return $this;
 	}
 
 	/**
@@ -79,7 +60,7 @@ class BatchInvalidProductEntry {
 			$validation_errors[] = sprintf( '[%s] %s', $violation->getPropertyPath(), $violation->getMessage() );
 		}
 
-		$this->set_errors( $validation_errors );
+		$this->errors = $validation_errors;
 
 		return $this;
 	}

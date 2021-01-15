@@ -1,10 +1,14 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use BadMethodCallException;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class ProductMetaHandler
@@ -20,7 +24,7 @@ use BadMethodCallException;
  */
 class ProductMetaHandler implements Service {
 
-	protected const KEY_PREFIX = '_wc_gla_';
+	use PluginHelper;
 
 	public const KEY_SYNCED_AT  = 'synced_at';
 	public const KEY_GOOGLE_IDS = 'google_ids';
@@ -68,7 +72,7 @@ class ProductMetaHandler implements Service {
 	public function update( int $product_id, string $key, $value ) {
 		self::validate_meta_key( $key );
 
-		update_post_meta( $product_id, self::generate_meta_key( $key ), $value );
+		update_post_meta( $product_id, $this->generate_meta_key( $key ), $value );
 	}
 
 	/**
@@ -80,7 +84,7 @@ class ProductMetaHandler implements Service {
 	public function delete( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
 
-		delete_post_meta( $product_id, self::generate_meta_key( $key ) );
+		delete_post_meta( $product_id, $this->generate_meta_key( $key ) );
 	}
 
 	/**
@@ -94,7 +98,7 @@ class ProductMetaHandler implements Service {
 	public function get( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
 
-		return get_post_meta( $product_id, self::generate_meta_key( $key ), true );
+		return get_post_meta( $product_id, $this->generate_meta_key( $key ), true );
 	}
 
 	/**
@@ -102,8 +106,8 @@ class ProductMetaHandler implements Service {
 	 *
 	 * @return string
 	 */
-	protected static function generate_meta_key( string $key ): string {
-		return self::KEY_PREFIX . $key;
+	protected function generate_meta_key( string $key ): string {
+		return "{$this->get_meta_key_prefix()}_{$key}";
 	}
 
 	/**

@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Validator;
 
@@ -7,6 +8,8 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class GooglePriceConstraintValidator

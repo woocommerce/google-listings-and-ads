@@ -527,9 +527,15 @@ class ConnectionTest implements Service, Registerable {
 			$product_syncer = $this->container->get( ProductSyncer::class );
 
 			try {
-				$product_syncer->update( $product );
+				$result = $product_syncer->update( [ $product ] );
 
-				$this->response = sprintf( 'Product successfully submitted to Google.' );
+				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
+				if ( ! empty( $result->get_errors() ) ) {
+					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+					foreach ($result->get_errors() as  $invalid_product) {
+						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+					}
+				}
 			} catch ( ProductSyncerException $exception ) {
 				$this->response = 'Error submitting product to Google: ' . $exception->getMessage();
 			}
@@ -546,12 +552,12 @@ class ConnectionTest implements Service, Registerable {
 					]
 				);
 
-				$result = $product_syncer->update_many( $products );
+				$result = $product_syncer->update( $products );
 
-				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_updated_products() ) ) . "\n";
-				if ( ! empty( $result->get_invalid_products() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
-					foreach ($result->get_invalid_products() as  $invalid_product) {
+				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
+				if ( ! empty( $result->get_errors() ) ) {
+					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+					foreach ($result->get_errors() as  $invalid_product) {
 						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
@@ -571,12 +577,12 @@ class ConnectionTest implements Service, Registerable {
 					]
 				);
 
-				$result = $product_syncer->delete_many( $products );
+				$result = $product_syncer->delete( $products );
 
-				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_deleted_products() ) ) . "\n";
-				if ( ! empty( $result->get_invalid_products() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_invalid_products() ) ) . "\n";
-					foreach ($result->get_invalid_products() as  $invalid_product) {
+				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
+				if ( ! empty( $result->get_errors() ) ) {
+					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+					foreach ($result->get_errors() as  $invalid_product) {
 						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}

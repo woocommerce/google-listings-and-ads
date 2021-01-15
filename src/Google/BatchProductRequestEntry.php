@@ -1,8 +1,11 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class BatchProductRequestEntry

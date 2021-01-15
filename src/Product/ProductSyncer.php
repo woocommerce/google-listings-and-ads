@@ -1,18 +1,19 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchDeleteProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchUpdateProductResponse;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Google_Exception;
-use Google_Service_ShoppingContent_Product as GoogleProduct;
+use Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class ProductSyncer
@@ -62,45 +63,15 @@ class ProductSyncer implements Service {
 	}
 
 	/**
-	 * Submits a WooCommerce product to Google Merchant Center.
-	 *
-	 * @param WC_Product $product
-	 *
-	 * @throws ProductSyncerException If there are any errors while syncing products with Google Merchant Center.
-	 */
-	public function update( WC_Product $product ) {
-		$google_product = ProductHelper::generate_adapted_product( $product );
-
-		$validation_result = $this->validate_product( $google_product );
-		if ( $validation_result instanceof BatchInvalidProductEntry ) {
-			throw new ProductSyncerException(
-				sprintf(
-					"Product with ID %s does not meet the Google Merchant Center requirements:\n%s",
-					$product->get_id(),
-					implode( "\n", $validation_result->get_errors() )
-				)
-			);
-		}
-
-		try {
-			$updated_product = $this->google_service->insert( $google_product );
-
-			$this->update_metas( $product->get_id(), $updated_product );
-		} catch ( Google_Exception $exception ) {
-			throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
-		}
-	}
-
-	/**
 	 * Submits an array of WooCommerce products to Google Merchant Center.
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchUpdateProductResponse Containing both the synced and invalid products.
+	 * @return BatchProductResponse Containing both the synced and invalid products (including their variation).
 	 *
 	 * @throws ProductSyncerException If there are any errors while syncing products with Google Merchant Center.
 	 */
-	public function update_many( array $products ): BatchUpdateProductResponse {
+	public function update( array $products ): BatchProductResponse {
 		// prepare and validate products
 		$products         = ProductHelper::expand_variations( $products );
 		$updated_products = [];
@@ -118,43 +89,24 @@ class ProductSyncer implements Service {
 
 		// bail if no valid products provided
 		if ( empty( $product_entries ) ) {
-			return new BatchUpdateProductResponse( [], $invalid_products );
+			return new BatchProductResponse( [], $invalid_products );
 		}
 
 		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $product_entries ) {
 			try {
 				$response = $this->google_service->insert_batch( $product_entries );
 
-				$updated_products = array_merge( $updated_products, $response->get_updated_products() );
-				$invalid_products = array_merge( $invalid_products, $response->get_invalid_products() );
+				$updated_products = array_merge( $updated_products, $response->get_products() );
+				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
 
 				// update the meta data for the synced products
-				array_walk( $updated_products, [ $this, 'update_batch_metas' ] );
-			} catch ( Google_Exception $exception ) {
+				array_walk( $updated_products, [ $this, 'mark_as_synced' ] );
+			} catch ( GoogleException $exception ) {
 				throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
 
-		return new BatchUpdateProductResponse( $updated_products, $invalid_products );
-	}
-
-	/**
-	 * Deletes a WooCommerce product from Google Merchant Center.
-	 *
-	 * @param WC_Product $product
-	 *
-	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
-	 */
-	public function delete( WC_Product $product ) {
-		$google_product = ProductHelper::generate_adapted_product( $product );
-
-		try {
-			$this->google_service->delete( $google_product );
-
-			$this->delete_metas( $product->get_id() );
-		} catch ( Google_Exception $exception ) {
-			throw new ProductSyncerException( sprintf( 'Error deleting Google product: %s', $exception->getMessage() ), 0, $exception );
-		}
+		return new BatchProductResponse( $updated_products, $invalid_products );
 	}
 
 	/**
@@ -162,11 +114,11 @@ class ProductSyncer implements Service {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchDeleteProductResponse Containing both the deleted and invalid products.
+	 * @return BatchProductResponse Containing both the deleted and invalid products (including their variation).
 	 *
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
-	public function delete_many( array $products ): BatchDeleteProductResponse {
+	public function delete( array $products ): BatchProductResponse {
 		$deleted_products = [];
 		$invalid_products = [];
 
@@ -177,7 +129,7 @@ class ProductSyncer implements Service {
 
 		// return empty response if no synced product found
 		if ( empty( $synced_products ) ) {
-			return new BatchDeleteProductResponse( [], [] );
+			return new BatchProductResponse( [], [] );
 		}
 
 		foreach ( array_chunk( $synced_products, GoogleProductService::BATCH_SIZE ) as $products_batch ) {
@@ -185,26 +137,28 @@ class ProductSyncer implements Service {
 			try {
 				$response = $this->google_service->delete_batch( $product_entries );
 
-				$deleted_products = array_merge( $deleted_products, $response->get_deleted_products() );
-				$invalid_products = array_merge( $invalid_products, $response->get_invalid_products() );
+				$deleted_products = array_merge( $deleted_products, $response->get_products() );
+				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
 
-				array_walk( $deleted_products, [ $this, 'delete_batch_metas' ] );
-			} catch ( Google_Exception $exception ) {
+				array_walk( $deleted_products, [ $this, 'mark_as_unsynced' ] );
+			} catch ( GoogleException $exception ) {
 				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
 
-		return new BatchDeleteProductResponse( $deleted_products, $invalid_products );
+		return new BatchProductResponse( $deleted_products, $invalid_products );
 	}
 
 	/**
-	 * @param int           $wc_product_id WooCommerce product ID
-	 * @param GoogleProduct $google_product
+	 * @param BatchProductEntry $product_entry
 	 */
-	protected function update_metas( int $wc_product_id, GoogleProduct $google_product ) {
+	protected function mark_as_synced( BatchProductEntry $product_entry ) {
+		$wc_product_id  = $product_entry->get_wc_product_id();
+		$google_product = $product_entry->get_google_product();
+
 		$this->meta_handler->update_synced_at( $wc_product_id, time() );
 
-		// merge all google product ids
+		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
 		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getId() ] ) );
@@ -214,27 +168,10 @@ class ProductSyncer implements Service {
 	/**
 	 * @param BatchProductEntry $product_entry
 	 */
-	protected function update_batch_metas( BatchProductEntry $product_entry ) {
-		$wc_product_id  = $product_entry->get_wc_product_id();
-		$google_product = $product_entry->get_google_product();
-
-		$this->update_metas( $wc_product_id, $google_product );
-	}
-
-	/**
-	 * @param int $wc_product_id WooCommerce product ID
-	 */
-	protected function delete_metas( int $wc_product_id ) {
+	protected function mark_as_unsynced( BatchProductEntry $product_entry ) {
+		$wc_product_id = $product_entry->get_wc_product_id();
 		$this->meta_handler->delete_synced_at( $wc_product_id );
 		$this->meta_handler->delete_google_ids( $wc_product_id );
-	}
-
-	/**
-	 * @param BatchProductEntry $product_entry
-	 */
-	protected function delete_batch_metas( BatchProductEntry $product_entry ) {
-		$wc_product_id = $product_entry->get_wc_product_id();
-		$this->delete_metas( $wc_product_id );
 	}
 
 	/**

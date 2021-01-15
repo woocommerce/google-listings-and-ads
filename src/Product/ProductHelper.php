@@ -1,10 +1,13 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use WC_Product;
 use WC_Product_Variable;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class ProductHelper
