@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import PropTypes from 'prop-types';
-
-/**
  * Internal dependencies
  */
 import TrackableLink from '../trackable-link';
@@ -20,9 +15,9 @@ import TrackableLink from '../trackable-link';
  * - `target="_blank"` by default.
  *
  * @param {Object} props Props to be forwarded to {@link TrackableLink}.
- * @param {String} props.context Describe what the context is.
- * @param {String} [props.linkId] Describe what linkId is. It's optional, isn't it?
- * @param {String} props.href Describe href.
+ * @param {string} props.context The screen or page of this AppDocumentationLink. This will be sent as part of track event properties.
+ * @param {string} props.linkId An identifier for this DocumentationLink. This will be sent as part of track event properties.
+ * @param {string} props.href `href` to be passed to `TrackableLink` component.
  */
 const AppDocumentationLink = ( props ) => {
 	const { context, linkId, href, ...rest } = props;
@@ -37,18 +32,6 @@ const AppDocumentationLink = ( props ) => {
 			{ ...rest }
 		/>
 	);
-};
-
-AppDocumentationLink.propTypes = {
-	/**
-	 * The screen or page of this DocumentationLink. This will be sent as part of track event properties.
-	 */
-	context: PropTypes.string.isRequired,
-
-	/**
-	 * An identifier for this DocumentationLink. This will be sent as part of track event properties.
-	 */
-	linkId: PropTypes.string.isRequired,
 };
 
 export default AppDocumentationLink;
