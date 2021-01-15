@@ -9,7 +9,9 @@ import PropTypes from 'prop-types';
 import TrackableLink from '../trackable-link';
 
 /**
- * Renders a `TrackableLink` that will open the link in new tab and
+ * Renders a trackable link to external documentation.
+ *
+ * Uses a `TrackableLink` that will open the link in new tab and
  * call `recordEvent` with `gla_documentation_link_click` event name.
  *
  * - `eventName="gla_documentation_link_click"`
