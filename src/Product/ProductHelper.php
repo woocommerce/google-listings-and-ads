@@ -67,9 +67,10 @@ class ProductHelper implements Service {
 	public static function expand_variations( array $products ): array {
 		$all_products = [];
 		foreach ( $products as $product ) {
-			$all_products[] = $product;
 			if ( $product instanceof WC_Product_Variable ) {
 				$all_products = array_merge( $all_products, $product->get_available_variations( 'objects' ) );
+			} else {
+				$all_products[] = $product;
 			}
 		}
 
