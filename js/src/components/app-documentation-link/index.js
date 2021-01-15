@@ -17,7 +17,10 @@ import TrackableLink from '../trackable-link';
  * - `type="external"` by default.
  * - `target="_blank"` by default.
  *
- * @param {Object} props Props.
+ * @param {Object} props Props to be forwarded to {@link TrackableLink}.
+ * @param {String} props.context Describe what the context is.
+ * @param {String} [props.linkId] Describe what linkId is. It's optional, isn't it?
+ * @param {String} props.href Describe href.
  */
 const AppDocumentationLink = ( props ) => {
 	const { context, linkId, href, ...rest } = props;
