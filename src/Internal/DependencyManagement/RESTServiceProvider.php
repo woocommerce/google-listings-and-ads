@@ -49,7 +49,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_options( SettingsController::class );
 		$this->share( ConnectionController::class );
 		$this->share( AdsAccountController::class, Middleware::class );
-		$this->share_with_options( ShippingRateController::class, ISO3166DataProvider::class );
 		$this->share_with_container( ShippingRateBatchController::class );
 		$this->share_with_container( ShippingRateController::class );
 		$this->share_with_container( ShippingTimeBatchController::class );
