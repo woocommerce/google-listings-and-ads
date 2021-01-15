@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Exception;
 
+use Throwable;
 use WP_Error;
 
 /**
@@ -27,5 +28,18 @@ trait WPErrorTrait {
 		if ( $maybe_error->has_errors() ) {
 			throw WPError::from_error( $maybe_error );
 		}
+	}
+
+	/**
+	 * Create a WP_Error from an exception.
+	 *
+	 * @param Throwable $e
+	 * @param string    $code
+	 * @param array     $data
+	 *
+	 * @return WP_Error
+	 */
+	protected function error_from_exception( Throwable $e, string $code, array $data = [] ): WP_Error {
+		return new WP_Error( $code, $e->getMessage(), $data );
 	}
 }

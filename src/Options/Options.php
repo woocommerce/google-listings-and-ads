@@ -23,6 +23,7 @@ final class Options implements OptionsInterface, Service {
 		self::MERCHANT_CENTER   => true,
 		self::MERCHANT_ID       => true,
 		self::SHIPPING_RATES    => true,
+		self::SHIPPING_TIMES    => true,
 		self::ADS_ID            => true,
 	];
 

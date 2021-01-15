@@ -17,11 +17,11 @@ use WP_REST_Response;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ShippingRateController
+ * Class ShippingTimeController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ShippingRateController extends BaseOptionsController {
+class ShippingTimeController extends BaseOptionsController {
 
 	use ControllerTrait;
 	use CountryCodeTrait;
@@ -36,10 +36,10 @@ class ShippingRateController extends BaseOptionsController {
 	 *
 	 * @var string
 	 */
-	protected $route_base = 'mc/shipping/rates';
+	protected $route_base = 'mc/shipping/times';
 
 	/**
-	 * ShippingRateController constructor.
+	 * ShippingTimeController constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
@@ -57,12 +57,12 @@ class ShippingRateController extends BaseOptionsController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_read_rates_callback(),
+					'callback'            => $this->get_read_times_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->get_create_rate_callback(),
+					'callback'            => $this->get_create_time_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_item_schema(),
 				],
@@ -75,13 +75,13 @@ class ShippingRateController extends BaseOptionsController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_read_rate_callback(),
+					'callback'            => $this->get_read_time_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_item_schema(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
-					'callback'            => $this->get_delete_rate_callback(),
+					'callback'            => $this->get_delete_time_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -90,15 +90,15 @@ class ShippingRateController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the callback function for returning the endpoint results.
+	 * Get the callback function for reading times.
 	 *
 	 * @return callable
 	 */
-	protected function get_read_rates_callback(): callable {
+	protected function get_read_times_callback(): callable {
 		return function() {
-			$rates = $this->get_shipping_rates_option();
+			$times = $this->get_shipping_times_option();
 			$items = [];
-			foreach ( $rates as $country_code => $details ) {
+			foreach ( $times as $country_code => $details ) {
 				$items[ $country_code ] = $this->prepare_item_for_response( $details );
 			}
 
@@ -107,49 +107,52 @@ class ShippingRateController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the callback function for reading a single time.
+	 *
 	 * @return callable
 	 */
-	protected function get_read_rate_callback(): callable {
+	protected function get_read_time_callback(): callable {
 		return function( WP_REST_Request $request ) {
 			$country = $request->get_param( 'country_code' );
-			$rates   = $this->get_shipping_rates_option();
-			if ( ! array_key_exists( $country, $rates ) ) {
+			$times   = $this->get_shipping_times_option();
+			if ( ! array_key_exists( $country, $times ) ) {
 				return new WP_REST_Response(
 					[
-						'message' => __( 'No rate available.', 'google-listings-and-ads' ),
+						'message' => __( 'No time available.', 'google-listings-and-ads' ),
 						'country' => $country,
 					],
 					404
 				);
 			}
 
-			return $this->prepare_item_for_response( $rates[ $country ] );
+			return $this->prepare_item_for_response( $times[ $country ] );
 		};
 	}
 
 	/**
-	 * Get the callback function for creating a new shipping rate.
+	 * Get the callback to crate a new time.
 	 *
 	 * @return callable
 	 */
-	protected function get_create_rate_callback(): callable {
+	protected function get_create_time_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			$iso = $request->get_param( 'country_code' );
-			$this->update_shipping_rates_option(
-				$this->process_new_rate(
-					$this->get_shipping_rates_option(),
-					$iso,
-					$request->get_params()
-				)
+			$country_code           = $request->get_param( 'country_code' );
+			$times                  = $this->get_shipping_times_option();
+			$times[ $country_code ] = $this->process_new_time(
+				$times[ $country_code ] ?? [],
+				$request->get_params(),
+				$country_code
 			);
+
+			$this->update_shipping_times_option( $times );
 
 			return new WP_REST_Response(
 				[
 					'status'  => 'success',
 					'message' => sprintf(
 						/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
-						__( 'Successfully added rate for country: "%s".', 'google-listings-and-ads' ),
-						$iso
+						__( 'Successfully added time for country: "%s".', 'google-listings-and-ads' ),
+						$country_code
 					),
 				],
 				201
@@ -158,34 +161,80 @@ class ShippingRateController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the callback function for deleting a time.
+	 *
 	 * @return callable
 	 */
-	protected function get_delete_rate_callback(): callable {
+	protected function get_delete_time_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			$iso   = $request->get_param( 'country_code' );
-			$rates = $this->get_shipping_rates_option();
-			unset( $rates[ $iso ] );
-			$this->update_shipping_rates_option( $rates );
+			$country_code = $request->get_param( 'country_code' );
+			$times        = $this->get_shipping_times_option();
+
+			unset( $times[ $country_code ] );
+			$this->update_shipping_times_option( $times );
 
 			return [
 				'status'  => 'success',
 				'message' => sprintf(
 					/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
-					__( 'Successfully deleted the rate for country "%s".', 'google-listings-and-ads' ),
-					$iso
+					__( 'Successfully deleted the time for country: "%s".', 'google-listings-and-ads' ),
+					$country_code
 				),
 			];
 		};
 	}
 
 	/**
+	 * Process new data for a time option.
+	 *
+	 * @param array  $existing     Existing time data.
+	 * @param array  $new          New time data.
+	 * @param string $country_code The country code for the time.
+	 *
+	 * @return array
+	 */
+	protected function process_new_time( array $existing, array $new, string $country_code ): array {
+		$schema = $this->get_item_schema();
+		$time   = [];
+		foreach ( $schema as $key => $property ) {
+			$time[ $key ] = 'country' === $key
+				? $this->iso->alpha2( $country_code )['name']
+				: $new[ $key ] ?? $existing[ $key ] ?? $property['default'] ?? null;
+		}
+
+		return $time;
+	}
+
+	/**
+	 * Get the shipping times option from the options object.
+	 *
+	 * @return array
+	 */
+	protected function get_shipping_times_option(): array {
+		return $this->options->get( OptionsInterface::SHIPPING_TIMES, [] );
+	}
+
+	/**
+	 * Update the array of shipping times in the options object.
+	 *
+	 * @param array $times
+	 *
+	 * @return bool
+	 */
+	protected function update_shipping_times_option( array $times ): bool {
+		return $this->options->update( OptionsInterface::SHIPPING_TIMES, $times );
+	}
+
+	/**
+	 * Get the item schema for the controller.
+	 *
 	 * @return array
 	 */
 	protected function get_item_schema(): array {
 		return [
 			'country'      => [
 				'type'        => 'string',
-				'description' => __( 'Country in which the shipping rate applies.', 'google-listings-and-ads' ),
+				'description' => __( 'Country in which the shipping time applies.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
@@ -197,16 +246,9 @@ class ShippingRateController extends BaseOptionsController {
 				'validate_callback' => $this->get_country_code_validate_callback(),
 				'required'          => true,
 			],
-			'currency'     => [
-				'type'              => 'string',
-				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => 'USD', // todo: default to store currency.
-			],
-			'rate'         => [
+			'time'         => [
 				'type'              => 'integer',
-				'description'       => __( 'The shipping rate.', 'google-listings-and-ads' ),
+				'description'       => __( 'The shipping time in days.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
@@ -222,51 +264,6 @@ class ShippingRateController extends BaseOptionsController {
 	 * @return string
 	 */
 	protected function get_item_schema_name(): string {
-		return 'shipping_rates';
-	}
-
-	/**
-	 * Get the array of shipping rates from the option store.
-	 *
-	 * @return array
-	 */
-	protected function get_shipping_rates_option(): array {
-		return $this->options->get( OptionsInterface::SHIPPING_RATES, [] );
-	}
-
-	/**
-	 * Update the array of shipping rates in the options store.
-	 *
-	 * @param array $rates
-	 *
-	 * @return bool
-	 */
-	protected function update_shipping_rates_option( array $rates ): bool {
-		return $this->options->update( OptionsInterface::SHIPPING_RATES, $rates );
-	}
-
-	/**
-	 * Process a new rate and add it to the other rates.
-	 *
-	 * @param array  $all_rates Array of all rates.
-	 * @param string $rate_key  The rate key.
-	 * @param array  $raw_data  Raw data to process.
-	 *
-	 * @return array
-	 */
-	protected function process_new_rate( array $all_rates, string $rate_key, array $raw_data ): array {
-		// Specifically call the schema method from this class.
-		$schema = self::get_item_schema();
-
-		$rate = $all_rates[ $rate_key ] ?? [];
-		foreach ( $schema as $key => $property ) {
-			$rate[ $key ] = $raw_data[ $key ] ?? $rate[ $key ] ?? $property['default'] ?? null;
-		}
-
-		// todo: translate the country using WC_Countries class
-		$rate['country']        = $this->iso->alpha2( $rate_key )['name'];
-		$all_rates[ $rate_key ] = $rate;
-
-		return $all_rates;
+		return 'shipping_times';
 	}
 }
