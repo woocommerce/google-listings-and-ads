@@ -17,10 +17,10 @@ use Psr\Container\ContainerInterface;
 class GlobalSiteTag implements Service, Registerable {
 
 	/** @var string Developer ID */
-	const DEVELOPER_ID = 'dOGY3NW';
+	protected const DEVELOPER_ID = 'dOGY3NW';
 
 	/** @var string Meta key used to mark orders as converted */
-	const ORDER_CONVERSION_META_KEY = '_gla_tracked';
+	protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
 
 	/**
 	 * @var ContainerInterface
@@ -67,8 +67,7 @@ class GlobalSiteTag implements Service, Registerable {
 	 * @param string $aw_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $aw_conversion_id ) {
-
-		if ( $this->is_woocommerce_google_analytics_active() && $this->is_gtag_enabled()  ) {
+		if ( $this->is_woocommerce_google_analytics_active() && $this->is_gtag_enabled() ) {
 			add_filter(
 				'woocommerce_gtag_snippet',
 				function( $gtag_snippet ) use ( $aw_conversion_id ) {
@@ -98,7 +97,7 @@ class GlobalSiteTag implements Service, Registerable {
 	 *
 	 * @return bool True if WooCommerce Google Analytics Integration has "Use Global Site Tag" enabled.
 	 */
-	protected function is_gtag_enabled() : bool{
+	protected function is_gtag_enabled(): bool {
 		$woocommerce_google_analytics_settings = get_option( 'woocommerce_google_analytics_settings', [] );
 		if ( empty( $woocommerce_google_analytics_settings['ga_gtag_enabled'] ) ) {
 			return false;
@@ -112,6 +111,7 @@ class GlobalSiteTag implements Service, Registerable {
 	 * @param string $aw_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $aw_conversion_id ) {
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 		<!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $aw_conversion_id ); ?> -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_js( $aw_conversion_id ); ?>"></script>
@@ -124,6 +124,7 @@ class GlobalSiteTag implements Service, Registerable {
 			gtag('config','<?php echo esc_js( $aw_conversion_id ); ?>');
 		</script>
 		<?php
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**
@@ -132,8 +133,7 @@ class GlobalSiteTag implements Service, Registerable {
 	 * @param string $aw_conversion_id Google Ads account conversion ID.
 	 * @param string $aw_conversion_label Google Ads conversion label.
 	 */
-	public function maybe_display_event_snippet( string $aw_conversion_id, string $aw_conversion_label ) : void {
-
+	public function maybe_display_event_snippet( string $aw_conversion_id, string $aw_conversion_label ): void {
 		// Only display on the order confirmation page.
 		if ( ! is_order_received_page() ) {
 			return;
@@ -142,7 +142,7 @@ class GlobalSiteTag implements Service, Registerable {
 		global $wp;
 		$order_id = isset( $wp->query_vars['order-received'] ) ? $wp->query_vars['order-received'] : 0;
 
-		if ( 0 < $order_id && 1 != get_post_meta( $order_id, self::ORDER_CONVERSION_META_KEY, true ) ) {
+		if ( 0 < $order_id && 1 !== get_post_meta( $order_id, self::ORDER_CONVERSION_META_KEY, true ) ) {
 			$order = wc_get_order( $order_id );
 
 			// Make sure there is a valid order object.
@@ -156,11 +156,11 @@ class GlobalSiteTag implements Service, Registerable {
 			?>
 	<script>
 		gtag('event', 'conversion', {'send_to': '<?php echo esc_js( $aw_conversion_id ); ?>/<?php echo esc_js( $aw_conversion_label ); ?>',
-			'value': '<?php echo esc_js( $order->get_total() ) ?>',
+			'value': '<?php echo esc_js( $order->get_total() ); ?>',
 			'currency': '<?php echo esc_js( $order->get_currency() ); ?>'
 		});
 	</script>
-<?php
+			<?php
 		}
 	}
 
