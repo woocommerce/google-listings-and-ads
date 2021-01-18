@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -136,9 +137,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 			return;
 		}
 
-		global $wp;
-		$order_id = isset( $wp->query_vars['order-received'] ) ? $wp->query_vars['order-received'] : 0;
-
+		$order_id = $this->container->get( WP::class )->get_query_vars( 'order-received', 0 );
+		error_log("YM: $order_id");
 		if ( 0 < $order_id && 1 !== get_post_meta( $order_id, self::ORDER_CONVERSION_META_KEY, true ) ) {
 			$order = wc_get_order( $order_id );
 

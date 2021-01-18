@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Http;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 /**
  * Class ProxyServiceProvider
@@ -25,6 +26,7 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		RESTServer::class   => true,
 		Tracks::class       => true,
 		GoogleGtagJs::class => true,
+		WP::class           => true,
 	];
 
 	/**
@@ -42,5 +44,6 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		$this->share( RESTServer::class );
 		$this->share( Tracks::class );
 		$this->share( GoogleGtagJs::class );
+		$this->share( WP::class );
 	}
 }
