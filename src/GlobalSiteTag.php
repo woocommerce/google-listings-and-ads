@@ -7,14 +7,16 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Psr\Container\ContainerInterface;
 
 /**
  * Main class for Global Site Tag.
  */
-class GlobalSiteTag implements Service, Registerable {
+class GlobalSiteTag implements Service, Registerable, Conditional {
 
 	/** @var string Developer ID */
 	protected const DEVELOPER_ID = 'dOGY3NW';
@@ -40,6 +42,7 @@ class GlobalSiteTag implements Service, Registerable {
 	 * Register the service.
 	 */
 	public function register(): void {
+		// TODO: Inject or load these values.
 		$aw_conversion_id    = 'AW-TEST-CODE';
 		$aw_conversion_label = 'CONVERSION_LABEL';
 
@@ -67,7 +70,10 @@ class GlobalSiteTag implements Service, Registerable {
 	 * @param string $aw_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $aw_conversion_id ) {
-		if ( $this->is_woocommerce_google_analytics_active() && $this->is_gtag_enabled() ) {
+		/** @var GoogleGtagJs $gtag_js */
+		$gtag_js = $this->container->get( GoogleGtagJs::class );
+
+		if ( $gtag_js->class_exists() && $this->is_gtag_enabled() ) {
 			add_filter(
 				'woocommerce_gtag_snippet',
 				function( $gtag_snippet ) use ( $aw_conversion_id ) {
@@ -81,15 +87,6 @@ class GlobalSiteTag implements Service, Registerable {
 		} else {
 			$this->display_global_site_tag( $aw_conversion_id );
 		}
-	}
-
-	/**
-	 * Whether WooCommerce Google Analytics Integration v1.5+ is loaded.
-	 *
-	 * @return bool True if WooCommerce Google Analytics Integration is loaded.
-	 */
-	protected function is_woocommerce_google_analytics_active() {
-		return class_exists( '\WC_Google_Gtag_JS' );
 	}
 
 	/**
@@ -164,4 +161,12 @@ class GlobalSiteTag implements Service, Registerable {
 		}
 	}
 
+	/**
+	 * TODO: Should the Global Site Tag framework be used if there are no paid Ads campaigns?
+	 *
+	 * @return bool True if the Global Site Tag framework should be included.
+	 */
+	public static function is_needed(): bool {
+		return true;
+	}
 }
