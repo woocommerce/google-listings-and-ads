@@ -114,12 +114,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function register_ads_client() {
 		$callback = function() {
+			// Using placeholder values, as the middleware server handles the authentication tokens.
 			$oauth = ( new OAuth2TokenBuilder() )
 				->withClientId( 'clientid' )
 				->withClientSecret( 'clientsecret' )
 				->withRefreshToken( 'refreshtoken' )
 				->build();
 
+			// The developer token will be handled by the middleware server.
 			return ( new GoogleAdsClientBuilder() )
 				->withDeveloperToken( 'developertoken' )
 				->withOAuth2Credential( $oauth )
