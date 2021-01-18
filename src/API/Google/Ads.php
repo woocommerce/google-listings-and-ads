@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
-use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V6\Resources\Campaign;
 use Google\ApiCore\PagedListResponse;
 use Psr\Container\ContainerInterface;
