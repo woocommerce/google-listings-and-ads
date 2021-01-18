@@ -46,7 +46,7 @@ class AccountController extends BaseController {
 					'callback'            => $this->get_accounts_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-				'schema' => $this->get_accounts_schema(),
+				'schema' => $this->get_accounts_schema_callback(),
 			]
 		);
 
@@ -108,16 +108,20 @@ class AccountController extends BaseController {
 	}
 
 	/**
-	 * @return array
+	 * Get the callback to obtain the accounts schema.
+	 *
+	 * @return callable
 	 */
-	protected function get_accounts_schema(): array {
-		return [
-			'type'  => 'array',
-			'items' => [
-				'type'        => 'integer',
-				'description' => __( 'Google Ads account ID.', 'google-listings-and-ads' ),
-			],
-		];
+	protected function get_accounts_schema_callback(): callable {
+		return function() {
+			return [
+				'type'  => 'array',
+				'items' => [
+					'type'        => 'integer',
+					'description' => __( 'Google Ads account ID.', 'google-listings-and-ads' ),
+				],
+			];
+		};
 	}
 
 	/**
