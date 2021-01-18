@@ -79,7 +79,7 @@ class Proxy {
 			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers( $args );
 
 			foreach ( $customers->getResourceNames() as $name ) {
-				$ids[] = absint( str_replace( 'customers/', '', $name ) );
+				$ids[] = $this->parse_ads_id( $name );
 			}
 
 			return $ids;
@@ -109,7 +109,9 @@ class Proxy {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
-				return new WP_REST_Response( $this->update_ads_id( $response['resourceName'] ) );
+				$id = $this->parse_ads_id( $response['resourceName'] );
+				$this->update_ads_id( $id );
+				return new WP_REST_Response( $id );
 			}
 
 			return new WP_REST_Response( $response, $result->getStatusCode() );
@@ -146,7 +148,8 @@ class Proxy {
 			$name     = "customers/{$id}";
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
-				return new WP_REST_Response( $this->update_ads_id( $name ) );
+				$this->update_ads_id( $id );
+				return new WP_REST_Response( $id );
 			}
 
 			return new WP_REST_Response( $response, $result->getStatusCode() );
@@ -233,18 +236,26 @@ class Proxy {
 	}
 
 	/**
-	 * Update the Ads ID to use for requests.
+	 * Convert ads ID from a resource name to an int.
 	 *
 	 * @param string $name Resource name containing ID number.
 	 *
 	 * @return int
 	 */
-	protected function update_ads_id( string $name ): int {
-		$id = absint( str_replace( 'customers/', '', $name ) );
+	protected function parse_ads_id( string $name ): int {
+		return absint( str_replace( 'customers/', '', $name ) );
+	}
 
+	/**
+	 * Update the Ads ID to use for requests.
+	 *
+	 * @param int $id Ads ID number.
+	 *
+	 * @return bool
+	 */
+	protected function update_ads_id( int $id ): bool {
 		/** @var Options $options */
 		$options = $this->container->get( OptionsInterface::class );
-		$options->update( Options::ADS_ID, $id );
-		return $id;
+		return $options->update( Options::ADS_ID, $id );
 	}
 }
