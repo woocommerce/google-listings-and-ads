@@ -76,7 +76,7 @@ class Ads {
 	public function query( string $query ): PagedListResponse {
 		/** @var GoogleAdsClient $client */
 		$client = $this->container->get( GoogleAdsClient::class );
-		$args   = [ 'headers' => $this->container->get( 'headers' ) ];
+		$args   = [ 'headers' => $this->container->get( 'connect_server_auth_header' ) ];
 
 		return $client->getGoogleAdsServiceClient()->search( $this->get_id(), $query, $args );
 	}

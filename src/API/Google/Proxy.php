@@ -75,7 +75,7 @@ class Proxy {
 		try {
 			/** @var GoogleAdsClient $client */
 			$client    = $this->container->get( GoogleAdsClient::class );
-			$args      = [ 'headers' => $this->container->get( 'headers' ) ];
+			$args      = [ 'headers' => $this->container->get( 'connect_server_auth_header' ) ];
 			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers( $args );
 
 			foreach ( $customers->getResourceNames() as $name ) {
