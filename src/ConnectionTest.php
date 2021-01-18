@@ -558,29 +558,6 @@ class ConnectionTest implements Service, Registerable {
 	}
 
 	/**
-	 * Get a GoogleAdsClient.
-	 *
-	 * @return GoogleAdsClient
-	 */
-	private function get_ads_client(): \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient {
-		$url = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads';
-		$url = preg_replace( '/^https?:\/\//', '', $url );
-
-		$oAuth2Credential = ( new \Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder() )
-			->withClientId( 'clientid' )
-			->withClientSecret( 'clientsecret' )
-			->withRefreshToken( 'refreshtoken' )
-			->build();
-
-		return ( new \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder() )
-			->withDeveloperToken( 'developertoken' )
-			->withOAuth2Credential( $oAuth2Credential )
-			->withEndpoint( $url )
-			->withTransport( 'rest' )
-			->build();
-	}
-
-	/**
 	 * Retrieve an authorization header containing a Jetpack token.
 	 *
 	 * @return string Authorization header.
