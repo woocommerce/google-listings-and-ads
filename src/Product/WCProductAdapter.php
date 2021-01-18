@@ -492,7 +492,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$metadata->addPropertyConstraint( 'offerId', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'title', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'description', new Assert\NotBlank() );
+		$metadata->addPropertyConstraint( 'link', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'link', new Assert\Url() );
+		$metadata->addPropertyConstraint( 'imageLink', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'imageLink', new Assert\Url() );
 		$metadata->addPropertyConstraint( 'additionalImageLinks', new Assert\All( [ 'constraints' => [ new Assert\Url() ] ] ) );
 		$metadata->addGetterConstraint( 'price', new Assert\NotNull() );
