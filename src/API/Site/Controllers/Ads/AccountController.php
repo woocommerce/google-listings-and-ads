@@ -46,19 +46,13 @@ class AccountController extends BaseController {
 					'callback'            => $this->get_accounts_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-				'schema' => $this->get_accounts_schema_callback(),
-			]
-		);
-
-		$this->register_route(
-			'ads/accounts',
-			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_create_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->create_accounts_schema(),
 				],
+				'schema' => $this->get_accounts_schema_callback(),
 			]
 		);
 
