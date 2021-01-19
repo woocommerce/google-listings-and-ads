@@ -30,12 +30,12 @@ const AppTableCard = ( props ) => {
 	/**
 	 * Returns a function that records a track event before executing an original handler.
 	 *
-	 * @param {string} handlerName The name of the event handler.
 	 * @param {Function} recordEvent The function to record the event.
+	 * @param {Function} [originalHandler] The original event handler.
 	 *
 	 * @return {decoratedHandler} Decorated handler.
 	 */
-	function decorateHandlerWithTrackEvent( handlerName, recordEvent ) {
+	function decorateHandlerWithTrackEvent( recordEvent, originalHandler ) {
 		/**
 		 * Records track event with specified `trackEventReportId` and any args given,
 		 * then calls original handler if any.
@@ -49,9 +49,8 @@ const AppTableCard = ( props ) => {
 			}
 
 			// Call the original handler if given.
-			const handler = props.handlerName;
-			if ( handler ) {
-				handler( ...args );
+			if ( originalHandler ) {
+				originalHandler( ...args );
 			}
 		};
 	}
@@ -60,12 +59,12 @@ const AppTableCard = ( props ) => {
 		<div className="app-table-card">
 			<TableCard
 				onColumnsChange={ decorateHandlerWithTrackEvent(
-					'onColumnsChange',
-					recordColumnToggleEvent
+					recordColumnToggleEvent,
+					props.onColumnsChange
 				) }
 				onSort={ decorateHandlerWithTrackEvent(
-					'onSort',
-					recordTableSortEvent
+					recordTableSortEvent,
+					props.onSort
 				) }
 				{ ...rest }
 			/>
