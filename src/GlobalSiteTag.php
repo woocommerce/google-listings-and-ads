@@ -100,16 +100,16 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 		// WooCommerce Google Analytics Integration is disabled for admin users.
 		$is_admin = is_admin() || current_user_can( 'manage_options' );
 
-		return ! $is_admin && $gtag_js->class_exists() && $this->are_gtag_options_correct();
+		return ! $is_admin && $gtag_js->class_exists() && $this->is_gtag_code_present();
 	}
 
 	/**
-	 * Whether WooCommerce Google Analytics Integration has Global Site Tag enabled and a
-	 * tracking ID entered.
+	 * Determine whether WooCommerce Google Analytics Integration is already
+	 * injecting the gtag <script> code.
 	 *
-	 * @return bool True if WooCommerce Google Analytics Integration has the correct options for "Use Global Site Tag"  to be enabled.
+	 * @return bool True if the <script> code is present.
 	 */
-	protected function are_gtag_options_correct(): bool {
+	protected function is_gtag_code_present(): bool {
 		$woocommerce_google_analytics_settings = get_option( 'woocommerce_google_analytics_settings', [] );
 		if ( empty( $woocommerce_google_analytics_settings['ga_gtag_enabled'] ) ) {
 			return false;
@@ -117,7 +117,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 		if ( empty( $woocommerce_google_analytics_settings['ga_id'] ) ) {
 			return false;
 		}
-		return $woocommerce_google_analytics_settings['ga_id'] && ( 'yes' === $woocommerce_google_analytics_settings['ga_gtag_enabled'] );
+
+		$standard_tracking_enabled = 'yes' === ( $woocommerce_google_analytics_settings['ga_standard_tracking_enabled'] ?? 'no' );
+		$page_has_tracking         = $standard_tracking_enabled || is_order_received_page() || is_woocommerce() || is_cart() || is_checkout();
+
+		return $page_has_tracking && $woocommerce_google_analytics_settings['ga_id'] && ( 'yes' === $woocommerce_google_analytics_settings['ga_gtag_enabled'] );
 	}
 
 	/**
