@@ -121,7 +121,7 @@ class Proxy {
 			}
 
 			return new WP_REST_Response( $response, $result->getStatusCode() );
-		} catch ( Exception $e ) {
+		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
 			return new WP_REST_Response( $e->getMessage(), 400 );
@@ -159,7 +159,7 @@ class Proxy {
 			}
 
 			return new WP_REST_Response( $response, $result->getStatusCode() );
-		} catch ( Exception $e ) {
+		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
 			return new WP_REST_Response( $e->getMessage(), 400 );
