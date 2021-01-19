@@ -26,6 +26,19 @@ const AppDateRangeFilterPicker = ( props ) => {
 	const { trackEventReportId } = props;
 	const dateQuery = getDateQuery();
 
+	/**
+	 * Handles DateRangeFilterPicker range changes.
+	 *
+	 * Reports `recordDatepickerUpdateEvent` with props.trackEventReportId
+	 * and `data` given by `onRangeSelect` callback.
+	 * Updates query string with selected data.
+	 *
+	 * @param {Object} data Data given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
+	 * @param {string} data.compare
+	 * @param {string} data.period
+	 * @param {string} data.after
+	 * @param {string} data.before
+	 */
 	const handleRangeSelect = ( data ) => {
 		if ( trackEventReportId ) {
 			recordDatepickerUpdateEvent( {

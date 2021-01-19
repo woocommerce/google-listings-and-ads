@@ -40,7 +40,7 @@ All event names are prefixed by `wcadmin_gla_`.
   * `direction`: (`asc`|`desc`)
 
 * `datepicker_update` - Changing datepicker
-  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
+  * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
   * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
 
 * `tooltip_viewed` - Viewing tooltip
