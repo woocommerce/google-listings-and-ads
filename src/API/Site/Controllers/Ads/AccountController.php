@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
@@ -19,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class AccountController extends BaseController {
+
+	use ControllerTrait;
 
 	/**
 	 * @var Middleware
@@ -52,9 +55,9 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->create_or_link_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_create_or_link_account_schema(),
+					'args'                => $this->get_item_schema(),
 				],
-				'schema' => $this->get_accounts_schema_callback(),
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
@@ -87,7 +90,7 @@ class AccountController extends BaseController {
 					$this->middleware->link_ads_account( $link_id ) :
 					$this->middleware->create_ads_account();
 
-				return new WP_REST_Response( $account_id );
+				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
 			} catch ( Exception $e ) {
 				return new WP_REST_Response( $e->getMessage(), 400 );
 			}
@@ -95,37 +98,30 @@ class AccountController extends BaseController {
 	}
 
 	/**
-	 * Get the callback to obtain the accounts schema.
-	 *
-	 * @return callable
-	 */
-	protected function get_accounts_schema_callback(): callable {
-		return function() {
-			return [
-				'$schema' => 'http://json-schema.org/draft-04/schema#',
-				'title'   => 'accounts',
-				'type'    => 'array',
-				'items'   => [
-					'type'        => 'integer',
-					'description' => __( 'Google Ads account ID.', 'google-listings-and-ads' ),
-				],
-			];
-		};
-	}
-
-	/**
-	 * Get the schema for creating or linking an account.
+	 * Get the item schema for the controller.
 	 *
 	 * @return array
 	 */
-	protected function get_create_or_link_account_schema(): array {
+	protected function get_item_schema(): array {
 		return [
 			'id' => [
 				'type'              => 'number',
-				'description'       => __( 'Google Ads Account ID to link.', 'google-listings-and-ads' ),
+				'description'       => __( 'Google Ads Account ID.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],
 		];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_item_schema_name(): string {
+		return 'accounts';
 	}
 }
