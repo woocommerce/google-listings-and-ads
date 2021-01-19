@@ -18,6 +18,8 @@ import TrackableLink from '../trackable-link';
  * @param {string} props.context The screen or page of this AppDocumentationLink. This will be sent as part of track event properties.
  * @param {string} props.linkId An identifier for this DocumentationLink. This will be sent as part of track event properties.
  * @param {string} props.href `href` to be passed to `TrackableLink` component.
+ * @param {string} [props.type="external"] Type of `TrackableLink`.
+ * @param {string} [props.target="_blank"] Target of `TrackableLink`.
  */
 const AppDocumentationLink = ( props ) => {
 	const { context, linkId, href, ...rest } = props;
