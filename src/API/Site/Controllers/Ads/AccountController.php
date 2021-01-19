@@ -7,7 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Exception;
 use WP_REST_Request;
+use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -48,21 +50,11 @@ class AccountController extends BaseController {
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->create_account_callback(),
+					'callback'            => $this->create_or_link_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_create_or_link_account_schema(),
 				],
 				'schema' => $this->get_accounts_schema_callback(),
-			]
-		);
-
-		$this->register_route(
-			'ads/accounts/(?P<id>\d+)',
-			[
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->link_account_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-				],
 			]
 		);
 	}
@@ -74,29 +66,31 @@ class AccountController extends BaseController {
 	 */
 	protected function get_accounts_callback(): callable {
 		return function() {
-			return $this->middleware->get_ads_account_ids();
+			try {
+				return new WP_REST_Response( $this->middleware->get_ads_account_ids() );
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( $e->getMessage(), 400 );
+			}
 		};
 	}
 
 	/**
-	 * Get the callback function for the create account request.
+	 * Get the callback function for creating or linking an account.
 	 *
 	 * @return callable
 	 */
-	protected function create_account_callback(): callable {
-		return function() {
-			return $this->middleware->create_ads_account();
-		};
-	}
-
-	/**
-	 * Get the callback function for the link account request.
-	 *
-	 * @return callable
-	 */
-	protected function link_account_callback(): callable {
+	protected function create_or_link_account_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			return $this->middleware->link_ads_account( absint( $request['id'] ) );
+			try {
+				$link_id    = absint( $request['id'] );
+				$account_id = $link_id ?
+					$this->middleware->link_ads_account( $link_id ) :
+					$this->middleware->create_ads_account();
+
+				return new WP_REST_Response( $account_id );
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( $e->getMessage(), 400 );
+			}
 		};
 	}
 
@@ -117,5 +111,21 @@ class AccountController extends BaseController {
 				],
 			];
 		};
+	}
+
+	/**
+	 * Get the schema for creating or linking an account.
+	 *
+	 * @return array
+	 */
+	protected function get_create_or_link_account_schema(): array {
+		return [
+			'id' => [
+				'type'              => 'number',
+				'description'       => __( 'Google Ads Account ID to link.', 'google-listings-and-ads' ),
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+			],
+		];
 	}
 }
