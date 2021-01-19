@@ -17,8 +17,8 @@ import './index.scss';
  * ## Usage
  * Same as [TableCard](https://woocommerce.github.io/woocommerce-admin/#/components/packages/table/README?id=tablecard).
  *
- * @fires gla_table_header_toggle upon toggling column visibility,
- * @fires gla_table_sort upon sorting table by column.
+ * @fires gla_table_header_toggle upon toggling column visibility
+ * @fires gla_table_sort upon sorting table by column
  * @see module:@woocommerce/components#TableCard
  *
  * @param {Object} props

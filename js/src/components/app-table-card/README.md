@@ -1,8 +1,8 @@
 # AppTableCard
 
 Renders a TableCard component with additional styling, and record [track event](../../../../src/Tracking) when `trackEventReportId` is supplied via props.
- - `gla_table_header_toggle` upon toggling column visibility,
- - `gla_table_sort` upon sorting table by column,
+ - `gla_table_header_toggle` upon toggling column visibility
+ - `gla_table_sort` upon sorting table by column
 
 ## Usage
 
