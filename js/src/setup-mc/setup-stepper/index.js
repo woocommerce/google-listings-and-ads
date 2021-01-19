@@ -11,7 +11,7 @@ const SetupStepper = () => {
 		'gla_setup_mc_saved_step'
 	);
 
-	if ( loading ) {
+	if ( loading || ! savedStep ) {
 		return <AppSpinner />;
 	}
 
