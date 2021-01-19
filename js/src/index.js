@@ -15,6 +15,7 @@ import Dashboard from './dashboard';
 import Analytics from './analytics';
 import ProductFeed from './product-feed';
 import Settings from './settings';
+import './data';
 
 addFilter(
 	'woocommerce_admin_pages_list',

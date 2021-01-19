@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
-import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,14 +14,15 @@ import AppDocumentationLink from '../../../components/app-documentation-link';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
+import useAudienceSelectedCountries from './useAudienceSelectedCountries';
 import './index.scss';
 
 const ChooseAudience = ( props ) => {
 	const { onContinue } = props;
-	const [ selected, setSelected ] = useState( [] );
+	const [ value, setValue ] = useAudienceSelectedCountries();
 
-	const handleListControlChange = ( items ) => {
-		setSelected( items );
+	const handleCountryChange = ( items ) => {
+		setValue( items );
 	};
 
 	return (
@@ -88,8 +88,8 @@ const ChooseAudience = ( props ) => {
 							</Subsection.Title>
 							<div className="input">
 								<AppCountryMultiSelect
-									value={ selected }
-									onChange={ handleListControlChange }
+									value={ value }
+									onChange={ handleCountryChange }
 								/>
 							</div>
 							<Subsection.HelperText>
