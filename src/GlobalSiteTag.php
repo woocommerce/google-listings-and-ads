@@ -71,10 +71,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 	 * @param string $aw_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $aw_conversion_id ) {
-		/** @var GoogleGtagJs $gtag_js */
-		$gtag_js = $this->container->get( GoogleGtagJs::class );
-
-		if ( $gtag_js->class_exists() && $this->is_gtag_enabled() ) {
+		if ( $this->is_active_woocommerce_google_analytics_integration() ) {
 			add_filter(
 				'woocommerce_gtag_snippet',
 				function( $gtag_snippet ) use ( $aw_conversion_id ) {
@@ -91,16 +88,36 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Whether WooCommerce Google Analytics Integration has Global Site Tag enabled.
+	 * Determine if the WooCommerce Google Analytics Integration extension is active and
+	 * inserting script tags.
 	 *
-	 * @return bool True if WooCommerce Google Analytics Integration has "Use Global Site Tag" enabled.
+	 * @return bool True if WooCommerce Google Analytics Integration is active and inserting script tags.
 	 */
-	protected function is_gtag_enabled(): bool {
+	protected function is_active_woocommerce_google_analytics_integration() {
+		/** @var GoogleGtagJs $gtag_js */
+		$gtag_js = $this->container->get( GoogleGtagJs::class );
+
+		// WooCommerce Google Analytics Integration is disabled for admin users.
+		$is_admin = is_admin() || current_user_can( 'manage_options' );
+
+		return ! $is_admin && $gtag_js->class_exists() && $this->are_gtag_options_correct();
+	}
+
+	/**
+	 * Whether WooCommerce Google Analytics Integration has Global Site Tag enabled and a
+	 * tracking ID entered.
+	 *
+	 * @return bool True if WooCommerce Google Analytics Integration has the correct options for "Use Global Site Tag"  to be enabled.
+	 */
+	protected function are_gtag_options_correct(): bool {
 		$woocommerce_google_analytics_settings = get_option( 'woocommerce_google_analytics_settings', [] );
 		if ( empty( $woocommerce_google_analytics_settings['ga_gtag_enabled'] ) ) {
 			return false;
 		}
-		return 'yes' === $woocommerce_google_analytics_settings['ga_gtag_enabled'];
+		if ( empty( $woocommerce_google_analytics_settings['ga_id'] ) ) {
+			return false;
+		}
+		return $woocommerce_google_analytics_settings['ga_id'] && ( 'yes' === $woocommerce_google_analytics_settings['ga_gtag_enabled'] );
 	}
 
 	/**
