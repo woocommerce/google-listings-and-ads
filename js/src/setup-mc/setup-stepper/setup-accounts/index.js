@@ -20,7 +20,7 @@ const SetupAccounts = ( props ) => {
 	// TODO: call backend API to check and set the following to true/false.
 	const isGoogleAccountDisabled = true;
 	const isGoogleMCAccountDisabled = true;
-	const isContinueButtonDisabled = true;
+	const isContinueButtonDisabled = false;
 
 	return (
 		<StepContent>
