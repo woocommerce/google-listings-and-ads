@@ -11,10 +11,10 @@ use DateTimeZone;
 use Exception;
 use Google_Service_ShoppingContent as ShoppingContent;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
+use Google\ApiCore\ApiException;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
-use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -71,31 +71,36 @@ class Proxy {
 	 * Get Ads IDs associated with the connected Google account.
 	 *
 	 * @return int[]
+	 * @throws Exception When an ApiException is caught.
 	 */
 	public function get_ads_account_ids(): array {
-		$ids = [];
 		try {
 			/** @var GoogleAdsClient $client */
 			$client    = $this->container->get( GoogleAdsClient::class );
 			$args      = [ 'headers' => $this->container->get( 'connect_server_auth_header' ) ];
 			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers( $args );
+			$ids       = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
 				$ids[] = $this->parse_ads_id( $name );
 			}
 
 			return $ids;
-		} catch ( Exception $e ) {
-			return $ids;
+		} catch ( ApiException $e ) {
+			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+
+			$error = json_decode( $e->getMessage(), true );
+			throw new Exception( sprintf( 'Error retrieving accounts: %s', $error['message'] ) );
 		}
 	}
 
 	/**
 	 * Create a new Google Ads account.
 	 *
-	 * @return WP_REST_Response
+	 * @return int
+	 * @throws Exception When a ClientException is caught or we receive an invalid response.
 	 */
-	public function create_ads_account(): WP_REST_Response {
+	public function create_ads_account(): int {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -117,14 +122,16 @@ class Proxy {
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
 				$id = $this->parse_ads_id( $response['resourceName'] );
 				$this->update_ads_id( $id );
-				return new WP_REST_Response( $id );
+				return $id;
 			}
 
-			return new WP_REST_Response( $response, $result->getStatusCode() );
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			throw new Exception( 'Invalid response when creating account' );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			return new WP_REST_Response( $e->getMessage(), 400 );
+			throw new Exception( sprintf( 'Error creating account: %s', $e->getMessage() ) );
 		}
 	}
 
@@ -133,9 +140,10 @@ class Proxy {
 	 *
 	 * @param int $id Existing account ID.
 	 *
-	 * @return WP_REST_Response
+	 * @return int
+	 * @throws Exception When a ClientException is caught or we receive an invalid response.
 	 */
-	public function link_ads_account( int $id ): WP_REST_Response {
+	public function link_ads_account( int $id ): int {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -155,14 +163,16 @@ class Proxy {
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
 				$this->update_ads_id( $id );
-				return new WP_REST_Response( $id );
+				return $id;
 			}
 
-			return new WP_REST_Response( $response, $result->getStatusCode() );
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			throw new Exception( 'Invalid response when linking account' );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			return new WP_REST_Response( $e->getMessage(), 400 );
+			throw new Exception( sprintf( 'Error linking account: %s', $e->getMessage() ) );
 		}
 	}
 
