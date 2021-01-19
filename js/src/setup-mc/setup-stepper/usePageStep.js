@@ -15,7 +15,7 @@ import useDispatchOptions from '../../hooks/useDispatchOptions';
  */
 
 /**
- * A custom React hook to access and update pageStep value to be used in `Stepper`.
+ * A custom React hook to access and update the user's progress in `SavedSetupStepper`.
  *
  * Upon calling update, it will save the pageStep value using Options API when needed.
  * The saved value can be retrieved later.
