@@ -47,9 +47,11 @@
 		"@wordpress/base-styles": "^3.2.0",
 		"@wordpress/components": "^11.1.1",
 		"@wordpress/data": "^4.26.1",
+		"@wordpress/data-controls": "^1.20.1",
 		"@wordpress/date": "^3.12.0",
 		"@wordpress/element": "^2.18.0",
 		"@wordpress/icons": "^2.8.0",
-		"gridicons": "^3.3.1"
+		"gridicons": "^3.3.1",
+		"lodash": "^4.17.20"
 	}
 }
