@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
+use DateTime;
+use DateTimeZone;
 use Exception;
 use Google_Service_ShoppingContent as ShoppingContent;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
@@ -91,18 +93,22 @@ class Proxy {
 	/**
 	 * Create a new Google Ads account.
 	 *
-	 * @param array $params Request paramaters.
-	 *
 	 * @return WP_REST_Response
 	 */
-	public function create_ads_account( array $params ): WP_REST_Response {
+	public function create_ads_account(): WP_REST_Response {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
 				$this->get_ads_manager_url( 'US/create-customer' ),
 				[
-					'body' => json_encode( $params ),
+					'body' => json_encode(
+						[
+							'descriptive_name' => $this->new_ads_account_name(),
+							'currency_code'    => get_woocommerce_currency(),
+							'time_zone'        => $this->get_site_timezone_string(),
+						]
+					),
 				]
 			);
 
@@ -257,5 +263,40 @@ class Proxy {
 		/** @var Options $options */
 		$options = $this->container->get( OptionsInterface::class );
 		return $options->update( Options::ADS_ID, $id );
+	}
+
+	/**
+	 * Generate a descriptive name for a new ads account.
+	 *
+	 * @return string
+	 */
+	protected function new_ads_account_name(): string {
+		$site_title = get_bloginfo( 'name' );
+		return $site_title;
+	}
+
+	/**
+	 * Get a timezone string from WP Settings.
+	 *
+	 * @return string
+	 */
+	protected function get_site_timezone_string(): string {
+		$timezone = wp_timezone_string();
+
+		// Convert a timezone offset to the closest match.
+		if ( false !== strpos( $timezone, ':' ) ) {
+			list( $hours, $minutes ) = explode( ':', $timezone );
+
+			$dst      = (int) ( new DateTime( 'now', new DateTimeZone( $timezone ) ) )->format( 'I' );
+			$seconds  = $hours * 60 * 60 + $minutes * 60;
+			$tz_name  = timezone_name_from_abbr( '', $seconds, $dst );
+			$timezone = $tz_name !== false ? $tz_name : date_default_timezone_get();
+		}
+
+		if ( 'UTC' === $timezone ) {
+			$timezone = 'Etc/GMT';
+		}
+
+		return $timezone;
 	}
 }

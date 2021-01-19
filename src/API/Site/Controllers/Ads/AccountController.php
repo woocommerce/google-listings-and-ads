@@ -48,9 +48,8 @@ class AccountController extends BaseController {
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->get_create_account_callback(),
+					'callback'            => $this->create_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->create_accounts_schema(),
 				],
 				'schema' => $this->get_accounts_schema_callback(),
 			]
@@ -61,7 +60,7 @@ class AccountController extends BaseController {
 			[
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->get_link_account_callback(),
+					'callback'            => $this->link_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -84,9 +83,9 @@ class AccountController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_create_account_callback(): callable {
-		return function( WP_REST_Request $request ) {
-			return $this->middleware->create_ads_account( $request->get_json_params() );
+	protected function create_account_callback(): callable {
+		return function() {
+			return $this->middleware->create_ads_account();
 		};
 	}
 
@@ -95,7 +94,7 @@ class AccountController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_link_account_callback(): callable {
+	protected function link_account_callback(): callable {
 		return function( WP_REST_Request $request ) {
 			return $this->middleware->link_ads_account( absint( $request['id'] ) );
 		};
@@ -109,32 +108,14 @@ class AccountController extends BaseController {
 	protected function get_accounts_schema_callback(): callable {
 		return function() {
 			return [
-				'type'  => 'array',
-				'items' => [
+				'$schema' => 'http://json-schema.org/draft-04/schema#',
+				'title'   => 'accounts',
+				'type'    => 'array',
+				'items'   => [
 					'type'        => 'integer',
 					'description' => __( 'Google Ads account ID.', 'google-listings-and-ads' ),
 				],
 			];
 		};
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function create_accounts_schema(): array {
-		return [
-			'descriptive_name' => [
-				'type'        => 'string',
-				'description' => __( 'Unique descriptive name to use for a new account.', 'google-listings-and-ads' ),
-			],
-			'currency_code'    => [
-				'type'        => 'string',
-				'description' => __( '3 letter currency code.', 'google-listings-and-ads' ),
-			],
-			'time_zone'        => [
-				'type'        => 'string',
-				'description' => __( 'Time zone name.', 'google-listings-and-ads' ),
-			],
-		];
 	}
 }
