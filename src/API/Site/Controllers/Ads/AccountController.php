@@ -122,6 +122,6 @@ class AccountController extends BaseController {
 	 * @return string
 	 */
 	protected function get_item_schema_name(): string {
-		return 'accounts';
+		return 'account';
 	}
 }
