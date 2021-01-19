@@ -138,7 +138,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 		}
 
 		$order_id = $this->container->get( WP::class )->get_query_vars( 'order-received', 0 );
-		error_log("YM: $order_id");
 		if ( 0 < $order_id && 1 !== get_post_meta( $order_id, self::ORDER_CONVERSION_META_KEY, true ) ) {
 			$order = wc_get_order( $order_id );
 
