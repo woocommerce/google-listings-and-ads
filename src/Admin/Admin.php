@@ -73,7 +73,7 @@ class Admin implements Service, Registerable, Conditional {
 			'google-listings-and-ads-css',
 			'/js/build/index',
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
+			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" )
 		) );
 	}
 }
