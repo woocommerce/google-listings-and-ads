@@ -62,9 +62,7 @@ class AccountController extends BaseController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => function() {
-						return [ 'active' => $this->is_jetpack_connected() ];
-					},
+					'callback'            => $this->get_connected_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -119,6 +117,17 @@ class AccountController extends BaseController {
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
 			];
+		};
+	}
+
+	/**
+	 * Get the callback function to determine if Jetpack is currently connected.
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_callback(): callable {
+		return function() {
+			return [ 'active' => $this->is_jetpack_connected() ];
 		};
 	}
 
