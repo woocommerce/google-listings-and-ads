@@ -17,12 +17,12 @@ const AppCountryMultiSelect = ( props ) => {
 		{
 			key: 'AU',
 			label: 'Australia',
-			value: { id: 'AUS' },
+			value: { id: 'AU' },
 		},
 		{
 			key: 'US',
 			label: 'United States of America',
-			value: { id: 'USA' },
+			value: { id: 'US' },
 		},
 	];
 
@@ -45,9 +45,9 @@ const AppCountryMultiSelect = ( props ) => {
 				'Start typing to filter countries…',
 				'google-listings-and-ads'
 			) }
+			{ ...rest }
 			selected={ selected }
 			onChange={ handleChange }
-			{ ...rest }
 		/>
 	);
 };
