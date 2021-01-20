@@ -42,12 +42,6 @@ class Admin implements Service, Registerable, Conditional {
 			'admin_enqueue_scripts',
 			function() {
 				if ( wc_admin_is_registered_page() ) {
-
-					// Load WC Admin styles before our own styles.
-					if ( defined( 'WC_ADMIN_APP' ) ) {
-						wp_enqueue_style( WC_ADMIN_APP );
-					}
-
 					$this->enqueue_assets();
 				}
 			}
