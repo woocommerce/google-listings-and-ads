@@ -149,7 +149,7 @@ class AccountController extends BaseController {
 		return [
 			'url' => [
 				'type'        => 'string',
-				'description' => __( 'The URL for making a connection to Google.', 'google-listings-and-ads' ),
+				'description' => __( 'The URL for making a connection to Jetpack (wordpress.com).', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
