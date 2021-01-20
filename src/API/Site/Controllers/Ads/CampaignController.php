@@ -100,7 +100,12 @@ class CampaignController extends BaseController {
 	 */
 	protected function create_campaign_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			return $this->ads->create_campaign( $request->get_json_params() );
+			try {
+				$campaign = $this->ads->create_campaign( $request->get_json_params() );
+				return $this->prepare_item_for_response( $campaign );
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+			}
 		};
 	}
 

@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V6\GoogleAdsException;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
@@ -93,10 +94,10 @@ class Ads {
 	 *
 	 * @param array $params Request parameters.
 	 *
-	 * @return string
-	 * @throws Exception When an ApiException is caught.
+	 * @return array
+	 * @throws Exception When an ApiException is caught or the created ID is invalid.
 	 */
-	public function create_campaign( array $params ): string {
+	public function create_campaign( array $params ): array {
 		try {
 			$budget = $this->create_campaign_budget( $params['amount'] );
 
@@ -130,8 +131,9 @@ class Ads {
 
 			/** @var Campaign $created_campaign */
 			$created_campaign = $response->getResults()[0];
+			$campaign_id      = $this->parse_id( $created_campaign->getResourceName() );
 
-			return $created_campaign->getResourceName();
+			return [ 'id' => $campaign_id ] + $params;
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
@@ -289,4 +291,21 @@ class Ads {
 	protected function get_args(): array {
 		return [ 'headers' => $this->container->get( 'connect_server_auth_header' ) ];
 	}
+
+	/**
+	 * Convert ID from a resource name to an int.
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_id( string $name ): int {
+		if ( ! preg_match( '/[a-z]+\/([0-9]+)/', $name, $matches ) || empty( $matches[1] ) ) {
+			throw new Exception( 'Invalid resource ID' );
+		}
+
+		return absint( $matches[1] );
+	}
+
 }
