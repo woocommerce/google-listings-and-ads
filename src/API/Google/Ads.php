@@ -84,8 +84,7 @@ class Ads {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
-			$error = json_decode( $e->getMessage(), true );
-			throw new Exception( sprintf( 'Error retrieving campaigns: %s', $error['message'] ) );
+			throw new Exception( sprintf( 'Error retrieving campaigns: %s', $e->getBasicMessage() ) );
 		}
 	}
 
@@ -137,8 +136,7 @@ class Ads {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
-			$error = json_decode( $e->getMessage(), true );
-			throw new Exception( sprintf( 'Error creating campaign: %s', $error['message'] ) );
+			throw new Exception( sprintf( 'Error creating campaign: %s', $e->getBasicMessage() ) );
 		}
 	}
 
@@ -162,8 +160,7 @@ class Ads {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
-			$error = json_decode( $e->getMessage(), true );
-			throw new Exception( sprintf( 'Error retrieving campaign: %s', $error['message'] ) );
+			throw new Exception( sprintf( 'Error retrieving campaign: %s', $e->getBasicMessage() ) );
 		}
 	}
 
