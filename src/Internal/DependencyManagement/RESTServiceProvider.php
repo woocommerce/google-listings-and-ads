@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AccountController as AdsAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController as AdsCampaignController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateBatchController;
@@ -49,6 +50,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_options( SettingsController::class );
 		$this->share( ConnectionController::class );
 		$this->share( AdsAccountController::class, Middleware::class );
+		$this->share_with_container( AdsCampaignController::class );
 		$this->share_with_container( ShippingRateBatchController::class );
 		$this->share_with_container( ShippingRateController::class );
 		$this->share_with_container( ShippingTimeBatchController::class );
