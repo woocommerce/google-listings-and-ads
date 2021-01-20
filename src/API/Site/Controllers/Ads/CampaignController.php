@@ -64,6 +64,18 @@ class CampaignController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+
+		$this->register_route(
+			'ads/campaigns/(?P<id>[\d]+)',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_campaign_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
 	}
 
 	/**
@@ -76,7 +88,7 @@ class CampaignController extends BaseController {
 			try {
 				return array_map( [ $this, 'prepare_item_for_response' ], $this->ads->get_campaigns() );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( $e->getMessage(), 400 );
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -89,6 +101,34 @@ class CampaignController extends BaseController {
 	protected function create_campaign_callback(): callable {
 		return function( WP_REST_Request $request ) {
 			return $this->ads->create_campaign( $request->get_json_params() );
+		};
+	}
+
+	/**
+	 * Get the callback function for listing a single campaign.
+	 *
+	 * @return callable
+	 */
+	protected function get_campaign_callback(): callable {
+		return function( WP_REST_Request $request ) {
+			try {
+				$id       = absint( $request['id'] );
+				$campaign = $this->ads->get_campaign( $id );
+
+				if ( empty( $campaign ) ) {
+					return new WP_REST_Response(
+						[
+							'message' => __( 'Campaign is not available.', 'google-listings-and-ads' ),
+							'id'      => $id,
+						],
+						404
+					);
+				}
+
+				return $this->prepare_item_for_response( $campaign );
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+			}
 		};
 	}
 

@@ -73,30 +73,10 @@ class Ads {
 	public function get_campaigns(): array {
 		try {
 			$return   = [];
-			$response = $this->query( 'SELECT campaign.id, campaign.name, campaign.shopping_setting.sales_country, campaign_budget.amount_micros FROM campaign' );
+			$response = $this->query( $this->get_campaign_query() );
 
 			foreach ( $response->iterateAllElements() as $row ) {
-				$campaign = $row->getCampaign();
-				$data     = [
-					'id'   => $campaign->getId(),
-					'name' => $campaign->getName(),
-				];
-
-				$budget = $row->getCampaignBudget();
-				if ( $budget ) {
-					$data += [
-						'amount' => $this->from_micro( $budget->getAmountMicros() ),
-					];
-				}
-
-				$shopping = $campaign->getShoppingSetting();
-				if ( $shopping ) {
-					$data += [
-						'country' => $shopping->getSalesCountry(),
-					];
-				}
-
-				$return[] = $data;
+				$return[] = $this->convert_campaign( $row );
 			}
 
 			return $return;
@@ -161,6 +141,82 @@ class Ads {
 	}
 
 	/**
+	 * Retrieve a single campaign.
+	 *
+	 * @param int $id Campaign ID.
+	 *
+	 * @return array
+	 * @throws Exception When an ApiException is caught.
+	 */
+	public function get_campaign( int $id ): array {
+		try {
+			$response = $this->query( $this->get_campaign_query( $id ) );
+
+			foreach ( $response->iterateAllElements() as $row ) {
+				return $this->convert_campaign( $row );
+			}
+
+			return [];
+		} catch ( ApiException $e ) {
+			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+
+			$error = json_decode( $e->getMessage(), true );
+			throw new Exception( sprintf( 'Error retrieving campaign: %s', $error['message'] ) );
+		}
+	}
+
+	/**
+	 * Get campaign query.
+	 *
+	 * @param int $id Optional ID to retrieve a specific campaign.
+	 *
+	 * @return string
+	 */
+	protected function get_campaign_query( int $id = 0 ): string {
+		return $this->build_query(
+			[
+				'campaign.id',
+				'campaign.name',
+				'campaign.shopping_setting.sales_country',
+				'campaign_budget.amount_micros',
+			],
+			'campaign',
+			$id ? "campaign.id = {$id}" : ''
+		);
+	}
+
+	/**
+	 * Convert campaign data to an array.
+	 *
+	 * @param GoogleAdsRow $row Data row returned from a query request.
+	 *
+	 * @return array
+	 */
+	protected function convert_campaign( GoogleAdsRow $row ): array {
+		$campaign = $row->getCampaign();
+		$data     = [
+			'id'   => $campaign->getId(),
+			'name' => $campaign->getName(),
+		];
+
+		$budget = $row->getCampaignBudget();
+		if ( $budget ) {
+			$data += [
+				'amount' => $this->from_micro( $budget->getAmountMicros() ),
+			];
+		}
+
+		$shopping = $campaign->getShoppingSetting();
+		if ( $shopping ) {
+			$data += [
+				'country' => $shopping->getSalesCountry(),
+			];
+		}
+
+		return $data;
+	}
+
+	/**
 	 * Creates a new campaign budget.
 	 *
 	 * @param float $amount Budget amount in the local currency.
@@ -189,6 +245,26 @@ class Ads {
 		/** @var CampaignBudget $created_budget */
 		$created_budget = $response->getResults()[0];
 		return $created_budget->getResourceName();
+	}
+
+	/**
+	 * Build a Google Ads Query string.
+	 *
+	 * @param array  $fields   List of fields to return.
+	 * @param string $resource Resource name to query from.
+	 * @param string $where    Condition clause.
+	 *
+	 * @return string
+	 */
+	protected function build_query( array $fields, string $resource, string $where = '' ): string {
+		$joined = join( ',', $fields );
+		$query  = "SELECT {$joined} FROM {$resource}";
+
+		if ( ! empty( $where ) ) {
+			$query .= " WHERE {$where}";
+		}
+
+		return $query;
 	}
 
 	/**
