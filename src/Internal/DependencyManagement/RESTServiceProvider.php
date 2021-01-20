@@ -46,7 +46,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register() {
 		$this->share_with_options( SettingsController::class );
-		$this->share( ConnectionController::class, Connection::class );
+		$this->share( ConnectionController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class );
 		$this->share_with_container( ShippingRateBatchController::class );
