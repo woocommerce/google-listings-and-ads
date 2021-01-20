@@ -78,7 +78,8 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function() {
-			$this->manager->enable_plugin(); // Mark the plugin connection as enabled, in case it was disabled earlier.
+			// Mark the plugin connection as enabled, in case it was disabled earlier.
+			$this->manager->enable_plugin();
 
 			// Register the site to wp.com.
 			if ( ! $this->manager->is_registered() ) {
@@ -136,7 +137,14 @@ class AccountController extends BaseController {
 	 * @return array
 	 */
 	protected function get_item_schema(): array {
-		return [];
+		return [
+			'url' => [
+				'type'        => 'string',
+				'description' => __( 'The URL for making a connection to Google.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+		];
 	}
 
 	/**

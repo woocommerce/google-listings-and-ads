@@ -93,7 +93,14 @@ class AccountController extends BaseController {
 	 * @return array
 	 */
 	protected function get_item_schema(): array {
-		return [];
+		return [
+			'url' => [
+				'type'        => 'string',
+				'description' => __( 'The URL for making a connection to Google.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+		];
 	}
 
 	/**
