@@ -3,16 +3,17 @@
  */
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import AppInputControl from '../../../../../components/app-input-control';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
-import CountriesPriceInput from './countries-price-input';
 import AddRateButton from './add-rate-button';
-import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
+import { STORE_KEY } from '../../../../../data';
 import './index.scss';
+import CountriesPriceInputForm from './countries-price-input-form';
 
 const formKeys = {
 	rows: 'shippingRateOption-rows',
@@ -20,39 +21,67 @@ const formKeys = {
 	priceOver: 'shippingRateOption-freeShipping-priceOver',
 };
 
+const getCountriesPriceArray = ( shippingRates ) => {
+	const map = new Map();
+
+	shippingRates.forEach( ( el ) => {
+		const { countryCode, rate } = el;
+		const arr = map.get( rate ) || [];
+		arr.push( countryCode );
+		map.set( rate, arr );
+	} );
+
+	const arr = [];
+	for ( const [ rate, countryCodes ] of map ) {
+		arr.push( {
+			countries: countryCodes,
+			price: rate,
+		} );
+	}
+
+	return arr;
+};
+
 const ShippingRateSetup = ( props ) => {
 	const {
-		formProps: { getInputProps, values, setValue },
+		formProps: { getInputProps, values },
 	} = props;
+	const selectedCountries = useSelect( ( select ) =>
+		select( STORE_KEY ).getAudienceSelectedCountries()
+	);
+	const shippingRates = useSelect( ( select ) =>
+		select( STORE_KEY ).getShippingRates()
+	);
 
-	const audienceCountries = useGetAudienceCountries();
-	const expectedCountryCount = audienceCountries.length;
-	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
-		return acc + cur.countries.length;
-	}, 0 );
+	if ( shippingRates.length === 0 ) {
+	}
 
-	const handleCountriesPriceChange = ( idx ) => ( countriesPrice ) => {
-		const newValues = [ ...values[ formKeys.rows ] ];
-		newValues[ idx ] = countriesPrice;
-		setValue( formKeys.rows, newValues );
-	};
+	const expectedCountryCount = selectedCountries.length;
+	const actualCountryCount = shippingRates.length;
+
+	const countriesPriceArray = getCountriesPriceArray( shippingRates );
 
 	return (
 		<div className="gla-shipping-rate-setup">
 			<VerticalGapLayout>
 				<div className="countries-price">
 					<VerticalGapLayout>
-						{ values[ formKeys.rows ].map( ( el, idx ) => {
+						{ shippingRates.length === 0 && (
+							<CountriesPriceInputForm
+								initialValue={ {
+									countries: selectedCountries,
+									price: '',
+								} }
+							/>
+						) }
+						{ countriesPriceArray.map( ( el, idx ) => {
 							return (
 								<div
 									key={ idx }
 									className="countries-price-input"
 								>
-									<CountriesPriceInput
-										value={ el }
-										onChange={ handleCountriesPriceChange(
-											idx
-										) }
+									<CountriesPriceInputForm
+										initialValue={ el }
 									/>
 								</div>
 							);

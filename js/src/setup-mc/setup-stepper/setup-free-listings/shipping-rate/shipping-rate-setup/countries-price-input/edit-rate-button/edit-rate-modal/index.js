@@ -4,18 +4,21 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { STORE_KEY } from '../../../../../../../../data';
 import AppModal from '../../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../../components/app-input-control';
-import './index.scss';
 import AppCountryMultiSelect from '../../../../../../../../components/app-country-multi-select';
 import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
+import './index.scss';
 
 const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
+	const { addShippingRate } = useDispatch( STORE_KEY );
 
 	// TODO: call API to delete the rate.
 	const handleDeleteClick = () => {
@@ -31,7 +34,17 @@ const EditRateModal = ( props ) => {
 	};
 
 	// TODO: call backend API when submit form.
-	const handleSubmitCallback = () => {
+	const handleSubmitCallback = ( values ) => {
+		const { countries, price } = values;
+
+		countries.forEach( ( el ) => {
+			addShippingRate( {
+				country: el,
+				currency: 'USD',
+				rate: price,
+			} );
+		} );
+
 		onRequestClose();
 	};
 
