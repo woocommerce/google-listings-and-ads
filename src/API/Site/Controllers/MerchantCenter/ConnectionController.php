@@ -20,7 +20,6 @@ class ConnectionController extends BaseController {
 	 * BaseController constructor.
 	 *
 	 * @param RESTServer $server
-	 * @param Connection $connection
 	 */
 	public function __construct( RESTServer $server ) {
 		parent::__construct( $server );
