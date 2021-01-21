@@ -71,7 +71,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		) )->add_localization(
 			'glaData',
 			[
-				'is_mc_setup_complete' => $this->setup_complete(),
+				'merchantCenterSetupComplete' => $this->setup_complete(),
 			]
 		);
 
