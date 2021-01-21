@@ -73,6 +73,11 @@ class CampaignController extends BaseController {
 					'callback'            => $this->get_campaign_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->delete_campaign_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
@@ -131,6 +136,27 @@ class CampaignController extends BaseController {
 				}
 
 				return $this->prepare_item_for_response( $campaign );
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for deleting a campaign.
+	 *
+	 * @return callable
+	 */
+	protected function delete_campaign_callback(): callable {
+		return function( WP_REST_Request $request ) {
+			try {
+				$deleted_id = $this->ads->delete_campaign( absint( $request['id'] ) );
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully deleted campaign.', 'google-listings-and-ads' ),
+					'id'      => $deleted_id,
+				];
 			} catch ( Exception $e ) {
 				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
 			}

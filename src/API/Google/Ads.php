@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
@@ -165,6 +166,40 @@ class Ads {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
 			throw new Exception( sprintf( 'Error retrieving campaign: %s', $e->getBasicMessage() ) );
+		}
+	}
+
+	/**
+	 * Delete a campaign.
+	 *
+	 * @param int $campaign_id Campaign ID.
+	 *
+	 * @return int
+	 * @throws Exception When an ApiException is caught or the created ID is invalid.
+	 */
+	public function delete_campaign( int $campaign_id ): int {
+		try {
+			$resource_name = ResourceNames::forCampaign( $this->get_id(), $campaign_id );
+			$operation     = new CampaignOperation();
+			$operation->setRemove( $resource_name );
+
+			/** @var GoogleAdsClient $client */
+			$client   = $this->container->get( GoogleAdsClient::class );
+			$response = $client->getCampaignServiceClient()->mutateCampaigns(
+				$this->get_id(),
+				[ $operation ],
+				$this->get_args()
+			);
+
+			/** @var Campaign $deleted_campaign */
+			$deleted_campaign    = $response->getResults()[0];
+			$deleted_campaign_id = $this->parse_id( $deleted_campaign->getResourceName() );
+
+			return $deleted_campaign_id;
+		} catch ( ApiException $e ) {
+			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+
+			throw new Exception( sprintf( 'Error deleting campaign: %s', $e->getBasicMessage() ) );
 		}
 	}
 
