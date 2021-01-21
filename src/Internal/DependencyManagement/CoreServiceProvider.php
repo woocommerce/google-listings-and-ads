@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
@@ -75,7 +76,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			TracksInterface::class,
 			$this->share_with_tags( Tracks::class, TracksProxy::class )
 		);
+
+		// Set up Options, and inflect classes that need options.
 		$this->share_interface( OptionsInterface::class, Options::class );
+		$this->getLeagueContainer()
+			->inflector( OptionsAwareInterface::class )
+			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Share our regular service classes.
 		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
