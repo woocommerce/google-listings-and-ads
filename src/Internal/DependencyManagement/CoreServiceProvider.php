@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
@@ -42,6 +43,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
+		Installer::class              => true,
 		Admin::class                  => true,
 		Analytics::class              => true,
 		AssetsHandlerInterface::class => true,
@@ -84,6 +86,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Share our regular service classes.
+		$this->conditionally_share_with_tags( Installer::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
