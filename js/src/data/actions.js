@@ -26,11 +26,37 @@ export const setAudienceSelectedCountryCodes = ( selected ) => {
 	};
 };
 
-export function receiveShippingRates( shippingRates ) {
-	return {
-		type: TYPES.RECEIVE_SHIPPING_RATES,
-		shippingRates,
-	};
+export function* fetchShippingRates() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		const shippingRates = Object.values( response ).map( ( el ) => {
+			return {
+				countryCode: el.country_code,
+				currency: el.currency,
+				rate: el.rate.toString(),
+			};
+		} );
+
+		return {
+			type: TYPES.RECEIVE_SHIPPING_RATES,
+			shippingRates,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading shipping rates.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* addShippingRate( shippingRate ) {
