@@ -48,7 +48,7 @@ class Admin implements Service, Registerable, Conditional {
 		);
 
 		add_action(
-			'plugin_action_links_' . $this->get_plugin_basename(),
+			"plugin_action_links_{$this->get_plugin_basename()}",
 			function( $links ) {
 				return $this->add_plugin_links( $links );
 			}
