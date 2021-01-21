@@ -12,9 +12,11 @@ import AppModal from '../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../components/app-input-control';
 import AppCountryMultiSelect from '../../../../../../../components/app-country-multi-select';
 import VerticalGapLayout from '../../../../components/vertical-gap-layout';
+import useStoreCurrency from '../../../../../../../hooks/useStoreCurrency';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
+	const { code } = useStoreCurrency();
 
 	// TODO: get list of countries without price.
 	const countriesWithoutPrice = [
@@ -42,6 +44,7 @@ const AddRateModal = ( props ) => {
 		<Form
 			initialValues={ {
 				countries: countriesWithoutPrice,
+				currency: code,
 				price: '',
 			} }
 			validate={ handleValidate }
@@ -85,10 +88,7 @@ const AddRateModal = ( props ) => {
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
-								suffix={ __(
-									'USD',
-									'google-listings-and-ads'
-								) }
+								suffix={ code }
 								{ ...getInputProps( 'price' ) }
 							/>
 						</VerticalGapLayout>

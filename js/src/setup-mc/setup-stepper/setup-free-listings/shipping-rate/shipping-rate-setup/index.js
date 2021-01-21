@@ -14,6 +14,7 @@ import AddRateButton from './add-rate-button';
 import { STORE_KEY } from '../../../../../data';
 import './index.scss';
 import CountriesPriceInputForm from './countries-price-input-form';
+import useStoreCurrency from '../../../../../hooks/useStoreCurrency';
 
 const formKeys = {
 	rows: 'shippingRateOption-rows',
@@ -52,6 +53,7 @@ const ShippingRateSetup = ( props ) => {
 	const shippingRates = useSelect( ( select ) =>
 		select( STORE_KEY ).getShippingRates()
 	);
+	const { code } = useStoreCurrency();
 
 	if ( shippingRates.length === 0 ) {
 	}
@@ -71,6 +73,7 @@ const ShippingRateSetup = ( props ) => {
 								initialValue={ {
 									countries: selectedCountryCodes,
 									price: '',
+									currency: code,
 								} }
 							/>
 						) }
@@ -107,7 +110,7 @@ const ShippingRateSetup = ( props ) => {
 								'I offer free shipping for products priced over',
 								'google-listings-and-ads'
 							) }
-							suffix={ __( 'USD', 'google-listings-and-ads' ) }
+							suffix={ code }
 							{ ...getInputProps( formKeys.priceOver ) }
 						/>
 					</div>

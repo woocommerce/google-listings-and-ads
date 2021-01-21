@@ -37,12 +37,12 @@ const EditRateModal = ( props ) => {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		const { countryCodes, price } = values;
+		const { countryCodes, currency, price } = values;
 
 		countryCodes.forEach( ( el ) => {
 			addShippingRate( {
 				countryCode: el,
-				currency: 'USD',
+				currency,
 				rate: price,
 			} );
 		} );
@@ -54,13 +54,14 @@ const EditRateModal = ( props ) => {
 		<Form
 			initialValues={ {
 				countryCodes: rate.countries,
+				currency: rate.currency,
 				price: rate.price,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, handleSubmit } = formProps;
+				const { getInputProps, values, handleSubmit } = formProps;
 
 				return (
 					<AppModal
@@ -105,10 +106,7 @@ const EditRateModal = ( props ) => {
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
-								suffix={ __(
-									'USD',
-									'google-listings-and-ads'
-								) }
+								suffix={ values.currency }
 								{ ...getInputProps( 'price' ) }
 							/>
 						</VerticalGapLayout>

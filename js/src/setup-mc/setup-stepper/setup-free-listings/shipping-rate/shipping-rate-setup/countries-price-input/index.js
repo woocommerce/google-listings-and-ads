@@ -16,7 +16,7 @@ import './index.scss';
 
 const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;
-	const { countries, price } = value;
+	const { countries, currency, price } = value;
 
 	const audienceCountries = useGetAudienceCountries();
 	const keyNameMap = useCountryKeyNameMap();
@@ -28,6 +28,7 @@ const CountriesPriceInput = ( props ) => {
 	const handleChange = ( v ) => {
 		onChange( {
 			countries,
+			currency,
 			price: v,
 		} );
 	};
@@ -64,7 +65,7 @@ const CountriesPriceInput = ( props ) => {
 						<EditRateButton rate={ value } />
 					</div>
 				}
-				suffix={ __( 'USD', 'google-listings-and-ads' ) }
+				suffix={ currency }
 				value={ price }
 				onChange={ handleChange }
 			/>
