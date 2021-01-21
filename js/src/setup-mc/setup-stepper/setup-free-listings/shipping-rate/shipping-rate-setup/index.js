@@ -46,8 +46,8 @@ const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
 	} = props;
-	const selectedCountries = useSelect( ( select ) =>
-		select( STORE_KEY ).getAudienceSelectedCountries()
+	const selectedCountryCodes = useSelect( ( select ) =>
+		select( STORE_KEY ).getAudienceSelectedCountryCodes()
 	);
 	const shippingRates = useSelect( ( select ) =>
 		select( STORE_KEY ).getShippingRates()
@@ -56,7 +56,7 @@ const ShippingRateSetup = ( props ) => {
 	if ( shippingRates.length === 0 ) {
 	}
 
-	const expectedCountryCount = selectedCountries.length;
+	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = shippingRates.length;
 
 	const countriesPriceArray = getCountriesPriceArray( shippingRates );
@@ -69,7 +69,7 @@ const ShippingRateSetup = ( props ) => {
 						{ shippingRates.length === 0 && (
 							<CountriesPriceInputForm
 								initialValue={ {
-									countries: selectedCountries,
+									countries: selectedCountryCodes,
 									price: '',
 								} }
 							/>

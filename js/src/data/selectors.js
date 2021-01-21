@@ -1,4 +1,4 @@
-export const getAudienceSelectedCountries = ( state ) => {
+export const getAudienceSelectedCountryCodes = ( state ) => {
 	return state.mc.audience.location.selected;
 };
 

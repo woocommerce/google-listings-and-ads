@@ -19,7 +19,7 @@ export function handleFetchError( error, message ) {
 	console.log( error );
 }
 
-export const setAudienceSelectedCountries = ( selected ) => {
+export const setAudienceSelectedCountryCodes = ( selected ) => {
 	return {
 		type: TYPES.SET_AUDIENCE_SELECTED_COUNTRIES,
 		selected,

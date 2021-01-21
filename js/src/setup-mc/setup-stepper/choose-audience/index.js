@@ -14,12 +14,12 @@ import AppDocumentationLink from '../../../components/app-documentation-link';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
-import useAudienceSelectedCountries from './useAudienceSelectedCountries';
+import useAudienceSelectedCountryCodes from './useAudienceSelectedCountryCodes';
 import './index.scss';
 
 const ChooseAudience = ( props ) => {
 	const { onContinue } = props;
-	const [ value, setValue ] = useAudienceSelectedCountries();
+	const [ value, setValue ] = useAudienceSelectedCountryCodes();
 
 	const handleCountryChange = ( items ) => {
 		setValue( items );
