@@ -21,7 +21,7 @@ import './index.scss';
  * @fires gla_table_sort upon sorting table by column
  * @see module:@woocommerce/components#TableCard
  *
- * @param {Object} props
+ * @param {Object} props Props to be forwarded to the TableCard plus trackEventReportId.
  * @param {string} [props.trackEventReportId] Report ID to be used in track events.
  * 											If this is not supplied, the track event will not be called.
  */
@@ -58,6 +58,7 @@ const AppTableCard = ( props ) => {
 	return (
 		<div className="app-table-card">
 			<TableCard
+				{ ...rest }
 				onColumnsChange={ decorateHandlerWithTrackEvent(
 					recordColumnToggleEvent,
 					props.onColumnsChange
@@ -66,7 +67,6 @@ const AppTableCard = ( props ) => {
 					recordTableSortEvent,
 					props.onSort
 				) }
-				{ ...rest }
 			/>
 		</div>
 	);
