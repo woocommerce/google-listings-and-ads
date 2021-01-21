@@ -51,7 +51,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const idx = newState.mc.shipping.rates.findIndex(
 				( el ) => el.countryCode === shippingRate.countryCode
 			);
-			newState.mc.shipping.rates[ idx ] = shippingRate;
+
+			if ( idx >= 0 ) {
+				newState.mc.shipping.rates[ idx ] = shippingRate;
+			} else {
+				newState.mc.shipping.rates.push( shippingRate );
+			}
 
 			return newState;
 		}
