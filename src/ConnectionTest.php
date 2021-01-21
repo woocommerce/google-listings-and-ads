@@ -14,8 +14,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
@@ -213,6 +216,7 @@ class ConnectionTest implements Service, Registerable {
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 				</p>
 
 				<div>
@@ -427,10 +431,48 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-mc-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-disconnect' ) ) {
 			/** @var Connection $connection */
-			$connection = $this->container->get( Connection::class );
-			$response = $connection->disconnect();
+			$connection      = $this->container->get( Connection::class );
+			$response        = $connection->disconnect();
 			$this->response .= $response;
 		}
+		if ( 'wcs-google-sv-token' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-token' ) ) {
+			/** @var SiteVerification $site_verification */
+			$site_verification = $this->container->get( SiteVerification::class );
+			$token             = $site_verification->get_token( site_url() );
+			$this->response    = 'Meta tag: ' . htmlentities( $token );
+
+			/** @var Options $options */
+			$options         = $this->container->get( OptionsInterface::class );
+			$this->response .= "\nAdding SITE_VERIFICATION to options..";
+			$options->update(
+				OptionsInterface::SITE_VERIFICATION,
+				[
+					'meta_tag' => $token,
+					'verified' => 'no',
+				]
+			);
+			$this->response .= " DONE.\n" . htmlentities( json_encode( $options->get( OptionsInterface::SITE_VERIFICATION ) ) );
+
+
+			$verification_options = $options->get( OptionsInterface::SITE_VERIFICATION, [] );
+			$context_options      = [
+				'ssl' => [
+					'verify_peer'      => false,
+					'verify_peer_name' => false,
+				],
+			];
+			$page                 = wp_remote_get( site_url() );
+			$found                = preg_match(
+				'#' . $verification_options['meta_tag'] . '#',
+				$page['body']
+			);
+			if ( $found ) {
+				$verification_options['verified'] = 'yes';
+				$options->update( OptionsInterface::SITE_VERIFICATION, $verification_options );
+				$this->response .= "\nMeta tag found (using wp_remote_get) and verified!";
+			}
+		}
+
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
