@@ -24,7 +24,7 @@ export function* getShippingRates() {
 			return {
 				countryCode: el.country_code,
 				currency: el.currency,
-				rate: el.rate,
+				rate: el.rate.toString(),
 			};
 		} );
 
