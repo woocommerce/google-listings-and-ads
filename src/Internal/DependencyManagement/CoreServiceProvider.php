@@ -20,6 +20,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -53,6 +55,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Reports::class                => true,
 		AssetsHandlerInterface::class => true,
 		CompleteSetup::class          => true,
+		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
@@ -64,6 +67,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Settings::class               => true,
 		SetupAds::class               => true,
 		SetupMerchantCenter::class    => true,
+		SetupCampaignNote::class      => true,
 		TrackerSnapshot::class        => true,
 		Tracks::class                 => true,
 		TracksInterface::class        => true,
@@ -108,6 +112,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( CompleteSetupNote::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( SetupCampaignNote::class, ContainerInterface::class );
 
 		$this->share( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
