@@ -13,6 +13,45 @@ import AppTableCard from '../components/app-table-card';
 import { mockedListingsData, availableMetrics } from './mocked-programs-data'; // Mocked API calls
 
 /**
+ * All posible metric headers.
+ * Sorted in the order we wish to render them.
+ *
+ * @type {module:app-table-card.Props.headers}
+ */
+const metricsHeaders = [
+	{
+		key: 'netSales',
+		label: __( 'Net Sales', 'google-listings-and-ads' ),
+		isSortable: true,
+	},
+	{
+		key: 'itemsSold',
+		label: __( 'Items Sold', 'google-listings-and-ads' ),
+		isSortable: true,
+	},
+	{
+		key: 'conversions',
+		label: __( 'Conversions', 'google-listings-and-ads' ),
+		isSortable: true,
+	},
+	{
+		key: 'clicks',
+		label: __( 'Clicks', 'google-listings-and-ads' ),
+		isSortable: true,
+	},
+	{
+		key: 'impressions',
+		label: __( 'Impressions', 'google-listings-and-ads' ),
+		isSortable: true,
+	},
+	{
+		key: 'spend',
+		label: __( 'Spend', 'google-listings-and-ads' ),
+		isSortable: true,
+	},
+];
+
+/**
  * All programs table, with compare feature.
  *
  * @see AllProgramsTableCard
@@ -24,59 +63,53 @@ const CompareProgramsTableCard = ( props ) => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
 	const query = getQuery();
 
-	// TODO: DRY ProgramsReports~performanceMetrics one API is settled.
-	const metricsHeaders = [
-		{
-			key: 'netSales',
-			label: __( 'Net Sales', 'google-listings-and-ads' ),
-			isSortable: true,
-		},
-		{
-			key: 'itemsSold',
-			label: __( 'Items Sold', 'google-listings-and-ads' ),
-			isSortable: true,
-		},
-		{
-			key: 'conversions',
-			label: __( 'Conversions', 'google-listings-and-ads' ),
-			isSortable: true,
-		},
-		{
-			key: 'clicks',
-			label: __( 'Clicks', 'google-listings-and-ads' ),
-			isSortable: true,
-		},
-		{
-			key: 'impressions',
-			label: __( 'Impressions', 'google-listings-and-ads' ),
-			isSortable: true,
-		},
-		{
-			key: 'spend',
-			label: __( 'Spend', 'google-listings-and-ads' ),
-			isSortable: true,
-		},
-	];
-	// Fetch the set of available metrics.
+	// Fetch the set of available metrics, from the API.
 	const availableMetricsSet = new Set( availableMetrics() );
-	// Use labels and the order of columns defined here, but removed unavailable ones.
+	// Use labels and the order of columns defined here, but remove unavailable ones.
 	const availableMetricHeaders = metricsHeaders.filter( ( metric ) => {
 		return availableMetricsSet.has( metric.key );
 	} );
 
+	/**
+	 * Provides headers configuration, for AppTableCard:
+	 * Interactive select all checkbox for compare; program title, and available metric headers.
+	 *
+	 * @param {Array} data
+	 *
+	 * @return {module:app-table-card.Props.headers} All headers.
+	 */
+	const getHeaders = ( data ) => [
+		{
+			key: 'compare',
+			label: (
+				<CheckboxControl
+					checked={ selectedRows.size === data.length }
+					onChange={ selectAll }
+				/>
+			),
+			required: true,
+		},
+		{
+			key: 'title',
+			label: __( 'Program', 'google-listings-and-ads' ),
+			isLeftAligned: true,
+			required: true,
+			isSortable: true,
+		},
+		...availableMetricHeaders,
+	];
+
 	const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
 	/**
-	 * Creates an array of cells for
-	 * {@link module:app-table-card.Props.rows} -> {@link module:@woocommerce/components#TableCard.Props.rows},
+	 * Creates an array of metric data cells for {@link getRows},
 	 * for a given row.
-	 *
 	 * Creates a cell for every ~availableMetricHeaders item, displays `"Unavailable"`, when the data is `null`.
 	 *
 	 * @param {Object} row Row of data for programs table.
 	 *
 	 * @return {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
-	const rowRenderer = ( row ) =>
+	const renderMetricDataCells = ( row ) =>
 		availableMetricHeaders.map( ( metric ) => {
 			return {
 				display:
@@ -85,6 +118,31 @@ const CompareProgramsTableCard = ( props ) => {
 						: row[ metric.key ],
 			};
 		} );
+	/**
+	 * Provides a rows configuration, for AppTableCard.
+	 * Maps each data row to respective cell objects ({@link module:app-table-card.Props.rows}):
+	 * checkbox to compere, program title, and available metrics cells.
+	 *
+	 * @param {Array} data Programs data.
+	 *
+	 * @return {Array<Object>} Rows config {@link module:@woocommerce/components#TableCard.Props.rows}.
+	 */
+	const getRows = ( data ) =>
+		data.map( ( row ) => [
+			// compare
+			{
+				display: (
+					<CheckboxControl
+						checked={ selectedRows.has( row.id ) }
+						onChange={ selectRow.bind( null, row.id ) }
+					></CheckboxControl>
+				),
+			},
+			// title
+			{ display: row.title },
+			// merics data
+			...renderMetricDataCells( row ),
+		] );
 
 	// TODO: data should be coming from backend API,
 	// using the above query (e.g. orderby, order and page) as parameter.
@@ -142,38 +200,8 @@ const CompareProgramsTableCard = ( props ) => {
 					</Button>
 				</>
 			}
-			headers={ [
-				{
-					key: 'compare',
-					label: (
-						<CheckboxControl
-							checked={ selectedRows.size === data.length }
-							onChange={ selectAll }
-						/>
-					),
-					required: true,
-				},
-				{
-					key: 'title',
-					label: __( 'Program', 'google-listings-and-ads' ),
-					isLeftAligned: true,
-					required: true,
-					isSortable: true,
-				},
-			].concat( availableMetricHeaders ) }
-			rows={ data.map( ( row ) => {
-				return [
-					{
-						display: (
-							<CheckboxControl
-								checked={ selectedRows.has( row.id ) }
-								onChange={ selectRow.bind( null, row.id ) }
-							></CheckboxControl>
-						),
-					},
-					{ display: row.title },
-				].concat( rowRenderer( row ) );
-			} ) }
+			headers={ getHeaders( data ) }
+			rows={ getRows( data ) }
 			totalRows={ data.length }
 			rowsPerPage={ 10 }
 			query={ query }
