@@ -18,7 +18,6 @@
  */
 
 use Automattic\Jetpack\Config;
-use Automattic\WooCommerce\Admin\Loader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
@@ -72,60 +71,6 @@ function woogle_get_container(): ContainerInterface {
 
 	return $container;
 }
-
-/**
- * Register the JS.
- */
-function add_extension_register_script() {
-	/*
-	This if statement will need to be adjusted later. Simply disabled for now
-	if ( ! class_exists( Loader::class ) || ! Loader::is_admin_page() ) {
-		return;
-	}
-	*/
-
-	$script_path       = '/js/build/index.js';
-	$script_asset_path = dirname( __FILE__ ) . '/js/build/index.asset.php';
-	$script_asset      = file_exists( $script_asset_path )
-		? require $script_asset_path
-		: [
-			'dependencies' => [],
-			'version'      => filemtime( $script_path ),
-		];
-
-	$script_url = plugins_url( $script_path, __FILE__ );
-
-	wp_register_script(
-		'google-listings-and-ads',
-		$script_url,
-		$script_asset['dependencies'],
-		$script_asset['version'],
-		true
-	);
-
-	wp_register_style(
-		'google-listings-and-ads',
-		plugins_url( '/js/build/index.css', __FILE__ ),
-		defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-		filemtime( dirname( __FILE__ ) . '/js/build/index.css' )
-	);
-
-	if ( wc_admin_is_registered_page() ) {
-
-		// Load WC Admin styles before our own styles
-		if ( defined( 'WC_ADMIN_APP' ) ) {
-			wp_enqueue_style( WC_ADMIN_APP );
-		}
-
-		wp_enqueue_script( 'google-listings-and-ads' );
-		wp_enqueue_style( 'google-listings-and-ads' );
-
-		// Demo tracks event
-		do_action( 'woogle_extension_loaded' );
-	}
-}
-
-add_action( 'admin_enqueue_scripts', 'add_extension_register_script' );
 
 /**
  * Jetpack-config will initialize the modules on "plugins_loaded" with priority 2,

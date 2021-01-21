@@ -4,11 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
 /**
- * Class StyleAsset
+ * Class AdminStyleAsset
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
-class StyleAsset extends BaseAsset {
+class AdminStyleAsset extends AdminBaseAsset {
 
 	use StyleHelper;
 }
