@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
@@ -11,7 +12,6 @@ use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
-use Google\Ads\GoogleAds\V6\Enums\CampaignStatusEnum\CampaignStatus;
 use Google\Ads\GoogleAds\V6\Resources\Campaign;
 use Google\Ads\GoogleAds\V6\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
@@ -106,7 +106,7 @@ class Ads {
 					'name'                         => $params['name'],
 					'advertising_channel_type'     => AdvertisingChannelType::SHOPPING,
 					'advertising_channel_sub_type' => AdvertisingChannelSubType::SHOPPING_SMART_ADS,
-					'status'                       => CampaignStatus::ENABLED,
+					'status'                       => CampaignStatus::number( 'enabled' ),
 					'campaign_budget'              => $budget,
 					'maximize_conversion_value'    => new MaximizeConversionValue(),
 					'shopping_setting'             => new ShoppingSetting(
@@ -133,7 +133,10 @@ class Ads {
 			$created_campaign = $response->getResults()[0];
 			$campaign_id      = $this->parse_id( $created_campaign->getResourceName(), 'campaigns' );
 
-			return [ 'id' => $campaign_id ] + $params;
+			return [
+				'id'     => $campaign_id,
+				'status' => CampaignStatus::ENABLED,
+			] + $params;
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
@@ -219,11 +222,12 @@ class Ads {
 			[
 				'campaign.id',
 				'campaign.name',
+				'campaign.status',
 				'campaign.shopping_setting.sales_country',
 				'campaign_budget.amount_micros',
 			],
 			'campaign',
-			$id ? "campaign.id = {$id}" : ''
+			$id ? "campaign.id = {$id}" : "campaign.status != 'REMOVED'"
 		);
 	}
 
@@ -237,8 +241,9 @@ class Ads {
 	protected function convert_campaign( GoogleAdsRow $row ): array {
 		$campaign = $row->getCampaign();
 		$data     = [
-			'id'   => $campaign->getId(),
-			'name' => $campaign->getName(),
+			'id'     => $campaign->getId(),
+			'name'   => $campaign->getName(),
+			'status' => CampaignStatus::label( $campaign->getStatus() ),
 		];
 
 		$budget = $row->getCampaignBudget();
