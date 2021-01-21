@@ -29,6 +29,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
@@ -74,6 +75,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductSyncer::class          => true,
 		ProductHelper::class          => true,
 		ProductMetaHandler::class     => true,
+		SiteVerification::class       => true,
 	];
 
 	/**
@@ -112,6 +114,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( SiteVerification::class, ContainerInterface::class );
 
 		// Inbox Notes
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );

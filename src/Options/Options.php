@@ -28,6 +28,7 @@ final class Options implements OptionsInterface, Service {
 		self::SHIPPING_RATES        => true,
 		self::SHIPPING_TIMES        => true,
 		self::ADS_ID                => true,
+		self::SITE_VERIFICATION     => true,
 	];
 
 	/**
