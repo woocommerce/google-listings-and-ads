@@ -77,10 +77,12 @@ const ShippingRateSetup = ( props ) => {
 								/>
 							</div>
 						) }
-						{ countriesPriceArray.map( ( el, idx ) => {
+						{ countriesPriceArray.map( ( el ) => {
 							return (
 								<div
-									key={ idx }
+									key={ `${ el.price }-${ el.countries.join(
+										'-'
+									) }` }
 									className="countries-price-input-form"
 								>
 									<CountriesPriceInputForm
