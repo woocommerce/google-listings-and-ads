@@ -131,7 +131,7 @@ class Ads {
 
 			/** @var Campaign $created_campaign */
 			$created_campaign = $response->getResults()[0];
-			$campaign_id      = $this->parse_id( $created_campaign->getResourceName() );
+			$campaign_id      = $this->parse_id( $created_campaign->getResourceName(), 'campaigns' );
 
 			return [ 'id' => $campaign_id ] + $params;
 		} catch ( ApiException $e ) {
@@ -193,7 +193,7 @@ class Ads {
 
 			/** @var Campaign $deleted_campaign */
 			$deleted_campaign    = $response->getResults()[0];
-			$deleted_campaign_id = $this->parse_id( $deleted_campaign->getResourceName() );
+			$deleted_campaign_id = $this->parse_id( $deleted_campaign->getResourceName(), 'campaigns' );
 
 			return $deleted_campaign_id;
 		} catch ( ApiException $e ) {
@@ -331,13 +331,14 @@ class Ads {
 	/**
 	 * Convert ID from a resource name to an int.
 	 *
-	 * @param string $name Resource name containing ID number.
+	 * @param string $name     Resource name containing ID number.
+	 * @param string $resource Resource type.
 	 *
 	 * @return int
 	 * @throws Exception When unable to parse resource ID.
 	 */
-	protected function parse_id( string $name ): int {
-		if ( ! preg_match( '/[a-z]+\/([0-9]+)/', $name, $matches ) || empty( $matches[1] ) ) {
+	protected function parse_id( string $name, string $resource ): int {
+		if ( ! preg_match( '/' . preg_quote( $resource, '/' ) . '\/([0-9]+)/', $name, $matches ) || empty( $matches[1] ) ) {
 			throw new Exception( 'Invalid resource ID' );
 		}
 
