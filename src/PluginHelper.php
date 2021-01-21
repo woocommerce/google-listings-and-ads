@@ -67,6 +67,30 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_version(): string {
-		return '0.1.0';
+		return GLA_VERSION;
+	}
+
+	/**
+	 * Get the db version
+	 *
+	 * @return string
+	 */
+	protected function get_db_version(): string {
+		$container = woogle_get_container();
+		$options   = $container->get( OptionsInterface::class );
+
+		return $options->get( OptionsInterface::DB_VERSION );
+	}
+
+	/**
+	 * Get the stored file version
+	 *
+	 * @return string
+	 */
+	protected function get_file_version(): string {
+		$container = woogle_get_container();
+		$options   = $container->get( OptionsInterface::class );
+
+		return $options->get( OptionsInterface::FILE_VERSION );
 	}
 }
