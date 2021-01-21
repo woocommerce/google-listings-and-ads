@@ -69,16 +69,4 @@ trait PluginHelper {
 	protected function get_version(): string {
 		return '0.1.0';
 	}
-
-	/**
-	 * Return whether the merchant center setup process has been completed?
-	 *
-	 * @return bool
-	 */
-	protected function is_mc_setup_complete(): bool {
-		$container = woogle_get_container();
-		$options   = $container->get( OptionsInterface::class );
-
-		return $options->get( OptionsInterface::MC_SETUP_COMPLETED_AT, false ) ? true : false;
-	}
 }
