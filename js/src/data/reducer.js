@@ -45,6 +45,17 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
+		case TYPES.UPDATE_SHIPPING_RATE: {
+			const { shippingRate } = action;
+			const newState = cloneDeep( state );
+			const idx = newState.mc.shipping.rates.findIndex(
+				( el ) => el.countryCode === shippingRate.countryCode
+			);
+			newState.mc.shipping.rates[ idx ] = shippingRate;
+
+			return newState;
+		}
+
 		case TYPES.DELETE_SHIPPING_RATE: {
 			const { countryCode } = action;
 			const newState = cloneDeep( state );

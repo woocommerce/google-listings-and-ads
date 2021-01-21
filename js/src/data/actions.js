@@ -92,7 +92,39 @@ export function* addShippingRate( shippingRate ) {
 	}
 }
 
-// TODO: call API to delete shipping rate.
+export function* updateShippingRate( shippingRate ) {
+	const { countryCode, currency, rate } = shippingRate;
+
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates`,
+			method: 'POST',
+			data: {
+				country_code: countryCode,
+				currency,
+				rate,
+			},
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.UPDATE_SHIPPING_RATE,
+			shippingRate,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to update shipping rate.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* deleteShippingRate( countryCode ) {
 	try {
 		const response = yield apiFetch( {

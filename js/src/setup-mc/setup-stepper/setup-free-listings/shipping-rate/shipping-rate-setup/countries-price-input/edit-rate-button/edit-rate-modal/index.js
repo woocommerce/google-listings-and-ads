@@ -18,7 +18,12 @@ import './index.scss';
 
 const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
-	const { addShippingRate, deleteShippingRate } = useDispatch( STORE_KEY );
+
+	const {
+		addShippingRate,
+		updateShippingRate,
+		deleteShippingRate,
+	} = useDispatch( STORE_KEY );
 
 	const handleDeleteClick = () => {
 		rate.countries.forEach( ( el ) => {
@@ -39,12 +44,28 @@ const EditRateModal = ( props ) => {
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, price } = values;
 
+		const oriCountrySet = new Set( rate.countries );
 		countryCodes.forEach( ( el ) => {
-			addShippingRate( {
-				countryCode: el,
-				currency,
-				rate: price,
-			} );
+			if ( ! oriCountrySet.has( el ) ) {
+				addShippingRate( {
+					countryCode: el,
+					currency,
+					rate: price,
+				} );
+			} else {
+				updateShippingRate( {
+					countryCode: el,
+					currency,
+					rate: price,
+				} );
+			}
+		} );
+
+		const valuesCountrySet = new Set( values.countryCodes );
+		rate.countries.forEach( ( el ) => {
+			if ( ! valuesCountrySet.has( el ) ) {
+				deleteShippingRate( el );
+			}
 		} );
 
 		onRequestClose();
