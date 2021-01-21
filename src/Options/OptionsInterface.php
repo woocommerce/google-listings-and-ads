@@ -27,6 +27,16 @@ interface OptionsInterface {
 	public function get( string $name, $default = null );
 
 	/**
+	 * Add an option.
+	 *
+	 * @param string $name  The option name.
+	 * @param mixed  $value The option value.
+	 *
+	 * @return bool
+	 */
+	public function add( string $name, $value ): bool;
+
+	/**
 	 * Update an option.
 	 *
 	 * @param string $name  The option name.

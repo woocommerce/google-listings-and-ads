@@ -52,6 +52,22 @@ final class Options implements OptionsInterface, Service {
 	}
 
 	/**
+	 * Add an option.
+	 *
+	 * @param string $name  The option name.
+	 * @param mixed  $value The option value.
+	 *
+	 * @return bool
+	 */
+	public function add( string $name, $value ): bool {
+		$this->validate_option_key( $name );
+		$name                   = $this->prefix_name( $name );
+		$this->options[ $name ] = $value;
+
+		return add_option( $name, $value );
+	}
+
+	/**
 	 * Update an option.
 	 *
 	 * @param string $name  The option name.
