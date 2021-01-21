@@ -95,6 +95,59 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_settings_schema(): array {
 		return [
+			'shipping_rate'           => [
+				'type'              => 'string',
+				'description'       => __(
+					'Whether shipping rate is a simple flat rate or needs to be configured manually in the Merchant Center.',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => [
+					'flat',
+					'manual',
+				],
+			],
+			'offers_free_shipping'    => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether free shipping over a certain price is allowed .', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'shipping_time'           => [
+				'type'              => 'string',
+				'description'       => __(
+					'Whether shipping time is a simple flat time or needs to be configured manually in the Merchant Center.',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => [
+					'flat',
+					'manual',
+				],
+			],
+			'share_shipping_time'     => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether the share shipping rates with Google.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'tax_rate'                => [
+				'type'              => 'string',
+				'description'       => __(
+					'Whether tax rate is destination based or need to be configured manually in the Merchant Center.',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => [
+					'destination',
+					'manual',
+				],
+			],
 			'website_live'            => [
 				'type'              => 'boolean',
 				'description'       => __( 'Whether the store website is live.', 'google-listings-and-ads' ),
