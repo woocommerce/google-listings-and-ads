@@ -34,14 +34,14 @@ export function receiveShippingRates( shippingRates ) {
 }
 
 export function* addShippingRate( shippingRate ) {
-	const { country, currency, rate } = shippingRate;
+	const { countryCode, currency, rate } = shippingRate;
 
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 			method: 'POST',
 			data: {
-				country_code: country,
+				country_code: countryCode,
 				currency,
 				rate,
 			},
@@ -67,9 +67,28 @@ export function* addShippingRate( shippingRate ) {
 }
 
 // TODO: call API to delete shipping rate.
-export function* deleteShippingRate( rate ) {
-	return {
-		type: TYPES.DELETE_SHIPPING_RATE,
-		rate,
-	};
+export function* deleteShippingRate( countryCode ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates/${ countryCode }`,
+			method: 'DELETE',
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.DELETE_SHIPPING_RATE,
+			countryCode,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to delete shipping rate.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }

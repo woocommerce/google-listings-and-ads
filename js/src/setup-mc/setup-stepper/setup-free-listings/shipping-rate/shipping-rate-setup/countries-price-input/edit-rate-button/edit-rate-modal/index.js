@@ -18,10 +18,13 @@ import './index.scss';
 
 const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
-	const { addShippingRate } = useDispatch( STORE_KEY );
+	const { addShippingRate, deleteShippingRate } = useDispatch( STORE_KEY );
 
-	// TODO: call API to delete the rate.
 	const handleDeleteClick = () => {
+		rate.countries.forEach( ( el ) => {
+			deleteShippingRate( el );
+		} );
+
 		onRequestClose();
 	};
 
@@ -33,13 +36,12 @@ const EditRateModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: call backend API when submit form.
 	const handleSubmitCallback = ( values ) => {
-		const { countries, price } = values;
+		const { countryCodes, price } = values;
 
-		countries.forEach( ( el ) => {
+		countryCodes.forEach( ( el ) => {
 			addShippingRate( {
-				country: el,
+				countryCode: el,
 				currency: 'USD',
 				rate: price,
 			} );
@@ -51,7 +53,7 @@ const EditRateModal = ( props ) => {
 	return (
 		<Form
 			initialValues={ {
-				countries: rate.countries,
+				countryCodes: rate.countries,
 				price: rate.price,
 			} }
 			validate={ handleValidate }
@@ -95,7 +97,7 @@ const EditRateModal = ( props ) => {
 									) }
 								</div>
 								<AppCountryMultiSelect
-									{ ...getInputProps( 'countries' ) }
+									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
 							<AppInputControl

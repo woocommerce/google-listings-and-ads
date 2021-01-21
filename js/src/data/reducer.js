@@ -45,10 +45,10 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.DELETE_SHIPPING_RATE: {
-			const { rate } = action;
+			const { countryCode } = action;
 			const newState = cloneDeep( state );
 			newState.mc.shipping.rates = newState.mc.shipping.rates.filter(
-				( el ) => el.country !== rate.country
+				( el ) => el.countryCode !== countryCode
 			);
 			return newState;
 		}
