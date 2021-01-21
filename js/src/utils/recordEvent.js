@@ -35,3 +35,5 @@ export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 		trigger,
 	} );
 };
+
+export default recordEvent;

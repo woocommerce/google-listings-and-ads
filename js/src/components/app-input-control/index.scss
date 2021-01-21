@@ -1,0 +1,13 @@
+.app-input-control {
+	.components-flex__item {
+		width: 100%;
+		max-width: 100%;
+		margin-right: 0;
+
+		// hack with !important to override the specificity in @wordpress/components.
+		label.components-input-control__label {
+			color: #757575 !important;
+			white-space: normal !important;
+		}
+	}
+}

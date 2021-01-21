@@ -25,7 +25,7 @@ const HelpPopover = ( props ) => {
 	};
 
 	return (
-		<div className="help-popover">
+		<span className="help-popover">
 			<button onClick={ handleButtonClick }>
 				<GridiconHelpOutline size={ 16 }></GridiconHelpOutline>
 			</button>
@@ -37,7 +37,7 @@ const HelpPopover = ( props ) => {
 					{ children }
 				</Popover>
 			) }
-		</div>
+		</span>
 	);
 };
 

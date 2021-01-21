@@ -4,8 +4,12 @@
 import { Panel, PanelBody, PanelRow } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
 import { recordEvent } from '@woocommerce/tracks';
+
+/**
+ * Internal dependencies
+ */
+import AppDocumentationLink from '../components/app-documentation-link';
 
 const recordToggleEvent = ( id, isOpened ) => {
 	recordEvent( 'gla_get_started_faq', {
@@ -14,20 +18,9 @@ const recordToggleEvent = ( id, isOpened ) => {
 	} );
 };
 
-const recordLinkClickEvent = ( id, href ) => {
-	recordEvent( 'gla_get_started_faq_link_clicked', {
-		id,
-		href,
-	} );
-};
-
 const Faqs = () => {
 	const getPanelToggleHandler = ( id ) => ( isOpened ) => {
 		recordToggleEvent( id, isOpened );
-	};
-
-	const getLinkClickHandler = ( id ) => ( event ) => {
-		recordLinkClickEvent( id, event.currentTarget.href );
 	};
 
 	return (
@@ -56,13 +49,10 @@ const Faqs = () => {
 							),
 							{
 								link: (
-									<Link
-										type="external"
+									<AppDocumentationLink
+										context="faqs"
+										linkId="what-is-google-merchant-center"
 										href="https://www.google.com/retail/solutions/merchant-center/"
-										target="_blank"
-										onClick={ getLinkClickHandler(
-											'what-is-google-merchant-center'
-										) }
 									/>
 								),
 							}
@@ -102,13 +92,10 @@ const Faqs = () => {
 							),
 							{
 								link: (
-									<Link
-										type="external"
+									<AppDocumentationLink
+										context="faqs"
+										linkId="what-do-i-need-to-do"
 										href="https://support.google.com/merchants/answer/6363310"
-										target="_blank"
-										onClick={ getLinkClickHandler(
-											'what-do-i-need-to-do'
-										) }
 									/>
 								),
 							}

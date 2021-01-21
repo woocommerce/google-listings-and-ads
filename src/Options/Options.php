@@ -19,9 +19,11 @@ final class Options implements OptionsInterface, Service {
 	use PluginHelper;
 
 	private const VALID_OPTIONS = [
-		self::MERCHANT_CENTER => true,
-		self::MERCHANT_ID     => true,
-		self::SHIPPING_RATES  => true,
+		self::MC_SETUP_COMPLETE => true,
+		self::MERCHANT_CENTER   => true,
+		self::MERCHANT_ID       => true,
+		self::SHIPPING_RATES    => true,
+		self::SHIPPING_TIMES    => true,
 	];
 
 	/**

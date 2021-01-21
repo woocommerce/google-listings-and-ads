@@ -4,14 +4,19 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding\JetpackConnectController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeBatchController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
+use Psr\Container\ContainerInterface;
 
 /**
  * Class RESTServiceProvider
@@ -40,10 +45,14 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->share( JetpackConnectController::class, Manager::class );
 		$this->share_with_options( SettingsController::class );
 		$this->share( ConnectionController::class );
-		$this->share_with_options( ShippingRateController::class, ISO3166DataProvider::class );
+		$this->share( GoogleAccountController::class, Connection::class );
+		$this->share( JetpackAccountController::class, Manager::class );
+		$this->share_with_container( ShippingRateBatchController::class );
+		$this->share_with_container( ShippingRateController::class );
+		$this->share_with_container( ShippingTimeBatchController::class );
+		$this->share_with_container( ShippingTimeController::class );
 	}
 
 	/**
@@ -70,5 +79,16 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function share_with_options( string $class, ...$arguments ): DefinitionInterface {
 		return $this->share( $class, OptionsInterface::class, ...$arguments );
+	}
+
+	/**
+	 * Share a class with only the container object provided.
+	 *
+	 * @param string $class The class name to add.
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function share_with_container( string $class ): DefinitionInterface {
+		return parent::share( $class, ContainerInterface::class )->addTag( 'rest_controller' );
 	}
 }

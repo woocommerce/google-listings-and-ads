@@ -33,9 +33,9 @@ class ConnectionController extends BaseController {
 			'mc/connect',
 			[
 				[
-					'methods'              => TransportMethods::READABLE,
-					'callback'             => $this->get_connect_callback(),
-					'permissions_callback' => $this->get_permission_callback(),
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connect_callback(),
+					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_connection_schema(),
 			]
@@ -50,7 +50,7 @@ class ConnectionController extends BaseController {
 	protected function get_connect_callback(): callable {
 		return function() {
 			return [
-				'url' => 'https://example.com',
+				'url' => 'example.com',
 			];
 		};
 	}
@@ -64,7 +64,7 @@ class ConnectionController extends BaseController {
 			'title'      => 'plugins',
 			'type'       => 'object',
 			'properties' => [
-				'connectAction' => [
+				'url' => [
 					'description' => __( 'Action that should be completed after connection.', 'google-listings-and-ads' ),
 					'type'        => 'string',
 					'context'     => [ 'view', 'edit' ],
