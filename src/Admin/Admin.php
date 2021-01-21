@@ -65,7 +65,7 @@ class Admin implements Service, Registerable, Conditional {
 		) )->add_localization(
 			'glaData',
 			[
-				'placeholder' => 'placeholder',
+				'is_mc_setup_complete' => $this->is_mc_setup_complete(),
 			]
 		);
 

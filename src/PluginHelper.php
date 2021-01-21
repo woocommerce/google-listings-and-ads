@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+
 /**
  * Trait PluginHelper
  *
@@ -66,5 +68,17 @@ trait PluginHelper {
 	 */
 	protected function get_version(): string {
 		return '0.1.0';
+	}
+
+	/**
+	 * Return whether the merchant center setup process has been completed?
+	 *
+	 * @return bool
+	 */
+	protected function is_mc_setup_complete(): bool {
+		$container = woogle_get_container();
+		$options   = $container->get( OptionsInterface::class );
+
+		return 'yes' === $options->get( OptionsInterface::MC_SETUP_COMPLETE );
 	}
 }
