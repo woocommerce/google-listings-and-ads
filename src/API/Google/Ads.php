@@ -199,6 +199,10 @@ class Ads {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
+			if ( $this->has_api_exception_error( $e, 'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' ) ) {
+				throw new Exception( 'This campaign has already been deleted' );
+			}
+
 			throw new Exception( sprintf( 'Error deleting campaign: %s', $e->getBasicMessage() ) );
 		}
 	}
