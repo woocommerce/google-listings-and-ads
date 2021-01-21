@@ -95,42 +95,6 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_settings_schema(): array {
 		return [
-			// todo: consider including an enum of valid countries.
-			'countries'               => [
-				'type'              => 'array',
-				'description'       => __( 'Countries in which products are available.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'items'             => [
-					'type' => 'string',
-				],
-				'default'           => [],
-			],
-			'shipping'                => [
-				'type'              => 'string',
-				'description'       => __(
-					'Whether shipping is set up automatically by the plugin or manually in the Merchant Center.',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'enum'              => [
-					'automatic',
-					'manual',
-				],
-			],
-			'estimated_shipping_rate' => [
-				'type'              => 'string',
-				'description'       => __( 'Estimated flat shipping rate (USD)', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'estimated_shipping_days' => [
-				'type'              => 'integer',
-				'description'       => __( 'Estimated shipping time (in days).', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
 			'website_live'            => [
 				'type'              => 'boolean',
 				'description'       => __( 'Whether the store website is live.', 'google-listings-and-ads' ),
