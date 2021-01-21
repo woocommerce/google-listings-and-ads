@@ -8,12 +8,13 @@ import { cloneDeep } from 'lodash';
  */
 import TYPES from './action-types';
 
+// TODO: initial data should come from resolvers.
 const DEFAULT_STATE = {
 	mc: {
 		audience: {
 			location: {
 				option: 'selected',
-				selected: [ 'AU' ],
+				selected: [ 'AU', 'CN', 'US' ],
 			},
 		},
 		shipping: {

@@ -20,6 +20,11 @@ const AppCountryMultiSelect = ( props ) => {
 			value: { id: 'AU' },
 		},
 		{
+			key: 'CN',
+			label: 'China',
+			value: { id: 'CN' },
+		},
+		{
 			key: 'US',
 			label: 'United States of America',
 			value: { id: 'US' },
