@@ -67,19 +67,21 @@ const ShippingRateSetup = ( props ) => {
 				<div className="countries-price">
 					<VerticalGapLayout>
 						{ shippingRates.length === 0 && (
-							<CountriesPriceInputForm
-								initialValue={ {
-									countries: selectedCountryCodes,
-									price: '',
-									currency: code,
-								} }
-							/>
+							<div className="countries-price-input-form">
+								<CountriesPriceInputForm
+									initialValue={ {
+										countries: selectedCountryCodes,
+										price: '',
+										currency: code,
+									} }
+								/>
+							</div>
 						) }
 						{ countriesPriceArray.map( ( el, idx ) => {
 							return (
 								<div
 									key={ idx }
-									className="countries-price-input"
+									className="countries-price-input-form"
 								>
 									<CountriesPriceInputForm
 										initialValue={ el }
