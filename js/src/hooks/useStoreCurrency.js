@@ -5,16 +5,16 @@ import { SETTINGS_STORE_NAME } from '@woocommerce/data';
 import { useSelect } from '@wordpress/data';
 
 /**
- * Get a country key-name map object. Used for getting complete country name based on country code.
+ * Get the store's currency object.
  *
  * Usage:
  *
  * ```js
- * const map = useCountryKeyNameMap()
- * console.log( map['AU'] ) // 'Australia'.
+ * const { code } = useStoreCurrency()
+ * console.log( code ) // Print the store's currency code, e.g. 'USD'.
  * ```
  *
- * @return {Object} A map object where the key is the country code and the value is the country name.
+ * @return {Object} The store's currency object.
  */
 const useStoreCurrency = () => {
 	return useSelect( ( select ) => {
