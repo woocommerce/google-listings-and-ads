@@ -79,7 +79,7 @@ trait PluginHelper {
 		$container = woogle_get_container();
 		$options   = $container->get( OptionsInterface::class );
 
-		return $options->get( OptionsInterface::DB_VERSION );
+		return $options->get( OptionsInterface::DB_VERSION, '' );
 	}
 
 	/**
@@ -91,6 +91,6 @@ trait PluginHelper {
 		$container = woogle_get_container();
 		$options   = $container->get( OptionsInterface::class );
 
-		return $options->get( OptionsInterface::FILE_VERSION );
+		return $options->get( OptionsInterface::FILE_VERSION, '' );
 	}
 }
