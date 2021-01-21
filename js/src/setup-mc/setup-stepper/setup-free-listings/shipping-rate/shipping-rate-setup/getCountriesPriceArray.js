@@ -1,4 +1,5 @@
 const getCountriesPriceArray = ( shippingRates ) => {
+	const currency = shippingRates[ 0 ]?.currency;
 	const map = new Map();
 
 	shippingRates.forEach( ( el ) => {
@@ -13,6 +14,7 @@ const getCountriesPriceArray = ( shippingRates ) => {
 		arr.push( {
 			countries: countryCodes,
 			price: rate,
+			currency,
 		} );
 	}
 
