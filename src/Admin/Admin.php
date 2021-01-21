@@ -93,11 +93,19 @@ class Admin implements Service, Registerable, Conditional {
 	protected function add_plugin_links( $links ): array {
 		$plugin_links = [];
 
-		// If setup complete, add settings link.
-		// $plugin_links[] = '<a href="' . esc_attr( $this->get_settings_url() ) . '">' . esc_html__( 'Settings', 'google-listings-and-ads' ) . '</a>';
+		$plugin_links[] = sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_attr( $this->get_settings_url() ),
+			esc_html__( 'Settings', 'google-listings-and-ads' )
+		);
 
-		$plugin_links[] = '<a href="' . esc_attr( $this->get_documentation_url() ) . '">' . esc_html__( 'Documentation', 'google-listings-and-ads' ) . '</a>';
+		$plugin_links[] = sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_attr( $this->get_documentation_url() ),
+			esc_html__( 'Documentation', 'google-listings-and-ads' )
+		);
 
+		// Add new links to the beginning
 		return array_merge( $plugin_links, $links );
 	}
 }
