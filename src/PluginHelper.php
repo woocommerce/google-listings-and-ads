@@ -79,6 +79,6 @@ trait PluginHelper {
 		$container = woogle_get_container();
 		$options   = $container->get( OptionsInterface::class );
 
-		return 'yes' === $options->get( OptionsInterface::MC_SETUP_COMPLETE );
+		return $options->get( OptionsInterface::MC_SETUP_COMPLETED_AT, false ) ? true : false;
 	}
 }

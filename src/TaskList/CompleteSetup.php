@@ -78,7 +78,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable {
 		) )->add_localization(
 			'glaTaskData',
 			[
-				'isComplete' => $this->options->get( OptionsInterface::MC_SETUP_COMPLETE, false ),
+				'isComplete' => $this->is_mc_setup_complete(),
 			]
 		);
 	}
