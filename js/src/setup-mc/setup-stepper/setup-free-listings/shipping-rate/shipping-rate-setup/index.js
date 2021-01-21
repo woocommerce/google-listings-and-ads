@@ -55,11 +55,9 @@ const ShippingRateSetup = ( props ) => {
 	);
 	const { code } = useStoreCurrency();
 
-	if ( shippingRates.length === 0 ) {
-	}
-
 	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = shippingRates.length;
+	const remainingCount = expectedCountryCount - actualCountryCount;
 
 	const countriesPriceArray = getCountriesPriceArray( shippingRates );
 
@@ -89,7 +87,7 @@ const ShippingRateSetup = ( props ) => {
 								</div>
 							);
 						} ) }
-						{ actualCountryCount < expectedCountryCount && (
+						{ actualCountryCount >= 1 && remainingCount >= 1 && (
 							<div className="add-rate-button">
 								<AddRateButton />
 							</div>
