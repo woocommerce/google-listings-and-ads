@@ -121,17 +121,7 @@ class Ads {
 
 			$operation = new CampaignOperation();
 			$operation->setCreate( $campaign );
-
-			/** @var GoogleAdsClient $client */
-			$client   = $this->container->get( GoogleAdsClient::class );
-			$response = $client->getCampaignServiceClient()->mutateCampaigns(
-				$this->get_id(),
-				[ $operation ],
-				$this->get_args()
-			);
-
-			/** @var Campaign $created_campaign */
-			$created_campaign = $response->getResults()[0];
+			$created_campaign = $this->mutate_campaign( $operation );
 			$campaign_id      = $this->parse_id( $created_campaign->getResourceName(), 'campaigns' );
 
 			return [
@@ -202,17 +192,7 @@ class Ads {
 				$operation = new CampaignOperation();
 				$operation->setUpdate( $campaign );
 				$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $campaign ) );
-
-				/** @var GoogleAdsClient $client */
-				$client   = $this->container->get( GoogleAdsClient::class );
-				$response = $client->getCampaignServiceClient()->mutateCampaigns(
-					$this->get_id(),
-					[ $operation ],
-					$this->get_args()
-				);
-
-				/** @var Campaign $edited_campaign */
-				$edited_campaign = $response->getResults()[0];
+				$edited_campaign = $this->mutate_campaign( $operation );
 				$campaign_id     = $this->parse_id( $edited_campaign->getResourceName(), 'campaigns' );
 			}
 
@@ -237,17 +217,7 @@ class Ads {
 			$resource_name = ResourceNames::forCampaign( $this->get_id(), $campaign_id );
 			$operation     = new CampaignOperation();
 			$operation->setRemove( $resource_name );
-
-			/** @var GoogleAdsClient $client */
-			$client   = $this->container->get( GoogleAdsClient::class );
-			$response = $client->getCampaignServiceClient()->mutateCampaigns(
-				$this->get_id(),
-				[ $operation ],
-				$this->get_args()
-			);
-
-			/** @var Campaign $deleted_campaign */
-			$deleted_campaign    = $response->getResults()[0];
+			$deleted_campaign    = $this->mutate_campaign( $operation );
 			$deleted_campaign_id = $this->parse_id( $deleted_campaign->getResourceName(), 'campaigns' );
 
 			return $deleted_campaign_id;
@@ -332,17 +302,8 @@ class Ads {
 
 		$operation = new CampaignBudgetOperation();
 		$operation->setCreate( $budget );
+		$created_budget = $this->mutate_budget( $operation );
 
-		/** @var GoogleAdsClient $client */
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
-			$this->get_id(),
-			[ $operation ],
-			$this->get_args()
-		);
-
-		/** @var CampaignBudget $created_budget */
-		$created_budget = $response->getResults()[0];
 		return $created_budget->getResourceName();
 	}
 
@@ -366,17 +327,8 @@ class Ads {
 		$operation = new CampaignBudgetOperation();
 		$operation->setUpdate( $budget );
 		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $budget ) );
+		$edited_budget = $this->mutate_budget( $operation );
 
-		/** @var GoogleAdsClient $client */
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
-			$this->get_id(),
-			[ $operation ],
-			$this->get_args()
-		);
-
-		/** @var CampaignBudget $edited_budget */
-		$edited_budget = $response->getResults()[0];
 		return $edited_budget->getResourceName();
 	}
 
@@ -398,6 +350,42 @@ class Ads {
 		}
 
 		throw new Exception( sprintf( 'No budget found for campaign %d', $campaign_id ) );
+	}
+
+	/**
+	 * Run a single mutate campaign operation.
+	 *
+	 * @param CampaignOperation $operation Operation we would like to run.
+	 *
+	 * @return Campaign
+	 */
+	protected function mutate_campaign( CampaignOperation $operation ): Campaign {
+		$client   = $this->container->get( GoogleAdsClient::class );
+		$response = $client->getCampaignServiceClient()->mutateCampaigns(
+			$this->get_id(),
+			[ $operation ],
+			$this->get_args()
+		);
+
+		return $response->getResults()[0];
+	}
+
+	/**
+	 * Run a single mutate campaign budget operation.
+	 *
+	 * @param CampaignBudgetOperation $operation Operation we would like to run.
+	 *
+	 * @return CampaignBudget
+	 */
+	protected function mutate_budget( CampaignBudgetOperation $operation ): CampaignBudget {
+		$client   = $this->container->get( GoogleAdsClient::class );
+		$response = $client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
+			$this->get_id(),
+			[ $operation ],
+			$this->get_args()
+		);
+
+		return $response->getResults()[0];
 	}
 
 	/**
