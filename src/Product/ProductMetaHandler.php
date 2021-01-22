@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidMeta;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use BadMethodCallException;
@@ -22,12 +23,17 @@ defined( 'ABSPATH' ) || exit;
  * @method delete_google_ids( int $product_id )
  * @method get_google_ids( int $product_id ): array
  */
-class ProductMetaHandler implements Service {
+class ProductMetaHandler implements Service, Registerable {
 
 	use PluginHelper;
 
 	public const KEY_SYNCED_AT  = 'synced_at';
 	public const KEY_GOOGLE_IDS = 'google_ids';
+
+	public const VALID_KEYS = [
+		self::KEY_SYNCED_AT,
+		self::KEY_GOOGLE_IDS,
+	];
 
 	/**
 	 * @param string $name
@@ -72,7 +78,7 @@ class ProductMetaHandler implements Service {
 	public function update( int $product_id, string $key, $value ) {
 		self::validate_meta_key( $key );
 
-		update_post_meta( $product_id, $this->generate_meta_key( $key ), $value );
+		update_post_meta( $product_id, $this->prefix_meta_key( $key ), $value );
 	}
 
 	/**
@@ -84,7 +90,7 @@ class ProductMetaHandler implements Service {
 	public function delete( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
 
-		delete_post_meta( $product_id, $this->generate_meta_key( $key ) );
+		delete_post_meta( $product_id, $this->prefix_meta_key( $key ) );
 	}
 
 	/**
@@ -98,16 +104,7 @@ class ProductMetaHandler implements Service {
 	public function get( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
 
-		return get_post_meta( $product_id, $this->generate_meta_key( $key ), true );
-	}
-
-	/**
-	 * @param string $key
-	 *
-	 * @return string
-	 */
-	protected function generate_meta_key( string $key ): string {
-		return "{$this->get_meta_key_prefix()}_{$key}";
+		return get_post_meta( $product_id, $this->prefix_meta_key( $key ), true );
 	}
 
 	/**
@@ -116,13 +113,38 @@ class ProductMetaHandler implements Service {
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
 	protected static function validate_meta_key( string $key ) {
-		$valid_keys = [
-			self::KEY_SYNCED_AT,
-			self::KEY_GOOGLE_IDS,
-		];
-
-		if ( ! in_array( $key, $valid_keys, true ) ) {
+		if ( ! in_array( $key, self::VALID_KEYS, true ) ) {
 			throw InvalidMeta::invalid_key( $key );
 		}
+	}
+
+	/**
+	 * Register a service.
+	 */
+	public function register(): void {
+		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', [ $this, 'handle_query_vars' ], 10, 2 );
+	}
+
+	/**
+	 * Handle the WooCommerce product's meta data query vars.
+	 *
+	 * @hooked handle_query_vars
+	 *
+	 * @param array $query      Args for WP_Query.
+	 * @param array $query_vars Query vars from WC_Product_Query.
+	 *
+	 * @return array modified $query
+	 */
+	public function handle_query_vars( array $query, array $query_vars ): array {
+		$prefixed_meta_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
+		$valid_keys         = array_intersect( $prefixed_meta_keys, array_flip( $query_vars ) );
+		foreach ( $valid_keys as $key ) {
+			$query['meta_query'][] = [
+				'key'   => $key,
+				'value' => $query_vars[ $key ],
+			];
+		}
+
+		return $query;
 	}
 }

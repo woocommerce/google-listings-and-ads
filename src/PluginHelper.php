@@ -76,4 +76,17 @@ trait PluginHelper {
 	protected function get_meta_key_prefix(): string {
 		return '_wc_gla';
 	}
+
+	/**
+	 * Prefix a meta data key with the plugin prefix.
+	 *
+	 * @param string $key
+	 *
+	 * @return string
+	 */
+	protected function prefix_meta_key( string $key ): string {
+		$prefix = self::get_meta_key_prefix();
+
+		return "{$prefix}_{$key}";
+	}
 }
