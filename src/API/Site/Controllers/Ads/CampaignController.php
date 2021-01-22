@@ -75,6 +75,12 @@ class CampaignController extends BaseController {
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				[
+					'methods'             => TransportMethods::EDITABLE,
+					'callback'            => $this->edit_campaign_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_edit_schema(),
+				],
+				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->delete_campaign_callback(),
 					'permission_callback' => $this->get_permission_callback(),
@@ -144,6 +150,38 @@ class CampaignController extends BaseController {
 	}
 
 	/**
+	 * Get the callback function for editing a campaign.
+	 *
+	 * @return callable
+	 */
+	protected function edit_campaign_callback(): callable {
+		return function( WP_REST_Request $request ) {
+			try {
+				$fields = array_intersect_key( $request->get_json_params(), $this->get_edit_schema() );
+				if ( empty( $fields ) ) {
+					return new WP_REST_Response(
+						[
+							'status'  => 'invalid_data',
+							'message' => __( 'Invalid edit data.', 'google-listings-and-ads' ),
+						],
+						400
+					);
+				}
+
+				$campaign_id = $this->ads->edit_campaign( absint( $request['id'] ), $fields );
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully edited campaign.', 'google-listings-and-ads' ),
+					'id'      => $campaign_id,
+				];
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+			}
+		};
+	}
+
+	/**
 	 * Get the callback function for deleting a campaign.
 	 *
 	 * @return callable
@@ -165,6 +203,21 @@ class CampaignController extends BaseController {
 	}
 
 	/**
+	 * Get the schema for fields we are allowed to edit.
+	 *
+	 * @return array
+	 */
+	protected function get_edit_schema(): array {
+		$allowed = [
+			'name',
+			'status',
+			'amount',
+		];
+
+		return array_intersect_key( $this->get_item_schema(), array_flip( $allowed ) );
+	}
+
+	/**
 	 * Get the item schema for the controller.
 	 *
 	 * @return array
@@ -182,7 +235,6 @@ class CampaignController extends BaseController {
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
 			],
 			'status'  => [
 				'type'              => 'string',
@@ -196,7 +248,6 @@ class CampaignController extends BaseController {
 				'description'       => __( 'Budget amount in the local currency.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
 			],
 			'country' => [
 				'type'              => 'string',
@@ -204,7 +255,6 @@ class CampaignController extends BaseController {
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
-				'required'          => true,
 			],
 		];
 	}

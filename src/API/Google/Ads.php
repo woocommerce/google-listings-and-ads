@@ -3,11 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\CampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsException;
+use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
@@ -173,12 +174,63 @@ class Ads {
 	}
 
 	/**
+	 * Edit a campaign.
+	 *
+	 * @param int   $campaign_id Campaign ID.
+	 * @param array $params      Request parameters.
+	 *
+	 * @return int
+	 * @throws Exception When an ApiException is caught or the ID is invalid.
+	 */
+	public function edit_campaign( int $campaign_id, array $params ): int {
+		try {
+			$campaign_fields = [
+				'resource_name' => ResourceNames::forCampaign( $this->get_id(), $campaign_id ),
+			];
+			if ( ! empty( $params['name'] ) ) {
+				$campaign_fields['name'] = $params['name'];
+			}
+			if ( ! empty( $params['status'] ) ) {
+				$campaign_fields['status'] = CampaignStatus::number( $params['status'] );
+			}
+			if ( ! empty( $params['amount'] ) ) {
+				$this->edit_campaign_budget( $campaign_id, $params['amount'] );
+			}
+
+			if ( count( $campaign_fields ) > 1 ) {
+				$campaign  = new Campaign( $campaign_fields );
+				$operation = new CampaignOperation();
+				$operation->setUpdate( $campaign );
+				$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $campaign ) );
+
+				/** @var GoogleAdsClient $client */
+				$client   = $this->container->get( GoogleAdsClient::class );
+				$response = $client->getCampaignServiceClient()->mutateCampaigns(
+					$this->get_id(),
+					[ $operation ],
+					$this->get_args()
+				);
+
+				/** @var Campaign $edited_campaign */
+				$edited_campaign = $response->getResults()[0];
+				$campaign_id     = $this->parse_id( $edited_campaign->getResourceName(), 'campaigns' );
+			}
+
+			return $campaign_id;
+		} catch ( ApiException $e ) {
+			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+
+			throw new Exception( sprintf( 'Error editing campaign: %s', $e->getBasicMessage() ) );
+		}
+	}
+
+	/**
 	 * Delete a campaign.
 	 *
 	 * @param int $campaign_id Campaign ID.
 	 *
 	 * @return int
-	 * @throws Exception When an ApiException is caught or the created ID is invalid.
+	 * @throws Exception When an ApiException is caught or the ID is invalid.
 	 */
 	public function delete_campaign( int $campaign_id ): int {
 		try {
@@ -292,6 +344,60 @@ class Ads {
 		/** @var CampaignBudget $created_budget */
 		$created_budget = $response->getResults()[0];
 		return $created_budget->getResourceName();
+	}
+
+	/**
+	 * Updates a new campaign budget.
+	 *
+	 * @param int   $campaign_id Campaign ID.
+	 * @param float $amount      Budget amount in the local currency.
+	 *
+	 * @return string Resource name of the updated budget.
+	 */
+	protected function edit_campaign_budget( int $campaign_id, float $amount ): string {
+		$budget_id = $this->get_budget_from_campaign( $campaign_id );
+		$budget    = new CampaignBudget(
+			[
+				'resource_name' => ResourceNames::forCampaignBudget( $this->get_id(), $budget_id ),
+				'amount_micros' => $this->to_micro( $amount ),
+			]
+		);
+
+		$operation = new CampaignBudgetOperation();
+		$operation->setUpdate( $budget );
+		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $budget ) );
+
+		/** @var GoogleAdsClient $client */
+		$client   = $this->container->get( GoogleAdsClient::class );
+		$response = $client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
+			$this->get_id(),
+			[ $operation ],
+			$this->get_args()
+		);
+
+		/** @var CampaignBudget $edited_budget */
+		$edited_budget = $response->getResults()[0];
+		return $edited_budget->getResourceName();
+	}
+
+	/**
+	 * Retrieve the linked budget ID from a campaign ID.
+	 *
+	 * @param int $campaign_id Campaign ID.
+	 *
+	 * @return int
+	 * @throws Exception When no linked budget has been found.
+	 */
+	protected function get_budget_from_campaign( int $campaign_id ): int {
+		$query    = $this->build_query( [ 'campaign.campaign_budget' ], 'campaign', "campaign.id = {$campaign_id}" );
+		$response = $this->query( $query );
+
+		foreach ( $response->iterateAllElements() as $row ) {
+			$campaign = $row->getCampaign();
+			return $this->parse_id( $campaign->getCampaignBudget(), 'campaignBudgets' );
+		}
+
+		throw new Exception( sprintf( 'No budget found for campaign %d', $campaign_id ) );
 	}
 
 	/**
