@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-
 /**
  * Trait PluginHelper
  *
@@ -68,29 +66,5 @@ trait PluginHelper {
 	 */
 	protected function get_version(): string {
 		return GLA_VERSION;
-	}
-
-	/**
-	 * Get the db version
-	 *
-	 * @return string
-	 */
-	protected function get_db_version(): string {
-		$container = woogle_get_container();
-		$options   = $container->get( OptionsInterface::class );
-
-		return $options->get( OptionsInterface::DB_VERSION, '' );
-	}
-
-	/**
-	 * Get the stored file version
-	 *
-	 * @return string
-	 */
-	protected function get_file_version(): string {
-		$container = woogle_get_container();
-		$options   = $container->get( OptionsInterface::class );
-
-		return $options->get( OptionsInterface::FILE_VERSION, '' );
 	}
 }
