@@ -100,6 +100,15 @@ trait PluginHelper {
 	}
 
 	/**
+	 * Get the plugin start URL
+	 *
+	 * @return string
+	 */
+	protected function get_start_url(): string {
+		return admin_url( 'admin.php?page=wc-admin&path=/google/start' );
+	}
+
+	/**
 	 * Get the plugin settings URL
 	 *
 	 * @return string
