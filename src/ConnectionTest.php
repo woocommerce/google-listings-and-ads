@@ -226,7 +226,7 @@ class ConnectionTest implements Service, Registerable {
 						<?php wp_nonce_field( 'wcs-delete-synced-products' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-delete-synced-products" type="hidden" />
-                        <input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+						<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 						<button class="button">Delete All Synced Products from Google Merchant Center</button>
 					</form>
 				</div>
