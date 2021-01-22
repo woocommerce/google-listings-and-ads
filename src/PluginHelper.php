@@ -74,7 +74,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_meta_key_prefix(): string {
-		return '_wc_gla';
+		return "_wc_{$this->get_slug()}";
 	}
 
 	/**
