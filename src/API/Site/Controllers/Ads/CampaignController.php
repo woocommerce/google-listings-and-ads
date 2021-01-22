@@ -113,7 +113,9 @@ class CampaignController extends BaseController {
 	protected function create_campaign_callback(): callable {
 		return function( WP_REST_Request $request ) {
 			try {
-				$campaign = $this->ads->create_campaign( $request->get_json_params() );
+				$fields   = array_intersect_key( $request->get_json_params(), $this->get_item_schema() );
+				$campaign = $this->ads->create_campaign( $fields );
+
 				return $this->prepare_item_for_response( $campaign );
 			} catch ( Exception $e ) {
 				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
@@ -214,7 +216,17 @@ class CampaignController extends BaseController {
 			'amount',
 		];
 
-		return array_intersect_key( $this->get_item_schema(), array_flip( $allowed ) );
+		$fields = array_intersect_key( $this->get_item_schema(), array_flip( $allowed ) );
+
+		// Unset required to allow editing individual fields.
+		array_walk(
+			$fields,
+			function( &$value ) {
+				unset( $value['required'] );
+			}
+		);
+
+		return $fields;
 	}
 
 	/**
@@ -235,6 +247,7 @@ class CampaignController extends BaseController {
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
 			],
 			'status'  => [
 				'type'              => 'string',
@@ -248,6 +261,7 @@ class CampaignController extends BaseController {
 				'description'       => __( 'Budget amount in the local currency.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
 			],
 			'country' => [
 				'type'              => 'string',
@@ -255,6 +269,7 @@ class CampaignController extends BaseController {
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
+				'required'          => true,
 			],
 		];
 	}
