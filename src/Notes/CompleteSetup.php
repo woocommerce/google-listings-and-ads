@@ -84,6 +84,11 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 	/**
 	 * Checks if a note can and should be added.
 	 *
+	 * Check if a stores done 5 sales
+	 * Check if setup IS NOT complete
+	 * Check if it is > 3 days ago from DATE OF START OF SETUP (installation date)
+	 * Send notification
+	 *
 	 * @return Note
 	 */
 	public function can_add_note(): bool {
