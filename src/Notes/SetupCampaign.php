@@ -5,9 +5,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\Notes;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Psr\Container\ContainerInterface;
@@ -17,11 +20,13 @@ use Psr\Container\ContainerInterface;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class SetupCampaign implements Deactivateable, Service, Registerable {
+class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwareInterface {
 
 	use PluginHelper;
+	use MerchantCenterTrait;
+	use Utilities;
 
-	const NOTE_NAME = 'gla-setup-campaign-202102';
+	public const NOTE_NAME = 'gla-setup-campaign-2021-02';
 
 	/**
 	 * @var OptionsInterface
@@ -41,7 +46,6 @@ class SetupCampaign implements Deactivateable, Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-
 		add_action(
 			'admin_init',
 			function() {
@@ -51,70 +55,62 @@ class SetupCampaign implements Deactivateable, Service, Registerable {
 	}
 
 	/**
-	 * Add the note
+	 * Possibly add the note
 	 *
-	 * @return void
+	 * @return Note
 	 */
 	public function possibly_add_note(): void {
-
-		if ( ! class_exists( 'Automattic\WooCommerce\Admin\Notes\Note' ) ) {
+		if ( ! $this->can_add_note() ) {
 			return;
 		}
 
+		$note = new Note();
+		$note->set_title( __( 'Get more customers with easy advertising on Google', 'google-listings-and-ads' ) );
+		$note->set_content( __( "People search for what they want. Smart Shopping campaigns will put your products right in front of shoppers looking for what you sell on Google. The best part? You won't pay unless you get results.", 'google-listings-and-ads' ) );
+		$note->set_content_data( (object) [] );
+		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_layout( 'plain' );
+		$note->set_image( '' );
+		$note->set_name( self::NOTE_NAME );
+		$note->set_source( $this->get_slug() );
+		$note->add_action(
+			'setup-campaign',
+			__( 'Set up paid campaign', 'google-listings-and-ads' ),
+			'www.to-do.com'
+		);
+		$note->save();
+	}
+
+	/**
+	 * Checks if a note can and should be added.
+	 *
+	 * @return Note
+	 */
+	public function can_add_note(): bool {
 		if ( ! class_exists( '\WC_Data_Store' ) ) {
-			return;
+			return false;
 		}
 
 		$data_store = \WC_Data_Store::load( 'admin-note' );
+		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
 
-		// First, see if we've already created this kind of note so we don't do it again.
-		$note_ids = $data_store->get_notes_with_name( self::NOTE_NAME );
-		foreach( (array) $note_ids as $note_id ) {
-			$note         = Notes::get_note( $note_id );
-			$content_data = $note->get_content_data();
- 			if ( property_exists( $content_data, 'getting_started' ) ) {
-				return;
-			}
+		if ( ! empty( $note_ids ) ) {
+			return false;
 		}
 
-		// Otherwise, add the note
-		$activated_time = current_time( 'timestamp', 0 );
-		$activated_time_formatted = date( 'F jS', $activated_time );
+		if ( ! $this->setup_complete() ) {
+			return false;
+		}
 
-		$note = new Note();
-		$note->set_title( __( 'Setup Campaign', 'wapi-example-plugin-one' ) );
-		$note->set_content(
-			sprintf(
-				/* translators: a date, e.g. November 1st */
-				__( 'Plugin activated on %s.', 'wapi-example-plugin-one' ),
-				$activated_time_formatted
-			)
-		);
-		$note->set_content_data( (object) array(
-			'getting_started'     => true,
-			'activated'           => $activated_time,
-			'activated_formatted' => $activated_time_formatted,
-		) );
-		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
-		$note->set_layout('plain');
-		$note->set_image('');
-		$note->set_name( self::NOTE_NAME );
-		$note->set_source( 'wapi-example-plugin-one' );
-		$note->set_layout('plain');
-		$note->set_image('');
-		// This example has two actions. A note can have 0 or 1 as well.
-		$note->add_action(
-			'settings',
-			__( 'Open Settings', 'wapi-example-plugin-one' ),
-			'?page=wc-settings&tab=general'
-		);
-		$note->add_action(
-			'settings',
-			__( 'Learn More', 'wapi-example-plugin-one' ),
-			'https://github.com/woocommerce/woocommerce-admin/tree/main/docs'
-		);
-		$note->save();
+		if ( ! $this->gla_setup_for( 3 * DAY_IN_SECONDS ) ) {
+			return false;
+		}
 
+		if ( ! $this->has_orders( 5 ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
