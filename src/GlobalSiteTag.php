@@ -71,7 +71,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 	 * @param string $aw_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $aw_conversion_id ) {
-		if ( $this->is_active_woocommerce_google_analytics_integration() ) {
+		if ( $this->container->get( GoogleGtagJs::class )->is_adding_framework() ) {
 			add_filter(
 				'woocommerce_gtag_snippet',
 				function( $gtag_snippet ) use ( $aw_conversion_id ) {
@@ -87,42 +87,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 		}
 	}
 
-	/**
-	 * Determine if the WooCommerce Google Analytics Integration extension is active and
-	 * inserting script tags.
-	 *
-	 * @return bool True if WooCommerce Google Analytics Integration is active and inserting script tags.
-	 */
-	protected function is_active_woocommerce_google_analytics_integration() {
-		/** @var GoogleGtagJs $gtag_js */
-		$gtag_js = $this->container->get( GoogleGtagJs::class );
-
-		// WooCommerce Google Analytics Integration is disabled for admin users.
-		$is_admin = is_admin() || current_user_can( 'manage_options' );
-
-		return ! $is_admin && $gtag_js->class_exists() && $this->is_gtag_code_present();
-	}
-
-	/**
-	 * Determine whether WooCommerce Google Analytics Integration is already
-	 * injecting the gtag <script> code.
-	 *
-	 * @return bool True if the <script> code is present.
-	 */
-	protected function is_gtag_code_present(): bool {
-		$woocommerce_google_analytics_settings = get_option( 'woocommerce_google_analytics_settings', [] );
-		if ( empty( $woocommerce_google_analytics_settings['ga_gtag_enabled'] ) ) {
-			return false;
-		}
-		if ( empty( $woocommerce_google_analytics_settings['ga_id'] ) ) {
-			return false;
-		}
-
-		$standard_tracking_enabled = 'yes' === ( $woocommerce_google_analytics_settings['ga_standard_tracking_enabled'] ?? 'no' );
-		$page_has_tracking         = $standard_tracking_enabled || is_order_received_page() || is_woocommerce() || is_cart() || is_checkout();
-
-		return $page_has_tracking && $woocommerce_google_analytics_settings['ga_id'] && ( 'yes' === $woocommerce_google_analytics_settings['ga_gtag_enabled'] );
-	}
 
 	/**
 	 * Display the JavaScript code to load the Global Site Tag framework.
