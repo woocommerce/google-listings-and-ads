@@ -17,6 +17,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
@@ -467,9 +470,11 @@ class ConnectionTest implements Service, Registerable {
 							<th>Sync Product:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 									<label>
 										Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
+									</label>
+									<label>
+										Async? <input id="async-sync-product" name="async" value=1 type="checkbox" />
 									</label>
 									<button class="button">Sync Product with Google Merchant Center</button>
 								</p>
@@ -477,6 +482,7 @@ class ConnectionTest implements Service, Registerable {
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-sync-product' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-product" type="hidden" />
 				</form>
@@ -486,13 +492,16 @@ class ConnectionTest implements Service, Registerable {
 							<th>Sync All Products:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<label>
+										Async? <input id="async-sync-all-products" name="async" value=1 type="checkbox" />
+									</label>
 									<button class="button">Sync All Products with Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-sync-all-products' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-all-products" type="hidden" />
 				</form>
@@ -502,13 +511,16 @@ class ConnectionTest implements Service, Registerable {
 							<th>Delete All Synced Products:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<label>
+										Async? <input id="async-delete-synced-products" name="async" value=1 type="checkbox" />
+									</label>
 									<button class="button">Delete All Synced Products from Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-delete-synced-products' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-delete-synced-products" type="hidden" />
 				</form>
@@ -930,71 +942,99 @@ class ConnectionTest implements Service, Registerable {
 			$id      = absint( $_GET['product_id'] );
 			$product = wc_get_product( $id );
 
-			/** @var ProductSyncer $product_syncer */
-			$product_syncer = $this->container->get( ProductSyncer::class );
+			if ( $product instanceof \WC_Product ) {
+				if ( ! $_GET['async'] ) {
+					/** @var ProductSyncer $product_syncer */
+					$product_syncer = $this->container->get( ProductSyncer::class );
 
-			try {
-				$result = $product_syncer->update( [ $product ] );
+					try {
+						$result = $product_syncer->update( [ $product ] );
 
-				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
-				if ( ! empty( $result->get_errors() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ( $result->get_errors() as  $invalid_product ) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
+						if ( ! empty( $result->get_errors() ) ) {
+							$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+							foreach ( $result->get_errors() as $invalid_product ) {
+								$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+							}
+						}
+					} catch ( ProductSyncerException $exception ) {
+						$this->response = 'Error submitting product to Google: ' . $exception->getMessage();
 					}
+				} else {
+					// schedule a job
+					/** @var UpdateProducts $update_job */
+					$update_job = $this->container->get( UpdateProducts::class );
+					$update_job->start( [ $product->get_id() ] );
+					$this->response = 'Successfully scheduled a job to sync the product ' . $product->get_id();
 				}
-			} catch ( ProductSyncerException $exception ) {
-				$this->response = 'Error submitting product to Google: ' . $exception->getMessage();
+			} else {
+				$this->response = 'Invalid product ID provided: ' . $id;
 			}
 		}
 
 		if ( 'wcs-sync-all-products' === $_GET['action'] && check_admin_referer( 'wcs-sync-all-products' ) ) {
-			/** @var ProductSyncer $product_syncer */
-			$product_syncer = $this->container->get( ProductSyncer::class );
+			if ( ! $_GET['async'] ) {
+				/** @var ProductSyncer $product_syncer */
+				$product_syncer = $this->container->get( ProductSyncer::class );
 
-			try {
-				$products = wc_get_products(
-					[
-						'limit' => -1,
-					]
-				);
+				try {
+					$products = wc_get_products(
+						[
+							'limit' => -1,
+						]
+					);
 
-				$result = $product_syncer->update( $products );
+					$result = $product_syncer->update( $products );
 
-				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
-				if ( ! empty( $result->get_errors() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ( $result->get_errors() as  $invalid_product ) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+					$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
+					if ( ! empty( $result->get_errors() ) ) {
+						$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+						foreach ($result->get_errors() as  $invalid_product) {
+							$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						}
 					}
+				} catch ( ProductSyncerException $exception ) {
+					$this->response = 'Error submitting products to Google: ' . $exception->getMessage();
 				}
-			} catch ( ProductSyncerException $exception ) {
-				$this->response = 'Error submitting products to Google: ' . $exception->getMessage();
+			} else {
+				// schedule a job
+				/** @var UpdateAllProducts $update_job */
+				$update_job = $this->container->get( UpdateAllProducts::class );
+				$update_job->start();
+				$this->response = 'Successfully scheduled a job to sync all products!';
 			}
 		}
 
 		if ( 'wcs-delete-synced-products' === $_GET['action'] && check_admin_referer( 'wcs-delete-synced-products' ) ) {
-			/** @var ProductSyncer $product_syncer */
-			$product_syncer = $this->container->get( ProductSyncer::class );
+			if ( ! $_GET['async'] ) {
+				/** @var ProductSyncer $product_syncer */
+				$product_syncer = $this->container->get( ProductSyncer::class );
 
-			try {
-				$products = wc_get_products(
-					[
-						'limit' => -1,
-					]
-				);
+				try {
+					$products = wc_get_products(
+						[
+							'limit' => - 1,
+						]
+					);
 
-				$result = $product_syncer->delete( $products );
+					$result = $product_syncer->delete( $products );
 
-				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
-				if ( ! empty( $result->get_errors() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ( $result->get_errors() as  $invalid_product ) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+					$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
+					if ( ! empty( $result->get_errors() ) ) {
+						$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+						foreach ( $result->get_errors() as $invalid_product ) {
+							$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						}
 					}
+				} catch ( ProductSyncerException $exception ) {
+					$this->response = 'Error deleting products from Google: ' . $exception->getMessage();
 				}
-			} catch ( ProductSyncerException $exception ) {
-				$this->response = 'Error deleting products from Google: ' . $exception->getMessage();
+			} else {
+				// schedule a job
+				/** @var DeleteAllProducts $delete_job */
+				$delete_job = $this->container->get( DeleteAllProducts::class );
+				$delete_job->start();
+				$this->response = 'Successfully scheduled a job to delete all synced products!';
 			}
 		}
 	}
