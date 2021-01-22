@@ -19,6 +19,8 @@ use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V6\Services\CampaignBudgetOperation;
 use Google\Ads\GoogleAds\V6\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V6\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V6\Services\MutateCampaignBudgetResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\PagedListResponse;
 use Psr\Container\ContainerInterface;
@@ -357,9 +359,9 @@ class Ads {
 	 *
 	 * @param CampaignOperation $operation Operation we would like to run.
 	 *
-	 * @return Campaign
+	 * @return MutateCampaignResult
 	 */
-	protected function mutate_campaign( CampaignOperation $operation ): Campaign {
+	protected function mutate_campaign( CampaignOperation $operation ): MutateCampaignResult {
 		$client   = $this->container->get( GoogleAdsClient::class );
 		$response = $client->getCampaignServiceClient()->mutateCampaigns(
 			$this->get_id(),
@@ -375,9 +377,9 @@ class Ads {
 	 *
 	 * @param CampaignBudgetOperation $operation Operation we would like to run.
 	 *
-	 * @return CampaignBudget
+	 * @return MutateCampaignBudgetResult
 	 */
-	protected function mutate_budget( CampaignBudgetOperation $operation ): CampaignBudget {
+	protected function mutate_budget( CampaignBudgetOperation $operation ): MutateCampaignBudgetResult {
 		$client   = $this->container->get( GoogleAdsClient::class );
 		$response = $client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
 			$this->get_id(),
