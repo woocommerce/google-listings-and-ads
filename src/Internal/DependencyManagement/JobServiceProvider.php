@@ -71,7 +71,8 @@ class JobServiceProvider extends AbstractServiceProvider {
 			DeleteAllProducts::class,
 			ActionScheduler::class,
 			ActionSchedulerJobMonitor::class,
-			ProductSyncer::class
+			ProductSyncer::class,
+			BatchProductHelper::class
 		);
 		$this->share_with_tags(
 			UpdateProducts::class,
