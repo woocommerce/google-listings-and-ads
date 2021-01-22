@@ -93,11 +93,20 @@ class Admin implements Service, Registerable, Conditional {
 	protected function add_plugin_links( $links ): array {
 		$plugin_links = [];
 
-		$plugin_links[] = sprintf(
-			'<a href="%1$s">%2$s</a>',
-			esc_attr( $this->get_settings_url() ),
-			esc_html__( 'Settings', 'google-listings-and-ads' )
-		);
+		// Display settings url if setup is complete otherwise link to get started page
+		if ( $this->setup_complete() ) {
+			$plugin_links[] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_attr( $this->get_settings_url() ),
+				esc_html__( 'Settings', 'google-listings-and-ads' )
+			);
+		} else {
+			$plugin_links[] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_attr( $this->get_start_url() ),
+				esc_html__( 'Get Started', 'google-listings-and-ads' )
+			);
+		}
 
 		$plugin_links[] = sprintf(
 			'<a href="%1$s">%2$s</a>',
