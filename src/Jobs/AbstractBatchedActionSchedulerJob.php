@@ -92,14 +92,17 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 
 		$items = $this->get_batch( $batch_number );
 
-		$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
-
 		if ( empty( $items ) ) {
-			// If no more items the job is complete
+			// if no more items the job is complete
 			$this->handle_complete( $batch_number );
 		} else {
-			// If items, schedule another "create_batch" action to handle remaining items
-			$this->schedule_create_batch_action( $batch_number + 1 );
+			// if items, schedule the process action
+			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
+
+			if ( count( $items ) >= $this->get_batch_size() ) {
+				// if there might be more items, add another "create_batch" action to handle them
+				$this->schedule_create_batch_action( $batch_number + 1 );
+			}
 		}
 	}
 
