@@ -4,7 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
@@ -25,14 +26,26 @@ class DeleteAllProducts extends AbstractBatchedActionSchedulerJob {
 	protected $product_syncer;
 
 	/**
+	 * @var BatchProductHelper
+	 */
+	protected $batch_product_helper;
+
+	/**
 	 * SyncProducts constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param ProductSyncer             $product_syncer
+	 * @param BatchProductHelper        $batch_product_helper
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductSyncer $product_syncer ) {
-		$this->product_syncer = $product_syncer;
+	public function __construct(
+		ActionSchedulerInterface $action_scheduler,
+		ActionSchedulerJobMonitor $monitor,
+		ProductSyncer $product_syncer,
+		BatchProductHelper $batch_product_helper
+	) {
+		$this->product_syncer       = $product_syncer;
+		$this->batch_product_helper = $batch_product_helper;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
@@ -52,14 +65,17 @@ class DeleteAllProducts extends AbstractBatchedActionSchedulerJob {
 	 *
 	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
 	 *
-	 * @return array
+	 * @return int[]
 	 */
 	protected function get_batch( int $batch_number ): array {
+		$google_id_key = ProductMetaHandler::KEY_GOOGLE_IDS;
 		return wc_get_products(
 			[
-				'limit'  => $this->get_batch_size(),
-				'offset' => $this->get_query_offset( $batch_number ),
-				'return' => 'ids',
+				'limit'                    => $this->get_batch_size(),
+				'offset'                   => $this->get_query_offset( $batch_number ),
+				'return'                   => 'ids',
+				$google_id_key             => '',
+				"{$google_id_key}_compare" => 'EXISTS',
 			]
 		);
 	}
@@ -67,26 +83,18 @@ class DeleteAllProducts extends AbstractBatchedActionSchedulerJob {
 	/**
 	 * Process batch items.
 	 *
-	 * @param string[] $items An array of Google product IDs mapped to WooCommerce product IDs as their key.
+	 * @param int[] $items A single batch from the get_batch() method.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	protected function process_items( array $items ) {
-		$product_entries = $this->generate_delete_requests( $items );
+		$products        = wc_get_products(
+			[
+				'include' => $items,
+				'return'  => 'objects',
+			]
+		);
+		$product_entries = $this->batch_product_helper->generate_delete_request_entries( $products );
 		$this->product_syncer->delete_by_batch_requests( $product_entries );
-	}
-
-	/**
-	 * @param string[] $product_id_map An array of Google product IDs mapped to WooCommerce product IDs as their key.
-	 *
-	 * @return BatchProductRequestEntry[]
-	 */
-	protected function generate_delete_requests( array $product_id_map ): array {
-		$product_entries = [];
-		foreach ( $product_id_map as $wc_product_id => $google_product_id ) {
-			$product_entries[] = new BatchProductRequestEntry( $wc_product_id, $google_product_id );
-		}
-
-		return $product_entries;
 	}
 }
