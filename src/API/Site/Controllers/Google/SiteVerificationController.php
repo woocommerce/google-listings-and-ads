@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptions
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Google\Service\Exception;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -58,6 +59,9 @@ class SiteVerificationController extends BaseOptionsController {
 	 * @return array Status and informative message about the verification attempt.
 	 */
 	protected function get_verify_endpoint_callback(): array {
+		$site_url = site_url();
+
+		// Inform of previous verification.
 		$current_options = $this->options->get( OptionsInterface::SITE_VERIFICATION );
 		if ( ! empty( $current_options['verified'] ) && 'yes' === $current_options['verified'] ) {
 			return [
@@ -67,32 +71,66 @@ class SiteVerificationController extends BaseOptionsController {
 
 		}
 
+		// Retrieve the meta tag with verification token.
 		/** @var SiteVerification $site_verification */
-		$site_verification  = $this->container->get( SiteVerification::class );
-		$meta_tag           = $site_verification->get_token( site_url() );
-		$options_unverified = [
-			'meta_tag' => $meta_tag,
-			'verified' => 'no',
-		];
-
-		$this->options->update(
-			OptionsInterface::SITE_VERIFICATION,
-			$options_unverified
-		);
-
-		if ( $site_verification->insert( site_url() ) ) {
-			$options_unverified['verified'] = 'yes';
-			$this->options->update( OptionsInterface::SITE_VERIFICATION, $options_unverified );
-
-			return [
-				'status'  => 'success',
-				'message' => __( 'Site successfully verified', 'google-listings-and-ads' ),
-			];
+		$site_verification = $this->container->get( SiteVerification::class );
+		try {
+			$meta_tag = $site_verification->get_token( $site_url );
+		} catch ( Exception $e ) {
+			return $this->get_failure_status( $e->getMessage() );
 		}
 
-		return [
+		// Store the meta tag in the options table and mark as unverified.
+		$site_verification_options = [
+			'verified' => 'no',
+			'meta_tag' => $meta_tag,
+		];
+		$this->options->update(
+			OptionsInterface::SITE_VERIFICATION,
+			$site_verification_options
+		);
+
+		// Attempt verification.
+		try {
+			if ( $site_verification->insert( $site_url ) ) {
+				$site_verification_options['verified'] = 'yes';
+				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Site successfully verified', 'google-listings-and-ads' ),
+				];
+			}
+		} catch ( Exception $e ) {
+			return $this->get_failure_status( $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Generate a failure status array
+	 *
+	 * @param string $details Additional details to pass in the error message.
+	 *
+	 * @return array
+	 */
+	private function get_failure_status( string $details ): array {
+		$status = [
 			'status'  => '400',
 			'message' => __( 'Error verifying site', 'google-listings-and-ads' ),
 		];
+
+		// Add details.
+		if ( ! is_null( $details ) ) {
+
+			// Extract error message if possible (or use error JSON).
+			if ( json_decode( $details, true ) ) {
+				$details = json_decode( $details, true );
+				$details = $details['error']['message'] ?? $details;
+			}
+
+			$status['details'] = $details;
+		}
+
+		return $status;
 	}
 }
