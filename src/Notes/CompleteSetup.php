@@ -66,7 +66,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 
 		$note = new Note();
 		$note->set_title( __( 'Complete Setup', 'google-listings-and-ads' ) );
-		$note->set_content( __( "People search for what they want. Smart Shopping campaigns will put your products right in front of shoppers looking for what you sell on Google. The best part? You won't pay unless you get results.", 'google-listings-and-ads' ) );
+		$note->set_content( __( 'Finish your setup (placeholder text)', 'google-listings-and-ads' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
@@ -76,7 +76,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		$note->add_action(
 			'complete-setup',
 			__( 'Complete your set up', 'google-listings-and-ads' ),
-			'www.to-do.com'
+			admin_url( 'admin.php?page=wc-admin&path=/google/start' )
 		);
 		$note->save();
 	}
