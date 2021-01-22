@@ -34,7 +34,7 @@ if ( ! Autoloader::init() ) {
 
 // Hook much of our plugin after WooCommerce is loaded.
 add_action(
-	'woocommerce_loaded',
+	'plugins_loaded',
 	function () {
 		PluginFactory::instance()->register();
 	},
