@@ -43,7 +43,7 @@ register_activation_hook(
 
 // Hook much of our plugin after WooCommerce is loaded.
 add_action(
-	'plugins_loaded',
+	'woocommerce_loaded',
 	function () {
 		PluginFactory::instance()->register();
 	},
