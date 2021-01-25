@@ -53,8 +53,8 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 		}
 
 		$note = new Note();
-		$note->set_title( __( 'Get more customers with easy advertising on Google', 'google-listings-and-ads' ) );
-		$note->set_content( __( "People search for what they want. Smart Shopping campaigns will put your products right in front of shoppers looking for what you sell on Google. The best part? You won't pay unless you get results.", 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Boost store sales with Google Ads', 'google-listings-and-ads' ) );
+		$note->set_content( __( 'Leverage the power of paid ads to list products on Google Search, Shopping, YouTube, Gmail and the Display Network and drive sales.', 'google-listings-and-ads' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );

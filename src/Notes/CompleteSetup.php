@@ -53,8 +53,8 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		}
 
 		$note = new Note();
-		$note->set_title( __( 'Complete Setup', 'google-listings-and-ads' ) );
-		$note->set_content( __( 'Finish your setup (placeholder text)', 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Drive traffic and sales with Google', 'google-listings-and-ads' ) );
+		$note->set_content( __( 'Reach online shoppers to drive traffic and sales for your store by showcasing products across Google, for free or with ads.', 'google-listings-and-ads' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
