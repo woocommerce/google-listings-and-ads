@@ -63,8 +63,8 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
 			'complete-setup',
-			__( 'Complete your set up', 'google-listings-and-ads' ),
-			admin_url( 'admin.php?page=wc-admin&path=/google/start' )
+			__( 'Get started', 'google-listings-and-ads' ),
+			$this->get_start_url()
 		);
 		$note->save();
 	}

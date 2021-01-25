@@ -63,8 +63,8 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
 			'setup-campaign',
-			__( 'Set up paid campaign', 'google-listings-and-ads' ),
-			'www.to-do.com'
+			__( 'Get started', 'google-listings-and-ads' ),
+			$this->get_start_url() // TODO: update to ads/campgaign flow
 		);
 		$note->save();
 	}
