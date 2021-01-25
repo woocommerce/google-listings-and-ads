@@ -8,6 +8,8 @@ use ActionScheduler_AsyncRequest_QueueRunner as QueueRunnerAsyncRequest;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunner;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
@@ -61,37 +63,44 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ActionScheduler::class, AsyncActionRunner::class );
 		$this->share_with_tags( ActionSchedulerJobMonitor::class, ActionScheduler::class );
 
-		$this->share_with_tags(
-			UpdateAllProducts::class,
-			ActionScheduler::class,
-			ActionSchedulerJobMonitor::class,
-			ProductSyncer::class
-		);
-		$this->share_with_tags(
-			DeleteAllProducts::class,
-			ActionScheduler::class,
-			ActionSchedulerJobMonitor::class,
-			ProductSyncer::class,
-			BatchProductHelper::class
-		);
-		$this->share_with_tags(
-			UpdateProducts::class,
-			ActionScheduler::class,
-			ActionSchedulerJobMonitor::class,
-			ProductSyncer::class
-		);
-		$this->share_with_tags(
-			DeleteProducts::class,
-			ActionScheduler::class,
-			ActionSchedulerJobMonitor::class,
-			ProductSyncer::class
-		);
+		$this->share_action_scheduler_job( UpdateAllProducts::class, ProductSyncer::class );
+		$this->share_action_scheduler_job( DeleteAllProducts::class, ProductSyncer::class, BatchProductHelper::class );
+		$this->share_action_scheduler_job( UpdateProducts::class, ProductSyncer::class );
+		$this->share_action_scheduler_job( DeleteProducts::class, ProductSyncer::class );
 
 		$this->share_with_tags(
 			JobInitializer::class,
 			JobInterface::class
 		);
 
-		$this->share_with_tags( SyncerHooks::class, BatchProductHelper::class, ProductHelper::class, UpdateProducts::class, DeleteProducts::class );
+		$this->share_with_tags(
+			SyncerHooks::class,
+			BatchProductHelper::class,
+			ProductHelper::class,
+			UpdateProducts::class,
+			DeleteProducts::class
+		);
+	}
+
+	/**
+	 * Share an ActionScheduler job class
+	 *
+	 * @param string $class         The class name to add.
+	 * @param mixed  ...$arguments  Constructor arguments for the class.
+	 *
+	 * @throws InvalidClass When the given class does not implement the ActionSchedulerJobInterface.
+	 */
+	protected function share_action_scheduler_job( string $class, ...$arguments ) {
+		$implements = class_implements( $class );
+		if ( ! array_key_exists( ActionSchedulerJobInterface::class, $implements ) ) {
+			throw InvalidClass::should_implement( $class, ActionSchedulerJobInterface::class );
+		}
+
+		$this->share_with_tags(
+			$class,
+			ActionScheduler::class,
+			ActionSchedulerJobMonitor::class,
+			...$arguments
+		);
 	}
 }
