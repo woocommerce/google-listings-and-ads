@@ -198,6 +198,19 @@ class ConnectionTest implements Service, Registerable {
 					</form>
 				</div>
 
+				<div>
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers-lib' ), $url ), 'wcs-ads-customers-lib' ) ); ?>">Get Customers from Google Ads (using library)</a>
+						<?php wp_nonce_field( 'wcs-ads-campaign-lib' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-ads-campaign-lib" type="hidden" />
+						<label>
+							Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+						</label>
+						<button class="button">Get Campaigns from Google Ads (using library)</button>
+					</form>
+				</div>
+
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
@@ -504,6 +517,62 @@ class ConnectionTest implements Service, Registerable {
 			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
+		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
+			try {
+				$googleAdsClient       = $this->get_ads_client();
+				$customerServiceClient = $googleAdsClient->getCustomerServiceClient();
+
+				$args = [
+					'headers' => [ 'Authorization' => $this->get_auth_header() ],
+				];
+
+				// Issues a request for listing all accessible customers.
+				$accessibleCustomers = $customerServiceClient->listAccessibleCustomers( $args );
+				$this->response .= 'Total results: ' . count( $accessibleCustomers->getResourceNames() ) . PHP_EOL;
+
+				// Iterates over all accessible customers' resource names and prints them.
+				foreach ( $accessibleCustomers->getResourceNames() as $resourceName ) {
+					$this->response     .= sprintf( "Customer resource name: '%s'%s", $resourceName, PHP_EOL );
+					$_GET['customer_id'] = absint( str_replace( 'customers/', '', $resourceName ) );
+				}
+
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
+			}
+		}
+
+		if ( 'wcs-ads-campaign-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-campaign-lib' ) ) {
+			try {
+				$id  = ! empty( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] ) : '12345';
+
+				$googleAdsClient        = $this->get_ads_client();
+				$googleAdsServiceClient = $googleAdsClient->getGoogleAdsServiceClient();
+
+				// Creates a query that retrieves all campaigns.
+				$query = 'SELECT campaign.id, campaign.name FROM campaign ORDER BY campaign.id';
+
+				$args = [
+					'headers' => [ 'Authorization' => $this->get_auth_header() ],
+				];
+
+				// Issues a search request.
+				$response = $googleAdsServiceClient->search( $id, $query, $args );
+
+				// Output details for each campaign.
+				foreach ( $response->iterateAllElements() as $googleAdsRow ) {
+					$this->response .= sprintf(
+						"Campaign with ID %d and name '%s' was found.%s",
+						$googleAdsRow->getCampaign()->getId(),
+						$googleAdsRow->getCampaign()->getName(),
+						PHP_EOL
+					);
+				}
+
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
+			}
+		}
+
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
 			/** @var Proxy $proxy */
 			$proxy    = $this->container->get( Proxy::class );
@@ -627,6 +696,29 @@ class ConnectionTest implements Service, Registerable {
 				$this->response = 'Successfully scheduled a job to delete all synced products!';
 			}
 		}
+	}
+
+	/**
+	 * Get a GoogleAdsClient.
+	 *
+	 * @return GoogleAdsClient
+	 */
+	private function get_ads_client(): \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient {
+		$url = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads';
+		$url = preg_replace( '/^https?:\/\//', '', $url );
+
+		$oAuth2Credential = ( new \Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder() )
+			->withClientId( 'clientid' )
+			->withClientSecret( 'clientsecret' )
+			->withRefreshToken( 'refreshtoken' )
+			->build();
+
+		return ( new \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder() )
+			->withDeveloperToken( 'developertoken' )
+			->withOAuth2Credential( $oAuth2Credential )
+			->withEndpoint( $url )
+			->withTransport( 'rest' )
+			->build();
 	}
 
 	/**

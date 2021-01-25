@@ -6,6 +6,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
 use Closure;
 
+/**
+ * Trait ScriptHelper
+ *
+ * Helper functions related to scripts that are useful throughout the plugin.
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
+ */
 trait ScriptHelper {
 
 	use SourceHelper;

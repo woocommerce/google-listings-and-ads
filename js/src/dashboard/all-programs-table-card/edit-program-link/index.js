@@ -1,8 +1,12 @@
 /**
  * External dependencies
  */
-import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
+import TrackableLink from '../../../components/trackable-link';
 
 /**
  * Internal dependencies
@@ -16,14 +20,16 @@ const EditProgramLink = ( props ) => {
 	const url = `https://example.com/${ programId }`;
 
 	return (
-		<Link
+		<TrackableLink
+			eventName="gla_dashboard_edit_program_click"
+			eventProps={ { programId, url } }
 			type="external"
-			href={ url }
 			target="_blank"
+			href={ url }
 			className="edit-program-link"
 		>
 			{ __( 'Edit', 'google-listings-and-ads' ) }
-		</Link>
+		</TrackableLink>
 	);
 };
 

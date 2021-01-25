@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import './index.scss';
 
 const AppCountryMultiSelect = ( props ) => {
-	const { value = [], onChange = () => {} } = props;
+	const { value = [], className = '', ...rest } = props;
 
 	// TODO: get list of countries from backend API.
 	const options = [
@@ -28,7 +28,7 @@ const AppCountryMultiSelect = ( props ) => {
 
 	return (
 		<SelectControl
-			className="app-country-multi-select"
+			className={ `app-country-multi-select ${ className }` }
 			multiple
 			isSearchable
 			inlineTags
@@ -38,7 +38,7 @@ const AppCountryMultiSelect = ( props ) => {
 				'google-listings-and-ads'
 			) }
 			selected={ value }
-			onChange={ onChange }
+			{ ...rest }
 		/>
 	);
 };

@@ -1,0 +1,36 @@
+.gla-setup-free-listing-hero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: #fff;
+	padding: var(--large-gap);
+	padding-bottom: 0;
+
+	.hero-text {
+		max-width: unset;
+		margin-bottom: 0;
+
+		.hero-text__subtitle {
+			font-size: 16px;
+			font-weight: 600;
+			line-height: 1.5;
+			padding: 0;
+			margin: 0;
+			margin-top: 4px;
+		}
+
+		.hero-text__body {
+			font-size: 14px;
+			margin-bottom: var(--main-gap);
+		}
+	}
+
+	.hero-image {
+		margin-bottom: -4px;
+
+		svg {
+			width: 100%;
+			height: 100%;
+		}
+	}
+}

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use WP_REST_Request;
@@ -16,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class SettingsController extends BaseOptionsController {
+
+	use ControllerTrait;
 
 	/**
 	 * Register rest routes with WordPress.
@@ -34,7 +37,7 @@ class SettingsController extends BaseOptionsController {
 					'callback'            => $this->get_settings_endpoint_edit_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-				'schema' => $this->get_item_schema(),
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
@@ -47,7 +50,7 @@ class SettingsController extends BaseOptionsController {
 	protected function get_settings_endpoint_read_callback(): callable {
 		return function() {
 			$data   = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-			$schema = $this->get_settings_schema();
+			$schema = $this->get_item_schema();
 			$items  = [];
 			foreach ( $schema as $key => $property ) {
 				$items[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
@@ -64,7 +67,7 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_settings_endpoint_edit_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			$schema  = $this->get_settings_schema();
+			$schema  = $this->get_item_schema();
 			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 			foreach ( $schema as $key => $property ) {
 				$options[ $key ] = $request->get_param( $key ) ?? $options[ $key ] ?? $property['default'] ?? null;
@@ -75,17 +78,9 @@ class SettingsController extends BaseOptionsController {
 			return [
 				'status'  => 'success',
 				'message' => __( 'Merchant Center Settings successfully updated.', 'google-listings-and-ads' ),
+				'data'    => $options,
 			];
 		};
-	}
-
-	/**
-	 * Get the schema for request items.
-	 *
-	 * @return array
-	 */
-	public function get_item_schema(): array {
-		return $this->prepare_item_schema( $this->get_settings_schema(), 'merchant_center_settings' );
 	}
 
 	/**
@@ -93,43 +88,69 @@ class SettingsController extends BaseOptionsController {
 	 *
 	 * @return array
 	 */
-	protected function get_settings_schema(): array {
+	protected function get_item_schema(): array {
 		return [
-			// todo: consider including an enum of valid countries.
-			'countries'               => [
-				'type'              => 'array',
-				'description'       => __( 'Countries in which products are available.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'items'             => [
-					'type' => 'string',
-				],
-				'default'           => [],
-			],
-			'shipping'                => [
+			'shipping_rate'           => [
 				'type'              => 'string',
 				'description'       => __(
-					'Whether shipping is set up automatically by the plugin or manually in the Merchant Center.',
+					'Whether shipping rate is a simple flat rate or needs to be configured manually in the Merchant Center.',
 					'google-listings-and-ads'
 				),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'enum'              => [
-					'automatic',
+					'flat',
 					'manual',
 				],
 			],
-			'estimated_shipping_rate' => [
-				'type'              => 'string',
-				'description'       => __( 'Estimated flat shipping rate (USD)', 'google-listings-and-ads' ),
+			'offers_free_shipping'    => [
+				'type'              => 'boolean',
+				'description'       => __(
+					'Whether free shipping over a certain price is allowed .',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'free_shipping_threshold' => [
+				'type'              => 'integer',
+				'description'       => __( 'Minimum price eligible for free shipping.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'estimated_shipping_days' => [
-				'type'              => 'integer',
-				'description'       => __( 'Estimated shipping time (in days).', 'google-listings-and-ads' ),
+			'shipping_time'           => [
+				'type'              => 'string',
+				'description'       => __(
+					'Whether shipping time is a simple flat time or needs to be configured manually in the Merchant Center.',
+					'google-listings-and-ads'
+				),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => [
+					'flat',
+					'manual',
+				],
+			],
+			'share_shipping_time'     => [
+				'type'              => 'boolean',
+				'description'       => __( 'Whether the share shipping rates with Google.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'default'           => false,
+			],
+			'tax_rate'                => [
+				'type'              => 'string',
+				'description'       => __(
+					'Whether tax rate is destination based or need to be configured manually in the Merchant Center.',
+					'google-listings-and-ads'
+				),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'enum'              => [
+					'destination',
+					'manual',
+				],
 			],
 			'website_live'            => [
 				'type'              => 'boolean',
@@ -140,14 +161,20 @@ class SettingsController extends BaseOptionsController {
 			],
 			'checkout_process_secure' => [
 				'type'              => 'boolean',
-				'description'       => __( 'Whether the checkout process is complete and secure.', 'google-listings-and-ads' ),
+				'description'       => __(
+					'Whether the checkout process is complete and secure.',
+					'google-listings-and-ads'
+				),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
 			],
 			'payment_methods_visible' => [
 				'type'              => 'boolean',
-				'description'       => __( 'Whether the payment methods are visible on the website.', 'google-listings-and-ads' ),
+				'description'       => __(
+					'Whether the payment methods are visible on the website.',
+					'google-listings-and-ads'
+				),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'default'           => false,
@@ -173,5 +200,16 @@ class SettingsController extends BaseOptionsController {
 				'default'           => false,
 			],
 		];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_item_schema_name(): string {
+		return 'merchant_center_settings';
 	}
 }
