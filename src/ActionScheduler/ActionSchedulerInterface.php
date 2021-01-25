@@ -26,11 +26,10 @@ interface ActionSchedulerInterface {
 	 * @param int    $timestamp When the job will run.
 	 * @param string $hook      The hook to trigger.
 	 * @param array  $args      Arguments to pass when the hook triggers.
-	 * @param string $group     The group to assign this job to.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_single( int $timestamp, string $hook, $args = [], $group = 'gla' ): int;
+	public function schedule_single( int $timestamp, string $hook, $args = [] ): int;
 
 	/**
 	 * Schedule an action to run now i.e. in the next available batch.
@@ -41,22 +40,20 @@ interface ActionSchedulerInterface {
 	 *
 	 * @param string $hook  The hook to trigger.
 	 * @param array  $args  Arguments to pass when the hook triggers.
-	 * @param string $group The group to assign this job to.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_immediate( string $hook, $args = [], $group = 'gla' ): int;
+	public function schedule_immediate( string $hook, $args = [] ): int;
 
 	/**
 	 * Enqueue an action to run one time, as soon as possible
 	 *
 	 * @param string $hook  The hook to trigger.
 	 * @param array  $args  Arguments to pass when the hook triggers.
-	 * @param string $group The group to assign this job to. Defaults to 'gla'.
 	 *
 	 * @return int The action ID.
 	 */
-	public function enqueue_async_action( string $hook, $args = [], $group = 'gla' ): int;
+	public function enqueue_async_action( string $hook, $args = [] ): int;
 
 	/**
 	 * Check if there is an existing action in the queue with a given hook, args and group combination.
@@ -69,22 +66,20 @@ interface ActionSchedulerInterface {
 	 *
 	 * @param string $hook
 	 * @param array  $args
-	 * @param string $group The group to check for jobs. Defaults to 'gla'.
 	 *
 	 * @return int|bool The timestamp for the next occurrence of a pending scheduled action, true for an async or in-progress action or false if there is no matching action.
 	 */
-	public function next_scheduled_action( string $hook, $args = null, $group = 'gla' );
+	public function next_scheduled_action( string $hook, $args = null );
 
 	/**
 	 * Search for scheduled actions.
 	 *
 	 * @param array  $args          See as_get_scheduled_actions() for possible arguments.
 	 * @param string $return_format OBJECT, ARRAY_A, or ids.
-	 * @param string $group         The group to search for jobs. Defaults to 'gla'.
 	 *
 	 * @return array
 	 */
-	public function search( $args = [], $return_format = OBJECT, $group = 'gla' ): array;
+	public function search( $args = [], $return_format = OBJECT ): array;
 
 	/**
 	 * Cancel the next scheduled instance of an action with a matching hook (and optionally matching args and group).
@@ -93,10 +88,9 @@ interface ActionSchedulerInterface {
 	 *
 	 * @param string $hook  The hook that the job will trigger.
 	 * @param array  $args  Args that would have been passed to the job.
-	 * @param string $group The group the job is assigned to. Defaults to 'gla'.
 	 *
 	 * @return string|null The scheduled action ID if a scheduled action was found, or null if no matching action found.
 	 */
-	public function cancel( string $hook, $args = [], $group = 'gla' );
+	public function cancel( string $hook, $args = [] );
 
 }
