@@ -13,7 +13,7 @@ use Psr\Container\ContainerInterface;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds
  */
-class SiteVerification implements Service, Registerable {
+class SiteVerificationMeta implements Service, Registerable {
 
 	/**
 	 * @var array

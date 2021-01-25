@@ -49,7 +49,7 @@ class SiteVerificationController extends BaseOptionsController {
 				],
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_verify_endpoint_check_callback(),
+					'callback'            => $this->get_verify_endpoint_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -59,9 +59,9 @@ class SiteVerificationController extends BaseOptionsController {
 	/**
 	 * Run the site verification process.
 	 *
-	 * @return \Closure Callback to retrieve status and informative message about the verification attempt.
+	 * @return callable Callback to retrieve status and informative message about the verification attempt.
 	 */
-	protected function get_verify_endpoint_create_callback(): \Closure {
+	protected function get_verify_endpoint_create_callback(): callable {
 		$site_url = site_url();
 
 		// Inform of previous verification.
@@ -105,9 +105,9 @@ class SiteVerificationController extends BaseOptionsController {
 	 *
 	 * @param string $details Additional details to pass in the error message.
 	 *
-	 * @return \Closure
+	 * @return callable
 	 */
-	private function get_failure_status_callback( string $details ): \Closure {
+	private function get_failure_status_callback( string $details ): callable {
 		$status = [
 			'status'  => '400',
 			'message' => __( 'Error verifying site', 'google-listings-and-ads' ),
@@ -135,9 +135,9 @@ class SiteVerificationController extends BaseOptionsController {
 	 *
 	 * @param string $message Additional details to pass in the error message.
 	 *
-	 * @return \Closure
+	 * @return callable
 	 */
-	private function get_success_status_callback( string $message ): \Closure {
+	private function get_success_status_callback( string $message ): callable {
 		return function() use ( $message ) {
 			return [
 				'status'  => 'success',
@@ -151,7 +151,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 *
 	 * @return bool True if the site is marked as verified.
 	 */
-	private function is_site_verified() {
+	private function is_site_verified(): bool {
 		$current_options = $this->options->get( OptionsInterface::SITE_VERIFICATION );
 		return ! empty( $current_options['verified'] ) && 'yes' === $current_options['verified'];
 	}
@@ -159,27 +159,16 @@ class SiteVerificationController extends BaseOptionsController {
 	/**
 	 * Retrieve the current verification status of the site.
 	 *
-	 * @return \Closure
+	 * @return callable
 	 */
-	protected function get_verify_endpoint_check_callback() {
-		if ( $this->is_site_verified() ) {
+	protected function get_verify_endpoint_read_callback(): callable {
 			return function () {
+				$verified = $this->is_site_verified();
 				return [
 					'status'   => 'success',
-					'message'  => __( 'Site already verified', 'google-listings-and-ads' ),
-					'verified' => true,
-
+					'verified' => $verified,
+					'message'  => $verified ? __( 'Site already verified', 'google-listings-and-ads' ) : __( 'Site not verified', 'google-listings-and-ads' ),
 				];
 			};
-		} else {
-			return function () {
-				return [
-					'status'   => 'success',
-					'message'  => __( 'Site not verified', 'google-listings-and-ads' ),
-					'verified' => false,
-
-				];
-			};
-		}
 	}
 }

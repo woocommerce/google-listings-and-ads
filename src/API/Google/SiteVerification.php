@@ -63,7 +63,7 @@ class SiteVerification {
 			]
 		);
 
-		//phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$response = $service->webResource->getToken( $post_body );
 
 		return $response->getToken();
@@ -91,7 +91,7 @@ class SiteVerification {
 			]
 		);
 
-		//phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$response = $service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
 
 		return true;
