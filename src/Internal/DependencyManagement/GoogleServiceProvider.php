@@ -22,7 +22,6 @@ use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
 use Google\Client;
 use Google_Service_ShoppingContent;
-use Google_Service_SiteVerification;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\HandlerStack;
@@ -154,8 +153,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Google_Service_ShoppingContent::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google-mc' )
-		);
-
 		);
 	}
 
