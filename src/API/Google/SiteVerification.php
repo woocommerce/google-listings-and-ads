@@ -68,7 +68,7 @@ class SiteVerification {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$response = $service->webResource->getToken( $post_body );
 		} catch ( GoogleException $e ) {
-			throw new Exception( $e->getMessage(), $e->getCode(), $e );
+			throw new Exception( __( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ) );
 		}
 
 		return $response->getToken();
@@ -100,7 +100,7 @@ class SiteVerification {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
 		} catch ( GoogleException $e ) {
-			throw new Exception( $e->getMessage(), $e->getCode(), $e );
+			throw new Exception( __( 'Unable to complete site verification.', 'google-listings-and-ads' ) );
 		}
 
 		return true;

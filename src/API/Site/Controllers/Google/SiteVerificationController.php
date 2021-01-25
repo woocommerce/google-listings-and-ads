@@ -66,7 +66,7 @@ class SiteVerificationController extends BaseOptionsController {
 
 		// Inform of previous verification.
 		if ( $this->is_site_verified() ) {
-			return $this->get_success_status_callback( __( 'Site already verified', 'google-listings-and-ads' ) );
+			return $this->get_success_status_callback( __( 'Site already verified.', 'google-listings-and-ads' ) );
 		}
 
 		// Retrieve the meta tag with verification token.
@@ -93,7 +93,7 @@ class SiteVerificationController extends BaseOptionsController {
 			if ( $site_verification->insert( $site_url ) ) {
 				$site_verification_options['verified'] = 'yes';
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-				return $this->get_success_status_callback( __( 'Site successfully verified', 'google-listings-and-ads' ) );
+				return $this->get_success_status_callback( __( 'Site successfully verified.', 'google-listings-and-ads' ) );
 			}
 		} catch ( Exception $e ) {
 			return $this->get_failure_status_callback( $e->getMessage() );
@@ -113,7 +113,7 @@ class SiteVerificationController extends BaseOptionsController {
 	private function get_failure_status_callback( string $details = '' ): callable {
 		$status = [
 			'status'  => '400',
-			'message' => __( 'Site verification failed', 'google-listings-and-ads' ),
+			'message' => __( 'Site verification failed.', 'google-listings-and-ads' ),
 		];
 
 		// Add details.
@@ -170,7 +170,7 @@ class SiteVerificationController extends BaseOptionsController {
 				return [
 					'status'   => 'success',
 					'verified' => $verified,
-					'message'  => $verified ? __( 'Site already verified', 'google-listings-and-ads' ) : __( 'Site not verified', 'google-listings-and-ads' ),
+					'message'  => $verified ? __( 'Site already verified.', 'google-listings-and-ads' ) : __( 'Site not verified.', 'google-listings-and-ads' ),
 				];
 			};
 	}
