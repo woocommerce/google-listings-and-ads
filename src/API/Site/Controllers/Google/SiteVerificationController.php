@@ -44,9 +44,7 @@ class SiteVerificationController extends BaseOptionsController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => function() {
-						return $this->get_verify_endpoint_callback();
-					},
+					'callback'            => $this->get_verify_endpoint_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -56,19 +54,15 @@ class SiteVerificationController extends BaseOptionsController {
 	/**
 	 * Run the site verification process.
 	 *
-	 * @return array Status and informative message about the verification attempt.
+	 * @return \Closure Callback to retrieve status and informative message about the verification attempt.
 	 */
-	protected function get_verify_endpoint_callback(): array {
+	protected function get_verify_endpoint_callback(): \Closure {
 		$site_url = site_url();
 
 		// Inform of previous verification.
 		$current_options = $this->options->get( OptionsInterface::SITE_VERIFICATION );
 		if ( ! empty( $current_options['verified'] ) && 'yes' === $current_options['verified'] ) {
-			return [
-				'status'  => 'success',
-				'message' => __( 'Site already verified', 'google-listings-and-ads' ),
-			];
-
+			return $this->get_success_status_callback( __( 'Site already verified', 'google-listings-and-ads' ) );
 		}
 
 		// Retrieve the meta tag with verification token.
@@ -77,7 +71,7 @@ class SiteVerificationController extends BaseOptionsController {
 		try {
 			$meta_tag = $site_verification->get_token( $site_url );
 		} catch ( Exception $e ) {
-			return $this->get_failure_status( $e->getMessage() );
+			return $this->get_failure_status_callback( $e->getMessage() );
 		}
 
 		// Store the meta tag in the options table and mark as unverified.
@@ -95,14 +89,10 @@ class SiteVerificationController extends BaseOptionsController {
 			if ( $site_verification->insert( $site_url ) ) {
 				$site_verification_options['verified'] = 'yes';
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-
-				return [
-					'status'  => 'success',
-					'message' => __( 'Site successfully verified', 'google-listings-and-ads' ),
-				];
+				return $this->get_success_status_callback( __( 'Site successfully verified', 'google-listings-and-ads' ) );
 			}
 		} catch ( Exception $e ) {
-			return $this->get_failure_status( $e->getMessage() );
+			return $this->get_failure_status_callback( $e->getMessage() );
 		}
 	}
 
@@ -111,9 +101,9 @@ class SiteVerificationController extends BaseOptionsController {
 	 *
 	 * @param string $details Additional details to pass in the error message.
 	 *
-	 * @return array
+	 * @return \Closure
 	 */
-	private function get_failure_status( string $details ): array {
+	private function get_failure_status_callback( string $details ): \Closure {
 		$status = [
 			'status'  => '400',
 			'message' => __( 'Error verifying site', 'google-listings-and-ads' ),
@@ -131,6 +121,24 @@ class SiteVerificationController extends BaseOptionsController {
 			$status['details'] = $details;
 		}
 
-		return $status;
+		return function() use ( $status ) {
+			return $status;
+		};
+	}
+
+	/**
+	 * Generate a failure status array
+	 *
+	 * @param string $message Additional details to pass in the error message.
+	 *
+	 * @return \Closure
+	 */
+	private function get_success_status_callback( string $message ): \Closure {
+		return function() use ( $message ) {
+			return [
+				'status'  => 'success',
+				'message' => $message,
+			];
+		};
 	}
 }
