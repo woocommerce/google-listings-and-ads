@@ -223,7 +223,7 @@ class ConnectionTest implements Service, Registerable {
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-sync-all-products" type="hidden" />
                         <input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-                        <input id="async-sync-all-products" name="async" value=1 type="checkbox" />
+                        <input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
                         <label for="async-sync-all-products">Async?</label>
 						<button class="button">Sync All Products with Google Merchant Center</button>
 					</form>
@@ -234,7 +234,7 @@ class ConnectionTest implements Service, Registerable {
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-delete-synced-products" type="hidden" />
 						<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-                        <input id="async-delete-synced-products" name="async" value=1 type="checkbox" />
+                        <input id="async-delete-synced-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
                         <label for="async-delete-synced-products">Async?</label>
 						<button class="button">Delete All Synced Products from Google Merchant Center</button>
 					</form>
