@@ -21,17 +21,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class SyncerHooks implements Service, Registerable {
 
-	public const NEW_PRODUCT_HOOK    = 'woocommerce_new_product';
-	public const UPDATE_PRODUCT_HOOK = 'woocommerce_update_product';
-
-	public const PROCESS_METADATA_HOOK = 'woocommerce_process_product_meta';
-
-	public const TRASH_POST_HOOK         = 'wp_trash_post';
-	public const BEFORE_DELETE_POST_HOOK = 'before_delete_post';
-	public const TRASHED_POST_HOOK       = 'trashed_post';
-	public const DELETED_POST_HOOK       = 'deleted_post';
-	public const UNTRASHED_POST_HOOK     = 'untrashed_post';
-
 	/**
 	 * @var BatchProductRequestEntry[]
 	 */
@@ -82,20 +71,20 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	public function register(): void {
 		// when a product is added / updated, schedule a update job.
-		add_action( self::NEW_PRODUCT_HOOK, [ $this, 'update_product' ], 90 );
-		add_action( self::UPDATE_PRODUCT_HOOK, [ $this, 'update_product' ], 90 );
+		add_action( 'woocommerce_new_product', [ $this, 'update_product' ], 90 );
+		add_action( 'woocommerce_update_product', [ $this, 'update_product' ], 90 );
 
 		// if we don't attach to these we miss product gallery updates.
-		add_action( self::PROCESS_METADATA_HOOK, [ $this, 'update_product' ], 90, 2 );
+		add_action( 'woocommerce_process_product_meta', [ $this, 'update_product' ], 90, 2 );
 
 		// when a product is trashed or removed, schedule a delete job.
-		add_action( self::TRASH_POST_HOOK, [ $this, 'pre_delete_product' ], 90 );
-		add_action( self::BEFORE_DELETE_POST_HOOK, [ $this, 'pre_delete_product' ], 90 );
-		add_action( self::TRASHED_POST_HOOK, [ $this, 'delete_product' ], 90 );
-		add_action( self::DELETED_POST_HOOK, [ $this, 'delete_product' ], 90 );
+		add_action( 'wp_trash_post', [ $this, 'pre_delete_product' ], 90 );
+		add_action( 'before_delete_post', [ $this, 'pre_delete_product' ], 90 );
+		add_action( 'trashed_post', [ $this, 'delete_product' ], 90 );
+		add_action( 'deleted_post', [ $this, 'delete_product' ], 90 );
 
 		// when a product is restored from the trash, schedule a update job.
-		add_action( self::UNTRASHED_POST_HOOK, [ $this, 'update_product' ], 90 );
+		add_action( 'untrashed_post', [ $this, 'update_product' ], 90 );
 	}
 
 	/**
