@@ -9,7 +9,6 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
 /**
  * Internal dependencies
  */
-import '../dashboard/index.scss';
 import './metric-number.scss';
 
 /**
