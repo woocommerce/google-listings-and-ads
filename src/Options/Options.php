@@ -19,6 +19,9 @@ final class Options implements OptionsInterface, Service {
 	use PluginHelper;
 
 	private const VALID_OPTIONS = [
+		self::DB_VERSION            => true,
+		self::FILE_VERSION          => true,
+		self::INSTALL_TIMESTAMP     => true,
 		self::MC_SETUP_COMPLETED_AT => true,
 		self::MERCHANT_CENTER       => true,
 		self::MERCHANT_ID           => true,
@@ -49,6 +52,22 @@ final class Options implements OptionsInterface, Service {
 		}
 
 		return $this->options[ $name ];
+	}
+
+	/**
+	 * Add an option.
+	 *
+	 * @param string $name  The option name.
+	 * @param mixed  $value The option value.
+	 *
+	 * @return bool
+	 */
+	public function add( string $name, $value ): bool {
+		$this->validate_option_key( $name );
+		$name                   = $this->prefix_name( $name );
+		$this->options[ $name ] = $value;
+
+		return add_option( $name, $value );
 	}
 
 	/**

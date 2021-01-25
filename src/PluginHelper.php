@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-
 /**
  * Trait PluginHelper
  *
@@ -67,7 +65,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_version(): string {
-		return '0.1.0';
+		return GLA_VERSION;
 	}
 
 	/**
