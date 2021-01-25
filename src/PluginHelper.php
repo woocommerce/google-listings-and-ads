@@ -91,4 +91,40 @@ trait PluginHelper {
 
 		return "{$prefix}_{$key}";
 	}
+
+	/**
+	 * Get the plugin basename
+	 *
+	 * @return string
+	 */
+	protected function get_plugin_basename(): string {
+		return plugin_basename( $this->get_main_file() );
+	}
+
+	/**
+	 * Get the plugin start URL
+	 *
+	 * @return string
+	 */
+	protected function get_start_url(): string {
+		return admin_url( 'admin.php?page=wc-admin&path=/google/start' );
+	}
+
+	/**
+	 * Get the plugin settings URL
+	 *
+	 * @return string
+	 */
+	protected function get_settings_url(): string {
+		return admin_url( 'admin.php?page=wc-admin&path=/google/settings' );
+	}
+
+	/**
+	 * Get the plugin documentation URL
+	 *
+	 * @return string
+	 */
+	protected function get_documentation_url(): string {
+		return 'https://docs.woocommerce.com/document/google-listings-and-ads/';
+	}
 }

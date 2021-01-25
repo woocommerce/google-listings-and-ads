@@ -52,6 +52,13 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				}
 			}
 		);
+
+		add_action(
+			"plugin_action_links_{$this->get_plugin_basename()}",
+			function( $links ) {
+				return $this->add_plugin_links( $links );
+			}
+		);
 	}
 
 	/**
@@ -81,5 +88,39 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
 			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" )
 		) );
+	}
+
+	/**
+	 * Adds links to the plugin's row in the "Plugins" wp-admin page.
+	 *
+	 * @see https://codex.wordpress.org/Plugin_API/Filter_Reference/plugin_action_links_(plugin_file_name)
+	 * @param array $links The existing list of links that will be rendered.
+	 */
+	protected function add_plugin_links( $links ): array {
+		$plugin_links = [];
+
+		// Display settings url if setup is complete otherwise link to get started page
+		if ( $this->setup_complete() ) {
+			$plugin_links[] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_attr( $this->get_settings_url() ),
+				esc_html__( 'Settings', 'google-listings-and-ads' )
+			);
+		} else {
+			$plugin_links[] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				esc_attr( $this->get_start_url() ),
+				esc_html__( 'Get Started', 'google-listings-and-ads' )
+			);
+		}
+
+		$plugin_links[] = sprintf(
+			'<a href="%1$s">%2$s</a>',
+			esc_attr( $this->get_documentation_url() ),
+			esc_html__( 'Documentation', 'google-listings-and-ads' )
+		);
+
+		// Add new links to the beginning
+		return array_merge( $plugin_links, $links );
 	}
 }
