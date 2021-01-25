@@ -12,7 +12,14 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 import EditProductLink from '../../components/edit-product-link';
 import AppTableCard from '../../components/app-table-card';
 
-const ProductFeedTableCard = () => {
+/**
+ * All programs table, with compare feature.
+ *
+ * @see AppTableCard
+ *
+ * @param {Object} [props] Properties to be forwarded to AppTableCard.
+ */
+const ProductFeedTableCard = ( props ) => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
 	const query = getQuery();
 
@@ -60,7 +67,6 @@ const ProductFeedTableCard = () => {
 	return (
 		<div className="gla-product-feed-table-card">
 			<AppTableCard
-				trackEventReportId="product-feed"
 				title={
 					<>
 						{ __( 'Product Feed', 'google-listings-and-ads' ) }
@@ -149,6 +155,7 @@ const ProductFeedTableCard = () => {
 				] }
 				query={ query }
 				onQueryChange={ onQueryChange }
+				{ ...props }
 			/>
 		</div>
 	);
