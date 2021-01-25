@@ -89,7 +89,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 * @return bool True if there is a pending scheduled, async or in-progress action in the queue or false if there is no matching action.
 	 */
 	public function has_scheduled_action( string $hook, array $args = [] ): bool {
-		return as_next_scheduled_action( $hook, $args, $this->get_slug() );
+		return ( false !== as_next_scheduled_action( $hook, $args, $this->get_slug() ) );
 	}
 
 	/**
