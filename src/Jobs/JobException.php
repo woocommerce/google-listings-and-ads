@@ -25,6 +25,23 @@ class JobException extends RuntimeException implements GoogleListingsAndAdsExcep
 	}
 
 	/**
+	 * Create a new exception instance for when a required job item is not provided.
+	 *
+	 * @param string $item The item name.
+	 *
+	 * @return static
+	 */
+	public static function item_not_provided( string $item ): JobException {
+		return new static(
+			sprintf(
+			/* translators: %s: the job item name */
+				__( 'Required job item "%s" not provided.', 'google-listings-and-ads' ),
+				$item
+			)
+		);
+	}
+
+	/**
 	 * Create a new exception instance for when a job is stopped due to a high failure rate.
 	 *
 	 * @param string $job_name

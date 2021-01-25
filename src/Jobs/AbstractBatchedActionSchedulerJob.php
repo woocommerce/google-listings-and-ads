@@ -49,8 +49,8 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * The job name is used to generate the schedule event name.
 	 */
 	public function init(): void {
-		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ], 10, 1 );
-		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ], 10, 1 );
+		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ] );
+		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ] );
 	}
 
 	/**
@@ -59,7 +59,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @return string
 	 */
 	protected function get_create_batch_hook(): string {
-		return $this->get_hook_base_name() . 'create_batch';
+		return "{$this->get_hook_base_name()}create_batch";
 	}
 
 	/**
@@ -69,7 +69,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * @param array $args
 	 */
-	public function start( $args = [] ) {
+	public function start( array $args = [] ) {
 		if ( $this->can_start( $args ) ) {
 			$this->schedule_create_batch_action( 1 );
 		}
@@ -157,7 +157,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * @return bool
 	 */
-	protected function is_running( $args = [] ): bool {
+	protected function is_running( array $args = [] ): bool {
 		return false !== $this->action_scheduler->next_scheduled_action( $this->get_create_batch_hook(), $args );
 	}
 

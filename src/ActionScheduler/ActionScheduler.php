@@ -42,7 +42,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_single( int $timestamp, string $hook, $args = [] ): int {
+	public function schedule_single( int $timestamp, string $hook, array $args = [] ): int {
 		return as_schedule_single_action( $timestamp, $hook, $args, $this->get_slug() );
 	}
 
@@ -58,7 +58,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_immediate( string $hook, $args = [] ): int {
+	public function schedule_immediate( string $hook, array $args = [] ): int {
 		return as_schedule_single_action( gmdate( 'U' ) - 1, $hook, $args, $this->get_slug() );
 	}
 
@@ -70,7 +70,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return int The action ID.
 	 */
-	public function enqueue_async_action( string $hook, $args = [] ): int {
+	public function enqueue_async_action( string $hook, array $args = [] ): int {
 		$this->async_runner->attach_shutdown_hook();
 		return $this->schedule_immediate( $hook, $args );
 	}
@@ -89,7 +89,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return int|bool The timestamp for the next occurrence of a pending scheduled action, true for an async or in-progress action or false if there is no matching action.
 	 */
-	public function next_scheduled_action( string $hook, $args = null ) {
+	public function next_scheduled_action( string $hook, array $args = [] ) {
 		return as_next_scheduled_action( $hook, $args, $this->get_slug() );
 	}
 
@@ -101,7 +101,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return array
 	 */
-	public function search( $args = [], $return_format = OBJECT ): array {
+	public function search( array $args = [], $return_format = OBJECT ): array {
 		$args['group'] = $this->get_slug();
 
 		return as_get_scheduled_actions( $args, $return_format );
@@ -117,7 +117,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return string|null The scheduled action ID if a scheduled action was found, or null if no matching action found.
 	 */
-	public function cancel( string $hook, $args = [] ) {
+	public function cancel( string $hook, array $args = [] ) {
 		return as_unschedule_action( $hook, $args, $this->get_slug() );
 	}
 

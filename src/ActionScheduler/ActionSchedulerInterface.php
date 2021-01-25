@@ -29,7 +29,7 @@ interface ActionSchedulerInterface {
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_single( int $timestamp, string $hook, $args = [] ): int;
+	public function schedule_single( int $timestamp, string $hook, array $args = [] ): int;
 
 	/**
 	 * Schedule an action to run now i.e. in the next available batch.
@@ -43,7 +43,7 @@ interface ActionSchedulerInterface {
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_immediate( string $hook, $args = [] ): int;
+	public function schedule_immediate( string $hook, array $args = [] ): int;
 
 	/**
 	 * Enqueue an action to run one time, as soon as possible
@@ -53,7 +53,7 @@ interface ActionSchedulerInterface {
 	 *
 	 * @return int The action ID.
 	 */
-	public function enqueue_async_action( string $hook, $args = [] ): int;
+	public function enqueue_async_action( string $hook, array $args = [] ): int;
 
 	/**
 	 * Check if there is an existing action in the queue with a given hook, args and group combination.
@@ -69,7 +69,7 @@ interface ActionSchedulerInterface {
 	 *
 	 * @return int|bool The timestamp for the next occurrence of a pending scheduled action, true for an async or in-progress action or false if there is no matching action.
 	 */
-	public function next_scheduled_action( string $hook, $args = null );
+	public function next_scheduled_action( string $hook, array $args = [] );
 
 	/**
 	 * Search for scheduled actions.
@@ -79,7 +79,7 @@ interface ActionSchedulerInterface {
 	 *
 	 * @return array
 	 */
-	public function search( $args = [], $return_format = OBJECT ): array;
+	public function search( array $args = [], $return_format = OBJECT ): array;
 
 	/**
 	 * Cancel the next scheduled instance of an action with a matching hook (and optionally matching args and group).
@@ -91,6 +91,6 @@ interface ActionSchedulerInterface {
 	 *
 	 * @return string|null The scheduled action ID if a scheduled action was found, or null if no matching action found.
 	 */
-	public function cancel( string $hook, $args = [] );
+	public function cancel( string $hook, array $args = [] );
 
 }
