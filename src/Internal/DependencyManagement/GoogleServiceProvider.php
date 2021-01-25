@@ -154,6 +154,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google-mc' )
 		);
+		$this->add(
+			\Google_Service_SiteVerification::class,
+			Client::class,
+			$this->get_connect_server_url_root( 'google-sv' )
+		);
 	}
 
 	/**

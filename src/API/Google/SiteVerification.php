@@ -3,7 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Google\Service\Exception;
+use Google\Service\Exception as GoogleException;
+use Exception;
 use Google_Service_SiteVerification as SiteVerificationService;
 use Google_Service_SiteVerification_SiteVerificationWebResourceResource as WebResource;
 use Google_Service_SiteVerification_SiteVerificationWebResourceResourceSite as WebResourceSite;
@@ -63,8 +64,12 @@ class SiteVerification {
 			]
 		);
 
-		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$response = $service->webResource->getToken( $post_body );
+		try {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$response = $service->webResource->getToken( $post_body );
+		} catch ( GoogleException $e ) {
+			throw new Exception( $e->getMessage(), $e->getCode(), $e );
+		}
 
 		return $response->getToken();
 	}
@@ -91,8 +96,12 @@ class SiteVerification {
 			]
 		);
 
-		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$response = $service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
+		try {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
+		} catch ( GoogleException $e ) {
+			throw new Exception( $e->getMessage(), $e->getCode(), $e );
+		}
 
 		return true;
 	}

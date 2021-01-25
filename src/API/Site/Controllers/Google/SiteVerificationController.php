@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptions
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Google\Service\Exception;
+use Exception;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -98,6 +98,9 @@ class SiteVerificationController extends BaseOptionsController {
 		} catch ( Exception $e ) {
 			return $this->get_failure_status_callback( $e->getMessage() );
 		}
+
+		// Should never reach this point.
+		return $this->get_failure_status_callback();
 	}
 
 	/**
@@ -107,14 +110,14 @@ class SiteVerificationController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	private function get_failure_status_callback( string $details ): callable {
+	private function get_failure_status_callback( string $details = '' ): callable {
 		$status = [
 			'status'  => '400',
-			'message' => __( 'Error verifying site', 'google-listings-and-ads' ),
+			'message' => __( 'Site verification failed', 'google-listings-and-ads' ),
 		];
 
 		// Add details.
-		if ( ! is_null( $details ) ) {
+		if ( ! empty( $details ) ) {
 
 			// Extract error message if possible (or use error JSON).
 			if ( json_decode( $details, true ) ) {
