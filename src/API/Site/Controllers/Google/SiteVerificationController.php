@@ -75,6 +75,7 @@ class SiteVerificationController extends BaseOptionsController {
 		try {
 			$meta_tag = $site_verification->get_token( $site_url );
 		} catch ( Exception $e ) {
+			do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'token' ] );
 			return $this->get_failure_status_callback( $e->getMessage() );
 		}
 
@@ -93,13 +94,16 @@ class SiteVerificationController extends BaseOptionsController {
 			if ( $site_verification->insert( $site_url ) ) {
 				$site_verification_options['verified'] = 'yes';
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
+				do_action( $this->get_slug() . '_site_verify_success', [] );
 				return $this->get_success_status_callback( __( 'Site successfully verified.', 'google-listings-and-ads' ) );
 			}
 		} catch ( Exception $e ) {
+			do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'meta-tag' ] );
 			return $this->get_failure_status_callback( $e->getMessage() );
 		}
 
 		// Should never reach this point.
+		do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'unknown' ] );
 		return $this->get_failure_status_callback();
 	}
 

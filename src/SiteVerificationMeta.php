@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Psr\Container\ContainerInterface;
 
 /**
- * Class SiteVerification
+ * Class SiteVerificationMeta
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds
  */
@@ -21,7 +21,7 @@ class SiteVerificationMeta implements Service, Registerable {
 	private $settings;
 
 	/**
-	 * CompleteSetup constructor.
+	 * SiteVerificationMeta constructor.
 	 *
 	 * @param ContainerInterface $container The container object.
 	 */
