@@ -86,7 +86,7 @@ class Installer implements Service, Registerable {
 	/**
 	 * Checks and records if plugin files have been updated.
 	 */
-	protected function check_if_plugin_files_updated() {
+	protected function check_if_plugin_files_updated(): void {
 		if ( $this->get_file_version() !== $this->get_version() ) {
 			$this->options->update( OptionsInterface::FILE_VERSION, $this->get_version() );
 		}
