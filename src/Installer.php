@@ -5,8 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,29 +17,15 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds
  */
-class Installer implements Service, Registerable {
+class Installer implements OptionsAwareInterface, Service, Registerable {
 
+	use OptionsAwareTrait;
 	use PluginHelper;
-
-	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
 
 	/**
 	 * @var OptionsInterface
 	 */
 	protected $options;
-
-	/**
-	 * ConnectionTest constructor.
-	 *
-	 * @param ContainerInterface $container
-	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->container = $container;
-		$this->options   = $container->get( OptionsInterface::class );
-	}
 
 	/**
 	 * Register a service.
