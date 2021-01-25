@@ -112,8 +112,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
-		$this->conditionally_share_with_tags( CompleteSetupNote::class, ContainerInterface::class );
-		$this->conditionally_share_with_tags( SetupCampaignNote::class, ContainerInterface::class );
+
+		// Inbox Notes
+		$this->conditionally_share_with_tags( CompleteSetupNote::class );
+		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
 		$this->share( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );

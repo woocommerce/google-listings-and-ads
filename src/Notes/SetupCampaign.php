@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Psr\Container\ContainerInterface;
@@ -22,25 +23,12 @@ use Psr\Container\ContainerInterface;
  */
 class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwareInterface {
 
-	use PluginHelper;
 	use MerchantCenterTrait;
+	use OptionsAwareTrait;
+	use PluginHelper;
 	use Utilities;
 
 	public const NOTE_NAME = 'gla-setup-campaign-2021-02';
-
-	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
-
-	/**
-	 * CompleteSetup constructor.
-	 *
-	 * @param ContainerInterface $container The container object.
-	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->options = $container->get( OptionsInterface::class );
-	}
 
 	/**
 	 * Register a service.
