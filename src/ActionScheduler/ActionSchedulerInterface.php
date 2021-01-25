@@ -56,20 +56,19 @@ interface ActionSchedulerInterface {
 	public function enqueue_async_action( string $hook, array $args = [] ): int;
 
 	/**
-	 * Check if there is an existing action in the queue with a given hook, args and group combination.
+	 * Check if there is an existing action in the queue with a given hook and args combination.
 	 *
-	 * An action in the queue could be pending, in-progress or async. If the is pending for a time in
-	 * future, its scheduled date will be returned as a timestamp. If it is currently being run, or an
-	 * async action sitting in the queue waiting to be processed, in which case boolean true will be
-	 * returned. Or there may be no async, in-progress or pending action for this hook, in which case,
-	 * boolean false will be the return value.
+	 * An action in the queue could be pending, in-progress or async. If the action is pending for a time in
+	 * future, currently being run, or an async action sitting in the queue waiting to be processed, boolean
+	 * true will be returned. Or there may be no async, in-progress or pending action for this hook, in which
+	 * case, boolean false will be the return value.
 	 *
 	 * @param string $hook
 	 * @param array  $args
 	 *
-	 * @return int|bool The timestamp for the next occurrence of a pending scheduled action, true for an async or in-progress action or false if there is no matching action.
+	 * @return bool True if there is a pending scheduled, async or in-progress action in the queue or false if there is no matching action.
 	 */
-	public function next_scheduled_action( string $hook, array $args = [] );
+	public function has_scheduled_action( string $hook, array $args = [] ): bool;
 
 	/**
 	 * Search for scheduled actions.
@@ -82,15 +81,17 @@ interface ActionSchedulerInterface {
 	public function search( array $args = [], $return_format = OBJECT ): array;
 
 	/**
-	 * Cancel the next scheduled instance of an action with a matching hook (and optionally matching args and group).
+	 * Cancel the next scheduled instance of an action with a matching hook (and optionally matching args).
 	 *
 	 * Any recurring actions with a matching hook should also be cancelled, not just the next scheduled action.
 	 *
 	 * @param string $hook  The hook that the job will trigger.
 	 * @param array  $args  Args that would have been passed to the job.
 	 *
-	 * @return string|null The scheduled action ID if a scheduled action was found, or null if no matching action found.
+	 * @return string The scheduled action ID if a scheduled action was found.
+	 *
+	 * @throws ActionSchedulerException If no matching action found.
 	 */
-	public function cancel( string $hook, array $args = [] );
+	public function cancel( string $hook, array $args = [] ): string;
 
 }
