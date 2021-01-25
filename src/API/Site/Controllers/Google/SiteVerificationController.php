@@ -43,8 +43,13 @@ class SiteVerificationController extends BaseOptionsController {
 			'site/verify',
 			[
 				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->get_verify_endpoint_create_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_verify_endpoint_callback(),
+					'callback'            => $this->get_verify_endpoint_check_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -56,12 +61,11 @@ class SiteVerificationController extends BaseOptionsController {
 	 *
 	 * @return \Closure Callback to retrieve status and informative message about the verification attempt.
 	 */
-	protected function get_verify_endpoint_callback(): \Closure {
+	protected function get_verify_endpoint_create_callback(): \Closure {
 		$site_url = site_url();
 
 		// Inform of previous verification.
-		$current_options = $this->options->get( OptionsInterface::SITE_VERIFICATION );
-		if ( ! empty( $current_options['verified'] ) && 'yes' === $current_options['verified'] ) {
+		if ( $this->is_site_verified() ) {
 			return $this->get_success_status_callback( __( 'Site already verified', 'google-listings-and-ads' ) );
 		}
 
@@ -140,5 +144,42 @@ class SiteVerificationController extends BaseOptionsController {
 				'message' => $message,
 			];
 		};
+	}
+
+	/**
+	 * Determine whether the site has already been verified.
+	 *
+	 * @return bool True if the site is marked as verified.
+	 */
+	private function is_site_verified() {
+		$current_options = $this->options->get( OptionsInterface::SITE_VERIFICATION );
+		return ! empty( $current_options['verified'] ) && 'yes' === $current_options['verified'];
+	}
+
+	/**
+	 * Retrieve the current verification status of the site.
+	 *
+	 * @return \Closure
+	 */
+	protected function get_verify_endpoint_check_callback() {
+		if ( $this->is_site_verified() ) {
+			return function () {
+				return [
+					'status'   => 'success',
+					'message'  => __( 'Site already verified', 'google-listings-and-ads' ),
+					'verified' => true,
+
+				];
+			};
+		} else {
+			return function () {
+				return [
+					'status'   => 'success',
+					'message'  => __( 'Site not verified', 'google-listings-and-ads' ),
+					'verified' => false,
+
+				];
+			};
+		}
 	}
 }
