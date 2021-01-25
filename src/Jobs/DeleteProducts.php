@@ -73,7 +73,7 @@ class DeleteProducts extends AbstractActionSchedulerJob {
 	 *
 	 * @param array $args
 	 */
-	public function start( $args = [] ) {
+	public function start( array $args = [] ) {
 		if ( ! empty( $args ) && $this->can_start( $args ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $args ] );
 		}

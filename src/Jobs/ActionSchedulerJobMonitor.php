@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -14,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
 class ActionSchedulerJobMonitor implements Service {
+
+	use PluginHelper;
 
 	/**
 	 * @var ActionSchedulerInterface
@@ -62,7 +65,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @return int
 	 */
 	protected function get_failure_rate_threshold(): int {
-		return absint( apply_filters( 'gla/batched_job_monitor/failure_rate_threshold', 5 ) );
+		return absint( apply_filters( "{$this->get_slug()}/batched_job_monitor/failure_rate_threshold", 5 ) );
 	}
 
 }

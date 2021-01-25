@@ -64,7 +64,12 @@ class UpdateProducts extends AbstractActionSchedulerJob {
 	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $product_ids ) {
-		$products = array_map( 'wc_get_product', $product_ids );
+		$products = wc_get_products(
+			[
+				'include' => $product_ids,
+				'return'  => 'objects',
+			]
+		);
 
 		if ( empty( $products ) ) {
 			throw JobException::item_not_found();
@@ -77,9 +82,15 @@ class UpdateProducts extends AbstractActionSchedulerJob {
 	 * Start the job.
 	 *
 	 * @param int[] $args An array of WooCommerce product ids.
+	 *
+	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
-	public function start( $args = [] ) {
-		if ( ! empty( $args ) && $this->can_start( $args ) ) {
+	public function start( array $args = [] ) {
+		if ( empty( $args ) ) {
+			throw JobException::item_not_provided( 'Array of WooCommerce Product IDs' );
+		}
+
+		if ( $this->can_start( $args ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $args ] );
 		}
 	}

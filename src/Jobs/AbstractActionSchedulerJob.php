@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
 abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface {
+
+	use PluginHelper;
 
 	/**
 	 * @var ActionSchedulerInterface
@@ -44,12 +47,8 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 *
 	 * @return bool Returns true if the job can start.
 	 */
-	protected function can_start( $args = [] ): bool {
-		if ( $this->is_running( $args ) ) {
-			return false;
-		}
-
-		return true;
+	protected function can_start( array $args = [] ): bool {
+		return ! $this->is_running( $args );
 	}
 
 	/**
@@ -61,7 +60,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 *
 	 * @return bool
 	 */
-	protected function is_running( $args = [] ): bool {
+	protected function is_running( array $args = [] ): bool {
 		return false !== $this->action_scheduler->next_scheduled_action( $this->get_process_item_hook(), $args );
 	}
 
@@ -70,8 +69,8 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 *
 	 * @return string
 	 */
-	protected function get_hook_base_name() {
-		return 'gla/jobs/' . $this->get_name() . '/';
+	protected function get_hook_base_name(): string {
+		return "{$this->get_slug()}/jobs/{$this->get_name()}/";
 	}
 
 	/**
@@ -82,6 +81,6 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 * @return string
 	 */
 	public function get_process_item_hook(): string {
-		return $this->get_hook_base_name() . 'process_item';
+		return "{$this->get_hook_base_name()}process_item";
 	}
 }
