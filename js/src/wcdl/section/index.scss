@@ -1,12 +1,11 @@
 .wcdl-section {
 	display: flex;
 	flex-direction: column;
-	margin-bottom: calc(var(--large-gap) * 2);
+	margin-bottom: var(--large-gap);
 
 	@include break-small() {
 		flex-direction: row;
 		gap: var(--main-gap);
-		margin-bottom: var(--large-gap);
 	}
 
 	header {

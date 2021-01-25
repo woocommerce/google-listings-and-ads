@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use WP_REST_Request;
+use WP_REST_Response;
 use WP_REST_Server;
 
 /**
@@ -42,6 +44,17 @@ class RESTServer {
 		$route      = trim( $route, '/' );
 		$full_route = "/{$namespace}/{$route}";
 		$this->server->register_route( $namespace, $full_route, $this->prepare_route_args( $args ) );
+	}
+
+	/**
+	 * Run an internal request.
+	 *
+	 * @param WP_REST_Request $request
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function dispatch_request( WP_REST_Request $request ): WP_REST_Response {
+		return $this->server->dispatch( $request );
 	}
 
 	/**

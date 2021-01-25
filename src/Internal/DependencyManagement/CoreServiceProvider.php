@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -20,11 +21,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Pages\ConnectAccount;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
@@ -45,9 +46,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
+		Admin::class                  => true,
 		Analytics::class              => true,
 		AssetsHandlerInterface::class => true,
-		ConnectAccount::class         => true,
+		CompleteSetup::class          => true,
 		Dashboard::class              => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
@@ -63,6 +65,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Tracks::class                 => true,
 		TracksInterface::class        => true,
 		ProductSyncer::class          => true,
+		ProductHelper::class          => true,
 		ProductMetaHandler::class     => true,
 	];
 
@@ -83,6 +86,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_interface( OptionsInterface::class, Options::class );
 
 		// Share our regular service classes.
+		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
@@ -90,11 +94,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( Analytics::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
 		$this->conditionally_share_with_tags( Settings::class );
-		$this->conditionally_share_with_tags( ConnectAccount::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
 
 		$this->share( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );

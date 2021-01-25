@@ -12,6 +12,15 @@
 		}
 	}
 
+	// hack to fix tertiary destructive button.
+	&.is-tertiary.is-destructive {
+		box-shadow: none;
+
+		&:hover:not(:disabled) {
+			box-shadow: none;
+		}
+	}
+
 	&.is-link.is-destructive:focus {
 		color: $alert-red;
 
@@ -23,4 +32,14 @@
 	&.is-link {
 		text-decoration: none;
 	}
+}
+
+// hack to fix radio button selected style bug caused by woocommerce-admin.
+.components-radio-control__input[type="radio"]:checked::before {
+	border: none;
+}
+
+// hack to fix InputControl suffix's empty right margin.
+.components-input-control__suffix {
+	margin-right: 8px;
 }
