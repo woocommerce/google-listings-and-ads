@@ -9,7 +9,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import AppTableCard from '../components/app-table-card';
+import AppTableCard from '../../components/app-table-card';
 import { mockedListingsData, availableMetrics } from './mocked-programs-data'; // Mocked API calls
 
 /**

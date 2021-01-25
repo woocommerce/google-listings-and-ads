@@ -12,7 +12,7 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
-import Reports from './reports';
+import Reports from './reports/programs';
 import ProductFeed from './product-feed';
 import Settings from './settings';
 
@@ -77,7 +77,7 @@ addFilter(
 				],
 				title: __( 'Reports', 'google-listings-and-ads' ),
 				container: Reports,
-				path: '/google/reports',
+				path: '/google/reports/programs',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
