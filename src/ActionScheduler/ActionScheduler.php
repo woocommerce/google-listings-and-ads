@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler
  */
 class ActionScheduler implements ActionSchedulerInterface, Service {
+
+	use PluginHelper;
 
 	/**
 	 * @var AsyncActionRunner
@@ -36,12 +39,11 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 * @param int    $timestamp When the job will run.
 	 * @param string $hook      The hook to trigger.
 	 * @param array  $args      Arguments to pass when the hook triggers.
-	 * @param string $group     The group to assign this job to.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_single( int $timestamp, string $hook, $args = [], $group = 'gla' ): int {
-		return as_schedule_single_action( $timestamp, $hook, $args, $group );
+	public function schedule_single( int $timestamp, string $hook, $args = [] ): int {
+		return as_schedule_single_action( $timestamp, $hook, $args, $this->get_slug() );
 	}
 
 	/**
@@ -53,12 +55,11 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @param string $hook  The hook to trigger.
 	 * @param array  $args  Arguments to pass when the hook triggers.
-	 * @param string $group The group to assign this job to.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_immediate( string $hook, $args = [], $group = 'gla' ): int {
-		return as_schedule_single_action( gmdate( 'U' ) - 1, $hook, $args, $group );
+	public function schedule_immediate( string $hook, $args = [] ): int {
+		return as_schedule_single_action( gmdate( 'U' ) - 1, $hook, $args, $this->get_slug() );
 	}
 
 	/**
@@ -66,13 +67,12 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @param string $hook  The hook to trigger.
 	 * @param array  $args  Arguments to pass when the hook triggers.
-	 * @param string $group The group to assign this job to. Defaults to 'gla'.
 	 *
 	 * @return int The action ID.
 	 */
-	public function enqueue_async_action( string $hook, $args = [], $group = 'gla' ): int {
+	public function enqueue_async_action( string $hook, $args = [] ): int {
 		$this->async_runner->attach_shutdown_hook();
-		return $this->schedule_immediate( $hook, $args, $group );
+		return $this->schedule_immediate( $hook, $args );
 	}
 
 	/**
@@ -86,12 +86,11 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @param string $hook
 	 * @param array  $args
-	 * @param string $group The group to check for jobs. Defaults to 'gla'.
 	 *
 	 * @return int|bool The timestamp for the next occurrence of a pending scheduled action, true for an async or in-progress action or false if there is no matching action.
 	 */
-	public function next_scheduled_action( string $hook, $args = null, $group = 'gla' ) {
-		return as_next_scheduled_action( $hook, $args, $group );
+	public function next_scheduled_action( string $hook, $args = null ) {
+		return as_next_scheduled_action( $hook, $args, $this->get_slug() );
 	}
 
 	/**
@@ -99,12 +98,11 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @param array  $args          See as_get_scheduled_actions() for possible arguments.
 	 * @param string $return_format OBJECT, ARRAY_A, or ids.
-	 * @param string $group         The group to search for jobs. Defaults to 'gla'.
 	 *
 	 * @return array
 	 */
-	public function search( $args = [], $return_format = OBJECT, $group = 'gla' ): array {
-		$args['group'] = $group;
+	public function search( $args = [], $return_format = OBJECT ): array {
+		$args['group'] = $this->get_slug();
 
 		return as_get_scheduled_actions( $args, $return_format );
 	}
@@ -116,12 +114,11 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @param string $hook  The hook that the job will trigger.
 	 * @param array  $args  Args that would have been passed to the job.
-	 * @param string $group The group the job is assigned to. Defaults to 'gla'.
 	 *
 	 * @return string|null The scheduled action ID if a scheduled action was found, or null if no matching action found.
 	 */
-	public function cancel( string $hook, $args = [], $group = 'gla' ) {
-		return as_unschedule_action( $hook, $args, $group );
+	public function cancel( string $hook, $args = [] ) {
+		return as_unschedule_action( $hook, $args, $this->get_slug() );
 	}
 
 }
