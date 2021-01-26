@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
@@ -24,14 +25,26 @@ class UpdateAllProducts extends AbstractBatchedActionSchedulerJob {
 	protected $product_syncer;
 
 	/**
+	 * @var ProductRepository
+	 */
+	protected $product_repository;
+
+	/**
 	 * SyncProducts constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param ProductSyncer             $product_syncer
+	 * @param ProductRepository         $product_repository
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductSyncer $product_syncer ) {
-		$this->product_syncer = $product_syncer;
+	public function __construct(
+		ActionSchedulerInterface $action_scheduler,
+		ActionSchedulerJobMonitor $monitor,
+		ProductSyncer $product_syncer,
+		ProductRepository $product_repository
+	) {
+		$this->product_syncer     = $product_syncer;
+		$this->product_repository = $product_repository;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
@@ -53,12 +66,11 @@ class UpdateAllProducts extends AbstractBatchedActionSchedulerJob {
 	 *
 	 * @return array
 	 */
-	protected function get_batch( int $batch_number ): array {
-		return wc_get_products(
+	public function get_batch( int $batch_number ): array {
+		return $this->product_repository->find_ids(
 			[
 				'limit'  => $this->get_batch_size(),
 				'offset' => $this->get_query_offset( $batch_number ),
-				'return' => 'ids',
 			]
 		);
 	}
@@ -66,17 +78,12 @@ class UpdateAllProducts extends AbstractBatchedActionSchedulerJob {
 	/**
 	 * Process batch items.
 	 *
-	 * @param array $items A single batch from the get_batch() method.
+	 * @param int[] $items A single batch of WooCommerce product IDs from the get_batch() method.
 	 *
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	protected function process_items( array $items ) {
-		$products = wc_get_products(
-			[
-				'include' => $items,
-				'return'  => 'objects',
-			]
-		);
+		$products = $this->product_repository->find_by_ids( $items );
 
 		$this->product_syncer->update( $products );
 	}

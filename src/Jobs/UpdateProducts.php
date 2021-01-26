@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
@@ -26,14 +27,26 @@ class UpdateProducts extends AbstractActionSchedulerJob {
 	protected $product_syncer;
 
 	/**
+	 * @var ProductRepository
+	 */
+	protected $product_repository;
+
+	/**
 	 * SyncProducts constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
 	 * @param ProductSyncer             $product_syncer
+	 * @param ProductRepository         $product_repository
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, ActionSchedulerJobMonitor $monitor, ProductSyncer $product_syncer ) {
-		$this->product_syncer = $product_syncer;
+	public function __construct(
+		ActionSchedulerInterface $action_scheduler,
+		ActionSchedulerJobMonitor $monitor,
+		ProductSyncer $product_syncer,
+		ProductRepository $product_repository
+	) {
+		$this->product_syncer     = $product_syncer;
+		$this->product_repository = $product_repository;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 
@@ -64,12 +77,7 @@ class UpdateProducts extends AbstractActionSchedulerJob {
 	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $product_ids ) {
-		$products = wc_get_products(
-			[
-				'include' => $product_ids,
-				'return'  => 'objects',
-			]
-		);
+		$products = $this->product_repository->find_by_ids( $product_ids );
 
 		if ( empty( $products ) ) {
 			throw JobException::item_not_found();
