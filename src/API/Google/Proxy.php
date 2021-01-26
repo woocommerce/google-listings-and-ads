@@ -90,7 +90,8 @@ class Proxy {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
 			$error = json_decode( $e->getMessage(), true );
-			throw new Exception( sprintf( 'Error retrieving accounts: %s', $error['message'] ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $error['message'] ) );
 		}
 	}
 
@@ -127,11 +128,12 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			throw new Exception( 'Invalid response when creating account' );
+			throw new Exception( __( 'Invalid response when creating account', 'google-listings-and-ads' ) );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( sprintf( 'Error creating account: %s', $e->getMessage() ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error creating account: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
 		}
 	}
 
@@ -168,11 +170,12 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			throw new Exception( 'Invalid response when linking account' );
+			throw new Exception( __( 'Invalid response when linking account', 'google-listings-and-ads' ) );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( sprintf( 'Error linking account: %s', $e->getMessage() ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error linking account: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
 		}
 	}
 

@@ -72,7 +72,7 @@ class AccountController extends BaseController {
 			try {
 				return new WP_REST_Response( $this->middleware->get_ads_account_ids() );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( $e->getMessage(), 400 );
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -92,7 +92,7 @@ class AccountController extends BaseController {
 
 				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( $e->getMessage(), 400 );
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}

@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
+use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -32,6 +34,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 		Config::class              => true,
 		Manager::class             => true,
 		ISO3166DataProvider::class => true,
+		ValidatorInterface::class  => true,
 	];
 
 	/**
@@ -57,5 +60,14 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share_interface( ISO3166DataProvider::class, ISO3166::class );
+
+		$this->share_interface(
+			ValidatorInterface::class,
+			function () {
+				return Validation::createValidatorBuilder()
+								->addMethodMapping( 'load_validator_metadata' )
+								->getValidator();
+			}
+		);
 	}
 }
