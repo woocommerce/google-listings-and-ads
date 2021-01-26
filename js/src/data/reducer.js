@@ -20,7 +20,7 @@ const DEFAULT_STATE = {
 		shipping: {
 			rates: [],
 		},
-		settings: {},
+		settings: null,
 	},
 };
 
@@ -72,6 +72,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_SETTINGS: {
+			const { settings } = action;
+			const newState = cloneDeep( state );
+			newState.mc.settings = settings;
+			return newState;
+		}
+
+		case TYPES.SAVE_SETTINGS: {
 			const { settings } = action;
 			const newState = cloneDeep( state );
 			newState.mc.settings = settings;

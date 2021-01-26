@@ -175,3 +175,30 @@ export function* fetchSettings() {
 		);
 	}
 }
+
+export function* saveSettings( settings ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/settings`,
+			method: 'POST',
+			data: settings,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.SAVE_SETTINGS,
+			settings,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to save settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
