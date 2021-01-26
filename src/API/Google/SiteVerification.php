@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google\Service\Exception as GoogleException;
 use Exception;
 use Google_Service_SiteVerification as SiteVerificationService;
@@ -20,6 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
 class SiteVerification {
+
+	use PluginHelper;
 
 	/**
 	 * The container object.
@@ -68,6 +71,7 @@ class SiteVerification {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$response = $service->webResource->getToken( $post_body );
 		} catch ( GoogleException $e ) {
+			do_action( $this->get_slug() . '_site_verification_gettoken_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ) );
 		}
 
@@ -100,6 +104,7 @@ class SiteVerification {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
 		} catch ( GoogleException $e ) {
+			do_action( $this->get_slug() . '_site_verification_insert_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to complete site verification.', 'google-listings-and-ads' ) );
 		}
 
