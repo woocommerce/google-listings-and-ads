@@ -10,6 +10,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
@@ -167,6 +168,7 @@ class ConnectionTest implements Service, Registerable {
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-status' ), $url ), 'wcs-google-mc-status' ) ); ?>">Google Account Status</a>
 				</p>
 
 				<div>
@@ -430,6 +432,24 @@ class ConnectionTest implements Service, Registerable {
 			$this->response .= $response;
 		}
 
+		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
+			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
+			$args = [
+				'headers' => [ 'Authorization' => $this->get_auth_header() ],
+				'method'  => 'GET',
+			];
+
+			$this->response = 'GET ' . $url . "\n" . var_export( $args, true ) . "\n";
+
+			$response = wp_remote_get( $url, $args );
+			if ( is_wp_error( $response ) ) {
+				$this->response .= $response->get_error_message();
+				return;
+			}
+
+			$this->response .= wp_remote_retrieve_body( $response );
+		}
+
 		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {
 			$this->response = 'Proxied request > get merchant ID' . "\n";
 
@@ -510,23 +530,15 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
 			try {
-				$googleAdsClient       = $this->get_ads_client();
-				$customerServiceClient = $googleAdsClient->getCustomerServiceClient();
+				/** @var Proxy $proxy */
+				$proxy = $this->container->get( Proxy::class );
+				$accounts = $proxy->get_ads_account_ids();
 
-				$args = [
-					'headers' => [ 'Authorization' => $this->get_auth_header() ],
-				];
-
-				// Issues a request for listing all accessible customers.
-				$accessibleCustomers = $customerServiceClient->listAccessibleCustomers( $args );
-				$this->response .= 'Total results: ' . count( $accessibleCustomers->getResourceNames() ) . PHP_EOL;
-
-				// Iterates over all accessible customers' resource names and prints them.
-				foreach ( $accessibleCustomers->getResourceNames() as $resourceName ) {
-					$this->response     .= sprintf( "Customer resource name: '%s'%s", $resourceName, PHP_EOL );
-					$_GET['customer_id'] = absint( str_replace( 'customers/', '', $resourceName ) );
+				$this->response .= 'Total accounts: ' . count( $accounts ) . "\n";
+				foreach ( $accounts as $id ) {
+					$this->response .= sprintf( "Ads ID: %d\n", $id );
+					$_GET['customer_id'] = $id;
 				}
-
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
@@ -534,31 +546,20 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-campaign-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-campaign-lib' ) ) {
 			try {
-				$id  = ! empty( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] ) : '12345';
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
 
-				$googleAdsClient        = $this->get_ads_client();
-				$googleAdsServiceClient = $googleAdsClient->getGoogleAdsServiceClient();
+				$this->response = "Proxied request > get ad campaigns {$ads->get_id()}\n";
 
-				// Creates a query that retrieves all campaigns.
-				$query = 'SELECT campaign.id, campaign.name FROM campaign ORDER BY campaign.id';
-
-				$args = [
-					'headers' => [ 'Authorization' => $this->get_auth_header() ],
-				];
-
-				// Issues a search request.
-				$response = $googleAdsServiceClient->search( $id, $query, $args );
-
-				// Output details for each campaign.
-				foreach ( $response->iterateAllElements() as $googleAdsRow ) {
-					$this->response .= sprintf(
-						"Campaign with ID %d and name '%s' was found.%s",
-						$googleAdsRow->getCampaign()->getId(),
-						$googleAdsRow->getCampaign()->getName(),
-						PHP_EOL
-					);
+				$campaigns = $ads->get_campaigns();
+				if ( empty( $campaigns ) ){
+					$this->response .= 'No campaigns found';
+				} else {
+					$this->response .= 'Total campaigns: ' . count( $campaigns ) . "\n";
+					foreach ( $campaigns as $campaign ) {
+						$this->response .= "{$campaign->getId()} {$campaign->getName()}\n";
+					}
 				}
-
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
@@ -659,29 +660,6 @@ class ConnectionTest implements Service, Registerable {
 				$this->response = 'Error deleting products from Google: ' . $exception->getMessage();
 			}
 		}
-	}
-
-	/**
-	 * Get a GoogleAdsClient.
-	 *
-	 * @return GoogleAdsClient
-	 */
-	private function get_ads_client(): \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient {
-		$url = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads';
-		$url = preg_replace( '/^https?:\/\//', '', $url );
-
-		$oAuth2Credential = ( new \Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder() )
-			->withClientId( 'clientid' )
-			->withClientSecret( 'clientsecret' )
-			->withRefreshToken( 'refreshtoken' )
-			->build();
-
-		return ( new \Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder() )
-			->withDeveloperToken( 'developertoken' )
-			->withOAuth2Credential( $oAuth2Credential )
-			->withEndpoint( $url )
-			->withTransport( 'rest' )
-			->build();
 	}
 
 	/**
