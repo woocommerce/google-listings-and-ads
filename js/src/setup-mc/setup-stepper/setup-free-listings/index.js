@@ -21,8 +21,16 @@ import PreLaunchChecklist from './pre-launch-checklist';
 import Hero from './hero';
 
 const SetupFreeListings = () => {
-	const settings = useSelect( ( select ) => {
-		return select( STORE_KEY ).getSettings();
+	const { settings, displayTaxRate } = useSelect( ( select ) => {
+		const s = select( STORE_KEY ).getSettings();
+		const audienceCountryCodes = select(
+			STORE_KEY
+		).getAudienceSelectedCountryCodes();
+
+		return {
+			settings: s,
+			displayTaxRate: audienceCountryCodes.includes( 'US' ),
+		};
 	} );
 	const { saveSettings } = useDispatch( STORE_KEY );
 
@@ -45,10 +53,6 @@ const SetupFreeListings = () => {
 		refund_tos_visible: settings.refund_tos_visible,
 		contact_info_visible: settings.contact_info_visible,
 	};
-
-	// TODO: call backend API and display tax rate section
-	// only when users selected US in the list of countries.
-	const displayTaxRate = true;
 
 	const handleAutosave = ( values ) => {
 		saveSettings( values );
