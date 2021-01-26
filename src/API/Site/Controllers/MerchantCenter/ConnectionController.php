@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 
@@ -15,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class ConnectionController extends BaseController {
+
+	use ControllerTrait;
 
 	/**
 	 * BaseController constructor.
@@ -37,7 +40,7 @@ class ConnectionController extends BaseController {
 					'callback'            => $this->get_connect_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-				'schema' => $this->get_connection_schema(),
+				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
@@ -56,21 +59,29 @@ class ConnectionController extends BaseController {
 	}
 
 	/**
+	 * Get the schema for settings endpoints.
+	 *
 	 * @return array
 	 */
-	protected function get_connection_schema(): array {
+	protected function get_item_schema(): array {
 		return [
-			'$schema'    => 'http://json-schema.org/draft-04/schema#',
-			'title'      => 'plugins',
-			'type'       => 'object',
-			'properties' => [
-				'url' => [
-					'description' => __( 'Action that should be completed after connection.', 'google-listings-and-ads' ),
-					'type'        => 'string',
-					'context'     => [ 'view', 'edit' ],
-					'readonly'    => true,
-				],
+			'url' => [
+				'description' => __( 'Action that should be completed after connection.', 'google-listings-and-ads' ),
+				'type'        => 'string',
+				'context'     => [ 'view', 'edit' ],
+				'readonly'    => true,
 			],
 		];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_item_schema_name(): string {
+		return 'merchant_center_connection';
 	}
 }

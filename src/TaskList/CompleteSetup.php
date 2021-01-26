@@ -6,9 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
@@ -19,9 +21,10 @@ use Psr\Container\ContainerInterface;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\TaskList
  */
-class CompleteSetup implements Deactivateable, Service, Registerable {
+class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwareInterface {
 
 	use AssetsAwareness;
+	use MerchantCenterTrait;
 	use PluginHelper;
 	use TaskListTrait;
 
@@ -78,7 +81,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable {
 		) )->add_localization(
 			'glaTaskData',
 			[
-				'isComplete' => $this->options->get( OptionsInterface::MC_SETUP_COMPLETE, false ),
+				'isComplete' => $this->setup_complete(),
 			]
 		);
 	}

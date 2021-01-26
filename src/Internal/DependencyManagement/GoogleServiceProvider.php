@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
@@ -48,6 +49,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Merchant::class                       => true,
 		'connect_server_root'                 => true,
 		Connection::class                     => true,
+		GoogleProductService::class           => true,
 	];
 
 	/**
@@ -103,6 +105,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Google_Service_ShoppingContent::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google-mc' )
+		);
+		$this->share(
+			GoogleProductService::class,
+			Google_Service_ShoppingContent::class,
+			Merchant::class
 		);
 	}
 
