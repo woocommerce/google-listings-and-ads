@@ -102,6 +102,12 @@ class Proxy {
 	 */
 	public function create_ads_account(): int {
 		try {
+			$user = wp_get_current_user();
+			$tos  = $this->mark_tos_accepted( 'google-ads', $user->user_email );
+			if ( ! $tos->accepted() ) {
+				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
