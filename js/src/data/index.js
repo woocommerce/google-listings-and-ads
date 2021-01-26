@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { controls } from '@wordpress/data-controls';
-import { registerStore } from '@wordpress/data';
+import { registerStore, useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -22,3 +22,7 @@ registerStore( STORE_KEY, {
 } );
 
 export { STORE_KEY };
+
+export const useAppDispatch = () => {
+	return useDispatch( STORE_KEY );
+};
