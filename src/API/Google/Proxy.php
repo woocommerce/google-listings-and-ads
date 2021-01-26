@@ -181,14 +181,16 @@ class Proxy {
 	/**
 	 * Determine whether the TOS have been accepted.
 	 *
+	 * @param string $service Name of service.
+	 *
 	 * @return TosAccepted
 	 */
-	public function check_tos_accepted(): TosAccepted {
+	public function check_tos_accepted( string $service ): TosAccepted {
 		// todo: see about using the WooCommerce Services code here
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
-			$result = $client->get( $this->get_tos_url() );
+			$result = $client->get( $this->get_tos_url( $service ) );
 
 			return new TosAccepted( 200 === $result->getStatusCode(), $result->getBody()->getContents() );
 		} catch ( ClientExceptionInterface $e ) {
@@ -201,17 +203,18 @@ class Proxy {
 	/**
 	 * Record TOS acceptance for a particular email address.
 	 *
+	 * @param string $service Name of service.
 	 * @param string $email
 	 *
 	 * @return TosAccepted
 	 */
-	public function mark_tos_accepted( string $email ): TosAccepted {
+	public function mark_tos_accepted( string $service, string $email ): TosAccepted {
 		// todo: see about using WooCommerce Services code here.
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_tos_url(),
+				$this->get_tos_url( $service ),
 				[
 					'body' => json_encode(
 						[
@@ -235,10 +238,13 @@ class Proxy {
 	/**
 	 * Get the TOS endpoint URL
 	 *
+	 * @param string $service Name of service.
+	 *
 	 * @return string
 	 */
-	protected function get_tos_url(): string {
-		return $this->container->get( 'connect_server_root' ) . 'tos/google-mc';
+	protected function get_tos_url( string $service ): string {
+		$url = $this->container->get( 'connect_server_root' ) . 'tos';
+		return $service ? trailingslashit( $url ) . $service : $url;
 	}
 
 	/**
