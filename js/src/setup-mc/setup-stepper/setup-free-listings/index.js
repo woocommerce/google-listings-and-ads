@@ -19,6 +19,17 @@ import ShippingTime from './shipping-time';
 import TaxRate from './tax-rate';
 import PreLaunchChecklist from './pre-launch-checklist';
 import Hero from './hero';
+import { recordPreLaunchChecklistCompleteEvent } from '../../../utils/recordEvent';
+
+const isPreLaunchChecklistComplete = ( values ) => {
+	return (
+		values.website_live &&
+		values.checkout_process_secure &&
+		values.payment_methods_visible &&
+		values.refund_tos_visible &&
+		values.contact_info_visible
+	);
+};
 
 const SetupFreeListings = () => {
 	const { settings, displayTaxRate } = useSelect( ( select ) => {
@@ -56,6 +67,10 @@ const SetupFreeListings = () => {
 
 	const handleAutosave = ( values ) => {
 		saveSettings( values );
+
+		if ( isPreLaunchChecklistComplete( values ) ) {
+			recordPreLaunchChecklistCompleteEvent();
+		}
 	};
 
 	const handleValidate = () => {
@@ -82,13 +97,7 @@ const SetupFreeListings = () => {
 
 					const isCompleteSetupDisabled =
 						Object.keys( errors ).length >= 1 ||
-						! (
-							values.website_live &&
-							values.checkout_process_secure &&
-							values.payment_methods_visible &&
-							values.refund_tos_visible &&
-							values.contact_info_visible
-						);
+						! isPreLaunchChecklistComplete( values );
 
 					return (
 						<StepContent>

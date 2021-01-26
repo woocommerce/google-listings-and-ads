@@ -36,4 +36,8 @@ export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	} );
 };
 
+export const recordPreLaunchChecklistCompleteEvent = () => {
+	recordEvent( 'gla_pre_launch_checklist_complete' );
+};
+
 export default recordEvent;
