@@ -89,9 +89,8 @@ class Proxy {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
-			$error = json_decode( $e->getMessage(), true );
 			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $error['message'] ) );
+			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
 		}
 	}
 

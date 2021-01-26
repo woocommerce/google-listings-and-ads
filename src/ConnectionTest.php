@@ -557,7 +557,7 @@ class ConnectionTest implements Service, Registerable {
 				} else {
 					$this->response .= 'Total campaigns: ' . count( $campaigns ) . "\n";
 					foreach ( $campaigns as $campaign ) {
-						$this->response .= "{$campaign->getId()} {$campaign->getName()}\n";
+						$this->response .= print_r( $campaign, true ) . "\n";
 					}
 				}
 			} catch ( \Exception $e ) {
