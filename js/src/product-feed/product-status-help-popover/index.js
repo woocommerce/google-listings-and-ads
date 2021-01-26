@@ -2,12 +2,12 @@
  * External dependencies
  */
 import { createInterpolateElement } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import AppDocumentationLink from '../../components/app-documentation-link';
 import HelpPopover from '../../components/help-popover';
 import './index.scss';
 
@@ -99,11 +99,11 @@ const ProductStatusHelpPopover = () => {
 						),
 						{
 							link: (
-								<Link
-									type="external"
-									target="_blank"
+								<AppDocumentationLink
+									context="product-feed"
+									linkId="product-sync-statuses"
 									href="https://support.google.com/merchants/answer/160491"
-								></Link>
+								/>
 							),
 						}
 					) }

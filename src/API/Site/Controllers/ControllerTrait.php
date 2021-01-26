@@ -23,6 +23,10 @@ trait ControllerTrait {
 		$prepared = [];
 		$schema   = $this->get_item_schema();
 		foreach ( $schema as $key => $property ) {
+			if ( $property['readonly'] ?? false ) {
+				continue;
+			}
+
 			$prepared[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
 		}
 

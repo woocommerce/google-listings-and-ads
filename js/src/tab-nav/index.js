@@ -20,10 +20,10 @@ const tabs = [
 		path: '%2Fgoogle%2Fdashboard',
 	},
 	{
-		name: 'analytics',
-		title: __( 'Analytics', 'google-listings-and-ads' ),
-		className: 'tab-analytics',
-		path: '%2Fgoogle%2Fanalytics',
+		name: 'reports',
+		title: __( 'Reports', 'google-listings-and-ads' ),
+		className: 'tab-reports',
+		path: '%2Fgoogle%2Freports',
 	},
 	{
 		name: 'product-feed',

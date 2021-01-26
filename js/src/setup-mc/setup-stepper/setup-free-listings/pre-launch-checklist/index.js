@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { CheckboxControl } from '@wordpress/components';
 
@@ -11,6 +10,7 @@ import { CheckboxControl } from '@wordpress/components';
  */
 
 import HelpPopover from '../../../../components/help-popover';
+import AppDocumentationLink from '../../../../components/app-documentation-link';
 import Section from '../../../../wcdl/section';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import './index.scss';
@@ -36,16 +36,16 @@ const PreLaunchChecklist = ( props ) => {
 						</p>
 						<p>
 							{ /* TODO: Link to read more on Google Merchant requirements. */ }
-							<Link
-								type="external"
+							<AppDocumentationLink
+								context="setup-mc-checklist"
+								linkId="checklist-requirements"
 								href="https://www.google.com/"
-								target="_blank"
 							>
 								{ __(
 									'Read Google Merchant requirements',
 									'google-listings-and-ads'
 								) }
-							</Link>
+							</AppDocumentationLink>
 						</p>
 					</div>
 				}
@@ -99,10 +99,10 @@ const PreLaunchChecklist = ( props ) => {
 													),
 													{
 														link: (
-															<Link
-																type="external"
+															<AppDocumentationLink
+																context="setup-mc-checklist"
+																linkId="check-checkout-process"
 																href="https://www.google.com/retail/solutions/merchant-center/"
-																target="_blank"
 															/>
 														),
 													}
