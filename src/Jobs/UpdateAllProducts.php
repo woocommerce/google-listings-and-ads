@@ -67,12 +67,7 @@ class UpdateAllProducts extends AbstractBatchedActionSchedulerJob {
 	 * @return array
 	 */
 	public function get_batch( int $batch_number ): array {
-		return $this->product_repository->find_ids(
-			[
-				'limit'  => $this->get_batch_size(),
-				'offset' => $this->get_query_offset( $batch_number ),
-			]
-		);
+		return $this->product_repository->find_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
 	/**
