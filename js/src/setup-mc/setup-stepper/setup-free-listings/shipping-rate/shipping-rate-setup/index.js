@@ -18,7 +18,6 @@ import useStoreCurrency from '../../../../../hooks/useStoreCurrency';
 import getCountriesPriceArray from './getCountriesPriceArray';
 
 const formKeys = {
-	rows: 'shippingRateOption-rows',
 	freeShipping: 'shippingRateOption-freeShipping',
 	priceOver: 'shippingRateOption-freeShipping-priceOver',
 };

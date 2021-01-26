@@ -4,10 +4,14 @@
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { Form } from '@woocommerce/components';
+import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { STORE_KEY } from '../../../data';
+import AppSpinner from '../../../components/app-spinner';
+import DebounceCallback from '../../../components/debounce-callback';
 import StepContent from '../components/step-content';
 import StepContentFooter from '../components/step-content-footer';
 import ShippingRate from './shipping-rate';
@@ -17,49 +21,24 @@ import PreLaunchChecklist from './pre-launch-checklist';
 import Hero from './hero';
 
 const SetupFreeListings = () => {
+	const settings = useSelect( ( select ) => {
+		return select( STORE_KEY ).getSettings();
+	} );
+	const { saveSettings } = useDispatch( STORE_KEY );
+
+	if ( ! settings ) {
+		return <AppSpinner />;
+	}
+
 	// TODO: initial values for the form.
 	// the shippingRateOption-rows should first load from previous saved value;
 	// if there is no saved value, then it should be set to the countries
 	// selected in Step 2 Choose Your Audience.
 	const initialValues = {
-		shippingRateOption: null,
-		'shippingRateOption-rows': [
-			{
-				countries: [
-					{
-						key: 'AUS',
-						label: 'Australia',
-					},
-					{
-						key: 'CHN',
-						label: 'China',
-					},
-					{
-						key: 'USA',
-						label: 'United States of America',
-					},
-				],
-				price: '20',
-			},
-		],
+		shipping_rate: settings.shipping_rate,
 		'shippingRateOption-freeShipping': false,
 		'shippingRateOption-freeShipping-priceOver': '',
 		shippingTimeOption: null,
-		'shippingTimeOption-rows': [
-			{
-				countries: [
-					{
-						key: 'AUS',
-						label: 'Australia',
-					},
-					{
-						key: 'USA',
-						label: 'United States of America',
-					},
-				],
-				time: '20',
-			},
-		],
 		'shippingTimeOption-allowGoogleDataCollection': false,
 		taxRateOption: null,
 		checkWebsiteLive: false,
@@ -72,6 +51,10 @@ const SetupFreeListings = () => {
 	// TODO: call backend API and display tax rate section
 	// only when users selected US in the list of countries.
 	const displayTaxRate = true;
+
+	const handleAutosave = ( values ) => {
+		saveSettings( values );
+	};
 
 	const handleValidate = () => {
 		const errors = {};
@@ -125,6 +108,11 @@ const SetupFreeListings = () => {
 									) }
 								</Button>
 							</StepContentFooter>
+							<DebounceCallback
+								value={ values }
+								delay={ 500 }
+								onCallback={ handleAutosave }
+							/>
 						</StepContent>
 					);
 				} }
