@@ -110,7 +110,7 @@ class SyncerHooks implements Service, Registerable {
 	public function delete_product( int $product_id ) {
 		if ( isset( $this->delete_requests[ $product_id ] ) ) {
 			$google_product_id = $this->delete_requests[ $product_id ]->get_product();
-			$this->update_products_job->start( [ $product_id => $google_product_id ] );
+			$this->delete_products_job->start( [ $product_id => $google_product_id ] );
 		}
 	}
 

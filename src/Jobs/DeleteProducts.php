@@ -72,9 +72,15 @@ class DeleteProducts extends AbstractActionSchedulerJob {
 	 * Start the job.
 	 *
 	 * @param array $args
+	 *
+	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function start( array $args = [] ) {
-		if ( ! empty( $args ) && $this->can_start( $args ) ) {
+		if ( empty( $args ) ) {
+			throw JobException::item_not_provided( 'Array of Google product IDs' );
+		}
+
+		if ( $this->can_start( $args ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $args ] );
 		}
 	}
