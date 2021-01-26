@@ -88,7 +88,8 @@ class Ads {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
-			throw new Exception( sprintf( 'Error retrieving campaigns: %s', $e->getBasicMessage() ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
 		}
 	}
 
@@ -134,10 +135,11 @@ class Ads {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
 			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
-				throw new Exception( 'A campaign with this name already exists' );
+				throw new Exception( __( 'A campaign with this name already exists', 'google-listings-and-ads' ) );
 			}
 
-			throw new Exception( sprintf( 'Error creating campaign: %s', $e->getBasicMessage() ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
 		}
 	}
 
@@ -161,7 +163,8 @@ class Ads {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
-			throw new Exception( sprintf( 'Error retrieving campaign: %s', $e->getBasicMessage() ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
 		}
 	}
 
@@ -202,7 +205,8 @@ class Ads {
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
-			throw new Exception( sprintf( 'Error editing campaign: %s', $e->getBasicMessage() ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
 		}
 	}
 
@@ -227,10 +231,11 @@ class Ads {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
 			if ( $this->has_api_exception_error( $e, 'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' ) ) {
-				throw new Exception( 'This campaign has already been deleted' );
+				throw new Exception( __( 'This campaign has already been deleted', 'google-listings-and-ads' ) );
 			}
 
-			throw new Exception( sprintf( 'Error deleting campaign: %s', $e->getBasicMessage() ) );
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error deleting campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
 		}
 	}
 
@@ -351,7 +356,8 @@ class Ads {
 			return $this->parse_id( $campaign->getCampaignBudget(), 'campaignBudgets' );
 		}
 
-		throw new Exception( sprintf( 'No budget found for campaign %d', $campaign_id ) );
+		/* translators: %d Campaign ID */
+		throw new Exception( sprintf( __( 'No budget found for campaign %d', 'google-listings-and-ads' ), $campaign_id ) );
 	}
 
 	/**
@@ -444,7 +450,7 @@ class Ads {
 	 */
 	protected function parse_id( string $name, string $resource ): int {
 		if ( ! preg_match( '/' . preg_quote( $resource, '/' ) . '\/([0-9]+)/', $name, $matches ) || empty( $matches[1] ) ) {
-			throw new Exception( 'Invalid resource ID' );
+			throw new Exception( __( 'Invalid resource ID', 'google-listings-and-ads' ) );
 		}
 
 		return absint( $matches[1] );
