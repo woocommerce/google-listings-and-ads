@@ -568,7 +568,7 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
 			/** @var Proxy $proxy */
 			$proxy    = $this->container->get( Proxy::class );
-			$result = $proxy->mark_tos_accepted( 'john.doe@example.com' );
+			$result = $proxy->mark_tos_accepted( 'google-mc', 'john.doe@example.com' );
 
 			$this->response .= sprintf(
 				"Attempting to accept Tos. Successful? %s<br>Response body: %s",
@@ -580,7 +580,7 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-check-tos' === $_GET['action'] && check_admin_referer( 'wcs-check-tos' ) ) {
 			/** @var Proxy $proxy */
 			$proxy    = $this->container->get( Proxy::class );
-			$accepted = $proxy->check_tos_accepted();
+			$accepted = $proxy->check_tos_accepted( 'google-mc' );
 
 			$this->response .= sprintf(
 				"Tos Accepted? %s<br>Response body: %s",
