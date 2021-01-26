@@ -7,11 +7,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
- * Class Programs
+ * Class Products
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports
  */
-class Programs implements Service, Registerable {
+class Products implements Service, Registerable {
 
 	/**
 	 * Register a service.
@@ -22,10 +22,10 @@ class Programs implements Service, Registerable {
 			function() {
 				wc_admin_register_page(
 					[
-						'title'  => __( 'Programs Report', 'google-listings-and-ads' ),
+						'title'  => __( 'Products Report', 'google-listings-and-ads' ),
 						'parent' => 'woocommerce-marketing',
-						'path'   => '/google/reports/programs',
-						'id'     => 'google-reports-programs',
+						'path'   => '/google/reports/products',
+						'id'     => 'google-reports-products',
 					]
 				);
 			}
