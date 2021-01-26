@@ -20,6 +20,7 @@ const DEFAULT_STATE = {
 		shipping: {
 			rates: [],
 		},
+		settings: {},
 	},
 };
 
@@ -67,6 +68,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			newState.mc.shipping.rates = newState.mc.shipping.rates.filter(
 				( el ) => el.countryCode !== countryCode
 			);
+			return newState;
+		}
+
+		case TYPES.RECEIVE_SETTINGS: {
+			const { settings } = action;
+			const newState = cloneDeep( state );
+			newState.mc.settings = settings;
 			return newState;
 		}
 

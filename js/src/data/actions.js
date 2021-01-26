@@ -150,3 +150,28 @@ export function* deleteShippingRate( countryCode ) {
 		);
 	}
 }
+
+export function* fetchSettings() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/settings`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_SETTINGS,
+			settings: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading merchant center settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
