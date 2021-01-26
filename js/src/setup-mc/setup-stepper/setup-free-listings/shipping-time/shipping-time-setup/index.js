@@ -16,7 +16,6 @@ import CountriesTimeInput from './countries-time-input';
 
 const formKeys = {
 	rows: 'shippingTimeOption-rows',
-	allowGoogleDataCollection: 'shippingTimeOption-allowGoogleDataCollection',
 };
 
 const ShippingTimeSetup = ( props ) => {
@@ -79,7 +78,7 @@ const ShippingTimeSetup = ( props ) => {
 							),
 						}
 					) }
-					{ ...getInputProps( formKeys.allowGoogleDataCollection ) }
+					{ ...getInputProps( 'share_shipping_time' ) }
 				/>
 			</VerticalGapLayout>
 		</div>

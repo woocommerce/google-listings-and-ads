@@ -30,22 +30,20 @@ const SetupFreeListings = () => {
 		return <AppSpinner />;
 	}
 
-	// TODO: initial values for the form.
-	// the shippingRateOption-rows should first load from previous saved value;
-	// if there is no saved value, then it should be set to the countries
-	// selected in Step 2 Choose Your Audience.
+	// TODO: 'shippingTimeOption-rows' should be removed, and use shipping time API instead.
 	const initialValues = {
 		shipping_rate: settings.shipping_rate,
-		'shippingRateOption-freeShipping': false,
-		'shippingRateOption-freeShipping-priceOver': '',
-		shippingTimeOption: null,
-		'shippingTimeOption-allowGoogleDataCollection': false,
-		taxRateOption: null,
-		checkWebsiteLive: false,
-		checkCheckoutProcess: false,
-		checkPaymentMethods: false,
-		checkPolicy: false,
-		checkContacts: false,
+		offers_free_shipping: settings.offers_free_shipping,
+		free_shipping_threshold: settings.free_shipping_threshold,
+		shipping_time: settings.shipping_time,
+		'shippingTimeOption-rows': [],
+		share_shipping_time: settings.share_shipping_time,
+		tax_rate: settings.tax_rate,
+		website_live: settings.website_live,
+		checkout_process_secure: settings.checkout_process_secure,
+		payment_methods_visible: settings.payment_methods_visible,
+		refund_tos_visible: settings.refund_tos_visible,
+		contact_info_visible: settings.contact_info_visible,
 	};
 
 	// TODO: call backend API and display tax rate section
@@ -81,11 +79,11 @@ const SetupFreeListings = () => {
 					const isCompleteSetupDisabled =
 						Object.keys( errors ).length >= 1 ||
 						! (
-							values.checkWebsiteLive &&
-							values.checkCheckoutProcess &&
-							values.checkPaymentMethods &&
-							values.checkPolicy &&
-							values.checkContacts
+							values.website_live &&
+							values.checkout_process_secure &&
+							values.payment_methods_visible &&
+							values.refund_tos_visible &&
+							values.contact_info_visible
 						);
 
 					return (
