@@ -18,7 +18,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
@@ -50,7 +49,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->share_with_options( SettingsController::class );
+		$this->share( SettingsController::class );
 		$this->share( ConnectionController::class );
 		$this->share( AdsAccountController::class, Middleware::class );
 		$this->share_with_container( AdsCampaignController::class );
@@ -61,7 +60,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_container( ShippingTimeBatchController::class );
 		$this->share_with_container( ShippingTimeController::class );
 		$this->share_with_container( SiteVerificationController::class );
-		$this->share_with_options( TargetAudienceController::class );
+		$this->share( TargetAudienceController::class );
 	}
 
 	/**
@@ -76,18 +75,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function share( string $class, ...$arguments ): DefinitionInterface {
 		return parent::share( $class, RESTServer::class, ...$arguments )->addTag( 'rest_controller' );
-	}
-
-	/**
-	 * Share a class with the OptionsInterface object provided.
-	 *
-	 * @param string $class        The class name to add.
-	 * @param mixed  ...$arguments Constructor arguments for the class.
-	 *
-	 * @return DefinitionInterface
-	 */
-	protected function share_with_options( string $class, ...$arguments ): DefinitionInterface {
-		return $this->share( $class, OptionsInterface::class, ...$arguments );
 	}
 
 	/**

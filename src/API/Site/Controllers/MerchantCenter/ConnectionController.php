@@ -20,15 +20,6 @@ class ConnectionController extends BaseController {
 	use ControllerTrait;
 
 	/**
-	 * BaseController constructor.
-	 *
-	 * @param RESTServer $server
-	 */
-	public function __construct( RESTServer $server ) {
-		parent::__construct( $server );
-	}
-
-	/**
 	 * Register rest routes with WordPress.
 	 */
 	protected function register_routes(): void {

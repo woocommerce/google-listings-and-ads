@@ -44,7 +44,7 @@ class ShippingRateController extends BaseOptionsController {
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ), $container->get( OptionsInterface::class ) );
+		parent::__construct( $container->get( RESTServer::class ) );
 		$this->iso = $container->get( ISO3166DataProvider::class );
 	}
 
