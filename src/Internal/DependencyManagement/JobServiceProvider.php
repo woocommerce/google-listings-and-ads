@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\SyncerHooks;
 
@@ -63,9 +64,9 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ActionScheduler::class, AsyncActionRunner::class );
 		$this->share_with_tags( ActionSchedulerJobMonitor::class, ActionScheduler::class );
 
-		$this->share_action_scheduler_job( UpdateAllProducts::class, ProductSyncer::class );
-		$this->share_action_scheduler_job( DeleteAllProducts::class, ProductSyncer::class, BatchProductHelper::class );
-		$this->share_action_scheduler_job( UpdateProducts::class, ProductSyncer::class );
+		$this->share_action_scheduler_job( UpdateAllProducts::class, ProductSyncer::class, ProductRepository::class );
+		$this->share_action_scheduler_job( DeleteAllProducts::class, ProductSyncer::class, BatchProductHelper::class, ProductRepository::class );
+		$this->share_action_scheduler_job( UpdateProducts::class, ProductSyncer::class, ProductRepository::class );
 		$this->share_action_scheduler_job( DeleteProducts::class, ProductSyncer::class );
 
 		$this->share_with_tags(
