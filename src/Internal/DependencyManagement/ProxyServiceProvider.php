@@ -49,12 +49,6 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		$this->share( Tracks::class );
 		$this->share( GoogleGtagJs::class );
 		$this->share( WP::class );
-
-		$this->share(
-			WCProxy::class,
-			function() {
-				return new WCProxy( WC()->countries );
-			}
-		);
+		$this->share( WCProxy::class, WC()->countries );
 	}
 }
