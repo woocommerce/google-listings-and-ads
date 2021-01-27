@@ -210,12 +210,23 @@ class ConnectionTest implements Service, Registerable {
 					</form>
 				</div>
 
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET" style="display:inline">
 				<p>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
+				<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
+					<br/>
+					<?php wp_nonce_field( 'wcs-google-mc-claim' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-google-mc-claim" type="hidden" />
+					<label>
+						Merchant ID <input name="merchant_id" type="text" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+					</label>
+					<button class="button">Claim website</button>
 				</p>
+				</form>
 
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -452,6 +463,12 @@ class ConnectionTest implements Service, Registerable {
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
 			$this->response = $json;
+		}
+		if ( 'wcs-google-mc-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-claim' ) ) {
+			/** @var Merchant $merchant */
+			$merchant = $this->container->get( Merchant::class );
+			$claim = $merchant->claim_website();
+//			$this->response = print_r( $merchant, true );
 		}
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
