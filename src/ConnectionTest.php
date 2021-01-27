@@ -473,13 +473,17 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {
-			$this->response = 'Proxied request > get merchant ID' . "\n";
+			try {
+				$this->response = 'Proxied request > get merchant ID' . "\n";
 
-			/** @var Proxy $proxy */
-			$proxy = $this->container->get( Proxy::class );
-			foreach ( $proxy->get_merchant_ids() as $id ) {
-				$this->response .= sprintf( "Merchant ID: %s\n", $id );
-				$_GET['merchant_id'] = $id;
+				/** @var Proxy $proxy */
+				$proxy = $this->container->get( Proxy::class );
+				foreach ( $proxy->get_merchant_ids() as $id ) {
+					$this->response .= sprintf( "Merchant ID: %s\n", $id );
+					$_GET['merchant_id'] = $id;
+				}
+			} catch ( \Exception $e ) {
+				$this->response .= $e->getMessage();
 			}
 		}
 
