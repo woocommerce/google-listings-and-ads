@@ -55,10 +55,10 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_container( AdsCampaignController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class );
-		$this->share_with_container( ShippingRateBatchController::class );
-		$this->share_with_container( ShippingRateController::class );
-		$this->share_with_container( ShippingTimeBatchController::class );
-		$this->share_with_container( ShippingTimeController::class );
+		$this->share( ShippingRateBatchController::class );
+		$this->share( ShippingRateController::class );
+		$this->share( ShippingTimeBatchController::class );
+		$this->share( ShippingTimeController::class );
 		$this->share_with_container( SiteVerificationController::class );
 		$this->share( TargetAudienceController::class );
 	}
