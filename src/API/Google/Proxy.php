@@ -43,17 +43,18 @@ class Proxy {
 	 * Get merchant IDs associated with the connected Merchant Center account.
 	 *
 	 * @return int[]
+	 * @throws Exception When an Exception is caught.
 	 */
 	public function get_merchant_ids(): array {
-		$ids = [];
 		try {
 			/** @var ShoppingContent $service */
 			$service  = $this->container->get( ShoppingContent::class );
 			$accounts = $service->accounts->authinfo();
+			$ids      = [];
 
 			foreach ( $accounts->getAccountIdentifiers() as $account ) {
 
-				$id = $account->getMerchantID();
+				$id = (int) $account->getMerchantID();
 
 				// $id can be NULL if it is a Multi Client Account (MCA)
 				if ( $id ) {
@@ -63,8 +64,71 @@ class Proxy {
 
 			return $ids;
 		} catch ( Exception $e ) {
-			return $ids;
+			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Create a new Merchant Center account.
+	 *
+	 * @return int
+	 * @throws Exception When an Exception is caught or we receive an invalid response.
+	 */
+	public function create_merchant_account(): int {
+		try {
+			$user = wp_get_current_user();
+			$tos  = $this->mark_tos_accepted( 'google-mc', $user->user_email );
+			if ( ! $tos->accepted() ) {
+				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
+			}
+
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_manager_url( 'create-merchant' ),
+				[
+					'body' => json_encode(
+						[
+							'name'       => $this->new_account_name(),
+							'websiteUrl' => site_url(),
+						]
+					),
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['id'] ) ) {
+				$id = absint( $response['id'] );
+				$this->update_merchant_id( $id );
+				return $id;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			throw new Exception( __( 'Invalid response when creating account', 'google-listings-and-ads' ) );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error creating account: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Link an existing Merchant Center account.
+	 *
+	 * @param int $id Existing account ID.
+	 *
+	 * @return int
+	 */
+	public function link_merchant_account( int $id ): int {
+		$this->update_merchant_id( $id );
+
+		return $id;
 	}
 
 	/**
@@ -111,11 +175,11 @@ class Proxy {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_ads_manager_url( 'US/create-customer' ),
+				$this->get_manager_url( 'US/create-customer' ),
 				[
 					'body' => json_encode(
 						[
-							'descriptive_name' => $this->new_ads_account_name(),
+							'descriptive_name' => $this->new_account_name(),
 							'currency_code'    => get_woocommerce_currency(),
 							'time_zone'        => $this->get_site_timezone_string(),
 						]
@@ -155,7 +219,7 @@ class Proxy {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_ads_manager_url( 'link-customer' ),
+				$this->get_manager_url( 'link-customer' ),
 				[
 					'body' => json_encode(
 						[
@@ -254,13 +318,13 @@ class Proxy {
 	}
 
 	/**
-	 * Get the ads manager endpoint URL
+	 * Get the manager endpoint URL
 	 *
 	 * @param string $name Resource name.
 	 *
 	 * @return string
 	 */
-	protected function get_ads_manager_url( string $name = '' ): string {
+	protected function get_manager_url( string $name = '' ): string {
 		$url = $this->container->get( 'connect_server_root' ) . 'manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
 	}
@@ -277,6 +341,19 @@ class Proxy {
 	}
 
 	/**
+	 * Update the Merchant Center ID to use for requests.
+	 *
+	 * @param int $id Merchant ID number.
+	 *
+	 * @return bool
+	 */
+	protected function update_merchant_id( int $id ): bool {
+		/** @var Options $options */
+		$options = $this->container->get( OptionsInterface::class );
+		return $options->update( Options::MERCHANT_ID, $id );
+	}
+
+	/**
 	 * Update the Ads ID to use for requests.
 	 *
 	 * @param int $id Ads ID number.
@@ -290,11 +367,11 @@ class Proxy {
 	}
 
 	/**
-	 * Generate a descriptive name for a new ads account.
+	 * Generate a descriptive name for a new account.
 	 *
 	 * @return string
 	 */
-	protected function new_ads_account_name(): string {
+	protected function new_account_name(): string {
 		$site_title = get_bloginfo( 'name' );
 		return $site_title;
 	}
