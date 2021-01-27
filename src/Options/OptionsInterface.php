@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const SHIPPING_RATES        = 'shipping_rates';
 	public const SHIPPING_TIMES        = 'shipping_times';
 	public const ADS_ID                = 'ads_id';
+	public const SITE_VERIFICATION     = 'site_verification';
 
 	/**
 	 * Get an option.

@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
@@ -29,8 +30,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
@@ -59,7 +62,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Dashboard::class              => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
+		GlobalSiteTag::class          => true,
 		Loaded::class                 => true,
+		SiteVerificationEvents::class => true,
 		OptionsInterface::class       => true,
 		ProductFeed::class            => true,
 		RESTControllers::class        => true,
@@ -74,6 +79,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductSyncer::class          => true,
 		ProductHelper::class          => true,
 		ProductMetaHandler::class     => true,
+		SiteVerificationMeta::class   => true,
 	];
 
 	/**
@@ -112,6 +118,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
 
 		// Inbox Notes
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
@@ -134,6 +142,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
+		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
 	}
 
 	/**

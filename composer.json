@@ -12,7 +12,8 @@
     "googleads/google-ads-php": "^6.1",
     "league/container": "^3.3",
     "league/iso3166": "^3.0",
-    "symfony/validator": "^5.2"
+    "symfony/validator": "^5.2",
+    "ext-json": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.5 || ^7",

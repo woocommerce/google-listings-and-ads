@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareTrait;
 
@@ -13,7 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareTrait;
  */
 abstract class BaseEvent implements TracksEventInterface, TracksAwareInterface {
 
-	use TracksAwareTrait;
+	use TracksAwareTrait, PluginHelper;
 
 	/**
 	 * Record an event using the Tracks instance.

@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
@@ -58,6 +59,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		'merchant_id'                         => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
+		SiteVerification::class               => true,
 	];
 
 	/**
@@ -84,6 +86,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Merchant::class,
 			$this->getLeagueContainer(),
 			$this->get_merchant_id()
+		);
+
+		$this->add(
+			SiteVerification::class,
+			$this->getLeagueContainer()
 		);
 
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
@@ -147,10 +154,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google-mc' )
 		);
-		$this->share(
-			GoogleProductService::class,
-			Google_Service_ShoppingContent::class,
-			Merchant::class
+		$this->add(
+			\Google_Service_SiteVerification::class,
+			Client::class,
+			$this->get_connect_server_url_root( 'google-sv' )
 		);
 	}
 
