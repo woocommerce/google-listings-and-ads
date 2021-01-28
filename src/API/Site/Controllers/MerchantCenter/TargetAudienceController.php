@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerT
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -20,8 +22,28 @@ defined( 'ABSPATH' ) || exit;
  */
 class TargetAudienceController extends BaseOptionsController {
 
-	use ControllerTrait;
+	use ControllerTrait {
+		prepare_item_for_response as trait_item_response;
+	}
 	use CountryCodeTrait;
+
+	/**
+	 * The WP proxy object.
+	 *
+	 * @var WP
+	 */
+	protected $wp;
+
+	/**
+	 * BaseController constructor.
+	 *
+	 * @param RESTServer $server
+	 * @param WP         $wp
+	 */
+	public function __construct( RESTServer $server, WP $wp ) {
+		parent::__construct( $server );
+		$this->wp = $wp;
+	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -53,7 +75,7 @@ class TargetAudienceController extends BaseOptionsController {
 	 */
 	protected function get_read_audience_callback(): callable {
 		return function() {
-			return $this->get_target_audience_option();
+			return $this->prepare_item_for_response( $this->get_target_audience_option() );
 		};
 	}
 
@@ -75,6 +97,21 @@ class TargetAudienceController extends BaseOptionsController {
 			);
 		};
 	}
+
+	/**
+	 * Prepare an item to be sent as an API response.
+	 *
+	 * @param array $data The raw item data.
+	 *
+	 * @return array The prepared item data.
+	 */
+	protected function prepare_item_for_response( array $data ): array {
+		$response             = $this->trait_item_response( $data );
+		$response['language'] = $this->wp->get_locale();
+
+		return $response;
+	}
+
 
 	/**
 	 * Get the option data for the target audience.
