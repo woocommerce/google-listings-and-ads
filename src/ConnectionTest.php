@@ -16,6 +16,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
@@ -213,8 +215,12 @@ class ConnectionTest implements Service, Registerable {
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
+				</p>
+
+				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-claim' ), $url ), 'wcs-google-sv-claim' ) ); ?>">Claim Site (if MCA)</a>
 				</p>
 
 				<div>
@@ -452,6 +458,27 @@ class ConnectionTest implements Service, Registerable {
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
 			$this->response = $json;
+		}
+
+		if ( 'wcs-google-sv-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-claim' ) ) {
+			try {
+				/** @var Options $options */
+				$options = $this->container->get( OptionsInterface::class );
+				$mca     = (bool) $options->get( Options::MERCHANT_ID_MCA );
+
+				if ( ! $mca ) {
+					$this->response = 'This site was not created through a merchant account (unable to claim)' . "\n";
+					return;
+				}
+
+				/** @var Proxy $proxy */
+				$proxy = $this->container->get( Proxy::class );
+				if ( $proxy->claim_merchant_website() ) {
+					$this->response = 'Claimed website ' . site_url() . "\n";
+				}
+			} catch ( \Exception $e ) {
+				$this->response .= $e->getMessage();
+			}
 		}
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {

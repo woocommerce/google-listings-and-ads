@@ -25,6 +25,7 @@ final class Options implements OptionsInterface, Service {
 		self::MC_SETUP_COMPLETED_AT => true,
 		self::MERCHANT_CENTER       => true,
 		self::MERCHANT_ID           => true,
+		self::MERCHANT_ID_MCA       => true,
 		self::SHIPPING_RATES        => true,
 		self::SHIPPING_TIMES        => true,
 		self::ADS_ID                => true,
