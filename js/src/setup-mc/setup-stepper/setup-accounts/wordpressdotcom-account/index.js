@@ -1,27 +1,32 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import AppButton from '../../../../components/app-button';
 import Section from '../../../../wcdl/section';
 import TitleButtonLayout from '../title-button-layout';
 import useDispatchCoreNotices from '../../../../hooks/useDispatchCoreNotices';
 
 const WordPressDotComAccount = () => {
+	const [ loading, setLoading ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
+		setLoading( true );
+
 		try {
 			const { url } = await apiFetch( {
 				path: '/wc/gla/jetpack/connect',
 			} );
 			window.location.href = url;
 		} catch ( error ) {
+			setLoading( false );
 			createNotice(
 				'error',
 				__(
@@ -48,9 +53,13 @@ const WordPressDotComAccount = () => {
 							'google-listings-and-ads'
 						) }
 						button={
-							<Button isSecondary onClick={ handleConnectClick }>
+							<AppButton
+								isSecondary
+								loading={ loading }
+								onClick={ handleConnectClick }
+							>
 								{ __( 'Connect', 'google-listings-and-ads' ) }
-							</Button>
+							</AppButton>
 						}
 					/>
 				</Section.Card.Body>
