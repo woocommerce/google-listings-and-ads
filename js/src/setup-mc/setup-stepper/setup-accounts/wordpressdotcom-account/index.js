@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,7 +13,12 @@ import TitleButtonLayout from '../title-button-layout';
 
 const WordPressDotComAccount = () => {
 	// TODO: call backend API upon clicking Connect button.
-	const handleConnectClick = () => {};
+	const handleConnectClick = async () => {
+		const { url } = await apiFetch( {
+			path: '/wc/gla/jetpack/connect',
+		} );
+		window.location.href = url;
+	};
 
 	return (
 		<Section
