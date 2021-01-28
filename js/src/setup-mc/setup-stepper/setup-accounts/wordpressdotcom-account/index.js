@@ -4,6 +4,7 @@
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -12,9 +13,19 @@ import AppButton from '../../../../components/app-button';
 import Section from '../../../../wcdl/section';
 import TitleButtonLayout from '../title-button-layout';
 import useDispatchCoreNotices from '../../../../hooks/useDispatchCoreNotices';
+import { STORE_KEY } from '../../../../data/constants';
+import AppSpinner from '../../../../components/app-spinner';
 
 const WordPressDotComAccount = () => {
 	const [ loading, setLoading ] = useState( false );
+	const { jetpack, isResolving } = useSelect( ( select ) => {
+		const acc = select( STORE_KEY ).getJetpackAccount();
+		const resolving = select( STORE_KEY ).isResolving(
+			'getJetpackAccount'
+		);
+
+		return { jetpack: acc, isResolving: resolving };
+	} );
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
@@ -47,21 +58,47 @@ const WordPressDotComAccount = () => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<TitleButtonLayout
-						title={ __(
-							'Connect your WordPress.com account',
-							'google-listings-and-ads'
-						) }
-						button={
-							<AppButton
-								isSecondary
-								loading={ loading }
-								onClick={ handleConnectClick }
-							>
-								{ __( 'Connect', 'google-listings-and-ads' ) }
-							</AppButton>
-						}
-					/>
+					{ isResolving && <AppSpinner /> }
+					{ ! isResolving && ! jetpack?.active && (
+						<TitleButtonLayout
+							title={ __(
+								'Connect your WordPress.com account',
+								'google-listings-and-ads'
+							) }
+							button={
+								<AppButton
+									isSecondary
+									loading={ loading }
+									onClick={ handleConnectClick }
+								>
+									{ __(
+										'Connect',
+										'google-listings-and-ads'
+									) }
+								</AppButton>
+							}
+						/>
+					) }
+					{ ! isResolving && jetpack?.active && (
+						<TitleButtonLayout
+							title={ __(
+								'Connected',
+								'google-listings-and-ads'
+							) }
+							button={
+								<AppButton
+									isTertiary
+									isDestructive
+									onClick={ handleConnectClick }
+								>
+									{ __(
+										'Disconnect',
+										'google-listings-and-ads'
+									) }
+								</AppButton>
+							}
+						/>
+					) }
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>
