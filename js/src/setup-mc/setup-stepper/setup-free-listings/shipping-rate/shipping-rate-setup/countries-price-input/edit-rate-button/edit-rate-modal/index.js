@@ -4,21 +4,32 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { STORE_KEY } from '../../../../../../../../data';
 import AppModal from '../../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../../components/app-input-control';
-import './index.scss';
 import AppCountryMultiSelect from '../../../../../../../../components/app-country-multi-select';
 import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
+import './index.scss';
 
 const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
 
-	// TODO: call API to delete the rate.
+	const {
+		addShippingRate,
+		updateShippingRate,
+		deleteShippingRate,
+	} = useDispatch( STORE_KEY );
+
 	const handleDeleteClick = () => {
+		rate.countries.forEach( ( el ) => {
+			deleteShippingRate( el );
+		} );
+
 		onRequestClose();
 	};
 
@@ -30,22 +41,48 @@ const EditRateModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: call backend API when submit form.
-	const handleSubmitCallback = () => {
+	const handleSubmitCallback = ( values ) => {
+		const { countryCodes, currency, price } = values;
+
+		const oriCountrySet = new Set( rate.countries );
+		countryCodes.forEach( ( el ) => {
+			if ( ! oriCountrySet.has( el ) ) {
+				addShippingRate( {
+					countryCode: el,
+					currency,
+					rate: price,
+				} );
+			} else {
+				updateShippingRate( {
+					countryCode: el,
+					currency,
+					rate: price,
+				} );
+			}
+		} );
+
+		const valuesCountrySet = new Set( values.countryCodes );
+		rate.countries.forEach( ( el ) => {
+			if ( ! valuesCountrySet.has( el ) ) {
+				deleteShippingRate( el );
+			}
+		} );
+
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countries: rate.countries,
+				countryCodes: rate.countries,
+				currency: rate.currency,
 				price: rate.price,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, handleSubmit } = formProps;
+				const { getInputProps, values, handleSubmit } = formProps;
 
 				return (
 					<AppModal
@@ -82,7 +119,7 @@ const EditRateModal = ( props ) => {
 									) }
 								</div>
 								<AppCountryMultiSelect
-									{ ...getInputProps( 'countries' ) }
+									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
 							<AppInputControl
@@ -90,10 +127,7 @@ const EditRateModal = ( props ) => {
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
-								suffix={ __(
-									'USD',
-									'google-listings-and-ads'
-								) }
+								suffix={ values.currency }
 								{ ...getInputProps( 'price' ) }
 							/>
 						</VerticalGapLayout>

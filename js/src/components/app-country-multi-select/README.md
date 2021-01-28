@@ -17,5 +17,5 @@ Same as [SelectControl](https://woocommerce.github.io/woocommerce-admin/#/compon
 
 | Property | Description | Type | Default |
 | --- | --- | --- | --- |
-| `value` | Selected country values. | Array | [] |
-| `onChange` | Text to display below the icon | Function | - |
+| `value` | Selected country values. | `Array<string>` | [] |
+| `onChange` | Handler function called when the selected values are changed. | `(values: Array<string>) => void` | - |

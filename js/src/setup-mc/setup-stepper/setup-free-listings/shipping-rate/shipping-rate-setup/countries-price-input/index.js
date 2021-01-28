@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import useCountryKeyNameMap from '../../../../../../hooks/useCountryKeyNameMap';
 import AppInputControl from '../../../../../../components/app-input-control';
 import More from '../../../components/more';
 import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
@@ -15,15 +16,19 @@ import './index.scss';
 
 const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;
-	const { countries, price } = value;
+	const { countries, currency, price } = value;
 
 	const audienceCountries = useGetAudienceCountries();
-	const first5countries = countries.slice( 0, 5 ).map( ( c ) => c.label );
-	const remainingCount = countries.length - first5countries.length;
+	const keyNameMap = useCountryKeyNameMap();
+	const first5countryNames = countries
+		.slice( 0, 5 )
+		.map( ( c ) => keyNameMap[ c ] );
+	const remainingCount = countries.length - first5countryNames.length;
 
 	const handleChange = ( v ) => {
 		onChange( {
 			countries,
+			currency,
 			price: v,
 		} );
 	};
@@ -48,7 +53,9 @@ const CountriesPriceInput = ( props ) => {
 														`all countries`,
 														'google-listings-and-ads'
 												  )
-												: first5countries.join( ', ' ) }
+												: first5countryNames.join(
+														', '
+												  ) }
 										</strong>
 									),
 									more: <More count={ remainingCount } />,
@@ -58,7 +65,7 @@ const CountriesPriceInput = ( props ) => {
 						<EditRateButton rate={ value } />
 					</div>
 				}
-				suffix={ __( 'USD', 'google-listings-and-ads' ) }
+				suffix={ currency }
 				value={ price }
 				onChange={ handleChange }
 			/>

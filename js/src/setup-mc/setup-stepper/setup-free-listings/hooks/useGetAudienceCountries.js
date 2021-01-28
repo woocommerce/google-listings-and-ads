@@ -1,22 +1,33 @@
-// TODO: React hook to call backend API to get the selected countries
-// from Step 2 Choose Your Audience.
-const useGetAudienceCountries = () => {
-	const audienceCountries = [
-		{
-			key: 'AUS',
-			label: 'Australia',
-		},
-		{
-			key: 'CHN',
-			label: 'China',
-		},
-		{
-			key: 'USA',
-			label: 'United States of America',
-		},
-	];
+/**
+ * External dependencies
+ */
+import { SETTINGS_STORE_NAME } from '@woocommerce/data';
+import { useSelect } from '@wordpress/data';
 
-	return audienceCountries;
+/**
+ * Internal dependencies
+ */
+import useAudienceSelectedCountryCodes from '../../choose-audience/useAudienceSelectedCountryCodes';
+
+// from Step 2 Choose Your Audience.
+// TODO: consider not to use this and remove this, because this is too coupled with the label logic.
+const useGetAudienceCountries = () => {
+	const [ value ] = useAudienceSelectedCountryCodes();
+	const keyNameMap = useSelect( ( select ) => {
+		return select( SETTINGS_STORE_NAME ).getSetting(
+			'wc_admin',
+			'countries'
+		);
+	} );
+
+	const result = value.map( ( el ) => {
+		return {
+			key: el,
+			label: keyNameMap[ el ],
+		};
+	} );
+
+	return result;
 };
 
 export default useGetAudienceCountries;
