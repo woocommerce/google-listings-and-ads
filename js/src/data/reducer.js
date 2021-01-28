@@ -21,6 +21,11 @@ const DEFAULT_STATE = {
 			rates: [],
 		},
 		settings: null,
+		accounts: {
+			jetpack: null,
+			google: null,
+			mc: null,
+		},
 	},
 };
 
@@ -82,6 +87,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { settings } = action;
 			const newState = cloneDeep( state );
 			newState.mc.settings = settings;
+			return newState;
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_JETPACK: {
+			const { account } = action;
+			const newState = cloneDeep( state );
+			newState.mc.accounts.jetpack = account;
 			return newState;
 		}
 

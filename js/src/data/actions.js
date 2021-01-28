@@ -202,3 +202,28 @@ export function* saveSettings( settings ) {
 		);
 	}
 }
+
+export function* fetchJetpackAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/jetpack/connected`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_JETPACK,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Jetpack account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

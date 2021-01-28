@@ -9,3 +9,7 @@ export const getShippingRates = ( state ) => {
 export const getSettings = ( state ) => {
 	return state.mc.settings;
 };
+
+export const getJetpackAccount = ( state ) => {
+	return state.mc.accounts.jetpack;
+};
