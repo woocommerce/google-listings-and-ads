@@ -10,14 +10,26 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '../../../../wcdl/section';
 import TitleButtonLayout from '../title-button-layout';
+import useDispatchCoreNotices from '../../../../hooks/useDispatchCoreNotices';
 
 const WordPressDotComAccount = () => {
-	// TODO: call backend API upon clicking Connect button.
+	const { createNotice } = useDispatchCoreNotices();
+
 	const handleConnectClick = async () => {
-		const { url } = await apiFetch( {
-			path: '/wc/gla/jetpack/connect',
-		} );
-		window.location.href = url;
+		try {
+			const { url } = await apiFetch( {
+				path: '/wc/gla/jetpack/connect',
+			} );
+			window.location.href = url;
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to connect your WordPress.com account. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
 	};
 
 	return (
