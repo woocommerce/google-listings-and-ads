@@ -196,13 +196,7 @@ class PHPView implements View {
 	 */
 	public function __get( string $property ) {
 		if ( array_key_exists( $property, $this->context ) ) {
-			$value = $this->context[ $property ];
-			try {
-				return $this->escape( (string) $this->context[ $property ] );
-			} catch ( Throwable $exception ) {
-				// Value could not be converted to string, so just return as-is.
-				return $value;
-			}
+			return wc_clean( $this->context[ $property ] );
 		}
 
 		/*
@@ -215,15 +209,5 @@ class PHPView implements View {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Escape a value for output.
-	 *
-	 * @param mixed $value Value to escape.
-	 * @return string Escaped value.
-	 */
-	protected function escape( $value ): string {
-		return htmlspecialchars( (string) $value, ENT_COMPAT );
 	}
 }

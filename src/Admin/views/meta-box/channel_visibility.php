@@ -39,21 +39,19 @@ $has_issues = ! empty( $issues );
 	<div class="alert alert-warning sync-status">
 		<p><strong>Google sync status</strong></p>
 		<p><?php echo $is_synced ? 'Synced' : 'Not synced'; ?></p>
-		<?php if ( $is_synced ) : ?>
-			<?php if ( $has_issues ) : ?>
-				<div class="gla-product-issues">
-					<p><strong>Issues</strong></p>
-					<ul>
-						<li>Missing description</li>
-					</ul>
-				</div>
-				<div class="gla-product-suggestion-actions">
-					<p><strong>Suggested actions</strong></p>
-					<ul>
-						<li>Add a description for this product</li>
-					</ul>
-				</div>
-			<?php endif; ?>
+		<?php if ( $is_synced && $has_issues ) : ?>
+			<div class="gla-product-issues">
+				<p><strong>Issues</strong></p>
+				<ul>
+					<li>Missing description</li>
+				</ul>
+			</div>
+			<div class="gla-product-suggestion-actions">
+				<p><strong>Suggested actions</strong></p>
+				<ul>
+					<li>Add a description for this product</li>
+				</ul>
+			</div>
 		<?php endif; ?>
 	</div>
 </div>
