@@ -18,7 +18,7 @@ import './index.scss';
 const headers = [
 	{
 		key: 'title',
-		label: __( 'Title', 'google-listings-and-ads' ),
+		label: __( 'Program', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
 		isSortable: true,
@@ -36,7 +36,14 @@ const headers = [
 	{ key: 'actions', label: '', required: true },
 ];
 
-const AllProgramsTableCard = () => {
+/**
+ * All programs table.
+ *
+ * @see AppTableCard
+ *
+ * @param {Object} [props] Properties to be forwarded to AppTableCard.
+ */
+const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 
 	// TODO: data from backend API.
@@ -63,7 +70,6 @@ const AllProgramsTableCard = () => {
 
 	return (
 		<AppTableCard
-			trackEventReportId="all-programs"
 			className="gla-all-programs-table-card"
 			title={
 				<div className="gla-all-programs-table-card__header">
@@ -102,6 +108,7 @@ const AllProgramsTableCard = () => {
 			rowsPerPage={ 10 }
 			query={ query }
 			onQueryChange={ onQueryChange }
+			{ ...props }
 		/>
 	);
 };

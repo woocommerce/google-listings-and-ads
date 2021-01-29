@@ -8,13 +8,44 @@ import { updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import getDateQuery from './getDateQuery';
+import { recordDatepickerUpdateEvent } from '../../utils/recordEvent';
 
 const isoDateFormat = 'YYYY-MM-DD';
 
-const AppDateRangeFilterPicker = () => {
+/**
+ * Renders DateRangeFilterPicker, handles range selection,
+ * fires applicable track events.
+ *
+ * @param {Object} props
+ * @param {string} [props.trackEventReportId] An id to be used as `report` propert in fired events.
+ * 												If not given, no track event will be fired.
+ *
+ * @return {module:@woocommerce/components~DateRangeFilterPicker} Customized DateRangeFilterPicker.
+ */
+const AppDateRangeFilterPicker = ( props ) => {
+	const { trackEventReportId } = props;
 	const dateQuery = getDateQuery();
 
+	/**
+	 * Handles DateRangeFilterPicker range changes.
+	 *
+	 * Reports `recordDatepickerUpdateEvent` with props.trackEventReportId
+	 * and `data` given by `onRangeSelect` callback.
+	 * Updates query string with selected data.
+	 *
+	 * @param {Object} data Data given by `DateRangeFilterPicker`'s `onRangeSelect` callback.
+	 * @param {string} data.compare
+	 * @param {string} data.period
+	 * @param {string} data.after
+	 * @param {string} data.before
+	 */
 	const handleRangeSelect = ( data ) => {
+		if ( trackEventReportId ) {
+			recordDatepickerUpdateEvent( {
+				report: trackEventReportId,
+				...data,
+			} );
+		}
 		updateQueryString( data );
 	};
 

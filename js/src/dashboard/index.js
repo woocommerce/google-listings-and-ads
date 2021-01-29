@@ -39,14 +39,17 @@ const Dashboard = () => {
 			},
 		},
 	};
+	const trackEventReportId = 'dashboard';
 
 	return (
 		<div className="gla-dashboard">
 			<TabNav initialName="dashboard" />
 			<div className="gla-dashboard__filter">
-				<AppDateRangeFilterPicker />
-				<Link href={ getNewPath( null, '/google/analytics' ) }>
-					<Button isPrimary>View Analytics</Button>
+				<AppDateRangeFilterPicker
+					trackEventReportId={ trackEventReportId }
+				/>
+				<Link href={ getNewPath( null, '/google/reports' ) }>
+					<Button isPrimary>View Reports</Button>
 				</Link>
 			</div>
 			<div className="gla-dashboard__performance">
@@ -86,7 +89,9 @@ const Dashboard = () => {
 				</SummaryCard>
 			</div>
 			<div className="gla-dashboard__programs">
-				<AllProgramsTableCard />
+				<AllProgramsTableCard
+					trackEventReportId={ trackEventReportId }
+				/>
 			</div>
 		</div>
 	);
