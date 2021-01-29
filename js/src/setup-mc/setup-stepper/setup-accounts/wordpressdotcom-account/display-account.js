@@ -12,7 +12,7 @@ import AppButton from '../../../../components/app-button';
 import TitleButtonLayout from '../title-button-layout';
 import useDispatchCoreNotices from '../../../../hooks/useDispatchCoreNotices';
 
-const DisconnectAccount = ( props ) => {
+const DisplayAccount = ( props ) => {
 	const { jetpack } = props;
 	const [ loading, setLoading ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
@@ -55,4 +55,4 @@ const DisconnectAccount = ( props ) => {
 	);
 };
 
-export default DisconnectAccount;
+export default DisplayAccount;
