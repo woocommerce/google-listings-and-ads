@@ -109,7 +109,7 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			$error = isset( $response['message'] ) ? $response['message'] : __( 'Invalid response when creating account', 'google-listings-and-ads' );
+			$error = $response['message'] ?? __( 'Invalid response when creating account', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
@@ -165,7 +165,7 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			$error = isset( $response['message'] ) ? $response['message'] : __( 'Invalid response when claiming website', 'google-listings-and-ads' );
+			$error = $response['message'] ?? __( 'Invalid response when claiming website', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
@@ -241,7 +241,7 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			$error = isset( $response['message'] ) ? $response['message'] : __( 'Invalid response when creating account', 'google-listings-and-ads' );
+			$error = $response['message'] ?? __( 'Invalid response when creating account', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
@@ -284,7 +284,7 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			$error = isset( $response['message'] ) ? $response['message'] : __( 'Invalid response when linking account', 'google-listings-and-ads' );
+			$error = $response['message'] ?? __( 'Invalid response when linking account', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
