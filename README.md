@@ -2,25 +2,16 @@
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
-## Project Management
-
- - [Sprint board](https://github.com/woocommerce/google-listings-and-ads/projects/1)
- - [Issue breakdown by integration area project board](https://github.com/woocommerce/google-listings-and-ads/projects/2)
- - [Estimated timings](https://docs.google.com/spreadsheets/d/19rSXGrTzZHB5pWegQ_mG9FehbglggcBdxr2JlS2aZNs/edit#gid=0)
- - [Slidedeck on cycles for reference](https://docs.google.com/presentation/d/1uNyLwYfquI_QNsiRc5b6V9e1QYfNI1aobqY_fU5gfio/edit#slide=id.ga05d0b5191_0_27)
-
 ## Prerequisites (TBC)
 
  - WordPress 5.3+
  - WooCommerce 4.5+
  - PHP 7.0+
 
-Some considerations...
+Current considerations...
  - PHP 7.2 is recommended but [Woo still supports 7.0](https://docs.woocommerce.com/document/update-php-wordpress/)
- - We're considering using new 7.1+ syntax
- - We're considering using dependency injection containers (building off those available in WooCommerce 4.7)
- - We're building using more modern React UI elements (WP 5.3) which was only bumped to be the minimum for WC 4.5
- - Note - full Launch is estimated to not be until April 5, 2021
+ - We're using new 7.1+ syntax - will assess closer to launch whether we revert to 7.0 compatibility syntax
+ - We're building using React UI elements (available in WP 5.3) which was only bumped to be the minimum for WC 4.5
 
 ## Development
 
@@ -103,3 +94,8 @@ What is considered private?
 * Internal Automattic links. Default to summarizing the information instead. If you must it’s OK to use shorthand (e.g., 1234-wpcom) but please try to summarize.
 * References to filenames in proprietary codebases. E.g. or a reference to a private repository.
 * Images that show private user data… or any of the above.
+
+## Project Management
+
+ - [Project Board](https://github.com/woocommerce/google-listings-and-ads/projects/1)
+ - [Issue breakdown by integration area project board](https://github.com/woocommerce/google-listings-and-ads/projects/2)

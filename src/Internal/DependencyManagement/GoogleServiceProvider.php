@@ -4,9 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
@@ -15,6 +17,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
+use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
+use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
+use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
 use Google\Client;
 use Google_Service_ShoppingContent;
 use GuzzleHttp\Client as GuzzleClient;
@@ -44,12 +49,17 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		Client::class                         => true,
 		Google_Service_ShoppingContent::class => true,
+		GoogleAdsClient::class                => true,
 		GuzzleClient::class                   => true,
 		Proxy::class                          => true,
 		Merchant::class                       => true,
+		Ads::class                            => true,
 		'connect_server_root'                 => true,
+		'connect_server_auth_header'          => true,
+		'merchant_id'                         => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
+		SiteVerification::class               => true,
 	];
 
 	/**
@@ -61,9 +71,16 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register() {
 		$this->register_guzzle();
+		$this->register_ads_client();
 		$this->register_google_classes();
 		$this->add( Proxy::class, $this->getLeagueContainer() );
 		$this->add( Connection::class, $this->getLeagueContainer() );
+
+		$this->add(
+			Ads::class,
+			$this->getLeagueContainer(),
+			$this->get_ads_id()
+		);
 
 		$this->add(
 			Merchant::class,
@@ -71,7 +88,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_merchant_id()
 		);
 
+		$this->add(
+			SiteVerification::class,
+			$this->getLeagueContainer()
+		);
+
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
+		$this->getLeagueContainer()->add( 'connect_server_auth_header', [ 'Authorization' => $this->generate_auth_header() ] );
+		$this->getLeagueContainer()->add( 'merchant_id', $this->get_merchant_id()->get() );
 	}
 
 	/**
@@ -83,7 +107,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack->remove( 'http_errors' );
 
 			try {
-				$auth_header = $this->generate_guzzle_auth_header();
+				$auth_header = $this->generate_auth_header();
 				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
 			} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
 				// Don't do anything with the error here.
@@ -97,6 +121,30 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
+	 * Register ads client.
+	 */
+	protected function register_ads_client() {
+		$callback = function() {
+			// Using placeholder values, as the middleware server handles the authentication tokens.
+			$oauth = ( new OAuth2TokenBuilder() )
+				->withClientId( 'clientid' )
+				->withClientSecret( 'clientsecret' )
+				->withRefreshToken( 'refreshtoken' )
+				->build();
+
+			// The developer token will be handled by the middleware server.
+			return ( new GoogleAdsClientBuilder() )
+				->withDeveloperToken( 'developertoken' )
+				->withOAuth2Credential( $oauth )
+				->withEndpoint( $this->get_connect_server_endpoint() )
+				->withTransport( 'rest' )
+				->build();
+		};
+
+		$this->share_interface( GoogleAdsClient::class, new Definition( GoogleAdsClient::class, $callback ) );
+	}
+
+	/**
 	 * Register the various Google classes we use.
 	 */
 	protected function register_google_classes() {
@@ -106,10 +154,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google-mc' )
 		);
-		$this->share(
-			GoogleProductService::class,
-			Google_Service_ShoppingContent::class,
-			Merchant::class
+		$this->add(
+			\Google_Service_SiteVerification::class,
+			Client::class,
+			$this->get_connect_server_url_root( 'google-sv' )
 		);
 	}
 
@@ -130,15 +178,20 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	}
 
 	/**
-	 * Generate the authorization header for the Guzzle client.
+	 * Generate the authorization header for the GuzzleClient and GoogleAdsClient.
 	 *
 	 * @return string
 	 */
-	protected function generate_guzzle_auth_header(): string {
+	protected function generate_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
 		$token   = $manager->get_access_token( false, false, false );
-		$this->check_for_wp_error( $token );
+
+		try {
+			$this->check_for_wp_error( $token );
+		} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+			return '';
+		}
 
 		[ $key, $secret ] = explode( '.', $token->secret );
 
@@ -184,6 +237,31 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$path = '/' . trim( $path, '/' );
 
 		return new RawArgument( "{$url}/google${path}" );
+	}
+
+	/**
+	 * Get the connect server endpoint in the format `domain:port/path`
+	 *
+	 * @return string
+	 */
+	protected function get_connect_server_endpoint(): string {
+		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google-ads' )->getValue() );
+		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
+		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
+	}
+
+	/**
+	 * Get the ads ID to use for requests.
+	 *
+	 * @return PositiveInteger
+	 */
+	protected function get_ads_id(): PositiveInteger {
+		/** @var Options $options */
+		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
+		$default = $_GET['customer_id'] ?? 12345; // phpcs:ignore WordPress.Security
+		$ads_id  = intval( $options->get( Options::ADS_ID, $default ) );
+
+		return new PositiveInteger( $ads_id );
 	}
 
 	/**

@@ -1,0 +1,18 @@
+.gla-reports__metric-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+$icon-color: #949494;
+
+.gla-reports__metric-infoicon {
+	display: flex;
+	align-items: center;
+	fill: $icon-color;
+	cursor: pointer;
+
+	&:hover {
+		fill: darken($color: $icon-color, $amount: 20%);
+	}
+}
