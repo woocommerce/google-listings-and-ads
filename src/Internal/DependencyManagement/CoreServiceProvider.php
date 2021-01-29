@@ -4,6 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -11,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
@@ -34,6 +38,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -71,6 +76,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductMetaHandler::class     => true,
 		BatchProductHelper::class     => true,
 		ProductRepository::class      => true,
+		MetaBoxInterface::class       => true,
+		MetaBoxInitializer::class     => true,
+		ViewFactory::class            => true,
 	];
 
 	/**
@@ -90,7 +98,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_interface( OptionsInterface::class, Options::class );
 
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
+		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class, PHPViewFactory::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
@@ -112,6 +120,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ProductSyncer::class,
 			GoogleProductService::class,
 			BatchProductHelper::class,
+			ProductHelper::class,
 			ValidatorInterface::class
 		);
 
@@ -119,6 +128,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			->inflector( TracksAwareInterface::class )
 			->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
+
+		// Share admin meta boxes
+		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class );
+		$this->conditionally_share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class );
+
+		$this->share_with_tags( PHPViewFactory::class );
 
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );

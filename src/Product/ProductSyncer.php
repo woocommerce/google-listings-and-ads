@@ -37,19 +37,27 @@ class ProductSyncer implements Service {
 	protected $validator;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * ProductSyncer constructor.
 	 *
 	 * @param GoogleProductService $google_service
 	 * @param BatchProductHelper   $batch_helper
+	 * @param ProductHelper        $product_helper
 	 * @param ValidatorInterface   $validator
 	 */
 	public function __construct(
 		GoogleProductService $google_service,
 		BatchProductHelper $batch_helper,
+		ProductHelper $product_helper,
 		ValidatorInterface $validator
 	) {
 		$this->google_service = $google_service;
 		$this->batch_helper   = $batch_helper;
+		$this->product_helper = $product_helper;
 		$this->validator      = $validator;
 	}
 
@@ -64,11 +72,15 @@ class ProductSyncer implements Service {
 	 */
 	public function update( array $products ): BatchProductResponse {
 		// prepare and validate products
-		$products         = ProductHelper::expand_variations( $products );
+		$products         = BatchProductHelper::expand_variations( $products );
 		$updated_products = [];
 		$invalid_products = [];
 		$product_entries  = [];
 		foreach ( $products as $product ) {
+			if ( ! $this->product_helper->is_sync_enabled( $product ) ) {
+				continue;
+			}
+
 			$adapted_product   = ProductHelper::generate_adapted_product( $product );
 			$validation_result = $this->validate_product( $adapted_product );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
@@ -110,7 +122,7 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete( array $products ): BatchProductResponse {
-		$products = ProductHelper::expand_variations( $products );
+		$products = BatchProductHelper::expand_variations( $products );
 
 		// filter the synced products
 		$synced_products = $this->batch_helper->filter_synced_products( $products );

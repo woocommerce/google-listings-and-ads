@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use WC_Product;
+use WC_Product_Variable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -104,5 +105,39 @@ class BatchProductHelper implements Service {
 		}
 
 		return $request_entries;
+	}
+
+	/**
+	 * @param BatchProductRequestEntry[] $request_entries
+	 *
+	 * @return string[] Array of Google product IDs mapped to WooCommerce product IDs
+	 */
+	public function request_entries_to_id_map( array $request_entries ): array {
+		$id_map = [];
+		foreach ( $request_entries as $request_entry ) {
+			$id_map[ $request_entry->get_wc_product_id() ] = $request_entry->get_product();
+		}
+
+		return $id_map;
+	}
+
+	/**
+	 * Fetch and return all of the available product variations next to the given products.
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return WC_Product[]
+	 */
+	public static function expand_variations( array $products ): array {
+		$all_products = [];
+		foreach ( $products as $product ) {
+			if ( $product instanceof WC_Product_Variable ) {
+				$all_products = array_merge( $all_products, $product->get_available_variations( 'objects' ) );
+			} else {
+				$all_products[] = $product;
+			}
+		}
+
+		return $all_products;
 	}
 }
