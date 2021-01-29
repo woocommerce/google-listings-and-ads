@@ -186,7 +186,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
 		$token   = $manager->get_access_token( false, false, false );
-		$this->check_for_wp_error( $token );
+
+		try {
+			$this->check_for_wp_error( $token );
+		} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+			return '';
+		}
 
 		[ $key, $secret ] = explode( '.', $token->secret );
 
