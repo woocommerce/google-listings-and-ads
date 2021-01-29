@@ -131,8 +131,8 @@ class AccountController extends BaseController {
 			return [
 				'active'      => $this->is_jetpack_connected(),
 				'owner'       => $this->is_jetpack_connection_owner(),
-				'displayName' => $user_data['display_name'],
-				'email'       => $user_data['email'],
+				'displayName' => array_key_exists( 'display_name', $user_data, ) ? $user_data['display_name'] : '',
+				'email'       => array_key_exists( 'email', $user_data, ) ? $user_data['email'] : '',
 			];
 		};
 	}
