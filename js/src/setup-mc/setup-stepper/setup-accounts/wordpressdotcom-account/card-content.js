@@ -39,7 +39,7 @@ const CardContent = () => {
 	}
 
 	if ( jetpack.active === 'yes' ) {
-		return <DisconnectAccount />;
+		return <DisconnectAccount jetpack={ jetpack } />;
 	}
 
 	if ( jetpack.active === 'no' ) {

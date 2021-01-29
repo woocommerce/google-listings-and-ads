@@ -12,7 +12,8 @@ import AppButton from '../../../../components/app-button';
 import TitleButtonLayout from '../title-button-layout';
 import useDispatchCoreNotices from '../../../../hooks/useDispatchCoreNotices';
 
-const DisconnectAccount = () => {
+const DisconnectAccount = ( props ) => {
+	const { jetpack } = props;
 	const [ loading, setLoading ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 
@@ -39,7 +40,7 @@ const DisconnectAccount = () => {
 
 	return (
 		<TitleButtonLayout
-			title={ __( 'Connected', 'google-listings-and-ads' ) }
+			title={ jetpack.email }
 			button={
 				<AppButton
 					isTertiary
