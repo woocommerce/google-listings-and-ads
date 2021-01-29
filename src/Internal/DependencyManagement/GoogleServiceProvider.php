@@ -172,6 +172,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google-sv' )
 		);
+		$this->share(
+			GoogleProductService::class,
+			Google_Service_ShoppingContent::class,
+			Merchant::class
+		);
 	}
 
 	/**
