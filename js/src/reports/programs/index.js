@@ -30,7 +30,7 @@ const performanceMetrics = [
 	[ 'totalSpend', __( 'Total Spend', 'google-listings-and-ads' ) ],
 ];
 
-const ProgramsReports = () => {
+const ProgramsReport = () => {
 	// TODO: this data should come from backend API.
 	const data = metricsData();
 
@@ -135,4 +135,4 @@ const ProgramsReports = () => {
 	);
 };
 
-export default ProgramsReports;
+export default ProgramsReport;

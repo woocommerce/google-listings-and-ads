@@ -3,7 +3,7 @@
  */
 import TabNav from '../../tab-nav';
 
-const ProductsReports = () => {
+const ProductsReport = () => {
 	return (
 		<div>
 			<TabNav initialName="reports" />
@@ -11,4 +11,4 @@ const ProductsReports = () => {
 	);
 };
 
-export default ProductsReports;
+export default ProductsReport;

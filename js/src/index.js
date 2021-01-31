@@ -12,8 +12,8 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
-import ProgramsReports from './reports/programs';
-import ProductsReports from './reports/products';
+import ProgramsReport from './reports/programs';
+import ProductsReport from './reports/products';
 import ProductFeed from './product-feed';
 import Settings from './settings';
 
@@ -76,8 +76,8 @@ addFilter(
 					],
 					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				],
-				title: __( 'Programs Reports', 'google-listings-and-ads' ),
-				container: ProgramsReports,
+				title: __( 'Programs Report', 'google-listings-and-ads' ),
+				container: ProgramsReport,
 				path: '/google/reports/programs',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
@@ -90,8 +90,8 @@ addFilter(
 					],
 					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				],
-				title: __( 'Products Reports', 'google-listings-and-ads' ),
-				container: ProductsReports,
+				title: __( 'Products Report', 'google-listings-and-ads' ),
+				container: ProductsReport,
 				path: '/google/reports/products',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},

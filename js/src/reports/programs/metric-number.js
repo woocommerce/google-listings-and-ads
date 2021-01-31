@@ -13,7 +13,7 @@ import './metric-number.scss';
 
 /**
  * SummeryNumber annotated about missing data.
- * To be used in ProgramsReports.
+ * To be used in ProgramsReport.
  *
  * Renders SummaryNumber with label that contains an info icon with a tootip
  * informing about missing data for some metrics.
