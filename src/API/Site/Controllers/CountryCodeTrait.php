@@ -4,8 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\ISO3166Awareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Throwable;
 
 defined( 'ABSPATH' ) || exit;
@@ -17,12 +17,8 @@ defined( 'ABSPATH' ) || exit;
  */
 trait CountryCodeTrait {
 
+	use ISO3166Awareness;
 	use WPErrorTrait;
-
-	/**
-	 * @var ISO3166DataProvider
-	 */
-	protected $iso;
 
 	/**
 	 * Validate that a country is valid.
@@ -32,7 +28,7 @@ trait CountryCodeTrait {
 	 * @throws OutOfBoundsException When the country code cannot be found.
 	 */
 	protected function validate_country_code( string $country ): void {
-		$this->iso->alpha2( $country );
+		$this->iso3166_data_provider->alpha2( $country );
 	}
 
 	/**

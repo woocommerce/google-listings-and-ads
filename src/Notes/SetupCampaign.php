@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
+use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
@@ -11,10 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Psr\Container\ContainerInterface;
+use WC_Data_Store;
 
 /**
  * Class SetupCampaign
@@ -24,7 +23,6 @@ use Psr\Container\ContainerInterface;
 class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwareInterface {
 
 	use MerchantCenterTrait;
-	use OptionsAwareTrait;
 	use PluginHelper;
 	use Utilities;
 
@@ -80,11 +78,12 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 	 * @return Note
 	 */
 	public function can_add_note(): bool {
-		if ( ! class_exists( '\WC_Data_Store' ) ) {
+		if ( ! class_exists( WC_Data_Store::class ) ) {
 			return false;
 		}
 
-		$data_store = \WC_Data_Store::load( 'admin-note' );
+		/** @var DataStore $data_store */
+		$data_store = WC_Data_Store::load( 'admin-note' );
 		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
 
 		if ( ! empty( $note_ids ) ) {
@@ -112,7 +111,7 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 	 * @return void
 	 */
 	public function deactivate(): void {
-		if ( ! class_exists( 'Automattic\WooCommerce\Admin\Notes\Notes' ) ) {
+		if ( ! class_exists( Notes::class ) ) {
 			return;
 		}
 

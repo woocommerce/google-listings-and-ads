@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Config;
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166;
@@ -60,13 +61,16 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share_interface( ISO3166DataProvider::class, ISO3166::class );
+		$this->getLeagueContainer()
+			->inflector( ISO3166AwareInterface::class )
+			->invokeMethod( 'set_iso3166_provider', [ ISO3166DataProvider::class ] );
 
 		$this->share_interface(
 			ValidatorInterface::class,
 			function () {
 				return Validation::createValidatorBuilder()
-								->addMethodMapping( 'load_validator_metadata' )
-								->getValidator();
+					->addMethodMapping( 'load_validator_metadata' )
+					->getValidator();
 			}
 		);
 	}

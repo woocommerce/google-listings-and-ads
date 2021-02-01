@@ -10,6 +10,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface OptionsInterface {
 
+	public const ADS_ID                = 'ads_id';
 	public const DB_VERSION            = 'db_version';
 	public const FILE_VERSION          = 'file_version';
 	public const INSTALL_TIMESTAMP     = 'install_timestamp';
@@ -18,8 +19,8 @@ interface OptionsInterface {
 	public const MERCHANT_ID           = 'merchant_id';
 	public const SHIPPING_RATES        = 'shipping_rates';
 	public const SHIPPING_TIMES        = 'shipping_times';
-	public const ADS_ID                = 'ads_id';
 	public const SITE_VERIFICATION     = 'site_verification';
+	public const TARGET_AUDIENCE       = 'target_audience';
 
 	/**
 	 * Get an option.
