@@ -316,7 +316,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If any step of the site verification process fails.
 	 */
 	private function verify_site() {
-		$site_url = site_url();
+		$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 		// Inform of previous verification.
 		if ( $this->is_site_verified() ) {

@@ -93,7 +93,7 @@ class Proxy {
 					'body' => json_encode(
 						[
 							'name'       => $this->new_account_name(),
-							'websiteUrl' => site_url(),
+							'websiteUrl' => apply_filters( 'woocommerce_gla_site_url', site_url() ),
 						]
 					),
 				]
