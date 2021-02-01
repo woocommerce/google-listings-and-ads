@@ -222,6 +222,19 @@ class ConnectionTest implements Service, Registerable {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-claim' ), $url ), 'wcs-google-sv-claim' ) ); ?>">Claim Site (if MCA)</a>
 				</p>
+					<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID)) : ?>
+					<p>Merchant Center Connected, ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?></p>
+					<?php else: ?>
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-google-accounts-create" type="hidden" />
+						<button class="button" onclick="jQuery(this).text('May take 60+ seconds...');return true;">Create Merchant Center Sub-Account</button>
+						<label>
+							Site URL <input name="site_url" type="text" style="width:20em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
+						</label>
+					</form>
+					<?php endif; ?>
 
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -474,11 +487,24 @@ class ConnectionTest implements Service, Registerable {
 				/** @var Proxy $proxy */
 				$proxy = $this->container->get( Proxy::class );
 				if ( $proxy->claim_merchant_website() ) {
-					$this->response = 'Claimed website ' . site_url() . "\n";
+					$this->response = 'Claimed website ' . apply_filters( 'woocommerce_gla_site_url', site_url() ) . "\n";
 				}
 			} catch ( \Exception $e ) {
 				$this->response .= $e->getMessage();
 			}
+		}
+
+		if ( 'wcs-google-accounts-create' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-create' ) ) {
+			// Using REST API
+			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			jplog($data);
+			$json = wp_json_encode( $data );
+			$this->response = $json;
 		}
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {

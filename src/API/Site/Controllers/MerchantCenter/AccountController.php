@@ -201,12 +201,13 @@ class AccountController extends BaseOptionsController {
 
 	/**
 	 * Performs the steps necessary to initialize a Merchant Center sub-account.
-	 * Should always resume up at the last pending or unfinished step.
+	 * Should always resume up at the last pending or unfinished step. If the Merchant Center account
+	 * has already been created, the ID is simply returned.
 	 *
 	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
 	 * @todo Include request+approve account linking process.
 	 *
-	 * @return int The newly created Merchant ID.
+	 * @return int The newly created (or pre-existing) Merchant ID.
 	 * @throws Exception If an error occurs during any step.
 	 */
 	protected function setup_merchant_account(): int {
