@@ -12,8 +12,7 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
-import ProgramsReport from './reports/programs';
-import ProductsReport from './reports/products';
+import { ProgramsReport, ProductsReport } from './reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
 
