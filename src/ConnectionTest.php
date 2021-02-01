@@ -234,6 +234,7 @@ class ConnectionTest implements Service, Registerable {
 							Site URL <input name="site_url" type="text" style="width:20em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
 						</label>
 					</form>
+				    &nbsp;
 					<?php endif; ?>
 
 				<div>
