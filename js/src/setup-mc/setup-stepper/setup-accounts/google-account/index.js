@@ -1,21 +1,43 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
+import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import Section from '../../../../wcdl/section';
 import DisabledDiv from '../../../../components/disabled-div';
+import AppButton from '../../../../components/app-button';
+import useDispatchCoreNotices from '../../../../hooks/useDispatchCoreNotices';
 import TitleButtonLayout from '../title-button-layout';
 
 const GoogleAccount = ( props ) => {
 	const { disabled = false } = props;
+	const [ loading, setLoading ] = useState( false );
+	const { createNotice } = useDispatchCoreNotices();
 
-	// TODO: call backend API upon clicking Connect button.
-	const handleConnectClick = () => {};
+	const handleConnectClick = async () => {
+		setLoading( true );
+
+		try {
+			const { url } = await apiFetch( {
+				path: '/wc/gla/google/connect',
+			} );
+			window.location.href = url;
+		} catch ( error ) {
+			setLoading( false );
+			createNotice(
+				'error',
+				__(
+					'Unable to connect your Google account. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
 
 	return (
 		<DisabledDiv disabled={ disabled }>
@@ -34,16 +56,17 @@ const GoogleAccount = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							button={
-								<Button
+								<AppButton
 									isSecondary
 									disabled={ disabled }
+									loading={ loading }
 									onClick={ handleConnectClick }
 								>
 									{ __(
 										'Connect',
 										'google-listings-and-ads'
 									) }
-								</Button>
+								</AppButton>
 							}
 						/>
 					</Section.Card.Body>
