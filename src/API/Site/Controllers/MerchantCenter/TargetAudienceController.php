@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Locale;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -107,7 +108,9 @@ class TargetAudienceController extends BaseOptionsController {
 	 */
 	protected function prepare_item_for_response( array $data ): array {
 		$response             = $this->trait_item_response( $data );
-		$response['language'] = $this->wp->get_locale();
+		$locale               = $this->wp->get_locale();
+		$response['locale']   = $locale;
+		$response['language'] = Locale::getDisplayLanguage( $locale, $locale );
 
 		return $response;
 	}
