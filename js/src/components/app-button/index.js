@@ -26,12 +26,12 @@ import './index.scss';
  * @param {boolean} props.loading If true, the button will be disabled and will display a loading spinner indicator beside the button text.
  */
 const AppButton = ( props ) => {
-	const { className = '', loading, children, ...rest } = props;
+	const { className = '', disabled, loading, children, ...rest } = props;
 
 	return (
 		<Button
 			className={ `app-button ${ className }` }
-			disabled={ loading }
+			disabled={ disabled || loading }
 			{ ...rest }
 		>
 			{ loading && <Spinner /> }
