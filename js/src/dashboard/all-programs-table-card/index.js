@@ -2,8 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
-import { getQuery, onQueryChange } from '@woocommerce/navigation';
+import { getQuery, getNewPath, onQueryChange } from '@woocommerce/navigation';
+import { Link } from '@woocommerce/components';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -65,22 +66,22 @@ const AllProgramsTableCard = ( props ) => {
 		},
 	];
 
-	// TODO: what happens when click add paid campaign button.
-	const handleAddPaidCampaignClick = () => {};
-
 	return (
 		<AppTableCard
 			className="gla-all-programs-table-card"
 			title={
 				<div className="gla-all-programs-table-card__header">
 					{ __( 'All Programs', 'google-listings-and-ads' ) }
-					<Button
-						isSecondary
-						isSmall
-						onClick={ handleAddPaidCampaignClick }
+					<Link
+						className={ classnames(
+							'components-button',
+							'is-secondary',
+							'is-small'
+						) }
+						href={ getNewPath( {}, '/google/setup-ads' ) }
 					>
-						Add Paid Campaign
-					</Button>
+						{ __( 'Add Paid Campaign', 'google-listings-and-ads' ) }
+					</Link>
 				</div>
 			}
 			headers={ headers }
