@@ -203,6 +203,9 @@ class AccountController extends BaseOptionsController {
 	 * Performs the steps necessary to initialize a Merchant Center sub-account.
 	 * Should always resume up at the last pending or unfinished step.
 	 *
+	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
+	 * @todo Include request+approve account linking process.
+	 *
 	 * @return int The newly created Merchant ID.
 	 * @throws Exception If an error occurs during any step.
 	 */
@@ -221,7 +224,7 @@ class AccountController extends BaseOptionsController {
 			try {
 				switch ( $step['name'] ) {
 					case 'create':
-						// Just in case
+						// Just in case, don't create another merchant ID.
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
@@ -233,6 +236,7 @@ class AccountController extends BaseOptionsController {
 						break;
 					case 'verify':
 						$this->verify_site();
+						// Only delay before claiming if also verifying during this request.
 						$delay_after_verify = true;
 						break;
 					case 'claim':
@@ -269,11 +273,13 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * Retrieve or initialize the MERCHANT_ACCOUNT_STATE Option.
 	 *
+	 * @param bool $initialize_if_not_found True to initialize and option array of steps.
+	 *
 	 * @return array The MC creation steps and statuses.
 	 */
-	private function get_merchant_account_state(): array {
+	private function get_merchant_account_state( bool $initialize_if_not_found = true ): array {
 		$state = $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE );
-		if ( empty( $state ) ) {
+		if ( empty( $state ) && $initialize_if_not_found ) {
 			$state = [];
 			foreach ( self::MERCHANT_ACCOUNT_CREATION_STEPS as $step ) {
 				array_push(
@@ -323,7 +329,7 @@ class AccountController extends BaseOptionsController {
 		try {
 			$meta_tag = $site_verification->get_token( $site_url );
 		} catch ( Exception $e ) {
-			do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'token' ] );
+			do_action( 'gla_site_verify_failure', [ 'step' => 'token' ] );
 			throw $e;
 		}
 
@@ -342,18 +348,18 @@ class AccountController extends BaseOptionsController {
 			if ( $site_verification->insert( $site_url ) ) {
 				$site_verification_options['verified'] = $site_verification::VERIFICATION_STATUS_VERIFIED;
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-				do_action( $this->get_slug() . '_site_verify_success', [] );
+				do_action( 'gla_site_verify_success', [] );
 
 				return true;
 			}
 		} catch ( Exception $e ) {
-			do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'meta-tag' ] );
+			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
 
 			throw $e;
 		}
 
 		// Should never reach this point.
-		do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'unknown' ] );
+		do_action( 'gla_site_verify_failure', [ 'step' => 'unknown' ] );
 
 		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
 	}
