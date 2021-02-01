@@ -18,8 +18,8 @@ const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 
 	// TODO: call backend API to check and set the following to true/false.
-	const isGoogleAccountDisabled = true;
-	const isGoogleMCAccountDisabled = true;
+	const isGoogleAccountDisabled = false;
+	const isGoogleMCAccountDisabled = false;
 	const isContinueButtonDisabled = false;
 
 	return (
