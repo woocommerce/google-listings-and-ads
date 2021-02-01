@@ -222,10 +222,16 @@ class ConnectionTest implements Service, Registerable {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-claim' ), $url ), 'wcs-google-sv-claim' ) ); ?>">Claim Site (if MCA)</a>
 				</p>
-					<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID)) : ?>
-					<p>Merchant Center Connected, ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?></p>
-					<?php else: ?>
+
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<p>
+						<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
+							Merchant Center Connected, ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?>
+						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $step): ?>
+							<?php echo $step['name'] . ':' . $step['status'] ?>
+						<?php endforeach; ?>
+							<br/>
+						<?php endif; ?>
 						<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-google-accounts-create" type="hidden" />
@@ -233,9 +239,8 @@ class ConnectionTest implements Service, Registerable {
 						<label>
 							Site URL <input name="site_url" type="text" style="width:20em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
 						</label>
+						</p>
 					</form>
-				    &nbsp;
-					<?php endif; ?>
 
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
