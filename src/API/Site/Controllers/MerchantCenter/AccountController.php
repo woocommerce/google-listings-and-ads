@@ -243,7 +243,7 @@ class AccountController extends BaseOptionsController {
 					case 'claim':
 						// Time necessary between verify and claim :shrug:
 						if ( $delay_after_verify ) {
-							$sl = 65;
+							$sl = 70;
 							usleep( $sl * 1000000 );
 						}
 						$this->middleware->claim_merchant_website();
