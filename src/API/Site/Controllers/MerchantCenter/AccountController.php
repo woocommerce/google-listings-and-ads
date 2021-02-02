@@ -221,13 +221,11 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If an error occurs during any step.
 	 */
 	protected function setup_merchant_account(): int {
-		$state = $this->get_merchant_account_state();
+		$state       = $this->get_merchant_account_state();
+		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		foreach ( $state as $name => &$step ) {
 			if ( self::MC_CREATION_STEP_DONE === $step['status'] ) {
-				if ( 'create' === $name ) {
-					$merchant_id = intval( $this->container->get( 'merchant_id' ) );
-				}
 				continue;
 			}
 
