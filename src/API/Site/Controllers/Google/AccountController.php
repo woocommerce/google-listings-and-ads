@@ -77,9 +77,13 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function() {
-			return [
-				'url' => $this->connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) ),
-			];
+			try {
+				return [
+					'url' => $this->connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) ),
+				];
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
@@ -111,11 +115,11 @@ class AccountController extends BaseController {
 			try {
 				$status = $this->connection->get_status();
 				return [
-					'active' => ( 'connected' === $status['status'] ) ? 'yes' : 'no',
+					'active' => array_key_exists( 'status', $status ) && ( 'connected' === $status['status'] ) ? 'yes' : 'no',
 					'email'  => array_key_exists( 'email', $status ) ? $status['email'] : '',
 				];
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}

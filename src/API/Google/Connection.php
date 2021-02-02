@@ -37,7 +37,7 @@ class Connection {
 	 * @param string $return_url The return URL.
 	 *
 	 * @return string
-	 * @throws Exception When we don't receive the oauthUrl value in the response.
+	 * @throws Exception When a ClientException is caught or the response doesn't contain the oauthUrl.
 	 */
 	public function connect( string $return_url ): string {
 		try {
@@ -50,18 +50,18 @@ class Connection {
 				]
 			);
 
-			$body = json_decode( $result->getBody()->getContents(), true );
-			if ( ! isset( $body['oauthUrl'] ) ) {
-				throw new Exception( 'Did not receive oauthUrl value.' );
+			$response = json_decode( $result->getBody()->getContents(), true );
+			if ( 200 === $result->getStatusCode() && ! empty( $response['oauthUrl'] ) ) {
+				return $response['oauthUrl'];
 			}
 
-			return $body['oauthUrl'];
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			throw new Exception( __( 'Unable to connect Google account', 'google-listings-and-ads' ) );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			return '';
-		} catch ( Exception $e ) {
-			throw $e;
+			throw new Exception( __( 'Unable to connect Google account', 'google-listings-and-ads' ) );
 		}
 	}
 
@@ -92,22 +92,25 @@ class Connection {
 	 * Get the status of the connection.
 	 *
 	 * @return array
-	 * @throws Exception When an ClientExceptionInterface is caught.
+	 * @throws Exception When a ClientException is caught or the response contains an error.
 	 */
 	public function get_status(): array {
 		try {
 			/** @var Client $client */
-			$client = $this->container->get( Client::class );
-			$result = $client->get( $this->get_connection_url() );
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_connection_url() );
+			$response = json_decode( $result->getBody()->getContents(), true );
 
-			return json_decode( $result->getBody()->getContents(), true );
+			if ( 200 === $result->getStatusCode() ) {
+				return $response;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$message = $response['message'] ?? __( 'Invalid response when retrieving status', 'google-listings-and-ads' );
+			throw new Exception( $message, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
-
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving status: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
-		} catch ( Exception $e ) {
-			do_action( 'gla_exception', $e, __METHOD__ );
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error retrieving status: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
