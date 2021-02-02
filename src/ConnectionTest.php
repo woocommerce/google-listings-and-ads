@@ -235,10 +235,11 @@ class ConnectionTest implements Service, Registerable {
 						<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-google-accounts-create" type="hidden" />
-						<button class="button" onclick="jQuery(this).text('May take 60+ seconds...');return true;">Create Merchant Center Sub-Account</button>
 						<label>
-							Site URL <input name="site_url" type="text" style="width:20em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
+							Site URL <input name="site_url" type="text" style="width:17em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
 						</label>
+						<button class="button">Create MC Sub-Account</button>
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
 						</p>
 					</form>
 
@@ -505,6 +506,18 @@ class ConnectionTest implements Service, Registerable {
 			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
 
 			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response = $json;
+		}
+
+		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
+			// Using REST API
+			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claimwebsite' );
 			$response = rest_do_request( $request );
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
