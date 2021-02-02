@@ -171,7 +171,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_verify_endpoint_read_callback(): callable {
-			return function () {
+			return function() {
 				$verified = $this->is_site_verified();
 				return [
 					'status'   => 'success',

@@ -31,13 +31,13 @@ class AccountController extends BaseOptionsController {
 	 */
 	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'create', 'link', 'verify', 'claim' ];
 
-	/** @var int Status value for a pending merchant account creation step*/
+	/** @var int Status value for a pending merchant account creation step */
 	private const MC_CREATION_STEP_PENDING = 0;
 
-	/** @var int Status value for a completed merchant account creation step*/
+	/** @var int Status value for a completed merchant account creation step */
 	private const MC_CREATION_STEP_DONE = 1;
 
-	/** @var int Status value for an unsuccessful merchant account creation step*/
+	/** @var int Status value for an unsuccessful merchant account creation step */
 	private const MC_CREATION_STEP_ERROR = - 1;
 
 	/**
@@ -112,7 +112,7 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_accounts_callback(): callable {
-		return function () {
+		return function() {
 			try {
 				return new WP_REST_Response( $this->middleware->get_merchant_ids() );
 			} catch ( Exception $e ) {
@@ -127,7 +127,7 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function create_or_link_account_callback(): callable {
-		return function ( WP_REST_Request $request ) {
+		return function( WP_REST_Request $request ) {
 			try {
 				$link_id = absint( $request['id'] );
 
