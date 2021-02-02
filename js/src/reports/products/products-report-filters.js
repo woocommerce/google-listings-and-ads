@@ -34,7 +34,7 @@ const siteLocale = wcSettings.locale.siteLocale;
  *
  * @param {Object} props
  * @param {Object} query Search query object, to fetch filter values from.
- * @param {String} report Report ID used in tracking events.
+ * @param {string} report Report ID used in tracking events.
  */
 class ProductsReportFilters extends Component {
 	constructor() {
