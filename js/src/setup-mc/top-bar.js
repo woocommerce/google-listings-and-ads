@@ -7,10 +7,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import SetupHelpButton from '../../components/setup-help-button';
-import SetupBackLink from '../../components/setup-back-link';
-import SetupTopBar from '../../components/setup-top-bar';
-import { recordSetupMCEvent } from '../../utils/recordEvent';
+import SetupHelpButton from '../components/setup-help-button';
+import SetupBackLink from '../components/setup-back-link';
+import SetupTopBar from '../components/setup-top-bar';
+import { recordSetupMCEvent } from '../utils/recordEvent';
 
 const TopBar = () => {
 	const handleBackLinkClick = () => {
