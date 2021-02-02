@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
-import { SummaryList } from '@woocommerce/components';
+import { SummaryList, Chart } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -11,6 +11,7 @@ import { SummaryList } from '@woocommerce/components';
 import TabNav from '../../tab-nav';
 import ProductsReportFilters from './products-report-filters';
 import MetricNumber from '../metric-number';
+import chartData from './mocked-chart-data';
 import getMetricsData from './mocked-metrics-data'; // Mocked data
 
 /**
@@ -56,6 +57,13 @@ const ProductsReport = () => {
 					) )
 				}
 			</SummaryList>
+			<Chart
+				data={ chartData }
+				title="Conversions"
+				layout="time-comparison"
+				interactiveLegend="false"
+				showHeaderControls="false"
+			/>
 		</>
 	);
 };
