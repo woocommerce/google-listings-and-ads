@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import WordPressDotComAccount from './wordpressdotcom-account';
-import GoogleAccount from './google-account';
+import GoogleAccount from '../../../components/google-account';
 import GoogleMCAccount from './google-mc-account';
 import StepContent from '../../../components/step-content';
 import StepContentHeader from '../../../components/step-content-header';

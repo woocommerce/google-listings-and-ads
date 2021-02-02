@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 import Section from '../../../../../wcdl/section';
 import Subsection from '../../../../../wcdl/subsection';
 import MerchantCenterSelectControl from '../../../../../components/merchant-center-select-control';
-import ContentButtonLayout from '../../content-button-layout';
+import ContentButtonLayout from '../../../../../components/content-button-layout';
 
 const CreateMCCard = () => {
 	const [ value, setValue ] = useState();
