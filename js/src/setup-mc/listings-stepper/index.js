@@ -4,7 +4,6 @@
 import AppSpinner from '../../components/app-spinner';
 import useGetOption from '../../hooks/useGetOption';
 import SavedListingsStepper from './saved-listings-stepper';
-import './index.scss';
 
 const ListingsStepper = () => {
 	const { loading, data: savedStep } = useGetOption(
