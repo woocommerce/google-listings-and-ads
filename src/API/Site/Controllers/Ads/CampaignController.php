@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
@@ -25,7 +24,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class CampaignController extends BaseController implements ISO3166AwareInterface {
 
-	use ControllerTrait;
 	use CountryCodeTrait;
 
 	/**
@@ -46,7 +44,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'ads/campaigns',
 			[
@@ -59,7 +57,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->create_campaign_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -112,7 +110,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected function create_campaign_callback(): callable {
 		return function( WP_REST_Request $request ) {
 			try {
-				$fields   = array_intersect_key( $request->get_json_params(), $this->get_item_schema() );
+				$fields   = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 				$campaign = $this->ads->create_campaign( $fields );
 
 				return $this->prepare_item_for_response( $campaign );
@@ -215,7 +213,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			'amount',
 		];
 
-		$fields = array_intersect_key( $this->get_item_schema(), array_flip( $allowed ) );
+		$fields = array_intersect_key( $this->get_schema_properties(), array_flip( $allowed ) );
 
 		// Unset required to allow editing individual fields.
 		array_walk(
@@ -233,7 +231,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'id'      => [
 				'type'        => 'integer',
@@ -280,7 +278,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'campaign';
 	}
 }

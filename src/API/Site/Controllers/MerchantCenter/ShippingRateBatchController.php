@@ -22,7 +22,7 @@ class ShippingRateBatchController extends ShippingRateController {
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			"{$this->route_base}/batch",
 			[
@@ -85,7 +85,7 @@ class ShippingRateBatchController extends ShippingRateController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'batch_shipping_rates';
 	}
 }

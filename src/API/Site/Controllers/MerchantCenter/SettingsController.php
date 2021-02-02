@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use WP_REST_Request;
@@ -17,8 +16,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class SettingsController extends BaseOptionsController {
-
-	use ControllerTrait;
 
 	/**
 	 * Register rest routes with WordPress.
@@ -50,7 +47,7 @@ class SettingsController extends BaseOptionsController {
 	protected function get_settings_endpoint_read_callback(): callable {
 		return function() {
 			$data   = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-			$schema = $this->get_item_schema();
+			$schema = $this->get_schema_properties();
 			$items  = [];
 			foreach ( $schema as $key => $property ) {
 				$items[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
@@ -67,7 +64,7 @@ class SettingsController extends BaseOptionsController {
 	 */
 	protected function get_settings_endpoint_edit_callback(): callable {
 		return function( WP_REST_Request $request ) {
-			$schema  = $this->get_item_schema();
+			$schema  = $this->get_schema_properties();
 			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 			foreach ( $schema as $key => $property ) {
 				$options[ $key ] = $request->get_param( $key ) ?? $options[ $key ] ?? $property['default'] ?? null;
@@ -88,7 +85,7 @@ class SettingsController extends BaseOptionsController {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'shipping_rate'           => [
 				'type'              => 'string',
@@ -209,7 +206,7 @@ class SettingsController extends BaseOptionsController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'merchant_center_settings';
 	}
 }

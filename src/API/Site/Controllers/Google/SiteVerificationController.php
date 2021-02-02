@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use Psr\Container\ContainerInterface;
 
@@ -26,19 +25,9 @@ class SiteVerificationController extends BaseOptionsController {
 	protected $container;
 
 	/**
-	 * SiteVerificationController constructor.
-	 *
-	 * @param ContainerInterface $container
-	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ), $container->get( OptionsInterface::class ) );
-		$this->container = $container;
-	}
-
-	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'site/verify',
 			[
@@ -179,5 +168,25 @@ class SiteVerificationController extends BaseOptionsController {
 					'message'  => $verified ? __( 'Site already verified.', 'google-listings-and-ads' ) : __( 'Site not verified.', 'google-listings-and-ads' ),
 				];
 			};
+	}
+
+	/**
+	 * Get the item schema for the controller.
+	 *
+	 * @return array
+	 */
+	protected function get_schema_properties(): array {
+		return [];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_schema_title(): string {
+		return 'google_site_verification';
 	}
 }

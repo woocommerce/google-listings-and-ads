@@ -4,15 +4,15 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Locale;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_Error;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,9 +23,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class TargetAudienceController extends BaseOptionsController {
 
-	use ControllerTrait {
-		prepare_item_for_response as trait_item_response;
-	}
 	use CountryCodeTrait;
 
 	/**
@@ -49,7 +46,7 @@ class TargetAudienceController extends BaseOptionsController {
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'mc/target_audience',
 			[
@@ -62,7 +59,7 @@ class TargetAudienceController extends BaseOptionsController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_update_audience_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -75,8 +72,8 @@ class TargetAudienceController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_read_audience_callback(): callable {
-		return function() {
-			return $this->prepare_item_for_response( $this->get_target_audience_option() );
+		return function( Request $request ) {
+			return $this->prepare_item_for_response( $this->get_target_audience_option(), $request );
 		};
 	}
 
@@ -86,10 +83,12 @@ class TargetAudienceController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_update_audience_callback(): callable {
-		return function( WP_REST_Request $request ) {
-			$this->update_target_audience_option( $this->prepare_item_for_response( $request->get_params() ) );
+		return function( Request $request ) {
+			$data = $this->prepare_item_for_database( $request );
+			$this->update_target_audience_option( $data );
+			$this->prepare_item_for_response( $data, $request );
 
-			return new WP_REST_Response(
+			return new Response(
 				[
 					'status'  => 'success',
 					'message' => __( 'Successfully updated the Target Audience settings.', 'google-listings-and-ads' ),
@@ -100,21 +99,30 @@ class TargetAudienceController extends BaseOptionsController {
 	}
 
 	/**
-	 * Prepare an item to be sent as an API response.
+	 * Prepares the item for the REST response.
 	 *
-	 * @param array $data The raw item data.
+	 * @param mixed   $item    WordPress representation of the item.
+	 * @param Request $request Request object.
 	 *
-	 * @return array The prepared item data.
+	 * @return Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
-	protected function prepare_item_for_response( array $data ): array {
-		$response             = $this->trait_item_response( $data );
+	public function prepare_item_for_response( $item, $request ) {
+		$prepared = [];
+		$context  = $request['context'] ?? 'view';
+		$schema   = $this->get_schema_properties();
+		foreach ( $schema as $key => $property ) {
+			$prepared[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
+		}
+
 		$locale               = $this->wp->get_locale();
-		$response['locale']   = $locale;
-		$response['language'] = Locale::getDisplayLanguage( $locale, $locale );
+		$prepared['locale']   = $locale;
+		$prepared['language'] = Locale::getDisplayLanguage( $locale, $locale );
 
-		return $response;
+		$prepared = $this->add_additional_fields_to_object( $prepared, $request );
+		$prepared = $this->filter_response_by_context( $prepared, $context );
+
+		return new Response( $prepared );
 	}
-
 
 	/**
 	 * Get the option data for the target audience.
@@ -141,7 +149,7 @@ class TargetAudienceController extends BaseOptionsController {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'language'  => [
 				'type'        => 'string',
@@ -180,7 +188,7 @@ class TargetAudienceController extends BaseOptionsController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'target_audience';
 	}
 }

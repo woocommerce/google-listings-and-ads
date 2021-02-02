@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
@@ -21,7 +20,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class ShippingRateController extends BaseOptionsController implements ISO3166AwareInterface {
 
-	use ControllerTrait;
 	use CountryCodeTrait;
 
 	/**
@@ -34,7 +32,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			$this->route_base,
 			[
@@ -47,7 +45,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_create_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -60,7 +58,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_read_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
@@ -164,7 +162,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	/**
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'country'      => [
 				'type'        => 'string',
@@ -204,7 +202,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'shipping_rates';
 	}
 
@@ -239,7 +237,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	 */
 	protected function process_new_rate( array $all_rates, string $rate_key, array $raw_data ): array {
 		// Specifically call the schema method from this class.
-		$schema = self::get_item_schema();
+		$schema = self::get_schema_properties();
 
 		$rate = $all_rates[ $rate_key ] ?? [];
 		foreach ( $schema as $key => $property ) {
