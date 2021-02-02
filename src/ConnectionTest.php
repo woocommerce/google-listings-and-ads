@@ -226,7 +226,7 @@ class ConnectionTest implements Service, Registerable {
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 						<p>
 						<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
-							Merchant Center Connected, ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?>
+							Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?> ||
 						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
 							<?php echo $name . ':' . $step['status'] ?>
 						<?php endforeach; ?>

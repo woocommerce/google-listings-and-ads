@@ -140,12 +140,11 @@ class AccountController extends BaseOptionsController {
 		return function( WP_REST_Request $request ) {
 			try {
 				$link_id = absint( $request['id'] );
-
 				if ( $link_id ) {
-					$account_id = $this->middleware->link_merchant_account( $link_id );
-				} else {
-					$account_id = $this->setup_merchant_account();
+					$this->complete_create_step( $link_id );
 				}
+
+				$account_id = $this->setup_merchant_account();
 
 				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
 			} catch ( Exception $e ) {
@@ -454,4 +453,25 @@ class AccountController extends BaseOptionsController {
 		return ! empty( $current_options['verified'] ) && $this->container->get( SiteVerification::class )::VERIFICATION_STATUS_VERIFIED === $current_options['verified'];
 	}
 
+
+	/**
+	 * Mark the 'create' step as completed and set the Merchant ID.
+	 *
+	 * @param int $account_id The merchant ID to use.
+	 *
+	 * @throws Exception If there is already a Merchant Center ID.
+	 */
+	private function complete_create_step( int $account_id ): void {
+		$merchant_id = $this->options->get( OptionsInterface::MERCHANT_ID );
+
+		if ( $merchant_id && $merchant_id !== $account_id ) {
+			throw new Exception( __( 'Merchant center account already linked.', 'google-listings-and-ads' ) );
+		}
+
+		$state                               = $this->get_merchant_account_state();
+		$state['create']['status']           = self::MC_CREATION_STEP_DONE;
+		$state['create']['data']['from_mca'] = false;
+		$this->update_merchant_account_state( $state );
+		$this->middleware->link_merchant_account( $account_id );
+	}
 }
