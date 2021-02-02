@@ -50,9 +50,6 @@ class SiteVerificationMeta implements Service, Registerable {
 		if ( empty( $this->settings['meta_tag'] ) ) {
 			return;
 		}
-		if ( 'yes' === ( $this->settings['verified'] ?? 'no' ) ) {
-			return;
-		}
 		echo wp_kses(
 			$this->settings['meta_tag'],
 			[
