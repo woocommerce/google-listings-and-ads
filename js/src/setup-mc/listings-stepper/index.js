@@ -3,10 +3,10 @@
  */
 import AppSpinner from '../../components/app-spinner';
 import useGetOption from '../../hooks/useGetOption';
-import SavedSetupStepper from './saved-setup-stepper';
+import SavedListingsStepper from './saved-listings-stepper';
 import './index.scss';
 
-const SetupStepper = () => {
+const ListingsStepper = () => {
 	const { loading, data: savedStep } = useGetOption(
 		'gla_setup_mc_saved_step'
 	);
@@ -15,7 +15,7 @@ const SetupStepper = () => {
 		return <AppSpinner />;
 	}
 
-	return <SavedSetupStepper savedStep={ savedStep || '1' } />;
+	return <SavedListingsStepper savedStep={ savedStep || '1' } />;
 };
 
-export default SetupStepper;
+export default ListingsStepper;

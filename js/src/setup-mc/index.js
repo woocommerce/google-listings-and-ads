@@ -3,13 +3,13 @@
  */
 import FullScreen from '../components/full-screen';
 import TopBar from './top-bar';
-import SetupStepper from './setup-stepper';
+import ListingsStepper from './listings-stepper';
 
 const SetupMC = () => {
 	return (
 		<FullScreen>
 			<TopBar />
-			<SetupStepper />
+			<ListingsStepper />
 		</FullScreen>
 	);
 };

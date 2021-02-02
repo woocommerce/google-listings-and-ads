@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import SetupStepper from '../../components/setup-stepper';
 import { recordSetupMCEvent } from '../../utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
@@ -14,7 +14,7 @@ import ChooseAudience from './choose-audience';
 import usePageStep from './usePageStep';
 import './index.scss';
 
-const SavedSetupStepper = ( props ) => {
+const SavedListingsStepper = ( props ) => {
 	const { savedStep } = props;
 	const { pageStep, updatePageStep } = usePageStep( savedStep );
 
@@ -35,7 +35,7 @@ const SavedSetupStepper = ( props ) => {
 	};
 
 	return (
-		<Stepper
+		<SetupStepper
 			className="gla-setup-stepper"
 			currentStep={ pageStep }
 			steps={ [
@@ -79,4 +79,4 @@ const SavedSetupStepper = ( props ) => {
 	);
 };
 
-export default SavedSetupStepper;
+export default SavedListingsStepper;
