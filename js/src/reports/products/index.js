@@ -11,6 +11,8 @@ import { SummaryList, Chart } from '@woocommerce/components';
 import TabNav from '../../tab-nav';
 import ProductsReportFilters from './products-report-filters';
 import MetricNumber from '../metric-number';
+import CompareProductsTableCard from './compare-products-table-card';
+
 import chartData from './mocked-chart-data';
 import getMetricsData from './mocked-metrics-data'; // Mocked data
 
@@ -64,6 +66,7 @@ const ProductsReport = () => {
 				interactiveLegend="false"
 				showHeaderControls="false"
 			/>
+			<CompareProductsTableCard trackEventReportId={ reportId } />
 		</>
 	);
 };
