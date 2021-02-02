@@ -89,6 +89,32 @@ class Connection {
 	}
 
 	/**
+	 * Get the status of the connection.
+	 *
+	 * @return array
+	 * @throws Exception When an ClientExceptionInterface is caught.
+	 */
+	public function get_status(): array {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->get( $this->get_connection_url() );
+
+			return json_decode( $result->getBody()->getContents(), true );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving status: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		} catch ( Exception $e ) {
+			do_action( 'gla_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving status: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
+	/**
 	 * Get the Google connection URL.
 	 *
 	 * @return string

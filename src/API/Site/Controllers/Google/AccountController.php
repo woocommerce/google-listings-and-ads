@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
+use WP_REST_Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -56,6 +58,16 @@ class AccountController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+		$this->register_route(
+			'google/connected',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -84,6 +96,27 @@ class AccountController extends BaseController {
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
 			];
+		};
+	}
+
+	/**
+	 * Get the callback function to determine if Google is currently connected.
+	 *
+	 * Uses consistent properties to the Jetpack connected callback
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_callback(): callable {
+		return function() {
+			try {
+				$status = $this->connection->get_status();
+				return [
+					'active' => ( 'connected' === $status['status'] ) ? 'yes' : 'no',
+					'email'  => array_key_exists( 'email', $status ) ? $status['email'] : '',
+				];
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+			}
 		};
 	}
 
