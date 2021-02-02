@@ -10,9 +10,9 @@ import { __ } from '@wordpress/i18n';
 import WordPressDotComAccount from './wordpressdotcom-account';
 import GoogleAccount from './google-account';
 import GoogleMCAccount from './google-mc-account';
-import StepContent from '../components/step-content';
-import StepContentHeader from '../components/step-content-header';
-import StepContentFooter from '../components/step-content-footer';
+import StepContent from '../../../components/step-content';
+import StepContentHeader from '../../../components/step-content-header';
+import StepContentFooter from '../../../components/step-content-footer';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;

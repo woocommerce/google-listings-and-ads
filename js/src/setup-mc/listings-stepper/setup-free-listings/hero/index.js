@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import StepContentHeader from '../../components/step-content-header';
+import StepContentHeader from '../../../../components/step-content-header';
 import { ReactComponent as GoogleFreeListingImage } from './google-free-listing.svg';
 import './index.scss';
 
