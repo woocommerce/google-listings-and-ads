@@ -36,4 +36,11 @@ export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	} );
 };
 
+export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
+	recordEvent( 'gla_setup_ads', {
+		target,
+		trigger,
+	} );
+};
+
 export default recordEvent;
