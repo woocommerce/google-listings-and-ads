@@ -235,9 +235,12 @@ class ConnectionTest implements Service, Registerable {
 						<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
 						<input name="action" value="wcs-google-accounts-create" type="hidden" />
-						<label>
-							Site URL <input name="site_url" type="text" style="width:17em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
-						</label>
+							<label title="Use a live site!">
+								Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
+							</label>
+							<label title="To simulate linking with an external site">
+								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
+							</label>
 						<button class="button">Create MC Sub-Account</button>
 						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
 						</p>
@@ -505,7 +508,11 @@ class ConnectionTest implements Service, Registerable {
 			// Using REST API
 			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
 
+
 			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
+			if(is_numeric( $_GET['account_id']??false )) {
+				$request->set_body_params( ['id'=>$_GET['account_id']] );
+			}
 			$response = rest_do_request( $request );
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
