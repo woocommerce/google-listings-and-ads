@@ -211,25 +211,25 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If an error occurs during any step.
 	 */
 	protected function setup_merchant_account(): int {
-		$state              = $this->get_merchant_account_state();
-		$delay_after_verify = false;
+		$state = $this->get_merchant_account_state();
 
-		foreach ( $state as &$step ) {
+		foreach ( $state as $name => &$step ) {
 			if ( self::MC_CREATION_STEP_DONE === $step['status'] ) {
-				if ( 'create' === $step['name'] ) {
+				if ( 'create' === $name ) {
 					$merchant_id = intval( $this->container->get( 'merchant_id' ) );
 				}
 				continue;
 			}
 
 			try {
-				switch ( $step['name'] ) {
+				switch ( $name ) {
 					case 'create':
 						// Just in case, don't create another merchant ID.
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
-						$merchant_id = $this->middleware->create_merchant_account();
+						$merchant_id              = $this->middleware->create_merchant_account();
+						$step['data']['from_mca'] = true;
 						break;
 					case 'link':
 						// Request MCA
@@ -238,13 +238,13 @@ class AccountController extends BaseOptionsController {
 					case 'verify':
 						$this->verify_site();
 						// Only delay before claiming if also verifying during this request.
-						$delay_after_verify = true;
+						$step['data']['timestamp'] = time();
 						break;
 					case 'claim':
-						// Time necessary between verify and claim :shrug:
-						if ( $delay_after_verify ) {
-							$sl = 70;
-							usleep( $sl * 1000000 );
+						$delay             = 70;
+						$time_since_verify = time() - ( $state['verify']['data']['timestamp'] ?? 0 );
+						if ( $time_since_verify < $delay ) {
+							sleep( $delay - $time_since_verify );
 						}
 						$this->middleware->claim_merchant_website();
 						break;
@@ -253,7 +253,7 @@ class AccountController extends BaseOptionsController {
 							sprintf(
 							/* translators: 1: is an unknown step name */
 								__( 'Unknown merchant account creation step %s$1', 'google-listings-and-ads' ),
-								$step['name']
+								$name
 							)
 						);
 				}
@@ -283,14 +283,11 @@ class AccountController extends BaseOptionsController {
 		if ( empty( $state ) && $initialize_if_not_found ) {
 			$state = [];
 			foreach ( self::MERCHANT_ACCOUNT_CREATION_STEPS as $step ) {
-				array_push(
-					$state,
-					[
-						'name'    => $step,
-						'status'  => self::MC_CREATION_STEP_PENDING,
-						'message' => '',
-					]
-				);
+				$state[ $step ] = [
+					'status'  => self::MC_CREATION_STEP_PENDING,
+					'message' => '',
+					'data'    => [],
+				];
 			}
 			$this->update_merchant_account_state( $state );
 		}

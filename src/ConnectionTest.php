@@ -227,8 +227,8 @@ class ConnectionTest implements Service, Registerable {
 						<p>
 						<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
 							Merchant Center Connected, ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?>
-						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $step): ?>
-							<?php echo $step['name'] . ':' . $step['status'] ?>
+						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
+							<?php echo $name . ':' . $step['status'] ?>
 						<?php endforeach; ?>
 							<br/>
 						<?php endif; ?>
@@ -508,7 +508,6 @@ class ConnectionTest implements Service, Registerable {
 			$response = rest_do_request( $request );
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
-			jplog($data);
 			$json = wp_json_encode( $data );
 			$this->response = $json;
 		}
