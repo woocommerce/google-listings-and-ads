@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
@@ -325,7 +326,16 @@ class AccountController extends BaseOptionsController {
 			}
 
 			try {
-				$this->middleware->claim_merchant_website();
+
+				$from_mca = $state['create']['data']['from_mca'] ?? false;
+
+				if ( $from_mca ) {
+					// MCA sub-account
+					$this->middleware->claim_merchant_website();
+				} else {
+					// Linked account
+					$this->container->get( Merchant::class )->claimwebsite();
+				}
 			} catch ( Exception $e ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = $e->getMessage();
