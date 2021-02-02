@@ -41,6 +41,9 @@ class AccountController extends BaseOptionsController {
 	/** @var int Status value for an unsuccessful merchant account creation step */
 	private const MC_CREATION_STEP_ERROR = - 1;
 
+	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
+	private const MC_CLAIM_DELAY = 70;
+
 	/**
 	 * @var ContainerInterface
 	 */
@@ -145,9 +148,9 @@ class AccountController extends BaseOptionsController {
 					$this->complete_create_step( $link_id );
 				}
 
-				$account_id = $this->setup_merchant_account();
+				$response = $this->setup_merchant_account();
 
-				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
+				return $this->prepare_item_for_response( $response );
 			} catch ( Exception $e ) {
 				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -188,9 +191,16 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_item_schema(): array {
 		return [
-			'id' => [
+			'id'          => [
 				'type'              => 'number',
 				'description'       => __( 'Merchant Center Account ID.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+			],
+			'claim_delay' => [
+				'type'              => 'number',
+				'description'       => __( 'Seconds to wait before attempting a website claim.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
@@ -217,12 +227,13 @@ class AccountController extends BaseOptionsController {
 	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
 	 * @todo Include request+approve account linking process.
 	 *
-	 * @return int The newly created (or pre-existing) Merchant ID.
+	 * @return array The newly created (or pre-existing) Merchant ID and the website claim delay if there is one.
 	 * @throws Exception If an error occurs during any step.
 	 */
-	protected function setup_merchant_account(): int {
+	protected function setup_merchant_account(): array {
 		$state       = $this->get_merchant_account_state();
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
+		$response    = [ 'id' => $merchant_id ];
 
 		foreach ( $state as $name => &$step ) {
 			if ( self::MC_CREATION_STEP_DONE === $step['status'] ) {
@@ -236,7 +247,7 @@ class AccountController extends BaseOptionsController {
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
-						$merchant_id              = $this->middleware->create_merchant_account();
+						$response['id']           = intval( $this->middleware->create_merchant_account() );
 						$step['data']['from_mca'] = true;
 						break;
 					case 'link':
@@ -244,9 +255,11 @@ class AccountController extends BaseOptionsController {
 						// Approve MCC
 						break;
 					case 'verify':
-						$this->verify_site();
-						// Only delay before claiming if also verifying during this request.
-						$step['data']['timestamp'] = time();
+						$response['claim_delay'] = $this->verify_site();
+						// Only delay before claiming if not already verified.
+						if ( $response['claim_delay'] ) {
+							$step['data']['timestamp'] = time();
+						}
 						break;
 					case 'claim':
 						continue 2;
@@ -270,7 +283,7 @@ class AccountController extends BaseOptionsController {
 			}
 		}
 
-		return intval( $merchant_id );
+		return $response;
 	}
 
 	/**
@@ -306,8 +319,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Return error if not ready to be claimed
-			$delay           = 70;
-			$claim_timestamp = $delay + ( $state['verify']['data']['timestamp'] ?? 0 );
+			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['verify']['data']['timestamp'] ?? 0 );
 			if ( time() < $claim_timestamp ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = __( 'Please wait to execute website claim.', 'google-listings-and-ads' );
@@ -332,9 +344,11 @@ class AccountController extends BaseOptionsController {
 				if ( $from_mca ) {
 					// MCA sub-account
 					$this->middleware->claim_merchant_website();
+					$state['claim']['data']['endpoint'] = 'proxy';
 				} else {
 					// Linked account
 					$this->container->get( Merchant::class )->claimwebsite();
+					$state['claim']['data']['endpoint'] = 'merchant';
 				}
 			} catch ( Exception $e ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
@@ -399,15 +413,15 @@ class AccountController extends BaseOptionsController {
 	 * 2. Enables the meta tag in the head of the store.
 	 * 3. Instructs the Site Verification API to verify the meta tag.
 	 *
-	 * @return bool True if the entire process succeeds and the site is verified for the user.
+	 * @return int The number of seconds to delay before attempting a site claim (0 if previously verified).
 	 * @throws Exception If any step of the site verification process fails.
 	 */
-	private function verify_site() {
+	private function verify_site(): int {
 		$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 		// Inform of previous verification.
 		if ( $this->is_site_verified() ) {
-			return true;
+			return 0;
 		}
 
 		// Retrieve the meta tag with verification token.
@@ -437,7 +451,7 @@ class AccountController extends BaseOptionsController {
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
 				do_action( 'gla_site_verify_success', [] );
 
-				return true;
+				return self::MC_CLAIM_DELAY;
 			}
 		} catch ( Exception $e ) {
 			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
@@ -472,7 +486,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If there is already a Merchant Center ID.
 	 */
 	private function complete_create_step( int $account_id ): void {
-		$merchant_id = $this->options->get( OptionsInterface::MERCHANT_ID );
+		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		if ( $merchant_id && $merchant_id !== $account_id ) {
 			throw new Exception( __( 'Merchant center account already linked.', 'google-listings-and-ads' ) );
