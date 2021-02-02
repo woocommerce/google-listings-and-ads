@@ -1,21 +1,20 @@
 /**
  * External dependencies
  */
-import { Link } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import GridiconChevronLeft from 'gridicons/dist/chevron-left';
 import GridiconHelpOutline from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies
  */
 import AppIconButton from '../../components/app-icon-button';
+import SetupBackLink from '../../components/setup-back-link';
 import { recordSetupAdsEvent } from '../../utils/recordEvent';
 import './index.scss';
 
 const TopBar = () => {
-	const handleBackButtonClick = () => {
+	const handleBackLinkClick = () => {
 		recordSetupAdsEvent( 'back' );
 	};
 
@@ -25,14 +24,11 @@ const TopBar = () => {
 
 	return (
 		<div className="gla-setup-ads-top-bar">
-			<Link
-				className="back-button"
-				href={ getNewPath( {}, '/google/start' ) }
+			<SetupBackLink
 				type="wc-admin"
-				onClick={ handleBackButtonClick }
-			>
-				<GridiconChevronLeft />
-			</Link>
+				href={ getNewPath( {}, '/google/dashboard' ) }
+				onClick={ handleBackLinkClick }
+			/>
 			<span className="title">
 				{ __( 'Set up paid campaign', 'google-listings-and-ads' ) }
 			</span>
