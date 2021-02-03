@@ -43,7 +43,7 @@ class SupportedCountriesController extends BaseController {
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'mc/countries',
 			[
@@ -89,5 +89,25 @@ class SupportedCountriesController extends BaseController {
 		}
 
 		return $supported;
+	}
+
+	/**
+	 * Get the item schema properties for the controller.
+	 *
+	 * @return array
+	 */
+	protected function get_schema_properties(): array {
+		return [];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_schema_title(): string {
+		return 'supported_countries';
 	}
 }

@@ -4,9 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,12 +15,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class ConnectionController extends BaseController {
 
-	use ControllerTrait;
-
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'mc/connect',
 			[
@@ -54,7 +50,7 @@ class ConnectionController extends BaseController {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'url' => [
 				'description' => __( 'Action that should be completed after connection.', 'google-listings-and-ads' ),
@@ -72,7 +68,7 @@ class ConnectionController extends BaseController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'merchant_center_connection';
 	}
 }
