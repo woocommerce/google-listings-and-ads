@@ -54,22 +54,16 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected $middleware;
 
-
-	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
-
 	/**
 	 * AccountController constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
-		$this->options = $container->get( OptionsInterface::class );
-		parent::__construct( $container->get( RESTServer::class ), $this->options );
+		parent::__construct( $container->get( RESTServer::class ) );
 		$this->middleware = $container->get( Middleware::class );
-		$this->container  = $container;
+		$this->set_options_object( $container->get(  OptionsInterface::class ) );
+		$this->container = $container;
 	}
 
 	/**
