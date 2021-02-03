@@ -133,6 +133,33 @@ class Proxy {
 	}
 
 	/**
+	 * Get the connected merchant account.
+	 *
+	 * @return array
+	 */
+	public function get_connected_merchant(): array {
+		/** @var Options $options */
+		$options = $this->container->get( OptionsInterface::class );
+		$id      = intval( $options->get( Options::MERCHANT_ID ) );
+
+		// TODO: populate with status from site verification.
+
+		return [
+			'id'     => $id,
+			'status' => $id ? '' : 'disconnected',
+		];
+	}
+
+	/**
+	 * Disconnect the connected merchant account.
+	 */
+	public function disconnect_merchant() {
+		$this->update_merchant_id( 0, false );
+
+		// TODO: Cancel any active campaigns and remove product feeds when disconnecting.
+	}
+
+	/**
 	 * Claim the website for a MCA.
 	 *
 	 * @return bool

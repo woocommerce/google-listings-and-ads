@@ -60,6 +60,21 @@ class AccountController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+		$this->register_route(
+			'mc/connection',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_merchant_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->disconnect_merchant_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -94,6 +109,33 @@ class AccountController extends BaseController {
 			} catch ( Exception $e ) {
 				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the connected merchant account.
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_merchant_callback(): callable {
+		return function() {
+			return $this->middleware->get_connected_merchant();
+		};
+	}
+
+	/**
+	 * Get the callback function for disconnecting a merchant.
+	 *
+	 * @return callable
+	 */
+	protected function disconnect_merchant_callback(): callable {
+		return function() {
+			$this->middleware->disconnect_merchant();
+
+			return [
+				'status'  => 'success',
+				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
+			];
 		};
 	}
 
