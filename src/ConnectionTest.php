@@ -462,15 +462,6 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-sv-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-claim' ) ) {
 			try {
-				/** @var Options $options */
-				$options = $this->container->get( OptionsInterface::class );
-				$mca     = (bool) $options->get( Options::MERCHANT_ID_MCA );
-
-				if ( ! $mca ) {
-					$this->response = 'This site was not created through a merchant account (unable to claim)' . "\n";
-					return;
-				}
-
 				/** @var Proxy $proxy */
 				$proxy = $this->container->get( Proxy::class );
 				if ( $proxy->claim_merchant_website() ) {
