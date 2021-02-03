@@ -7,8 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,9 +20,20 @@ defined( 'ABSPATH' ) || exit;
 class SiteVerificationController extends BaseOptionsController {
 
 	/**
-	 * @var ContainerInterface
+	 * @var SiteVerification
 	 */
-	protected $container;
+	protected $site_verification;
+
+	/**
+	 * BaseController constructor.
+	 *
+	 * @param RESTServer       $server
+	 * @param SiteVerification $site_verification
+	 */
+	public function __construct( RESTServer $server, SiteVerification $site_verification ) {
+		parent::__construct( $server );
+		$this->site_verification = $site_verification;
+	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -60,12 +71,10 @@ class SiteVerificationController extends BaseOptionsController {
 			}
 
 			// Retrieve the meta tag with verification token.
-			/** @var SiteVerification $site_verification */
-			$site_verification = $this->container->get( SiteVerification::class );
 			try {
-				$meta_tag = $site_verification->get_token( $site_url );
+				$meta_tag = $this->site_verification->get_token( $site_url );
 			} catch ( Exception $e ) {
-				do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'token' ] );
+				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'token' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
@@ -82,21 +91,21 @@ class SiteVerificationController extends BaseOptionsController {
 
 			// Attempt verification.
 			try {
-				if ( $site_verification->insert( $site_url ) ) {
+				if ( $this->site_verification->insert( $site_url ) ) {
 					$site_verification_options['verified'] = 'yes';
 					$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-					do_action( $this->get_slug() . '_site_verify_success', [] );
+					do_action( "{$this->get_slug()}_site_verify_success", [] );
 
 					return $this->get_success_status( __( 'Site successfully verified.', 'google-listings-and-ads' ) );
 				}
 			} catch ( Exception $e ) {
-				do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'meta-tag' ] );
+				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'meta-tag' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
 
 			// Should never reach this point.
-			do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'unknown' ] );
+			do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'unknown' ] );
 
 			return $this->get_failure_status();
 		};
