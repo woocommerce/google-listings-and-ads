@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Locale;
-use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -99,29 +98,30 @@ class TargetAudienceController extends BaseOptionsController {
 	}
 
 	/**
-	 * Prepares the item for the REST response.
+	 * Retrieves all of the registered additional fields for a given object-type.
 	 *
-	 * @param mixed   $item    WordPress representation of the item.
-	 * @param Request $request Request object.
+	 * @param string $object_type Optional. The object type.
 	 *
-	 * @return Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return array Registered additional fields (if any), empty array if none or if the object type could
+	 *               not be inferred.
 	 */
-	public function prepare_item_for_response( $item, $request ) {
-		$prepared = [];
-		$context  = $request['context'] ?? 'view';
-		$schema   = $this->get_schema_properties();
-		foreach ( $schema as $key => $property ) {
-			$prepared[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
-		}
+	protected function get_additional_fields( $object_type = null ): array {
+		$fields = parent::get_additional_fields( $object_type );
+		$locale = $this->wp->get_locale();
 
-		$locale               = $this->wp->get_locale();
-		$prepared['locale']   = $locale;
-		$prepared['language'] = Locale::getDisplayLanguage( $locale, $locale );
+		// Fields are expected to be an array with a 'get_callback' callable that returns the field value.
+		$fields['locale']   = [
+			'get_callback' => function() use ( $locale ) {
+				return $locale;
+			},
+		];
+		$fields['language'] = [
+			'get_callback' => function() use ( $locale ) {
+				return Locale::getDisplayLanguage( $locale, $locale );
+			},
+		];
 
-		$prepared = $this->add_additional_fields_to_object( $prepared, $request );
-		$prepared = $this->filter_response_by_context( $prepared, $context );
-
-		return new Response( $prepared );
+		return $fields;
 	}
 
 	/**
@@ -154,6 +154,12 @@ class TargetAudienceController extends BaseOptionsController {
 			'language'  => [
 				'type'        => 'string',
 				'description' => __( 'The language to use for product listings.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'locale'    => [
+				'type'        => 'string',
+				'description' => __( 'The locale for the site.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
