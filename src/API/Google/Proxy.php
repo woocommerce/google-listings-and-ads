@@ -179,6 +179,29 @@ class Proxy {
 	}
 
 	/**
+	 * Get the connected ads account.
+	 *
+	 * @return array
+	 */
+	public function get_connected_ads_account(): array {
+		/** @var Options $options */
+		$options = $this->container->get( OptionsInterface::class );
+		$id      = intval( $options->get( Options::ADS_ID ) );
+
+		return [
+			'id'     => $id,
+			'status' => $id ? 'connected' : 'disconnected',
+		];
+	}
+
+	/**
+	 * Disconnect the connected ads account.
+	 */
+	public function disconnect_ads_account() {
+		$this->update_ads_id( 0 );
+	}
+
+	/**
 	 * Determine whether the TOS have been accepted.
 	 *
 	 * @return TosAccepted
