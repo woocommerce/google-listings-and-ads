@@ -16,7 +16,6 @@ interface OptionsInterface {
 	public const MC_SETUP_COMPLETED_AT = 'mc_setup_completed_at';
 	public const MERCHANT_CENTER       = 'merchant_center';
 	public const MERCHANT_ID           = 'merchant_id';
-	public const MERCHANT_ID_MCA       = 'merchant_id_mca';
 	public const SHIPPING_RATES        = 'shipping_rates';
 	public const SHIPPING_TIMES        = 'shipping_times';
 	public const ADS_ID                = 'ads_id';

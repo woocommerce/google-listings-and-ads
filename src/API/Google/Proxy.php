@@ -103,7 +103,7 @@ class Proxy {
 
 			if ( 200 === $result->getStatusCode() && isset( $response['id'] ) ) {
 				$id = absint( $response['id'] );
-				$this->update_merchant_id( $id, true );
+				$this->update_merchant_id( $id );
 				return $id;
 			}
 
@@ -127,7 +127,7 @@ class Proxy {
 	 * @return int
 	 */
 	public function link_merchant_account( int $id ): int {
-		$this->update_merchant_id( $id, false );
+		$this->update_merchant_id( $id );
 
 		return $id;
 	}
@@ -154,7 +154,7 @@ class Proxy {
 	 * Disconnect the connected merchant account.
 	 */
 	public function disconnect_merchant() {
-		$this->update_merchant_id( 0, false );
+		$this->update_merchant_id( 0 );
 
 		// TODO: Cancel any active campaigns and remove product feeds when disconnecting.
 	}
@@ -416,15 +416,13 @@ class Proxy {
 	/**
 	 * Update the Merchant Center ID to use for requests.
 	 *
-	 * @param int  $id  Merchant ID number.
-	 * @param bool $mca Is the account created by a MCA.
+	 * @param int $id  Merchant ID number.
 	 *
 	 * @return bool
 	 */
-	protected function update_merchant_id( int $id, bool $mca ): bool {
+	protected function update_merchant_id( int $id ): bool {
 		/** @var Options $options */
 		$options = $this->container->get( OptionsInterface::class );
-		$options->update( Options::MERCHANT_ID_MCA, $mca );
 		return $options->update( Options::MERCHANT_ID, $id );
 	}
 
