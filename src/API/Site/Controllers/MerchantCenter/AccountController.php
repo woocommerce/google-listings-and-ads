@@ -258,7 +258,7 @@ class AccountController extends BaseOptionsController {
 						$response['claim_delay'] = $this->verify_site();
 						// Only delay before claiming if not already verified.
 						if ( $response['claim_delay'] ) {
-							$step['data']['timestamp'] = time();
+							$step['data']['verify_timestamp'] = time();
 						}
 						break;
 					case 'claim':
@@ -319,7 +319,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Return error if not ready to be claimed
-			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['verify']['data']['timestamp'] ?? 0 );
+			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['verify']['data']['verify_timestamp'] ?? 0 );
 			if ( time() < $claim_timestamp ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = __( 'Please wait to execute website claim.', 'google-listings-and-ads' );
