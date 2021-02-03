@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
