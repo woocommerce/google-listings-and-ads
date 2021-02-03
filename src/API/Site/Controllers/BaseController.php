@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WC_REST_Controller;
-use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -117,7 +116,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	 * @param mixed   $item    WordPress representation of the item.
 	 * @param Request $request Request object.
 	 *
-	 * @return Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return Response Response object on success, or WP_Error object on failure.
 	 */
 	public function prepare_item_for_response( $item, $request ) {
 		$prepared = [];
