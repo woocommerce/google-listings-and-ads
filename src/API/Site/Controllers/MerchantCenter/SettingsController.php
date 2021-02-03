@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use WP_REST_Request;
+use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -63,7 +63,7 @@ class SettingsController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_settings_endpoint_edit_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$schema  = $this->get_schema_properties();
 			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
 			foreach ( $schema as $key => $property ) {

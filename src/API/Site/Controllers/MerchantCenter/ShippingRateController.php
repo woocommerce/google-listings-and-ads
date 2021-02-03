@@ -8,8 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCode
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -91,11 +91,11 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_read_rate_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country = $request->get_param( 'country_code' );
 			$rates   = $this->get_shipping_rates_option();
 			if ( ! array_key_exists( $country, $rates ) ) {
-				return new WP_REST_Response(
+				return new Response(
 					[
 						'message' => __( 'No rate available.', 'google-listings-and-ads' ),
 						'country' => $country,
@@ -114,7 +114,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_create_rate_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$iso = $request->get_param( 'country_code' );
 			$this->update_shipping_rates_option(
 				$this->process_new_rate(
@@ -124,7 +124,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 				)
 			);
 
-			return new WP_REST_Response(
+			return new Response(
 				[
 					'status'  => 'success',
 					'message' => sprintf(
@@ -142,7 +142,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_delete_rate_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$iso   = $request->get_param( 'country_code' );
 			$rates = $this->get_shipping_rates_option();
 			unset( $rates[ $iso ] );

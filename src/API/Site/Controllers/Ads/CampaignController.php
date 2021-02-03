@@ -12,8 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166Aware
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use Psr\Container\ContainerInterface;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -97,7 +97,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			try {
 				return array_map( [ $this, 'prepare_item_for_response' ], $this->ads->get_campaigns() );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -108,14 +108,14 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 * @return callable
 	 */
 	protected function create_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$fields   = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 				$campaign = $this->ads->create_campaign( $fields );
 
 				return $this->prepare_item_for_response( $campaign );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -126,13 +126,13 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 * @return callable
 	 */
 	protected function get_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$id       = absint( $request['id'] );
 				$campaign = $this->ads->get_campaign( $id );
 
 				if ( empty( $campaign ) ) {
-					return new WP_REST_Response(
+					return new Response(
 						[
 							'message' => __( 'Campaign is not available.', 'google-listings-and-ads' ),
 							'id'      => $id,
@@ -143,7 +143,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 
 				return $this->prepare_item_for_response( $campaign );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -154,11 +154,11 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 * @return callable
 	 */
 	protected function edit_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$fields = array_intersect_key( $request->get_json_params(), $this->get_edit_schema() );
 				if ( empty( $fields ) ) {
-					return new WP_REST_Response(
+					return new Response(
 						[
 							'status'  => 'invalid_data',
 							'message' => __( 'Invalid edit data.', 'google-listings-and-ads' ),
@@ -175,7 +175,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'id'      => $campaign_id,
 				];
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -186,7 +186,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 * @return callable
 	 */
 	protected function delete_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$deleted_id = $this->ads->delete_campaign( absint( $request['id'] ) );
 
@@ -196,7 +196,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'id'      => $deleted_id,
 				];
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}

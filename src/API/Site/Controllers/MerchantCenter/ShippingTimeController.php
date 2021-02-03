@@ -8,8 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCode
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -93,11 +93,11 @@ class ShippingTimeController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_read_time_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country = $request->get_param( 'country_code' );
 			$times   = $this->get_shipping_times_option();
 			if ( ! array_key_exists( $country, $times ) ) {
-				return new WP_REST_Response(
+				return new Response(
 					[
 						'message' => __( 'No time available.', 'google-listings-and-ads' ),
 						'country' => $country,
@@ -116,7 +116,7 @@ class ShippingTimeController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_create_time_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country_code           = $request->get_param( 'country_code' );
 			$times                  = $this->get_shipping_times_option();
 			$times[ $country_code ] = $this->process_new_time(
@@ -127,7 +127,7 @@ class ShippingTimeController extends BaseOptionsController implements ISO3166Awa
 
 			$this->update_shipping_times_option( $times );
 
-			return new WP_REST_Response(
+			return new Response(
 				[
 					'status'  => 'success',
 					'message' => sprintf(
@@ -147,7 +147,7 @@ class ShippingTimeController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_delete_time_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country_code = $request->get_param( 'country_code' );
 			$times        = $this->get_shipping_times_option();
 
