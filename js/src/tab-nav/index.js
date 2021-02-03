@@ -23,7 +23,7 @@ const tabs = [
 		name: 'reports',
 		title: __( 'Reports', 'google-listings-and-ads' ),
 		className: 'tab-reports',
-		path: '%2Fgoogle%2Freports',
+		path: '%2Fgoogle%2Freports%2Fprograms',
 	},
 	{
 		name: 'product-feed',

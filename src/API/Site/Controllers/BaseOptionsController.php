@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -13,21 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers
  */
-abstract class BaseOptionsController extends BaseController {
+abstract class BaseOptionsController extends BaseController implements OptionsAwareInterface {
 
-	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
-
-	/**
-	 * BaseController constructor.
-	 *
-	 * @param RESTServer       $server
-	 * @param OptionsInterface $options
-	 */
-	public function __construct( RESTServer $server, OptionsInterface $options ) {
-		parent::__construct( $server );
-		$this->options = $options;
-	}
+	use OptionsAwareTrait;
 }

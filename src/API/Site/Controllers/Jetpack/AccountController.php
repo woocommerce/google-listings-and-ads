@@ -127,7 +127,13 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connected_callback(): callable {
 		return function() {
-			return [ 'active' => $this->is_jetpack_connected() ];
+			$user_data = $this->get_jetpack_user_data();
+			return [
+				'active'      => $this->is_jetpack_connected(),
+				'owner'       => $this->is_jetpack_connection_owner(),
+				'displayName' => array_key_exists( 'display_name', $user_data, ) ? $user_data['display_name'] : '',
+				'email'       => array_key_exists( 'email', $user_data, ) ? $user_data['email'] : '',
+			];
 		};
 	}
 
@@ -138,6 +144,26 @@ class AccountController extends BaseController {
 	 */
 	protected function is_jetpack_connected(): string {
 		return $this->manager->is_active() ? 'yes' : 'no';
+	}
+
+	/**
+	 * Determine whether user is the current Jetpack connection owner.
+	 *
+	 * @return string
+	 */
+	protected function is_jetpack_connection_owner(): string {
+		return $this->manager->is_connection_owner() ? 'yes' : 'no';
+	}
+
+	/**
+	 * Get the wpcom user data of the current connected user.
+	 *
+	 * @return array
+	 */
+	protected function get_jetpack_user_data(): array {
+		$user_data = $this->manager->get_connected_user_data();
+		// adjust for $user_data returning false
+		return is_array( $user_data ) ? $user_data : [];
 	}
 
 	/**

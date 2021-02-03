@@ -19,6 +19,7 @@ final class Options implements OptionsInterface, Service {
 	use PluginHelper;
 
 	private const VALID_OPTIONS = [
+		self::ADS_ID                => true,
 		self::DB_VERSION            => true,
 		self::FILE_VERSION          => true,
 		self::INSTALL_TIMESTAMP     => true,
@@ -27,8 +28,8 @@ final class Options implements OptionsInterface, Service {
 		self::MERCHANT_ID           => true,
 		self::SHIPPING_RATES        => true,
 		self::SHIPPING_TIMES        => true,
-		self::ADS_ID                => true,
 		self::SITE_VERIFICATION     => true,
+		self::TARGET_AUDIENCE       => true,
 	];
 
 	/**

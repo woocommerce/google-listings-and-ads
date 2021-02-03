@@ -48,7 +48,7 @@ const Dashboard = () => {
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }
 				/>
-				<Link href={ getNewPath( null, '/google/reports' ) }>
+				<Link href={ getNewPath( null, '/google/reports/programs' ) }>
 					<Button isPrimary>View Reports</Button>
 				</Link>
 			</div>

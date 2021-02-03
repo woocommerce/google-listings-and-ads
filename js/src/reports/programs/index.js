@@ -8,11 +8,11 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import TabNav from '../tab-nav';
-import AppDateRangeFilterPicker from '../dashboard/app-date-range-filter-picker';
+import TabNav from '../../tab-nav';
+import AppDateRangeFilterPicker from '../../dashboard/app-date-range-filter-picker';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import MetricNumber from './metric-number';
-import '../dashboard/index.scss';
+import '../../dashboard/index.scss';
 import { programsFilterConfig } from './filter-config';
 import metricsData from './mocked-metrics-data'; // Mocked data
 
@@ -30,7 +30,7 @@ const performanceMetrics = [
 	[ 'totalSpend', __( 'Total Spend', 'google-listings-and-ads' ) ],
 ];
 
-const ProgramsReports = () => {
+const ProgramsReport = () => {
 	// TODO: this data should come from backend API.
 	const data = metricsData();
 
@@ -135,4 +135,4 @@ const ProgramsReports = () => {
 	);
 };
 
-export default ProgramsReports;
+export default ProgramsReport;

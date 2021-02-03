@@ -10,14 +10,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
@@ -30,7 +32,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -55,7 +56,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		Installer::class              => true,
 		Admin::class                  => true,
-		Reports::class                => true,
+		Programs::class               => true,
+		Products::class               => true,
 		AssetsHandlerInterface::class => true,
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
@@ -110,7 +112,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
-		$this->conditionally_share_with_tags( Reports::class );
+		$this->conditionally_share_with_tags( Programs::class );
+		$this->conditionally_share_with_tags( Products::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
 		$this->conditionally_share_with_tags( Settings::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );

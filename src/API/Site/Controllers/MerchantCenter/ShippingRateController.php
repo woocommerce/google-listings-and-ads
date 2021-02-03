@@ -7,10 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptions
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -21,15 +19,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ShippingRateController extends BaseOptionsController {
+class ShippingRateController extends BaseOptionsController implements ISO3166AwareInterface {
 
 	use ControllerTrait;
 	use CountryCodeTrait;
-
-	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
 
 	/**
 	 * The base for routes in this controller.
@@ -37,16 +30,6 @@ class ShippingRateController extends BaseOptionsController {
 	 * @var string
 	 */
 	protected $route_base = 'mc/shipping/rates';
-
-	/**
-	 * ShippingRateController constructor.
-	 *
-	 * @param ContainerInterface $container
-	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ), $container->get( OptionsInterface::class ) );
-		$this->iso = $container->get( ISO3166DataProvider::class );
-	}
 
 	/**
 	 * Register rest routes with WordPress.
@@ -264,7 +247,7 @@ class ShippingRateController extends BaseOptionsController {
 		}
 
 		// todo: translate the country using WC_Countries class
-		$rate['country']        = $this->iso->alpha2( $rate_key )['name'];
+		$rate['country']        = $this->iso3166_data_provider->alpha2( $rate_key )['name'];
 		$all_rates[ $rate_key ] = $rate;
 
 		return $all_rates;
