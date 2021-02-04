@@ -27,7 +27,7 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * @var string[]
 	 */
-	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'create', 'link', 'verify', 'claim' ];
+	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'link', 'verify', 'claim' ];
 
 	/** @var int Status value for a pending merchant account creation step */
 	private const MC_CREATION_STEP_PENDING = 0;
@@ -77,7 +77,7 @@ class AccountController extends BaseOptionsController {
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->create_or_link_account_callback(),
+					'callback'            => $this->set_account_id_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
@@ -131,12 +131,12 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function create_or_link_account_callback(): callable {
+	protected function set_account_id_callback(): callable {
 		return function( Request $request ) {
 			try {
 				$link_id = absint( $request['id'] );
 				if ( $link_id ) {
-					$this->complete_create_step( $link_id );
+					$this->use_standalone_account_id( $link_id );
 				}
 
 				$response = $this->setup_merchant_account();
@@ -195,6 +195,7 @@ class AccountController extends BaseOptionsController {
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
+				'default'           => 0,
 			],
 		];
 	}
@@ -233,26 +234,24 @@ class AccountController extends BaseOptionsController {
 
 			try {
 				switch ( $name ) {
-					case 'create':
+					case 'set_id':
 						// Just in case, don't create another merchant ID.
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
-						$response['id']           = intval( $this->middleware->create_merchant_account() );
-						$step['data']['from_mca'] = true;
+						$response['id']                    = intval( $this->middleware->create_merchant_account() );
+						$step['data']['from_mca']          = true;
+						$step['data']['created_timestamp'] = time();
+						$response['claim_delay']           = self::MC_CLAIM_DELAY;
 						break;
 					case 'link':
-						// Request MCA
-						// Approve MCC
+						// $this->middleware->link_merchant_to_mca();
 						break;
 					case 'verify':
-						$response['claim_delay'] = $this->verify_site();
-						// Only delay before claiming if not already verified.
-						if ( $response['claim_delay'] ) {
-							$step['data']['verify_timestamp'] = time();
-						}
+						$this->verify_site();
 						break;
 					case 'claim':
+						// Claim done in a separate call
 						continue 2;
 					default:
 						throw new Exception(
@@ -310,7 +309,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Return error if not ready to be claimed
-			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['verify']['data']['verify_timestamp'] ?? 0 );
+			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['set_id']['data']['created_timestamp'] ?? 0 );
 			if ( time() < $claim_timestamp ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = __( 'Please wait to execute website claim.', 'google-listings-and-ads' );
@@ -459,13 +458,13 @@ class AccountController extends BaseOptionsController {
 
 
 	/**
-	 * Mark the 'create' step as completed and set the Merchant ID.
+	 * Mark the 'set_id' step as completed and set the Merchant ID.
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
 	 * @throws Exception If there is already a Merchant Center ID.
 	 */
-	private function complete_create_step( int $account_id ): void {
+	private function use_standalone_account_id( int $account_id ): void {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		if ( $merchant_id && $merchant_id !== $account_id ) {
@@ -473,8 +472,8 @@ class AccountController extends BaseOptionsController {
 		}
 
 		$state                               = $this->get_merchant_account_state();
-		$state['create']['status']           = self::MC_CREATION_STEP_DONE;
-		$state['create']['data']['from_mca'] = false;
+		$state['set_id']['status']           = self::MC_CREATION_STEP_DONE;
+		$state['set_id']['data']['from_mca'] = false;
 		$this->update_merchant_account_state( $state );
 		$this->middleware->link_merchant_account( $account_id );
 	}
