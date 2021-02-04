@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\Account
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController as AdsCampaignController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\SiteVerificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController as MerchantCenterAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateBatchController;
@@ -59,6 +60,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_container( AdsCampaignController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class );
+		$this->share( MerchantCenterAccountController::class, Middleware::class );
 		$this->share( ShippingRateBatchController::class );
 		$this->share( ShippingRateController::class );
 		$this->share( ShippingTimeBatchController::class );

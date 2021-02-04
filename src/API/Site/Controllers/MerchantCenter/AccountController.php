@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class AccountController
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class AccountController extends BaseController {
 
@@ -41,7 +41,7 @@ class AccountController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'ads/accounts',
+			'mc/accounts',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
@@ -57,6 +57,21 @@ class AccountController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+		$this->register_route(
+			'mc/connection',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_merchant_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->disconnect_merchant_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -67,7 +82,7 @@ class AccountController extends BaseController {
 	protected function get_accounts_callback(): callable {
 		return function() {
 			try {
-				return new Response( $this->middleware->get_ads_account_ids() );
+				return new Response( $this->middleware->get_merchant_ids() );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -84,13 +99,40 @@ class AccountController extends BaseController {
 			try {
 				$link_id    = absint( $request['id'] );
 				$account_id = $link_id ?
-					$this->middleware->link_ads_account( $link_id ) :
-					$this->middleware->create_ads_account();
+					$this->middleware->link_merchant_account( $link_id ) :
+					$this->middleware->create_merchant_account();
 
 				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the connected merchant account.
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_merchant_callback(): callable {
+		return function() {
+			return $this->middleware->get_connected_merchant();
+		};
+	}
+
+	/**
+	 * Get the callback function for disconnecting a merchant.
+	 *
+	 * @return callable
+	 */
+	protected function disconnect_merchant_callback(): callable {
+		return function() {
+			$this->middleware->disconnect_merchant();
+
+			return [
+				'status'  => 'success',
+				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
+			];
 		};
 	}
 
@@ -103,7 +145,7 @@ class AccountController extends BaseController {
 		return [
 			'id' => [
 				'type'              => 'number',
-				'description'       => __( 'Google Ads Account ID.', 'google-listings-and-ads' ),
+				'description'       => __( 'Merchant Center Account ID.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
