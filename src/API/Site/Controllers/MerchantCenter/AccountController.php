@@ -141,7 +141,7 @@ class AccountController extends BaseOptionsController {
 
 				$response = $this->setup_merchant_account();
 
-				return $this->prepare_item_for_response( $response );
+				return $this->prepare_item_for_response( $response, $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
