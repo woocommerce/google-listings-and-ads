@@ -87,7 +87,7 @@ class AccountController extends BaseController {
 					$this->middleware->link_ads_account( $link_id ) :
 					$this->middleware->create_ads_account();
 
-				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
+				return $this->prepare_item_for_response( [ 'id' => $account_id ], $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
