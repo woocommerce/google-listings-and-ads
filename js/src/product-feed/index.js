@@ -11,6 +11,7 @@ import Summaries from './summaries';
 import IssuesTableCard from './issues-table-card';
 import ProductStatusHelpPopover from './product-status-help-popover';
 import ProductFeedTableCard from './product-feed-table-card';
+import SubmissionSuccessGuide from './submission-success-guide';
 import './index.scss';
 
 /* TODO: The last updated date and time need to come from backend API. */
@@ -30,6 +31,7 @@ const ProductFeed = () => {
 			</div>
 			<IssuesTableCard />
 			<ProductFeedTableCard trackEventReportId="product-feed" />
+			<SubmissionSuccessGuide />
 		</div>
 	);
 };
