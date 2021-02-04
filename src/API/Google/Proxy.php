@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use DateTime;
@@ -25,6 +26,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Proxy {
 
+	use OptionsAwareTrait;
+
 	/**
 	 * @var ContainerInterface
 	 */
@@ -36,6 +39,7 @@ class Proxy {
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
+		$this->set_options_object( $container->get( OptionsInterface::class ) );
 		$this->container = $container;
 	}
 
@@ -138,9 +142,7 @@ class Proxy {
 	 * @return array
 	 */
 	public function get_connected_merchant(): array {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		$id      = intval( $options->get( Options::MERCHANT_ID ) );
+		$id = intval( $this->options->get( Options::MERCHANT_ID ) );
 
 		// TODO: populate with status from site verification.
 
@@ -167,9 +169,7 @@ class Proxy {
 	 */
 	public function link_merchant_to_mca(): bool {
 		try {
-			/** @var Options $options */
-			$options     = $this->container->get( OptionsInterface::class );
-			$merchant_id = intval( $options->get( Options::MERCHANT_ID ) );
+			$merchant_id = intval( $this->options->get( Options::MERCHANT_ID ) );
 
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -210,9 +210,7 @@ class Proxy {
 	 */
 	public function claim_merchant_website(): bool {
 		try {
-			/** @var Options $options */
-			$options     = $this->container->get( OptionsInterface::class );
-			$merchant_id = intval( $options->get( Options::MERCHANT_ID ) );
+			$merchant_id = intval( $this->options->get( Options::MERCHANT_ID ) );
 
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -464,9 +462,7 @@ class Proxy {
 	 * @return bool
 	 */
 	protected function update_merchant_id( int $id ): bool {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->update( Options::MERCHANT_ID, $id );
+		return $this->options->update( Options::MERCHANT_ID, $id );
 	}
 
 	/**
@@ -477,9 +473,7 @@ class Proxy {
 	 * @return bool
 	 */
 	protected function update_ads_id( int $id ): bool {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->update( Options::ADS_ID, $id );
+		return $this->options->update( Options::ADS_ID, $id );
 	}
 
 	/**
