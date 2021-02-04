@@ -123,7 +123,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 		$context  = $request['context'] ?? 'view';
 		$schema   = $this->get_schema_properties();
 		foreach ( $schema as $key => $property ) {
-			$prepared[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
+			$prepared[ $key ] = $item[ $key ] ?? $property['default'] ?? null;
 		}
 
 		$prepared = $this->add_additional_fields_to_object( $prepared, $request );
