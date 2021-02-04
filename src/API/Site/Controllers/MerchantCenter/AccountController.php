@@ -329,18 +329,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			try {
-
-				$from_mca = $state['create']['data']['from_mca'] ?? false;
-
-				if ( $from_mca ) {
-					// MCA sub-account
-					$this->middleware->claim_merchant_website();
-					$state['claim']['data']['endpoint'] = 'proxy';
-				} else {
-					// Linked account
-					$this->container->get( Merchant::class )->claimwebsite();
-					$state['claim']['data']['endpoint'] = 'merchant';
-				}
+				$this->container->get( Merchant::class )->claimwebsite();
 			} catch ( Exception $e ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = $e->getMessage();
