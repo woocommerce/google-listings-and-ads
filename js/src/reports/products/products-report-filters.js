@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Component } from '@wordpress/element';
 import { compose } from '@wordpress/compose';
 import { withSelect } from '@wordpress/data';
 
@@ -26,6 +25,7 @@ import { productsFilter, advancedFilters } from './filter-config';
 // TODO: Consider importing it from something like '@woocommerce/wc-admin-settings'.
 const currency = wcSettings.currency;
 const siteLocale = wcSettings.locale.siteLocale;
+
 /**
  * Set of filters to be used in Products Report page.
  * Contains date, product with variations pickers.
@@ -33,67 +33,54 @@ const siteLocale = wcSettings.locale.siteLocale;
  * @see https://github.com/woocommerce/woocommerce-admin/blob/main/client/analytics/components/report-filters/index.js
  *
  * @param {Object} props
- * @param {Object} query Search query object, to fetch filter values from.
- * @param {string} report Report ID used in tracking events.
+ * @param {Object} props.query Search query object, to fetch filter values from.
+ * @param {string} props.report Report ID used in tracking events.
  */
-class ProductsReportFilters extends Component {
-	constructor() {
-		super();
-		this.onDateSelect = this.onDateSelect.bind( this );
-		this.onFilterSelect = this.onFilterSelect.bind( this );
-	}
+const ProductsReportFilters = ( props ) => {
+	const { query, report } = props;
 
-	onDateSelect( data ) {
+	const { period, compare, before, after } = getDateParamsFromQuery( query );
+	const { primary: primaryDate, secondary: secondaryDate } = getCurrentDates(
+		query
+	);
+	const dateQuery = {
+		period,
+		compare,
+		before,
+		after,
+		primaryDate,
+		secondaryDate,
+	};
+
+	const onDateSelect = ( data ) =>
 		recordDatepickerUpdateEvent( {
-			report: this.props.report,
+			report,
 			...omitBy( data, isUndefined ),
 		} );
-	}
 
-	onFilterSelect( data ) {
+	const onFilterSelect = ( data ) =>
 		recordFilterEvent( {
-			report: this.props.report,
+			report,
 			filter: data.filter || 'all',
 			// wc-admin does not send it
 			// https://github.com/woocommerce/woocommerce-admin/issues/6221
 			filterVariations: data[ 'filter-variations' ],
 		} );
-	}
 
-	render() {
-		const { query } = this.props;
-
-		const { period, compare, before, after } = getDateParamsFromQuery(
-			query
-		);
-		const {
-			primary: primaryDate,
-			secondary: secondaryDate,
-		} = getCurrentDates( query );
-		const dateQuery = {
-			period,
-			compare,
-			before,
-			after,
-			primaryDate,
-			secondaryDate,
-		};
-
-		return (
-			<ReportFilters
-				query={ query }
-				siteLocale={ siteLocale }
-				currency={ currency }
-				filters={ productsFilter }
-				advancedFilters={ advancedFilters }
-				onDateSelect={ this.onDateSelect }
-				onFilterSelect={ this.onFilterSelect }
-				dateQuery={ dateQuery }
-				isoDateFormat={ isoDateFormat }
-			/>
-		);
-	}
-}
+	return (
+		<ReportFilters
+			query={ query }
+			siteLocale={ siteLocale }
+			currency={ currency }
+			filters={ productsFilter }
+			advancedFilters={ advancedFilters }
+			onDateSelect={ onDateSelect }
+			onFilterSelect={ onFilterSelect }
+			dateQuery={ dateQuery }
+			isoDateFormat={ isoDateFormat }
+		/>
+	);
+};
 
 /**
  * @type {ProductsReportFilters}
