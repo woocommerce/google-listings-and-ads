@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use WP_REST_Request;
-use WP_REST_Response;
-use WP_REST_Server;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
+use WP_REST_Server as Server;
 
 /**
  * Class RESTServer
@@ -18,16 +18,16 @@ class RESTServer {
 	/**
 	 * The REST server instance.
 	 *
-	 * @var WP_REST_Server
+	 * @var Server
 	 */
 	protected $server;
 
 	/**
 	 * RESTServer constructor.
 	 *
-	 * @param WP_REST_Server|null $server
+	 * @param Server|null $server
 	 */
-	public function __construct( ?WP_REST_Server $server = null ) {
+	public function __construct( ?Server $server = null ) {
 		$this->server = $server ?? rest_get_server();
 	}
 
@@ -49,11 +49,11 @@ class RESTServer {
 	/**
 	 * Run an internal request.
 	 *
-	 * @param WP_REST_Request $request
+	 * @param Request $request
 	 *
-	 * @return WP_REST_Response
+	 * @return Response
 	 */
-	public function dispatch_request( WP_REST_Request $request ): WP_REST_Response {
+	public function dispatch_request( Request $request ): Response {
 		return $this->server->dispatch( $request );
 	}
 
