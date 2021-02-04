@@ -142,7 +142,7 @@ class Proxy {
 	 * @return array
 	 */
 	public function get_connected_merchant(): array {
-		$id = intval( $this->options->get( Options::MERCHANT_ID ) );
+		$id = $this->get_merchant_id();
 
 		// TODO: populate with status from site verification.
 
@@ -169,8 +169,6 @@ class Proxy {
 	 */
 	public function link_merchant_to_mca(): bool {
 		try {
-			$merchant_id = intval( $this->options->get( Options::MERCHANT_ID ) );
-
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
@@ -178,7 +176,7 @@ class Proxy {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $merchant_id,
+							'accountId' => $this->get_merchant_id(),
 						]
 					),
 				]
@@ -210,8 +208,6 @@ class Proxy {
 	 */
 	public function claim_merchant_website(): bool {
 		try {
-			$merchant_id = intval( $this->options->get( Options::MERCHANT_ID ) );
-
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
@@ -219,7 +215,7 @@ class Proxy {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $merchant_id,
+							'accountId' => $this->get_merchant_id(),
 						]
 					),
 				]
@@ -452,6 +448,15 @@ class Proxy {
 	 */
 	protected function parse_ads_id( string $name ): int {
 		return absint( str_replace( 'customers/', '', $name ) );
+	}
+
+	/**
+	 * Get the Merchant Center ID.
+	 *
+	 * @return int
+	 */
+	protected function get_merchant_id(): int {
+		return absint( $this->options->get( Options::MERCHANT_ID ) );
 	}
 
 	/**
