@@ -105,56 +105,32 @@ const ProductsReportFiltersWithVariationsData = compose(
 	 * https://github.com/woocommerce/woocommerce-admin/commit/c7de3559d9180cf6ecf9a20b72fc20f0a6658518#diff-28cbd3395bb82ac11cadfbf5c5432ef382c9759b297ddd64ef1b93313bef9e52R129-R156
 	 */
 	withSelect( ( select, props ) => {
-		const { query, isRequesting } = props;
+		const { query } = props;
 		const isSingleProductView =
 			! query.search &&
 			query.products &&
 			query.products.split( ',' ).length === 1;
-		if ( isRequesting ) {
-			return {
-				query: {
-					...query,
-				},
-				isSingleProductView,
-				isRequesting,
-			};
-		}
 
-		const { getItems, isResolving, getItemsError } = select(
-			ITEMS_STORE_NAME
-		);
 		if ( isSingleProductView ) {
 			const productId = parseInt( query.products, 10 );
 			const includeArgs = { include: productId };
+
+			const { getItems } = select( ITEMS_STORE_NAME );
 			// TODO Look at similar usage to populate tags in the Search component.
 			const products = getItems( 'products', includeArgs );
 			const isVariable =
 				products &&
 				products.get( productId ) &&
 				products.get( productId ).type === 'variable';
-			const isProductsRequesting = isResolving( 'getItems', [
-				'products',
-				includeArgs,
-			] );
-			const isProductsError = Boolean(
-				getItemsError( 'products', includeArgs )
-			);
 			return {
 				query: {
 					...query,
 					'is-variable': isVariable,
 				},
-				isSingleProductView,
-				isRequesting: isProductsRequesting,
-				isSingleProductVariable: isVariable,
-				isError: isProductsError,
 			};
 		}
 
-		return {
-			query,
-			isSingleProductView,
-		};
+		return { query };
 	} )
 )( ProductsReportFilters );
 
