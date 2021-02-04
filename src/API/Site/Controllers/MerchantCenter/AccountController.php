@@ -9,8 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Exception;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -85,9 +85,9 @@ class AccountController extends BaseController {
 	protected function get_accounts_callback(): callable {
 		return function() {
 			try {
-				return new WP_REST_Response( $this->middleware->get_merchant_ids() );
+				return new Response( $this->middleware->get_merchant_ids() );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
@@ -98,7 +98,7 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function create_or_link_account_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$link_id    = absint( $request['id'] );
 				$account_id = $link_id ?
@@ -107,7 +107,7 @@ class AccountController extends BaseController {
 
 				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
