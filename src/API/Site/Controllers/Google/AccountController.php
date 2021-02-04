@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerT
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use WP_REST_Response;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -119,7 +119,7 @@ class AccountController extends BaseController {
 					'email'  => array_key_exists( 'email', $status ) ? $status['email'] : '',
 				];
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
