@@ -39,7 +39,7 @@ class AccountController extends BaseOptionsController {
 	private const MC_CREATION_STEP_ERROR = - 1;
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
-	private const MC_CLAIM_DELAY = 70;
+	private const MC_CLAIM_DELAY = 90;
 
 	/**
 	 * @var ContainerInterface
