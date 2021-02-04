@@ -19,8 +19,8 @@ trait BatchSchemaTrait {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
-		$schema = parent::get_item_schema();
+	public function get_item_schema(): array {
+		$schema = parent::get_schema_properties();
 		unset( $schema['country'], $schema['country_code'] );
 
 		// Context is always edit for batches.
