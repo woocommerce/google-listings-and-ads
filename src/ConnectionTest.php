@@ -223,6 +223,29 @@ class ConnectionTest implements Service, Registerable {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-claim' ), $url ), 'wcs-google-sv-claim' ) ); ?>">Claim Site (if MCA)</a>
 				</p>
 
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<p>
+						<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
+							Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?> ||
+						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
+							<?php echo $name . ':' . $step['status'] ?>
+						<?php endforeach; ?>
+							<br/>
+						<?php endif; ?>
+						<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-google-accounts-create" type="hidden" />
+							<label title="Use a live site!">
+								Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
+							</label>
+							<label title="To simulate linking with an external site">
+								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
+							</label>
+						<button class="button">Create MC Sub-Account</button>
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
+						</p>
+					</form>
+
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 						<?php wp_nonce_field( 'wcs-sync-product' ); ?>
@@ -465,11 +488,39 @@ class ConnectionTest implements Service, Registerable {
 				/** @var Proxy $proxy */
 				$proxy = $this->container->get( Proxy::class );
 				if ( $proxy->claim_merchant_website() ) {
-					$this->response = 'Claimed website ' . site_url() . "\n";
+					$this->response = 'Claimed website ' . apply_filters( 'woocommerce_gla_site_url', site_url() ) . "\n";
 				}
 			} catch ( \Exception $e ) {
 				$this->response .= $e->getMessage();
 			}
+		}
+
+		if ( 'wcs-google-accounts-create' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-create' ) ) {
+			// Using REST API
+			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+
+
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
+			if(is_numeric( $_GET['account_id']??false )) {
+				$request->set_body_params( ['id'=>$_GET['account_id']] );
+			}
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response = $json;
+		}
+
+		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
+			// Using REST API
+			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claimwebsite' );
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response = $json;
 		}
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {

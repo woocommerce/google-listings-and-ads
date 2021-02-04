@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -60,7 +61,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_container( AdsCampaignController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class );
-		$this->share( MerchantCenterAccountController::class, Middleware::class );
+		$this->share_with_container( MerchantCenterAccountController::class );
 		$this->share( ShippingRateBatchController::class );
 		$this->share( ShippingRateController::class );
 		$this->share( ShippingTimeBatchController::class );

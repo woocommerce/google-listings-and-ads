@@ -63,7 +63,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 */
 	protected function get_verify_endpoint_create_callback(): callable {
 		return function() {
-			$site_url = site_url();
+			$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 			// Inform of previous verification.
 			if ( $this->is_site_verified() ) {
@@ -169,7 +169,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_verify_endpoint_read_callback(): callable {
-			return function () {
+			return function() {
 				$verified = $this->is_site_verified();
 				return [
 					'status'   => 'success',
