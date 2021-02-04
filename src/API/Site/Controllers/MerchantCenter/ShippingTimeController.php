@@ -76,11 +76,11 @@ class ShippingTimeController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_read_times_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			$times = $this->get_shipping_times_option();
 			$items = [];
 			foreach ( $times as $country_code => $details ) {
-				$items[ $country_code ] = $this->prepare_item_for_response( $details );
+				$items[ $country_code ] = $this->prepare_item_for_response( $details, $request );
 			}
 
 			return $items;
@@ -106,7 +106,7 @@ class ShippingTimeController extends BaseOptionsController implements ISO3166Awa
 				);
 			}
 
-			return $this->prepare_item_for_response( $times[ $country ] );
+			return $this->prepare_item_for_response( $times[ $country ], $request );
 		};
 	}
 

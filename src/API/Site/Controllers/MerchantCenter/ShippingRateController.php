@@ -76,11 +76,11 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 	 * @return callable
 	 */
 	protected function get_read_rates_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			$rates = $this->get_shipping_rates_option();
 			$items = [];
 			foreach ( $rates as $country_code => $details ) {
-				$items[ $country_code ] = $this->prepare_item_for_response( $details );
+				$items[ $country_code ] = $this->prepare_item_for_response( $details, $request );
 			}
 
 			return $items;
@@ -104,7 +104,7 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 				);
 			}
 
-			return $this->prepare_item_for_response( $rates[ $country ] );
+			return $this->prepare_item_for_response( $rates[ $country ], $request );
 		};
 	}
 
