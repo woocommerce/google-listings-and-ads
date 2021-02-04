@@ -4,15 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
-use Psr\Container\ContainerInterface;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,15 +18,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ShippingTimeController extends BaseOptionsController {
+class ShippingTimeController extends BaseOptionsController implements ISO3166AwareInterface {
 
-	use ControllerTrait;
 	use CountryCodeTrait;
-
-	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
 
 	/**
 	 * The base for routes in this controller.
@@ -39,19 +30,9 @@ class ShippingTimeController extends BaseOptionsController {
 	protected $route_base = 'mc/shipping/times';
 
 	/**
-	 * ShippingTimeController constructor.
-	 *
-	 * @param ContainerInterface $container
-	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ), $container->get( OptionsInterface::class ) );
-		$this->iso = $container->get( ISO3166DataProvider::class );
-	}
-
-	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			$this->route_base,
 			[
@@ -64,7 +45,7 @@ class ShippingTimeController extends BaseOptionsController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_create_time_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -77,7 +58,7 @@ class ShippingTimeController extends BaseOptionsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_read_time_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				[
 					'methods'             => TransportMethods::DELETABLE,
@@ -112,11 +93,11 @@ class ShippingTimeController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_read_time_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country = $request->get_param( 'country_code' );
 			$times   = $this->get_shipping_times_option();
 			if ( ! array_key_exists( $country, $times ) ) {
-				return new WP_REST_Response(
+				return new Response(
 					[
 						'message' => __( 'No time available.', 'google-listings-and-ads' ),
 						'country' => $country,
@@ -135,7 +116,7 @@ class ShippingTimeController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_create_time_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country_code           = $request->get_param( 'country_code' );
 			$times                  = $this->get_shipping_times_option();
 			$times[ $country_code ] = $this->process_new_time(
@@ -146,7 +127,7 @@ class ShippingTimeController extends BaseOptionsController {
 
 			$this->update_shipping_times_option( $times );
 
-			return new WP_REST_Response(
+			return new Response(
 				[
 					'status'  => 'success',
 					'message' => sprintf(
@@ -166,7 +147,7 @@ class ShippingTimeController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_delete_time_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country_code = $request->get_param( 'country_code' );
 			$times        = $this->get_shipping_times_option();
 
@@ -194,11 +175,11 @@ class ShippingTimeController extends BaseOptionsController {
 	 * @return array
 	 */
 	protected function process_new_time( array $existing, array $new, string $country_code ): array {
-		$schema = $this->get_item_schema();
+		$schema = $this->get_schema_properties();
 		$time   = [];
 		foreach ( $schema as $key => $property ) {
 			$time[ $key ] = 'country' === $key
-				? $this->iso->alpha2( $country_code )['name']
+				? $this->iso3166_data_provider->alpha2( $country_code )['name']
 				: $new[ $key ] ?? $existing[ $key ] ?? $property['default'] ?? null;
 		}
 
@@ -230,7 +211,7 @@ class ShippingTimeController extends BaseOptionsController {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'country'      => [
 				'type'        => 'string',
@@ -263,7 +244,7 @@ class ShippingTimeController extends BaseOptionsController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'shipping_times';
 	}
 }

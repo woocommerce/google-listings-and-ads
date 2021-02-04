@@ -16,6 +16,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
@@ -213,9 +215,36 @@ class ConnectionTest implements Service, Registerable {
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
+				</p>
+
+				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-claim' ), $url ), 'wcs-google-sv-claim' ) ); ?>">Claim Site (if MCA)</a>
 				</p>
+
+					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+						<p>
+						<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
+							Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?> ||
+						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
+							<?php echo $name . ':' . $step['status'] ?>
+						<?php endforeach; ?>
+							<br/>
+						<?php endif; ?>
+						<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
+						<input name="page" value="connection-test-admin-page" type="hidden" />
+						<input name="action" value="wcs-google-accounts-create" type="hidden" />
+							<label title="Use a live site!">
+								Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : site_url(); ?>" />
+							</label>
+							<label title="To simulate linking with an external site">
+								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
+							</label>
+						<button class="button">Create MC Sub-Account</button>
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
+						</p>
+					</form>
 
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -454,6 +483,46 @@ class ConnectionTest implements Service, Registerable {
 			$this->response = $json;
 		}
 
+		if ( 'wcs-google-sv-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-claim' ) ) {
+			try {
+				/** @var Proxy $proxy */
+				$proxy = $this->container->get( Proxy::class );
+				if ( $proxy->claim_merchant_website() ) {
+					$this->response = 'Claimed website ' . apply_filters( 'woocommerce_gla_site_url', site_url() ) . "\n";
+				}
+			} catch ( \Exception $e ) {
+				$this->response .= $e->getMessage();
+			}
+		}
+
+		if ( 'wcs-google-accounts-create' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-create' ) ) {
+			// Using REST API
+			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+
+
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
+			if(is_numeric( $_GET['account_id']??false )) {
+				$request->set_body_params( ['id'=>$_GET['account_id']] );
+			}
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response = $json;
+		}
+
+		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
+			// Using REST API
+			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claimwebsite' );
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response = $json;
+		}
+
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
 			$args = [
@@ -473,13 +542,17 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-mc-id' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-id' ) ) {
-			$this->response = 'Proxied request > get merchant ID' . "\n";
+			try {
+				$this->response = 'Proxied request > get merchant ID' . "\n";
 
-			/** @var Proxy $proxy */
-			$proxy = $this->container->get( Proxy::class );
-			foreach ( $proxy->get_merchant_ids() as $id ) {
-				$this->response .= sprintf( "Merchant ID: %s\n", $id );
-				$_GET['merchant_id'] = $id;
+				/** @var Proxy $proxy */
+				$proxy = $this->container->get( Proxy::class );
+				foreach ( $proxy->get_merchant_ids() as $id ) {
+					$this->response .= sprintf( "Merchant ID: %s\n", $id );
+					$_GET['merchant_id'] = $id;
+				}
+			} catch ( \Exception $e ) {
+				$this->response .= $e->getMessage();
 			}
 		}
 
@@ -590,7 +663,7 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
 			/** @var Proxy $proxy */
 			$proxy    = $this->container->get( Proxy::class );
-			$result = $proxy->mark_tos_accepted( 'john.doe@example.com' );
+			$result = $proxy->mark_tos_accepted( 'google-mc', 'john.doe@example.com' );
 
 			$this->response .= sprintf(
 				"Attempting to accept Tos. Successful? %s<br>Response body: %s",
@@ -602,7 +675,7 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-check-tos' === $_GET['action'] && check_admin_referer( 'wcs-check-tos' ) ) {
 			/** @var Proxy $proxy */
 			$proxy    = $this->container->get( Proxy::class );
-			$accepted = $proxy->check_tos_accepted();
+			$accepted = $proxy->check_tos_accepted( 'google-mc' );
 
 			$this->response .= sprintf(
 				"Tos Accepted? %s<br>Response body: %s",

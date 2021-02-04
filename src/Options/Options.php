@@ -19,16 +19,18 @@ final class Options implements OptionsInterface, Service {
 	use PluginHelper;
 
 	private const VALID_OPTIONS = [
-		self::DB_VERSION            => true,
-		self::FILE_VERSION          => true,
-		self::INSTALL_TIMESTAMP     => true,
-		self::MC_SETUP_COMPLETED_AT => true,
-		self::MERCHANT_CENTER       => true,
-		self::MERCHANT_ID           => true,
-		self::SHIPPING_RATES        => true,
-		self::SHIPPING_TIMES        => true,
-		self::ADS_ID                => true,
-		self::SITE_VERIFICATION     => true,
+		self::ADS_ID                 => true,
+		self::DB_VERSION             => true,
+		self::FILE_VERSION           => true,
+		self::INSTALL_TIMESTAMP      => true,
+		self::MC_SETUP_COMPLETED_AT  => true,
+		self::MERCHANT_ACCOUNT_STATE => true,
+		self::MERCHANT_CENTER        => true,
+		self::MERCHANT_ID            => true,
+		self::SHIPPING_RATES         => true,
+		self::SHIPPING_TIMES         => true,
+		self::SITE_VERIFICATION      => true,
+		self::TARGET_AUDIENCE        => true,
 	];
 
 	/**

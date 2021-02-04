@@ -6,15 +6,14 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
 use Psr\Container\ContainerInterface;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,9 +22,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class CampaignController extends BaseController {
+class CampaignController extends BaseController implements ISO3166AwareInterface {
 
-	use ControllerTrait;
 	use CountryCodeTrait;
 
 	/**
@@ -41,13 +39,12 @@ class CampaignController extends BaseController {
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
 		$this->ads = $container->get( Ads::class );
-		$this->iso = $container->get( ISO3166DataProvider::class );
 	}
 
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'ads/campaigns',
 			[
@@ -60,7 +57,7 @@ class CampaignController extends BaseController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->create_campaign_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -100,7 +97,7 @@ class CampaignController extends BaseController {
 			try {
 				return array_map( [ $this, 'prepare_item_for_response' ], $this->ads->get_campaigns() );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -111,14 +108,14 @@ class CampaignController extends BaseController {
 	 * @return callable
 	 */
 	protected function create_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
-				$fields   = array_intersect_key( $request->get_json_params(), $this->get_item_schema() );
+				$fields   = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 				$campaign = $this->ads->create_campaign( $fields );
 
 				return $this->prepare_item_for_response( $campaign );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -129,13 +126,13 @@ class CampaignController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$id       = absint( $request['id'] );
 				$campaign = $this->ads->get_campaign( $id );
 
 				if ( empty( $campaign ) ) {
-					return new WP_REST_Response(
+					return new Response(
 						[
 							'message' => __( 'Campaign is not available.', 'google-listings-and-ads' ),
 							'id'      => $id,
@@ -146,7 +143,7 @@ class CampaignController extends BaseController {
 
 				return $this->prepare_item_for_response( $campaign );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -157,11 +154,11 @@ class CampaignController extends BaseController {
 	 * @return callable
 	 */
 	protected function edit_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$fields = array_intersect_key( $request->get_json_params(), $this->get_edit_schema() );
 				if ( empty( $fields ) ) {
-					return new WP_REST_Response(
+					return new Response(
 						[
 							'status'  => 'invalid_data',
 							'message' => __( 'Invalid edit data.', 'google-listings-and-ads' ),
@@ -178,7 +175,7 @@ class CampaignController extends BaseController {
 					'id'      => $campaign_id,
 				];
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -189,7 +186,7 @@ class CampaignController extends BaseController {
 	 * @return callable
 	 */
 	protected function delete_campaign_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$deleted_id = $this->ads->delete_campaign( absint( $request['id'] ) );
 
@@ -199,7 +196,7 @@ class CampaignController extends BaseController {
 					'id'      => $deleted_id,
 				];
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
 		};
 	}
@@ -216,7 +213,7 @@ class CampaignController extends BaseController {
 			'amount',
 		];
 
-		$fields = array_intersect_key( $this->get_item_schema(), array_flip( $allowed ) );
+		$fields = array_intersect_key( $this->get_schema_properties(), array_flip( $allowed ) );
 
 		// Unset required to allow editing individual fields.
 		array_walk(
@@ -234,7 +231,7 @@ class CampaignController extends BaseController {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'id'      => [
 				'type'        => 'integer',
@@ -281,7 +278,7 @@ class CampaignController extends BaseController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'campaign';
 	}
 }

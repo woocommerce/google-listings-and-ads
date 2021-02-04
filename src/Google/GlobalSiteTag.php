@@ -5,7 +5,7 @@
  * @package Automattic\WooCommerce\GoogleListingsAndAds
  */
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;

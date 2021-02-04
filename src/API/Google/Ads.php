@@ -3,11 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsException;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
