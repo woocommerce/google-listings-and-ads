@@ -36,7 +36,7 @@ const webpackConfig = {
 	...defaultConfig,
 	resolve: {
 		alias: {
-			root: path.resolve( process.cwd(), 'js/src/' ),
+			'.~': path.resolve( process.cwd(), 'js/src/' ),
 		},
 	},
 	plugins: [
