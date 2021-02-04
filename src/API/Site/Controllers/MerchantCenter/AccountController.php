@@ -299,7 +299,7 @@ class AccountController extends BaseOptionsController {
 					break;
 				}
 				if ( $step['status'] !== self::MC_CREATION_STEP_DONE ) {
-					return new WP_REST_Response(
+					return new Response(
 						[
 							'status'  => 'error',
 							'message' => __( 'Unable to claim website, previous account creation steps not completed.', 'google-listings-and-ads' ),
@@ -315,7 +315,7 @@ class AccountController extends BaseOptionsController {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = __( 'Please wait to execute website claim.', 'google-listings-and-ads' );
 				$this->update_merchant_account_state( $state );
-				return new WP_REST_Response(
+				return new Response(
 					[
 						'status'      => 'error',
 						'message'     => $state['claim']['message'],
@@ -345,7 +345,7 @@ class AccountController extends BaseOptionsController {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = $e->getMessage();
 				$this->update_merchant_account_state( $state );
-				return new WP_REST_Response(
+				return new Response(
 					[
 						'status'  => 'error',
 						'message' => $e->getMessage(),
