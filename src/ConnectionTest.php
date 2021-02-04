@@ -220,6 +220,7 @@ class ConnectionTest implements Service, Registerable {
 				<p>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-link' ), $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-claim' ), $url ), 'wcs-google-sv-claim' ) ); ?>">Claim Site (if MCA)</a>
 				</p>
 
@@ -483,8 +484,30 @@ class ConnectionTest implements Service, Registerable {
 			$this->response = $json;
 		}
 
+		if ( 'wcs-google-sv-link' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-link' ) ) {
+			try {
+				/** @var Proxy $proxy */
+				$proxy = $this->container->get( Proxy::class );
+				if ( $proxy->link_merchant_to_mca() ) {
+					$this->response .= "Linked merchant to MCA\n";
+				}
+			} catch ( \Exception $e ) {
+				$this->response .= $e->getMessage();
+			}
+		}
+
 		if ( 'wcs-google-sv-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-claim' ) ) {
 			try {
+				/** @var Options $options */
+				$options     = $this->container->get( OptionsInterface::class );
+				$merchant_id = intval( $options->get( Options::MERCHANT_ID ) );
+				$state       = $options->get( Options::MERCHANT_ACCOUNT_STATE );
+
+				if ( ! $state['create']['data']['from_mca'] ) {
+					$this->response = 'This site was not created through a merchant account (unable to claim)' . "\n";
+					return;
+				}
+
 				/** @var Proxy $proxy */
 				$proxy = $this->container->get( Proxy::class );
 				if ( $proxy->claim_merchant_website() ) {

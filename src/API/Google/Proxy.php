@@ -160,6 +160,49 @@ class Proxy {
 	}
 
 	/**
+	 * Link Merchant Center account to MCA.
+	 *
+	 * @return bool
+	 * @throws Exception When a ClientException is caught or we receive an invalid response.
+	 */
+	public function link_merchant_to_mca(): bool {
+		try {
+			/** @var Options $options */
+			$options     = $this->container->get( OptionsInterface::class );
+			$merchant_id = intval( $options->get( Options::MERCHANT_ID ) );
+
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_manager_url( 'link-merchant' ),
+				[
+					'body' => json_encode(
+						[
+							'accountId' => $merchant_id,
+						]
+					),
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['status'] ) && 'success' === $response['status'] ) {
+				return true;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$error = $response['message'] ?? __( 'Invalid response when linking merchant to MCA', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error linking merchant to MCA: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
+	/**
 	 * Claim the website for a MCA.
 	 *
 	 * @return bool
