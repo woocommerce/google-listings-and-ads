@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import { compose } from '@wordpress/compose';
-import { withSelect } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 
 import { omitBy, isUndefined } from 'lodash';
 import { ReportFilters } from '@woocommerce/components';
@@ -79,6 +78,34 @@ const ProductsReportFilters = ( props ) => {
 			filterVariations: data[ 'filter-variations' ],
 		} );
 
+	/**
+	 * Fetch given product, for the single product view, to get `is-variable` property, to show vartiation filter if needed.
+	 * Logic from https://github.com/woocommerce/woocommerce-admin/blob/087b9fad197c561119960def835650671e6f6e04/client/analytics/report/products/index.js#L144
+	 * TODO: Check why it's so disjoint with fetching product data (label) in filter config.
+	 * https://github.com/woocommerce/woocommerce-admin/commit/c7de3559d9180cf6ecf9a20b72fc20f0a6658518#diff-28cbd3395bb82ac11cadfbf5c5432ef382c9759b297ddd64ef1b93313bef9e52R129-R156
+	 */
+	const isVariable = useSelect( ( select ) => {
+		const isSingleProductView =
+			! query.search &&
+			query.products &&
+			query.products.split( ',' ).length === 1;
+		if ( ! isSingleProductView ) {
+			return false;
+		}
+		const productId = parseInt( query.products, 10 );
+		const includeArgs = { include: productId };
+
+		const { getItems } = select( ITEMS_STORE_NAME );
+		// TODO Look at similar usage to populate tags in the Search component.
+		const products = getItems( 'products', includeArgs );
+		return (
+			products &&
+			products.get( productId ) &&
+			products.get( productId ).type === 'variable'
+		);
+	} );
+	query[ 'is-variable' ] = isVariable;
+
 	return (
 		<ReportFilters
 			query={ query }
@@ -94,44 +121,4 @@ const ProductsReportFilters = ( props ) => {
 	);
 };
 
-/**
- * @type {ProductsReportFilters}
- */
-const ProductsReportFiltersWithVariationsData = compose(
-	/**
-	 * Fetch given product, for the single product view, to get `is-variable` property, to show vartiation filter if needed.
-	 * Copied from https://github.com/woocommerce/woocommerce-admin/blob/087b9fad197c561119960def835650671e6f6e04/client/analytics/report/products/index.js#L144
-	 * TODO: Check why it's so disjoint with fetching product data (label) in filter config.
-	 * https://github.com/woocommerce/woocommerce-admin/commit/c7de3559d9180cf6ecf9a20b72fc20f0a6658518#diff-28cbd3395bb82ac11cadfbf5c5432ef382c9759b297ddd64ef1b93313bef9e52R129-R156
-	 */
-	withSelect( ( select, props ) => {
-		const { query } = props;
-		const isSingleProductView =
-			! query.search &&
-			query.products &&
-			query.products.split( ',' ).length === 1;
-
-		if ( isSingleProductView ) {
-			const productId = parseInt( query.products, 10 );
-			const includeArgs = { include: productId };
-
-			const { getItems } = select( ITEMS_STORE_NAME );
-			// TODO Look at similar usage to populate tags in the Search component.
-			const products = getItems( 'products', includeArgs );
-			const isVariable =
-				products &&
-				products.get( productId ) &&
-				products.get( productId ).type === 'variable';
-			return {
-				query: {
-					...query,
-					'is-variable': isVariable,
-				},
-			};
-		}
-
-		return { query };
-	} )
-)( ProductsReportFilters );
-
-export default ProductsReportFiltersWithVariationsData;
+export default ProductsReportFilters;
