@@ -145,7 +145,7 @@ const CompareProductsTableCard = ( props ) => {
 	/**
 	 * Selects or unselects all rows (~selectedRows).
 	 *
-	 * @param {boolean} checked true if the all should be selected.
+	 * @param {boolean} checked true if all should be selected.
 	 */
 	const selectAll = ( checked ) => {
 		if ( checked ) {
@@ -159,7 +159,7 @@ const CompareProductsTableCard = ( props ) => {
 	 * Selects given row, updates ~selectedRows.
 	 *
 	 * @param {*} rowId Id of the row to be selected.
-	 * @param {boolean} checked true if the all should be selected.
+	 * @param {boolean} checked true if the row should be selected.
 	 */
 	const selectRow = ( rowId, checked ) => {
 		if ( checked ) {
