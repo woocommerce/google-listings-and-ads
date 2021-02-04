@@ -101,10 +101,6 @@ export function mockedListingsData() {
 	return products;
 }
 
-export const getProgramLabels = function () {
-	return products;
-};
-
 /**
  * Returns mocked available metric values, according to missingFreeListingsData query parameter.
  * When it's set to "na" - do not provide metrics that would miss data,
