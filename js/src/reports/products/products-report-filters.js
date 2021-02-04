@@ -52,12 +52,24 @@ const ProductsReportFilters = ( props ) => {
 		secondaryDate,
 	};
 
+	/**
+	 * Record datepicker update tracking event.
+	 * Forward all defined data.
+	 *
+	 * @param {Object} data Data to be forwarded from ReportFilters' date picker.
+	 */
 	const onDateSelect = ( data ) =>
 		recordDatepickerUpdateEvent( {
 			report,
 			...omitBy( data, isUndefined ),
 		} );
 
+	/**
+	 * Record filter tracking event.
+	 * Forward selected values of products and variations filters.
+	 *
+	 * @param {Object} data Data to be forwarded from ReportFilters.
+	 */
 	const onFilterSelect = ( data ) =>
 		recordFilterEvent( {
 			report,
