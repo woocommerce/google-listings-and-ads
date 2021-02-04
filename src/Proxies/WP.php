@@ -61,4 +61,15 @@ class WP {
 	public function get_locale(): string {
 		return get_locale();
 	}
+
+	/**
+	 * Run the WP dbDelta() function.
+	 *
+	 * @param string|string[] $sql The query or queries to run.
+	 *
+	 * @return array Results of the query or queries.
+	 */
+	public function db_delta( $sql ): array {
+		return dbDelta( $sql );
+	}
 }
