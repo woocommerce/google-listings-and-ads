@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Google_Service_ShoppingContent_Account as MC_Account;
 use Exception;
 use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
@@ -462,19 +463,49 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
-	 * @throws Exception If there is already a Merchant Center ID.
+	 * @throws Exception If there is already a Merchant Center ID or the website can't be configured correctly.
 	 */
 	private function use_standalone_account_id( int $account_id ): void {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
-
 		if ( $merchant_id && $merchant_id !== $account_id ) {
 			throw new Exception( __( 'Merchant center account already linked.', 'google-listings-and-ads' ) );
 		}
+
+		// Make sure the standalone account has the correct website URL (or fail).
+		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
 		$state                               = $this->get_merchant_account_state();
 		$state['set_id']['status']           = self::MC_CREATION_STEP_DONE;
 		$state['set_id']['data']['from_mca'] = false;
 		$this->update_merchant_account_state( $state );
 		$this->middleware->link_merchant_account( $account_id );
+	}
+
+	/**
+	 * Ensure the Merchant Center account's Website URL matches the site URL, updating an empty value if
+	 * necessary. Fails if the Merchant Center account has a different Website URL.
+	 *
+	 * @param int    $merchant_id      The Merchant Center account to update
+	 * @param string $site_website_url The new website URL
+	 *
+	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
+	 * @throws Exception If there's an error updating the website URL.
+	 */
+	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
+		/** @var Merchant $merchant_id */
+		$merchant = $this->container->get( Merchant::class );
+		/** @var MC_Account $mc_account */
+		$mc_account = $merchant->get_account( $merchant_id );
+
+		$account_website_url = $mc_account->getWebsiteUrl();
+
+		if ( empty( $account_website_url ) ) {
+			$mc_account->setWebsiteUrl( $site_website_url );
+			$merchant->update_account( $mc_account );
+		} elseif ( $site_website_url !== $account_website_url ) {
+			throw new Exception( __( 'Merchant Center account has a different website URL.', 'google-listings-and-ads' ) );
+		}
+
+		return true;
 	}
 }
