@@ -107,10 +107,10 @@ export const getProgramLabels = function () {
 
 /**
  * Returns mocked available metric values, according to missingFreeListingsData query parameter.
+ * When it's set to "na" - do not provide metrics that would miss data,
+ * otherwise provide all metrics.
  *
- * not set or "" - mark all metrics as not missing data.
- * "true" or any truthy value - mark some metrics as missing data from free listings.
- * "na" - not applicable, do not provide metrics that would miss data.
+ * @return {Array<string>} Array of metric keys.
  */
 export function availableMetrics() {
 	const { missingFreeListingsData = false } = getQuery();
