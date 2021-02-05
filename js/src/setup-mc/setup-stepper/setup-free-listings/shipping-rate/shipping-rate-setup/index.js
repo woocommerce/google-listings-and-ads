@@ -33,7 +33,7 @@ const ShippingRateSetup = ( props ) => {
 	const shippingRates = useSelect( ( select ) =>
 		select( STORE_KEY ).getShippingRates()
 	);
-	const { code } = useStoreCurrency();
+	const { code: currencyCode } = useStoreCurrency();
 
 	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = shippingRates.length;
@@ -52,7 +52,7 @@ const ShippingRateSetup = ( props ) => {
 									initialValue={ {
 										countries: selectedCountryCodes,
 										price: '',
-										currency: code,
+										currency: currencyCode,
 									} }
 								/>
 							</div>
@@ -92,7 +92,7 @@ const ShippingRateSetup = ( props ) => {
 								'I offer free shipping for products priced over',
 								'google-listings-and-ads'
 							) }
-							suffix={ code }
+							suffix={ currencyCode }
 							{ ...getInputProps( formKeys.priceOver ) }
 						/>
 					</div>
