@@ -16,18 +16,17 @@ import './index.scss';
 import CountriesPriceInputForm from './countries-price-input-form';
 import useStoreCurrency from '../../../../../hooks/useStoreCurrency';
 import getCountriesPriceArray from './getCountriesPriceArray';
+import useAudienceSelectedCountryCodes from '../../../../../hooks/useAudienceSelectedCountryCodes';
 
 const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
 	} = props;
-	const selectedCountryCodes = useSelect( ( select ) =>
-		select( STORE_KEY ).getAudienceSelectedCountryCodes()
-	);
+	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const shippingRates = useSelect( ( select ) =>
 		select( STORE_KEY ).getShippingRates()
 	);
-	const { code } = useStoreCurrency();
+	const { code: currencyCode } = useStoreCurrency();
 
 	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = shippingRates.length;
@@ -46,7 +45,7 @@ const ShippingRateSetup = ( props ) => {
 									initialValue={ {
 										countries: selectedCountryCodes,
 										price: '',
-										currency: code,
+										currency: currencyCode,
 									} }
 								/>
 							</div>
@@ -86,7 +85,7 @@ const ShippingRateSetup = ( props ) => {
 								'I offer free shipping for products priced over',
 								'google-listings-and-ads'
 							) }
-							suffix={ code }
+							suffix={ currencyCode }
 							{ ...getInputProps( 'free_shipping_threshold' ) }
 						/>
 					</div>

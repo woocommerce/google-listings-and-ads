@@ -10,20 +10,22 @@ import { createInterpolateElement } from '@wordpress/element';
 import useCountryKeyNameMap from '../../../../../../hooks/useCountryKeyNameMap';
 import AppInputControl from '../../../../../../components/app-input-control';
 import More from '../../../components/more';
-import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 import EditRateButton from './edit-rate-button';
 import './index.scss';
+import useAudienceSelectedCountryCodes from '../../../../../../hooks/useAudienceSelectedCountryCodes';
+
+const firstN = 5;
 
 const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, currency, price } = value;
 
-	const audienceCountries = useGetAudienceCountries();
+	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const keyNameMap = useCountryKeyNameMap();
-	const first5countryNames = countries
-		.slice( 0, 5 )
+	const firstCountryNames = countries
+		.slice( 0, firstN )
 		.map( ( c ) => keyNameMap[ c ] );
-	const remainingCount = countries.length - first5countryNames.length;
+	const remainingCount = countries.length - firstCountryNames.length;
 
 	const handleChange = ( v ) => {
 		onChange( {
@@ -47,13 +49,13 @@ const CountriesPriceInput = ( props ) => {
 								{
 									countries: (
 										<strong>
-											{ audienceCountries.length ===
+											{ selectedCountryCodes.length ===
 											countries.length
 												? __(
 														`all countries`,
 														'google-listings-and-ads'
 												  )
-												: first5countryNames.join(
+												: firstCountryNames.join(
 														', '
 												  ) }
 										</strong>
