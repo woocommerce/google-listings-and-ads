@@ -106,16 +106,6 @@ class AccountController extends BaseOptionsController {
 				],
 			]
 		);
-		$this->register_route(
-			'mc/accounts/claimwebsite',
-			[
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->claimwebsite_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-				],
-			]
-		);
 	}
 
 	/**
@@ -286,83 +276,6 @@ class AccountController extends BaseOptionsController {
 		}
 
 		return [ 'id' => $merchant_id ];
-	}
-
-	/**
-	 * Get callback function for claiming a website
-	 *
-	 * @return callable
-	 */
-	private function claimwebsite_callback(): callable {
-		return function() {
-			$state = $this->get_merchant_account_state();
-
-			if ( ! empty( $state['claim']['status'] ) && self::MC_CREATION_STEP_DONE === $state['claim']['status'] ) {
-				return [
-					'status'  => 'success',
-					'message' => __( 'Website already claimed.', 'google-listings-and-ads' ),
-				];
-			}
-
-			// Ensure previous steps completed
-			foreach ( $state as $name => $step ) {
-				if ( 'claim' === $name ) {
-					break;
-				}
-				if ( $step['status'] !== self::MC_CREATION_STEP_DONE ) {
-					return new Response(
-						[
-							'status'  => 'error',
-							'message' => __( 'Unable to claim website, previous account creation steps not completed.', 'google-listings-and-ads' ),
-						],
-						400
-					);
-				}
-			}
-
-			// Return error if not ready to be claimed
-			$claim_timestamp = self::MC_DELAY_AFTER_CREATE + ( $state['set_id']['data']['created_timestamp'] ?? 0 );
-			if ( time() < $claim_timestamp ) {
-				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
-				$state['claim']['message'] = __( 'Please wait to execute website claim.', 'google-listings-and-ads' );
-				$this->update_merchant_account_state( $state );
-				return new Response(
-					[
-						'status'      => 'error',
-						'message'     => $state['claim']['message'],
-						'delay_until' => intval( $claim_timestamp ),
-					],
-					503,
-					[
-						'Retry-After' => $claim_timestamp - time(),
-					]
-				);
-			}
-
-			try {
-				$this->merchant->claimwebsite();
-			} catch ( Exception $e ) {
-				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
-				$state['claim']['message'] = $e->getMessage();
-				$this->update_merchant_account_state( $state );
-				return new Response(
-					[
-						'status'  => 'error',
-						'message' => $e->getMessage(),
-					],
-					400
-				);
-			}
-
-			$state['claim']['status']  = self::MC_CREATION_STEP_DONE;
-			$state['claim']['message'] = '';
-			$this->update_merchant_account_state( $state );
-
-			return [
-				'status'  => 'success',
-				'message' => __( 'Successfully claimed website.', 'google-listings-and-ads' ),
-			];
-		};
 	}
 
 	/**

@@ -469,7 +469,7 @@ class ConnectionTest implements Service, Registerable {
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
-			$this->response = $json;
+			$this->response .= $json;
 		}
 
 		if ( 'wcs-google-sv-check' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-check' ) ) {
@@ -479,7 +479,7 @@ class ConnectionTest implements Service, Registerable {
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
-			$this->response = $json;
+			$this->response .= $json;
 		}
 
 		if ( 'wcs-google-sv-link' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-link' ) ) {
@@ -507,19 +507,21 @@ class ConnectionTest implements Service, Registerable {
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
-			$this->response = $json;
+			$this->response .= $json;
 		}
 
 		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
 			// Using REST API
-			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+			add_filter( 'woocommerce_gla_site_url', function ( $url ) {
+				return $_GET['site_url'] ?? $url;
+			} );
 
-			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claimwebsite' );
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
-			$this->response = $json;
+			try {
+				$this->container->get( Merchant::class )->claimwebsite();
+				$this->response .= 'Website claimed';
+			} catch( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
+			}
 		}
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
