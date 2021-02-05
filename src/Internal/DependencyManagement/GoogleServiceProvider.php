@@ -57,7 +57,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Ads::class                            => true,
 		'connect_server_root'                 => true,
 		'connect_server_auth_header'          => true,
-		'merchant_id'                         => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
 		SiteVerification::class               => true,
@@ -107,7 +106,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		}
 		$this->getLeagueContainer()->add( 'connect_server_auth_header', $auth_header );
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
-		$this->getLeagueContainer()->add( 'merchant_id', $this->get_merchant_id()->get() );
 	}
 
 	/**
