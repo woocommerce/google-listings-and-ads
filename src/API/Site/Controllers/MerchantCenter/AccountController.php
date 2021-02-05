@@ -28,7 +28,7 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * @var string[]
 	 */
-	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'link', 'verify', 'claim' ];
+	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'verify', 'link', 'claim' ];
 
 	/** @var int Status value for a pending merchant account creation step */
 	private const MC_CREATION_STEP_PENDING = 0;
