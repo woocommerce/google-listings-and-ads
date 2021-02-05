@@ -240,7 +240,7 @@ class AccountController extends BaseOptionsController {
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
-						$response['id']                    = intval( $this->middleware->create_merchant_account() );
+						$response['id']                    = $this->middleware->create_merchant_account();
 						$step['data']['from_mca']          = true;
 						$step['data']['created_timestamp'] = time();
 						$response['claim_delay']           = self::MC_CLAIM_DELAY;
