@@ -11,7 +11,9 @@ import { Guide } from '@wordpress/components';
  */
 import { ReactComponent as GoogleLogoSvg } from './google-logo.svg';
 import { ReactComponent as WooCommerceLogoSvg } from './woocommerce-logo.svg';
-import PageContent, { ContentLink } from '../../components/guide-page-content';
+import GuidePageContent, {
+	ContentLink,
+} from '../../components/guide-page-content';
 import './index.scss';
 
 const GUIDE_NAME = 'submission-success';
@@ -32,7 +34,7 @@ const pages = [
 	{
 		image,
 		content: (
-			<PageContent
+			<GuidePageContent
 				title={ __(
 					'You have successfully set up Google Listings & Ads!',
 					'google-listings-and-ads'
@@ -50,13 +52,13 @@ const pages = [
 						'google-listings-and-ads'
 					) }
 				</p>
-			</PageContent>
+			</GuidePageContent>
 		),
 	},
 	{
 		image,
 		content: (
-			<PageContent
+			<GuidePageContent
 				title={ __(
 					`You've been automatically enrolled in Google's Free Listings program.`,
 					'google-listings-and-ads'
@@ -76,7 +78,7 @@ const pages = [
 						),
 					}
 				) }
-			</PageContent>
+			</GuidePageContent>
 		),
 	},
 ];
