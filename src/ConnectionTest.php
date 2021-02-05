@@ -220,6 +220,7 @@ class ConnectionTest implements Service, Registerable {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-link' ), $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
 				</p>
 
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -240,8 +241,7 @@ class ConnectionTest implements Service, Registerable {
 							<label title="To simulate linking with an external site">
 								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
 							</label>
-						<button class="button">Account Setup Step 1</button>
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
+						<button class="button">MC Account Setup (I & II)</button>
 						</p>
 					</form>
 

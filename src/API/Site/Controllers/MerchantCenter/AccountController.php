@@ -40,7 +40,7 @@ class AccountController extends BaseOptionsController {
 	private const MC_CREATION_STEP_ERROR = - 1;
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
-	private const MC_CLAIM_DELAY = 90;
+	private const MC_DELAY_AFTER_CREATE = 90;
 
 	/**
 	 * @var ContainerInterface
@@ -53,6 +53,11 @@ class AccountController extends BaseOptionsController {
 	protected $middleware;
 
 	/**
+	 * @var Merchant
+	 */
+	protected $merchant;
+
+	/**
 	 * AccountController constructor.
 	 *
 	 * @param ContainerInterface $container
@@ -60,6 +65,7 @@ class AccountController extends BaseOptionsController {
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
 		$this->middleware = $container->get( Middleware::class );
+		$this->merchant   = $container->get( Merchant::class );
 		$this->set_options_object( $container->get( OptionsInterface::class ) );
 		$this->container = $container;
 	}
@@ -188,15 +194,12 @@ class AccountController extends BaseOptionsController {
 				'description'       => __( 'Merchant Center Account ID.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => false,
 			],
-			'claim_delay' => [
+			'retry_after' => [
 				'type'              => 'number',
-				'description'       => __( 'Seconds to wait before attempting a website claim.', 'google-listings-and-ads' ),
+				'description'       => __( 'Seconds to wait before repeating the call to complete the process.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => false,
-				'default'           => 0,
 			],
 		];
 	}
@@ -226,11 +229,19 @@ class AccountController extends BaseOptionsController {
 	protected function setup_merchant_account(): array {
 		$state       = $this->get_merchant_account_state();
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
-		$response    = [ 'id' => $merchant_id ];
 
 		foreach ( $state as $name => &$step ) {
 			if ( self::MC_CREATION_STEP_DONE === $step['status'] ) {
 				continue;
+			}
+
+			if ( 'link' === $name || 'claim' === $name ) {
+				$time_to_wait = $this->get_seconds_to_wait_after_created();
+				if ( $time_to_wait ) {
+					return [
+						'retry_after' => $time_to_wait,
+					];
+				}
 			}
 
 			try {
@@ -240,20 +251,19 @@ class AccountController extends BaseOptionsController {
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
-						$response['id']                    = $this->middleware->create_merchant_account();
+						$this->middleware->create_merchant_account();
 						$step['data']['from_mca']          = true;
 						$step['data']['created_timestamp'] = time();
-						$response['claim_delay']           = self::MC_CLAIM_DELAY;
-						break;
-					case 'link':
-						// Add a call to the link method in the middleware
 						break;
 					case 'verify':
 						$this->verify_site();
 						break;
+					case 'link':
+						$this->middleware->link_merchant_to_mca();
+						break;
 					case 'claim':
-						// Claim done in a separate call
-						continue 2;
+						$this->merchant->claimwebsite();
+						break;
 					default:
 						throw new Exception(
 							sprintf(
@@ -274,7 +284,7 @@ class AccountController extends BaseOptionsController {
 			}
 		}
 
-		return $response;
+		return [ 'id' => $merchant_id ];
 	}
 
 	/**
@@ -310,7 +320,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Return error if not ready to be claimed
-			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['set_id']['data']['created_timestamp'] ?? 0 );
+			$claim_timestamp = self::MC_DELAY_AFTER_CREATE + ( $state['set_id']['data']['created_timestamp'] ?? 0 );
 			if ( time() < $claim_timestamp ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = __( 'Please wait to execute website claim.', 'google-listings-and-ads' );
@@ -329,7 +339,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			try {
-				$this->container->get( Merchant::class )->claimwebsite();
+				$this->merchant->claimwebsite();
 			} catch ( Exception $e ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = $e->getMessage();
@@ -431,7 +441,7 @@ class AccountController extends BaseOptionsController {
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
 				do_action( 'gla_site_verify_success', [] );
 
-				return self::MC_CLAIM_DELAY;
+				return self::MC_DELAY_AFTER_CREATE;
 			}
 		} catch ( Exception $e ) {
 			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
@@ -492,20 +502,27 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If there's an error updating the website URL.
 	 */
 	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
-		/** @var Merchant $merchant_id */
-		$merchant = $this->container->get( Merchant::class );
 		/** @var MC_Account $mc_account */
-		$mc_account = $merchant->get_account( $merchant_id );
+		$mc_account = $this->merchant->get_account( $merchant_id );
 
 		$account_website_url = $mc_account->getWebsiteUrl();
 
 		if ( empty( $account_website_url ) ) {
 			$mc_account->setWebsiteUrl( $site_website_url );
-			$merchant->update_account( $mc_account );
+			$this->merchant->update_account( $mc_account );
 		} elseif ( $site_website_url !== $account_website_url ) {
 			throw new Exception( __( 'Merchant Center account has a different website URL.', 'google-listings-and-ads' ) );
 		}
 
 		return true;
+	}
+
+	private function get_seconds_to_wait_after_created() {
+		$state = $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE );
+
+		$created_timestamp = $state['set_id']['data']['created_timestamp'] ?? 0;
+		$seconds_elapsed   = time() - $created_timestamp;
+
+		return max( 0, self::MC_DELAY_AFTER_CREATE - $seconds_elapsed );
 	}
 }
