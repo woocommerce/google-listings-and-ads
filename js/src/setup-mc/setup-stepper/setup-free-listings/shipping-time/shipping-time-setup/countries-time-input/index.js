@@ -9,9 +9,9 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import AppInputControl from '../../../../../../components/app-input-control';
 import More from '../../../components/more';
-import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
+import useAudienceSelectedCountryCodes from '../../../../../../hooks/useAudienceSelectedCountryCodes';
 
 const firstN = 5;
 
@@ -19,7 +19,7 @@ const CountriesTimeInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, time } = value;
 
-	const audienceCountries = useGetAudienceCountries();
+	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const firstCountries = countries.slice( 0, firstN ).map( ( c ) => c.label );
 	const remainingCount = countries.length - firstCountries.length;
 
@@ -44,7 +44,7 @@ const CountriesTimeInput = ( props ) => {
 								{
 									countries: (
 										<strong>
-											{ audienceCountries.length ===
+											{ selectedCountryCodes.length ===
 											countries.length
 												? __(
 														`all countries`,

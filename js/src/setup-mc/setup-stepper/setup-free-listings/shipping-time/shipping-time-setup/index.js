@@ -10,9 +10,9 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import AppDocumentationLink from '../../../../../components/app-documentation-link';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
-import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
 import AddTimeButton from './add-time-button';
 import CountriesTimeInput from './countries-time-input';
+import useAudienceSelectedCountryCodes from '../../../../../hooks/useAudienceSelectedCountryCodes';
 
 const formKeys = {
 	rows: 'shippingTimeOption-rows',
@@ -24,8 +24,8 @@ const ShippingTimeSetup = ( props ) => {
 		formProps: { getInputProps, values, setValue },
 	} = props;
 
-	const audienceCountries = useGetAudienceCountries();
-	const expectedCountryCount = audienceCountries.length;
+	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
+	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
 		return acc + cur.countries.length;
 	}, 0 );

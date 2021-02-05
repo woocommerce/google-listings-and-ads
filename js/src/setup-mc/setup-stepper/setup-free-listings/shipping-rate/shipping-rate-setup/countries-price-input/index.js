@@ -10,9 +10,9 @@ import { createInterpolateElement } from '@wordpress/element';
 import useCountryKeyNameMap from '../../../../../../hooks/useCountryKeyNameMap';
 import AppInputControl from '../../../../../../components/app-input-control';
 import More from '../../../components/more';
-import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 import EditRateButton from './edit-rate-button';
 import './index.scss';
+import useAudienceSelectedCountryCodes from '../../../../../../hooks/useAudienceSelectedCountryCodes';
 
 const firstN = 5;
 
@@ -20,7 +20,7 @@ const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, currency, price } = value;
 
-	const audienceCountries = useGetAudienceCountries();
+	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const keyNameMap = useCountryKeyNameMap();
 	const firstCountryNames = countries
 		.slice( 0, firstN )
@@ -49,7 +49,7 @@ const CountriesPriceInput = ( props ) => {
 								{
 									countries: (
 										<strong>
-											{ audienceCountries.length ===
+											{ selectedCountryCodes.length ===
 											countries.length
 												? __(
 														`all countries`,
