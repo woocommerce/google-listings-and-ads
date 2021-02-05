@@ -240,7 +240,7 @@ class ConnectionTest implements Service, Registerable {
 							<label title="To simulate linking with an external site">
 								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
 							</label>
-						<button class="button">Create MC Sub-Account</button>
+						<button class="button">Account Setup Step 1</button>
 						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
 						</p>
 					</form>
