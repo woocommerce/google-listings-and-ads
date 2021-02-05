@@ -86,6 +86,9 @@ const pages = [
 /**
  * Show this guide modal by visiting the path with a specific query: guide=submission-success
  * For example: /wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success
+ *
+ * TODO: The current open/close methods are temporarily for demo.
+ *       Need to reconsider how this guide modal would be triggered later.
  */
 const SubmissionSuccessGuide = () => {
 	const query = getQuery();
