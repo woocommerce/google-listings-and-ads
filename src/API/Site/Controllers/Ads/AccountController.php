@@ -57,6 +57,22 @@ class AccountController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+
+		$this->register_route(
+			'ads/connection',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_ads_account_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->disconnect_ads_account_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -91,6 +107,33 @@ class AccountController extends BaseController {
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the connected ads account.
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_ads_account_callback(): callable {
+		return function() {
+			return $this->middleware->get_connected_ads_account();
+		};
+	}
+
+	/**
+	 * Get the callback function for disconnecting a merchant.
+	 *
+	 * @return callable
+	 */
+	protected function disconnect_ads_account_callback(): callable {
+		return function() {
+			$this->middleware->disconnect_ads_account();
+
+			return [
+				'status'  => 'success',
+				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
+			];
 		};
 	}
 
