@@ -16,6 +16,7 @@ import './index.scss';
 import CountriesPriceInputForm from './countries-price-input-form';
 import useStoreCurrency from '../../../../../hooks/useStoreCurrency';
 import getCountriesPriceArray from './getCountriesPriceArray';
+import useAudienceSelectedCountryCodes from '../../../../../hooks/useAudienceSelectedCountryCodes';
 
 const formKeys = {
 	rows: 'shippingRateOption-rows',
@@ -27,9 +28,7 @@ const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
 	} = props;
-	const selectedCountryCodes = useSelect( ( select ) =>
-		select( STORE_KEY ).getAudienceSelectedCountryCodes()
-	);
+	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const shippingRates = useSelect( ( select ) =>
 		select( STORE_KEY ).getShippingRates()
 	);
