@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
@@ -82,6 +83,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductHelper::class          => true,
 		ProductMetaHandler::class     => true,
 		SiteVerificationMeta::class   => true,
+		DebugLogger::class            => true,
 	];
 
 	/**
@@ -146,6 +148,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
+		$this->conditionally_share_with_tags( DebugLogger::class );
 	}
 
 	/**
