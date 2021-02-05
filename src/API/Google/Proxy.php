@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use DateTime;
@@ -25,6 +26,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Proxy {
 
+	use OptionsAwareTrait;
+
 	/**
 	 * @var ContainerInterface
 	 */
@@ -36,6 +39,7 @@ class Proxy {
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
+		$this->set_options_object( $container->get( OptionsInterface::class ) );
 		$this->container = $container;
 	}
 
@@ -138,9 +142,7 @@ class Proxy {
 	 * @return array
 	 */
 	public function get_connected_merchant(): array {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		$id      = intval( $options->get( Options::MERCHANT_ID ) );
+		$id = $this->get_merchant_id();
 
 		// TODO: populate with status from site verification.
 
@@ -160,6 +162,45 @@ class Proxy {
 	}
 
 	/**
+	 * Link Merchant Center account to MCA.
+	 *
+	 * @return bool
+	 * @throws Exception When a ClientException is caught or we receive an invalid response.
+	 */
+	public function link_merchant_to_mca(): bool {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_manager_url( 'link-merchant' ),
+				[
+					'body' => json_encode(
+						[
+							'accountId' => $this->get_merchant_id(),
+						]
+					),
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['status'] ) && 'success' === $response['status'] ) {
+				return true;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$error = $response['message'] ?? __( 'Invalid response when linking merchant to MCA', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error linking merchant to MCA: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
+	/**
 	 * Claim the website for a MCA.
 	 *
 	 * @return bool
@@ -167,10 +208,6 @@ class Proxy {
 	 */
 	public function claim_merchant_website(): bool {
 		try {
-			/** @var Options $options */
-			$options     = $this->container->get( OptionsInterface::class );
-			$merchant_id = intval( $options->get( Options::MERCHANT_ID ) );
-
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
@@ -178,7 +215,7 @@ class Proxy {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $merchant_id,
+							'accountId' => $this->get_merchant_id(),
 						]
 					),
 				]
@@ -437,6 +474,15 @@ class Proxy {
 	}
 
 	/**
+	 * Get the Merchant Center ID.
+	 *
+	 * @return int
+	 */
+	protected function get_merchant_id(): int {
+		return absint( $this->options->get( Options::MERCHANT_ID ) );
+	}
+
+	/**
 	 * Update the Merchant Center ID to use for requests.
 	 *
 	 * @param int $id  Merchant ID number.
@@ -444,9 +490,7 @@ class Proxy {
 	 * @return bool
 	 */
 	protected function update_merchant_id( int $id ): bool {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->update( Options::MERCHANT_ID, $id );
+		return $this->options->update( Options::MERCHANT_ID, $id );
 	}
 
 	/**
@@ -457,9 +501,7 @@ class Proxy {
 	 * @return bool
 	 */
 	protected function update_ads_id( int $id ): bool {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->update( Options::ADS_ID, $id );
+		return $this->options->update( Options::ADS_ID, $id );
 	}
 
 	/**
