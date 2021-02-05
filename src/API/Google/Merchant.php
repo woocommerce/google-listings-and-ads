@@ -93,7 +93,7 @@ class Merchant {
 		try {
 			$response = $service->accounts->claimwebsite( $this->get_id(), $this->get_id() );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_claimwebsite_exception', $e, __METHOD__ );
+			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to claim website.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return true;
@@ -114,7 +114,7 @@ class Merchant {
 		try {
 			$mc_account = $service->accounts->get( $id, $id );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_get_account_exception', $e, __METHOD__ );
+			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;
@@ -135,7 +135,7 @@ class Merchant {
 		try {
 			$mc_account = $service->accounts->update( $mc_account->getId(), $mc_account->getId(), $mc_account );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_get_account_exception', $e, __METHOD__ );
+			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;
