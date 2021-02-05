@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
@@ -25,7 +26,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Proxy {
+class Proxy implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
@@ -40,7 +41,6 @@ class Proxy {
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
-		$this->set_options_object( $container->get( OptionsInterface::class ) );
 		$this->container = $container;
 	}
 
