@@ -246,7 +246,7 @@ class AccountController extends BaseOptionsController {
 						$response['claim_delay']           = self::MC_CLAIM_DELAY;
 						break;
 					case 'link':
-						// $this->middleware->link_merchant_to_mca();
+						// Add a call to the link method in the middleware
 						break;
 					case 'verify':
 						$this->verify_site();
