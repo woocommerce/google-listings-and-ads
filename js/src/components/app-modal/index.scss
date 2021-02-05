@@ -1,4 +1,6 @@
 .app-modal {
+	overflow: inherit;
+
 	.app-modal__footer {
 		display: flex;
 		flex-direction: column-reverse;

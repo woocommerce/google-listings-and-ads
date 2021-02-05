@@ -16,6 +16,7 @@ import ProgramsReport from './reports/programs';
 import ProductsReport from './reports/products';
 import ProductFeed from './product-feed';
 import Settings from './settings';
+import './data';
 
 addFilter(
 	'woocommerce_admin_pages_list',

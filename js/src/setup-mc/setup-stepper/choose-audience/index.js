@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
-import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,6 +11,7 @@ import AppCountryMultiSelect from '../../../components/app-country-multi-select'
 import Section from '../../../wcdl/section';
 import Subsection from '../../../wcdl/subsection';
 import AppDocumentationLink from '../../../components/app-documentation-link';
+import useAudienceSelectedCountryCodes from '../../../hooks/useAudienceSelectedCountryCodes';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
@@ -19,11 +19,7 @@ import './index.scss';
 
 const ChooseAudience = ( props ) => {
 	const { onContinue } = props;
-	const [ selected, setSelected ] = useState( [] );
-
-	const handleListControlChange = ( items ) => {
-		setSelected( items );
-	};
+	const [ value, setValue ] = useAudienceSelectedCountryCodes();
 
 	return (
 		<div className="gla-choose-audience">
@@ -88,8 +84,8 @@ const ChooseAudience = ( props ) => {
 							</Subsection.Title>
 							<div className="input">
 								<AppCountryMultiSelect
-									value={ selected }
-									onChange={ handleListControlChange }
+									value={ value }
+									onChange={ setValue }
 								/>
 							</div>
 							<Subsection.HelperText>

@@ -10,21 +10,34 @@ import { __ } from '@wordpress/i18n';
 import './index.scss';
 
 const AppCountryMultiSelect = ( props ) => {
-	const { value = [], className = '', ...rest } = props;
+	const { value = [], className = '', onChange = () => {}, ...rest } = props;
 
 	// TODO: get list of countries from backend API.
 	const options = [
 		{
-			key: 'AUS',
+			key: 'AU',
 			label: 'Australia',
-			value: { id: 'AUS' },
+			value: { id: 'AU' },
 		},
 		{
-			key: 'USA',
+			key: 'CN',
+			label: 'China',
+			value: { id: 'CN' },
+		},
+		{
+			key: 'US',
 			label: 'United States of America',
-			value: { id: 'USA' },
+			value: { id: 'US' },
 		},
 	];
+
+	const valueSet = new Set( value );
+	const selected = options.filter( ( el ) => valueSet.has( el.key ) );
+
+	const handleChange = ( v ) => {
+		const result = v.map( ( el ) => el.key );
+		onChange( result );
+	};
 
 	return (
 		<SelectControl
@@ -37,8 +50,9 @@ const AppCountryMultiSelect = ( props ) => {
 				'Start typing to filter countries…',
 				'google-listings-and-ads'
 			) }
-			selected={ value }
 			{ ...rest }
+			selected={ selected }
+			onChange={ handleChange }
 		/>
 	);
 };
