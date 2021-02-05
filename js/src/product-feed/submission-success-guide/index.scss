@@ -26,12 +26,10 @@
 
 		&__page {
 			flex-grow: 1;
-    		justify-content: normal
+			justify-content: normal;
 		}
 
 		&__page-control {
-			display: flex;
-			justify-content: center;
 			margin: 18px 0;
 
 			li {
