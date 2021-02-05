@@ -41,6 +41,7 @@ const EditRateModal = ( props ) => {
 		return errors;
 	};
 
+	// TODO: might need to rework this when backend API changes are done.
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, price } = values;
 
