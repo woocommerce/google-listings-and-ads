@@ -20,7 +20,7 @@ class WP {
 	use PluginHelper;
 
 	/** @var WPCore $wp */
-	public $wp;
+	protected $wp;
 
 	/**
 	 * WP constructor.

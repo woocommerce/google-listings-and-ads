@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use wpdb;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -14,18 +15,21 @@ defined( 'ABSPATH' ) || exit;
  */
 abstract class DBTable implements DBTableInterface {
 
-	/**
-	 * @var WP
-	 */
+	/** @var WP */
 	protected $wp;
+
+	/** @var wpdb */
+	protected $wpdb;
 
 	/**
 	 * DBTable constructor.
 	 *
-	 * @param WP $wp The WP proxy object.
+	 * @param WP   $wp   The WP proxy object.
+	 * @param wpdb $wpdb The wpdb object.
 	 */
-	public function __construct( WP $wp ) {
-		$this->wp = $wp;
+	public function __construct( WP $wp, wpdb $wpdb ) {
+		$this->wp   = $wp;
+		$this->wpdb = $wpdb;
 	}
 
 	/**
@@ -39,7 +43,7 @@ abstract class DBTable implements DBTableInterface {
 	 * Delete the Database table.
 	 */
 	public function delete(): void {
-		// TODO: Implement delete() method.
+		$this->wpdb->query( "DROP TABLE `{$this->get_table_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**
@@ -50,4 +54,11 @@ abstract class DBTable implements DBTableInterface {
 	 * @return string
 	 */
 	abstract protected function get_db_schema(): string;
+
+	/**
+	 * Get the table name.
+	 *
+	 * @return string
+	 */
+	abstract protected function get_table_name(): string;
 }
