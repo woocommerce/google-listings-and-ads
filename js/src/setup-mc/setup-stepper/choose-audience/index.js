@@ -21,10 +21,6 @@ const ChooseAudience = ( props ) => {
 	const { onContinue } = props;
 	const [ value, setValue ] = useAudienceSelectedCountryCodes();
 
-	const handleCountryChange = ( items ) => {
-		setValue( items );
-	};
-
 	return (
 		<div className="gla-choose-audience">
 			<StepContent>
@@ -89,7 +85,7 @@ const ChooseAudience = ( props ) => {
 							<div className="input">
 								<AppCountryMultiSelect
 									value={ value }
-									onChange={ handleCountryChange }
+									onChange={ setValue }
 								/>
 							</div>
 							<Subsection.HelperText>
