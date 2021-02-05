@@ -44,9 +44,9 @@ const EditRateModal = ( props ) => {
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, price } = values;
 
-		const oriCountrySet = new Set( rate.countries );
+		const originalCountrySet = new Set( rate.countries );
 		countryCodes.forEach( ( el ) => {
-			if ( ! oriCountrySet.has( el ) ) {
+			if ( ! originalCountrySet.has( el ) ) {
 				addShippingRate( {
 					countryCode: el,
 					currency,
