@@ -13,13 +13,15 @@ import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
 
+const firstN = 5;
+
 const CountriesTimeInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, time } = value;
 
 	const audienceCountries = useGetAudienceCountries();
-	const first5countries = countries.slice( 0, 5 ).map( ( c ) => c.label );
-	const remainingCount = countries.length - first5countries.length;
+	const firstCountries = countries.slice( 0, firstN ).map( ( c ) => c.label );
+	const remainingCount = countries.length - firstCountries.length;
 
 	const handleChange = ( v ) => {
 		onChange( {
@@ -48,7 +50,7 @@ const CountriesTimeInput = ( props ) => {
 														`all countries`,
 														'google-listings-and-ads'
 												  )
-												: first5countries.join( ', ' ) }
+												: firstCountries.join( ', ' ) }
 										</strong>
 									),
 									more: <More count={ remainingCount } />,
