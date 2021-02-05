@@ -9,6 +9,11 @@ import { useSelect } from '@wordpress/data';
 import useAudienceSelectedCountryCodes from '../../../../../../../hooks/useAudienceSelectedCountryCodes';
 import { STORE_KEY } from '../../../../../../../data';
 
+/**
+ * Get the country codes that do not have any shipping rate setup yet.
+ * This is done by comparing the selected country codes in Step 2 Choose Audience page
+ * and the shipping rate setup in Step 3.
+ */
 const useGetRemainingCountryCodes = () => {
 	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const actual = useSelect( ( select ) => {
