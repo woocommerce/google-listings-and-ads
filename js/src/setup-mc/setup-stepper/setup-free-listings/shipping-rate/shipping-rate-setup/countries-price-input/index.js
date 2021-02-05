@@ -14,6 +14,9 @@ import EditRateButton from './edit-rate-button';
 import './index.scss';
 import useAudienceSelectedCountryCodes from '../../../../../../hooks/useAudienceSelectedCountryCodes';
 
+/**
+ * The limit of the number of countries to show.
+ */
 const firstN = 5;
 
 const CountriesPriceInput = ( props ) => {

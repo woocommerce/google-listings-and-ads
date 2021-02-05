@@ -1,45 +1,45 @@
 /**
- * Group shipping rates based on price.
+ * Groups shipping rates based on price.
  *
  * Usage example:
  *
  * ```js
  * const shippingRates = [
- * 	{
- * 		countryCode: 'US',
- * 		currency: 'USD',
- * 		rate: 20
- * 	},
- * 	{
- * 		countryCode: 'AU',
- * 		currency: 'USD',
- * 		rate: 20
- * 	},
- *  {
- * 		countryCode: 'CN',
- * 		currency: 'USD',
- * 		rate: 25,
- * 	},
+ *     {
+ *         countryCode: 'US',
+ *         currency: 'USD',
+ *         rate: 20,
+ *     },
+ *     {
+ *         countryCode: 'AU',
+ *         currency: 'USD',
+ *         rate: 20,
+ *     },
+ *     {
+ *         countryCode: 'CN',
+ *         currency: 'USD',
+ *         rate: 25,
+ *     },
  * ]
  *
- * const result = getCountriesPriceArray(shippingRates)
+ * const result = getCountriesPriceArray( shippingRates );
  *
  * // result:
  * // [
- * // 	{
- * // 		countries: [ 'US', 'AU' ],
- * // 		price: 20,
- * // 		currency: 'USD',
- * // 	},
- * // 	{
- * // 		countries: [ 'CN ],
- * // 		price: 25,
- * // 		currency: 'USD',
- * // 	}
- * // ]
+ * //     {
+ * //         countries: ['US', 'AU'],
+ * //         price: 20,
+ * //         currency: 'USD',
+ * //     },
+ * //     {
+ * //         countries: ['CN'],
+ * //         price: 25,
+ * //         currency: 'USD',
+ * //     },
+ * ]
  * ```
  *
- * @param {Array} shippingRates Array of shipping rates in the format of { countryCode, rate, currency}.
+ * @param {Array<Object>} shippingRates Array of shipping rates in the format of `{ countryCode, rate, currency }`.
  */
 const getCountriesPriceArray = ( shippingRates ) => {
 	const currency = shippingRates[ 0 ]?.currency;
