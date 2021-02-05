@@ -251,9 +251,10 @@ class AccountController extends BaseOptionsController {
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
-						$this->middleware->create_merchant_account();
+						$merchant_id                       = $this->middleware->create_merchant_account();
 						$step['data']['from_mca']          = true;
 						$step['data']['created_timestamp'] = time();
+						$this->merchant->set_id( $merchant_id );
 						break;
 					case 'verify':
 						$this->verify_site();
@@ -489,6 +490,7 @@ class AccountController extends BaseOptionsController {
 		$state['set_id']['data']['from_mca'] = false;
 		$this->update_merchant_account_state( $state );
 		$this->middleware->link_merchant_account( $account_id );
+		$this->merchant->set_id( $account_id );
 	}
 
 	/**

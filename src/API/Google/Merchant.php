@@ -55,6 +55,15 @@ class Merchant {
 	}
 
 	/**
+	 * Set the ID.
+	 *
+	 * @param int $id
+	 */
+	public function set_id( int $id ): void {
+		$this->id = new PositiveInteger( $id );
+	}
+
+	/**
 	 * @return Product[]
 	 */
 	public function get_products(): array {
