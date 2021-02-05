@@ -12,6 +12,10 @@
 		.components-button {
 			// The close button at the top-right side on the modal
 			color: #50575e;
+
+			&:hover svg {
+				fill: currentColor;
+			}
 		}
 	}
 
