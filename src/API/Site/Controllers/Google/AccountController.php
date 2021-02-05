@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -53,6 +55,16 @@ class AccountController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+		$this->register_route(
+			'google/connected',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -62,9 +74,13 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function() {
-			return [
-				'url' => $this->connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) ),
-			];
+			try {
+				return [
+					'url' => $this->connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) ),
+				];
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
@@ -81,6 +97,27 @@ class AccountController extends BaseController {
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
 			];
+		};
+	}
+
+	/**
+	 * Get the callback function to determine if Google is currently connected.
+	 *
+	 * Uses consistent properties to the Jetpack connected callback
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_callback(): callable {
+		return function() {
+			try {
+				$status = $this->connection->get_status();
+				return [
+					'active' => array_key_exists( 'status', $status ) && ( 'connected' === $status['status'] ) ? 'yes' : 'no',
+					'email'  => array_key_exists( 'email', $status ) ? $status['email'] : '',
+				];
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
