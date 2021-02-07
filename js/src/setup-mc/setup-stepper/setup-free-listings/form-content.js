@@ -14,7 +14,7 @@ import ShippingTime from './shipping-time';
 import TaxRate from './tax-rate';
 import PreLaunchChecklist from './pre-launch-checklist';
 import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
-import useAutoSaveEffect from './useAutoSaveEffect';
+import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from './useDisplayTaxRate';
 
 const FormContent = ( props ) => {
@@ -22,7 +22,7 @@ const FormContent = ( props ) => {
 	const { values, errors, handleSubmit } = formProps;
 	const { displayTaxRate } = useDisplayTaxRate();
 
-	useAutoSaveEffect( values );
+	useAutoSaveSettingsEffect( values );
 
 	const isCompleteSetupDisabled =
 		Object.keys( errors ).length >= 1 ||

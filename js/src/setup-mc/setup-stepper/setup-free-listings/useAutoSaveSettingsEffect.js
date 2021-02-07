@@ -11,7 +11,7 @@ import { useAppDispatch } from '../../../data';
 
 const delay = 500;
 
-const useAutoSaveEffect = ( value ) => {
+const useAutoSaveSettingsEffect = ( value ) => {
 	const { saveSettings } = useAppDispatch();
 	const debouncedCallback = useDebouncedCallback( saveSettings, delay );
 	const ref = useRef( null );
@@ -26,4 +26,4 @@ const useAutoSaveEffect = ( value ) => {
 	}, [ debouncedCallback, value ] );
 };
 
-export default useAutoSaveEffect;
+export default useAutoSaveSettingsEffect;
