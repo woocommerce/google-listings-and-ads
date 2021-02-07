@@ -51,7 +51,7 @@ const ShippingTime = ( props ) => {
 								'I can estimate a flat shipping time for all my products.',
 								'google-listings-and-ads'
 							) }
-							value="simple"
+							value="flat"
 						>
 							<ShippingTimeSetup formProps={ formProps } />
 						</AppRadioContentControl>
@@ -61,7 +61,7 @@ const ShippingTime = ( props ) => {
 								'I cannot estimate a flat shipping time for all my products.',
 								'google-listings-and-ads'
 							) }
-							value="complex"
+							value="manual"
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(
