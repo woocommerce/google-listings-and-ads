@@ -8,11 +8,11 @@ import { Form } from '@woocommerce/components';
  */
 import AppSpinner from '../../../components/app-spinner';
 import Hero from './hero';
-import useSetupFreeListingsSelect from './useSetupFreeListingsSelect';
+import useSettings from './useSettings';
 import FormContent from './form-content';
 
 const SetupFreeListings = () => {
-	const { settings } = useSetupFreeListingsSelect();
+	const { settings } = useSettings();
 
 	if ( ! settings ) {
 		return <AppSpinner />;

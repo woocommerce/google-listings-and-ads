@@ -13,7 +13,7 @@ import { STORE_KEY } from '../../../data';
  *
  * `settings` is the saved values retrieved from API.
  */
-const useSetupFreeListingsSelect = () => {
+const useSettings = () => {
 	return useSelect( ( select ) => {
 		const settings = select( STORE_KEY ).getSettings();
 
@@ -23,4 +23,4 @@ const useSetupFreeListingsSelect = () => {
 	} );
 };
 
-export default useSetupFreeListingsSelect;
+export default useSettings;
