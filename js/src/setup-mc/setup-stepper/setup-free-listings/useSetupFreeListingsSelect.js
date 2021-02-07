@@ -8,6 +8,14 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '../../../data';
 
+/**
+ * Returns an object `{ settings, displayTaxRate }` to be used in the Setup Free Listing page.
+ *
+ * `settings` is the saved values retrieved from API.
+ *
+ * `displayTaxRate` is a boolean to indicate whether the tax rate section should be shown or not.
+ * Tax rate section should be shown when the audience countries contain `'US'`.
+ */
 const useSetupFreeListingsSelect = () => {
 	return useSelect( ( select ) => {
 		const { getSettings, getAudienceSelectedCountryCodes } = select(
