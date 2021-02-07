@@ -1,42 +1,22 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '../../../data';
 import AppSpinner from '../../../components/app-spinner';
-import DebounceCallback from '../../../components/debounce-callback';
-import { recordPreLaunchChecklistCompleteEvent } from '../../../utils/recordEvent';
-import StepContent from '../components/step-content';
-import StepContentFooter from '../components/step-content-footer';
-import ShippingRate from './shipping-rate';
-import ShippingTime from './shipping-time';
-import TaxRate from './tax-rate';
-import PreLaunchChecklist from './pre-launch-checklist';
 import Hero from './hero';
-import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
 import useSetupFreeListingsSelect from './useSetupFreeListingsSelect';
+import FormContent from './form-content';
 
 const SetupFreeListings = () => {
-	const { settings, displayTaxRate } = useSetupFreeListingsSelect();
-	const { saveSettings } = useAppDispatch();
+	const { settings } = useSetupFreeListingsSelect();
 
 	if ( ! settings ) {
 		return <AppSpinner />;
 	}
-
-	const handleAutosave = ( values ) => {
-		saveSettings( values );
-
-		if ( isPreLaunchChecklistComplete( values ) ) {
-			recordPreLaunchChecklistCompleteEvent();
-		}
-	};
 
 	const handleValidate = () => {
 		const errors = {};
@@ -72,39 +52,7 @@ const SetupFreeListings = () => {
 				onSubmitCallback={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
-					const { values, errors, handleSubmit } = formProps;
-
-					const isCompleteSetupDisabled =
-						Object.keys( errors ).length >= 1 ||
-						! isPreLaunchChecklistComplete( values );
-
-					return (
-						<StepContent>
-							<ShippingRate formProps={ formProps } />
-							<ShippingTime formProps={ formProps } />
-							{ displayTaxRate && (
-								<TaxRate formProps={ formProps } />
-							) }
-							<PreLaunchChecklist formProps={ formProps } />
-							<StepContentFooter>
-								<Button
-									isPrimary
-									disabled={ isCompleteSetupDisabled }
-									onClick={ handleSubmit }
-								>
-									{ __(
-										'Complete setup',
-										'google-listings-and-ads'
-									) }
-								</Button>
-							</StepContentFooter>
-							<DebounceCallback
-								value={ values }
-								delay={ 500 }
-								onCallback={ handleAutosave }
-							/>
-						</StepContent>
-					);
+					return <FormContent formProps={ formProps } />;
 				} }
 			</Form>
 		</div>
