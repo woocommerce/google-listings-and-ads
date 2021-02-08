@@ -438,7 +438,13 @@ class AccountController extends BaseOptionsController {
 		return true;
 	}
 
-	private function get_seconds_to_wait_after_created() {
+	/**
+	 * Calculate the number of seconds to wait after creating a sub-account and
+	 * before operating on the new sub-account (MCA link and website claim).
+	 *
+	 * @return int
+	 */
+	private function get_seconds_to_wait_after_created(): int {
 		$state = $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 
 		$created_timestamp = $state['set_id']['data']['created_timestamp'] ?? 0;
