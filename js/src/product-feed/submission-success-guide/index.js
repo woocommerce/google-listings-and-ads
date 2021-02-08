@@ -13,7 +13,7 @@ import { ReactComponent as GoogleLogoSvg } from './google-logo.svg';
 import { ReactComponent as WooCommerceLogoSvg } from './woocommerce-logo.svg';
 import GuidePageContent, {
 	ContentLink,
-} from '../../components/guide-page-content';
+} from '.~/components/guide-page-content';
 import './index.scss';
 
 const GUIDE_NAME = 'submission-success';

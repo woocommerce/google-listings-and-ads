@@ -6,7 +6,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
-import TrackableLink from '../trackable-link';
+import TrackableLink from '.~/components/trackable-link';
 import './index.scss';
 
 // TODO: These components are planned to be reused when implementing the Successful Campaign Creation Modal.
