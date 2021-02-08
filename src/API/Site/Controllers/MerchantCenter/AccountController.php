@@ -258,7 +258,7 @@ class AccountController extends BaseOptionsController {
 					default:
 						throw new Exception(
 							sprintf(
-							/* translators: 1: is an unknown step name */
+							/* translators: 1: is a string representing an unknown step name */
 								__( 'Unknown merchant account creation step %s$1', 'google-listings-and-ads' ),
 								$name
 							)
@@ -392,7 +392,13 @@ class AccountController extends BaseOptionsController {
 	private function use_standalone_account_id( int $account_id ): void {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 		if ( $merchant_id && $merchant_id !== $account_id ) {
-			throw new Exception( __( 'Merchant center account already linked.', 'google-listings-and-ads' ) );
+			throw new Exception(
+				sprintf(
+					/* translators: 1: is a numeric account ID */
+					__( 'Merchant Center sub-account %1$s already created.', 'google-listings-and-ads' ),
+					$merchant_id
+				)
+			);
 		}
 
 		// Make sure the standalone account has the correct website URL (or fail).
