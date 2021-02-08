@@ -94,6 +94,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register(): void {
+		$this->conditionally_share_with_tags( DebugLogger::class );
+
 		// Share our interfaces, possibly with concrete objects.
 		$this->share_interface( AssetsHandlerInterface::class, AssetsHandler::class );
 		$this->share_interface(
@@ -148,7 +150,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
-		$this->conditionally_share_with_tags( DebugLogger::class );
 	}
 
 	/**
