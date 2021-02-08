@@ -18,6 +18,13 @@ interface DBTableInterface {
 	public function install(): void;
 
 	/**
+	 * Determine whether the table actually exists in the DB.
+	 *
+	 * @return bool
+	 */
+	public function exists(): bool;
+
+	/**
 	 * Delete the Database table.
 	 */
 	public function delete(): void;

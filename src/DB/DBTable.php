@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use wpdb;
 
@@ -14,6 +15,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
 abstract class DBTable implements DBTableInterface {
+
+	use PluginHelper;
 
 	/** @var WP */
 	protected $wp;
@@ -36,14 +39,56 @@ abstract class DBTable implements DBTableInterface {
 	 * Install the Database table.
 	 */
 	public function install(): void {
-		// TODO: Implement install() method.
+		$this->wp->db_delta( $this->get_install_query() );
+	}
+
+	/**
+	 * Determine whether the table actually exists in the DB.
+	 *
+	 * @return bool
+	 */
+	public function exists(): bool {
+		$result = $this->wpdb->get_var(
+			"SHOW TABLES LIKE '{$this->get_sql_safe_name()}'" // phpcs:ignore WordPress.DB.PreparedSQL
+		);
+
+		return $result === $this->get_name();
 	}
 
 	/**
 	 * Delete the Database table.
 	 */
 	public function delete(): void {
-		$this->wpdb->query( "DROP TABLE `{$this->get_table_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$this->wpdb->query( "DROP TABLE `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+	/**
+	 * Get the SQL escaped version of the table name.
+	 *
+	 * @return string
+	 */
+	protected function get_sql_safe_name(): string {
+		return $this->wpdb->_escape( $this->get_name() );
+	}
+
+	/**
+	 * Get the name of the Database table.
+	 *
+	 * The name is prefixed with the wpdb prefix, and our plugin prefix.
+	 *
+	 * @return string
+	 */
+	public function get_name(): string {
+		return "{$this->wpdb->prefix}{$this->get_slug()}_{$this->get_raw_name()}";
+	}
+
+	/**
+	 * Get the DB collation.
+	 *
+	 * @return string
+	 */
+	protected function get_collation(): string {
+		return $this->wpdb->has_cap( 'collation' ) ? $this->wpdb->get_charset_collate() : '';
 	}
 
 	/**
@@ -53,12 +98,12 @@ abstract class DBTable implements DBTableInterface {
 	 *
 	 * @return string
 	 */
-	abstract protected function get_db_schema(): string;
+	abstract protected function get_install_query(): string;
 
 	/**
-	 * Get the table name.
+	 * Get the un-prefixed (raw) table name.
 	 *
 	 * @return string
 	 */
-	abstract protected function get_table_name(): string;
+	abstract protected function get_raw_name(): string;
 }
