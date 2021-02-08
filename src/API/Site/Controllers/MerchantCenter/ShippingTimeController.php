@@ -80,7 +80,8 @@ class ShippingTimeController extends BaseOptionsController implements ISO3166Awa
 			$times = $this->get_shipping_times_option();
 			$items = [];
 			foreach ( $times as $country_code => $details ) {
-				$items[ $country_code ] = $this->prepare_item_for_response( $details, $request );
+				$data                   = $this->prepare_item_for_response( $details, $request );
+				$items[ $country_code ] = $this->prepare_response_for_collection( $data );
 			}
 
 			return $items;

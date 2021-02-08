@@ -97,7 +97,8 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			try {
 				return array_map(
 					function( $campaign ) use ( $request ) {
-						return $this->prepare_item_for_response( $campaign, $request );
+						$data = $this->prepare_item_for_response( $campaign, $request );
+						return $this->prepare_response_for_collection( $data );
 					},
 					$this->ads->get_campaigns()
 				);
