@@ -21,6 +21,7 @@ const ProductFeed = () => {
 	return (
 		<div className="gla-product-feed">
 			<TabNav initialName="product-feed" />
+			<SubmissionSuccessGuide />
 			<div className="gla-product-feed__last-updated">
 				Last updated:{ ' ' }
 				{ formatDate( 'Y-m-d H:i:s', lastUpdatedDateTime ) }
@@ -31,7 +32,6 @@ const ProductFeed = () => {
 			</div>
 			<IssuesTableCard />
 			<ProductFeedTableCard trackEventReportId="product-feed" />
-			<SubmissionSuccessGuide />
 		</div>
 	);
 };
