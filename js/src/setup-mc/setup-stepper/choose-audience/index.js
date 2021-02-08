@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppCountryMultiSelect from '../../../components/app-country-multi-select';
 import Section from '../../../wcdl/section';
 import Subsection from '../../../wcdl/subsection';
 import AppDocumentationLink from '../../../components/app-documentation-link';
@@ -15,6 +14,7 @@ import useAudienceSelectedCountryCodes from '../../../hooks/useAudienceSelectedC
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
+import SupportedCountrySelect from './supported-country-select';
 import './index.scss';
 
 const ChooseAudience = ( props ) => {
@@ -83,7 +83,8 @@ const ChooseAudience = ( props ) => {
 								) }
 							</Subsection.Title>
 							<div className="input">
-								<AppCountryMultiSelect
+								<SupportedCountrySelect
+									multiple
 									value={ value }
 									onChange={ setValue }
 								/>
