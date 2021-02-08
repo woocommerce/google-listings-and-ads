@@ -227,3 +227,55 @@ export function* fetchCountries() {
 		);
 	}
 }
+
+export function* fetchTargetAudience() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/target_audience`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_TARGET_AUDIENCE,
+			target_audience: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading target audience.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* saveTargetAudience( targetAudience ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/target_audience`,
+			method: 'POST',
+			data: targetAudience,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.SAVE_TARGET_AUDIENCE,
+			target_audience: targetAudience,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error saving target audience data.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

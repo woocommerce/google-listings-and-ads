@@ -1,7 +1,12 @@
 /**
  * Internal dependencies
  */
-import { fetchShippingRates, fetchSettings, fetchCountries } from './actions';
+import {
+	fetchShippingRates,
+	fetchSettings,
+	fetchCountries,
+	fetchTargetAudience,
+} from './actions';
 
 export function* getShippingRates() {
 	yield fetchShippingRates();
@@ -13,4 +18,8 @@ export function* getSettings() {
 
 export function* getCountries() {
 	yield fetchCountries();
+}
+
+export function* getTargetAudience() {
+	yield fetchTargetAudience();
 }

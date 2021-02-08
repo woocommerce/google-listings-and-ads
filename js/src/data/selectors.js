@@ -13,3 +13,7 @@ export const getSettings = ( state ) => {
 export const getCountries = ( state ) => {
 	return state.mc.countries;
 };
+
+export const getTargetAudience = ( state ) => {
+	return state.mc.target_audience;
+};

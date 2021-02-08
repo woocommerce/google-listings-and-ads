@@ -17,6 +17,7 @@ const DEFAULT_STATE = {
 				selected: [ 'AU', 'CN', 'US' ],
 			},
 		},
+		target_audience: null,
 		countries: null,
 		shipping: {
 			rates: [],
@@ -84,6 +85,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { countries } = action;
 			const newState = cloneDeep( state );
 			newState.mc.countries = countries;
+			return newState;
+		}
+
+		case TYPES.RECEIVE_TARGET_AUDIENCE:
+		case TYPES.SAVE_TARGET_AUDIENCE: {
+			const newState = cloneDeep( state );
+			newState.mc.target_audience = action.target_audience;
 			return newState;
 		}
 
