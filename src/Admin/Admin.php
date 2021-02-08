@@ -72,7 +72,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
 				]
 			)
 		) )->add_localization(

@@ -75,7 +75,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 			new BuiltScriptDependencyArray(
 				[
 					'dependencies' => [],
-					'version'      => filemtime( "{$this->get_root_dir()}/js/build/task-complete-setup.js" ),
+					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/task-complete-setup.js" ),
 				]
 			)
 		) )->add_localization(
