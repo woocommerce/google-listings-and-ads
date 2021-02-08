@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Google_Service_ShoppingContent_Account as MC_Account;
 use Exception;
 use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
@@ -27,7 +28,7 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * @var string[]
 	 */
-	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'create', 'link', 'verify', 'claim' ];
+	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'link', 'verify', 'claim' ];
 
 	/** @var int Status value for a pending merchant account creation step */
 	private const MC_CREATION_STEP_PENDING = 0;
@@ -77,7 +78,7 @@ class AccountController extends BaseOptionsController {
 				],
 				[
 					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->create_or_link_account_callback(),
+					'callback'            => $this->set_account_id_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
@@ -131,12 +132,12 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function create_or_link_account_callback(): callable {
+	protected function set_account_id_callback(): callable {
 		return function( Request $request ) {
 			try {
 				$link_id = absint( $request['id'] );
 				if ( $link_id ) {
-					$this->complete_create_step( $link_id );
+					$this->use_standalone_account_id( $link_id );
 				}
 
 				$response = $this->setup_merchant_account();
@@ -195,6 +196,7 @@ class AccountController extends BaseOptionsController {
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
+				'default'           => 0,
 			],
 		];
 	}
@@ -233,26 +235,24 @@ class AccountController extends BaseOptionsController {
 
 			try {
 				switch ( $name ) {
-					case 'create':
+					case 'set_id':
 						// Just in case, don't create another merchant ID.
 						if ( ! empty( $merchant_id ) ) {
 							break;
 						}
-						$response['id']           = intval( $this->middleware->create_merchant_account() );
-						$step['data']['from_mca'] = true;
+						$response['id']                    = $this->middleware->create_merchant_account();
+						$step['data']['from_mca']          = true;
+						$step['data']['created_timestamp'] = time();
+						$response['claim_delay']           = self::MC_CLAIM_DELAY;
 						break;
 					case 'link':
-						// Request MCA
-						// Approve MCC
+						// Add a call to the link method in the middleware
 						break;
 					case 'verify':
-						$response['claim_delay'] = $this->verify_site();
-						// Only delay before claiming if not already verified.
-						if ( $response['claim_delay'] ) {
-							$step['data']['verify_timestamp'] = time();
-						}
+						$this->verify_site();
 						break;
 					case 'claim':
+						// Claim done in a separate call
 						continue 2;
 					default:
 						throw new Exception(
@@ -310,7 +310,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Return error if not ready to be claimed
-			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['verify']['data']['verify_timestamp'] ?? 0 );
+			$claim_timestamp = self::MC_CLAIM_DELAY + ( $state['set_id']['data']['created_timestamp'] ?? 0 );
 			if ( time() < $claim_timestamp ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = __( 'Please wait to execute website claim.', 'google-listings-and-ads' );
@@ -329,18 +329,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			try {
-
-				$from_mca = $state['create']['data']['from_mca'] ?? false;
-
-				if ( $from_mca ) {
-					// MCA sub-account
-					$this->middleware->claim_merchant_website();
-					$state['claim']['data']['endpoint'] = 'proxy';
-				} else {
-					// Linked account
-					$this->container->get( Merchant::class )->claimwebsite();
-					$state['claim']['data']['endpoint'] = 'merchant';
-				}
+				$this->container->get( Merchant::class )->claimwebsite();
 			} catch ( Exception $e ) {
 				$state['claim']['status']  = self::MC_CREATION_STEP_ERROR;
 				$state['claim']['message'] = $e->getMessage();
@@ -470,23 +459,53 @@ class AccountController extends BaseOptionsController {
 
 
 	/**
-	 * Mark the 'create' step as completed and set the Merchant ID.
+	 * Mark the 'set_id' step as completed and set the Merchant ID.
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
-	 * @throws Exception If there is already a Merchant Center ID.
+	 * @throws Exception If there is already a Merchant Center ID or the website can't be configured correctly.
 	 */
-	private function complete_create_step( int $account_id ): void {
+	private function use_standalone_account_id( int $account_id ): void {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
-
 		if ( $merchant_id && $merchant_id !== $account_id ) {
 			throw new Exception( __( 'Merchant center account already linked.', 'google-listings-and-ads' ) );
 		}
 
+		// Make sure the standalone account has the correct website URL (or fail).
+		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+
 		$state                               = $this->get_merchant_account_state();
-		$state['create']['status']           = self::MC_CREATION_STEP_DONE;
-		$state['create']['data']['from_mca'] = false;
+		$state['set_id']['status']           = self::MC_CREATION_STEP_DONE;
+		$state['set_id']['data']['from_mca'] = false;
 		$this->update_merchant_account_state( $state );
 		$this->middleware->link_merchant_account( $account_id );
+	}
+
+	/**
+	 * Ensure the Merchant Center account's Website URL matches the site URL, updating an empty value if
+	 * necessary. Fails if the Merchant Center account has a different Website URL.
+	 *
+	 * @param int    $merchant_id      The Merchant Center account to update
+	 * @param string $site_website_url The new website URL
+	 *
+	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
+	 * @throws Exception If there's an error updating the website URL.
+	 */
+	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
+		/** @var Merchant $merchant_id */
+		$merchant = $this->container->get( Merchant::class );
+		/** @var MC_Account $mc_account */
+		$mc_account = $merchant->get_account( $merchant_id );
+
+		$account_website_url = $mc_account->getWebsiteUrl();
+
+		if ( empty( $account_website_url ) ) {
+			$mc_account->setWebsiteUrl( $site_website_url );
+			$merchant->update_account( $mc_account );
+		} elseif ( $site_website_url !== $account_website_url ) {
+			throw new Exception( __( 'Merchant Center account has a different website URL.', 'google-listings-and-ads' ) );
+		}
+
+		return true;
 	}
 }
