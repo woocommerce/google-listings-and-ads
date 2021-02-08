@@ -80,7 +80,8 @@ class ShippingRateController extends BaseOptionsController implements ISO3166Awa
 			$rates = $this->get_shipping_rates_option();
 			$items = [];
 			foreach ( $rates as $country_code => $details ) {
-				$items[ $country_code ] = $this->prepare_item_for_response( $details, $request );
+				$data                   = $this->prepare_item_for_response( $details, $request );
+				$items[ $country_code ] = $this->prepare_response_for_collection( $data );
 			}
 
 			return $items;
