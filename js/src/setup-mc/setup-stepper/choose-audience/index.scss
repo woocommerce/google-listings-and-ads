@@ -2,4 +2,8 @@
 	.input {
 		margin-bottom: 8px;
 	}
+
+	.helper-text {
+		margin-bottom: calc(var(--main-gap) / 3 * 2);
+	}
 }

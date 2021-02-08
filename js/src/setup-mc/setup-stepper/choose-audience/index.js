@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
+import { Button, RadioControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -15,11 +16,13 @@ import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
 import SupportedCountrySelect from './supported-country-select';
+import useTargetAudience from '.~/hooks/useTargetAudience';
 import './index.scss';
 
 const ChooseAudience = ( props ) => {
 	const { onContinue } = props;
 	const [ value, setValue ] = useAudienceSelectedCountryCodes();
+	const { data } = useTargetAudience();
 
 	return (
 		<div className="gla-choose-audience">
@@ -38,26 +41,12 @@ const ChooseAudience = ( props ) => {
 				<Section
 					title={ __( 'Audience', 'google-listings-and-ads' ) }
 					description={
-						<div>
-							<p>
-								{ __(
-									'Your store must have the appropriate shipping and tax rates (if required) for customers in all your selected countries.',
-									'google-listings-and-ads'
-								) }
-							</p>
-							<p>
-								<AppDocumentationLink
-									context="setup-mc-audience"
-									linkId="audience-read-more"
-									href="https://docs.woocommerce.com/documentation/plugins/woocommerce/getting-started/shipping/core-shipping-options/"
-								>
-									{ __(
-										'Read more',
-										'google-listings-and-ads'
-									) }
-								</AppDocumentationLink>
-							</p>
-						</div>
+						<p>
+							{ __(
+								'Where do you want to sell your products?',
+								'google-listings-and-ads'
+							) }
+						</p>
 					}
 				>
 					<Section.Card>
@@ -65,36 +54,67 @@ const ChooseAudience = ( props ) => {
 							<Subsection>
 								<Subsection.Title>
 									{ __(
-										'Site language',
+										'Language',
 										'google-listings-and-ads'
 									) }
 								</Subsection.Title>
-								<Subsection.Body>
+								<Subsection.HelperText className="helper-text">
+									{ createInterpolateElement(
+										__(
+											'Listings can only be displayed in your site language. <link>Read more</link>',
+											'google-listings-and-ads'
+										),
+										{
+											link: (
+												// TODO: check URL and track event is correct.
+												<AppDocumentationLink
+													context="setup-mc-audience"
+													linkId="site-language"
+													href="https://support.google.com/merchants/answer/160491"
+												/>
+											),
+										}
+									) }
+								</Subsection.HelperText>
+								{ data && (
+									<RadioControl
+										selected={ data.locale }
+										options={ [
+											{
+												label: data.language,
+												value: data.locale,
+											},
+										] }
+									/>
+								) }
+							</Subsection>
+							<Subsection>
+								<Subsection.Title>
 									{ __(
-										'English',
+										'Location',
 										'google-listings-and-ads'
 									) }
-								</Subsection.Body>
+								</Subsection.Title>
+								<Subsection.HelperText className="helper-text">
+									{ __(
+										'Your store should already have the appropriate shipping and tax rates (if required) for potential customers in your selected location(s).',
+										'google-listings-and-ads'
+									) }
+								</Subsection.HelperText>
+								<div className="input">
+									<SupportedCountrySelect
+										multiple
+										value={ value }
+										onChange={ setValue }
+									/>
+								</div>
+								<Subsection.HelperText>
+									{ __(
+										'Can’t find a country? Only supported countries are listed.',
+										'google-listings-and-ads'
+									) }
+								</Subsection.HelperText>
 							</Subsection>
-							<Subsection.Title>
-								{ __(
-									'Show my product listings to customers from these countries:',
-									'google-listings-and-ads'
-								) }
-							</Subsection.Title>
-							<div className="input">
-								<SupportedCountrySelect
-									multiple
-									value={ value }
-									onChange={ setValue }
-								/>
-							</div>
-							<Subsection.HelperText>
-								{ __(
-									'Can’t find a country? Only supported countries are listed.',
-									'google-listings-and-ads'
-								) }
-							</Subsection.HelperText>
 						</Section.Card.Body>
 					</Section.Card>
 				</Section>
