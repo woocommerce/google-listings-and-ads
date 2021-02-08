@@ -46,22 +46,22 @@ const ShippingTime = ( props ) => {
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
 						<AppRadioContentControl
-							{ ...getInputProps( 'shippingTimeOption' ) }
+							{ ...getInputProps( 'shipping_time' ) }
 							label={ __(
 								'I can estimate a flat shipping time for all my products.',
 								'google-listings-and-ads'
 							) }
-							value="simple"
+							value="flat"
 						>
 							<ShippingTimeSetup formProps={ formProps } />
 						</AppRadioContentControl>
 						<AppRadioContentControl
-							{ ...getInputProps( 'shippingTimeOption' ) }
+							{ ...getInputProps( 'shipping_time' ) }
 							label={ __(
 								'I cannot estimate a flat shipping time for all my products.',
 								'google-listings-and-ads'
 							) }
-							value="complex"
+							value="manual"
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

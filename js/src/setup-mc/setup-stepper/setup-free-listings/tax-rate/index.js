@@ -49,12 +49,12 @@ const TaxRate = ( props ) => {
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
 						<AppRadioContentControl
-							{ ...getInputProps( 'taxRateOption' ) }
+							{ ...getInputProps( 'tax_rate' ) }
 							label={ __(
 								'My store uses destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
-							value="yes"
+							value="destination"
 						>
 							<RadioHelperText>
 								{ __(
@@ -64,12 +64,12 @@ const TaxRate = ( props ) => {
 							</RadioHelperText>
 						</AppRadioContentControl>
 						<AppRadioContentControl
-							{ ...getInputProps( 'taxRateOption' ) }
+							{ ...getInputProps( 'tax_rate' ) }
 							label={ __(
 								'My store does not use destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
-							value="no"
+							value="manual"
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

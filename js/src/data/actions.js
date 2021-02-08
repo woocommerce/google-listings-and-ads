@@ -150,3 +150,55 @@ export function* deleteShippingRate( countryCode ) {
 		);
 	}
 }
+
+export function* fetchSettings() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/settings`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_SETTINGS,
+			settings: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading merchant center settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* saveSettings( settings ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/settings`,
+			method: 'POST',
+			data: settings,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.SAVE_SETTINGS,
+			settings,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to save settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

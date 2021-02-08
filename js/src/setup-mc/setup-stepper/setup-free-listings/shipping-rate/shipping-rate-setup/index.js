@@ -18,12 +18,6 @@ import useStoreCurrency from '../../../../../hooks/useStoreCurrency';
 import getCountriesPriceArray from './getCountriesPriceArray';
 import useAudienceSelectedCountryCodes from '../../../../../hooks/useAudienceSelectedCountryCodes';
 
-const formKeys = {
-	rows: 'shippingRateOption-rows',
-	freeShipping: 'shippingRateOption-freeShipping',
-	priceOver: 'shippingRateOption-freeShipping-priceOver',
-};
-
 const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
@@ -82,9 +76,9 @@ const ShippingRateSetup = ( props ) => {
 						'I also offer free shipping for all countries for products over a certain price.',
 						'google-listings-and-ads'
 					) }
-					{ ...getInputProps( formKeys.freeShipping ) }
+					{ ...getInputProps( 'offers_free_shipping' ) }
 				/>
-				{ values[ formKeys.freeShipping ] && (
+				{ values.offers_free_shipping && (
 					<div className="price-over-input">
 						<AppInputControl
 							label={ __(
@@ -92,7 +86,7 @@ const ShippingRateSetup = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							suffix={ currencyCode }
-							{ ...getInputProps( formKeys.priceOver ) }
+							{ ...getInputProps( 'free_shipping_threshold' ) }
 						/>
 					</div>
 				) }

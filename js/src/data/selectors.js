@@ -5,3 +5,7 @@ export const getAudienceSelectedCountryCodes = ( state ) => {
 export const getShippingRates = ( state ) => {
 	return state.mc.shipping.rates;
 };
+
+export const getSettings = ( state ) => {
+	return state.mc.settings;
+};
