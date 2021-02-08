@@ -17,6 +17,7 @@ const DEFAULT_STATE = {
 				selected: [ 'AU', 'CN', 'US' ],
 			},
 		},
+		countries: null,
 		shipping: {
 			rates: [],
 		},
@@ -76,6 +77,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { settings } = action;
 			const newState = cloneDeep( state );
 			newState.mc.settings = settings;
+			return newState;
+		}
+
+		case TYPES.RECEIVE_COUNTRIES: {
+			const { countries } = action;
+			const newState = cloneDeep( state );
+			newState.mc.countries = countries;
 			return newState;
 		}
 

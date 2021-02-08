@@ -9,3 +9,7 @@ export const getShippingRates = ( state ) => {
 export const getSettings = ( state ) => {
 	return state.mc.settings;
 };
+
+export const getCountries = ( state ) => {
+	return state.mc.countries;
+};

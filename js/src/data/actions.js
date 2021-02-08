@@ -202,3 +202,28 @@ export function* saveSettings( settings ) {
 		);
 	}
 }
+
+export function* fetchCountries() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/countries`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_COUNTRIES,
+			countries: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading supported country details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
