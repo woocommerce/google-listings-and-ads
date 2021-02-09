@@ -103,7 +103,12 @@ class Merchant {
 			$response = $service->accounts->claimwebsite( $this->get_id(), $this->get_id() );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to claim website.', 'google-listings-and-ads' ), $e->getCode() );
+			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
+			if ( 403 === $e->getCode() ) {
+				$error_message = __( 'Website already claimed, use overwrite to complete.', 'google-listings-and-ads' );
+			}
+			throw new Exception( $error_message, $e->getCode() );
+
 		}
 		return true;
 	}
