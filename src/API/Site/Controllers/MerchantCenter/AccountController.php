@@ -58,6 +58,11 @@ class AccountController extends BaseOptionsController {
 	protected $merchant;
 
 	/**
+	 * @var bool Whether to perform website claim with overwrite.
+	 */
+	protected $overwrite_claim = false;
+
+	/**
 	 * AccountController constructor.
 	 *
 	 * @param ContainerInterface $container
@@ -85,6 +90,18 @@ class AccountController extends BaseOptionsController {
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->set_account_id_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_schema_properties(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+		$this->register_route(
+			'mc/accounts/claim-overwrite',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->overwrite_claim_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
@@ -121,6 +138,16 @@ class AccountController extends BaseOptionsController {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
+	}
+
+	/**
+	 * Get the callback for creating or linking an account, overwriting the website claim during the claim step.
+	 *
+	 * @return callable
+	 */
+	protected function overwrite_claim_callback(): callable {
+		$this->overwrite_claim = true;
+		return $this->set_account_id_callback();
 	}
 
 	/**
@@ -254,7 +281,8 @@ class AccountController extends BaseOptionsController {
 						$this->middleware->link_merchant_to_mca();
 						break;
 					case 'claim':
-						$this->merchant->claimwebsite();
+						$overwrite_required = $step['data']['overwrite_required'] ?? false;
+						$this->merchant->claimwebsite( $overwrite_required && $this->overwrite_claim );
 						break;
 					default:
 						throw new Exception(
@@ -271,6 +299,11 @@ class AccountController extends BaseOptionsController {
 			} catch ( Exception $e ) {
 				$step['status']  = self::MC_CREATION_STEP_ERROR;
 				$step['message'] = $e->getMessage();
+
+				if ( 'claim' === $name && 403 === $e->getCode() ) {
+					$step['data']['overwrite_required'] = true;
+				}
+
 				$this->update_merchant_account_state( $state );
 				throw $e;
 			}

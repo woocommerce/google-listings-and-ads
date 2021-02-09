@@ -92,15 +92,17 @@ class Merchant {
 	/**
 	 * Claim a website for the user's Merchant Center account.
 	 *
+	 * @param bool $overwrite Whether to include the overwrite directive.
 	 * @return bool
 	 * @throws Exception If the website claim fails.
 	 */
-	public function claimwebsite(): bool {
+	public function claimwebsite( bool $overwrite = false ): bool {
 		/** @var ShoppingService $service */
 		$service = $this->container->get( ShoppingService::class );
 
 		try {
-			$response = $service->accounts->claimwebsite( $this->get_id(), $this->get_id() );
+			$params = $overwrite ? [ 'overwrite' => true ] : [];
+			$service->accounts->claimwebsite( $this->get_id(), $this->get_id(), $params );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
