@@ -11,8 +11,9 @@ import useCountryKeyNameMap from '../../../../../../hooks/useCountryKeyNameMap';
 import AppInputControl from '../../../../../../components/app-input-control';
 import More from '../../../components/more';
 import EditRateButton from './edit-rate-button';
+import AppSpinner from '.~/components/app-spinner';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import './index.scss';
-import useAudienceSelectedCountryCodes from '../../../../../../hooks/useAudienceSelectedCountryCodes';
 
 /**
  * The limit of the number of countries to show.
@@ -23,8 +24,13 @@ const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, currency, price } = value;
 
-	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const keyNameMap = useCountryKeyNameMap();
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
+
 	const firstCountryNames = countries
 		.slice( 0, firstN )
 		.map( ( c ) => keyNameMap[ c ] );
