@@ -9,7 +9,15 @@ import { RadioControl } from '@wordpress/components';
 import './index.scss';
 
 const AppRadioContentControl = ( props ) => {
-	const { className = '', label, value, selected, children, ...rest } = props;
+	const {
+		className = '',
+		label,
+		value,
+		selected,
+		collapsible = false,
+		children,
+		...rest
+	} = props;
 
 	return (
 		<div className={ `app-radio-content-control ${ className }` }>
@@ -23,7 +31,7 @@ const AppRadioContentControl = ( props ) => {
 				] }
 				{ ...rest }
 			/>
-			{ selected === value && (
+			{ ( ! collapsible || ( collapsible && selected === value ) ) && (
 				<div className="app-radio-content-control__content">
 					{ children }
 				</div>

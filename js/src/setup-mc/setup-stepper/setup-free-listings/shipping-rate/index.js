@@ -53,6 +53,7 @@ const ShippingRate = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							value="flat"
+							collapsible
 						>
 							<ShippingRateSetup formProps={ formProps } />
 						</AppRadioContentControl>
@@ -63,6 +64,7 @@ const ShippingRate = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							value="manual"
+							collapsible
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(
