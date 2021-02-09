@@ -16,12 +16,15 @@ import RadioHelperText from '.~/wcdl/radio-helper-text';
 import StepContentFooter from '../components/step-content-footer';
 import SupportedCountrySelect from './supported-country-select';
 import VerticalGapLayout from '../setup-free-listings/components/vertical-gap-layout';
+import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
 import './index.scss';
 
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
+
+	useAutoSaveTargetAudienceEffect( values );
 
 	return (
 		<>
