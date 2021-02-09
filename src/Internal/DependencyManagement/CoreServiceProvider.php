@@ -99,14 +99,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( DebugLogger::class );
 
 		// Share our interfaces, possibly with concrete objects.
-		$this->share_interface( AssetsHandlerInterface::class, AssetsHandler::class );
-		$this->share_interface(
+		$this->share_concrete( AssetsHandlerInterface::class, AssetsHandler::class );
+		$this->share_concrete(
 			TracksInterface::class,
 			$this->share_with_tags( Tracks::class, TracksProxy::class )
 		);
 
 		// Set up Options, and inflect classes that need options.
-		$this->share_interface( OptionsInterface::class, Options::class );
+		$this->share_concrete( OptionsInterface::class, Options::class );
 		$this->getLeagueContainer()
 			->inflector( OptionsAwareInterface::class )
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );

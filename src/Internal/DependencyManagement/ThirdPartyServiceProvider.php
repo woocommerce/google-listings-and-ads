@@ -60,12 +60,12 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 			]
 		);
 
-		$this->share_interface( ISO3166DataProvider::class, ISO3166::class );
+		$this->share_concrete( ISO3166DataProvider::class, ISO3166::class );
 		$this->getLeagueContainer()
 			->inflector( ISO3166AwareInterface::class )
 			->invokeMethod( 'set_iso3166_provider', [ ISO3166DataProvider::class ] );
 
-		$this->share_interface(
+		$this->share_concrete(
 			ValidatorInterface::class,
 			function () {
 				return Validation::createValidatorBuilder()

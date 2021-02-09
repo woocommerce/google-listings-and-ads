@@ -54,7 +54,7 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		$this->share( WCProxy::class, WC()->countries );
 
 		// Use a wrapper function to get the wpdb object.
-		$this->share_interface(
+		$this->share_concrete(
 			wpdb::class,
 			new Definition(
 				wpdb::class,
