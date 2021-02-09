@@ -43,3 +43,24 @@
 .components-input-control__suffix {
 	margin-right: 8px;
 }
+
+// Hack to fix the Tooltip position of the top-right side close button in a Modal component.
+// The follow up can be found here: https://github.com/woocommerce/google-listings-and-ads/issues/203
+.components-modal {
+	&__screen-overlay {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	&__frame {
+		@include break-small() {
+			transform: initial;
+			position: relative;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+	}
+}
