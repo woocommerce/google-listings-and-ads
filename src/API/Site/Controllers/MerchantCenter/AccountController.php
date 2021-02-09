@@ -462,14 +462,10 @@ class AccountController extends BaseOptionsController {
 
 		$account_website_url = $mc_account->getWebsiteUrl();
 
-		// Remove trailing slashes from the URLs for consistency
-		$account_website_url_unslashed = preg_replace( '#/$#', '', $account_website_url );
-		$site_website_url_unslashed    = preg_replace( '#/$#', '', $site_website_url );
-
 		if ( empty( $account_website_url ) ) {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
-		} elseif ( $site_website_url_unslashed !== $account_website_url_unslashed ) {
+		} elseif ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) ) {
 			throw new Exception( __( 'Merchant Center account has a different website URL.', 'google-listings-and-ads' ) );
 		}
 
