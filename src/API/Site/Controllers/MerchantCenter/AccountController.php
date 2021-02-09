@@ -317,15 +317,15 @@ class AccountController extends BaseOptionsController {
 	 * 2. Enables the meta tag in the head of the store.
 	 * 3. Instructs the Site Verification API to verify the meta tag.
 	 *
-	 * @return int The number of seconds to delay before attempting a site claim (0 if previously verified).
+	 * @return bool True if the site has been (or already was) verified for the connected Google account.
 	 * @throws Exception If any step of the site verification process fails.
 	 */
-	private function verify_site(): int {
+	private function verify_site(): bool {
 		$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 		// Inform of previous verification.
 		if ( $this->is_site_verified() ) {
-			return 0;
+			return true;
 		}
 
 		// Retrieve the meta tag with verification token.
@@ -355,7 +355,7 @@ class AccountController extends BaseOptionsController {
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
 				do_action( 'gla_site_verify_success', [] );
 
-				return self::MC_DELAY_AFTER_CREATE;
+				return true;
 			}
 		} catch ( Exception $e ) {
 			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
