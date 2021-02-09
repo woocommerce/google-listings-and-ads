@@ -138,7 +138,7 @@ class AccountController extends BaseOptionsController {
 
 				$response = $this->setup_merchant_account();
 
-				return $this->prepare_item_for_response( $response, $request );
+				return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -179,15 +179,9 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'          => [
+			'id' => [
 				'type'              => 'number',
 				'description'       => __( 'Merchant Center Account ID.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'retry_after' => [
-				'type'              => 'number',
-				'description'       => __( 'Seconds to wait before repeating the call to complete the process.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
@@ -213,10 +207,10 @@ class AccountController extends BaseOptionsController {
 	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
 	 * @todo Include request+approve account linking process.
 	 *
-	 * @return array The newly created (or pre-existing) Merchant ID and the website claim delay if there is one.
+	 * @return array|Response The newly created (or pre-existing) Merchant ID or the retry delay.
 	 * @throws Exception If an error occurs during any step.
 	 */
-	protected function setup_merchant_account(): array {
+	protected function setup_merchant_account() {
 		$state       = $this->get_merchant_account_state();
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
@@ -228,9 +222,16 @@ class AccountController extends BaseOptionsController {
 			if ( 'link' === $name || 'claim' === $name ) {
 				$time_to_wait = $this->get_seconds_to_wait_after_created();
 				if ( $time_to_wait ) {
-					return [
-						'retry_after' => $time_to_wait,
-					];
+					return new Response(
+						[
+							'retry_after' => $time_to_wait,
+							'message'     => __( 'Please retry after the indicated number of seconds.', 'google-listings-and-ads' ),
+						],
+						503,
+						[
+							'Retry-After' => $time_to_wait,
+						]
+					);
 				}
 			}
 
