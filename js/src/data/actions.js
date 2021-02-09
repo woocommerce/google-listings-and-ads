@@ -19,13 +19,6 @@ export function handleFetchError( error, message ) {
 	console.log( error );
 }
 
-export const setAudienceSelectedCountryCodes = ( selected ) => {
-	return {
-		type: TYPES.SET_AUDIENCE_SELECTED_COUNTRIES,
-		selected,
-	};
-};
-
 export function* fetchShippingRates() {
 	try {
 		const response = yield apiFetch( {

@@ -8,15 +8,8 @@ import { cloneDeep } from 'lodash';
  */
 import TYPES from './action-types';
 
-// TODO: initial data should come from resolvers.
 const DEFAULT_STATE = {
 	mc: {
-		audience: {
-			location: {
-				option: 'selected',
-				selected: [ 'AU', 'CN', 'US' ],
-			},
-		},
 		target_audience: null,
 		countries: null,
 		shipping: {
@@ -28,12 +21,6 @@ const DEFAULT_STATE = {
 
 const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
-		case TYPES.SET_AUDIENCE_SELECTED_COUNTRIES: {
-			const newState = cloneDeep( state );
-			newState.mc.audience.location.selected = action.selected;
-			return newState;
-		}
-
 		case TYPES.RECEIVE_SHIPPING_RATES: {
 			const { shippingRates } = action;
 			const newState = cloneDeep( state );
