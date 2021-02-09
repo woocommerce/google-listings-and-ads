@@ -3,11 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\DBController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
-use Psr\Container\ContainerInterface;
 use wpdb;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,7 +25,6 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		DBController::class      => true,
 		ShippingRateTable::class => true,
 	];
 
@@ -51,7 +48,6 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$this->share( DBController::class, ContainerInterface::class );
 		$this->share_table_class( ShippingRateTable::class );
 	}
 

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
@@ -87,6 +88,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SiteVerificationMeta::class   => true,
 		DebugLogger::class            => true,
 		MerchantAccountState::class   => true,
+		DBInstaller::class            => true,
 	];
 
 	/**
@@ -121,7 +123,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Installer::class );
 		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
@@ -162,6 +163,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
+
+		// The DB Controller has some extra setup required.
+		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );
+		$db_definition->setConcrete(
+			function( ...$arguments ) {
+				return new DBInstaller( ...$arguments );
+			}
+		);
 	}
 
 	/**
