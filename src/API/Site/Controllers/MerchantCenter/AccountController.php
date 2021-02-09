@@ -259,7 +259,7 @@ class AccountController extends BaseOptionsController {
 						throw new Exception(
 							sprintf(
 							/* translators: 1: is a string representing an unknown step name */
-								__( 'Unknown merchant account creation step %s$1', 'google-listings-and-ads' ),
+								__( 'Unknown merchant account creation step %1$s', 'google-listings-and-ads' ),
 								$name
 							)
 						);
@@ -395,7 +395,7 @@ class AccountController extends BaseOptionsController {
 			throw new Exception(
 				sprintf(
 					/* translators: 1: is a numeric account ID */
-					__( 'Merchant Center sub-account %1$s already created.', 'google-listings-and-ads' ),
+					__( 'Merchant Center sub-account %1$d already created.', 'google-listings-and-ads' ),
 					$merchant_id
 				)
 			);
