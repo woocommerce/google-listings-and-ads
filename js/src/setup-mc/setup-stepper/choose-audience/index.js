@@ -18,6 +18,9 @@ import StepContentFooter from '../components/step-content-footer';
 import SupportedCountrySelect from './supported-country-select';
 import useTargetAudience from '.~/hooks/useTargetAudience';
 import './index.scss';
+import VerticalGapLayout from '../setup-free-listings/components/vertical-gap-layout';
+import AppRadioContentControl from '.~/components/app-radio-content-control';
+import RadioHelperText from '.~/wcdl/radio-helper-text';
 
 const ChooseAudience = ( props ) => {
 	const { onContinue } = props;
@@ -101,19 +104,41 @@ const ChooseAudience = ( props ) => {
 										'google-listings-and-ads'
 									) }
 								</Subsection.HelperText>
-								<div className="input">
-									<SupportedCountrySelect
-										multiple
-										value={ value }
-										onChange={ setValue }
-									/>
-								</div>
-								<Subsection.HelperText>
-									{ __(
-										'Can’t find a country? Only supported countries are listed.',
-										'google-listings-and-ads'
-									) }
-								</Subsection.HelperText>
+								<VerticalGapLayout>
+									<AppRadioContentControl
+										label={ __(
+											'All countries',
+											'google-listings-and-ads'
+										) }
+									>
+										<RadioHelperText>
+											{ __(
+												'Your listings will be shown in all supported countries.',
+												'google-listings-and-ads'
+											) }
+										</RadioHelperText>
+									</AppRadioContentControl>
+									<AppRadioContentControl
+										label={ __(
+											'Selected countries only',
+											'google-listings-and-ads'
+										) }
+									>
+										<div className="input">
+											<SupportedCountrySelect
+												multiple
+												value={ value }
+												onChange={ setValue }
+											/>
+										</div>
+										<RadioHelperText>
+											{ __(
+												'Can’t find a country? Only supported countries can be selected.',
+												'google-listings-and-ads'
+											) }
+										</RadioHelperText>
+									</AppRadioContentControl>
+								</VerticalGapLayout>
 							</Subsection>
 						</Section.Card.Body>
 					</Section.Card>
