@@ -445,7 +445,7 @@ class AccountController extends BaseOptionsController {
 	 * @return int
 	 */
 	private function get_seconds_to_wait_after_created(): int {
-		$state = $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE );
+		$state = $this->get_merchant_account_state( false );
 
 		$created_timestamp = $state['set_id']['data']['created_timestamp'] ?? 0;
 		$seconds_elapsed   = time() - $created_timestamp;
