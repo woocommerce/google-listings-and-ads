@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\Installable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
@@ -110,6 +111,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			->inflector( OptionsAwareInterface::class )
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
+
+		// Set up the installer.
+		$installer_definition = $this->share_with_tags( Installer::class, Installable::class );
+		$installer_definition->setConcrete(
+			function( ...$arguments ) {
+				return new Installer( ...$arguments );
+			}
+		);
 
 		// Share our regular service classes.
 		$this->conditionally_share_with_tags( Installer::class );

@@ -3,12 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\Installable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,11 +22,27 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 
 	use OptionsAwareTrait;
 	use PluginHelper;
+	use ValidateInterface;
+
+	/**
+	 * @var Installable[]
+	 */
+	protected $installables;
 
 	/**
 	 * @var OptionsInterface
 	 */
 	protected $options;
+
+	/**
+	 * Installer constructor.
+	 *
+	 * @param Installable[] $installables
+	 */
+	public function __construct( array $installables ) {
+		$this->installables = $installables;
+		$this->validate_installables();
+	}
 
 	/**
 	 * Register a service.
@@ -49,16 +66,16 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 
 		$this->check_if_plugin_files_updated();
 
-		if ( $this->get_db_version() !== $this->get_version() ) {
+		$db_version = $this->get_db_version();
+		if ( $db_version !== $this->get_version() ) {
 			$this->install();
 
-			if ( ! $this->get_db_version() ) {
+			if ( '' === $db_version ) {
 				$this->first_install();
 			}
 
 			$this->options->update( OptionsInterface::DB_VERSION, $this->get_version() );
 		}
-
 	}
 
 	/**
@@ -67,7 +84,9 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 * Run on every plugin update.
 	 */
 	protected function install(): void {
-		// Perform installation things
+		foreach ( $this->installables as $installable ) {
+			$installable->install();
+		}
 	}
 
 	/**
@@ -103,5 +122,14 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 */
 	protected function get_file_version(): string {
 		return $this->options->get( OptionsInterface::FILE_VERSION, '' );
+	}
+
+	/**
+	 * Validate that each of the installable items is of the correct interface.
+	 */
+	protected function validate_installables() {
+		foreach ( $this->installables as $installable ) {
+			$this->validate_instanceof( $installable, Installable::class );
+		}
 	}
 }
