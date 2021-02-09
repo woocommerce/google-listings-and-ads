@@ -10,8 +10,8 @@ import { Form } from '@woocommerce/components';
  */
 import AppModal from '../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../components/app-input-control';
-import AppCountryMultiSelect from '../../../../../../../components/app-country-multi-select';
 import VerticalGapLayout from '../../../../components/vertical-gap-layout';
+import AudienceCountrySelect from '.~/components/audience-country-select';
 
 const AddTimeModal = ( props ) => {
 	const { onRequestClose } = props;
@@ -75,7 +75,8 @@ const AddTimeModal = ( props ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AppCountryMultiSelect
+								<AudienceCountrySelect
+									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
