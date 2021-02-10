@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Activateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\Installable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,14 +16,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
-class DBInstaller implements Service, Installable, Activateable {
+class DBInstaller implements Service, FirstInstallInterface, InstallableInterface {
 
 	use ValidateInterface;
-
-	/**
-	 * The current database version.
-	 */
-	protected const DB_VERSION = 1;
 
 	/**
 	 * @var OptionsInterface
@@ -48,23 +43,19 @@ class DBInstaller implements Service, Installable, Activateable {
 	}
 
 	/**
-	 * Activate the service.
-	 *
-	 * @return void
-	 */
-	public function activate(): void {
-		$this->install();
-	}
-
-	/**
 	 * Run installation logic for this class.
 	 */
 	public function install(): void {
 		foreach ( $this->tables as $table ) {
-			if ( ! $table->exists() ) {
-				$table->install();
-			}
+			$table->install();
 		}
+	}
+
+	/**
+	 * Logic to run when the plugin is first installed.
+	 */
+	public function first_install(): void {
+		$this->install();
 	}
 
 	/**
