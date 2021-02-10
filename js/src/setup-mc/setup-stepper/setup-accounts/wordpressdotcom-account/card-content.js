@@ -11,7 +11,6 @@ import AppSpinner from '../../../../components/app-spinner';
 import { STORE_KEY } from '../../../../data/constants';
 import TitleButtonLayout from '../title-button-layout';
 import ConnectAccount from './connect-account';
-import DisplayAccount from './display-account';
 
 const CardContent = () => {
 	const { jetpack, isResolving } = useSelect( ( select ) => {
@@ -39,7 +38,7 @@ const CardContent = () => {
 	}
 
 	if ( jetpack.active === 'yes' ) {
-		return <DisplayAccount jetpack={ jetpack } />;
+		return <TitleButtonLayout title={ jetpack.email } />;
 	}
 
 	if ( jetpack.active === 'no' ) {
