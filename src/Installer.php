@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -30,6 +31,11 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	protected $installables;
 
 	/**
+	 * @var FirstInstallInterface[]
+	 */
+	protected $first_installers;
+
+	/**
 	 * @var OptionsInterface
 	 */
 	protected $options;
@@ -38,10 +44,13 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 * Installer constructor.
 	 *
 	 * @param InstallableInterface[] $installables
+	 * @param array                  $first_installers
 	 */
-	public function __construct( array $installables ) {
-		$this->installables = $installables;
+	public function __construct( array $installables, array $first_installers ) {
+		$this->installables     = $installables;
+		$this->first_installers = $first_installers;
 		$this->validate_installables();
+		$this->validate_first_installers();
 	}
 
 	/**
@@ -104,6 +113,9 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	protected function first_install(): void {
 		// Use add here to avoid overwriting the value if somehow happens to already be set
 		$this->options->add( OptionsInterface::INSTALL_TIMESTAMP, time() );
+		foreach ( $this->first_installers as $installer ) {
+			$installer->first_install();
+		}
 	}
 
 	/**
@@ -130,6 +142,15 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	protected function validate_installables() {
 		foreach ( $this->installables as $installable ) {
 			$this->validate_instanceof( $installable, InstallableInterface::class );
+		}
+	}
+
+	/**
+	 * Validate that each of the first installers is of the correct interface.
+	 */
+	protected function validate_first_installers() {
+		foreach ( $this->first_installers as $installer ) {
+			$this->validate_instanceof( $installer, FirstInstallInterface::class );
 		}
 	}
 }
