@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\Installable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -25,7 +25,7 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	use ValidateInterface;
 
 	/**
-	 * @var Installable[]
+	 * @var InstallableInterface[]
 	 */
 	protected $installables;
 
@@ -37,7 +37,7 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	/**
 	 * Installer constructor.
 	 *
-	 * @param Installable[] $installables
+	 * @param InstallableInterface[] $installables
 	 */
 	public function __construct( array $installables ) {
 		$this->installables = $installables;
@@ -129,7 +129,7 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 */
 	protected function validate_installables() {
 		foreach ( $this->installables as $installable ) {
-			$this->validate_instanceof( $installable, Installable::class );
+			$this->validate_instanceof( $installable, InstallableInterface::class );
 		}
 	}
 }

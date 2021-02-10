@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces
  */
-interface Installable {
+interface InstallableInterface {
 
 	/**
 	 * Run installation logic for this class.
