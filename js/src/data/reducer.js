@@ -98,6 +98,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC: {
+			const { account } = action;
+			const newState = cloneDeep( state );
+			newState.mc.accounts.mc = account;
+			return newState;
+		}
+
 		default:
 			return state;
 	}

@@ -252,3 +252,28 @@ export function* fetchGoogleAccount() {
 		);
 	}
 }
+
+export function* fetchGoogleMCAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/connection`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google Merchant Center account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

@@ -17,3 +17,7 @@ export const getJetpackAccount = ( state ) => {
 export const getGoogleAccount = ( state ) => {
 	return state.mc.accounts.google;
 };
+
+export const getGoogleMCAccount = ( state ) => {
+	return state.mc.accounts.mc;
+};
