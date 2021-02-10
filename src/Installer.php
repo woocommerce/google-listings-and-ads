@@ -111,8 +111,6 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 * Runs on the first install of GLA.
 	 */
 	protected function first_install(): void {
-		// Use add here to avoid overwriting the value if somehow happens to already be set
-		$this->options->add( OptionsInterface::INSTALL_TIMESTAMP, time() );
 		foreach ( $this->first_installers as $installer ) {
 			$installer->first_install();
 		}
