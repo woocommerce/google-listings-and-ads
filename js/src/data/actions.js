@@ -302,3 +302,56 @@ export function* fetchExistingGoogleMCAccounts() {
 		);
 	}
 }
+
+export function* createMCAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/accounts`,
+			method: 'POST',
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to create a Merchant Center account.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* linkMCAccount( id ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/accounts`,
+			method: 'POST',
+			data: { id },
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to link your Merchant Center account.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
