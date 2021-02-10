@@ -25,6 +25,7 @@ const DEFAULT_STATE = {
 			jetpack: null,
 			google: null,
 			mc: null,
+			existing_mc: null,
 		},
 	},
 };
@@ -102,6 +103,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { account } = action;
 			const newState = cloneDeep( state );
 			newState.mc.accounts.mc = account;
+			return newState;
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING: {
+			const { accounts } = action;
+			const newState = cloneDeep( state );
+			newState.mc.accounts.existing_mc = accounts;
 			return newState;
 		}
 

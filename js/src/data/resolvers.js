@@ -7,6 +7,7 @@ import {
 	fetchJetpackAccount,
 	fetchGoogleAccount,
 	fetchGoogleMCAccount,
+	fetchExistingGoogleMCAccounts,
 } from './actions';
 
 export function* getShippingRates() {
@@ -27,4 +28,8 @@ export function* getGoogleAccount() {
 
 export function* getGoogleMCAccount() {
 	yield fetchGoogleMCAccount();
+}
+
+export function* getExistingGoogleMCAccounts() {
+	yield fetchExistingGoogleMCAccounts();
 }

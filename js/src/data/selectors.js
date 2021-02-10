@@ -21,3 +21,7 @@ export const getGoogleAccount = ( state ) => {
 export const getGoogleMCAccount = ( state ) => {
 	return state.mc.accounts.mc;
 };
+
+export const getExistingGoogleMCAccounts = ( state ) => {
+	return state.mc.accounts.existing_mc;
+};

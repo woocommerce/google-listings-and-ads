@@ -277,3 +277,28 @@ export function* fetchGoogleMCAccount() {
 		);
 	}
 }
+
+export function* fetchExistingGoogleMCAccounts() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/accounts`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING,
+			accounts: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting your Google Merchant Center accounts.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
