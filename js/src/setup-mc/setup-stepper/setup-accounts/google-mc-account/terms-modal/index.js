@@ -3,12 +3,14 @@
  */
 import { Button, CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
+import './index.scss';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 
 const TermsModal = ( props ) => {
 	const { onRequestClose } = props;
@@ -20,6 +22,7 @@ const TermsModal = ( props ) => {
 
 	return (
 		<AppModal
+			className="gla-mc-terms-modal"
 			title={ __(
 				'Create Google Merchant Center Account',
 				'google-listings-and-ads'
@@ -36,16 +39,27 @@ const TermsModal = ( props ) => {
 			] }
 			onRequestClose={ onRequestClose }
 		>
-			<p>
+			<p className="main">
 				{ __(
 					'By creating a Google Merchant Center account, you agree to the following terms and conditions:',
 					'google-listings-and-ads'
 				) }
 			</p>
 			<p>
-				{ __(
-					'You agree to comply with Google’s terms and policies, including Google Merchant Center Terms of Service.',
-					'google-listings-and-ads'
+				{ createInterpolateElement(
+					__(
+						'You agree to comply with Google’s terms and policies, including <link>Google Merchant Center Terms of Service</link>.',
+						'google-listings-and-ads'
+					),
+					{
+						link: (
+							<AppDocumentationLink
+								context="setup-mc"
+								linkId="google-mc-terms-of-service"
+								href="https://support.google.com/merchants/answer/6363310"
+							/>
+						),
+					}
 				) }
 			</p>
 			<CheckboxControl
