@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import useGoogleMCAccount from './useGoogleMCAccount';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedCard from './connected-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';

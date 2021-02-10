@@ -7,9 +7,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
+import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import TitleButtonLayout from '../title-button-layout';
 import ConnectAccount from './connect-account';
-import useGoogleAccount from './useGoogleAccount';
 
 const CardContent = ( props ) => {
 	const { disabled } = props;
