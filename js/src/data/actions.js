@@ -227,3 +227,28 @@ export function* fetchJetpackAccount() {
 		);
 	}
 }
+
+export function* fetchGoogleAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/connected`,
+		} );
+
+		if ( ! response ) {
+			throw new Error();
+		}
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}

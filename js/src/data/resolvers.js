@@ -5,6 +5,7 @@ import {
 	fetchShippingRates,
 	fetchSettings,
 	fetchJetpackAccount,
+	fetchGoogleAccount,
 } from './actions';
 
 export function* getShippingRates() {
@@ -17,4 +18,8 @@ export function* getSettings() {
 
 export function* getJetpackAccount() {
 	yield fetchJetpackAccount();
+}
+
+export function* getGoogleAccount() {
+	yield fetchGoogleAccount();
 }

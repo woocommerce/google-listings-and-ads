@@ -13,3 +13,7 @@ export const getSettings = ( state ) => {
 export const getJetpackAccount = ( state ) => {
 	return state.mc.accounts.jetpack;
 };
+
+export const getGoogleAccount = ( state ) => {
+	return state.mc.accounts.google;
+};
