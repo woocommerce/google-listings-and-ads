@@ -372,7 +372,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return array
 	 */
 	public function get_connected_ads_account(): array {
-		$id = intval( $this->options->get( Options::ADS_ID ) );
+		$id = $this->options->get( Options::ADS_ID );
 
 		return [
 			'id'     => $id,
@@ -485,7 +485,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return int
 	 */
 	protected function get_merchant_id(): int {
-		return absint( $this->options->get( Options::MERCHANT_ID ) );
+		return $this->options->get( Options::MERCHANT_ID );
 	}
 
 	/**
