@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use DateTime;
@@ -25,6 +26,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Proxy {
 
+	use OptionsAwareTrait;
+
 	/**
 	 * @var ContainerInterface
 	 */
@@ -36,6 +39,7 @@ class Proxy {
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
+		$this->set_options_object( $container->get( OptionsInterface::class ) );
 		$this->container = $container;
 	}
 
@@ -43,17 +47,18 @@ class Proxy {
 	 * Get merchant IDs associated with the connected Merchant Center account.
 	 *
 	 * @return int[]
+	 * @throws Exception When an Exception is caught.
 	 */
 	public function get_merchant_ids(): array {
-		$ids = [];
 		try {
 			/** @var ShoppingContent $service */
 			$service  = $this->container->get( ShoppingContent::class );
 			$accounts = $service->accounts->authinfo();
+			$ids      = [];
 
 			foreach ( $accounts->getAccountIdentifiers() as $account ) {
 
-				$id = $account->getMerchantID();
+				$id = (int) $account->getMerchantID();
 
 				// $id can be NULL if it is a Multi Client Account (MCA)
 				if ( $id ) {
@@ -63,7 +68,135 @@ class Proxy {
 
 			return $ids;
 		} catch ( Exception $e ) {
-			return $ids;
+			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Create a new Merchant Center account.
+	 *
+	 * @return int
+	 * @throws Exception When an Exception is caught or we receive an invalid response.
+	 */
+	public function create_merchant_account(): int {
+		try {
+			$user = wp_get_current_user();
+			$tos  = $this->mark_tos_accepted( 'google-mc', $user->user_email );
+			if ( ! $tos->accepted() ) {
+				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
+			}
+
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_manager_url( 'create-merchant' ),
+				[
+					'body' => json_encode(
+						[
+							'name'       => $this->new_account_name(),
+							'websiteUrl' => apply_filters( 'woocommerce_gla_site_url', site_url() ),
+						]
+					),
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['id'] ) ) {
+				$id = absint( $response['id'] );
+				$this->update_merchant_id( $id );
+				return $id;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$error = $response['message'] ?? __( 'Invalid response when creating account', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error creating account: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
+	/**
+	 * Link an existing Merchant Center account.
+	 *
+	 * @param int $id Existing account ID.
+	 *
+	 * @return int
+	 */
+	public function link_merchant_account( int $id ): int {
+		$this->update_merchant_id( $id );
+
+		return $id;
+	}
+
+	/**
+	 * Get the connected merchant account.
+	 *
+	 * @return array
+	 */
+	public function get_connected_merchant(): array {
+		$id = $this->get_merchant_id();
+
+		// TODO: populate with status from site verification.
+
+		return [
+			'id'     => $id,
+			'status' => $id ? '' : 'disconnected',
+		];
+	}
+
+	/**
+	 * Disconnect the connected merchant account.
+	 */
+	public function disconnect_merchant() {
+		$this->update_merchant_id( 0 );
+
+		// TODO: Cancel any active campaigns and remove product feeds when disconnecting.
+	}
+
+	/**
+	 * Link Merchant Center account to MCA.
+	 *
+	 * @return bool
+	 * @throws Exception When a ClientException is caught or we receive an invalid response.
+	 */
+	public function link_merchant_to_mca(): bool {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_manager_url( 'link-merchant' ),
+				[
+					'body' => json_encode(
+						[
+							'accountId' => $this->get_merchant_id(),
+						]
+					),
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['status'] ) && 'success' === $response['status'] ) {
+				return true;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$error = $response['message'] ?? __( 'Invalid response when linking merchant to MCA', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error linking merchant to MCA: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
 		}
 	}
 
@@ -102,14 +235,20 @@ class Proxy {
 	 */
 	public function create_ads_account(): int {
 		try {
+			$user = wp_get_current_user();
+			$tos  = $this->mark_tos_accepted( 'google-ads', $user->user_email );
+			if ( ! $tos->accepted() ) {
+				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_ads_manager_url( 'US/create-customer' ),
+				$this->get_manager_url( 'US/create-customer' ),
 				[
 					'body' => json_encode(
 						[
-							'descriptive_name' => $this->new_ads_account_name(),
+							'descriptive_name' => $this->new_account_name(),
 							'currency_code'    => get_woocommerce_currency(),
 							'time_zone'        => $this->get_site_timezone_string(),
 						]
@@ -127,7 +266,8 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			throw new Exception( __( 'Invalid response when creating account', 'google-listings-and-ads' ) );
+			$error = $response['message'] ?? __( 'Invalid response when creating account', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
@@ -149,7 +289,7 @@ class Proxy {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_ads_manager_url( 'link-customer' ),
+				$this->get_manager_url( 'link-customer' ),
 				[
 					'body' => json_encode(
 						[
@@ -169,7 +309,8 @@ class Proxy {
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
 
-			throw new Exception( __( 'Invalid response when linking account', 'google-listings-and-ads' ) );
+			$error = $response['message'] ?? __( 'Invalid response when linking account', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
@@ -179,16 +320,41 @@ class Proxy {
 	}
 
 	/**
+	 * Get the connected ads account.
+	 *
+	 * @return array
+	 */
+	public function get_connected_ads_account(): array {
+		/** @var Options $options */
+		$options = $this->container->get( OptionsInterface::class );
+		$id      = intval( $options->get( Options::ADS_ID ) );
+
+		return [
+			'id'     => $id,
+			'status' => $id ? 'connected' : 'disconnected',
+		];
+	}
+
+	/**
+	 * Disconnect the connected ads account.
+	 */
+	public function disconnect_ads_account() {
+		$this->update_ads_id( 0 );
+	}
+
+	/**
 	 * Determine whether the TOS have been accepted.
+	 *
+	 * @param string $service Name of service.
 	 *
 	 * @return TosAccepted
 	 */
-	public function check_tos_accepted(): TosAccepted {
+	public function check_tos_accepted( string $service ): TosAccepted {
 		// todo: see about using the WooCommerce Services code here
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
-			$result = $client->get( $this->get_tos_url() );
+			$result = $client->get( $this->get_tos_url( $service ) );
 
 			return new TosAccepted( 200 === $result->getStatusCode(), $result->getBody()->getContents() );
 		} catch ( ClientExceptionInterface $e ) {
@@ -201,17 +367,18 @@ class Proxy {
 	/**
 	 * Record TOS acceptance for a particular email address.
 	 *
+	 * @param string $service Name of service.
 	 * @param string $email
 	 *
 	 * @return TosAccepted
 	 */
-	public function mark_tos_accepted( string $email ): TosAccepted {
+	public function mark_tos_accepted( string $service, string $email ): TosAccepted {
 		// todo: see about using WooCommerce Services code here.
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_tos_url(),
+				$this->get_tos_url( $service ),
 				[
 					'body' => json_encode(
 						[
@@ -235,20 +402,23 @@ class Proxy {
 	/**
 	 * Get the TOS endpoint URL
 	 *
+	 * @param string $service Name of service.
+	 *
 	 * @return string
 	 */
-	protected function get_tos_url(): string {
-		return $this->container->get( 'connect_server_root' ) . 'tos/google-mc';
+	protected function get_tos_url( string $service ): string {
+		$url = $this->container->get( 'connect_server_root' ) . 'tos';
+		return $service ? trailingslashit( $url ) . $service : $url;
 	}
 
 	/**
-	 * Get the ads manager endpoint URL
+	 * Get the manager endpoint URL
 	 *
 	 * @param string $name Resource name.
 	 *
 	 * @return string
 	 */
-	protected function get_ads_manager_url( string $name = '' ): string {
+	protected function get_manager_url( string $name = '' ): string {
 		$url = $this->container->get( 'connect_server_root' ) . 'manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
 	}
@@ -265,6 +435,26 @@ class Proxy {
 	}
 
 	/**
+	 * Get the Merchant Center ID.
+	 *
+	 * @return int
+	 */
+	protected function get_merchant_id(): int {
+		return absint( $this->options->get( Options::MERCHANT_ID ) );
+	}
+
+	/**
+	 * Update the Merchant Center ID to use for requests.
+	 *
+	 * @param int $id  Merchant ID number.
+	 *
+	 * @return bool
+	 */
+	protected function update_merchant_id( int $id ): bool {
+		return $this->options->update( Options::MERCHANT_ID, $id );
+	}
+
+	/**
 	 * Update the Ads ID to use for requests.
 	 *
 	 * @param int $id Ads ID number.
@@ -272,17 +462,15 @@ class Proxy {
 	 * @return bool
 	 */
 	protected function update_ads_id( int $id ): bool {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->update( Options::ADS_ID, $id );
+		return $this->options->update( Options::ADS_ID, $id );
 	}
 
 	/**
-	 * Generate a descriptive name for a new ads account.
+	 * Generate a descriptive name for a new account.
 	 *
 	 * @return string
 	 */
-	protected function new_ads_account_name(): string {
+	protected function new_account_name(): string {
 		$site_title = get_bloginfo( 'name' );
 		return $site_title;
 	}

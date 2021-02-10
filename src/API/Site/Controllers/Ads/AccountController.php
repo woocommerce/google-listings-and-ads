@@ -4,13 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Exception;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,8 +19,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
 class AccountController extends BaseController {
-
-	use ControllerTrait;
 
 	/**
 	 * @var Middleware
@@ -42,7 +39,7 @@ class AccountController extends BaseController {
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'ads/accounts',
 			[
@@ -55,9 +52,25 @@ class AccountController extends BaseController {
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->create_or_link_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_item_schema(),
+					'args'                => $this->get_schema_properties(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+
+		$this->register_route(
+			'ads/connection',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_ads_account_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->disconnect_ads_account_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
 			]
 		);
 	}
@@ -70,9 +83,9 @@ class AccountController extends BaseController {
 	protected function get_accounts_callback(): callable {
 		return function() {
 			try {
-				return new WP_REST_Response( $this->middleware->get_ads_account_ids() );
+				return new Response( $this->middleware->get_ads_account_ids() );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
@@ -83,17 +96,44 @@ class AccountController extends BaseController {
 	 * @return callable
 	 */
 	protected function create_or_link_account_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			try {
 				$link_id    = absint( $request['id'] );
 				$account_id = $link_id ?
 					$this->middleware->link_ads_account( $link_id ) :
 					$this->middleware->create_ads_account();
 
-				return $this->prepare_item_for_response( [ 'id' => $account_id ] );
+				return $this->prepare_item_for_response( [ 'id' => $account_id ], $request );
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the connected ads account.
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_ads_account_callback(): callable {
+		return function() {
+			return $this->middleware->get_connected_ads_account();
+		};
+	}
+
+	/**
+	 * Get the callback function for disconnecting a merchant.
+	 *
+	 * @return callable
+	 */
+	protected function disconnect_ads_account_callback(): callable {
+		return function() {
+			$this->middleware->disconnect_ads_account();
+
+			return [
+				'status'  => 'success',
+				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
+			];
 		};
 	}
 
@@ -102,7 +142,7 @@ class AccountController extends BaseController {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'id' => [
 				'type'              => 'number',
@@ -121,7 +161,7 @@ class AccountController extends BaseController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'account';
 	}
 }

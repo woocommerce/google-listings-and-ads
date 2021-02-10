@@ -5,9 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Googl
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,8 +18,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google
  */
 class AccountController extends BaseController {
-
-	use ControllerTrait;
 
 	/**
 	 * @var Connection
@@ -39,7 +38,7 @@ class AccountController extends BaseController {
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'google/connect',
 			[
@@ -56,6 +55,16 @@ class AccountController extends BaseController {
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+		$this->register_route(
+			'google/connected',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_connected_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -65,9 +74,13 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connect_callback(): callable {
 		return function() {
-			return [
-				'url' => $this->connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) ),
-			];
+			try {
+				return [
+					'url' => $this->connection->connect( admin_url( 'admin.php?page=wc-admin&path=/google/setup-mc' ) ),
+				];
+			} catch ( Exception $e ) {
+				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
@@ -88,11 +101,32 @@ class AccountController extends BaseController {
 	}
 
 	/**
+	 * Get the callback function to determine if Google is currently connected.
+	 *
+	 * Uses consistent properties to the Jetpack connected callback
+	 *
+	 * @return callable
+	 */
+	protected function get_connected_callback(): callable {
+		return function() {
+			try {
+				$status = $this->connection->get_status();
+				return [
+					'active' => array_key_exists( 'status', $status ) && ( 'connected' === $status['status'] ) ? 'yes' : 'no',
+					'email'  => array_key_exists( 'email', $status ) ? $status['email'] : '',
+				];
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+		};
+	}
+
+	/**
 	 * Get the item schema for the controller.
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'url' => [
 				'type'        => 'string',
@@ -110,7 +144,7 @@ class AccountController extends BaseController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'google_account';
 	}
 }

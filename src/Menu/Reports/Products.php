@@ -1,17 +1,17 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
- * Class Reports
+ * Class Products
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports
  */
-class Reports implements Service, Registerable {
+class Products implements Service, Registerable {
 
 	/**
 	 * Register a service.
@@ -22,10 +22,10 @@ class Reports implements Service, Registerable {
 			function() {
 				wc_admin_register_page(
 					[
-						'title'  => __( 'Reports', 'google-listings-and-ads' ),
+						'title'  => __( 'Products Report', 'google-listings-and-ads' ),
 						'parent' => 'woocommerce-marketing',
-						'path'   => '/google/reports',
-						'id'     => 'google-reports',
+						'path'   => '/google/reports/products',
+						'id'     => 'google-reports-products',
 					]
 				);
 			}

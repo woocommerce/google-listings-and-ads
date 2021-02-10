@@ -8,20 +8,16 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '../../../data';
 
-const useSetupFreeListingsSelect = () => {
+const useDisplayTaxRate = () => {
 	return useSelect( ( select ) => {
-		const { getSettings, getAudienceSelectedCountryCodes } = select(
-			STORE_KEY
-		);
-		const settings = getSettings();
-		const audienceCountryCodes = getAudienceSelectedCountryCodes() || [];
+		const audienceCountryCodes =
+			select( STORE_KEY ).getAudienceSelectedCountryCodes() || [];
 		const displayTaxRate = audienceCountryCodes.includes( 'US' );
 
 		return {
-			settings,
 			displayTaxRate,
 		};
 	} );
 };
 
-export default useSetupFreeListingsSelect;
+export default useDisplayTaxRate;

@@ -54,7 +54,7 @@ const TaxRate = ( props ) => {
 								'My store uses destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
-							value="yes"
+							value="destination"
 						>
 							<RadioHelperText>
 								{ __(
@@ -69,7 +69,7 @@ const TaxRate = ( props ) => {
 								'My store does not use destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
-							value="no"
+							value="manual"
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

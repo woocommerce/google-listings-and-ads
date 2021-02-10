@@ -5,8 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BatchSchemaTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use WP_REST_Request;
-use WP_REST_Response;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,7 +22,7 @@ class ShippingTimeBatchController extends ShippingTimeController {
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			"{$this->route_base}/batch",
 			[
@@ -43,14 +43,14 @@ class ShippingTimeBatchController extends ShippingTimeController {
 	 * @return callable
 	 */
 	protected function get_batch_create_callback(): callable {
-		return function( WP_REST_Request $request ) {
+		return function( Request $request ) {
 			$country_codes = $request->get_param( 'country_codes' );
 			$time          = $request->get_param( 'time' );
 
 			$responses = [];
 			$errors    = [];
 			foreach ( $country_codes as $country_code ) {
-				$new_request = new WP_REST_Request( 'POST', "/{$this->get_namespace()}/{$this->route_base}" );
+				$new_request = new Request( 'POST', "/{$this->get_namespace()}/{$this->route_base}" );
 				$new_request->set_body_params(
 					[
 						'country_code' => $country_code,
@@ -66,7 +66,7 @@ class ShippingTimeBatchController extends ShippingTimeController {
 				}
 			}
 
-			return new WP_REST_Response(
+			return new Response(
 				[
 					'errors'  => $errors,
 					'success' => $responses,
@@ -83,7 +83,7 @@ class ShippingTimeBatchController extends ShippingTimeController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'batch_shipping_times';
 	}
 }

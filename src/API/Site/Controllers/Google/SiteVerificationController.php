@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,24 +20,25 @@ defined( 'ABSPATH' ) || exit;
 class SiteVerificationController extends BaseOptionsController {
 
 	/**
-	 * @var ContainerInterface
+	 * @var SiteVerification
 	 */
-	protected $container;
+	protected $site_verification;
 
 	/**
-	 * SiteVerificationController constructor.
+	 * BaseController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer       $server
+	 * @param SiteVerification $site_verification
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ), $container->get( OptionsInterface::class ) );
-		$this->container = $container;
+	public function __construct( RESTServer $server, SiteVerification $site_verification ) {
+		parent::__construct( $server );
+		$this->site_verification = $site_verification;
 	}
 
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'site/verify',
 			[
@@ -63,7 +63,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 */
 	protected function get_verify_endpoint_create_callback(): callable {
 		return function() {
-			$site_url = site_url();
+			$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 			// Inform of previous verification.
 			if ( $this->is_site_verified() ) {
@@ -71,12 +71,10 @@ class SiteVerificationController extends BaseOptionsController {
 			}
 
 			// Retrieve the meta tag with verification token.
-			/** @var SiteVerification $site_verification */
-			$site_verification = $this->container->get( SiteVerification::class );
 			try {
-				$meta_tag = $site_verification->get_token( $site_url );
+				$meta_tag = $this->site_verification->get_token( $site_url );
 			} catch ( Exception $e ) {
-				do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'token' ] );
+				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'token' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
@@ -93,21 +91,21 @@ class SiteVerificationController extends BaseOptionsController {
 
 			// Attempt verification.
 			try {
-				if ( $site_verification->insert( $site_url ) ) {
+				if ( $this->site_verification->insert( $site_url ) ) {
 					$site_verification_options['verified'] = 'yes';
 					$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-					do_action( $this->get_slug() . '_site_verify_success', [] );
+					do_action( "{$this->get_slug()}_site_verify_success", [] );
 
 					return $this->get_success_status( __( 'Site successfully verified.', 'google-listings-and-ads' ) );
 				}
 			} catch ( Exception $e ) {
-				do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'meta-tag' ] );
+				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'meta-tag' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
 
 			// Should never reach this point.
-			do_action( $this->get_slug() . '_site_verify_failure', [ 'step' => 'unknown' ] );
+			do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'unknown' ] );
 
 			return $this->get_failure_status();
 		};
@@ -171,7 +169,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_verify_endpoint_read_callback(): callable {
-			return function () {
+			return function() {
 				$verified = $this->is_site_verified();
 				return [
 					'status'   => 'success',
@@ -179,5 +177,25 @@ class SiteVerificationController extends BaseOptionsController {
 					'message'  => $verified ? __( 'Site already verified.', 'google-listings-and-ads' ) : __( 'Site not verified.', 'google-listings-and-ads' ),
 				];
 			};
+	}
+
+	/**
+	 * Get the item schema for the controller.
+	 *
+	 * @return array
+	 */
+	protected function get_schema_properties(): array {
+		return [];
+	}
+
+	/**
+	 * Get the item schema name for the controller.
+	 *
+	 * Used for building the API response schema.
+	 *
+	 * @return string
+	 */
+	protected function get_schema_title(): string {
+		return 'google_site_verification';
 	}
 }

@@ -76,13 +76,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
-		case TYPES.RECEIVE_SETTINGS: {
-			const { settings } = action;
-			const newState = cloneDeep( state );
-			newState.mc.settings = settings;
-			return newState;
-		}
-
+		case TYPES.RECEIVE_SETTINGS:
 		case TYPES.SAVE_SETTINGS: {
 			const { settings } = action;
 			const newState = cloneDeep( state );

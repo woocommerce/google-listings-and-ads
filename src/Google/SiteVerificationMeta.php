@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -38,19 +38,15 @@ class SiteVerificationMeta implements Service, Registerable {
 			'wp_head',
 			function() {
 				$this->display_meta_token();
-			},
-			1
+			}
 		);
 	}
 
 	/**
 	 * Display the meta tag with the site verification token.
 	 */
-	public function display_meta_token() {
+	protected function display_meta_token() {
 		if ( empty( $this->settings['meta_tag'] ) ) {
-			return;
-		}
-		if ( 'yes' === ( $this->settings['verified'] ?? 'no' ) ) {
 			return;
 		}
 		echo wp_kses(

@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use WP as WPCore;
+use function get_locale;
 use function plugins_url;
 
 /**
@@ -17,7 +19,7 @@ class WP {
 
 	use PluginHelper;
 
-	/** @var \WP $wp */
+	/** @var WPCore $wp */
 	public $wp;
 
 	/**
@@ -49,5 +51,14 @@ class WP {
 	 */
 	public function get_query_vars( string $key, $default = null ) {
 		return $this->wp->query_vars[ $key ] ?? $default;
+	}
+
+	/**
+	 * Get the locale of the site.
+	 *
+	 * @return string
+	 */
+	public function get_locale(): string {
+		return get_locale();
 	}
 }
