@@ -7,12 +7,16 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Section from '../../../../../wcdl/section';
+import { useAppDispatch } from '.~/data';
+import Section from '.~/wcdl/section';
 import TitleButtonLayout from '../../title-button-layout';
 
 const CreateAccountCard = () => {
-	// TODO: call API to create account.
-	const handleCreateAccountClick = () => {};
+	const { createMCAccount } = useAppDispatch();
+
+	const handleCreateAccountClick = () => {
+		createMCAccount();
+	};
 
 	return (
 		<Section.Card>

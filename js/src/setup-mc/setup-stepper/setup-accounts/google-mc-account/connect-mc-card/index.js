@@ -13,7 +13,7 @@ import Subsection from '../../../../../wcdl/subsection';
 import MerchantCenterSelectControl from '../../../../../components/merchant-center-select-control';
 import ContentButtonLayout from '../../content-button-layout';
 
-const CreateMCCard = () => {
+const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
 
 	const handleSelectChange = ( optionValue ) => {
@@ -57,4 +57,4 @@ const CreateMCCard = () => {
 	);
 };
 
-export default CreateMCCard;
+export default ConnectMCCard;
