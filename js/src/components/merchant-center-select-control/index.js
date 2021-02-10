@@ -6,19 +6,22 @@ import { SelectControl } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
+import AppSpinner from '../app-spinner';
 import './index.scss';
 
 const MerchantCenterSelectControl = ( props ) => {
 	const { value, onChange } = props;
+	const { existingAccounts } = useExistingGoogleMCAccounts();
 
-	// TODO: list of merchant center accounts that can be connected.
-	// This should come from backend API.
-	const options = [
-		{
-			value: 123,
-			label: 'Test MC account',
-		},
-	];
+	if ( ! existingAccounts ) {
+		return <AppSpinner />;
+	}
+
+	const options = existingAccounts.map( ( acc ) => ( {
+		value: acc,
+		label: acc,
+	} ) );
 
 	return (
 		<div className="gla-merchant-center-select-control">
