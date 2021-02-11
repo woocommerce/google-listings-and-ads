@@ -104,11 +104,14 @@ const ProductsReportFilters = ( props ) => {
 			products.get( productId ).type === 'variable'
 		);
 	} );
-	query[ 'is-variable' ] = isVariable;
+	const updatedQuery = {
+		...query,
+		'is-variable': isVariable,
+	};
 
 	return (
 		<ReportFilters
-			query={ query }
+			query={ updatedQuery }
 			siteLocale={ siteLocale }
 			currency={ currency }
 			filters={ productsFilter }
