@@ -21,17 +21,37 @@ import StepContentFooter from '../components/step-content-footer';
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 
+	let isGoogleAccountDisabled = true;
+	let isGoogleMCAccountDisabled = true;
+	let isContinueButtonDisabled = true;
+	let spinner = true;
+
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
 
-	if ( ! jetpack || ! google || ! googleMCAccount ) {
-		return <AppSpinner />;
+	if ( jetpack ) {
+		spinner = false;
+		if ( 'yes' == jetpack.active ) {
+			isGoogleAccountDisabled = false;
+		}
 	}
 
-	const isGoogleAccountDisabled = ! jetpack;
-	const isGoogleMCAccountDisabled = ! google;
-	const isContinueButtonDisabled = ! googleMCAccount;
+	if ( google ) {
+		if ( 'yes' == google.active ) {
+			isGoogleMCAccountDisabled = false;
+		}
+	}
+
+	if ( googleMCAccount ) {
+		if ( 'connected' == googleMCAccount.status ) {
+			isContinueButtonDisabled = false;
+		}
+	}
+
+	if ( spinner ) {
+		return <AppSpinner />;
+	}
 
 	return (
 		<StepContent>

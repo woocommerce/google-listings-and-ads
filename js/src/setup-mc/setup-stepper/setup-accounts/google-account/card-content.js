@@ -19,6 +19,10 @@ const CardContent = ( props ) => {
 		return <AppSpinner />;
 	}
 
+	if ( disabled ) {
+		return <ConnectAccount disabled={ disabled } />;
+	}
+
 	if ( ! google ) {
 		return (
 			<TitleButtonLayout
