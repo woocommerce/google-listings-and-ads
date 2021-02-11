@@ -148,7 +148,7 @@ class AccountController extends BaseOptionsController {
 	protected function overwrite_claim_callback(): callable {
 		return function( Request $request ) {
 			$this->overwrite_claim = true;
-			return $this->set_account_id_callback()( $request );
+			return $this->set_account_id( $request );
 		};
 	}
 
@@ -159,19 +159,30 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function set_account_id_callback(): callable {
 		return function( Request $request ) {
-			try {
-				$link_id = absint( $request['id'] );
-				if ( $link_id ) {
-					$this->use_standalone_account_id( $link_id );
-				}
-
-				$response = $this->setup_merchant_account();
-
-				return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
-			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
+			return $this->set_account_id( $request );
 		};
+	}
+
+	/**
+	 * Run the process for setting up a Merchant Center account (sub-account or standalone).
+	 *
+	 * @param Request $request
+	 *
+	 * @return array|Response The account ID if setup has completed, or an error if not.
+	 */
+	protected function set_account_id( Request $request ) {
+		try {
+			$link_id = absint( $request['id'] );
+			if ( $link_id ) {
+				$this->use_standalone_account_id( $link_id );
+			}
+
+			$response = $this->setup_merchant_account();
+
+			return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
+		} catch ( Exception $e ) {
+			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+		}
 	}
 
 	/**
