@@ -146,8 +146,10 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function overwrite_claim_callback(): callable {
-		$this->overwrite_claim = true;
-		return $this->set_account_id_callback();
+		return function() {
+			$this->overwrite_claim = true;
+			return $this->set_account_id_callback();
+		};
 	}
 
 	/**
@@ -282,6 +284,8 @@ class AccountController extends BaseOptionsController {
 						break;
 					case 'claim':
 						$overwrite_required = $step['data']['overwrite_required'] ?? false;
+						jplog($overwrite_required);
+						jplog($this->overwrite_claim);
 						$this->merchant->claimwebsite( $overwrite_required && $this->overwrite_claim );
 						break;
 					default:
