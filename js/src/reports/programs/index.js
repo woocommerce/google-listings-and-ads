@@ -12,7 +12,7 @@ import TabNav from '../../tab-nav';
 import SubNav from '../sub-nav';
 import AppDateRangeFilterPicker from '../../dashboard/app-date-range-filter-picker';
 import CompareProgramsTableCard from './compare-programs-table-card';
-import MetricNumber from './metric-number';
+import MetricNumber from '../metric-number';
 import '../../dashboard/index.scss';
 import { programsFilterConfig } from './filter-config';
 import metricsData from './mocked-metrics-data'; // Mocked data
