@@ -9,6 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import TabNav from '../../tab-nav';
+import SubNav from '../sub-nav';
 import AppDateRangeFilterPicker from '../../dashboard/app-date-range-filter-picker';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import MetricNumber from '../metric-number';
@@ -97,6 +98,8 @@ const ProgramsReport = () => {
 	return (
 		<div className="gla-dashboard">
 			<TabNav initialName="reports" />
+			<SubNav initialName="programs" />
+
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }

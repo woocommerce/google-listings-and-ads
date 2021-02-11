@@ -14,6 +14,7 @@ import MetricNumber from '../metric-number';
 import CompareProductsTableCard from './compare-products-table-card';
 
 import chartData from './mocked-chart-data';
+import SubNav from '../sub-nav';
 import getMetricsData from './mocked-metrics-data'; // Mocked data
 
 /**
@@ -47,6 +48,7 @@ const ProductsReport = () => {
 	return (
 		<>
 			<TabNav initialName="reports" />
+			<SubNav initialName="products" />
 			<ProductsReportFilters query={ getQuery() } report={ reportId } />
 			<SummaryList>
 				{ () =>
