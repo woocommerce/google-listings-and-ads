@@ -284,8 +284,6 @@ class AccountController extends BaseOptionsController {
 						break;
 					case 'claim':
 						$overwrite_required = $step['data']['overwrite_required'] ?? false;
-						jplog($overwrite_required);
-						jplog($this->overwrite_claim);
 						$this->merchant->claimwebsite( $overwrite_required && $this->overwrite_claim );
 						break;
 					default:
