@@ -31,13 +31,13 @@ class AccountController extends BaseOptionsController {
 	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'verify', 'link', 'claim' ];
 
 	/** @var int Status value for a pending merchant account creation step */
-	private const MC_CREATION_STEP_PENDING = 0;
+	public const MC_CREATION_STEP_PENDING = 0;
 
 	/** @var int Status value for a completed merchant account creation step */
-	private const MC_CREATION_STEP_DONE = 1;
+	public const MC_CREATION_STEP_DONE = 1;
 
 	/** @var int Status value for an unsuccessful merchant account creation step */
-	private const MC_CREATION_STEP_ERROR = - 1;
+	public const MC_CREATION_STEP_ERROR = - 1;
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
 	private const MC_DELAY_AFTER_CREATE = 90;
