@@ -252,7 +252,7 @@ class AccountController extends BaseOptionsController {
 					return new Response(
 						[
 							'retry_after' => $time_to_wait,
-							'message'     => __( 'Please retry after the indicated number of seconds.', 'google-listings-and-ads' ),
+							'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
 						],
 						503,
 						[

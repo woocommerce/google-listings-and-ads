@@ -507,7 +507,7 @@ class ConnectionTest implements Service, Registerable {
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
-			$this->response .= $json;
+			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
