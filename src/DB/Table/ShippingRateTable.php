@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\DBTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Tables
  */
-class ShippingRateTable extends DBTable {
+class ShippingRateTable extends Table {
 
 	/**
 	 * Get the schema for the DB.

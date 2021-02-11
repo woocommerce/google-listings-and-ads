@@ -26,14 +26,14 @@ class DBInstaller implements Service, FirstInstallInterface, InstallableInterfac
 	protected $options;
 
 	/**
-	 * @var DBTable[]
+	 * @var Table[]
 	 */
 	protected $tables;
 
 	/**
 	 * DBController constructor.
 	 *
-	 * @param DBTable[]        $tables
+	 * @param Table[]          $tables
 	 * @param OptionsInterface $options
 	 */
 	public function __construct( array $tables, OptionsInterface $options ) {
@@ -63,7 +63,7 @@ class DBInstaller implements Service, FirstInstallInterface, InstallableInterfac
 	 */
 	protected function validate_table_controllers() {
 		foreach ( $this->tables as $table ) {
-			$this->validate_instanceof( $table, DBTable::class );
+			$this->validate_instanceof( $table, Table::class );
 		}
 	}
 }

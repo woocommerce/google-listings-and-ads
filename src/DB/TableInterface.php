@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
-interface DBTableInterface {
+interface TableInterface {
 
 	/**
 	 * Install the Database table.

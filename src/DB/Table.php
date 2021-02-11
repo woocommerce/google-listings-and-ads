@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
-abstract class DBTable implements DBTableInterface {
+abstract class Table implements TableInterface {
 
 	use PluginHelper;
 
