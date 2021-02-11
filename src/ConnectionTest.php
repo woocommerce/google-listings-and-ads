@@ -223,10 +223,11 @@ class ConnectionTest implements Service, Registerable {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-link' ), $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-claim-overwrite' ), $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
 				</p>
 
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<p>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<p>
 						<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
 							Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?> ||
 						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
@@ -234,9 +235,9 @@ class ConnectionTest implements Service, Registerable {
 						<?php endforeach; ?>
 							<br/>
 						<?php endif; ?>
-						<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
+						<?php wp_nonce_field( 'wcs-google-mc-setup' ); ?>
 						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-google-accounts-create" type="hidden" />
+						<input name="action" value="wcs-google-mc-setup" type="hidden" />
 							<label title="Use a live site!">
 								Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : apply_filters( 'woocommerce_gla_site_url', site_url() ); ?>" />
 							</label>
@@ -244,8 +245,10 @@ class ConnectionTest implements Service, Registerable {
 								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
 							</label>
 						<button class="button">MC Account Setup (I & II)</button>
-						</p>
-					</form>
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-check' ), $url ), 'wcs-google-accounts-check' ) ); ?>">MC Conn. Status</a>
+						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-delete' ), $url ), 'wcs-google-accounts-delete' ) ); ?>">MC Disconnect</a>
+					</p>
+				</form>
 
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -501,15 +504,41 @@ class ConnectionTest implements Service, Registerable {
 			}
 		}
 
-		if ( 'wcs-google-accounts-create' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-create' ) ) {
+		if ( 'wcs-google-mc-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-setup' ) ) {
 			// Using REST API
 			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
-
 
 			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
 			if(is_numeric( $_GET['account_id']??false )) {
 				$request->set_body_params( ['id'=>$_GET['account_id']] );
 			}
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
+		}
+
+		if ( 'wcs-google-mc-claim-overwrite' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-claim-overwrite' ) ) {
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
+		}
+
+		if ( 'wcs-google-accounts-check' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-check' ) ) {
+			$request = new \WP_REST_Request( 'GET', '/wc/gla/mc/connection' );
+			$response = rest_do_request( $request );
+			$server = rest_get_server();
+			$data = $server->response_to_data( $response, false );
+			$json = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
+		}
+
+		if ( 'wcs-google-accounts-delete' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-delete' ) ) {
+			$request = new \WP_REST_Request( 'DELETE', '/wc/gla/mc/connection' );
 			$response = rest_do_request( $request );
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
