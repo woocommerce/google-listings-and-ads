@@ -211,6 +211,9 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->middleware->disconnect_merchant();
 
+			$this->update_merchant_account_state( [] );
+			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
+
 			return [
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
