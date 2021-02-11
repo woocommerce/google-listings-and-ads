@@ -146,9 +146,9 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function overwrite_claim_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			$this->overwrite_claim = true;
-			return $this->set_account_id_callback();
+			return $this->set_account_id_callback()( $request );
 		};
 	}
 
