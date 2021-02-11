@@ -312,7 +312,7 @@ class AccountController extends BaseOptionsController {
 					case 'claim':
 						$overwrite_required = $step['data']['overwrite_required'] ?? false;
 						if ( $overwrite_required && $this->overwrite_claim ) {
-							$this->middleware->claim_merchant_website();
+							$this->middleware->claim_merchant_website( true );
 						} else {
 							$this->merchant->claimwebsite();
 						}

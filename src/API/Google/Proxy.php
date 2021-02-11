@@ -211,7 +211,7 @@ class Proxy {
 	 * @return bool
 	 * @throws Exception When an Exception is caught or we receive an invalid response.
 	 */
-	public function claim_merchant_website(): bool {
+	public function claim_merchant_website( bool $overwrite = false ): bool {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -221,6 +221,7 @@ class Proxy {
 					'body' => json_encode(
 						[
 							'accountId' => $this->get_merchant_id(),
+							'overwrite' => $overwrite,
 						]
 					),
 				]
