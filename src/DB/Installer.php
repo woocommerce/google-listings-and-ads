@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
-class DBInstaller implements Service, FirstInstallInterface, InstallableInterface {
+class Installer implements Service, FirstInstallInterface, InstallableInterface {
 
 	use ValidateInterface;
 
