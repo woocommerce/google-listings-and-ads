@@ -362,9 +362,7 @@ class Proxy {
 	 * @return array
 	 */
 	public function get_connected_ads_account(): array {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		$id      = intval( $options->get( Options::ADS_ID ) );
+		$id = intval( $this->options->get( Options::ADS_ID ) );
 
 		return [
 			'id'     => $id,
