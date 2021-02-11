@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
@@ -26,6 +27,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		ShippingRateTable::class => true,
+		ShippingRateQuery::class => true,
 	];
 
 	/**
@@ -37,7 +39,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @return boolean
 	 */
 	public function provides( string $service ): bool {
-		return 'db_table' === $service || parent::provides( $service );
+		return 'db_table' === $service || 'db_query' === $service || parent::provides( $service );
 	}
 
 	/**
@@ -49,10 +51,23 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register() {
 		$this->share_table_class( ShippingRateTable::class );
+		$this->share_query_class( ShippingRateQuery::class, ShippingRateTable::class );
 	}
 
 	/**
-	 * Share a class.
+	 * Share a query class.
+	 *
+	 * @param string $class
+	 * @param mixed  ...$arguments
+	 *
+	 * @return DefinitionInterface
+	 */
+	protected function share_query_class( string $class, ...$arguments ): DefinitionInterface {
+		return parent::share( $class, wpdb::class, ...$arguments )->addTag( 'db_query' );
+	}
+
+	/**
+	 * Share a table class.
 	 *
 	 * Shared classes will always return the same instance of the class when the class is requested
 	 * from the container.
