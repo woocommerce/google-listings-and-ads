@@ -43,4 +43,18 @@ SQL;
 	protected function get_raw_name(): string {
 		return 'shipping_rates';
 	}
+
+	/**
+	 * Get the columns for the table.
+	 *
+	 * @return array
+	 */
+	public function get_columns(): array {
+		return [
+			'id'       => true,
+			'country'  => true,
+			'currency' => true,
+			'rate'     => true,
+		];
+	}
 }

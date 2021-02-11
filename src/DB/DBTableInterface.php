@@ -35,4 +35,11 @@ interface DBTableInterface {
 	 * @return string
 	 */
 	public function get_name(): string;
+
+	/**
+	 * Get the columns for the table.
+	 *
+	 * @return array
+	 */
+	public function get_columns(): array;
 }
