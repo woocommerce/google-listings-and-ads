@@ -208,6 +208,7 @@ class Proxy {
 	/**
 	 * Claim the website for a MCA.
 	 *
+	 * @param bool $overwrite To enable claim overwriting.
 	 * @return bool
 	 * @throws Exception When an Exception is caught or we receive an invalid response.
 	 */
