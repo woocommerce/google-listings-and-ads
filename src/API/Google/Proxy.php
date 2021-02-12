@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -139,13 +140,20 @@ class Proxy {
 	 * @return array
 	 */
 	public function get_connected_merchant(): array {
-		$id = $this->get_merchant_id();
+		$id     = $this->get_merchant_id();
+		$status = $id ? 'connected' : 'disconnected';
 
-		// TODO: populate with status from site verification.
+		foreach ( $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) {
+			if ( ! isset( $step['status'] ) || AccountController::MC_CREATION_STEP_DONE !== $step['status'] ) {
+				$status = 'incomplete';
+				$id     = 0;
+				break;
+			}
+		}
 
 		return [
 			'id'     => $id,
-			'status' => $id ? '' : 'disconnected',
+			'status' => $status,
 		];
 	}
 
@@ -196,6 +204,48 @@ class Proxy {
 			throw new Exception( sprintf( __( 'Error linking merchant to MCA: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
 		}
 	}
+
+	/**
+	 * Claim the website for a MCA.
+	 *
+	 * @param bool $overwrite To enable claim overwriting.
+	 * @return bool
+	 * @throws Exception When an Exception is caught or we receive an invalid response.
+	 */
+	public function claim_merchant_website( bool $overwrite = false ): bool {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_manager_url( 'claim-website' ),
+				[
+					'body' => json_encode(
+						[
+							'accountId' => $this->get_merchant_id(),
+							'overwrite' => $overwrite,
+						]
+					),
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['status'] ) && 'success' === $response['status'] ) {
+				return true;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$error = $response['message'] ?? __( 'Invalid response when claiming website', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error claiming website: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
 
 	/**
 	 * Get Ads IDs associated with the connected Google account.
@@ -322,9 +372,7 @@ class Proxy {
 	 * @return array
 	 */
 	public function get_connected_ads_account(): array {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		$id      = intval( $options->get( Options::ADS_ID ) );
+		$id = intval( $this->options->get( Options::ADS_ID ) );
 
 		return [
 			'id'     => $id,

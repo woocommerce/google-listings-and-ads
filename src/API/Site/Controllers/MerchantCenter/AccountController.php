@@ -31,13 +31,13 @@ class AccountController extends BaseOptionsController {
 	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'verify', 'link', 'claim' ];
 
 	/** @var int Status value for a pending merchant account creation step */
-	private const MC_CREATION_STEP_PENDING = 0;
+	public const MC_CREATION_STEP_PENDING = 0;
 
 	/** @var int Status value for a completed merchant account creation step */
-	private const MC_CREATION_STEP_DONE = 1;
+	public const MC_CREATION_STEP_DONE = 1;
 
 	/** @var int Status value for an unsuccessful merchant account creation step */
-	private const MC_CREATION_STEP_ERROR = - 1;
+	public const MC_CREATION_STEP_ERROR = - 1;
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
 	private const MC_DELAY_AFTER_CREATE = 90;
@@ -211,6 +211,9 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->middleware->disconnect_merchant();
 
+			$this->update_merchant_account_state( [] );
+			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
+
 			return [
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
@@ -308,7 +311,11 @@ class AccountController extends BaseOptionsController {
 						break;
 					case 'claim':
 						$overwrite_required = $step['data']['overwrite_required'] ?? false;
-						$this->merchant->claimwebsite( $overwrite_required && $this->overwrite_claim );
+						if ( $overwrite_required && $this->overwrite_claim ) {
+							$this->middleware->claim_merchant_website( true );
+						} else {
+							$this->merchant->claimwebsite();
+						}
 						break;
 					default:
 						throw new Exception(
