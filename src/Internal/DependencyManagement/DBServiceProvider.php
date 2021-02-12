@@ -51,19 +51,19 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 */
 	public function register() {
 		$this->share_table_class( ShippingRateTable::class );
-		$this->share_query_class( ShippingRateQuery::class, ShippingRateTable::class );
+		$this->add_query_class( ShippingRateQuery::class, ShippingRateTable::class );
 	}
 
 	/**
-	 * Share a query class.
+	 * Add a query class.
 	 *
 	 * @param string $class
 	 * @param mixed  ...$arguments
 	 *
 	 * @return DefinitionInterface
 	 */
-	protected function share_query_class( string $class, ...$arguments ): DefinitionInterface {
-		return parent::share( $class, wpdb::class, ...$arguments )->addTag( 'db_query' );
+	protected function add_query_class( string $class, ...$arguments ): DefinitionInterface {
+		return $this->add( $class, wpdb::class, ...$arguments )->addTag( 'db_query' );
 	}
 
 	/**
