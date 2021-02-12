@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\DB\Query;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\wpdb;
+use wpdb;
 
 defined( 'ABSPATH' ) || exit;
 
