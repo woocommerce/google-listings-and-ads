@@ -139,7 +139,10 @@ abstract class Query implements QueryInterface {
 	 * Perform the query and save it to the results.
 	 */
 	protected function query_results() {
-
+		$this->results = $this->wpdb->get_results(
+			$this->build_query(), // phpcs:ignore WordPress.DB.PreparedSQL
+			ARRAY_A
+		);
 	}
 
 	/**
@@ -190,5 +193,67 @@ abstract class Query implements QueryInterface {
 		$order = strtoupper( $order );
 
 		return 'DESC' === $order ? $order : 'ASC';
+	}
+
+	/**
+	 * Build the query and return the query string.
+	 *
+	 * @return string
+	 */
+	protected function build_query(): string {
+		$pieces = [ "SELECT * FROM {$this->table->get_name()}" ];
+		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
+
+		$pieces[] = "GROUP BY {$this->table->get_name()}.{$this->table->get_primary_column()}";
+
+		if ( $this->orderby ) {
+			$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
+		}
+
+		if ( $this->limit ) {
+			$pieces[] = "LIMIT {$this->limit}";
+		}
+
+		$pieces[] = "OFFSET {$this->offset}";
+
+		return join( "\n", $pieces );
+	}
+
+	/**
+	 * Generate the pieces for the WHERE part of the query.
+	 *
+	 * @return string[]
+	 */
+	protected function generate_where_pieces(): array {
+		if ( empty( $this->where ) ) {
+			return [];
+		}
+
+		$where_pieces = [ 'WHERE' ];
+		foreach ( $this->where as $where ) {
+			$column  = $where['column'];
+			$compare = $where['compare'];
+
+			if ( $compare === 'IN' || $compare === 'NOT IN' ) {
+				$value = sprintf(
+					"('%s')",
+					join(
+						"','",
+						array_map(
+							function( $value ) {
+								return $this->wpdb->_escape( $value );
+							},
+							$where['value']
+						)
+					)
+				);
+			} else {
+				$value = "'{$this->wpdb->_escape( $where['value'] )}'";
+			}
+
+			$where_pieces[] = "{$column} {$compare} {$value}";
+		}
+
+		return $where_pieces;
 	}
 }
