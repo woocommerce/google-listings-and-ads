@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use wpdb;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -13,6 +15,12 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
 abstract class Query implements QueryInterface {
+
+	/** @var int */
+	protected $limit = 10;
+
+	/** @var int */
+	protected $offset = 0;
 
 	/** @var string */
 	protected $order = 'ASC';
@@ -84,6 +92,32 @@ abstract class Query implements QueryInterface {
 		$this->validate_column( $column );
 		$this->orderby = $column;
 		$this->order   = $this->normalize_order( $order );
+
+		return $this;
+	}
+
+	/**
+	 * Limit the number of results for the query.
+	 *
+	 * @param int $limit
+	 *
+	 * @return QueryInterface
+	 */
+	public function set_limit( int $limit ): QueryInterface {
+		$this->limit = ( new PositiveInteger( $limit ) )->get();
+
+		return $this;
+	}
+
+	/**
+	 * Set an offset for the results.
+	 *
+	 * @param int $offset
+	 *
+	 * @return QueryInterface
+	 */
+	public function set_offset( int $offset ): QueryInterface {
+		$this->offset = ( new PositiveInteger( $offset ) )->get();
 
 		return $this;
 	}
