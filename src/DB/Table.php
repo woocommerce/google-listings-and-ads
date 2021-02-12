@@ -83,6 +83,15 @@ abstract class Table implements TableInterface {
 	}
 
 	/**
+	 * Get the primary column name for the table.
+	 *
+	 * @return string
+	 */
+	public function get_primary_column(): string {
+		return 'id';
+	}
+
+	/**
 	 * Get the DB collation.
 	 *
 	 * @return string
