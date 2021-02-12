@@ -42,4 +42,11 @@ interface TableInterface {
 	 * @return array
 	 */
 	public function get_columns(): array;
+
+	/**
+	 * Get the primary column name for the table.
+	 *
+	 * @return string
+	 */
+	public function get_primary_column(): string;
 }
