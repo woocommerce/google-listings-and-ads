@@ -334,7 +334,14 @@ class AccountController extends BaseOptionsController {
 				$step['message'] = $e->getMessage();
 
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
-					$step['data']['overwrite_required'] = true;
+					if ( $state['set_id']['data']['from_mca'] ?? true ) {
+						$step['data']['overwrite_required'] = true;
+					} else {
+						throw new Exception(
+							__( 'Unable to claim website URL with this Merchant Center Account.', 'google-listings-and-ads' ),
+							406
+						);
+					}
 				}
 
 				$this->update_merchant_account_state( $state );
