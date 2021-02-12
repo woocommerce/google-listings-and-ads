@@ -141,17 +141,19 @@ class ConnectionTest implements Service, Registerable {
 			</p>
 
 			<?php if ( $blog_token && $user_token ) { ?>
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<?php wp_nonce_field( 'wcs-google-manager' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-google-manager" type="hidden" />
-						<label>
-							Manager ID <input name="manager_id" type="text" value="<?php echo ! empty( $_GET['manager_id'] ) ? intval( $_GET['manager_id'] ) : ''; ?>" />
-						</label>
-						<button class="button">Connect Google Manager Account</button>
-					</form>
-				</div>
+				<?php if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) || 'https://api-vipgo.woocommerce.com' !== WOOCOMMERCE_CONNECT_SERVER_URL ) { ?>
+					<div>
+						<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+							<?php wp_nonce_field( 'wcs-google-manager' ); ?>
+							<input name="page" value="connection-test-admin-page" type="hidden" />
+							<input name="action" value="wcs-google-manager" type="hidden" />
+							<label>
+								Manager ID <input name="manager_id" type="text" value="<?php echo ! empty( $_GET['manager_id'] ) ? intval( $_GET['manager_id'] ) : ''; ?>" />
+							</label>
+							<button class="button">Connect Google Manager Account</button>
+						</form>
+					</div>
+				<?php } ?>
 
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -362,7 +364,12 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-manager' === $_GET['action'] && check_admin_referer( 'wcs-google-manager' ) ) {
-			$id   = ! empty( $_GET['manager_id'] ) ? absint( $_GET['manager_id'] ) : 1;
+			if ( empty( $_GET['manager_id'] ) ) {
+				$this->response .= 'Manager ID must be set';
+				return;
+			}
+
+			$id   = absint( $_GET['manager_id'] );
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-manager';
 			$args = [
 				'headers' => [ 'Authorization' => $this->get_auth_header() ],
