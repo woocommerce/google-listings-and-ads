@@ -32,6 +32,24 @@ interface QueryInterface {
 	public function set_order( string $column, string $order = 'DESC' ): QueryInterface;
 
 	/**
+	 * Limit the number of results for the query.
+	 *
+	 * @param int $limit
+	 *
+	 * @return QueryInterface
+	 */
+	public function set_limit( int $limit ): QueryInterface;
+
+	/**
+	 * Set an offset for the results.
+	 *
+	 * @param int $offset
+	 *
+	 * @return QueryInterface
+	 */
+	public function set_offset( int $offset ): QueryInterface;
+
+	/**
 	 * Get the results of the query.
 	 *
 	 * @return mixed
