@@ -10,7 +10,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppTableCard from '../../components/app-table-card';
-import { mockedListingsData, availableMetrics } from './mocked-programs-data'; // Mocked API calls
+import { mockedListingsData, availableMetrics } from './mocked-products-data'; // Mocked API calls
 
 /**
  * All posible metric headers.
@@ -20,13 +20,8 @@ import { mockedListingsData, availableMetrics } from './mocked-programs-data'; /
  */
 const metricsHeaders = [
 	{
-		key: 'netSales',
+		key: 'totalSales',
 		label: __( 'Net Sales', 'google-listings-and-ads' ),
-		isSortable: true,
-	},
-	{
-		key: 'itemsSold',
-		label: __( 'Items Sold', 'google-listings-and-ads' ),
 		isSortable: true,
 	},
 	{
@@ -44,22 +39,17 @@ const metricsHeaders = [
 		label: __( 'Impressions', 'google-listings-and-ads' ),
 		isSortable: true,
 	},
-	{
-		key: 'spend',
-		label: __( 'Spend', 'google-listings-and-ads' ),
-		isSortable: true,
-	},
 ];
 
 /**
- * All programs table, with compare feature.
+ * All products table, with compare feature.
  *
  * @see AllProgramsTableCard
  * @see AppTableCard
  *
  * @param {Object} [props] Properties to be forwarded to AppTableCard.
  */
-const CompareProgramsTableCard = ( props ) => {
+const CompareProductsTableCard = ( props ) => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
 	const query = getQuery();
 
@@ -72,7 +62,7 @@ const CompareProgramsTableCard = ( props ) => {
 
 	/**
 	 * Provides headers configuration, for AppTableCard:
-	 * Interactive select all checkbox for compare; program title, and available metric headers.
+	 * Interactive select all checkbox for compare; product title, and available metric headers.
 	 *
 	 * @param {Array} data
 	 *
@@ -91,7 +81,7 @@ const CompareProgramsTableCard = ( props ) => {
 		},
 		{
 			key: 'title',
-			label: __( 'Program', 'google-listings-and-ads' ),
+			label: __( 'Product title', 'google-listings-and-ads' ),
 			isLeftAligned: true,
 			required: true,
 			isSortable: true,
@@ -105,7 +95,7 @@ const CompareProgramsTableCard = ( props ) => {
 	 * for a given row.
 	 * Creates a cell for every ~availableMetricHeaders item, displays `"Unavailable"`, when the data is `null`.
 	 *
-	 * @param {Object} row Row of data for programs table.
+	 * @param {Object} row Row of data for products table.
 	 *
 	 * @return {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
@@ -182,7 +172,6 @@ const CompareProgramsTableCard = ( props ) => {
 
 	return (
 		<AppTableCard
-			className="gla-all-programs-table-card"
 			title={
 				<>
 					{ __( 'Programs', 'google-listings-and-ads' ) }
@@ -211,4 +200,4 @@ const CompareProgramsTableCard = ( props ) => {
 	);
 };
 
-export default CompareProgramsTableCard;
+export default CompareProductsTableCard;

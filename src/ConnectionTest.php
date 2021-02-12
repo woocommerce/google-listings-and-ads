@@ -141,17 +141,19 @@ class ConnectionTest implements Service, Registerable {
 			</p>
 
 			<?php if ( $blog_token && $user_token ) { ?>
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<?php wp_nonce_field( 'wcs-google-manager' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-google-manager" type="hidden" />
-						<label>
-							Manager ID <input name="manager_id" type="text" value="<?php echo ! empty( $_GET['manager_id'] ) ? intval( $_GET['manager_id'] ) : ''; ?>" />
-						</label>
-						<button class="button">Connect Google Manager Account</button>
-					</form>
-				</div>
+				<?php if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) || 'https://api-vipgo.woocommerce.com' !== WOOCOMMERCE_CONNECT_SERVER_URL ) { ?>
+					<div>
+						<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+							<?php wp_nonce_field( 'wcs-google-manager' ); ?>
+							<input name="page" value="connection-test-admin-page" type="hidden" />
+							<input name="action" value="wcs-google-manager" type="hidden" />
+							<label>
+								Manager ID <input name="manager_id" type="text" value="<?php echo ! empty( $_GET['manager_id'] ) ? intval( $_GET['manager_id'] ) : ''; ?>" />
+							</label>
+							<button class="button">Connect Google Manager Account</button>
+						</form>
+					</div>
+				<?php } ?>
 
 				<div>
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -220,6 +222,7 @@ class ConnectionTest implements Service, Registerable {
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
 					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-link' ), $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
 				</p>
 
 					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -240,8 +243,7 @@ class ConnectionTest implements Service, Registerable {
 							<label title="To simulate linking with an external site">
 								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
 							</label>
-						<button class="button">Account Setup Step 1</button>
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
+						<button class="button">MC Account Setup (I & II)</button>
 						</p>
 					</form>
 
@@ -362,7 +364,12 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-manager' === $_GET['action'] && check_admin_referer( 'wcs-google-manager' ) ) {
-			$id   = ! empty( $_GET['manager_id'] ) ? absint( $_GET['manager_id'] ) : 1;
+			if ( empty( $_GET['manager_id'] ) ) {
+				$this->response .= 'Manager ID must be set';
+				return;
+			}
+
+			$id   = absint( $_GET['manager_id'] );
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-manager';
 			$args = [
 				'headers' => [ 'Authorization' => $this->get_auth_header() ],
@@ -469,7 +476,7 @@ class ConnectionTest implements Service, Registerable {
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
-			$this->response = $json;
+			$this->response .= $json;
 		}
 
 		if ( 'wcs-google-sv-check' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-check' ) ) {
@@ -479,7 +486,7 @@ class ConnectionTest implements Service, Registerable {
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
-			$this->response = $json;
+			$this->response .= $json;
 		}
 
 		if ( 'wcs-google-sv-link' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-link' ) ) {
@@ -507,19 +514,21 @@ class ConnectionTest implements Service, Registerable {
 			$server = rest_get_server();
 			$data = $server->response_to_data( $response, false );
 			$json = wp_json_encode( $data );
-			$this->response = $json;
+			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
 			// Using REST API
-			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+			add_filter( 'woocommerce_gla_site_url', function ( $url ) {
+				return $_GET['site_url'] ?? $url;
+			} );
 
-			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claimwebsite' );
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
-			$this->response = $json;
+			try {
+				$this->container->get( Merchant::class )->claimwebsite();
+				$this->response .= 'Website claimed';
+			} catch( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
+			}
 		}
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
