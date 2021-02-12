@@ -555,9 +555,13 @@ class ConnectionTest implements Service, Registerable {
 
 				/** @var Proxy $proxy */
 				$proxy = $this->container->get( Proxy::class );
-				foreach ( $proxy->get_merchant_ids() as $id ) {
-					$this->response .= sprintf( "Merchant ID: %s\n", $id );
-					$_GET['merchant_id'] = $id;
+				foreach ( $proxy->get_merchant_ids() as $account ) {
+					$this->response .= sprintf(
+						"Merchant ID: %s%s\n",
+						$account['id'],
+						$account['subaccount'] ? ' (IS a subaccount)':''
+					);
+					$_GET['merchant_id'] = $account['id'];
 				}
 			} catch ( \Exception $e ) {
 				$this->response .= $e->getMessage();

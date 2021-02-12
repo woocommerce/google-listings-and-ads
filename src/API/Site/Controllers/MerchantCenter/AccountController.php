@@ -131,9 +131,15 @@ class AccountController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_accounts_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			try {
-				return new Response( $this->middleware->get_merchant_ids() );
+				return array_map(
+					function( $account ) use ( $request ) {
+						$data = $this->prepare_item_for_response( $account, $request );
+						return $this->prepare_response_for_collection( $data );
+					},
+					$this->middleware->get_merchant_ids()
+				);
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -219,11 +225,18 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id' => [
+			'id'         => [
 				'type'              => 'number',
 				'description'       => __( 'Merchant Center Account ID.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => false,
+			],
+			'subaccount' => [
+				'type'        => 'boolean',
+				'description' => __( 'Is a MCA sub account.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
 			],
 		];
 	}

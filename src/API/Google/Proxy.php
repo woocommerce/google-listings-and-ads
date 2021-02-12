@@ -51,24 +51,21 @@ class Proxy {
 	 */
 	public function get_merchant_ids(): array {
 		try {
-			/** @var ShoppingContent $service */
-			$service  = $this->container->get( ShoppingContent::class );
-			$accounts = $service->accounts->authinfo();
+			/** @var Client $client */
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_manager_url( 'merchant-accounts' ) );
+			$response = json_decode( $result->getBody()->getContents(), true );
 			$ids      = [];
 
-			foreach ( $accounts->getAccountIdentifiers() as $account ) {
-
-				$id = (int) $account->getMerchantID();
-
-				// $id can be NULL if it is a Multi Client Account (MCA)
-				if ( $id ) {
+			if ( 200 === $result->getStatusCode() && is_array( $response ) ) {
+				foreach ( $response as $id ) {
 					$ids[] = $id;
 				}
 			}
 
 			return $ids;
-		} catch ( Exception $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
