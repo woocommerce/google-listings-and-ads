@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\MerchantCenterAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
@@ -74,16 +76,17 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Service::class                => true,
 		Settings::class               => true,
 		SetupAds::class               => true,
-		SetupMerchantCenter::class    => true,
-		SetupCampaignNote::class      => true,
-		TrackerSnapshot::class        => true,
-		Tracks::class                 => true,
-		TracksInterface::class        => true,
-		ProductSyncer::class          => true,
-		ProductHelper::class          => true,
-		ProductMetaHandler::class     => true,
-		SiteVerificationMeta::class   => true,
-		DebugLogger::class            => true,
+		SetupMerchantCenter::class        => true,
+		SetupCampaignNote::class          => true,
+		TrackerSnapshot::class            => true,
+		Tracks::class                     => true,
+		TracksInterface::class            => true,
+		ProductSyncer::class              => true,
+		ProductHelper::class              => true,
+		ProductMetaHandler::class         => true,
+		SiteVerificationMeta::class       => true,
+		DebugLogger::class                => true,
+		MerchantCenterAccountState::class => true,
 	];
 
 	/**
@@ -133,6 +136,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
 		$this->share( ProductMetaHandler::class );
+		$this->share( MerchantCenterAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share(
 			ProductSyncer::class,
