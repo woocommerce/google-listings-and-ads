@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\MerchantCenterAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
@@ -42,7 +42,7 @@ class AccountController extends BaseOptionsController {
 	protected $merchant;
 
 	/**
-	 * @var MerchantCenterAccountState
+	 * @var MerchantAccountState
 	 */
 	protected $mc_account_state;
 
@@ -61,7 +61,7 @@ class AccountController extends BaseOptionsController {
 		$this->middleware = $container->get( Middleware::class );
 		$this->merchant   = $container->get( Merchant::class );
 		$this->set_options_object( $container->get( OptionsInterface::class ) );
-		$this->mc_account_state = $container->get( MerchantCenterAccountState::class );
+		$this->mc_account_state = $container->get( MerchantAccountState::class );
 		$this->container        = $container;
 	}
 
@@ -260,7 +260,7 @@ class AccountController extends BaseOptionsController {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		foreach ( $state as $name => &$step ) {
-			if ( MerchantCenterAccountState::MC_CREATION_STEP_DONE === $step['status'] ) {
+			if ( MerchantAccountState::MC_CREATION_STEP_DONE === $step['status'] ) {
 				continue;
 			}
 
@@ -315,11 +315,11 @@ class AccountController extends BaseOptionsController {
 							)
 						);
 				}
-				$step['status']  = MerchantCenterAccountState::MC_CREATION_STEP_DONE;
+				$step['status']  = MerchantAccountState::MC_CREATION_STEP_DONE;
 				$step['message'] = '';
 				$this->mc_account_state->update( $state );
 			} catch ( Exception $e ) {
-				$step['status']  = MerchantCenterAccountState::MC_CREATION_STEP_ERROR;
+				$step['status']  = MerchantAccountState::MC_CREATION_STEP_ERROR;
 				$step['message'] = $e->getMessage();
 
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
@@ -424,7 +424,7 @@ class AccountController extends BaseOptionsController {
 		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
 		$state                               = $this->mc_account_state->get();
-		$state['set_id']['status']           = MerchantCenterAccountState::MC_CREATION_STEP_DONE;
+		$state['set_id']['status']           = MerchantAccountState::MC_CREATION_STEP_DONE;
 		$state['set_id']['data']['from_mca'] = false;
 		$this->mc_account_state->update( $state );
 		$this->middleware->link_merchant_account( $account_id );

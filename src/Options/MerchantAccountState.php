@@ -5,17 +5,15 @@
  * @package Automattic\WooCommerce\GoogleListingsAndAds
  */
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 /**
  * Main class for Global Site Tag.
  */
-class MerchantCenterAccountState implements Service {
+class MerchantAccountState implements Service {
 
 	use OptionsAwareTrait;
 
