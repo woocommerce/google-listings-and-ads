@@ -133,7 +133,7 @@ class ConnectionTest implements Service, Registerable {
 					<th>Test WCS Connection:</th>
 					<td>
 						<p>
-							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test</a>
+							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-test' ], $url ), 'wcs-test' ) ); ?>">Test</a>
 						</p>
 					</td>
 				</tr>
@@ -175,7 +175,7 @@ class ConnectionTest implements Service, Registerable {
 					<th>Test Authenticated WCS Request:</th>
 					<td>
 						<p>
-							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-auth-test' ), $url ), 'wcs-auth-test' ) ); ?>">Test Authenticated Request</a>
+							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-auth-test' ], $url ), 'wcs-auth-test' ) ); ?>">Test Authenticated Request</a>
 						</p>
 					</td>
 				</tr>
@@ -185,10 +185,10 @@ class ConnectionTest implements Service, Registerable {
 					<th>Toggle Connection:</th>
 					<td>
 						<?php if ( ! $blog_token || ! $user_token ) { ?>
-							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'connect' ), $url ), 'connect' ) ); ?>">Connect to Jetpack</a></p>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Connect to Jetpack</a></p>
 						<?php } ?>
 						<?php if ( $blog_token && $user_token ) { ?>
-							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect' ), $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'disconnect' ], $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
 						<?php } ?>
 					</td>
 				</tr>
@@ -206,7 +206,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Connect:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc' ], $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
 							</p>
 						</td>
 					</tr>
@@ -214,7 +214,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Disconnect:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-disconnect' ], $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
 							</p>
 						</td>
 					</tr>
@@ -222,7 +222,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Get Status:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-status' ), $url ), 'wcs-google-mc-status' ) ); ?>">Google Account Status</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-status' ], $url ), 'wcs-google-mc-status' ) ); ?>">Google Account Status</a>
 							</p>
 						</td>
 					</tr>
@@ -238,7 +238,7 @@ class ConnectionTest implements Service, Registerable {
 							<th>Get Merchant Center ID:</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-id' ], $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
 								</p>
 							</td>
 						</tr>
@@ -262,7 +262,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Perform Verification:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-sv-token' ], $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
 							</p>
 						</td>
 					</tr>
@@ -270,7 +270,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Check Verification:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-sv-check' ], $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
 							</p>
 						</td>
 					</tr>
@@ -278,7 +278,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Link Site to MCA:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-link' ), $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-sv-link' ], $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
 							</p>
 						</td>
 					</tr>
@@ -286,7 +286,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Claim Website:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-accounts-claim' ], $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
 							</p>
 						</td>
 					</tr>
@@ -294,11 +294,11 @@ class ConnectionTest implements Service, Registerable {
 
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 
-					<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
-						Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?> ||
-					<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
-						<?php echo $name . ':' . $step['status'] ?>
-					<?php endforeach; ?>
+					<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ) ) : ?>
+						Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
+						<?php foreach ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) : ?>
+							<?php echo $name . ':' . $step['status']; ?>
+						<?php endforeach; ?>
 						<br/>
 					<?php endif; ?>
 
@@ -337,7 +337,7 @@ class ConnectionTest implements Service, Registerable {
 							<th>Get Customers:</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers' ), $url ), 'wcs-ads-customers' ) ); ?>">Get Customers from Google Ads</a>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-ads-customers' ], $url ), 'wcs-ads-customers' ) ); ?>">Get Customers from Google Ads</a>
 								</p>
 							</td>
 						</tr>
@@ -364,7 +364,7 @@ class ConnectionTest implements Service, Registerable {
 							<th>Get Customers (Using Library):</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers-lib' ), $url ), 'wcs-ads-customers-lib' ) ); ?>">Get Customers from Google Ads (using library)</a>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-ads-customers-lib' ], $url ), 'wcs-ads-customers-lib' ) ); ?>">Get Customers from Google Ads (using library)</a>
 								</p>
 							</td>
 						</tr>
@@ -391,7 +391,7 @@ class ConnectionTest implements Service, Registerable {
 							<th>Create Ads Customer:</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-create' ), $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-create' ], $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
 								</p>
 							</td>
 						</tr>
@@ -421,7 +421,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Accept Merchant Center ToS:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-accept-tos' ], $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
 							</p>
 						</td>
 					</tr>
@@ -429,7 +429,7 @@ class ConnectionTest implements Service, Registerable {
 						<th>Get Latest Merchant Center ToS:</th>
 						<td>
 							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-check-tos' ], $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
 							</p>
 						</td>
 					</tr>
@@ -533,7 +533,7 @@ class ConnectionTest implements Service, Registerable {
 			$auth_url = $manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans.
-			$auth_url = add_query_arg( array( 'from' => 'woocommerce-payments' ), $auth_url );
+			$auth_url = add_query_arg( [ 'from' => 'woocommerce-payments' ], $auth_url );
 
 			error_log( $auth_url );
 
@@ -670,7 +670,7 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
 			/** @var Connection $connection */
-			$connection = $this->container->get( Connection::class );
+			$connection   = $this->container->get( Connection::class );
 			$redirect_url = $connection->connect( admin_url( 'admin.php?page=connection-test-admin-page' ) );
 
 			if ( ! empty( $redirect_url ) ) {
@@ -688,21 +688,21 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-sv-token' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-token' ) ) {
 			// Full process using REST API
-			$request = new \WP_REST_Request( 'POST', '/wc/gla/site/verify' );
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
+			$request         = new \WP_REST_Request( 'POST', '/wc/gla/site/verify' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
 			$this->response .= $json;
 		}
 
 		if ( 'wcs-google-sv-check' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-check' ) ) {
 			// Check using REST API
-			$request = new \WP_REST_Request( 'GET', '/wc/gla/site/verify' );
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
+			$request         = new \WP_REST_Request( 'GET', '/wc/gla/site/verify' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
 			$this->response .= $json;
 		}
 
@@ -720,56 +720,64 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-mc-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-setup' ) ) {
 			// Using REST API
-			add_filter( 'woocommerce_gla_site_url', function($url) { return $_GET['site_url']??$url; });
+			add_filter(
+				'woocommerce_gla_site_url',
+				function( $url ) {
+					return $_GET['site_url'] ?? $url;
+				}
+			);
 
 			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
-			if(is_numeric( $_GET['account_id']??false )) {
-				$request->set_body_params( ['id'=>$_GET['account_id']] );
+			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
 			}
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
 			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-mc-claim-overwrite' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-claim-overwrite' ) ) {
-			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
+			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
 			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-accounts-check' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-check' ) ) {
-			$request = new \WP_REST_Request( 'GET', '/wc/gla/mc/connection' );
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
+			$request         = new \WP_REST_Request( 'GET', '/wc/gla/mc/connection' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
 			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-accounts-delete' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-delete' ) ) {
-			$request = new \WP_REST_Request( 'DELETE', '/wc/gla/mc/connection' );
-			$response = rest_do_request( $request );
-			$server = rest_get_server();
-			$data = $server->response_to_data( $response, false );
-			$json = wp_json_encode( $data );
+			$request         = new \WP_REST_Request( 'DELETE', '/wc/gla/mc/connection' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
 			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
 			// Using REST API
-			add_filter( 'woocommerce_gla_site_url', function ( $url ) {
-				return $_GET['site_url'] ?? $url;
-			} );
+			add_filter(
+				'woocommerce_gla_site_url',
+				function ( $url ) {
+					return $_GET['site_url'] ?? $url;
+				}
+			);
 
 			try {
 				$this->container->get( Merchant::class )->claimwebsite();
 				$this->response .= 'Website claimed';
-			} catch( \Exception $e ) {
+			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
 		}
@@ -799,10 +807,10 @@ class ConnectionTest implements Service, Registerable {
 				/** @var Proxy $proxy */
 				$proxy = $this->container->get( Proxy::class );
 				foreach ( $proxy->get_merchant_ids() as $account ) {
-					$this->response .= sprintf(
+					$this->response     .= sprintf(
 						"Merchant ID: %s%s\n",
 						$account['id'],
-						$account['subaccount'] ? ' (IS a subaccount)':''
+						$account['subaccount'] ? ' (IS a subaccount)' : ''
 					);
 					$_GET['merchant_id'] = $account['id'];
 				}
@@ -818,7 +826,7 @@ class ConnectionTest implements Service, Registerable {
 			$this->response = "Proxied request > get products for merchant {$merchant->get_id()}\n";
 
 			$products = $merchant->get_products();
-			if ( empty( $products ) ){
+			if ( empty( $products ) ) {
 				$this->response .= 'No products found';
 			}
 
@@ -842,8 +850,8 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			$json = json_decode( wp_remote_retrieve_body( $response ), true );
-			if ( $json && is_array( $json['resourceNames' ] ) ) {
-				foreach( $json['resourceNames'] as $customer ) {
+			if ( $json && is_array( $json['resourceNames'] ) ) {
+				foreach ( $json['resourceNames'] as $customer ) {
 					$_GET['customer_id'] = absint( str_replace( 'customers/', '', $customer ) );
 				}
 			}
@@ -881,12 +889,12 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
 			try {
 				/** @var Proxy $proxy */
-				$proxy = $this->container->get( Proxy::class );
+				$proxy    = $this->container->get( Proxy::class );
 				$accounts = $proxy->get_ads_account_ids();
 
 				$this->response .= 'Total accounts: ' . count( $accounts ) . "\n";
 				foreach ( $accounts as $id ) {
-					$this->response .= sprintf( "Ads ID: %d\n", $id );
+					$this->response     .= sprintf( "Ads ID: %d\n", $id );
 					$_GET['customer_id'] = $id;
 				}
 			} catch ( \Exception $e ) {
@@ -902,7 +910,7 @@ class ConnectionTest implements Service, Registerable {
 				$this->response = "Proxied request > get ad campaigns {$ads->get_id()}\n";
 
 				$campaigns = $ads->get_campaigns();
-				if ( empty( $campaigns ) ){
+				if ( empty( $campaigns ) ) {
 					$this->response .= 'No campaigns found';
 				} else {
 					$this->response .= 'Total campaigns: ' . count( $campaigns ) . "\n";
@@ -917,11 +925,11 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
 			/** @var Proxy $proxy */
-			$proxy    = $this->container->get( Proxy::class );
+			$proxy  = $this->container->get( Proxy::class );
 			$result = $proxy->mark_tos_accepted( 'google-mc', 'john.doe@example.com' );
 
 			$this->response .= sprintf(
-				"Attempting to accept Tos. Successful? %s<br>Response body: %s",
+				'Attempting to accept Tos. Successful? %s<br>Response body: %s',
 				$result->accepted() ? 'Yes' : 'No',
 				$result->message()
 			);
@@ -933,7 +941,7 @@ class ConnectionTest implements Service, Registerable {
 			$accepted = $proxy->check_tos_accepted( 'google-mc' );
 
 			$this->response .= sprintf(
-				"Tos Accepted? %s<br>Response body: %s",
+				'Tos Accepted? %s<br>Response body: %s',
 				$accepted->accepted() ? 'Yes' : 'No',
 				$accepted->message()
 			);
@@ -952,7 +960,7 @@ class ConnectionTest implements Service, Registerable {
 				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
 				if ( ! empty( $result->get_errors() ) ) {
 					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ($result->get_errors() as  $invalid_product) {
+					foreach ( $result->get_errors() as  $invalid_product ) {
 						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
@@ -977,7 +985,7 @@ class ConnectionTest implements Service, Registerable {
 				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
 				if ( ! empty( $result->get_errors() ) ) {
 					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ($result->get_errors() as  $invalid_product) {
+					foreach ( $result->get_errors() as  $invalid_product ) {
 						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
@@ -1002,7 +1010,7 @@ class ConnectionTest implements Service, Registerable {
 				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
 				if ( ! empty( $result->get_errors() ) ) {
 					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ($result->get_errors() as  $invalid_product) {
+					foreach ( $result->get_errors() as  $invalid_product ) {
 						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
 					}
 				}
@@ -1029,18 +1037,18 @@ class ConnectionTest implements Service, Registerable {
 		$timestamp = time() + $time_diff;
 		$nonce     = wp_generate_password( 10, false );
 
-		$normalized_request_string = join( "\n", array( $token_key, $timestamp, $nonce ) ) . "\n";
+		$normalized_request_string = join( "\n", [ $token_key, $timestamp, $nonce ] ) . "\n";
 
 		$signature = base64_encode( hash_hmac( 'sha1', $normalized_request_string, $token_secret, true ) );
 
-		$auth = array(
+		$auth = [
 			'token'     => $token_key,
 			'timestamp' => $timestamp,
 			'nonce'     => $nonce,
 			'signature' => $signature,
-		);
+		];
 
-		$header_pieces = array();
+		$header_pieces = [];
 		foreach ( $auth as $key => $value ) {
 			$header_pieces[] = sprintf( '%s="%s"', $key, $value );
 		}
