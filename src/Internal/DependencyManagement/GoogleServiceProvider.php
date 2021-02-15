@@ -115,8 +115,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			try {
 				$auth_header = $this->generate_auth_header();
 				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
-			} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-				// Don't do anything with the error here.
+			} catch ( WPError $error ) {
+				do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in register_guzzle()' );
+				throw new \Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 			}
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
