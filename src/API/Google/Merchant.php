@@ -73,16 +73,19 @@ class Merchant {
 		$return   = [];
 
 		while ( ! empty( $products->getResources() ) ) {
+
 			foreach ( $products->getResources() as $product ) {
 				$return[] = $product;
 			}
 
-			if ( ! empty( $products->getNextPageToken() ) ) {
-				$products = $service->products->listProducts(
-					$this->id,
-					[ 'pageToken' => $products->getNextPageToken() ]
-				);
+			if ( empty( $products->getNextPageToken() ) ) {
+				break;
 			}
+
+			$products = $service->products->listProducts(
+				$this->get_id(),
+				[ 'pageToken' => $products->getNextPageToken() ]
+			);
 		}
 
 		return $return;
