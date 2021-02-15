@@ -823,6 +823,11 @@ class ConnectionTest implements Service, Registerable {
 			/** @var Merchant $merchant */
 			$merchant = $this->container->get( Merchant::class );
 
+			if ( empty( $merchant->get_id() ) ) {
+				$this->response .= 'Please enter a Merchant ID';
+				return;
+			}
+
 			$this->response = "Proxied request > get products for merchant {$merchant->get_id()}\n";
 
 			$products = $merchant->get_products();
