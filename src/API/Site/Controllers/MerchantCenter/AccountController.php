@@ -260,7 +260,7 @@ class AccountController extends BaseOptionsController {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		foreach ( $state as $name => &$step ) {
-			if ( MerchantAccountState::MC_CREATION_STEP_DONE === $step['status'] ) {
+			if ( MerchantAccountState::ACCOUNT_STEP_DONE === $step['status'] ) {
 				continue;
 			}
 
@@ -315,11 +315,11 @@ class AccountController extends BaseOptionsController {
 							)
 						);
 				}
-				$step['status']  = MerchantAccountState::MC_CREATION_STEP_DONE;
+				$step['status']  = MerchantAccountState::ACCOUNT_STEP_DONE;
 				$step['message'] = '';
 				$this->mc_account_state->update( $state );
 			} catch ( Exception $e ) {
-				$step['status']  = MerchantAccountState::MC_CREATION_STEP_ERROR;
+				$step['status']  = MerchantAccountState::ACCOUNT_STEP_ERROR;
 				$step['message'] = $e->getMessage();
 
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
@@ -424,7 +424,7 @@ class AccountController extends BaseOptionsController {
 		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
 		$state                               = $this->mc_account_state->get();
-		$state['set_id']['status']           = MerchantAccountState::MC_CREATION_STEP_DONE;
+		$state['set_id']['status']           = MerchantAccountState::ACCOUNT_STEP_DONE;
 		$state['set_id']['data']['from_mca'] = false;
 		$this->mc_account_state->update( $state );
 		$this->middleware->link_merchant_account( $account_id );

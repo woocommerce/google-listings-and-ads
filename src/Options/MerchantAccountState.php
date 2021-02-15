@@ -23,13 +23,13 @@ class MerchantAccountState implements Service {
 	public const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'verify', 'link', 'claim' ];
 
 	/** @var int Status value for a pending merchant account creation step */
-	public const MC_CREATION_STEP_PENDING = 0;
+	public const ACCOUNT_STEP_PENDING = 0;
 
 	/** @var int Status value for a completed merchant account creation step */
-	public const MC_CREATION_STEP_DONE = 1;
+	public const ACCOUNT_STEP_DONE = 1;
 
 	/** @var int Status value for an unsuccessful merchant account creation step */
-	public const MC_CREATION_STEP_ERROR = - 1;
+	public const ACCOUNT_STEP_ERROR = - 1;
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
 	public const MC_DELAY_AFTER_CREATE = 90;
@@ -47,7 +47,7 @@ class MerchantAccountState implements Service {
 			$state = [];
 			foreach ( self::MERCHANT_ACCOUNT_CREATION_STEPS as $step ) {
 				$state[ $step ] = [
-					'status'  => self::MC_CREATION_STEP_PENDING,
+					'status'  => self::ACCOUNT_STEP_PENDING,
 					'message' => '',
 					'data'    => [],
 				];

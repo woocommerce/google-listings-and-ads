@@ -144,7 +144,7 @@ class Proxy {
 		$status = $id ? 'connected' : 'disconnected';
 
 		foreach ( $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) {
-			if ( ! isset( $step['status'] ) || MerchantAccountState::MC_CREATION_STEP_DONE !== $step['status'] ) {
+			if ( ! isset( $step['status'] ) || MerchantAccountState::ACCOUNT_STEP_DONE !== $step['status'] ) {
 				$status = 'incomplete';
 				$id     = 0;
 				break;
