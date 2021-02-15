@@ -187,9 +187,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Generate the authorization header for the GuzzleClient and GoogleAdsClient.
 	 *
-	 * @param bool|true $suppress_errors If true, return a falsy value when the token isn't found; When false, return a descriptive WP_Error when the token isn't found.
+	 * @param bool|false $suppress_errors If true, return an empty value when the token isn't found; When false, pass on the WP_Error when the token isn't found.
 	 *
 	 * @return string Empty if no access token is available.
+	 *
+	 * @throws WPError If the authorization token isn't found and errors aren't suppressed.
 	 */
 	protected function generate_auth_header( bool $suppress_errors = false ): string {
 		/** @var Manager $manager */
