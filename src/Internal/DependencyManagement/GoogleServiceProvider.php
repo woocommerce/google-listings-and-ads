@@ -89,6 +89,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->add(
+			GoogleProductService::class,
+			Google_Service_ShoppingContent::class,
+			Merchant::class
+		);
+
+		$this->add(
 			SiteVerification::class,
 			$this->getLeagueContainer()
 		);
