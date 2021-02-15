@@ -35,6 +35,15 @@ class MerchantAccountState implements Service {
 	public const MC_DELAY_AFTER_CREATE = 90;
 
 	/**
+	 * MerchantAccountState constructor.
+	 *
+	 * @param OptionsInterface $options
+	 */
+	public function __construct( OptionsInterface $options ) {
+		$this->set_options_object( $options );
+	}
+
+	/**
 	 * Retrieve or initialize the MERCHANT_ACCOUNT_STATE Option.
 	 *
 	 * @param bool $initialize_if_not_found True to initialize and option array of steps.
