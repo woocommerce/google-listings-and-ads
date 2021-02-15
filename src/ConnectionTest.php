@@ -113,176 +113,390 @@ class ConnectionTest implements Service, Registerable {
 		<div class="wrap">
 			<h2>Connection Test</h2>
 
-			<?php if ( $blog_token ) { ?>
-				<p>Site is connected. ID: <?php echo Jetpack_Options::get_option( 'id' ); ?></p>
-				<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
-			<?php } ?>
+			<p>Google Listings & Ads connection testing page used for debugging purposes. Debug responses are output at the bottom of the page.</p>
 
-			<?php if ( $user_token ) { ?>
-				<p>Connected as an authenticated user. ID: <?php echo $user_data['ID']; ?></p>
-				<!--<pre><?php var_dump( $user_token ); ?></pre>-->
-			<?php } ?>
+			<hr />
 
-			<?php if ( ! $blog_token || ! $user_token ) { ?>
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'connect' ), $url ), 'connect' ) ); ?>">Connect to Jetpack</a></p>
-			<?php } ?>
+			<h2 class="title">WooCommerce Connect Server</h2>
 
-			<?php if ( $blog_token && $user_token ) { ?>
-				<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect' ), $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
-			<?php } ?>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th><label>WCS Server</label></th>
+					<td>
+						<p>
+							<code><?php echo defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL : 'http://localhost:5000'; ?></code>
+						</p>
+					</td>
+				</tr>
 
-			<p>WCS Server: <?php echo defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL : 'http://localhost:5000'; ?></p>
+				<tr>
+					<th>Test WCS Connection:</th>
+					<td>
+						<p>
+							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test</a>
+						</p>
+					</td>
+				</tr>
 
-			<p>
-				<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-test' ), $url ), 'wcs-test' ) ); ?>">Test WCS API</a>
+			</table>
+
+			<hr />
+
+			<h2 class="title">Jetpack</h2>
+
+			<table class="form-table" role="presentation">
+
+				<?php if ( $blog_token ) { ?>
+					<tr>
+						<th><label>Site ID:</label></th>
+						<td>
+							<p>
+								<code><?php echo Jetpack_Options::get_option( 'id' ); ?></code>
+							</p>
+							<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
+						</td>
+					</tr>
+				<?php } ?>
+
+				<?php if ( $user_token ) { ?>
+					<tr>
+						<th><label>User ID:</label></th>
+						<td>
+							<p>
+								<code><?php echo $user_data['ID']; ?></code>
+							</p>
+							<!--<pre><?php var_dump( $user_token ); ?></pre>-->
+						</td>
+					</tr>
+				<?php } ?>
+
 				<?php if ( $blog_token && $user_token ) { ?>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-auth-test' ), $url ), 'wcs-auth-test' ) ); ?>">Test WCS API with an authenticated request</a>
+				<tr>
+					<th>Test Authenticated WCS Request:</th>
+					<td>
+						<p>
+							<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-auth-test' ), $url ), 'wcs-auth-test' ) ); ?>">Test Authenticated Request</a>
+						</p>
+					</td>
+				</tr>
 				<?php } ?>
-			</p>
+
+				<tr>
+					<th>Toggle Connection:</th>
+					<td>
+						<?php if ( ! $blog_token || ! $user_token ) { ?>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'connect' ), $url ), 'connect' ) ); ?>">Connect to Jetpack</a></p>
+						<?php } ?>
+						<?php if ( $blog_token && $user_token ) { ?>
+							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'disconnect' ), $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
+						<?php } ?>
+					</td>
+				</tr>
+
+			</table>
+
+			<hr />
 
 			<?php if ( $blog_token && $user_token ) { ?>
-				<?php if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) || 'https://api-vipgo.woocommerce.com' !== WOOCOMMERCE_CONNECT_SERVER_URL ) { ?>
-					<div>
-						<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-							<?php wp_nonce_field( 'wcs-google-manager' ); ?>
-							<input name="page" value="connection-test-admin-page" type="hidden" />
-							<input name="action" value="wcs-google-manager" type="hidden" />
-							<label>
-								Manager ID <input name="manager_id" type="text" value="<?php echo ! empty( $_GET['manager_id'] ) ? intval( $_GET['manager_id'] ) : ''; ?>" />
-							</label>
-							<button class="button">Connect Google Manager Account</button>
-						</form>
-					</div>
-				<?php } ?>
 
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-create' ), $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
-						<?php wp_nonce_field( 'wcs-google-ads-link' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-google-ads-link" type="hidden" />
-						<label>
-							Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
-						</label>
-						<button class="button">Link Google Ads customer to a Merchant Account</button>
-					</form>
-				</div>
+				<h2 class="title">Google Account</h2>
 
-				<p>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-status' ), $url ), 'wcs-google-mc-status' ) ); ?>">Google Account Status</a>
-				</p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th>Connect:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc' ), $url ), 'wcs-google-mc' ) ); ?>">Connect Google Account</a>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th>Disconnect:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-disconnect' ), $url ), 'wcs-google-mc-disconnect' ) ); ?>">Disconnect Google Account</a>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th>Get Status:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-status' ), $url ), 'wcs-google-mc-status' ) ); ?>">Google Account Status</a>
+							</p>
+						</td>
+					</tr>
+				</table>
 
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
-						<?php wp_nonce_field( 'wcs-google-mc-proxy' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-google-mc-proxy" type="hidden" />
-						<label>
-							Merchant ID <input name="merchant_id" type="text" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-						</label>
-						<button class="button">Send proxied request to Google Merchant Center</button>
-					</form>
-				</div>
+				<hr />
 
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers' ), $url ), 'wcs-ads-customers' ) ); ?>">Get Customers from Google Ads</a>
-						<?php wp_nonce_field( 'wcs-ads-campaign' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-ads-campaign" type="hidden" />
-						<label>
-							Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
-						</label>
-						<button class="button">Get Campaigns from Google Ads</button>
-					</form>
-				</div>
-
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers-lib' ), $url ), 'wcs-ads-customers-lib' ) ); ?>">Get Customers from Google Ads (using library)</a>
-						<?php wp_nonce_field( 'wcs-ads-campaign-lib' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-ads-campaign-lib" type="hidden" />
-						<label>
-							Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
-						</label>
-						<button class="button">Get Campaigns from Google Ads (using library)</button>
-					</form>
-				</div>
-
-				<p>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
-				</p>
-
-				<p>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-link' ), $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
-					<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-claim-overwrite' ), $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
-				</p>
+				<h2 class="title">Merchant Center</h2>
 
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-					<p>
-						<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
-							Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?> ||
-						<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
-							<?php echo $name . ':' . $step['status'] ?>
-						<?php endforeach; ?>
-							<br/>
-						<?php endif; ?>
-						<?php wp_nonce_field( 'wcs-google-mc-setup' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-google-mc-setup" type="hidden" />
-							<label title="Use a live site!">
-								Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : apply_filters( 'woocommerce_gla_site_url', site_url() ); ?>" />
-							</label>
-							<label title="To simulate linking with an external site">
-								MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
-							</label>
-						<button class="button">MC Account Setup (I & II)</button>
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-check' ), $url ), 'wcs-google-accounts-check' ) ); ?>">MC Conn. Status</a>
-						<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-delete' ), $url ), 'wcs-google-accounts-delete' ) ); ?>">MC Disconnect</a>
-					</p>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Get Merchant Center ID:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-mc-id' ), $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Merchant ID:</th>
+							<td>
+								<p>
+									<input name="merchant_id" type="text" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<button class="button">Send proxied request to Google Merchant Center</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-google-mc-proxy' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-google-mc-proxy" type="hidden" />
 				</form>
 
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<?php wp_nonce_field( 'wcs-sync-product' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-sync-product" type="hidden" />
-						<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-						<label>
-							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
-						</label>
-						<button class="button">Sync Product with Google Merchant Center</button>
-					</form>
-				</div>
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<?php wp_nonce_field( 'wcs-sync-all-products' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-sync-all-products" type="hidden" />
-                        <input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-						<button class="button">Sync All Products with Google Merchant Center</button>
-					</form>
-				</div>
-				<div>
-					<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-						<?php wp_nonce_field( 'wcs-delete-synced-products' ); ?>
-						<input name="page" value="connection-test-admin-page" type="hidden" />
-						<input name="action" value="wcs-delete-synced-products" type="hidden" />
-                        <input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-						<button class="button">Delete All Synced Products from Google Merchant Center</button>
-					</form>
-				</div>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th>Perform Verification:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-token' ), $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th>Check Verification:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-check' ), $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th>Link Site to MCA:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-sv-link' ), $url ), 'wcs-google-sv-link' ) ); ?>">Link Site to MCA</a>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th>Claim Website:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-claim' ), $url ), 'wcs-google-accounts-claim' ) ); ?>">Claim website</a>
+							</p>
+						</td>
+					</tr>
+				</table>
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+
+					<?php if( $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ) : ?>
+						Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ID) ?> ||
+					<?php foreach($this->container->get( OptionsInterface::class )->get(OptionsInterface::MERCHANT_ACCOUNT_STATE,[]) as $name=>$step): ?>
+						<?php echo $name . ':' . $step['status'] ?>
+					<?php endforeach; ?>
+						<br/>
+					<?php endif; ?>
+
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MC Account Setup</th>
+							<td>
+								<p>
+									<label title="Use a live site!">
+										Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : apply_filters( 'woocommerce_gla_site_url', site_url() ); ?>" />
+									</label>
+								</p>
+								<p>
+									<label title="To simulate linking with an external site">
+										MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
+									</label>
+								</p>
+								<p>
+									<button class="button">MC Account Setup (I & II)</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-google-accounts-create" type="hidden" />
+				</form>
+
+				<hr />
+
+				<h2 class="title">Google Ads</h2>
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Get Customers:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers' ), $url ), 'wcs-ads-customers' ) ); ?>">Get Customers from Google Ads</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Get Campaigns:</th>
+							<td>
+								<p>
+									<label>
+										Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+									</label>
+									<button class="button">Get Campaigns from Google Ads</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-ads-campaign' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-ads-campaign" type="hidden" />
+				</form>
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Get Customers (Using Library):</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-ads-customers-lib' ), $url ), 'wcs-ads-customers-lib' ) ); ?>">Get Customers from Google Ads (using library)</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Get Campaigns (Using Library):</th>
+							<td>
+								<p>
+									<label>
+										Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+									</label>
+									<button class="button">Get Campaigns from Google Ads (using library)</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-ads-campaign-lib' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-ads-campaign-lib" type="hidden" />
+				</form>
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Create Ads Customer:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-create' ), $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Link Google Ads Customer:</th>
+							<td>
+								<p>
+									<label>
+										Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+									</label>
+									<button class="button">Link Google Ads customer to a Merchant Account</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-google-ads-link' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-google-ads-link" type="hidden" />
+				</form>
+
+				<hr />
+
+				<h2 class="title">Terms of Service</h2>
+
+				<table class="form-table" role="presentation">
+					<tr>
+						<th>Accept Merchant Center ToS:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-accept-tos' ), $url ), 'wcs-accept-tos' ) ); ?>">Accept ToS for Google</a>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th>Get Latest Merchant Center ToS:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-check-tos' ), $url ), 'wcs-check-tos' ) ); ?>">Get latest ToS for Google</a>
+							</p>
+						</td>
+					</tr>
+				</table>
+
+				<hr />
+
+				<h2 class="title">Product Sync</h2>
+
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Sync Product:</th>
+							<td>
+								<p>
+									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<label>
+										Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
+									</label>
+									<button class="button">Sync Product with Google Merchant Center</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-sync-product' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-sync-product" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Sync All Products:</th>
+							<td>
+								<p>
+									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<button class="button">Sync All Products with Google Merchant Center</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-sync-all-products' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-sync-all-products" type="hidden" />
+				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Delete All Synced Products:</th>
+							<td>
+								<p>
+									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<button class="button">Delete All Synced Products from Google Merchant Center</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-delete-synced-products' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-delete-synced-products" type="hidden" />
+				</form>
 			<?php } ?>
 
 			<?php if ( ! empty( $this->response ) ) { ?>
+				<hr />
+
+				<h2 class="title">Response</h2>
+
 				<pre><?php echo wp_kses_post( $this->response ); ?></pre>
 			<?php } ?>
 
