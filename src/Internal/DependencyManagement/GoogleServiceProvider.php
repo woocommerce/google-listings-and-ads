@@ -100,7 +100,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
-		$this->getLeagueContainer()->add( 'connect_server_auth_header', [ 'Authorization' => $this->generate_auth_header() ] );
+		$this->getLeagueContainer()->add( 'connect_server_auth_header', [ 'Authorization' => $this->generate_auth_header( true ) ] );
 		$this->getLeagueContainer()->add( 'merchant_id', $this->get_merchant_id()->get() );
 	}
 
@@ -186,17 +186,22 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Generate the authorization header for the GuzzleClient and GoogleAdsClient.
 	 *
-	 * @return string
+	 * @param bool|true $suppress_errors If true, return a falsy value when the token isn't found; When false, return a descriptive WP_Error when the token isn't found.
+	 *
+	 * @return string Empty if no access token is available.
 	 */
-	protected function generate_auth_header(): string {
+	protected function generate_auth_header( bool $suppress_errors = false ): string {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
 		$token   = $manager->get_access_token( false, false, false );
 
 		try {
 			$this->check_for_wp_error( $token );
-		} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-			return '';
+		} catch ( WPError $error ) {
+			if ( $suppress_errors ) {
+				return '';
+			}
+			throw $error;
 		}
 
 		[ $key, $secret ] = explode( '.', $token->secret );
