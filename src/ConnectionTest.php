@@ -133,7 +133,7 @@ class ConnectionTest implements Service, Registerable {
 
 			<table class="form-table" role="presentation">
 				<tr>
-					<th><label>WCS Server</label></th>
+					<th><label>WCS Server:</label></th>
 					<td>
 						<p>
 							<code><?php echo defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL : 'http://localhost:5000'; ?></code>
@@ -324,7 +324,7 @@ class ConnectionTest implements Service, Registerable {
 
 					<table class="form-table" role="presentation">
 						<tr>
-							<th>MC Account Setup</th>
+							<th>MC Account Setup:</th>
 							<td>
 								<p>
 									<label title="Use a live site!">
