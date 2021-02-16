@@ -46,7 +46,7 @@ class ConnectionTest implements Service, Registerable {
 	 */
 	public function register(): void {
 		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
-			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'http://localhost:5000' );
+			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'https://api-vipgo.woocommerce.com' );
 		}
 
 		add_action(
