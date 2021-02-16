@@ -103,7 +103,7 @@ This endpoint disconnects the connected ads account.
 
 The response contains the following fields:
 
-- status: When the request was successful or not e.g. "success"
+- status: Whether the request was successful or not e.g. "success"
 - message: Additional detail about the response e.g. "Successfully disconnected."
 
 ## Example Request

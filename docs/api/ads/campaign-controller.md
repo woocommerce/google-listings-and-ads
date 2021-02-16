@@ -130,7 +130,7 @@ This endpoint edits a campaign.
 
 The response contains the following fields:
 
-- status: When the request was successful or not e.g. "success"
+- status: Whether the request was successful or not e.g. "success"
 - message: Additional detail about the response e.g. "Successfully edited campaign."
 - id: ID of the edited campaign.
 
@@ -166,7 +166,7 @@ This endpoint deletes a campaign.
 
 The response contains the following fields:
 
-- status: When the request was successful or not e.g. "success"
+- status: Whether the request was successful or not e.g. "success"
 - message: Additional detail about the response e.g. "Successfully deleted campaign."
 - id: ID of the deleted campaign.
 
