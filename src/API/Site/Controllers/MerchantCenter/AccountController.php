@@ -148,7 +148,7 @@ class AccountController extends BaseOptionsController {
 			$claim_status        = $state['claim']['status'] ?? MerchantAccountState::ACCOUNT_STEP_PENDING;
 			if ( MerchantAccountState::ACCOUNT_STEP_DONE === $claim_status || ! $overwrite_necessary ) {
 				return new Response(
-					[ 'message' => __( 'Attempting unnecessary claim overwrite.', 'google-listings-and-ads' ) ],
+					[ 'message' => __( 'Attempting invalid claim overwrite.', 'google-listings-and-ads' ) ],
 					400
 				);
 			}
