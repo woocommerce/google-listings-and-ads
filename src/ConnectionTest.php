@@ -302,6 +302,14 @@ class ConnectionTest implements Service, Registerable {
 							</p>
 						</td>
 					</tr>
+					<tr>
+						<th>Claim Overwrite:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
+							</p>
+						</td>
+					</tr>
 				</table>
 
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
@@ -328,17 +336,36 @@ class ConnectionTest implements Service, Registerable {
 									<button class="button">MC Account Setup (I & II)</button>
 								</p>
 								<p class="description">
-									Can be used to perform all MC account steps - creation, verification, linking, claiming and also overriding.
+									Can be used to perform all MC account steps - creation, verification, linking, claiming and also overwriting.
 								</p>
 								<p class="description">
 									If no MC ID is provided, then a sub-account will be created under our MCA.
 								</p>
+								<p class="description">
+									Adds gla_merchant_id to site options.
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Check MC Status:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-accounts-check' ], $url ), 'wcs-google-accounts-check' ) ); ?>">MC Conn. Status</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Disconnect MC:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-delete' ), $url ), 'wcs-google-accounts-delete' ) ); ?>">MC Disconnect</a>
+								</p>
 							</td>
 						</tr>
 					</table>
-					<?php wp_nonce_field( 'wcs-google-accounts-create' ); ?>
+					<?php wp_nonce_field( 'wcs-google-mc-setup' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
-					<input name="action" value="wcs-google-accounts-create" type="hidden" />
+					<input name="action" value="wcs-google-mc-setup" type="hidden" />
 				</form>
 
 				<hr />
