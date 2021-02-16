@@ -117,6 +117,18 @@ class ConnectionTest implements Service, Registerable {
 
 			<hr />
 
+			<?php if ( ! empty( $this->response ) ) { ?>
+				<div style="padding: 10px 20px; background: #e1e1e1;">
+					<h2 class="title">Response</h2>
+						<pre style="
+							overflow: auto;
+							word-break: normal !important;
+							word-wrap: normal !important;
+							white-space: pre !important;"
+						><?php echo wp_kses_post( $this->response ); ?></pre>
+				</div>
+			<?php } ?>
+
 			<h2 class="title">WooCommerce Connect Server</h2>
 
 			<table class="form-table" role="presentation">
@@ -464,15 +476,6 @@ class ConnectionTest implements Service, Registerable {
 					<input name="action" value="wcs-delete-synced-products" type="hidden" />
 				</form>
 			<?php } ?>
-
-			<?php if ( ! empty( $this->response ) ) { ?>
-				<hr />
-
-				<h2 class="title">Response</h2>
-
-				<pre><?php echo wp_kses_post( $this->response ); ?></pre>
-			<?php } ?>
-
 		</div>
 		<?php
 	}
