@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 /**
  * Main class for Global Site Tag.
  */
-class MerchantAccountState implements Service {
+class MerchantAccountState implements Service, OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
@@ -33,15 +33,6 @@ class MerchantAccountState implements Service {
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
 	public const MC_DELAY_AFTER_CREATE = 90;
-
-	/**
-	 * MerchantAccountState constructor.
-	 *
-	 * @param OptionsInterface $options
-	 */
-	public function __construct( OptionsInterface $options ) {
-		$this->set_options_object( $options );
-	}
 
 	/**
 	 * Retrieve or initialize the MERCHANT_ACCOUNT_STATE Option.

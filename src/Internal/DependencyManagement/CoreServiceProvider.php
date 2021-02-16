@@ -135,7 +135,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
 		$this->share( ProductMetaHandler::class );
-		$this->share( MerchantAccountState::class, OptionsInterface::class );
+		$this->share( MerchantAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share(
 			ProductSyncer::class,
