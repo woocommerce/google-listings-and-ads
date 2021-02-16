@@ -247,10 +247,10 @@ class ConnectionTest implements Service, Registerable {
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
-							<th>Get Merchant Center ID:</th>
+							<th>Get Merchant Center ID(s):</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-id' ], $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID</a>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-id' ], $url ), 'wcs-google-mc-id' ) ); ?>">Get Merchant Center ID(s)</a>
 								</p>
 							</td>
 						</tr>
