@@ -143,8 +143,10 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function overwrite_claim_callback(): callable {
 		return function( Request $request ) {
-			$state = $this->mc_account_state->get( false );
-			if ( empty( $state['claim']['data']['overwrite_required'] ) ) {
+			$state               = $this->mc_account_state->get( false );
+			$overwrite_necessary = ! empty( $state['claim']['data']['overwrite_required'] );
+			$claim_status        = $state['claim']['status'] ?? MerchantAccountState::ACCOUNT_STEP_PENDING;
+			if ( MerchantAccountState::ACCOUNT_STEP_DONE === $claim_status || ! $overwrite_necessary ) {
 				return new Response(
 					[ 'message' => __( 'Attempting unnecessary claim overwrite.', 'google-listings-and-ads' ) ],
 					400
@@ -307,8 +309,7 @@ class AccountController extends BaseOptionsController {
 						$this->middleware->link_merchant_to_mca();
 						break;
 					case 'claim':
-						$overwrite_required = $step['data']['overwrite_required'] ?? false;
-						if ( $overwrite_required && $this->overwrite_claim ) {
+						if ( $this->overwrite_claim ) {
 							$this->middleware->claim_merchant_website( true );
 						} else {
 							$this->merchant->claimwebsite();
