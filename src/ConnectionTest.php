@@ -113,7 +113,7 @@ class ConnectionTest implements Service, Registerable {
 		<div class="wrap">
 			<h2>Connection Test</h2>
 
-			<p>Google Listings & Ads connection testing page used for debugging purposes. Debug responses are output at the bottom of the page.</p>
+			<p>Google Listings & Ads connection testing page used for debugging purposes. Debug responses are output at the top of the page.</p>
 
 			<hr />
 
