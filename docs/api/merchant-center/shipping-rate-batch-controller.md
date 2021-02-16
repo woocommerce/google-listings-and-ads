@@ -1,4 +1,4 @@
-# [API](../../api.md) | POST /mc/shipping/rates/batch/`<service>`
+# [API](../../api.md) | POST /mc/shipping/rates/batch/
 
 This endpoint returns xxx.
 

@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /mc/settings/`<service>`
+# [API](../../api.md) | GET /mc/settings/
 
 This endpoint returns xxx.
 
@@ -40,7 +40,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | POST/PUT/PATCH /mc/settings/`<service>`
+# [API](../../api.md) | POST/PUT/PATCH /mc/settings/
 
 This endpoint returns xxx.
 

@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /mc/countries/`<service>`
+# [API](../../api.md) | GET /mc/countries/
 
 This endpoint returns xxx.
 

@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /mc/connect/`<service>`
+# [API](../../api.md) | GET /mc/connect/
 
 This endpoint returns xxx.
 

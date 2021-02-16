@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /ads/accounts/`<service>`
+# [API](../../api.md) | GET /ads/accounts/
 
 This endpoint lists a Google users existing ad accounts.
 
@@ -24,7 +24,7 @@ GET https://domain.test/wp-json/wc/gla/ads/accounts
 
 ----
 
-# [API](../../api.md) | POST /ads/accounts/`<service>`
+# [API](../../api.md) | POST /ads/accounts/
 
 This endpoint creates a new Ads account or links an existing Ads account if there is an "id" in the request body.
 
@@ -66,7 +66,7 @@ POST https://domain.test/wp-json/wc/gla/ads/accounts
 
 ----
 
-# [API](../../api.md) | GET /ads/connection/`<service>`
+# [API](../../api.md) | GET /ads/connection/
 
 This endpoint gets the connected ads account.
 
@@ -95,7 +95,7 @@ GET https://domain.test/wp-json/wc/gla/ads/connection
 
 ----
 
-# [API](../../api.md) | DELETE /ads/connection/`<service>`
+# [API](../../api.md) | DELETE /ads/connection/
 
 This endpoint disconnects the connected ads account.
 

@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /ads/campaigns/`<service>`
+# [API](../../api.md) | GET /ads/campaigns/
 
 This endpoint returns all campaigns associated with an account.
 
@@ -35,7 +35,7 @@ GET https://domain.test/wp-json/wc/gla/ads/campaigns
 
 ----
 
-# [API](../../api.md) | GET /ads/campaigns/<id>`<service>`
+# [API](../../api.md) | GET /ads/campaigns/`<id>`
 
 This endpoint returns a single campaign.
 
@@ -74,7 +74,7 @@ GET https://domain.test/wp-json/wc/gla/ads/campaigns/12134267938
 ----
 
 
-# [API](../../api.md) | POST /ads/campaigns/`<service>`
+# [API](../../api.md) | POST /ads/campaigns/
 
 This endpoint creates a campaign.
 
@@ -122,7 +122,7 @@ POST https://domain.test/wp-json/wc/gla/ads/campaigns
 
 ----
 
-# [API](../../api.md) | POST/PUT/PATCH /ads/campaigns/(?P<id>[\d]+)`<service>`
+# [API](../../api.md) | POST/PUT/PATCH /ads/campaigns/`<id>`
 
 This endpoint edits a campaign.
 
@@ -158,7 +158,7 @@ PATCH https://domain.test/wp-json/wc/gla/ads/campaigns/12134267938
 
 ----
 
-# [API](../../api.md) | DELETE /ads/campaigns/(?P<id>[\d]+)`<service>`
+# [API](../../api.md) | DELETE /ads/campaigns/`<id>`
 
 This endpoint deletes a campaign.
 

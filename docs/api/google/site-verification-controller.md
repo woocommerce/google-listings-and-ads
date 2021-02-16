@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /site/verify/`<service>`
+# [API](../../api.md) | GET /site/verify/
 
 This endpoint returns xxx.
 
@@ -40,7 +40,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | POST /site/verify/`<service>`
+# [API](../../api.md) | POST /site/verify/
 
 This endpoint returns xxx.
 

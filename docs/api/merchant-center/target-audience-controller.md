@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /mc/target_audience/`<service>`
+# [API](../../api.md) | GET /mc/target_audience/
 
 This endpoint returns xxx.
 
@@ -40,7 +40,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | POST /mc/target_audience/`<service>`
+# [API](../../api.md) | POST /mc/target_audience/
 
 This endpoint returns xxx.
 

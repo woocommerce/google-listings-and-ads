@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /mc/accounts/`<service>`
+# [API](../../api.md) | GET /mc/accounts/
 
 This endpoint returns xxx.
 
@@ -40,7 +40,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | POST /mc/accounts/`<service>`
+# [API](../../api.md) | POST /mc/accounts/
 
 This endpoint returns xxx.
 
@@ -82,7 +82,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | POST /mc/accounts/claim-overwrite/`<service>`
+# [API](../../api.md) | POST /mc/accounts/claim-overwrite/
 
 This endpoint returns xxx.
 
@@ -124,7 +124,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | GET /mc/connection/`<service>`
+# [API](../../api.md) | GET /mc/connection/
 
 This endpoint returns xxx.
 
@@ -166,7 +166,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | DELETE /mc/connection/`<service>`
+# [API](../../api.md) | DELETE /mc/connection/
 
 This endpoint returns xxx.
 

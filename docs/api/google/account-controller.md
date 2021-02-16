@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /google/connect/`<service>`
+# [API](../../api.md) | GET /google/connect/
 
 This endpoint returns the URL used to connect to Google.
 
@@ -24,7 +24,7 @@ GET https://domain.test/wp-json/wc/gla/google/connect
 
 ----
 
-# [API](../../api.md) | DELETE /google/connect/`<service>`
+# [API](../../api.md) | DELETE /google/connect/
 
 This endpoint disconnects/revokes the google connection.
 
@@ -52,7 +52,7 @@ DELETE https://domain.test/wp-json/wc/gla/google/connect
 
 ----
 
-# [API](../../api.md) | GET /google/connected/`<service>`
+# [API](../../api.md) | GET /google/connected/
 
 This endpoint returns status of the Google account connection indicating when an account is connected or not.
 

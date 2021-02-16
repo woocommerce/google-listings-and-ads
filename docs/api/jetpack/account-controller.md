@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /jetpack/connect/`<service>`
+# [API](../../api.md) | GET /jetpack/connect/
 
 This endpoint returns the URL used to connect to Jetpack/WordPress.com.
 
@@ -24,7 +24,7 @@ GET https://domain.test/wp-json/wc/gla/jetpack/connect
 
 ----
 
-# [API](../../api.md) | DELETE /jetpack/connect/`<service>`
+# [API](../../api.md) | DELETE /jetpack/connect/
 
 This endpoint disconnects/revokes the jetpack connection.
 
@@ -52,7 +52,7 @@ DELETE https://domain.test/wp-json/wc/gla/jetpack/connect
 
 ----
 
-# [API](../../api.md) | GET /jetpack/connected/`<service>`
+# [API](../../api.md) | GET /jetpack/connected/
 
 This endpoint returns xxx.
 

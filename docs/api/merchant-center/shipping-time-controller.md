@@ -1,4 +1,4 @@
-# [API](../../api.md) | GET /mc/shipping/times/`<service>`
+# [API](../../api.md) | GET /mc/shipping/times/
 
 This endpoint returns xxx.
 
@@ -40,7 +40,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | POST /mc/shipping/times/`<service>`
+# [API](../../api.md) | POST /mc/shipping/times/
 
 This endpoint returns xxx.
 
@@ -82,7 +82,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | GET /mc/shipping/times/(?P<country_code>\w{2})`<service>`
+# [API](../../api.md) | GET /mc/shipping/times/`<country_code>`
 
 This endpoint returns xxx.
 
@@ -124,7 +124,7 @@ GET /ads/accounts/
 
 ----
 
-# [API](../../api.md) | DELETE /mc/shipping/times/(?P<country_code>\w{2})`<service>`
+# [API](../../api.md) | DELETE /mc/shipping/times/`<country_code>`
 
 This endpoint returns xxx.
 
