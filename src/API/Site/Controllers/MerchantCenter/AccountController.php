@@ -143,6 +143,14 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function overwrite_claim_callback(): callable {
 		return function( Request $request ) {
+			$state = $this->mc_account_state->get( false );
+			if ( empty( $state['claim']['data']['overwrite_required'] ) ) {
+				return new Response(
+					[ 'message' => __( 'Attempting unnecessary claim overwrite.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+
 			$this->overwrite_claim = true;
 			return $this->set_account_id( $request );
 		};
