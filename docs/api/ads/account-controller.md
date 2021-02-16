@@ -1,71 +1,58 @@
 # [API](../../api.md) | GET /ads/accounts/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint lists a Google users existing ad accounts.
 
 ## Response
 
-The response contains the following fields:
-
-- xyz: <description>
-- xyz: <description>
+The response contains an array of Ads accounts ids.
 
 ## Example Request
 
 ```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
+GET https://domain.test/wp-json/wc/gla/ads/accounts
 ```
 
 ## Example Response
 
 ```javascript
-{
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
-}
+[
+    7897423400,
+    9898373407,
+    7946319897
+]
 ```
 
 ----
 
 # [API](../../api.md) | POST /ads/accounts/`<service>`
 
-This endpoint returns xxx.
+This endpoint creates a new Ads account or links an existing Ads account if there is an "id" in the request body.
+
+Note: Only if the account is not already linked to our manager account will it actually link the account, in both cases the request will respond with the same successful response of the ID number.
+
+For both the create and link account requests, after it is completed the wp_options table should have an entry with the name `gla_ads_id`.
 
 ## Request
 
-The request URL must contain the following path parameters:
+To link an account the request body must contain an id.
 
-- xyz: <description>
+- id: Ads Account ID to be linked.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
+- id: Ads Account ID that has been created or linked
 
 ## Example Request
 
 ```
-GET /ads/accounts/
+POST https://domain.test/wp-json/wc/gla/ads/accounts
 ```
 
 ```javascript
 {
-	data: 'foo'
+    "id": 5942319812
 }
 ```
 
@@ -73,10 +60,7 @@ GET /ads/accounts/
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    "id": 5942319812
 }
 ```
 
@@ -84,41 +68,28 @@ GET /ads/accounts/
 
 # [API](../../api.md) | GET /ads/connection/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint gets the connected ads account.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
+- id: The connected ads account id.
+- status: The status of the ads account i.e. "connected"
 
 ## Example Request
 
 ```
-GET /ads/accounts/
+GET https://domain.test/wp-json/wc/gla/ads/connection
 ```
 
-```javascript
-{
-	data: 'foo'
-}
-```
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    "id": 1234567890,
+    "status": "connected"
 }
 ```
 
@@ -126,40 +97,26 @@ GET /ads/accounts/
 
 # [API](../../api.md) | DELETE /ads/connection/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint disconnects the connected ads account.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
+- status: When the request was successful or not e.g. "success"
+- message: Additional detail about the response e.g. "Successfully disconnected."
 
 ## Example Request
 
 ```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
+POST https://domain.test/wp-json/wc/gla/ads/connection
 ```
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    "status": "success",
+    "message": "Successfully disconnected."
 }
 ```
