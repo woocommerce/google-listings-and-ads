@@ -643,7 +643,13 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-ads-link' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-link' ) ) {
-			$id   = ! empty( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] ) : '12345';
+
+			if ( empty( $_GET['customer_id'] ) ) {
+				$this->response .= 'Please enter a Customer ID';
+				return;
+			}
+
+			$id   = absint( $_GET['customer_id'] );
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/link-customer';
 			$args = [
 				'headers' => [
@@ -865,7 +871,13 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-ads-campaign' === $_GET['action'] && check_admin_referer( 'wcs-ads-campaign' ) ) {
-			$id   = ! empty( $_GET['customer_id'] ) ? absint( $_GET['customer_id'] ) : '12345';
+
+			if ( empty( $_GET['customer_id'] ) ) {
+				$this->response .= 'Please enter a Customer ID';
+				return;
+			}
+
+			$id   = absint( $_GET['customer_id'] );
 			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/google-ads/v6/customers/' . $id . '/googleAds:search';
 			$args = [
 				'headers' => [
@@ -953,7 +965,13 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-sync-product' === $_GET['action'] && check_admin_referer( 'wcs-sync-product' ) ) {
-			$id      = ! empty( $_GET['product_id'] ) ? absint( $_GET['product_id'] ) : '12345';
+
+			if ( empty( $_GET['product_id'] ) ) {
+				$this->response .= 'Please enter a Product ID';
+				return;
+			}
+
+			$id      = absint( $_GET['product_id'] );
 			$product = wc_get_product( $id );
 
 			/** @var ProductSyncer $product_syncer */
