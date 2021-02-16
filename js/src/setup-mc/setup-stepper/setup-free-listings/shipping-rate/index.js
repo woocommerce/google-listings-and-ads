@@ -13,7 +13,6 @@ import RadioHelperText from '../../../../wcdl/radio-helper-text';
 import AppDocumentationLink from '../../../../components/app-documentation-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import ShippingRateSetup from './shipping-rate-setup';
-import './index.scss';
 
 const ShippingRate = ( props ) => {
 	const { formProps } = props;
