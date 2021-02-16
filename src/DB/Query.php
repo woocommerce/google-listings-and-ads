@@ -256,4 +256,37 @@ abstract class Query implements QueryInterface {
 
 		return $where_pieces;
 	}
+
+	/**
+	 * Insert a row of data into the table.
+	 *
+	 * @param array $data
+	 *
+	 * @return int
+	 * @throws InvalidQuery When there is an error inserting the data.
+	 */
+	public function insert( array $data ): int {
+		foreach ( $data as $column => &$value ) {
+			$this->validate_column( $column );
+			$value = $this->sanitize_value( $column, $value );
+		}
+
+		$result = $this->wpdb->insert( $this->table->get_name(), $data );
+
+		if ( false === $result ) {
+			throw InvalidQuery::from_insert( $this->wpdb->last_error ?: 'Error inserting data.' );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Sanitize a value for a given column before inserting it into the DB.
+	 *
+	 * @param string $column The column name.
+	 * @param mixed  $value The value to sanitize.
+	 *
+	 * @return mixed The sanitized value.
+	 */
+	abstract protected function sanitize_value( string $column, $value );
 }
