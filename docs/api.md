@@ -14,8 +14,8 @@
 
 * [Shipping Rate Controller](api/merchant-center/shipping-rate-controller.md)
 * [Shipping Rate Batch Controller](api/merchant-center/shipping-rate-batch-controller.md)
-* [Shippinh Time Controller](api/merchant-center/shipping-time-controller.md)
-* [Shippinh Time Batch Controller](api/merchant-center/shipping-time-batch-controller.md)
+* [Shipping Time Controller](api/merchant-center/shipping-time-controller.md)
+* [Shipping Time Batch Controller](api/merchant-center/shipping-time-batch-controller.md)
 
-* [MC Account Controller](api/merchant-center/supported-countries-controller.md)
-* [MC Account Controller](api/merchant-center/target-audience-controller.md)
+* [Supported Countries Controller](api/merchant-center/supported-countries-controller.md)
+* [Target Audience Controller](api/merchant-center/target-audience-controller.md)
