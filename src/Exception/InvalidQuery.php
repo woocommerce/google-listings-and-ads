@@ -34,4 +34,27 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	public static function from_compare( string $compare ): InvalidQuery {
 		return new static( sprintf( 'The compare value "%s" is not valid.', $compare ) );
 	}
+
+	/**
+	 * Create a new instance of the exception when there is an error inserting data into the DB.
+	 *
+	 * @param string $error
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function from_insert( string $error ): InvalidQuery {
+		return new static( sprintf( 'Error inserting data into the database: "%s"', $error ) );
+	}
+
+	/**
+	 * Create a new instance of the exception when trying to set an auto increment ID.
+	 *
+	 * @param string $table_class
+	 * @param string $column_name
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function cant_set_id( string $table_class, string $column_name = 'id' ): InvalidQuery {
+		return new static( sprintf( 'Cannot set column "%s" for table class "%s".', $column_name, $table_class ) );
+	}
 }
