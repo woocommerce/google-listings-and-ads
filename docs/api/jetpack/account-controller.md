@@ -1,40 +1,24 @@
 # [API](../../api.md) | GET /jetpack/connect/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint returns the URL used to connect to Jetpack/WordPress.com.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
+- url: URL to redirect merchants to to connect to Jetpack/WordPress.com.
 
 ## Example Request
 
 ```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
+GET https://domain.test/wp-json/wc/gla/jetpack/connect
 ```
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    url: https://wordpresscom/?somethings
 }
 ```
 
@@ -42,41 +26,27 @@ GET /ads/accounts/
 
 # [API](../../api.md) | DELETE /jetpack/connect/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint disconnects/revokes the jetpack connection.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
+- status: Whether the request was successful or not e.g. "success"
+- message: Additional detail about the response e.g. "Successfully disconnected."
 
 ## Example Request
 
 ```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
+DELETE https://domain.test/wp-json/wc/gla/jetpack/connect
 ```
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    "status": "success",
+    "message": "Successfully disconnected."
 }
 ```
 
@@ -86,38 +56,22 @@ GET /ads/accounts/
 
 This endpoint returns xxx.
 
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
-
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
-
-## Example Request
-
-```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
-```
+- active: Whether the connection is active
+- owner: Whether the current user is the connection owner (yes or no)
+- displayName: Account display name
+- email: Account email address
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    "active": "connected",
+    "owner": "yes",
+    "displayName": "Jason",
+    "email": "jason@example.com"
 }
 ```

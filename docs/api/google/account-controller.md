@@ -1,40 +1,24 @@
 # [API](../../api.md) | GET /google/connect/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint returns the URL used to connect to Google.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
+- url: URL to redirect merchants to to connect to Google.
 
 ## Example Request
 
 ```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
+GET https://domain.test/wp-json/wc/gla/google/connect
 ```
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    url: https://google.com/?somethings
 }
 ```
 
@@ -42,41 +26,27 @@ GET /ads/accounts/
 
 # [API](../../api.md) | DELETE /google/connect/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint disconnects/revokes the google connection.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
+- status: Whether the request was successful or not e.g. "success"
+- message: Additional detail about the response e.g. "Successfully disconnected."
 
 ## Example Request
 
 ```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
+DELETE https://domain.test/wp-json/wc/gla/google/connect
 ```
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    "status": "success",
+    "message": "Successfully disconnected."
 }
 ```
 
@@ -84,40 +54,27 @@ GET /ads/accounts/
 
 # [API](../../api.md) | GET /google/connected/`<service>`
 
-This endpoint returns xxx.
-
-## Request
-
-The request URL must contain the following path parameters:
-
-- xyz: <description>
+This endpoint returns status of the Google account connection indicating when an account is connected or not.
 
 ## Response
 
 The response contains the following fields:
 
-- xyz: <description>
-- xyz: <description>
-
-## Example Request
-
-```
-GET /ads/accounts/
-```
-
-```javascript
-{
-	data: 'foo'
-}
-```
+- status: Whether the account is connected or disconnected
+- email: Account email address or null if disconnected.
 
 ## Example Response
 
 ```javascript
 {
-	offerId: "product123",
-	title: "Lorem Ipsum",
-	description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-	...
+    "status ": "connected",
+    "email": "jason@example.com"
+}
+```
+
+```javascript
+{
+    "status": "disconnected",
+    "email": ""
 }
 ```
