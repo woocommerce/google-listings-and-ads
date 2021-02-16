@@ -1,0 +1,23 @@
+.gla-full-container {
+	.woocommerce-layout {
+		padding-top: 0;
+
+		// Hide Header, TransientNotices, and StoreAlerts.
+		.woocommerce-transient-notices, .woocommerce-layout__header, .woocommerce-store-alerts, .woocommerce-layout__notice-list {
+			display: none;
+		}
+		.woocommerce-layout__primary {
+			margin: 0;
+
+			// Hide the Spinner for Suspended StoreAlerts.
+			> .woocommerce-spinner {
+				display: none;
+			}
+
+			.woocommerce-layout__main {
+				padding: 0;
+
+			}
+		}
+	}
+}
