@@ -28,7 +28,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     country varchar(2) NOT NULL,
     time bigint(20) NOT NULL default 0,
     PRIMARY KEY (id),
-    KEY country (country),
+    KEY country (country)
 ) {$this->get_collation()};
 SQL;
 	}
