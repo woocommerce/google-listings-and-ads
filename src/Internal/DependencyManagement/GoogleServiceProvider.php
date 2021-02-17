@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
+use Exception;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
@@ -117,7 +118,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
 			} catch ( WPError $error ) {
 				do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in register_guzzle()' );
-				throw new \Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
+				throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 			}
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
