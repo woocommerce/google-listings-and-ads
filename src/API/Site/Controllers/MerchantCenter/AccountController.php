@@ -277,16 +277,7 @@ class AccountController extends BaseOptionsController {
 			if ( 'link' === $name || 'claim' === $name ) {
 				$time_to_wait = $this->mc_account_state->get_seconds_to_wait_after_created();
 				if ( $time_to_wait ) {
-					return new Response(
-						[
-							'retry_after' => $time_to_wait,
-							'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
-						],
-						503,
-						[
-							'Retry-After' => $time_to_wait,
-						]
-					);
+					return $this->get_time_to_wait_response( $time_to_wait );
 				}
 			}
 
@@ -340,6 +331,8 @@ class AccountController extends BaseOptionsController {
 							406
 						);
 					}
+				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
+					return $this->get_time_to_wait_response( MerchantAccountState::MC_DELAY_AFTER_CREATE );
 				}
 
 				$this->mc_account_state->update( $state );
@@ -470,5 +463,18 @@ class AccountController extends BaseOptionsController {
 		$this->merchant->update_account( $mc_account );
 
 		return true;
+	}
+
+	private function get_time_to_wait_response( int $time_to_wait ) {
+		return new Response(
+			[
+				'retry_after' => $time_to_wait,
+				'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
+			],
+			503,
+			[
+				'Retry-After' => $time_to_wait,
+			]
+		);
 	}
 }
