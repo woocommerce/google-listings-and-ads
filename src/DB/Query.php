@@ -281,10 +281,62 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Delete rows from the database.
+	 *
+	 * @param string $where_column Column to use when looking for values to delete.
+	 * @param mixed  $value        Value to use when determining what rows to delete.
+	 *
+	 * @return int The number of rows deleted.
+	 * @throws InvalidQuery When there is an error deleting data.
+	 */
+	public function delete( string $where_column, $value ): int {
+		$this->validate_column( $where_column );
+		$result = $this->wpdb->delete( $this->table->get_name(), [ $where_column => $value ] );
+
+		if ( false === $result ) {
+			throw InvalidQuery::from_delete( $this->wpdb->last_error ?: 'Error deleting data.' );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Update data in the database.
+	 *
+	 * @param array $data  Array of columns and their values.
+	 * @param array $where Array of where conditions for updating values.
+	 *
+	 * @return int
+	 * @throws InvalidQuery When there is an error updating data, or when an empty where array is provided.
+	 */
+	public function update( array $data, array $where ): int {
+		if ( empty( $where ) ) {
+			throw InvalidQuery::empty_where();
+		}
+
+		foreach ( $data as $column => &$value ) {
+			$this->validate_column( $column );
+			$value = $this->sanitize_value( $column, $value );
+		}
+
+		$result = $this->wpdb->update(
+			$this->table->get_name(),
+			$data,
+			$where
+		);
+
+		if ( false === $result ) {
+			throw InvalidQuery::from_update( $this->wpdb->last_error ?: 'Error updating data.' );
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Sanitize a value for a given column before inserting it into the DB.
 	 *
 	 * @param string $column The column name.
-	 * @param mixed  $value The value to sanitize.
+	 * @param mixed  $value  The value to sanitize.
 	 *
 	 * @return mixed The sanitized value.
 	 */

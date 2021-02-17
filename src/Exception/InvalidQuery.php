@@ -57,4 +57,35 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	public static function cant_set_id( string $table_class, string $column_name = 'id' ): InvalidQuery {
 		return new static( sprintf( 'Cannot set column "%s" for table class "%s".', $column_name, $table_class ) );
 	}
+
+	/**
+	 * Create a new instance of the exception when there is an error deleting data from the DB.
+	 *
+	 * @param string $error
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function from_delete( string $error ): InvalidQuery {
+		return new static( sprintf( 'Error deleting data into the database: "%s"', $error ) );
+	}
+
+	/**
+	 * Create a new instance of the exception when there is an error updating data in the DB.
+	 *
+	 * @param string $error
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function from_update( string $error ): InvalidQuery {
+		return new static( sprintf( 'Error updating data in the database: "%s"', $error ) );
+	}
+
+	/**
+	 * Create a new instance of the exception when an empty where clause is provided.
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function empty_where(): InvalidQuery {
+		return new static( 'Where clause cannot be an empty array.' );
+	}
 }
