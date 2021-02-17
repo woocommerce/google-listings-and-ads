@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -144,7 +144,7 @@ class Proxy {
 		$status = $id ? 'connected' : 'disconnected';
 
 		foreach ( $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) {
-			if ( ! isset( $step['status'] ) || AccountController::MC_CREATION_STEP_DONE !== $step['status'] ) {
+			if ( ! isset( $step['status'] ) || MerchantAccountState::ACCOUNT_STEP_DONE !== $step['status'] ) {
 				$status = 'incomplete';
 				$id     = 0;
 				break;

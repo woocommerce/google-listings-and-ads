@@ -268,7 +268,77 @@ class ConnectionTest implements Service, Registerable {
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-google-mc-proxy" type="hidden" />
 				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>MC Account Setup:</th>
+							<td>
+								<p>
+									<label title="Use a live site!">
+										Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : apply_filters( 'woocommerce_gla_site_url', site_url() ); ?>" />
+									</label>
+									<label title="To simulate linking with an external site">
+										MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
+									</label>
+									<button class="button">MC Account Setup (I & II)</button>
+								</p>
+
+								<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ) ) : ?>
+									<p class="description">
+										( Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
+										<?php foreach ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) : ?>
+											<?php echo $name . ':' . $step['status']; ?>
+										<?php endforeach; ?>
+										)
+									</p>
+								<?php endif; ?>
+								<p class="description">
+									Begins/continues four-step account-setup sequence: creation, verification, linking, claiming.
+								</p>
+								<p class="description">Claim overwrite performed with <a href="#overwrite">Claim Overwrite button</a>.
+								</p>
+								<p class="description">
+									If no MC ID is provided, then a sub-account will be created under our MCA.
+								</p>
+								<p class="description">
+									Adds <em>gla_merchant_id</em> to site options.
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Check MC Status:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-accounts-check' ], $url ), 'wcs-google-accounts-check' ) ); ?>">MC Connection Status</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Disconnect MC:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-delete' ), $url ), 'wcs-google-accounts-delete' ) ); ?>">MC Disconnect</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><a name="overwrite"></a>Claim Overwrite:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-google-mc-setup' ); ?>
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-google-mc-setup" type="hidden" />
+				</form>
+
+				<details>
+					<summary><strong>More Merchant Center</strong></summary>
+					<p class="description">For single-step development testing, not used for normal account setup flow.</p>
 				<table class="form-table" role="presentation">
 					<tr>
 						<th>Perform Verification:</th>
@@ -302,72 +372,10 @@ class ConnectionTest implements Service, Registerable {
 							</p>
 						</td>
 					</tr>
-					<tr>
-						<th>Claim Overwrite:</th>
-						<td>
-							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
-							</p>
-						</td>
-					</tr>
 				</table>
 
-				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
-
-					<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ) ) : ?>
-						Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
-						<?php foreach ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) : ?>
-							<?php echo $name . ':' . $step['status']; ?>
-						<?php endforeach; ?>
-						<br/>
-					<?php endif; ?>
-
-					<table class="form-table" role="presentation">
-						<tr>
-							<th>MC Account Setup:</th>
-							<td>
-								<p>
-									<label title="Use a live site!">
-										Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo ! empty( $_GET['site_url'] ) ? ( $_GET['site_url'] ) : apply_filters( 'woocommerce_gla_site_url', site_url() ); ?>" />
-									</label>
-									<label title="To simulate linking with an external site">
-										MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
-									</label>
-									<button class="button">MC Account Setup (I & II)</button>
-								</p>
-								<p class="description">
-									Can be used to perform all MC account steps - creation, verification, linking, claiming and also overwriting.
-								</p>
-								<p class="description">
-									If no MC ID is provided, then a sub-account will be created under our MCA.
-								</p>
-								<p class="description">
-									Adds gla_merchant_id to site options.
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th>Check MC Status:</th>
-							<td>
-								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-accounts-check' ], $url ), 'wcs-google-accounts-check' ) ); ?>">MC Conn. Status</a>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th>Disconnect MC:</th>
-							<td>
-								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-accounts-delete' ), $url ), 'wcs-google-accounts-delete' ) ); ?>">MC Disconnect</a>
-								</p>
-							</td>
-						</tr>
-					</table>
-					<?php wp_nonce_field( 'wcs-google-mc-setup' ); ?>
-					<input name="page" value="connection-test-admin-page" type="hidden" />
-					<input name="action" value="wcs-google-mc-setup" type="hidden" />
-				</form>
-
+				</details>
+				<br>
 				<hr />
 
 				<h2 class="title">Google Ads</h2>
