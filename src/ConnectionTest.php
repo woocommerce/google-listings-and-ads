@@ -546,7 +546,7 @@ class ConnectionTest implements Service, Registerable {
 			$auth_url = $manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans.
-			$auth_url = add_query_arg( [ 'from' => 'woocommerce-payments' ], $auth_url );
+			$auth_url = add_query_arg( [ 'from' => 'google-listings-and-ads' ], $auth_url );
 
 			error_log( $auth_url );
 
