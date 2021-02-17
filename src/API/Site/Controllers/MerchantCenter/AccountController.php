@@ -467,6 +467,13 @@ class AccountController extends BaseOptionsController {
 		return true;
 	}
 
+	/**
+	 * Generate a 503 Response with Retry-After header and message.
+	 *
+	 * @param int $time_to_wait The time to indicate
+	 *
+	 * @return Response
+	 */
 	private function get_time_to_wait_response( int $time_to_wait ) {
 		return new Response(
 			[
