@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
-import { useCallback, createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Guide } from '@wordpress/components';
 
@@ -83,6 +83,15 @@ const pages = [
 	},
 ];
 
+const handleGuideFinish = () => {
+	const nextQuery = {
+		...getQuery(),
+		guide: undefined,
+	};
+	const path = getNewPath( nextQuery );
+	getHistory().replace( path );
+};
+
 /**
  * Modal window to greet the user at Product Feed, after successful completion of onboarding.
  *
@@ -93,15 +102,7 @@ const pages = [
  *       Need to reconsider how this guide modal would be triggered later.
  */
 const SubmissionSuccessGuide = () => {
-	const query = getQuery();
-	const isOpen = query.guide === GUIDE_NAME;
-
-	const handleFinish = useCallback( () => {
-		const nextQuery = { ...query };
-		nextQuery.guide = undefined;
-		const path = getNewPath( nextQuery );
-		getHistory().replace( path );
-	}, [ query ] );
+	const isOpen = getQuery().guide === GUIDE_NAME;
 
 	if ( ! isOpen ) {
 		return null;
@@ -112,7 +113,7 @@ const SubmissionSuccessGuide = () => {
 			className="gla-submission-success-guide"
 			finishButtonText={ __( 'Got it', 'google-listings-and-ads' ) }
 			pages={ pages }
-			onFinish={ handleFinish }
+			onFinish={ handleGuideFinish }
 		/>
 	);
 };
