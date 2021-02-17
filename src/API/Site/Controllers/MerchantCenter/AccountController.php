@@ -332,6 +332,8 @@ class AccountController extends BaseOptionsController {
 						);
 					}
 				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
+					$state['set_id']['data']['created_timestamp'] = time();
+					$this->mc_account_state->update( $state );
 					return $this->get_time_to_wait_response( MerchantAccountState::MC_DELAY_AFTER_CREATE );
 				}
 
