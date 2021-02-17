@@ -76,7 +76,7 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 		$this->check_if_plugin_files_updated();
 
 		$db_version = $this->get_db_version();
-		if ( $db_version !== $this->get_version() ) {
+		if ( $db_version !== $this->get_version() || apply_filters( 'gla_force_run_install', false ) ) {
 			$this->install();
 
 			if ( '' === $db_version ) {
