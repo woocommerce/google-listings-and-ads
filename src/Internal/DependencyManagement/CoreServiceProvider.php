@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
@@ -14,6 +15,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
@@ -23,7 +27,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
@@ -86,6 +89,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SiteVerificationMeta::class   => true,
 		DebugLogger::class            => true,
 		MerchantAccountState::class   => true,
+		DBInstaller::class            => true,
 	];
 
 	/**
@@ -99,20 +103,27 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( DebugLogger::class );
 
 		// Share our interfaces, possibly with concrete objects.
-		$this->share_interface( AssetsHandlerInterface::class, AssetsHandler::class );
-		$this->share_interface(
+		$this->share_concrete( AssetsHandlerInterface::class, AssetsHandler::class );
+		$this->share_concrete(
 			TracksInterface::class,
 			$this->share_with_tags( Tracks::class, TracksProxy::class )
 		);
 
 		// Set up Options, and inflect classes that need options.
-		$this->share_interface( OptionsInterface::class, Options::class );
+		$this->share_concrete( OptionsInterface::class, Options::class );
 		$this->getLeagueContainer()
 			->inflector( OptionsAwareInterface::class )
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
+		// Set up the installer.
+		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
+		$installer_definition->setConcrete(
+			function( ...$arguments ) {
+				return new Installer( ...$arguments );
+			}
+		);
+
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Installer::class );
 		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
@@ -153,6 +164,15 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
+		$this->conditionally_share_with_tags( InstallTimestamp::class );
+
+		// The DB Controller has some extra setup required.
+		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );
+		$db_definition->setConcrete(
+			function( ...$arguments ) {
+				return new DBInstaller( ...$arguments );
+			}
+		);
 	}
 
 	/**
