@@ -195,7 +195,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @return string Empty if no access token is available.
 	 *
-	 * @throws WPError If the authorization token isn't found and errors aren't suppressed.
+	 * @throws WPError If the authorization token isn't found.
 	 */
 	protected function generate_auth_header(): string {
 		/** @var Manager $manager */
