@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
+use Exception;
 use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
@@ -99,8 +100,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->getLeagueContainer()
 		);
 
+		try {
+			$auth_header = [ 'Authorization' => $this->generate_auth_header() ];
+		} catch ( WPError $error ) {
+			$auth_header = [];
+		}
+		$this->getLeagueContainer()->add( 'connect_server_auth_header', $auth_header );
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
-		$this->getLeagueContainer()->add( 'connect_server_auth_header', [ 'Authorization' => $this->generate_auth_header() ] );
 		$this->getLeagueContainer()->add( 'merchant_id', $this->get_merchant_id()->get() );
 	}
 
@@ -115,8 +121,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			try {
 				$auth_header = $this->generate_auth_header();
 				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
-			} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-				// Don't do anything with the error here.
+			} catch ( WPError $error ) {
+				do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in register_guzzle()' );
+				throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 			}
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
@@ -186,18 +193,15 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	/**
 	 * Generate the authorization header for the GuzzleClient and GoogleAdsClient.
 	 *
-	 * @return string
+	 * @return string Empty if no access token is available.
+	 *
+	 * @throws WPError If the authorization token isn't found.
 	 */
 	protected function generate_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
 		$token   = $manager->get_access_token( false, false, false );
-
-		try {
-			$this->check_for_wp_error( $token );
-		} catch ( WPError $error ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-			return '';
-		}
+		$this->check_for_wp_error( $token );
 
 		[ $key, $secret ] = explode( '.', $token->secret );
 
