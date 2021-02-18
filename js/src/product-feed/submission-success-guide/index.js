@@ -18,6 +18,7 @@ import GuidePageContent, {
 import './index.scss';
 
 const GUIDE_NAME = 'submission-success';
+const CONFIRM_BUTTON_CLASS = 'components-guide__finish-button';
 
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
@@ -84,13 +85,24 @@ const pages = [
 	},
 ];
 
-const handleGuideFinish = () => {
+const handleGuideFinish = ( e ) => {
 	const nextQuery = {
 		...getQuery(),
 		guide: undefined,
 	};
 	const path = getNewPath( nextQuery );
 	getHistory().replace( path );
+
+	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
+	// here is a workaround by identifying the close button's class name.
+	const target = e.currentTarget || e.target;
+	const action = target.classList.contains( CONFIRM_BUTTON_CLASS )
+		? 'confirm'
+		: 'dismiss';
+	recordEvent( 'gla_modal_closed', {
+		context: GUIDE_NAME,
+		action,
+	} );
 };
 
 /**
