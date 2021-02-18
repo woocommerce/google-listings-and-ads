@@ -43,8 +43,8 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	/**
 	 * Installer constructor.
 	 *
-	 * @param InstallableInterface[] $installables
-	 * @param array                  $first_installers
+	 * @param InstallableInterface[]  $installables
+	 * @param FirstInstallInterface[] $first_installers
 	 */
 	public function __construct( array $installables, array $first_installers ) {
 		$this->installables     = $installables;
