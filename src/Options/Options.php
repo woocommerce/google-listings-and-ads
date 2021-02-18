@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidOption;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\CastableValueInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 
 defined( 'ABSPATH' ) || exit;
@@ -132,7 +133,9 @@ final class Options implements OptionsInterface, Service {
 	 */
 	protected function maybe_cast_value( string $name, $value ) {
 		if ( isset( self::OPTION_TYPES[ $name ] ) ) {
-			$value = self::OPTION_TYPES[ $name ]::cast( $value );
+			/** @var CastableValueInterface $class */
+			$class = self::OPTION_TYPES[ $name ];
+			$value = $class::cast( $value );
 		}
 
 		return $value;
