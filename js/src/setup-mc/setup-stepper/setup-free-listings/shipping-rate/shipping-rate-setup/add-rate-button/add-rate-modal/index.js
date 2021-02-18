@@ -13,9 +13,9 @@ import { STORE_KEY } from '../../../../../../../data';
 import AppModal from '../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../components/app-input-control';
 import VerticalGapLayout from '../../../../components/vertical-gap-layout';
+import AudienceCountrySelect from '../../../../components/audience-country-select';
 import useStoreCurrency from '../../../../../../../hooks/useStoreCurrency';
 import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
-import AudienceCountrySelect from '.~/components/audience-country-select';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
