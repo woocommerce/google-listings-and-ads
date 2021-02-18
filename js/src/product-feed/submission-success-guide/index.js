@@ -73,10 +73,17 @@ const pages = [
 					),
 					{
 						// TODO: The free listings link will be added when its URL is ready
-						// TODO: Event tracking will be implemented by another PR
-						freeListingsLink: <ContentLink href="/" />,
+						freeListingsLink: (
+							<ContentLink
+								href="/"
+								context="setup-mc-free-listings"
+							/>
+						),
 						merchantCenterLink: (
-							<ContentLink href="https://www.google.com/retail/solutions/merchant-center/" />
+							<ContentLink
+								href="https://www.google.com/retail/solutions/merchant-center/"
+								context="setup-mc-merchant-center"
+							/>
 						),
 					}
 				) }

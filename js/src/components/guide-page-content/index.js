@@ -32,22 +32,24 @@ export default function GuidePageContent( { title, children } ) {
  * Renders a TrackableLink component with preset props and additional styling. This link should be a link within the content of GuidePageContent.
  *
  * @param {Object} props Props to be forwarded to TrackableLink.
- * @param {Array<JSX.Element>} props.children Array of react element to be rendered inside the TrackableLink.
+ * @param {string} props.context Indicate which link is clicked.
+ * @param {string} props.href Link's URL and it also be passed to `TrackableLink` component.
  * @param {string} [props.className] Additional CSS class name to be appended.
  */
 export function ContentLink( props ) {
-	const { children, className, ...restProps } = props;
+	const { context, href, className, ...restProps } = props;
 	return (
 		<TrackableLink
 			className={ classnames(
 				'gla-guide__page-content__link',
 				className
 			) }
+			eventName="gla_modal_content_link_click"
+			eventProps={ { context, href } }
 			type="external"
 			target="_blank"
+			href={ href }
 			{ ...restProps }
-		>
-			{ children }
-		</TrackableLink>
+		/>
 	);
 }
