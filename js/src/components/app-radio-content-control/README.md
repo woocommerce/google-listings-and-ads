@@ -26,5 +26,5 @@ Same as [InputControl](https://github.com/WordPress/gutenberg/tree/master/packag
 | `label` | The option's label | Array | - |
 | `value` | The option's value | String | - |
 | `selected` | The selected `value` string | String | - |
-| `collapsible` | Collapse the additional content when `selected === value` | Boolean | - |
+| `collapsible` | Collapse the additional content when `selected !== value` | Boolean | - |
 | `children` | The additional content to display | React.Node | - |
