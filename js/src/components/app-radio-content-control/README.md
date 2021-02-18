@@ -1,6 +1,6 @@
 # AppRadioContentControl
 
-Display additional content under the radio control and optionally collapse the content with `collapsible` when the radio button is checked.
+Display additional content under the radio control. Optionally collapse the content of unchecked options, when the `collapsible` prop is set.
 
 This uses `@wordpress/components` [RadioControl](https://github.com/WordPress/gutenberg/tree/master/packages/components/src/radio-control) under the hood.
 
