@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidOption;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\CastableValueInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,6 +35,11 @@ final class Options implements OptionsInterface, Service {
 		self::TARGET_AUDIENCE        => true,
 	];
 
+	private const OPTION_TYPES = [
+		self::ADS_ID      => PositiveInteger::class,
+		self::MERCHANT_ID => PositiveInteger::class,
+	];
+
 	/**
 	 * Array of options that we have loaded.
 	 *
@@ -50,12 +57,13 @@ final class Options implements OptionsInterface, Service {
 	 */
 	public function get( string $name, $default = null ) {
 		$this->validate_option_key( $name );
-		$name = $this->prefix_name( $name );
+
 		if ( ! array_key_exists( $name, $this->options ) ) {
-			$this->options[ $name ] = get_option( $name, $default );
+			$value                  = get_option( $this->prefix_name( $name ), $default );
+			$this->options[ $name ] = $this->maybe_cast_value( $name, $value );
 		}
 
-		return $this->options[ $name ];
+		return $this->raw_value( $this->options[ $name ] );
 	}
 
 	/**
@@ -68,10 +76,9 @@ final class Options implements OptionsInterface, Service {
 	 */
 	public function add( string $name, $value ): bool {
 		$this->validate_option_key( $name );
-		$name                   = $this->prefix_name( $name );
+		$value                  = $this->maybe_convert_value( $name, $value );
 		$this->options[ $name ] = $value;
-
-		return add_option( $name, $value );
+		return add_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 	}
 
 	/**
@@ -84,10 +91,9 @@ final class Options implements OptionsInterface, Service {
 	 */
 	public function update( string $name, $value ): bool {
 		$this->validate_option_key( $name );
-		$name                   = $this->prefix_name( $name );
+		$value                  = $this->maybe_convert_value( $name, $value );
 		$this->options[ $name ] = $value;
-
-		return update_option( $name, $value );
+		return update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 	}
 
 	/**
@@ -99,10 +105,9 @@ final class Options implements OptionsInterface, Service {
 	 */
 	public function delete( string $name ): bool {
 		$this->validate_option_key( $name );
-		$name = $this->prefix_name( $name );
 		unset( $this->options[ $name ] );
 
-		return delete_option( $name );
+		return delete_option( $this->prefix_name( $name ) );
 	}
 
 	/**
@@ -116,6 +121,53 @@ final class Options implements OptionsInterface, Service {
 		if ( ! array_key_exists( $name, self::VALID_OPTIONS ) ) {
 			throw InvalidOption::invalid_name( $name );
 		}
+	}
+
+	/**
+	 * Cast to a specific value type.
+	 *
+	 * @param string $name  The option name.
+	 * @param mixed  $value The option value.
+	 *
+	 * @return mixed
+	 */
+	protected function maybe_cast_value( string $name, $value ) {
+		if ( isset( self::OPTION_TYPES[ $name ] ) ) {
+			/** @var CastableValueInterface $class */
+			$class = self::OPTION_TYPES[ $name ];
+			$value = $class::cast( $value );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Convert to a specific value type.
+	 *
+	 * @param string $name  The option name.
+	 * @param mixed  $value The option value.
+	 *
+	 * @return mixed
+	 * @throws InvalidValue When the value is invalid.
+	 */
+	protected function maybe_convert_value( string $name, $value ) {
+		if ( isset( self::OPTION_TYPES[ $name ] ) ) {
+			$class = self::OPTION_TYPES[ $name ];
+			$value = new $class( $value );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Return raw value.
+	 *
+	 * @param mixed $value Possible object value.
+	 *
+	 * @return mixed
+	 */
+	protected function raw_value( $value ) {
+		return is_object( $value ) && method_exists( $value, 'get' ) ? $value->get() : $value;
 	}
 
 	/**
