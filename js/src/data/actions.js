@@ -25,10 +25,6 @@ export function* fetchShippingRates() {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 		} );
 
-		if ( ! response ) {
-			throw new Error();
-		}
-
 		const shippingRates = Object.values( response ).map( ( el ) => {
 			return {
 				countryCode: el.country_code,
@@ -56,7 +52,7 @@ export function* addShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
 
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 			method: 'POST',
 			data: {
@@ -65,10 +61,6 @@ export function* addShippingRate( shippingRate ) {
 				rate,
 			},
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.ADD_SHIPPING_RATE,
@@ -89,7 +81,7 @@ export function* updateShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
 
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 			method: 'POST',
 			data: {
@@ -98,10 +90,6 @@ export function* updateShippingRate( shippingRate ) {
 				rate,
 			},
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.UPDATE_SHIPPING_RATE,
@@ -120,14 +108,10 @@ export function* updateShippingRate( shippingRate ) {
 
 export function* deleteShippingRate( countryCode ) {
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates/${ countryCode }`,
 			method: 'DELETE',
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.DELETE_SHIPPING_RATE,
@@ -150,10 +134,6 @@ export function* fetchSettings() {
 			path: `${ API_NAMESPACE }/mc/settings`,
 		} );
 
-		if ( ! response ) {
-			throw new Error();
-		}
-
 		return {
 			type: TYPES.RECEIVE_SETTINGS,
 			settings: response,
@@ -171,15 +151,11 @@ export function* fetchSettings() {
 
 export function* saveSettings( settings ) {
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/settings`,
 			method: 'POST',
 			data: settings,
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.SAVE_SETTINGS,
@@ -202,10 +178,6 @@ export function* fetchCountries() {
 			path: `${ API_NAMESPACE }/mc/countries`,
 		} );
 
-		if ( ! response ) {
-			throw new Error();
-		}
-
 		return {
 			type: TYPES.RECEIVE_COUNTRIES,
 			countries: response,
@@ -227,10 +199,6 @@ export function* fetchTargetAudience() {
 			path: `${ API_NAMESPACE }/mc/target_audience`,
 		} );
 
-		if ( ! response ) {
-			throw new Error();
-		}
-
 		return {
 			type: TYPES.RECEIVE_TARGET_AUDIENCE,
 			target_audience: response,
@@ -248,15 +216,11 @@ export function* fetchTargetAudience() {
 
 export function* saveTargetAudience( targetAudience ) {
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/target_audience`,
 			method: 'POST',
 			data: targetAudience,
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.SAVE_TARGET_AUDIENCE,
