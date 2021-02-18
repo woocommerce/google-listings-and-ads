@@ -31,7 +31,7 @@ const AppRadioContentControl = ( props ) => {
 				] }
 				{ ...rest }
 			/>
-			{ ( ! collapsible || ( collapsible && selected === value ) ) && (
+			{ ( ! collapsible || selected === value ) && (
 				<div className="app-radio-content-control__content">
 					{ children }
 				</div>
