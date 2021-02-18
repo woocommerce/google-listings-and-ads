@@ -38,7 +38,7 @@ register_activation_hook(
 	__FILE__,
 	function () {
 		PluginFactory::instance()->activate();
-	},
+	}
 );
 
 // Hook much of our plugin after WooCommerce is loaded.
@@ -55,7 +55,7 @@ register_deactivation_hook(
 	__FILE__,
 	function () {
 		PluginFactory::instance()->deactivate();
-	},
+	}
 );
 
 /**
