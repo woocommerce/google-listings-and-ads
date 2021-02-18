@@ -2,8 +2,8 @@
  * Internal dependencies
  */
 import AppCountrySelect from '.~/components/app-country-select';
+import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import AppSpinner from '../app-spinner';
 
 const AudienceCountrySelect = ( props ) => {
 	const { data } = useTargetAudienceFinalCountryCodes();
