@@ -2,9 +2,10 @@
  * External dependencies
  */
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Guide } from '@wordpress/components';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -102,11 +103,9 @@ const handleGuideFinish = () => {
  *       Need to reconsider how this guide modal would be triggered later.
  */
 const SubmissionSuccessGuide = () => {
-	const isOpen = getQuery().guide === GUIDE_NAME;
-
-	if ( ! isOpen ) {
-		return null;
-	}
+	useEffect( () => {
+		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
+	}, [] );
 
 	return (
 		<Guide
@@ -118,4 +117,11 @@ const SubmissionSuccessGuide = () => {
 	);
 };
 
-export default SubmissionSuccessGuide;
+export default function SubmissionSuccessGuideWrap() {
+	const isOpen = getQuery().guide === GUIDE_NAME;
+
+	if ( ! isOpen ) {
+		return null;
+	}
+	return <SubmissionSuccessGuide />;
+}
