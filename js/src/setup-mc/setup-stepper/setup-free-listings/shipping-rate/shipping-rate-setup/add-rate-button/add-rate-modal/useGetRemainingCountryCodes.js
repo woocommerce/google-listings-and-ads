@@ -26,7 +26,7 @@ const useGetRemainingCountryCodes = () => {
 	} );
 
 	if ( ! selectedCountryCodes ) {
-		return 0;
+		return [];
 	}
 
 	const actualSet = new Set( actual );
