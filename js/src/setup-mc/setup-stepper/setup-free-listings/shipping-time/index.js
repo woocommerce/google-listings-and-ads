@@ -52,6 +52,7 @@ const ShippingTime = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							value="flat"
+							collapsible
 						>
 							<ShippingTimeSetup formProps={ formProps } />
 						</AppRadioContentControl>
@@ -62,6 +63,7 @@ const ShippingTime = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							value="manual"
+							collapsible
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

@@ -12,8 +12,8 @@ import { useDispatch } from '@wordpress/data';
 import { STORE_KEY } from '../../../../../../../../data';
 import AppModal from '../../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../../components/app-input-control';
-import AppCountryMultiSelect from '../../../../../../../../components/app-country-multi-select';
 import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
+import AudienceCountrySelect from '../../../../../components/audience-country-select';
 import './index.scss';
 
 const EditRateModal = ( props ) => {
@@ -119,7 +119,8 @@ const EditRateModal = ( props ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AppCountryMultiSelect
+								<AudienceCountrySelect
+									multiple
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>

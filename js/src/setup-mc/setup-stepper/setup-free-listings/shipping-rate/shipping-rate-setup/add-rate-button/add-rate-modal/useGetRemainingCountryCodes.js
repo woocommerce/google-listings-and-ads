@@ -6,8 +6,8 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import useAudienceSelectedCountryCodes from '../../../../../../../hooks/useAudienceSelectedCountryCodes';
-import { STORE_KEY } from '../../../../../../../data';
+import { STORE_KEY } from '.~/data';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
  * Get the country codes that do not have any shipping rate setup yet.
@@ -17,12 +17,17 @@ import { STORE_KEY } from '../../../../../../../data';
  * @return	{Array<string>} array of country codes that do not have any shipping rate setup yet.
  */
 const useGetRemainingCountryCodes = () => {
-	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+
 	const actual = useSelect( ( select ) => {
 		return select( STORE_KEY )
 			.getShippingRates()
 			.map( ( el ) => el.countryCode );
 	} );
+
+	if ( ! selectedCountryCodes ) {
+		return [];
+	}
 
 	const actualSet = new Set( actual );
 	const remaining = selectedCountryCodes.filter(

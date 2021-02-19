@@ -19,22 +19,11 @@ export function handleFetchError( error, message ) {
 	console.log( error );
 }
 
-export const setAudienceSelectedCountryCodes = ( selected ) => {
-	return {
-		type: TYPES.SET_AUDIENCE_SELECTED_COUNTRIES,
-		selected,
-	};
-};
-
 export function* fetchShippingRates() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		const shippingRates = Object.values( response ).map( ( el ) => {
 			return {
@@ -63,7 +52,7 @@ export function* addShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
 
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 			method: 'POST',
 			data: {
@@ -72,10 +61,6 @@ export function* addShippingRate( shippingRate ) {
 				rate,
 			},
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.ADD_SHIPPING_RATE,
@@ -96,7 +81,7 @@ export function* updateShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
 
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 			method: 'POST',
 			data: {
@@ -105,10 +90,6 @@ export function* updateShippingRate( shippingRate ) {
 				rate,
 			},
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.UPDATE_SHIPPING_RATE,
@@ -127,14 +108,10 @@ export function* updateShippingRate( shippingRate ) {
 
 export function* deleteShippingRate( countryCode ) {
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates/${ countryCode }`,
 			method: 'DELETE',
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.DELETE_SHIPPING_RATE,
@@ -157,10 +134,6 @@ export function* fetchSettings() {
 			path: `${ API_NAMESPACE }/mc/settings`,
 		} );
 
-		if ( ! response ) {
-			throw new Error();
-		}
-
 		return {
 			type: TYPES.RECEIVE_SETTINGS,
 			settings: response,
@@ -178,15 +151,11 @@ export function* fetchSettings() {
 
 export function* saveSettings( settings ) {
 	try {
-		const response = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/settings`,
 			method: 'POST',
 			data: settings,
 		} );
-
-		if ( ! response ) {
-			throw new Error();
-		}
 
 		return {
 			type: TYPES.SAVE_SETTINGS,
@@ -197,6 +166,71 @@ export function* saveSettings( settings ) {
 			error,
 			__(
 				'There was an error trying to save settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchCountries() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/countries`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_COUNTRIES,
+			countries: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading supported country details.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchTargetAudience() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/target_audience`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_TARGET_AUDIENCE,
+			target_audience: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading target audience.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* saveTargetAudience( targetAudience ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/target_audience`,
+			method: 'POST',
+			data: targetAudience,
+		} );
+
+		return {
+			type: TYPES.SAVE_TARGET_AUDIENCE,
+			target_audience: targetAudience,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error saving target audience data.',
 				'google-listings-and-ads'
 			)
 		);

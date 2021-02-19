@@ -55,6 +55,7 @@ const TaxRate = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							value="destination"
+							collapsible
 						>
 							<RadioHelperText>
 								{ __(
@@ -70,6 +71,7 @@ const TaxRate = ( props ) => {
 								'google-listings-and-ads'
 							) }
 							value="manual"
+							collapsible
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

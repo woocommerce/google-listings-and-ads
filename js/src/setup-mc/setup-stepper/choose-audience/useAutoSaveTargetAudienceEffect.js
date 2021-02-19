@@ -10,10 +10,10 @@ import useDebouncedCallbackEffect from '.~/hooks/useDebouncedCallbackEffect';
  *
  * @param {Object} value Settings value object to be saved.
  */
-const useAutoSaveSettingsEffect = ( value ) => {
-	const { saveSettings } = useAppDispatch();
+const useAutoSaveTargetAudienceEffect = ( value ) => {
+	const { saveTargetAudience } = useAppDispatch();
 
-	useDebouncedCallbackEffect( value, saveSettings );
+	useDebouncedCallbackEffect( value, saveTargetAudience );
 };
 
-export default useAutoSaveSettingsEffect;
+export default useAutoSaveTargetAudienceEffect;

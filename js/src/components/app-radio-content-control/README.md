@@ -1,6 +1,6 @@
 # AppRadioContentControl
 
-Display additional content when the radio button is checked.
+Display additional content under the radio control. Optionally collapse the content of unchecked options, when the `collapsible` prop is set.
 
 This uses `@wordpress/components` [RadioControl](https://github.com/WordPress/gutenberg/tree/master/packages/components/src/radio-control) under the hood.
 
@@ -11,6 +11,7 @@ This uses `@wordpress/components` [RadioControl](https://github.com/WordPress/gu
   { ...getInputProps( 'shippingRateOption' ) }
   label='Click me to see additional content'
   value="simple"
+  collapsible
 >
   My additional content here.
 </AppRadioContentControl>
@@ -25,4 +26,5 @@ Same as [InputControl](https://github.com/WordPress/gutenberg/tree/master/packag
 | `label` | The option's label | Array | - |
 | `value` | The option's value | String | - |
 | `selected` | The selected `value` string | String | - |
-| `children` | The additional content to display when `selected === value` | React.Node | - |
+| `collapsible` | Collapse the additional content when `selected !== value` | Boolean | - |
+| `children` | The additional content to display | React.Node | - |

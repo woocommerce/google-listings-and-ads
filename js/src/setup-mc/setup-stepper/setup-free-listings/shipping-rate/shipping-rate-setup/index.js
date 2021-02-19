@@ -12,21 +12,26 @@ import AppInputControl from '../../../../../components/app-input-control';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
 import AddRateButton from './add-rate-button';
 import { STORE_KEY } from '../../../../../data';
-import './index.scss';
 import CountriesPriceInputForm from './countries-price-input-form';
 import useStoreCurrency from '../../../../../hooks/useStoreCurrency';
 import getCountriesPriceArray from './getCountriesPriceArray';
-import useAudienceSelectedCountryCodes from '../../../../../hooks/useAudienceSelectedCountryCodes';
+import AppSpinner from '.~/components/app-spinner';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import './index.scss';
 
 const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
 	} = props;
-	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
 	const shippingRates = useSelect( ( select ) =>
 		select( STORE_KEY ).getShippingRates()
 	);
 	const { code: currencyCode } = useStoreCurrency();
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
 
 	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = shippingRates.length;

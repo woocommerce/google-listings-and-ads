@@ -12,7 +12,8 @@ import AppDocumentationLink from '../../../../../components/app-documentation-li
 import VerticalGapLayout from '../../components/vertical-gap-layout';
 import AddTimeButton from './add-time-button';
 import CountriesTimeInput from './countries-time-input';
-import useAudienceSelectedCountryCodes from '../../../../../hooks/useAudienceSelectedCountryCodes';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import AppSpinner from '.~/components/app-spinner';
 
 const formKeys = {
 	rows: 'shippingTimeOption-rows',
@@ -23,7 +24,12 @@ const ShippingTimeSetup = ( props ) => {
 		formProps: { getInputProps, values, setValue },
 	} = props;
 
-	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
+
 	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
 		return acc + cur.countries.length;
