@@ -92,6 +92,8 @@ const pages = [
 	},
 ];
 
+// TODO: The current close method is temporarily for demo.
+//       Need to reconsider how this guide modal would be triggered later.
 const handleGuideFinish = ( e ) => {
 	const nextQuery = {
 		...getQuery(),
@@ -112,16 +114,7 @@ const handleGuideFinish = ( e ) => {
 	} );
 };
 
-/**
- * Modal window to greet the user at Product Feed, after successful completion of onboarding.
- *
- * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
- * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
- *
- * TODO: The current open/close methods are temporarily for demo.
- *       Need to reconsider how this guide modal would be triggered later.
- */
-const SubmissionSuccessGuide = () => {
+const GuideImplementation = () => {
 	useEffect( () => {
 		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
 	}, [] );
@@ -136,11 +129,20 @@ const SubmissionSuccessGuide = () => {
 	);
 };
 
-export default function SubmissionSuccessGuideWrap() {
+/**
+ * Modal window to greet the user at Product Feed, after successful completion of onboarding.
+ *
+ * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
+ * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
+ *
+ * TODO: The current open method is temporarily for demo.
+ *       Need to reconsider how this guide modal would be triggered later.
+ */
+export default function SubmissionSuccessGuide() {
 	const isOpen = getQuery().guide === GUIDE_NAME;
 
 	if ( ! isOpen ) {
 		return null;
 	}
-	return <SubmissionSuccessGuide />;
+	return <GuideImplementation />;
 }
