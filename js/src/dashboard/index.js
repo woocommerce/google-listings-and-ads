@@ -12,6 +12,7 @@ import { getNewPath } from '@woocommerce/navigation';
 import TabNav from '../tab-nav';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummaryCard from './summary-card';
+import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
 import './index.scss';
 
@@ -89,6 +90,7 @@ const Dashboard = () => {
 				</SummaryCard>
 			</div>
 			<div className="gla-dashboard__programs">
+				<CampaignCreationSuccessGuide />
 				<AllProgramsTableCard
 					trackEventReportId={ trackEventReportId }
 				/>
