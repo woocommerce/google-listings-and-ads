@@ -2,9 +2,10 @@
  * External dependencies
  */
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -33,13 +34,24 @@ const handleCloseWithAction = ( e, specifiedAction ) => {
 		// TODO: Mutate nextQuery to direct user to campaign creation path after that page ready.
 		getHistory().push( getNewPath( nextQuery ) );
 	}
+
+	recordEvent( 'gla_modal_closed', {
+		context: GUIDE_NAME,
+		action,
+	} );
 };
 
+const handleRequestClose = ( e ) => handleCloseWithAction( e, 'dismiss' );
+
 const GuideImplementation = () => {
+	useEffect( () => {
+		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
+	}, [] );
+
 	return (
 		<AppModal
 			className="gla-campaign-creation-success-guide"
-			onRequestClose={ handleCloseWithAction }
+			onRequestClose={ handleRequestClose }
 			buttons={ [
 				<Button
 					key="0"
