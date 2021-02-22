@@ -9,15 +9,18 @@ import { createInterpolateElement, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
-import './index.scss';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import { useAppDispatch } from '.~/data';
+import './index.scss';
 
 const TermsModal = ( props ) => {
 	const { onRequestClose } = props;
 	const [ agree, setAgree ] = useState( false );
+	const { createMCAccount } = useAppDispatch();
 
 	const handleCreateAccountClick = () => {
-		onRequestClose( agree );
+		createMCAccount();
+		onRequestClose();
 	};
 
 	return (

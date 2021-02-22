@@ -9,22 +9,16 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import TermsModal from './terms-modal';
-import { useAppDispatch } from '.~/data';
 
 const CreateAccountButton = () => {
 	const [ isOpen, setOpen ] = useState( false );
-	const { createMCAccount } = useAppDispatch();
 
 	const handleCreateAccountClick = () => {
 		setOpen( true );
 	};
 
-	const handleModalRequestClose = ( agree ) => {
+	const handleModalRequestClose = () => {
 		setOpen( false );
-
-		if ( agree ) {
-			createMCAccount();
-		}
 	};
 
 	return (
