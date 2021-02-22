@@ -1,15 +1,8 @@
 /**
- * External dependencies
- */
-import { useEffect, useRef } from '@wordpress/element';
-import { useDebouncedCallback } from 'use-debounce';
-
-/**
  * Internal dependencies
  */
-import { useAppDispatch } from '../../../data';
-
-const delay = 500;
+import { useAppDispatch } from '.~/data';
+import useDebouncedCallbackEffect from '.~/hooks/useDebouncedCallbackEffect';
 
 /**
  * Automatically save settings value upon value change with a debounce delay.
@@ -19,19 +12,8 @@ const delay = 500;
  */
 const useAutoSaveSettingsEffect = ( value ) => {
 	const { saveSettings } = useAppDispatch();
-	const debouncedCallback = useDebouncedCallback( saveSettings, delay );
-	const ref = useRef( null );
 
-	useEffect( () => {
-		// do not save on first render.
-		if ( ! ref.current ) {
-			ref.current = value;
-			return;
-		}
-
-		// call the debounced callback.
-		debouncedCallback.callback( value );
-	}, [ debouncedCallback, value ] );
+	useDebouncedCallbackEffect( value, saveSettings );
 };
 
 export default useAutoSaveSettingsEffect;

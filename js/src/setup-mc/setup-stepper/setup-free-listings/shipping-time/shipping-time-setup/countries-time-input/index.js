@@ -10,8 +10,9 @@ import { createInterpolateElement } from '@wordpress/element';
 import AppInputControl from '../../../../../../components/app-input-control';
 import More from '../../../components/more';
 import EditTimeButton from './edit-time-button';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import AppSpinner from '.~/components/app-spinner';
 import './index.scss';
-import useAudienceSelectedCountryCodes from '../../../../../../hooks/useAudienceSelectedCountryCodes';
 
 const firstN = 5;
 
@@ -19,7 +20,12 @@ const CountriesTimeInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, time } = value;
 
-	const [ selectedCountryCodes ] = useAudienceSelectedCountryCodes();
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
+
 	const firstCountries = countries.slice( 0, firstN ).map( ( c ) => c.label );
 	const remainingCount = countries.length - firstCountries.length;
 

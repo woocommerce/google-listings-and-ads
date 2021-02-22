@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
@@ -26,23 +27,6 @@ defined( 'ABSPATH' ) || exit;
 class AccountController extends BaseOptionsController {
 
 	/**
-	 * @var string[]
-	 */
-	private const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'verify', 'link', 'claim' ];
-
-	/** @var int Status value for a pending merchant account creation step */
-	public const MC_CREATION_STEP_PENDING = 0;
-
-	/** @var int Status value for a completed merchant account creation step */
-	public const MC_CREATION_STEP_DONE = 1;
-
-	/** @var int Status value for an unsuccessful merchant account creation step */
-	public const MC_CREATION_STEP_ERROR = - 1;
-
-	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
-	private const MC_DELAY_AFTER_CREATE = 90;
-
-	/**
 	 * @var ContainerInterface
 	 */
 	protected $container;
@@ -56,6 +40,11 @@ class AccountController extends BaseOptionsController {
 	 * @var Merchant
 	 */
 	protected $merchant;
+
+	/**
+	 * @var MerchantAccountState
+	 */
+	protected $mc_account_state;
 
 	/**
 	 * @var bool Whether to perform website claim with overwrite.
@@ -72,7 +61,8 @@ class AccountController extends BaseOptionsController {
 		$this->middleware = $container->get( Middleware::class );
 		$this->merchant   = $container->get( Merchant::class );
 		$this->set_options_object( $container->get( OptionsInterface::class ) );
-		$this->container = $container;
+		$this->mc_account_state = $container->get( MerchantAccountState::class );
+		$this->container        = $container;
 	}
 
 	/**
@@ -153,6 +143,16 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function overwrite_claim_callback(): callable {
 		return function( Request $request ) {
+			$state               = $this->mc_account_state->get( false );
+			$overwrite_necessary = ! empty( $state['claim']['data']['overwrite_required'] );
+			$claim_status        = $state['claim']['status'] ?? MerchantAccountState::ACCOUNT_STEP_PENDING;
+			if ( MerchantAccountState::ACCOUNT_STEP_DONE === $claim_status || ! $overwrite_necessary ) {
+				return new Response(
+					[ 'message' => __( 'Attempting invalid claim overwrite.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+
 			$this->overwrite_claim = true;
 			return $this->set_account_id( $request );
 		};
@@ -168,29 +168,6 @@ class AccountController extends BaseOptionsController {
 			return $this->set_account_id( $request );
 		};
 	}
-
-	/**
-	 * Run the process for setting up a Merchant Center account (sub-account or standalone).
-	 *
-	 * @param Request $request
-	 *
-	 * @return array|Response The account ID if setup has completed, or an error if not.
-	 */
-	protected function set_account_id( Request $request ) {
-		try {
-			$link_id = absint( $request['id'] );
-			if ( $link_id ) {
-				$this->use_standalone_account_id( $link_id );
-			}
-
-			$response = $this->setup_merchant_account();
-
-			return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
-		} catch ( Exception $e ) {
-			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-		}
-	}
-
 	/**
 	 * Get the callback function for the connected merchant account.
 	 *
@@ -211,7 +188,7 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->middleware->disconnect_merchant();
 
-			$this->update_merchant_account_state( [] );
+			$this->mc_account_state->update( [] );
 			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 
 			return [
@@ -256,6 +233,28 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
+	 * Run the process for setting up a Merchant Center account (sub-account or standalone).
+	 *
+	 * @param Request $request
+	 *
+	 * @return array|Response The account ID if setup has completed, or an error if not.
+	 */
+	protected function set_account_id( Request $request ) {
+		try {
+			$link_id = absint( $request['id'] );
+			if ( $link_id ) {
+				$this->use_standalone_account_id( $link_id );
+			}
+
+			$response = $this->setup_merchant_account();
+
+			return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
+		} catch ( Exception $e ) {
+			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+		}
+	}
+
+	/**
 	 * Performs the steps necessary to initialize a Merchant Center sub-account.
 	 * Should always resume up at the last pending or unfinished step. If the Merchant Center account
 	 * has already been created, the ID is simply returned.
@@ -267,27 +266,18 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If an error occurs during any step.
 	 */
 	protected function setup_merchant_account() {
-		$state       = $this->get_merchant_account_state();
+		$state       = $this->mc_account_state->get();
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		foreach ( $state as $name => &$step ) {
-			if ( self::MC_CREATION_STEP_DONE === $step['status'] ) {
+			if ( MerchantAccountState::ACCOUNT_STEP_DONE === $step['status'] ) {
 				continue;
 			}
 
 			if ( 'link' === $name || 'claim' === $name ) {
-				$time_to_wait = $this->get_seconds_to_wait_after_created();
+				$time_to_wait = $this->mc_account_state->get_seconds_to_wait_after_created();
 				if ( $time_to_wait ) {
-					return new Response(
-						[
-							'retry_after' => $time_to_wait,
-							'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
-						],
-						503,
-						[
-							'Retry-After' => $time_to_wait,
-						]
-					);
+					return $this->get_time_to_wait_response( $time_to_wait );
 				}
 			}
 
@@ -310,8 +300,7 @@ class AccountController extends BaseOptionsController {
 						$this->middleware->link_merchant_to_mca();
 						break;
 					case 'claim':
-						$overwrite_required = $step['data']['overwrite_required'] ?? false;
-						if ( $overwrite_required && $this->overwrite_claim ) {
+						if ( $this->overwrite_claim ) {
 							$this->middleware->claim_merchant_website( true );
 						} else {
 							$this->merchant->claimwebsite();
@@ -326,56 +315,34 @@ class AccountController extends BaseOptionsController {
 							)
 						);
 				}
-				$step['status']  = self::MC_CREATION_STEP_DONE;
+				$step['status']  = MerchantAccountState::ACCOUNT_STEP_DONE;
 				$step['message'] = '';
-				$this->update_merchant_account_state( $state );
+				$this->mc_account_state->update( $state );
 			} catch ( Exception $e ) {
-				$step['status']  = self::MC_CREATION_STEP_ERROR;
+				$step['status']  = MerchantAccountState::ACCOUNT_STEP_ERROR;
 				$step['message'] = $e->getMessage();
 
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
-					$step['data']['overwrite_required'] = true;
+					if ( $state['set_id']['data']['from_mca'] ?? true ) {
+						$step['data']['overwrite_required'] = true;
+					} else {
+						throw new Exception(
+							__( 'Unable to claim website URL with this Merchant Center Account.', 'google-listings-and-ads' ),
+							406
+						);
+					}
+				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
+					$state['set_id']['data']['created_timestamp'] = time();
+					$this->mc_account_state->update( $state );
+					return $this->get_time_to_wait_response( MerchantAccountState::MC_DELAY_AFTER_CREATE );
 				}
 
-				$this->update_merchant_account_state( $state );
+				$this->mc_account_state->update( $state );
 				throw $e;
 			}
 		}
 
 		return [ 'id' => $merchant_id ];
-	}
-
-	/**
-	 * Retrieve or initialize the MERCHANT_ACCOUNT_STATE Option.
-	 *
-	 * @param bool $initialize_if_not_found True to initialize and option array of steps.
-	 *
-	 * @return array The MC creation steps and statuses.
-	 */
-	private function get_merchant_account_state( bool $initialize_if_not_found = true ): array {
-		$state = $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE );
-		if ( empty( $state ) && $initialize_if_not_found ) {
-			$state = [];
-			foreach ( self::MERCHANT_ACCOUNT_CREATION_STEPS as $step ) {
-				$state[ $step ] = [
-					'status'  => self::MC_CREATION_STEP_PENDING,
-					'message' => '',
-					'data'    => [],
-				];
-			}
-			$this->update_merchant_account_state( $state );
-		}
-
-		return $state;
-	}
-
-	/**
-	 * Update the MERCHANT_ACCOUNT_STATE Option.
-	 *
-	 * @param array $state
-	 */
-	private function update_merchant_account_state( array $state ) {
-		$this->options->update( OptionsInterface::MERCHANT_ACCOUNT_STATE, $state );
 	}
 
 	/**
@@ -391,7 +358,7 @@ class AccountController extends BaseOptionsController {
 		$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 		// Inform of previous verification.
-		if ( $this->is_site_verified() ) {
+		if ( $this->mc_account_state->is_site_verified() ) {
 			return true;
 		}
 
@@ -437,17 +404,6 @@ class AccountController extends BaseOptionsController {
 	}
 
 
-	/**
-	 * Determine whether the site has already been verified.
-	 *
-	 * @return bool True if the site is marked as verified.
-	 */
-	private function is_site_verified(): bool {
-		$current_options = $this->options->get( OptionsInterface::SITE_VERIFICATION );
-
-		return ! empty( $current_options['verified'] ) && $this->container->get( SiteVerification::class )::VERIFICATION_STATUS_VERIFIED === $current_options['verified'];
-	}
-
 
 	/**
 	 * Mark the 'set_id' step as completed and set the Merchant ID.
@@ -471,10 +427,10 @@ class AccountController extends BaseOptionsController {
 		// Make sure the standalone account has the correct website URL (or fail).
 		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
-		$state                               = $this->get_merchant_account_state();
-		$state['set_id']['status']           = self::MC_CREATION_STEP_DONE;
+		$state                               = $this->mc_account_state->get();
+		$state['set_id']['status']           = MerchantAccountState::ACCOUNT_STEP_DONE;
 		$state['set_id']['data']['from_mca'] = false;
-		$this->update_merchant_account_state( $state );
+		$this->mc_account_state->update( $state );
 		$this->middleware->link_merchant_account( $account_id );
 		$this->merchant->set_id( $account_id );
 	}
@@ -512,17 +468,22 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
-	 * Calculate the number of seconds to wait after creating a sub-account and
-	 * before operating on the new sub-account (MCA link and website claim).
+	 * Generate a 503 Response with Retry-After header and message.
 	 *
-	 * @return int
+	 * @param int $time_to_wait The time to indicate
+	 *
+	 * @return Response
 	 */
-	private function get_seconds_to_wait_after_created(): int {
-		$state = $this->get_merchant_account_state( false );
-
-		$created_timestamp = $state['set_id']['data']['created_timestamp'] ?? 0;
-		$seconds_elapsed   = time() - $created_timestamp;
-
-		return max( 0, self::MC_DELAY_AFTER_CREATE - $seconds_elapsed );
+	private function get_time_to_wait_response( int $time_to_wait ) {
+		return new Response(
+			[
+				'retry_after' => $time_to_wait,
+				'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
+			],
+			503,
+			[
+				'Retry-After' => $time_to_wait,
+			]
+		);
 	}
 }

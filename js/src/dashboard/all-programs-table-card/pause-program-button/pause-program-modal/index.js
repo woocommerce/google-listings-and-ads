@@ -10,6 +10,14 @@ import { __ } from '@wordpress/i18n';
 import AppModal from '../../../../components/app-modal';
 import './index.scss';
 
+/**
+ * Modal window to confirm pausing a campaign.
+ *
+ * @param {Object} props
+ * @param {string} props.programId Id of a program to be paused.
+ * @param {Function} props.onRequestClose Callback to be performed once close action is requested.
+ *
+ */
 const PauseProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
 
@@ -21,6 +29,12 @@ const PauseProgramModal = ( props ) => {
 	// might need to have a "busy / loading" indicator.
 	// dismiss modal when pause process is done.
 	const handlePauseCampaignClick = () => {
+		// eslint-disable-next-line no-console
+		console.warn(
+			'The actual pause action is not implemented/integrated yet.',
+			programId
+		);
+
 		onRequestClose();
 	};
 
