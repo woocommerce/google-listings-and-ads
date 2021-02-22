@@ -11,47 +11,34 @@ import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import AppSpinner from '.~/components/app-spinner';
-import WordPressDotComAccount from './wordpressdotcom-account';
-import GoogleAccount from './google-account';
-import GoogleMCAccount from './google-mc-account';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
+import WordPressDotComAccount from './wordpressdotcom-account';
+import GoogleAccount from './google-account';
+import GoogleMCAccount from './google-mc-account';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
+	const { jetpack, isResolving: isResolvingJetpack } = useJetpackAccount();
+	const { google, isResolving: isResolvingGoogle } = useGoogleAccount();
+	const {
+		googleMCAccount,
+		isResolving: isResolvingGoogleMCAccount,
+	} = useGoogleMCAccount();
 
-	let isGoogleAccountDisabled = true;
-	let isGoogleMCAccountDisabled = true;
-	let isContinueButtonDisabled = true;
-	let spinner = true;
-
-	const { jetpack } = useJetpackAccount();
-	const { google } = useGoogleAccount();
-	const { googleMCAccount } = useGoogleMCAccount();
-
-	if ( jetpack ) {
-		spinner = false;
-		if ( 'yes' == jetpack.active ) {
-			isGoogleAccountDisabled = false;
-		}
-	}
-
-	if ( google ) {
-		if ( 'yes' == google.active ) {
-			isGoogleMCAccountDisabled = false;
-		}
-	}
-
-	if ( googleMCAccount ) {
-		if ( 'connected' == googleMCAccount.status ) {
-			isContinueButtonDisabled = false;
-		}
-	}
-
-	if ( spinner ) {
+	if (
+		isResolvingJetpack ||
+		isResolvingGoogle ||
+		isResolvingGoogleMCAccount
+	) {
 		return <AppSpinner />;
 	}
+
+	const isGoogleAccountDisabled = ! jetpack || jetpack.active === 'no';
+	const isGoogleMCAccountDisabled = ! google || google.active === 'no';
+	const isContinueButtonDisabled =
+		! googleMCAccount || googleMCAccount.status === 'disconnected';
 
 	return (
 		<StepContent>
