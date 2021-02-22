@@ -10,8 +10,8 @@ import { Form } from '@woocommerce/components';
  */
 import AppModal from '../../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../../components/app-input-control';
-import AppCountryMultiSelect from '../../../../../../../../components/app-country-multi-select';
 import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
+import AudienceCountrySelect from '../../../../../components/audience-country-select';
 import './index.scss';
 
 const EditTimeModal = ( props ) => {
@@ -81,7 +81,8 @@ const EditTimeModal = ( props ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AppCountryMultiSelect
+								<AudienceCountrySelect
+									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>

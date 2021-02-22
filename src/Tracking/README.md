@@ -43,6 +43,11 @@ All event names are prefixed by `wcadmin_gla_`.
   * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
   * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
 
+* `filter` - Changing products & variations filter
+  * `report`: name of the report (e.g. `"reports-products"`)
+  * `filter`: value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
+  * `variationFilter`: value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
+
 * `tooltip_viewed` - Viewing tooltip
   * `id`: (tooltip identifier)
 

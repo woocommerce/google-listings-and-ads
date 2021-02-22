@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Value
  */
-class PositiveInteger implements ValueInterface {
+class PositiveInteger implements CastableValueInterface, ValueInterface {
 
 	/**
 	 * @var int
@@ -42,5 +42,16 @@ class PositiveInteger implements ValueInterface {
 	 */
 	public function get() {
 		return $this->value;
+	}
+
+	/**
+	 * Cast a value and return a new instance of the class.
+	 *
+	 * @param mixed $value Mixed value to cast to class type.
+	 *
+	 * @return PositiveInteger
+	 */
+	public static function cast( $value ): PositiveInteger {
+		return new self( absint( $value ) );
 	}
 }

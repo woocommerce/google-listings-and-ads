@@ -55,6 +55,15 @@ class Merchant {
 	}
 
 	/**
+	 * Set the ID.
+	 *
+	 * @param int $id
+	 */
+	public function set_id( int $id ): void {
+		$this->id = new PositiveInteger( $id );
+	}
+
+	/**
 	 * @return Product[]
 	 */
 	public function get_products(): array {
@@ -64,16 +73,19 @@ class Merchant {
 		$return   = [];
 
 		while ( ! empty( $products->getResources() ) ) {
+
 			foreach ( $products->getResources() as $product ) {
 				$return[] = $product;
 			}
 
-			if ( ! empty( $products->getNextPageToken() ) ) {
-				$products = $service->products->listProducts(
-					$this->id,
-					[ 'pageToken' => $products->getNextPageToken() ]
-				);
+			if ( empty( $products->getNextPageToken() ) ) {
+				break;
 			}
+
+			$products = $service->products->listProducts(
+				$this->get_id(),
+				[ 'pageToken' => $products->getNextPageToken() ]
+			);
 		}
 
 		return $return;
@@ -83,18 +95,25 @@ class Merchant {
 	/**
 	 * Claim a website for the user's Merchant Center account.
 	 *
+	 * @param bool $overwrite Whether to include the overwrite directive.
 	 * @return bool
 	 * @throws Exception If the website claim fails.
 	 */
-	public function claimwebsite(): bool {
+	public function claimwebsite( bool $overwrite = false ): bool {
 		/** @var ShoppingService $service */
 		$service = $this->container->get( ShoppingService::class );
 
 		try {
-			$response = $service->accounts->claimwebsite( $this->get_id(), $this->get_id() );
+			$params = $overwrite ? [ 'overwrite' => true ] : [];
+			$service->accounts->claimwebsite( $this->get_id(), $this->get_id(), $params );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to claim website.', 'google-listings-and-ads' ), $e->getCode() );
+			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
+			if ( 403 === $e->getCode() ) {
+				$error_message = __( 'Website already claimed, use overwrite to complete the process.', 'google-listings-and-ads' );
+			}
+			throw new Exception( $error_message, $e->getCode() );
+
 		}
 		return true;
 	}

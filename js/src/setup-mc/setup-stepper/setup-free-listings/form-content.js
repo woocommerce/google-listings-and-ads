@@ -20,7 +20,7 @@ import useDisplayTaxRate from './useDisplayTaxRate';
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, errors, handleSubmit } = formProps;
-	const { displayTaxRate } = useDisplayTaxRate();
+	const displayTaxRate = useDisplayTaxRate();
 
 	useAutoSaveSettingsEffect( values );
 

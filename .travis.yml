@@ -39,7 +39,7 @@ matrix:
   include:
     - name: "Coding standard check"
       php: 7.3
-      env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=phpcs WP_MULTISITE=0
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=cs WP_MULTISITE=0
 
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
@@ -56,7 +56,7 @@ before_script:
 script:
 #  - tests/run_tests.sh
 #  - WP_MULTISITE=1 tests/run_tests.sh
-  - if [[ "${WP_TRAVISCI}" == "phpcs" ]]; then vendor/bin/phpcs; fi
+  - if [[ "${WP_TRAVISCI}" == "cs" ]]; then npm install && npm run lint; fi
 
 before_install:
   - composer self-update --1

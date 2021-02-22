@@ -1,23 +1,21 @@
 /**
- * External dependencies
- */
-import { useSelect } from '@wordpress/data';
-
-/**
  * Internal dependencies
  */
-import { STORE_KEY } from '../../../data';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
+/**
+ * Returns a boolean to indicate whether the Tax Rate section should be displayed.
+ *
+ * The Tax Rate section should be displayed when the country code `'US'` is one of the target audience countries.
+ */
 const useDisplayTaxRate = () => {
-	return useSelect( ( select ) => {
-		const audienceCountryCodes =
-			select( STORE_KEY ).getAudienceSelectedCountryCodes() || [];
-		const displayTaxRate = audienceCountryCodes.includes( 'US' );
+	const { data } = useTargetAudienceFinalCountryCodes();
 
-		return {
-			displayTaxRate,
-		};
-	} );
+	if ( ! data ) {
+		return false;
+	}
+
+	return data.includes( 'US' );
 };
 
 export default useDisplayTaxRate;

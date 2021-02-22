@@ -1,5 +1,9 @@
 .gla-choose-audience {
 	.input {
-		margin-bottom: 8px;
+		margin-bottom: calc(var(--main-gap) / 3);
+	}
+
+	.helper-text {
+		margin-bottom: calc(var(--main-gap) / 3 * 2);
 	}
 }

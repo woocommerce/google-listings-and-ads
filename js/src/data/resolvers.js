@@ -8,6 +8,8 @@ import {
 	fetchGoogleAccount,
 	fetchGoogleMCAccount,
 	fetchExistingGoogleMCAccounts,
+	fetchCountries,
+	fetchTargetAudience,
 } from './actions';
 
 export function* getShippingRates() {
@@ -32,4 +34,12 @@ export function* getGoogleMCAccount() {
 
 export function* getExistingGoogleMCAccounts() {
 	yield fetchExistingGoogleMCAccounts();
+}
+
+export function* getCountries() {
+	yield fetchCountries();
+}
+
+export function* getTargetAudience() {
+	yield fetchTargetAudience();
 }
