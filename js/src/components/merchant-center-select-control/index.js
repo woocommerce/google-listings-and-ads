@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { SelectControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,10 +19,16 @@ const MerchantCenterSelectControl = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	const options = existingAccounts.map( ( acc ) => ( {
-		value: acc.id,
-		label: acc.id,
-	} ) );
+	const options = [
+		{
+			value: '',
+			label: __( 'Select one', 'google-listings-and-ads' ),
+		},
+		...existingAccounts.map( ( acc ) => ( {
+			value: acc.id,
+			label: acc.id,
+		} ) ),
+	];
 
 	return (
 		<div className="gla-merchant-center-select-control">
