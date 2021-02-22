@@ -59,7 +59,7 @@ const TermsModal = ( props ) => {
 							<AppDocumentationLink
 								context="setup-mc"
 								linkId="google-mc-terms-of-service"
-								href="https://support.google.com/merchants/answer/6363310"
+								href="https://support.google.com/merchants/answer/160173"
 							/>
 						),
 					}
