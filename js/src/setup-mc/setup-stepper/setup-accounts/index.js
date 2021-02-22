@@ -20,22 +20,19 @@ import GoogleMCAccount from './google-mc-account';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
-	const { jetpack, isResolving: isResolvingJetpack } = useJetpackAccount();
-	const { google, isResolving: isResolvingGoogle } = useGoogleAccount();
-	const {
-		googleMCAccount,
-		isResolving: isResolvingGoogleMCAccount,
-	} = useGoogleMCAccount();
+	const { jetpack } = useJetpackAccount();
+	const { google } = useGoogleAccount();
+	const { googleMCAccount } = useGoogleMCAccount();
 
 	if (
-		isResolvingJetpack ||
-		isResolvingGoogle ||
-		isResolvingGoogleMCAccount
+		! jetpack ||
+		( jetpack.active === 'yes' &&
+			( ! google || ( google.active === 'yes' && ! googleMCAccount ) ) )
 	) {
 		return <AppSpinner />;
 	}
 
-	const isGoogleAccountDisabled = ! jetpack || jetpack.active === 'no';
+	const isGoogleAccountDisabled = jetpack.active === 'no';
 	const isGoogleMCAccountDisabled = ! google || google.active === 'no';
 	const isContinueButtonDisabled =
 		! googleMCAccount || googleMCAccount.status === 'disconnected';
