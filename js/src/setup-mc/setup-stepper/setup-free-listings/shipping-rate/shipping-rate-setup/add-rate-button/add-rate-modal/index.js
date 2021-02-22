@@ -9,12 +9,12 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '../../../../../../../data';
-import AppModal from '../../../../../../../components/app-modal';
-import AppInputControl from '../../../../../../../components/app-input-control';
-import VerticalGapLayout from '../../../../components/vertical-gap-layout';
+import { STORE_KEY } from '.~/data';
+import AppModal from '.~/components/app-modal';
+import AppInputControl from '.~/components/app-input-control';
+import VerticalGapLayout from '.~/components/edit-program/vertical-gap-layout';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AudienceCountrySelect from '../../../../components/audience-country-select';
-import useStoreCurrency from '../../../../../../../hooks/useStoreCurrency';
 import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {

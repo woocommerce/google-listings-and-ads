@@ -15,7 +15,7 @@ import Subsection from '.~/wcdl/subsection';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import StepContentFooter from '.~/components/edit-program/step-content-footer';
 import SupportedCountrySelect from './supported-country-select';
-import VerticalGapLayout from '../setup-free-listings/components/vertical-gap-layout';
+import VerticalGapLayout from '.~/components/edit-program/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
 import './index.scss';
 
