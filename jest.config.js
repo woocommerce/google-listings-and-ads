@@ -4,6 +4,7 @@ const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
 
 module.exports = {
 	...defaultConfig,
+	transformIgnorePatterns: [ 'node_modules/(?!@woocommerce)' ],
 	moduleNameMapper: {
 		// Transform our `.~/` alias.
 		'\\.~/(.*)$': '<rootDir>/js/src/$1',
