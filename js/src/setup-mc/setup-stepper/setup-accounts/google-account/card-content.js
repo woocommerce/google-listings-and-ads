@@ -27,7 +27,7 @@ const CardContent = ( props ) => {
 		return (
 			<TitleButtonLayout
 				title={ __(
-					'Error while loading WordPress.com account info',
+					'Error while loading Google account info',
 					'google-listings-and-ads'
 				) }
 			/>
