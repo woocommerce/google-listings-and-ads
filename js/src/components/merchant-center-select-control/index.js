@@ -19,8 +19,8 @@ const MerchantCenterSelectControl = ( props ) => {
 	}
 
 	const options = existingAccounts.map( ( acc ) => ( {
-		value: acc,
-		label: acc,
+		value: acc.id,
+		label: acc.id,
 	} ) );
 
 	return (
