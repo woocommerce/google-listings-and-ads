@@ -7,8 +7,8 @@ import { Button } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import StepContent from '../components/step-content';
-import StepContentFooter from '../components/step-content-footer';
+import StepContent from '.~/components/edit-program/step-content';
+import StepContentFooter from '.~/components/edit-program/step-content-footer';
 import ShippingRate from './shipping-rate';
 import ShippingTime from './shipping-time';
 import TaxRate from './tax-rate';
