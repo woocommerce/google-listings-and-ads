@@ -3,7 +3,7 @@
  */
 import CreateAccountCard from './create-account-card';
 import ConnectMCCard from './connect-mc-card';
-import useExistingGoogleMCAccounts from '../../../../hooks/useExistingGoogleMCAccounts';
+import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import SpinnerCard from './spinner-card';
 
 const NonConnected = () => {
