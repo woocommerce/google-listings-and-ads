@@ -7,7 +7,7 @@ import { SelectControl } from '@wordpress/components';
  * Internal dependencies
  */
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
-import AppSpinner from '../app-spinner';
+import AppSpinner from '.~/components/app-spinner';
 import './index.scss';
 
 const MerchantCenterSelectControl = ( props ) => {
