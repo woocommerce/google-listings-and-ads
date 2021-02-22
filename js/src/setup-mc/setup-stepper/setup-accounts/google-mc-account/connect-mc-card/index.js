@@ -8,9 +8,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Section from '../../../../../wcdl/section';
-import Subsection from '../../../../../wcdl/subsection';
-import MerchantCenterSelectControl from '../../../../../components/merchant-center-select-control';
+import MerchantCenterSelectControl from '.~/components/merchant-center-select-control';
+import Section from '.~/wcdl/section';
+import Subsection from '.~/wcdl/subsection';
 import ContentButtonLayout from '../../content-button-layout';
 
 const ConnectMCCard = () => {
