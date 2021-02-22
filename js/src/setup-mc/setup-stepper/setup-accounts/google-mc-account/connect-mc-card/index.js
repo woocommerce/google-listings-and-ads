@@ -11,17 +11,24 @@ import { __ } from '@wordpress/i18n';
 import MerchantCenterSelectControl from '.~/components/merchant-center-select-control';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
+import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
 
 const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
+	const { linkMCAccount } = useAppDispatch();
 
 	const handleSelectChange = ( optionValue ) => {
 		setValue( optionValue );
 	};
 
-	// TOOD: call API to connect existing merchant center.
-	const handleConnectClick = () => {};
+	const handleConnectClick = () => {
+		if ( ! value ) {
+			return;
+		}
+
+		linkMCAccount( value );
+	};
 
 	return (
 		<Section.Card>
