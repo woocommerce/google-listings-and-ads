@@ -8,9 +8,9 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppButton from '../../../../components/app-button';
+import AppButton from '.~/components/app-button';
 import TitleButtonLayout from '../title-button-layout';
-import useDispatchCoreNotices from '../../../../hooks/useDispatchCoreNotices';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const ConnectAccount = () => {
 	const [ loading, setLoading ] = useState( false );
