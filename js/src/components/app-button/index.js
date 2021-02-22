@@ -23,7 +23,7 @@ import './index.scss';
  * ```
  *
  * @param {*} props Props to be forwarded to {@link Button}.
- * @param {boolean} props.loading If true, the button will be disabled and will display a loading spinner indicator beside the button text.
+ * @param {boolean} [props.loading] If true, the button will be disabled and will display a loading spinner indicator beside the button text.
  */
 const AppButton = ( props ) => {
 	const { className = '', disabled, loading, children, ...rest } = props;
