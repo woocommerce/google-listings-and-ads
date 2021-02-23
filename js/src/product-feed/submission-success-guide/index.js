@@ -2,9 +2,10 @@
  * External dependencies
  */
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Guide } from '@wordpress/components';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -17,6 +18,7 @@ import GuidePageContent, {
 import './index.scss';
 
 const GUIDE_NAME = 'submission-success';
+const CONFIRM_BUTTON_CLASS = 'components-guide__finish-button';
 
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
@@ -71,10 +73,17 @@ const pages = [
 					),
 					{
 						// TODO: The free listings link will be added when its URL is ready
-						// TODO: Event tracking will be implemented by another PR
-						freeListingsLink: <ContentLink href="/" />,
+						freeListingsLink: (
+							<ContentLink
+								href="/"
+								context="setup-mc-free-listings"
+							/>
+						),
 						merchantCenterLink: (
-							<ContentLink href="https://www.google.com/retail/solutions/merchant-center/" />
+							<ContentLink
+								href="https://www.google.com/retail/solutions/merchant-center/"
+								context="setup-mc-merchant-center"
+							/>
 						),
 					}
 				) }
@@ -83,30 +92,32 @@ const pages = [
 	},
 ];
 
-const handleGuideFinish = () => {
+// TODO: The current close method is temporarily for demo.
+//       Need to reconsider how this guide modal would be triggered later.
+const handleGuideFinish = ( e ) => {
 	const nextQuery = {
 		...getQuery(),
 		guide: undefined,
 	};
 	const path = getNewPath( nextQuery );
 	getHistory().replace( path );
+
+	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
+	// here is a workaround by identifying the close button's class name.
+	const target = e.currentTarget || e.target;
+	const action = target.classList.contains( CONFIRM_BUTTON_CLASS )
+		? 'confirm'
+		: 'dismiss';
+	recordEvent( 'gla_modal_closed', {
+		context: GUIDE_NAME,
+		action,
+	} );
 };
 
-/**
- * Modal window to greet the user at Product Feed, after successful completion of onboarding.
- *
- * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
- * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
- *
- * TODO: The current open/close methods are temporarily for demo.
- *       Need to reconsider how this guide modal would be triggered later.
- */
-const SubmissionSuccessGuide = () => {
-	const isOpen = getQuery().guide === GUIDE_NAME;
-
-	if ( ! isOpen ) {
-		return null;
-	}
+const GuideImplementation = () => {
+	useEffect( () => {
+		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
+	}, [] );
 
 	return (
 		<Guide
@@ -118,4 +129,20 @@ const SubmissionSuccessGuide = () => {
 	);
 };
 
-export default SubmissionSuccessGuide;
+/**
+ * Modal window to greet the user at Product Feed, after successful completion of onboarding.
+ *
+ * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
+ * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
+ *
+ * TODO: The current open method is temporarily for demo.
+ *       Need to reconsider how this guide modal would be triggered later.
+ */
+export default function SubmissionSuccessGuide() {
+	const isOpen = getQuery().guide === GUIDE_NAME;
+
+	if ( ! isOpen ) {
+		return null;
+	}
+	return <GuideImplementation />;
+}

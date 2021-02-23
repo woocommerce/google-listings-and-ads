@@ -55,6 +55,19 @@ All event names are prefixed by `wcadmin_gla_`.
   * `target`: button ID
   * `trigger`: action (e.g. `click`)
 
+* `modal_open` - A modal is opend
+  * `context`: indicate which modal is opened
+
+* `modal_closed` - A modal is closed
+  * `context`: indicate which modal is closed
+  * `action`: indicate the modal is closed by what action (e.g. `confirm`|`dismiss`)
+    * `confirm` is used when the confirm button on the modal is clicked
+    * `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
+
+* `modal_content_link_click` - Clicking on a text link within the modal content
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
