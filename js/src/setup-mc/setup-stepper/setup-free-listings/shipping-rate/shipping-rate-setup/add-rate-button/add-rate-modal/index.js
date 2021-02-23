@@ -4,26 +4,24 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { STORE_KEY } from '../../../../../../../data';
 import AppModal from '../../../../../../../components/app-modal';
 import AppInputControl from '../../../../../../../components/app-input-control';
-import AppCountryMultiSelect from '../../../../../../../components/app-country-multi-select';
 import VerticalGapLayout from '../../../../components/vertical-gap-layout';
+import AudienceCountrySelect from '../../../../components/audience-country-select';
+import useStoreCurrency from '../../../../../../../hooks/useStoreCurrency';
+import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
-
-	// TODO: get list of countries without price.
-	const countriesWithoutPrice = [
-		{
-			key: 'USA',
-			label: 'United States of America',
-			value: { id: 'USA' },
-		},
-	];
+	const { addShippingRate } = useDispatch( STORE_KEY );
+	const { code } = useStoreCurrency();
+	const remainingCountryCodes = useGetRemainingCountryCodes();
 
 	const handleValidate = () => {
 		const errors = {};
@@ -34,15 +32,26 @@ const AddRateModal = ( props ) => {
 	};
 
 	// TODO: call backend API when submit form.
-	const handleSubmitCallback = () => {
+	const handleSubmitCallback = ( values ) => {
+		const { countryCodes, currency, rate } = values;
+
+		countryCodes.forEach( ( el ) => {
+			addShippingRate( {
+				countryCode: el,
+				currency,
+				rate,
+			} );
+		} );
+
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countries: countriesWithoutPrice,
-				price: '',
+				countryCodes: remainingCountryCodes,
+				currency: code,
+				rate: '',
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
@@ -76,8 +85,9 @@ const AddRateModal = ( props ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AppCountryMultiSelect
-									{ ...getInputProps( 'countries' ) }
+								<AudienceCountrySelect
+									multiple
+									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
 							<AppInputControl
@@ -85,11 +95,8 @@ const AddRateModal = ( props ) => {
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
-								suffix={ __(
-									'USD',
-									'google-listings-and-ads'
-								) }
-								{ ...getInputProps( 'price' ) }
+								suffix={ code }
+								{ ...getInputProps( 'rate' ) }
 							/>
 						</VerticalGapLayout>
 					</AppModal>

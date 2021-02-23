@@ -34,6 +34,11 @@ const requestToHandle = ( request ) => {
 
 const webpackConfig = {
 	...defaultConfig,
+	resolve: {
+		alias: {
+			'.~': path.resolve( process.cwd(), 'js/src/' ),
+		},
+	},
 	plugins: [
 		...defaultConfig.plugins.filter(
 			( plugin ) =>
@@ -47,7 +52,11 @@ const webpackConfig = {
 	],
 	entry: {
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
-		'task-complete-setup': path.resolve( process.cwd(), 'js/src/tasks/complete-setup', 'index.js' ),
+		'task-complete-setup': path.resolve(
+			process.cwd(),
+			'js/src/tasks/complete-setup',
+			'index.js'
+		),
 	},
 	output: {
 		...defaultConfig.output,

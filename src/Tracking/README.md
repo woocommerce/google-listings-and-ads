@@ -43,12 +43,30 @@ All event names are prefixed by `wcadmin_gla_`.
   * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
   * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
 
+* `filter` - Changing products & variations filter
+  * `report`: name of the report (e.g. `"reports-products"`)
+  * `filter`: value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
+  * `variationFilter`: value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
+
 * `tooltip_viewed` - Viewing tooltip
   * `id`: (tooltip identifier)
 
 * `setup_mc` - Setup Merchant Center
   * `target`: button ID
   * `trigger`: action (e.g. `click`)
+
+* `modal_open` - A modal is opend
+  * `context`: indicate which modal is opened
+
+* `modal_closed` - A modal is closed
+  * `context`: indicate which modal is closed
+  * `action`: indicate the modal is closed by what action (e.g. `confirm`|`dismiss`)
+    * `confirm` is used when the confirm button on the modal is clicked
+    * `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
+
+* `modal_content_link_click` - Clicking on a text link within the modal content
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
 
 <!-- -- >
 ## Developer Info

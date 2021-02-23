@@ -20,42 +20,68 @@ trait GoogleHelper {
 	 *
 	 * Commented out countries are "listed" as beta countries.
 	 *
+	 * @param bool $include_beta Whether to include countries supported in Beta by Google.
+	 *
 	 * @return array
 	 */
-	protected function get_mc_supported_countries() {
-		// phpcs:disable Squiz.PHP.CommentedOutCode.Found
-		return [
-			// 'DZ' => 'DZD', // Algeria
-			// 'AO' => 'AOA', // Angola
+	protected function get_mc_supported_countries( bool $include_beta = false ): array {
+		$beta_countries = [
+			'DZ' => 'DZD', // Algeria
+			'AO' => 'AOA', // Angola
+			'BD' => 'BDT', // Bangladesh
+			'KH' => 'KHR', // Cambodia
+			'CM' => 'XAF', // Cameroon
+			'CI' => 'XOF', // Cote d'Ivoire
+			'DO' => 'DOP', // Dominican Republic
+			'SV' => 'USD', // El Salvador
+			'ET' => 'ETB', // Ethiopia
+			'GH' => 'GHS', // Ghana
+			'GT' => 'GTQ', // Guatemala
+			'KE' => 'KES', // Kenya
+			'MG' => 'MGA', // Madagascar
+			'MU' => 'MUR', // Mauritius
+			'MA' => 'MAD', // Morocco
+			'MZ' => 'MZN', // Mozambique
+			'MM' => 'MMK', // Myanmar 'Burma'
+			'MP' => 'NPR', // Nepal
+			'NI' => 'NIO', // Nicaragua
+			'NG' => 'NGN', // Nigeria
+			'PK' => 'PKR', // Pakistan
+			'PA' => 'PAB', // Panama
+			'PR' => 'USD', // Puerto Rico
+			'SA' => 'SAR', // Saudi Arabia
+			'SN' => 'XOF', // Senegal
+			'LK' => 'LKR', // Sri Lanka
+			'TZ' => 'TZS', // Tanzania
+			'TH' => 'THB', // Thailand
+			'TN' => 'TND', // Tunisia
+			'VE' => 'VEF', // Venezuela
+			'VN' => 'VND', // Vietnam
+			'ZM' => 'ZMW', // Zambia
+			'ZW' => 'USD', // Zimbabwe
+		];
+
+		$supported_countries = [
 			'AR' => 'ARS', // Argentina
 			'AU' => 'AUD', // Australia
 			'AT' => 'EUR', // Austria
 			'BH' => 'BHD', // Bahrain
-			// 'BD' => 'BDT', // Bangladesh
 			'BY' => 'BYN', // Belarus
 			'BE' => 'EUR', // Belgium
 			'BR' => 'BRL', // Brazil
-			// 'KH' => 'KHR', // Cambodia
-			// 'CM' => 'XAF', // Cameroon
 			'CA' => 'CAD', // Canada
 			'CL' => 'CLP', // Chile
 			'CO' => 'COP', // Colombia
 			'CR' => 'CRC', // Costa Rica
-			// 'CI' => 'XOF', // Cote d'Ivoire
 			'CZ' => 'CZK', // Czechia
 			'DK' => 'DKK', // Denmark
-			// 'DO' => 'DOP', // Dominican Republic
 			'EC' => 'USD', // Ecuador
 			'EG' => 'EGP', // Egypt
-			// 'SV' => 'USD', // El Salvador
-			// 'ET' => 'ETB', // Ethiopia
 			'FI' => 'EUR', // Finland
 			'FR' => 'EUR', // France
 			'GE' => 'GEL', // Georgia
 			'DE' => 'EUR', // Germany
-			// 'GH' => 'GHS', // Ghana
 			'GR' => 'EUR', // Greece
-			// 'GT' => 'GTQ', // Guatemala
 			'HK' => 'HKD', // Hong Kong
 			'HU' => 'HUF', // Hungary
 			'IN' => 'INR', // India
@@ -66,60 +92,37 @@ trait GoogleHelper {
 			'JP' => 'JPY', // Japan
 			'JO' => 'JOD', // Jordan
 			'KZ' => 'KZT', // Kazakhstan
-			// 'KE' => 'KES', // Kenya
 			'KW' => 'KWD', // Kuwait
 			'LB' => 'LBP', // Lebanon
-			// 'MG' => 'MGA', // Madagascar
 			'MY' => 'MYR', // Malaysia
-			// 'MU' => 'MUR', // Mauritius
 			'MX' => 'MXN', // Mexico
-			// 'MA' => 'MAD', // Morocco
-			// 'MZ' => 'MZN', // Mozambique
-			// 'MM' => 'MMK', // Myanmar 'Burma'
-			// 'MP' => 'NPR', // Nepal
 			'NL' => 'EUR', // Netherlands
 			'NZ' => 'NZD', // New Zealand
-			// 'NI' => 'NIO', // Nicaragua
-			// 'NG' => 'NGN', // Nigeria
 			'NO' => 'NOK', // Norway
 			'OM' => 'OMR', // Oman
-			// 'PK' => 'PKR', // Pakistan
-			// 'PA' => 'PAB', // Panama
 			'PY' => 'PYG', // Paraguay
 			'PE' => 'PEN', // Peru
 			'PH' => 'PHP', // Philippines
 			'PL' => 'PLN', // Poland
 			'PT' => 'EUR', // Portugal
-			// 'PR' => 'USD', // Puerto Rico
 			'RO' => 'RON', // Romania
 			'RU' => 'RUB', // Russia
-			// 'SA' => 'SAR', // Saudi Arabia
-			// 'SN' => 'XOF', // Senegal
 			'SG' => 'SGD', // Singapore
 			'SK' => 'EUR', // Slovakia
 			'ZA' => 'ZAR', // South Africa
 			'KR' => 'KRW', // South Korea
 			'ES' => 'EUR', // Spain
-			// 'LK' => 'LKR', // Sri Lanka
 			'SE' => 'SEK', // Sweden
 			'CH' => 'CHF', // Switzerland
 			'TW' => 'TWD', // Taiwan
-			// 'TZ' => 'TZS', // Tanzania
-			// 'TH' => 'THB', // Thailand
-			// 'TN' => 'TND', // Tunisia
 			'TR' => 'TRY', // Turkey
-			// 'UG' => 'UGX', // Uganda
-			// 'UA' => 'UAH', // Ukraine
 			'AE' => 'AED', // United Arab Emirates
 			'GB' => 'GBP', // United Kingdom
 			'US' => 'USD', // United States
 			'UY' => 'UYU', // Uruguay
 			'UZ' => 'UZS', // Uzbekistan
-			// 'VE' => 'VEF', // Venezuela
-			// 'VN' => 'VND', // Vietnam
-			// 'ZM' => 'ZMW', // Zambia
-			// 'ZW' => 'USD', // Zimbabwe
 		];
-		// phpcs:enable
+
+		return $include_beta ? array_merge( $supported_countries, $beta_countries ) : $supported_countries;
 	}
 }

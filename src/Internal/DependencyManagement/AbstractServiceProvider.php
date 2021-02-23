@@ -55,7 +55,7 @@ abstract class AbstractServiceProvider extends LeagueProvider {
 	 *
 	 * @return DefinitionInterface
 	 */
-	protected function share_interface( string $interface, $concrete = null ): DefinitionInterface {
+	protected function share_concrete( string $interface, $concrete = null ): DefinitionInterface {
 		return $this->getLeagueContainer()->share( $interface, $concrete );
 	}
 

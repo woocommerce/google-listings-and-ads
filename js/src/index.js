@@ -12,9 +12,10 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
-import Reports from './reports';
+import { ProgramsReport, ProductsReport } from './reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
+import './data';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -75,9 +76,23 @@ addFilter(
 					],
 					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				],
-				title: __( 'Reports', 'google-listings-and-ads' ),
-				container: Reports,
-				path: '/google/reports',
+				title: __( 'Programs Report', 'google-listings-and-ads' ),
+				container: ProgramsReport,
+				path: '/google/reports/programs',
+				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+			},
+			{
+				breadcrumbs: [
+					[ '', wcSettings.woocommerceTranslation ],
+					[
+						'/marketing',
+						__( 'Marketing', 'google-listings-and-ads' ),
+					],
+					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				],
+				title: __( 'Products Report', 'google-listings-and-ads' ),
+				container: ProductsReport,
+				path: '/google/reports/products',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{

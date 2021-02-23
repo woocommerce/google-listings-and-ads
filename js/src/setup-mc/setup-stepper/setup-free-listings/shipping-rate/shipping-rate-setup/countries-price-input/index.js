@@ -7,23 +7,39 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import useCountryKeyNameMap from '../../../../../../hooks/useCountryKeyNameMap';
 import AppInputControl from '../../../../../../components/app-input-control';
 import More from '../../../components/more';
-import useGetAudienceCountries from '../../../hooks/useGetAudienceCountries';
 import EditRateButton from './edit-rate-button';
+import AppSpinner from '.~/components/app-spinner';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import './index.scss';
+
+/**
+ * The limit of the number of countries to show.
+ */
+const firstN = 5;
 
 const CountriesPriceInput = ( props ) => {
 	const { value, onChange } = props;
-	const { countries, price } = value;
+	const { countries, currency, price } = value;
 
-	const audienceCountries = useGetAudienceCountries();
-	const first5countries = countries.slice( 0, 5 ).map( ( c ) => c.label );
-	const remainingCount = countries.length - first5countries.length;
+	const keyNameMap = useCountryKeyNameMap();
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
+
+	const firstCountryNames = countries
+		.slice( 0, firstN )
+		.map( ( c ) => keyNameMap[ c ] );
+	const remainingCount = countries.length - firstCountryNames.length;
 
 	const handleChange = ( v ) => {
 		onChange( {
 			countries,
+			currency,
 			price: v,
 		} );
 	};
@@ -42,13 +58,15 @@ const CountriesPriceInput = ( props ) => {
 								{
 									countries: (
 										<strong>
-											{ audienceCountries.length ===
+											{ selectedCountryCodes.length ===
 											countries.length
 												? __(
 														`all countries`,
 														'google-listings-and-ads'
 												  )
-												: first5countries.join( ', ' ) }
+												: firstCountryNames.join(
+														', '
+												  ) }
 										</strong>
 									),
 									more: <More count={ remainingCount } />,
@@ -58,7 +76,7 @@ const CountriesPriceInput = ( props ) => {
 						<EditRateButton rate={ value } />
 					</div>
 				}
-				suffix={ __( 'USD', 'google-listings-and-ads' ) }
+				suffix={ currency }
 				value={ price }
 				onChange={ handleChange }
 			/>

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
@@ -10,29 +11,34 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Logging\DebugLogger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GoogleConnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -57,7 +63,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	protected $provides = [
 		Installer::class              => true,
 		Admin::class                  => true,
-		Reports::class                => true,
+		Programs::class               => true,
+		Products::class               => true,
 		AssetsHandlerInterface::class => true,
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
@@ -84,6 +91,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SiteVerificationMeta::class   => true,
 		BatchProductHelper::class     => true,
 		ProductRepository::class      => true,
+		DebugLogger::class            => true,
+		MerchantAccountState::class   => true,
+		DBInstaller::class            => true,
 	];
 
 	/**
@@ -94,27 +104,37 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register(): void {
+		$this->conditionally_share_with_tags( DebugLogger::class );
+
 		// Share our interfaces, possibly with concrete objects.
-		$this->share_interface( AssetsHandlerInterface::class, AssetsHandler::class );
-		$this->share_interface(
+		$this->share_concrete( AssetsHandlerInterface::class, AssetsHandler::class );
+		$this->share_concrete(
 			TracksInterface::class,
 			$this->share_with_tags( Tracks::class, TracksProxy::class )
 		);
 
 		// Set up Options, and inflect classes that need options.
-		$this->share_interface( OptionsInterface::class, Options::class );
+		$this->share_concrete( OptionsInterface::class, Options::class );
 		$this->getLeagueContainer()
 			->inflector( OptionsAwareInterface::class )
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
+		// Set up the installer.
+		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
+		$installer_definition->setConcrete(
+			function( ...$arguments ) {
+				return new Installer( ...$arguments );
+			}
+		);
+
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Installer::class );
 		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
-		$this->conditionally_share_with_tags( Reports::class );
+		$this->conditionally_share_with_tags( Programs::class );
+		$this->conditionally_share_with_tags( Products::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
 		$this->conditionally_share_with_tags( Settings::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
@@ -131,7 +151,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class );
-		$this->share_with_tags( ProductHelper::class, ProductMetaHandler::class );
+		$this->share_with_tags( MerchantAccountState::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share_with_tags( BatchProductHelper::class, ProductMetaHandler::class, ProductHelper::class );
 		$this->share_with_tags(
 			ProductSyncer::class,
@@ -148,6 +169,15 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
+		$this->conditionally_share_with_tags( InstallTimestamp::class );
+
+		// The DB Controller has some extra setup required.
+		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );
+		$db_definition->setConcrete(
+			function( ...$arguments ) {
+				return new DBInstaller( ...$arguments );
+			}
+		);
 	}
 
 	/**

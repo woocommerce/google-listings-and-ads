@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpa
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ControllerTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 
@@ -17,8 +16,6 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack
  */
 class AccountController extends BaseController {
-
-	use ControllerTrait;
 
 	/**
 	 * @var Manager
@@ -39,7 +36,7 @@ class AccountController extends BaseController {
 	/**
 	 * Register rest routes with WordPress.
 	 */
-	protected function register_routes(): void {
+	public function register_routes(): void {
 		$this->register_route(
 			'jetpack/connect',
 			[
@@ -96,7 +93,7 @@ class AccountController extends BaseController {
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
 
 			// Payments flow allows redirect back to the site without showing plans.
-			$auth_url = add_query_arg( [ 'from' => 'woocommerce-payments' ], $auth_url );
+			$auth_url = add_query_arg( [ 'from' => 'google-listings-and-ads' ], $auth_url );
 
 			return [
 				'url' => $auth_url,
@@ -131,8 +128,8 @@ class AccountController extends BaseController {
 			return [
 				'active'      => $this->is_jetpack_connected(),
 				'owner'       => $this->is_jetpack_connection_owner(),
-				'displayName' => array_key_exists( 'display_name', $user_data, ) ? $user_data['display_name'] : '',
-				'email'       => array_key_exists( 'email', $user_data, ) ? $user_data['email'] : '',
+				'displayName' => $user_data['display_name'] ?? '',
+				'email'       => $user_data['email'] ?? '',
 			];
 		};
 	}
@@ -171,7 +168,7 @@ class AccountController extends BaseController {
 	 *
 	 * @return array
 	 */
-	protected function get_item_schema(): array {
+	protected function get_schema_properties(): array {
 		return [
 			'url' => [
 				'type'        => 'string',
@@ -189,7 +186,7 @@ class AccountController extends BaseController {
 	 *
 	 * @return string
 	 */
-	protected function get_item_schema_name(): string {
+	protected function get_schema_title(): string {
 		return 'jetpack_account';
 	}
 }

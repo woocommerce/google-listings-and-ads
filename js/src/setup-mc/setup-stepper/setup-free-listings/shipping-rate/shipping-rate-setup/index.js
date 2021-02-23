@@ -3,61 +3,73 @@
  */
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import AppInputControl from '../../../../../components/app-input-control';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
-import CountriesPriceInput from './countries-price-input';
 import AddRateButton from './add-rate-button';
-import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
+import { STORE_KEY } from '../../../../../data';
+import CountriesPriceInputForm from './countries-price-input-form';
+import useStoreCurrency from '../../../../../hooks/useStoreCurrency';
+import getCountriesPriceArray from './getCountriesPriceArray';
+import AppSpinner from '.~/components/app-spinner';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import './index.scss';
-
-const formKeys = {
-	rows: 'shippingRateOption-rows',
-	freeShipping: 'shippingRateOption-freeShipping',
-	priceOver: 'shippingRateOption-freeShipping-priceOver',
-};
 
 const ShippingRateSetup = ( props ) => {
 	const {
-		formProps: { getInputProps, values, setValue },
+		formProps: { getInputProps, values },
 	} = props;
+	const shippingRates = useSelect( ( select ) =>
+		select( STORE_KEY ).getShippingRates()
+	);
+	const { code: currencyCode } = useStoreCurrency();
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	const audienceCountries = useGetAudienceCountries();
-	const expectedCountryCount = audienceCountries.length;
-	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
-		return acc + cur.countries.length;
-	}, 0 );
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
 
-	const handleCountriesPriceChange = ( idx ) => ( countriesPrice ) => {
-		const newValues = [ ...values[ formKeys.rows ] ];
-		newValues[ idx ] = countriesPrice;
-		setValue( formKeys.rows, newValues );
-	};
+	const expectedCountryCount = selectedCountryCodes.length;
+	const actualCountryCount = shippingRates.length;
+	const remainingCount = expectedCountryCount - actualCountryCount;
+
+	const countriesPriceArray = getCountriesPriceArray( shippingRates );
 
 	return (
 		<div className="gla-shipping-rate-setup">
 			<VerticalGapLayout>
 				<div className="countries-price">
 					<VerticalGapLayout>
-						{ values[ formKeys.rows ].map( ( el, idx ) => {
+						{ shippingRates.length === 0 && (
+							<div className="countries-price-input-form">
+								<CountriesPriceInputForm
+									initialValue={ {
+										countries: selectedCountryCodes,
+										price: '',
+										currency: currencyCode,
+									} }
+								/>
+							</div>
+						) }
+						{ countriesPriceArray.map( ( el ) => {
 							return (
 								<div
-									key={ idx }
-									className="countries-price-input"
+									key={ `${ el.price }-${ el.countries.join(
+										'-'
+									) }` }
+									className="countries-price-input-form"
 								>
-									<CountriesPriceInput
-										value={ el }
-										onChange={ handleCountriesPriceChange(
-											idx
-										) }
+									<CountriesPriceInputForm
+										initialValue={ el }
 									/>
 								</div>
 							);
 						} ) }
-						{ actualCountryCount < expectedCountryCount && (
+						{ actualCountryCount >= 1 && remainingCount >= 1 && (
 							<div className="add-rate-button">
 								<AddRateButton />
 							</div>
@@ -69,17 +81,17 @@ const ShippingRateSetup = ( props ) => {
 						'I also offer free shipping for all countries for products over a certain price.',
 						'google-listings-and-ads'
 					) }
-					{ ...getInputProps( formKeys.freeShipping ) }
+					{ ...getInputProps( 'offers_free_shipping' ) }
 				/>
-				{ values[ formKeys.freeShipping ] && (
+				{ values.offers_free_shipping && (
 					<div className="price-over-input">
 						<AppInputControl
 							label={ __(
 								'I offer free shipping for products priced over',
 								'google-listings-and-ads'
 							) }
-							suffix={ __( 'USD', 'google-listings-and-ads' ) }
-							{ ...getInputProps( formKeys.priceOver ) }
+							suffix={ currencyCode }
+							{ ...getInputProps( 'free_shipping_threshold' ) }
 						/>
 					</div>
 				) }
