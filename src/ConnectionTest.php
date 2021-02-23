@@ -472,11 +472,9 @@ class ConnectionTest implements Service, Registerable {
 								<p>
 						<label>
 							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" /></label>
-									<label>
-										Async? <input id="async-sync-product" name="async" value=1 type="checkbox" />
 						</label>
-                        <input id="async-sync-product" name="async" value=1 type="checkbox" />
-                        <label for="async-sync-product">Async?</label>
+						<label for="async-sync-product">Async?</label>
+                        <input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
 						<button class="button">Sync Product with Google Merchant Center</button>
 								</p>
 							</td>
@@ -493,12 +491,9 @@ class ConnectionTest implements Service, Registerable {
 							<th>Sync All Products:</th>
 							<td>
 								<p>
-									<label>
-										Async? <input id="async-sync-all-products" name="async" value=1 type="checkbox" />
-									</label>
-                        <input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
-                        <label for="async-sync-all-products">Async?</label>
-						<button class="button">Sync All Products with Google Merchant Center</button>
+									<label for="async-sync-all-products">Async?</label>
+									<input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+									<button class="button">Sync All Products with Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
@@ -514,12 +509,10 @@ class ConnectionTest implements Service, Registerable {
 							<th>Delete All Synced Products:</th>
 							<td>
 								<p>
-									<label>
-										Async? <input id="async-delete-synced-products" name="async" value=1 type="checkbox" />
-									</label>
-                        <input id="async-delete-synced-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
-                        <label for="async-delete-synced-products">Async?</label>
-									<button class="button">Delete All Synced Products from Google Merchant Center</button>
+									<label for="async-delete-synced-products">Async?</label>
+									<input id="async-delete-synced-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+									<button class="button">Delete All Synced Products from Google Merchant Center
+									</button>
 								</p>
 							</td>
 						</tr>
