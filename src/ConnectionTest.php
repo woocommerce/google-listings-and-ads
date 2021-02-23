@@ -20,6 +20,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
@@ -470,9 +473,10 @@ class ConnectionTest implements Service, Registerable {
 							<th>Sync Product:</th>
 							<td>
 								<p>
-						<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 						<label>
-							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
+							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" /></label>
+									<label>
+										Async? <input id="async-sync-product" name="async" value=1 type="checkbox" />
 						</label>
                         <input id="async-sync-product" name="async" value=1 type="checkbox" />
                         <label for="async-sync-product">Async?</label>
@@ -482,6 +486,7 @@ class ConnectionTest implements Service, Registerable {
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-sync-product' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-product" type="hidden" />
 				</form>
@@ -491,7 +496,9 @@ class ConnectionTest implements Service, Registerable {
 							<th>Sync All Products:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<label>
+										Async? <input id="async-sync-all-products" name="async" value=1 type="checkbox" />
+									</label>
                         <input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
                         <label for="async-sync-all-products">Async?</label>
 						<button class="button">Sync All Products with Google Merchant Center</button>
@@ -500,6 +507,7 @@ class ConnectionTest implements Service, Registerable {
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-sync-all-products' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-all-products" type="hidden" />
 						</form>
@@ -509,7 +517,9 @@ class ConnectionTest implements Service, Registerable {
 							<th>Delete All Synced Products:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+									<label>
+										Async? <input id="async-delete-synced-products" name="async" value=1 type="checkbox" />
+									</label>
                         <input id="async-delete-synced-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
                         <label for="async-delete-synced-products">Async?</label>
 									<button class="button">Delete All Synced Products from Google Merchant Center</button>
@@ -518,6 +528,7 @@ class ConnectionTest implements Service, Registerable {
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-delete-synced-products' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-delete-synced-products" type="hidden" />
 				</form>
