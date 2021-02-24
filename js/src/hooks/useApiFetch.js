@@ -1,42 +1,68 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useCallback, useReducer } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
-const useApiFetch = () => {
-	// TODO: consider useReducer so that we can
-	// avoid multiple setState within enhancedApiFetch.
-	const [ loading, setLoading ] = useState( false );
-	const [ error, setError ] = useState();
-	const [ data, setData ] = useState();
+const TYPES = {
+	START: 'START',
+	FINISH: 'FINISH',
+	ERROR: 'ERROR',
+};
 
-	const enhancedApiFetch = async ( options ) => {
+const initialState = {
+	loading: false,
+	error: undefined,
+	data: undefined,
+};
+
+const reducer = ( state, action ) => {
+	switch ( action.type ) {
+		case TYPES.START: {
+			return {
+				...state,
+				loading: true,
+			};
+		}
+		case TYPES.FINISH: {
+			return {
+				...state,
+				loading: false,
+				data: action.data,
+			};
+		}
+		case TYPES.ERROR: {
+			return {
+				...state,
+				loading: false,
+				error: action.error,
+			};
+		}
+	}
+};
+
+const useApiFetch = () => {
+	const [ state, dispatch ] = useReducer( reducer, initialState );
+
+	const enhancedApiFetch = useCallback( async ( options ) => {
 		let response;
-		setLoading( true );
-		setError();
+		dispatch( { type: TYPES.START } );
 
 		try {
 			response = await apiFetch( options );
-			setData( response );
-		} catch ( e ) {
-			setError( e );
-			throw e;
-		} finally {
-			setLoading( false );
+			dispatch( {
+				type: TYPES.FINISH,
+				data: response,
+			} );
+		} catch ( error ) {
+			dispatch( { type: TYPES.ERROR, error } );
+			throw error;
 		}
 
 		return response;
-	};
+	}, [] );
 
-	return [
-		enhancedApiFetch,
-		{
-			loading,
-			error,
-			data,
-		},
-	];
+	return [ enhancedApiFetch, state ];
 };
 
 export default useApiFetch;
