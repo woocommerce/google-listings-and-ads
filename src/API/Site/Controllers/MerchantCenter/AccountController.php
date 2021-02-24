@@ -51,6 +51,12 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected $overwrite_claim = false;
 
+
+	/**
+	 * @var bool Whether to switch the existing website URL.
+	 */
+	protected $switch_url = false;
+
 	/**
 	 * AccountController constructor.
 	 *
@@ -92,6 +98,18 @@ class AccountController extends BaseOptionsController {
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->overwrite_claim_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_schema_properties(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+		$this->register_route(
+			'mc/accounts/switch-url',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->switch_url_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
@@ -154,6 +172,28 @@ class AccountController extends BaseOptionsController {
 			}
 
 			$this->overwrite_claim = true;
+			return $this->set_account_id( $request );
+		};
+	}
+
+	/**
+	 * Get the callback for creating or linking an account, switching the URL during the set_id step.
+	 *
+	 * @return callable
+	 */
+	protected function switch_url_callback(): callable {
+		return function( Request $request ) {
+			$state            = $this->mc_account_state->get();
+			$switch_necessary = ! empty( $state['set_id']['data']['old_url'] );
+			$set_id_status    = $state['set_id']['status'] ?? MerchantAccountState::ACCOUNT_STEP_PENDING;
+			if ( empty( $request['id'] ) || MerchantAccountState::ACCOUNT_STEP_DONE === $set_id_status || ! $switch_necessary ) {
+				return new Response(
+					[ 'message' => __( 'Attempting invalid URL switch.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+
+			$this->switch_url = true;
 			return $this->set_account_id( $request );
 		};
 	}
@@ -454,8 +494,22 @@ class AccountController extends BaseOptionsController {
 		if ( empty( $account_website_url ) ) {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
-		} elseif ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) ) {
-			throw new Exception( __( 'Merchant Center account has a different website URL.', 'google-listings-and-ads' ) );
+		} elseif ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) && ! $this->switch_url ) {
+			if ( $this->container->get( SiteVerification::class )->is_verified( $account_website_url ) ) {
+				$state                              = $this->mc_account_state->get();
+				$state['set_id']['data']['old_url'] = $account_website_url;
+				$state['set_id']['status']          = MerchantAccountState::ACCOUNT_STEP_ERROR;
+				$this->mc_account_state->update( $state );
+
+				throw new Exception(
+					sprintf(
+						/* translators: 1: is a website URL (without the protocol) */
+						__( 'This Merchant Center account already has a verified URL, %1$s', 'google-listings-and-ads' ),
+						preg_replace( '#^https?://#', '', $account_website_url )
+					),
+					409
+				);
+			}
 		}
 
 		// Remove and reset website URL to allow re-claiming.
