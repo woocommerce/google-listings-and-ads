@@ -44,7 +44,11 @@ const ConnectMCCard = () => {
 						value={ value }
 						onChange={ handleSelectChange }
 					/>
-					<Button isSecondary onClick={ handleConnectClick }>
+					<Button
+						isSecondary
+						disabled={ ! value }
+						onClick={ handleConnectClick }
+					>
 						{ __( 'Connect', 'google-listings-and-ads' ) }
 					</Button>
 				</ContentButtonLayout>
