@@ -77,7 +77,7 @@ class SiteVerification {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$response = $service->webResource->getToken( $post_body );
 		} catch ( GoogleException $e ) {
-			do_action( $this->get_slug() . '_site_verification_gettoken_exception', $e, __METHOD__ );
+			do_action( 'gla_sv_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ) );
 		}
 
@@ -110,8 +110,8 @@ class SiteVerification {
 			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
 		} catch ( GoogleException $e ) {
-			do_action( $this->get_slug() . '_site_verification_insert_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to complete site verification.', 'google-listings-and-ads' ) );
+			do_action( 'gla_sv_client_exception', $e, __METHOD__ );
+			throw new Exception( __( 'Unable to insert site verification.', 'google-listings-and-ads' ) );
 		}
 
 		return true;
@@ -137,7 +137,7 @@ class SiteVerification {
 				}
 			}
 		} catch ( GoogleException $e ) {
-			do_action( $this->get_slug() . '_site_verification_check_exception', $e, __METHOD__ );
+			do_action( 'gla_sv_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to check site verification.', 'google-listings-and-ads' ) );
 		}
 
