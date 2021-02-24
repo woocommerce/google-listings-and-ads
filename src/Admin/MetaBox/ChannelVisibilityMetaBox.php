@@ -107,7 +107,8 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @param int $product_id
 	 */
 	public function handle_submission( int $product_id ) {
-		// todo: fix phpcs complaining about nonce verification
+		// phpcs:disable WordPress.Security.NonceVerification
+		// nonce is verified by self::verify_nonce
 		if ( ! $this->verify_nonce() || ! isset( $_POST['sync_enabled'] ) ) {
 			return;
 		}
