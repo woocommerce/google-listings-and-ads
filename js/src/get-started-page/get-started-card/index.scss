@@ -36,4 +36,13 @@
 			}
 		}
 	}
+
+	.components-flex &__terms-notice {
+		margin-top: $grid-unit-20;
+		font-style: italic;
+		font-size: $helptext-font-size;
+		a {
+			text-decoration: none;
+		}
+	}
 }

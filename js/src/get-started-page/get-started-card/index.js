@@ -8,6 +8,7 @@ import {
 	FlexBlock,
 	__experimentalText as Text,
 } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
@@ -51,6 +52,24 @@ const GetStartedCard = () => {
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
 					</Link>
+					<Text className="woocommerce-marketing-google-get-started-card__terms-notice">
+						{ createInterpolateElement(
+							__(
+								'By clicking ‘Get started’, you agree to our <link>Terms of Service.</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<Link
+										type="external"
+										target="_blank"
+										rel="noopener noreferrer"
+										href="https://wordpress.com/tos/"
+									/>
+								),
+							}
+						) }
+					</Text>
 				</FlexBlock>
 				<FlexItem className="motivation-image">
 					<GoogleShoppingImage viewBox="0 0 416 394"></GoogleShoppingImage>
