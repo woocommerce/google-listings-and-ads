@@ -1,9 +1,7 @@
 /**
  * External dependencies
  */
-import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,21 +9,19 @@ import { useState } from '@wordpress/element';
 import AppButton from '.~/components/app-button';
 import TitleButtonLayout from '../title-button-layout';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import useApiFetch from '.~/hooks/useApiFetch';
 
 const ConnectAccount = () => {
-	const [ loading, setLoading ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
+	const [ apiFetch, { loading, data } ] = useApiFetch();
 
 	const handleConnectClick = async () => {
-		setLoading( true );
-
 		try {
 			const { url } = await apiFetch( {
 				path: '/wc/gla/jetpack/connect',
 			} );
 			window.location.href = url;
 		} catch ( error ) {
-			setLoading( false );
 			createNotice(
 				'error',
 				__(
@@ -45,7 +41,7 @@ const ConnectAccount = () => {
 			button={
 				<AppButton
 					isSecondary
-					loading={ loading }
+					loading={ loading || data }
 					onClick={ handleConnectClick }
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
