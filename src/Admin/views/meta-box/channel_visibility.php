@@ -45,17 +45,17 @@ $has_issues = ! empty( $issues );
 	);
 	?>
 	<div class="alert alert-warning sync-status">
-		<p><strong>Google sync status</strong></p>
+		<p><strong><?php esc_html_e( 'Google sync status', 'google-listings-and-ads' ); ?></strong></p>
 		<p><?php echo $is_synced ? 'Synced' : 'Not synced'; ?></p>
 		<?php if ( $is_synced && $has_issues ) : ?>
 			<div class="gla-product-issues">
-				<p><strong>Issues</strong></p>
+				<p><strong><?php esc_html_e( 'Issues', 'google-listings-and-ads' ); ?></strong></p>
 				<ul>
 					<li>Missing description</li>
 				</ul>
 			</div>
 			<div class="gla-product-suggestion-actions">
-				<p><strong>Suggested actions</strong></p>
+				<p><strong><?php esc_html_e( 'Suggested actions', 'google-listings-and-ads' ); ?></strong></p>
 				<ul>
 					<li>Add a description for this product</li>
 				</ul>
