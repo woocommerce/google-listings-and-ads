@@ -32,13 +32,13 @@ const GetStartedCard = () => {
 				<FlexBlock className="motivation-text">
 					<Text variant="title.medium" className="title">
 						{ __(
-							'List your products on Google Shopping, for free',
+							'List your products on Google, for free and with ads',
 							'google-listings-and-ads'
 						) }
 					</Text>
 					<Text variant="body" className="description">
 						{ __(
-							'Integrate with Google’s Merchant Center to list your products for free on Google. Optionally, create paid Smart Shopping campaigns to boost your sales.',
+							'Reach more shoppers and drive sales for your store. Integrate with Google Merchant Center to list your products for free and launch paid ad campaigns.',
 							'google-listings-and-ads'
 						) }
 					</Text>
