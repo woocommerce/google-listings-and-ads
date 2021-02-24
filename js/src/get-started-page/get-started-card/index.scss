@@ -10,20 +10,19 @@
 		}
 
 		.motivation-text {
-			margin: calc(var(--main-gap) * 2);
+			margin: calc(var(--main-gap) * 2.5);
 
 			.title {
-				margin-bottom: calc(var(--main-gap) / 2);
+				margin-bottom: $grid-unit-20;
 			}
 
 			.description {
-				margin-bottom: var(--main-gap);
+				margin-bottom: $grid-unit-20;
 			}
 		}
 
 		.motivation-image {
 			text-align: right;
-			margin-left: calc(var(--main-gap) * 2);
 			margin-bottom: -4px;
 
 			@include break-large() {
