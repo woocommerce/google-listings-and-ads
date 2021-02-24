@@ -15,7 +15,7 @@ $product_id = $this->product_id;
  */
 $product = $this->product;
 
-$sync_enabled = wc_string_to_bool( $this->sync_enabled );
+$sync_enabled = $this->sync_enabled;
 
 /**
  * @var int $synced_at Timestamp
@@ -31,11 +31,19 @@ $has_issues = ! empty( $issues );
 ?>
 
 <div class="gla-channel-visibility-box">
-	<label for="sync_enabled">Google Listing & Ads</label>
-	<select name="sync_enabled" id="sync_enabled">
-		<option value="yes" <?php echo $sync_enabled ? 'selected="selected"' : ''; ?>>Sync and show</option>
-		<option value="no" <?php echo ! $sync_enabled ? 'selected="selected"' : ''; ?>>Don't Sync and show</option>
-	</select>
+	<?php
+	woocommerce_wp_select(
+		[
+			'id'      => 'sync_enabled',
+			'value'   => $sync_enabled,
+			'label'   => __( 'Google Listing & Ads', 'google-listings-and-ads' ),
+			'options' => [
+				'yes' => __( 'Sync and show', 'google-listings-and-ads' ),
+				'no'  => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
+			],
+		]
+	);
+	?>
 	<div class="alert alert-warning sync-status">
 		<p><strong>Google sync status</strong></p>
 		<p><?php echo $is_synced ? 'Synced' : 'Not synced'; ?></p>

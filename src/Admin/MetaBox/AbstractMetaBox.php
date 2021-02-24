@@ -95,8 +95,7 @@ abstract class AbstractMetaBox implements MetaBoxInterface {
 		$args    = $data['args'] ?? [];
 		$context = $this->get_view_context( $post, $args );
 
-		// todo: handle escaping the view output here
-		echo $this->render( $context );
+		echo wp_kses( $this->render( $context ), $this->get_allowed_html_tags() );
 	}
 
 	/**
@@ -118,6 +117,41 @@ abstract class AbstractMetaBox implements MetaBoxInterface {
 		$view_path = path_join( self::VIEW_PATH, $this->get_id() );
 
 		return $this->admin->get_view( $view_path, $context );
+	}
+
+	/**
+	 * Returns the list of allowed HTML tags used for view sanitization.
+	 *
+	 * @return array
+	 */
+	protected function get_allowed_html_tags(): array {
+		$allowed_attributes = [
+			'aria-describedby' => true,
+			'aria-details'     => true,
+			'aria-label'       => true,
+			'aria-labelledby'  => true,
+			'aria-hidden'      => true,
+			'class'            => true,
+			'id'               => true,
+			'style'            => true,
+			'title'            => true,
+			'role'             => true,
+			'data-*'           => true,
+			'action'           => true,
+			'value'            => true,
+			'name'             => true,
+			'selected'         => true,
+		];
+
+		return array_merge(
+			wp_kses_allowed_html( 'post' ),
+			[
+				'form'   => $allowed_attributes,
+				'input'  => $allowed_attributes,
+				'select' => $allowed_attributes,
+				'option' => $allowed_attributes,
+			]
+		);
 	}
 
 	/**

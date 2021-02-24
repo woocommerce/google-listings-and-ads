@@ -88,7 +88,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 		return [
 			'product_id'   => $product_id,
 			'product'      => wc_get_product( $product_id ),
-			'sync_enabled' => wc_string_to_bool( $this->meta_handler->get_sync_enabled( $product_id ) ),
+			'sync_enabled' => $this->meta_handler->get_sync_enabled( $product_id ),
 			'synced_at'    => $this->meta_handler->get_synced_at( $product_id ),
 			'issues'       => [], // todo: replace this with the list of issues retrieved from Google's Product Statuses API
 		];
