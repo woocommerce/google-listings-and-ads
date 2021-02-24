@@ -320,27 +320,11 @@ export function* fetchTargetAudience() {
 	}
 }
 
-export function* linkMCAccount( id ) {
-	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/accounts`,
-			method: 'POST',
-			data: { id },
-		} );
-
-		return {
-			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
-			account: response,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to link your Merchant Center account.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+export function receiveMCAccount( account ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+		account,
+	};
 }
 
 export function* saveTargetAudience( targetAudience ) {

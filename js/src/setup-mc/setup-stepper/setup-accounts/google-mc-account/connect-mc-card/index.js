@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -9,25 +8,34 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import MerchantCenterSelectControl from '.~/components/merchant-center-select-control';
+import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
+import useApiFetch from '.~/hooks/useApiFetch';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
 
 const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
-	const { linkMCAccount } = useAppDispatch();
+	const [ apiFetch, { loading } ] = useApiFetch();
+	const { receiveMCAccount } = useAppDispatch();
 
 	const handleSelectChange = ( optionValue ) => {
 		setValue( optionValue );
 	};
 
-	const handleConnectClick = () => {
+	const handleConnectClick = async () => {
 		if ( ! value ) {
 			return;
 		}
 
-		linkMCAccount( value );
+		const account = await apiFetch( {
+			path: `/wc/gla/mc/accounts`,
+			method: 'POST',
+			data: { id: value },
+		} );
+
+		receiveMCAccount( account );
 	};
 
 	return (
@@ -44,13 +52,14 @@ const ConnectMCCard = () => {
 						value={ value }
 						onChange={ handleSelectChange }
 					/>
-					<Button
+					<AppButton
 						isSecondary
+						loading={ loading }
 						disabled={ ! value }
 						onClick={ handleConnectClick }
 					>
 						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</Button>
+					</AppButton>
 				</ContentButtonLayout>
 			</Section.Card.Body>
 		</Section.Card>
