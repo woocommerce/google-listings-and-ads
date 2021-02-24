@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\QueryTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -26,6 +27,7 @@ class Ads implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 	use ApiExceptionTrait;
 	use AdsQueryTrait;
+	use QueryTrait;
 
 	/**
 	 * The Google Ads Client.
