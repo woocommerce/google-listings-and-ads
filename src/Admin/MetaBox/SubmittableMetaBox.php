@@ -19,7 +19,6 @@ abstract class SubmittableMetaBox extends AbstractMetaBox implements Registerabl
 	 * @return bool True is nonce is provided and valid, false otherwise.
 	 */
 	protected function verify_nonce(): bool {
-		// todo: fix phpcs complaining about non-sanitized variable usage.
-		return ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' );
+		return ! empty( $_POST['woocommerce_meta_nonce'] ) && wp_verify_nonce( sanitize_key( $_POST['woocommerce_meta_nonce'] ), 'woocommerce_save_data' );
 	}
 }
