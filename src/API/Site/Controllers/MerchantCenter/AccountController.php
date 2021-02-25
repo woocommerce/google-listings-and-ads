@@ -342,7 +342,7 @@ class AccountController extends BaseOptionsController {
 					case 'claim':
 						// At this step, the website URL is assumed to be correct.
 						// If the URL is already claimed, no claim should be attempted.
-						if ( ! $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+						if ( $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
 							break;
 						}
 
