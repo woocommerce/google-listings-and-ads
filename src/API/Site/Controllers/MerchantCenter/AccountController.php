@@ -509,6 +509,7 @@ class AccountController extends BaseOptionsController {
 	 * @param string $site_website_url The new website URL
 	 *
 	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
+	 * @throws Exception If the Merchant Center account can't be retrieved.
 	 * @throws ExceptionWithResponseData If the account website URL doesn't match the given URL.
 	 */
 	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
@@ -560,7 +561,7 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @return Response
 	 */
-	private function get_time_to_wait_response( int $time_to_wait ) {
+	private function get_time_to_wait_response( int $time_to_wait ): Response {
 		return new Response(
 			[
 				'retry_after' => $time_to_wait,
