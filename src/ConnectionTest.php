@@ -629,30 +629,15 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-ads-create' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-create' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/US/create-customer';
-			$args = [
-				'headers' => [
-					'Authorization' => $this->get_auth_header(),
-					'Content-Type'  => 'application/json',
-				],
-				'body'    => wp_json_encode(
-					[
-						'descriptive_name' => 'Connection test account at ' . date( 'Y-m-d h:i:s' ),
-						'currency_code'    => 'USD',
-						'time_zone'        => 'America/New_York',
-					]
-				),
-			];
+			try {
+				/** @var Proxy $proxy */
+				$proxy    = $this->container->get( Proxy::class );
+				$account_id = $proxy->create_ads_account();
 
-			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				$this->response .= $response->get_error_message();
-				return;
+				$this->response .= 'Created account: ' . $account_id . "\n";
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
 			}
-
-			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-ads-link' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-link' ) ) {
@@ -662,29 +647,15 @@ class ConnectionTest implements Service, Registerable {
 				return;
 			}
 
-			$id   = absint( $_GET['customer_id'] );
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/link-customer';
-			$args = [
-				'headers' => [
-					'Authorization' => $this->get_auth_header(),
-					'Content-Type'  => 'application/json',
-				],
-				'body'    => wp_json_encode(
-					[
-						'client_customer' => $id,
-					]
-				),
-			];
+			try {
+				/** @var Proxy $proxy */
+				$proxy    = $this->container->get( Proxy::class );
+				$account_id = $proxy->link_ads_account( absint( $_GET['customer_id'] ) );
 
-			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				$this->response .= $response->get_error_message();
-				return;
+				$this->response .= 'Linked account: ' . $account_id . "\n";
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
 			}
-
-			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
