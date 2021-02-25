@@ -139,7 +139,7 @@ class ConnectionTest implements Service, Registerable {
 					<th><label>WCS Server:</label></th>
 					<td>
 						<p>
-							<code><?php echo defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL : 'http://localhost:5000'; ?></code>
+							<code><?php echo $this->container->get( 'connect_server_root' ); ?></code>
 						</p>
 					</td>
 				</tr>
