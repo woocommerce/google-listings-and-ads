@@ -29,13 +29,15 @@ const ConnectMCCard = () => {
 			return;
 		}
 
-		const { data } = await apiFetch( {
+		const { data, response } = await apiFetch( {
 			path: `/wc/gla/mc/accounts`,
 			method: 'POST',
 			data: { id: value },
 		} );
 
-		receiveMCAccount( data );
+		if ( response.status === 200 ) {
+			receiveMCAccount( data );
+		}
 	};
 
 	return (
