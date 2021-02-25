@@ -44,7 +44,7 @@ $has_issues = ! empty( $issues );
 		]
 	);
 	?>
-	<div class="alert alert-warning sync-status">
+	<div class="sync-status notice-alt notice-large notice-warning">
 		<p><strong><?php esc_html_e( 'Google sync status', 'google-listings-and-ads' ); ?></strong></p>
 		<p><?php echo $is_synced ? 'Synced' : 'Not synced'; ?></p>
 		<?php if ( $is_synced && $has_issues ) : ?>
@@ -54,7 +54,7 @@ $has_issues = ! empty( $issues );
 					<li>Missing description</li>
 				</ul>
 			</div>
-			<div class="gla-product-suggestion-actions">
+			<div class="gla-product-suggested-actions">
 				<p><strong><?php esc_html_e( 'Suggested actions', 'google-listings-and-ads' ); ?></strong></p>
 				<ul>
 					<li>Add a description for this product</li>
