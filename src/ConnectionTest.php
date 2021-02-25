@@ -413,8 +413,12 @@ class ConnectionTest implements Service, Registerable {
 							<th>Create Ads Customer:</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-create' ], $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-create' ], $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer as a sub account</a>
 								</p>
+								<ol>
+									<li>Create account</li>
+									<li>Direct user to billing flow (not implemented yet)</li>
+								</ol>
 							</td>
 						</tr>
 						<tr>
@@ -424,8 +428,12 @@ class ConnectionTest implements Service, Registerable {
 									<label>
 										Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
 									</label>
-									<button class="button">Link Google Ads customer to a Merchant Account</button>
+									<button class="button">Link existing Google Ads customer to the site</button>
 								</p>
+								<ol>
+									<li>Link to manager account</li>
+									<li>Link to merchant account (not implemented yet)</li>
+								</ol>
 							</td>
 						</tr>
 					</table>
