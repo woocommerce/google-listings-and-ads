@@ -9,12 +9,26 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
+import useApiFetch from '.~/hooks/useApiFetch';
+import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
 import AccountId from '../account-id';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
 	const { id, message, onSelectAnotherAccount = () => {} } = props;
+	const { receiveMCAccount } = useAppDispatch();
+	const [ apiFetch, { loading } ] = useApiFetch();
+
+	const handleSwitch = async () => {
+		const { data } = await apiFetch( {
+			path: `/wc/gla/mc/accounts/switch-url`,
+			method: 'POST',
+			data: { id },
+		} );
+
+		receiveMCAccount( data );
+	};
 
 	return (
 		<Section.Card className="gla-switch-url-card">
@@ -43,10 +57,8 @@ const SwitchUrlCard = ( props ) => {
 						</AppButton>
 						<AppButton
 							isSecondary
-							// TODO: handle switch to new URL.
-							// loading={ loading }
-							// disabled={ ! value }
-							// onClick={ handleConnectClick }
+							loading={ loading }
+							onClick={ handleSwitch }
 						>
 							{ __(
 								'Switch to my new URL',
