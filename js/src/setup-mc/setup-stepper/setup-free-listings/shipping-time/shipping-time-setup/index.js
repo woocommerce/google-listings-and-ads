@@ -10,13 +10,13 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import AppDocumentationLink from '../../../../../components/app-documentation-link';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
-import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
 import AddTimeButton from './add-time-button';
 import CountriesTimeInput from './countries-time-input';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import AppSpinner from '.~/components/app-spinner';
 
 const formKeys = {
 	rows: 'shippingTimeOption-rows',
-	allowGoogleDataCollection: 'shippingTimeOption-allowGoogleDataCollection',
 };
 
 const ShippingTimeSetup = ( props ) => {
@@ -24,8 +24,13 @@ const ShippingTimeSetup = ( props ) => {
 		formProps: { getInputProps, values, setValue },
 	} = props;
 
-	const audienceCountries = useGetAudienceCountries();
-	const expectedCountryCount = audienceCountries.length;
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
+
+	const expectedCountryCount = selectedCountryCodes.length;
 	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
 		return acc + cur.countries.length;
 	}, 0 );
@@ -79,7 +84,7 @@ const ShippingTimeSetup = ( props ) => {
 							),
 						}
 					) }
-					{ ...getInputProps( formKeys.allowGoogleDataCollection ) }
+					{ ...getInputProps( 'share_shipping_time' ) }
 				/>
 			</VerticalGapLayout>
 		</div>

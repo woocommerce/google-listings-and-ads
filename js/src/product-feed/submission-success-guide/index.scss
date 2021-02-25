@@ -1,0 +1,108 @@
+.gla-submission-success-guide {
+	&.components-guide {
+		height: auto;
+		@include break-small() {
+			max-width: 517px;
+			height: 556px;
+		}
+	}
+
+	.components-modal__header {
+		position: absolute;
+		.components-button {
+			// The close button at the top-right side on the modal
+			color: #50575e;
+
+			&:hover svg {
+				fill: currentColor;
+			}
+		}
+	}
+
+	.components-guide {
+		&__container {
+			margin-top: 0;
+		}
+
+		&__page {
+			flex-grow: 1;
+			justify-content: normal;
+		}
+
+		&__page-control {
+			margin: 18px 0;
+
+			li {
+				margin-bottom: 0;
+			}
+
+			.components-button {
+				// The pagination dots' style
+				min-width: 20px;
+				height: 20px;
+				padding: 6px;
+			}
+		}
+
+		&__footer {
+			@media (max-width: $break-small) {
+				// Prevent layout break on small mobile devices
+				position: static;
+			}
+			justify-content: flex-end;
+			width: 100%;
+			height: auto;
+			margin: 0;
+			padding: 0 $grid-unit-30 $grid-unit-30;
+			box-sizing: border-box;
+
+			.components-button {
+				position: static;
+				height: 36px;
+				padding: 0 16px;
+				box-sizing: border-box;
+				border-radius: 3px;
+				font-weight: 500;
+				font-size: 14px;
+				& ~ .components-button {
+					margin-left: calc(var(--main-gap) / 2);
+				}
+			}
+		}
+
+		&__forward-button,
+		&__back-button {
+			color: var(--wp-admin-theme-color);
+		}
+
+		&__forward-button {
+			border: 1px solid;
+		}
+	}
+
+	&__logo-block {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 160px;
+		margin: 0;
+		background-color: #f3f4f5;
+	}
+
+	&__logo-item {
+		flex: 1;
+		margin-bottom: 0;
+		// Clear the 4px space gap for SVG
+		line-height: 0;
+		&:first-child {
+			text-align: right;
+		}
+	}
+
+	&__logo-separator-line {
+		width: 1px;
+		height: 63px;
+		margin: 0 28px;
+		background-color: $gray-600;
+	}
+}

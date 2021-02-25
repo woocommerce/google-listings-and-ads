@@ -34,6 +34,12 @@ class SiteVerification {
 	/** @var string */
 	private const VERIFICATION_METHOD = 'META';
 
+	/** @var string */
+	public const VERIFICATION_STATUS_VERIFIED = 'yes';
+
+	/** @var string */
+	public const VERIFICATION_STATUS_UNVERIFIED = 'no';
+
 
 	/**
 	 * SiteVerification constructor.

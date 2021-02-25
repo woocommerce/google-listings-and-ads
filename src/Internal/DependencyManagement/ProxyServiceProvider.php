@@ -7,7 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Http;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
+use wpdb;
+
+use function WC;
 
 /**
  * Class ProxyServiceProvider
@@ -27,6 +32,7 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		Tracks::class       => true,
 		GoogleGtagJs::class => true,
 		WP::class           => true,
+		WCProxy::class      => true,
 	];
 
 	/**
@@ -45,5 +51,18 @@ class ProxyServiceProvider extends AbstractServiceProvider {
 		$this->share( Tracks::class );
 		$this->share( GoogleGtagJs::class );
 		$this->share( WP::class );
+		$this->share( WCProxy::class, WC()->countries );
+
+		// Use a wrapper function to get the wpdb object.
+		$this->share_concrete(
+			wpdb::class,
+			new Definition(
+				wpdb::class,
+				function() {
+					global $wpdb;
+					return $wpdb;
+				}
+			)
+		);
 	}
 }

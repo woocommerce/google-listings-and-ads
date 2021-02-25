@@ -1,77 +1,22 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 import { Form } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
-import StepContent from '../components/step-content';
-import StepContentFooter from '../components/step-content-footer';
-import ShippingRate from './shipping-rate';
-import ShippingTime from './shipping-time';
-import TaxRate from './tax-rate';
-import PreLaunchChecklist from './pre-launch-checklist';
+import AppSpinner from '../../../components/app-spinner';
 import Hero from './hero';
+import useSettings from './useSettings';
+import FormContent from './form-content';
 
 const SetupFreeListings = () => {
-	// TODO: initial values for the form.
-	// the shippingRateOption-rows should first load from previous saved value;
-	// if there is no saved value, then it should be set to the countries
-	// selected in Step 2 Choose Your Audience.
-	const initialValues = {
-		shippingRateOption: null,
-		'shippingRateOption-rows': [
-			{
-				countries: [
-					{
-						key: 'AUS',
-						label: 'Australia',
-					},
-					{
-						key: 'CHN',
-						label: 'China',
-					},
-					{
-						key: 'USA',
-						label: 'United States of America',
-					},
-				],
-				price: '20',
-			},
-		],
-		'shippingRateOption-freeShipping': false,
-		'shippingRateOption-freeShipping-priceOver': '',
-		shippingTimeOption: null,
-		'shippingTimeOption-rows': [
-			{
-				countries: [
-					{
-						key: 'AUS',
-						label: 'Australia',
-					},
-					{
-						key: 'USA',
-						label: 'United States of America',
-					},
-				],
-				time: '20',
-			},
-		],
-		'shippingTimeOption-allowGoogleDataCollection': false,
-		taxRateOption: null,
-		checkWebsiteLive: false,
-		checkCheckoutProcess: false,
-		checkPaymentMethods: false,
-		checkPolicy: false,
-		checkContacts: false,
-	};
+	const { settings } = useSettings();
 
-	// TODO: call backend API and display tax rate section
-	// only when users selected US in the list of countries.
-	const displayTaxRate = true;
+	if ( ! settings ) {
+		return <AppSpinner />;
+	}
 
 	const handleValidate = () => {
 		const errors = {};
@@ -87,46 +32,27 @@ const SetupFreeListings = () => {
 	return (
 		<div className="gla-setup-free-listings">
 			<Hero />
+			{ /* TODO: 'shippingTimeOption-rows' should be removed, and use shipping time API instead. */ }
 			<Form
-				initialValues={ initialValues }
+				initialValues={ {
+					shipping_rate: settings.shipping_rate,
+					offers_free_shipping: settings.offers_free_shipping,
+					free_shipping_threshold: settings.free_shipping_threshold,
+					shipping_time: settings.shipping_time,
+					'shippingTimeOption-rows': [],
+					share_shipping_time: settings.share_shipping_time,
+					tax_rate: settings.tax_rate,
+					website_live: settings.website_live,
+					checkout_process_secure: settings.checkout_process_secure,
+					payment_methods_visible: settings.payment_methods_visible,
+					refund_tos_visible: settings.refund_tos_visible,
+					contact_info_visible: settings.contact_info_visible,
+				} }
 				validate={ handleValidate }
 				onSubmitCallback={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
-					const { values, errors, handleSubmit } = formProps;
-
-					const isCompleteSetupDisabled =
-						Object.keys( errors ).length >= 1 ||
-						! (
-							values.checkWebsiteLive &&
-							values.checkCheckoutProcess &&
-							values.checkPaymentMethods &&
-							values.checkPolicy &&
-							values.checkContacts
-						);
-
-					return (
-						<StepContent>
-							<ShippingRate formProps={ formProps } />
-							<ShippingTime formProps={ formProps } />
-							{ displayTaxRate && (
-								<TaxRate formProps={ formProps } />
-							) }
-							<PreLaunchChecklist formProps={ formProps } />
-							<StepContentFooter>
-								<Button
-									isPrimary
-									disabled={ isCompleteSetupDisabled }
-									onClick={ handleSubmit }
-								>
-									{ __(
-										'Complete setup',
-										'google-listings-and-ads'
-									) }
-								</Button>
-							</StepContentFooter>
-						</StepContent>
-					);
+					return <FormContent formProps={ formProps } />;
 				} }
 			</Form>
 		</div>
