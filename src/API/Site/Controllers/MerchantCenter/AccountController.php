@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -289,6 +290,8 @@ class AccountController extends BaseOptionsController {
 			$response = $this->setup_merchant_account();
 
 			return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
+		} catch ( ExceptionWithResponseData $e ) {
+			return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 		} catch ( Exception $e ) {
 			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 		}
@@ -457,7 +460,8 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
-	 * @throws Exception If there is already a Merchant Center ID or the website URL can't be configured correctly.
+	 * @throws Exception If there is already a Merchant Center ID or the website can't be configured correctly.
+	 * @throws ExceptionWithResponseData If there's a website URL conflict.
 	 */
 	private function use_existing_account_id( int $account_id ): void {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
@@ -505,7 +509,7 @@ class AccountController extends BaseOptionsController {
 	 * @param string $site_website_url The new website URL
 	 *
 	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
-	 * @throws Exception If the account website URL doesn't match the given URL.
+	 * @throws ExceptionWithResponseData If the account website URL doesn't match the given URL.
 	 */
 	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
 		/** @var MC_Account $mc_account */
@@ -523,13 +527,22 @@ class AccountController extends BaseOptionsController {
 				$state['set_id']['status']          = MerchantAccountState::ACCOUNT_STEP_ERROR;
 				$this->mc_account_state->update( $state );
 
-				throw new Exception(
+				$clean_account_website_url = preg_replace( '#^https?://#', '', untrailingslashit( $account_website_url ) );
+				$clean_site_website_url    = preg_replace( '#^https?://#', '', untrailingslashit( $site_website_url ) );
+
+				throw new ExceptionWithResponseData(
 					sprintf(
 					/* translators: 1: is a website URL (without the protocol) */
 						__( 'This Merchant Center account already has a verified and claimed URL, %1$s', 'google-listings-and-ads' ),
-						preg_replace( '#^https?://#', '', untrailingslashit( $account_website_url ) )
+						$clean_account_website_url
 					),
-					409
+					409,
+					null,
+					[
+						'id'          => $merchant_id,
+						'claimed_url' => $clean_account_website_url,
+						'new_url'     => $clean_site_website_url,
+					]
 				);
 			}
 
