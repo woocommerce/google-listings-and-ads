@@ -343,7 +343,9 @@ class AccountController extends BaseOptionsController {
 						if ( $this->overwrite_claim ) {
 							$this->middleware->claim_merchant_website( true );
 						} else {
-							$this->merchant->claimwebsite();
+							if ( ! $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+								$this->merchant->claimwebsite();
+							}
 						}
 						break;
 					default:
