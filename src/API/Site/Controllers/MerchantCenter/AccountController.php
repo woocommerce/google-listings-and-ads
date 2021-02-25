@@ -498,11 +498,12 @@ class AccountController extends BaseOptionsController {
 
 		$account_website_url = $mc_account->getWebsiteUrl();
 
+
 		if ( empty( $account_website_url ) ) {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
-		} elseif ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) && ! $this->switch_url ) {
-			if ( $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+		} elseif ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) ) {
+			if ( ! $this->switch_url && $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
 				$state                              = $this->mc_account_state->get();
 				$state['set_id']['data']['old_url'] = $account_website_url;
 				$state['set_id']['status']          = MerchantAccountState::ACCOUNT_STEP_ERROR;
@@ -517,6 +518,8 @@ class AccountController extends BaseOptionsController {
 					409
 				);
 			}
+			$mc_account->setWebsiteUrl( $site_website_url );
+			$this->merchant->update_account( $mc_account );
 		}
 
 		return true;
