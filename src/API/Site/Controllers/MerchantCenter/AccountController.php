@@ -452,7 +452,8 @@ class AccountController extends BaseOptionsController {
 
 
 	/**
-	 * Use an existing MC account – mark the 'set_id' step as completed and set the Merchant ID.
+	 * Use an existing MC account. Mark the 'set_id' step as done, update the MC account's website URL,
+	 * and sets the Merchant ID.
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
