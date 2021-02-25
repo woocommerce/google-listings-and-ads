@@ -118,5 +118,6 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			$sync_enabled = 'no' !== $_POST['sync_enabled'] ? 'yes' : 'no';
 			$this->meta_handler->update_sync_enabled( $product_id, $sync_enabled );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }
