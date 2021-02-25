@@ -55,7 +55,7 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * @var bool Whether to allow changes to the existing website URL.
 	 */
-	protected $switch_url = false;
+	protected $allow_switch_url = false;
 
 	/**
 	 * AccountController constructor.
@@ -193,7 +193,7 @@ class AccountController extends BaseOptionsController {
 				);
 			}
 
-			$this->switch_url = true;
+			$this->allow_switch_url = true;
 			return $this->set_account_id( $request );
 		};
 	}
@@ -483,14 +483,14 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
-	 * Ensure the Merchant Center account's Website URL matches the site URL, updating an empty value if
-	 * necessary. Throws an exception 409 if there's already a different, claimed website URL.
+	 * Ensure the Merchant Center account's Website URL matches the site URL. Update an empty value or
+	 * a different, unclaimed URL value. Throw a 409 exception if a different, claimed URL is found.
 	 *
 	 * @param int    $merchant_id      The Merchant Center account to update
 	 * @param string $site_website_url The new website URL
 	 *
 	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
-	 * @throws Exception If there's an error updating the website URL, or if .
+	 * @throws Exception If the account website URL doesn't match the given URL.
 	 */
 	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
 		/** @var MC_Account $mc_account */
@@ -498,12 +498,11 @@ class AccountController extends BaseOptionsController {
 
 		$account_website_url = $mc_account->getWebsiteUrl();
 
+		if ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) ) {
 
-		if ( empty( $account_website_url ) ) {
-			$mc_account->setWebsiteUrl( $site_website_url );
-			$this->merchant->update_account( $mc_account );
-		} elseif ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) ) {
-			if ( ! $this->switch_url && $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+			$is_website_claimed = $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed();
+
+			if ( ! empty( $account_website_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
 				$state                              = $this->mc_account_state->get();
 				$state['set_id']['data']['old_url'] = $account_website_url;
 				$state['set_id']['status']          = MerchantAccountState::ACCOUNT_STEP_ERROR;
@@ -511,13 +510,14 @@ class AccountController extends BaseOptionsController {
 
 				throw new Exception(
 					sprintf(
-						/* translators: 1: is a website URL (without the protocol) */
+					/* translators: 1: is a website URL (without the protocol) */
 						__( 'This Merchant Center account already has a verified and claimed URL, %1$s', 'google-listings-and-ads' ),
 						preg_replace( '#^https?://#', '', $account_website_url )
 					),
 					409
 				);
 			}
+
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
 		}
