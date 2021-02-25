@@ -283,7 +283,7 @@ class AccountController extends BaseOptionsController {
 		try {
 			$link_id = absint( $request['id'] );
 			if ( $link_id ) {
-				$this->use_existing_account_id( $link_id );
+				$this->use_standalone_account_id( $link_id );
 			}
 
 			$response = $this->setup_merchant_account();
@@ -452,13 +452,13 @@ class AccountController extends BaseOptionsController {
 
 
 	/**
-	 * Use an existing MC account – mark the 'set_id' step as completed and set the Merchant ID.
+	 * Mark the 'set_id' step as completed and set the Merchant ID.
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
-	 * @throws Exception If there is already a Merchant Center ID or the website URL can't be configured correctly.
+	 * @throws Exception If there is already a Merchant Center ID or the website can't be configured correctly.
 	 */
-	private function use_existing_account_id( int $account_id ): void {
+	private function use_standalone_account_id( int $account_id ): void {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 		if ( $merchant_id && $merchant_id !== $account_id ) {
 			throw new Exception(
@@ -476,19 +476,11 @@ class AccountController extends BaseOptionsController {
 			return;
 		}
 
-		// Make sure the existing account has the correct website URL (or fail).
+		// Make sure the standalone account has the correct website URL (or fail).
 		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
-		// Maybe the existing account is sub-account!
+		$state['set_id']['status']           = MerchantAccountState::ACCOUNT_STEP_DONE;
 		$state['set_id']['data']['from_mca'] = false;
-		foreach ( $this->middleware->get_merchant_ids() as $existing_account ) {
-			if ( $existing_account['id'] === $account_id ) {
-				$state['set_id']['data']['from_mca'] = $existing_account['subaccount'];
-				break;
-			}
-		}
-
-		$state['set_id']['status'] = MerchantAccountState::ACCOUNT_STEP_DONE;
 		$this->mc_account_state->update( $state );
 		$this->middleware->link_merchant_account( $account_id );
 		$this->merchant->set_id( $account_id );
