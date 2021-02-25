@@ -8,6 +8,7 @@ const TYPES = {
 	START: 'START',
 	FINISH: 'FINISH',
 	ERROR: 'ERROR',
+	RESET: 'RESET',
 };
 
 const initialState = {
@@ -15,6 +16,7 @@ const initialState = {
 	error: undefined,
 	data: undefined,
 	response: undefined,
+	options: undefined,
 };
 
 const reducer = ( state, action ) => {
@@ -43,6 +45,9 @@ const reducer = ( state, action ) => {
 				response: action.response,
 				options: action.options,
 			};
+		}
+		case TYPES.RESET: {
+			return initialState;
 		}
 	}
 };
@@ -76,7 +81,16 @@ const useApiFetch = () => {
 		}
 	}, [] );
 
-	return [ enhancedApiFetch, state ];
+	const reset = useCallback( () => {
+		dispatch( { type: TYPES.RESET } );
+	}, [] );
+
+	const fetchResult = {
+		...state,
+		reset,
+	};
+
+	return [ enhancedApiFetch, fetchResult ];
 };
 
 export default useApiFetch;
