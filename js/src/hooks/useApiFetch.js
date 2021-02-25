@@ -23,6 +23,7 @@ const reducer = ( state, action ) => {
 			return {
 				...state,
 				loading: true,
+				options: action.options,
 			};
 		}
 		case TYPES.FINISH: {
@@ -31,6 +32,7 @@ const reducer = ( state, action ) => {
 				loading: false,
 				data: action.data,
 				response: action.response,
+				options: action.options,
 			};
 		}
 		case TYPES.ERROR: {
@@ -39,6 +41,7 @@ const reducer = ( state, action ) => {
 				loading: false,
 				error: action.error,
 				response: action.response,
+				options: action.options,
 			};
 		}
 	}
@@ -48,7 +51,7 @@ const useApiFetch = () => {
 	const [ state, dispatch ] = useReducer( reducer, initialState );
 
 	const enhancedApiFetch = useCallback( async ( options ) => {
-		dispatch( { type: TYPES.START } );
+		dispatch( { type: TYPES.START, options } );
 
 		try {
 			const response = await apiFetch( { ...options, parse: false } );
@@ -58,6 +61,7 @@ const useApiFetch = () => {
 				type: TYPES.FINISH,
 				data,
 				response,
+				options,
 			} );
 
 			return { data, response };
@@ -67,7 +71,7 @@ const useApiFetch = () => {
 				? await response.json()
 				: new Error( 'No content in fetch response.' );
 
-			dispatch( { type: TYPES.ERROR, error, response } );
+			dispatch( { type: TYPES.ERROR, error, response, options } );
 			throw error;
 		}
 	}, [] );
