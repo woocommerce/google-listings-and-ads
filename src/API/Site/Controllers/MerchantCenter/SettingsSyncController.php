@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -56,6 +57,14 @@ class SettingsSyncController extends BaseController {
 	protected function get_sync_endpoint_callback(): callable {
 		return function( Request $request ) {
 			$this->settings->sync_shipping();
+
+			return new Response(
+				[
+					'status'  => 'success',
+					'message' => __( 'Successfully synchronized settings with Google.', 'google-listings-and-ads' ),
+				],
+				201
+			);
 		};
 	}
 
