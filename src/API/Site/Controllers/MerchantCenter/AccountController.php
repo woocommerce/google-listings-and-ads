@@ -516,7 +516,7 @@ class AccountController extends BaseOptionsController {
 					sprintf(
 					/* translators: 1: is a website URL (without the protocol) */
 						__( 'This Merchant Center account already has a verified and claimed URL, %1$s', 'google-listings-and-ads' ),
-						preg_replace( '#^https?://#', '', $account_website_url )
+						preg_replace( '#^https?://#', '', untrailingslashit( $account_website_url ) )
 					),
 					409
 				);
