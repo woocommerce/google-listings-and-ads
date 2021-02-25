@@ -436,6 +436,22 @@ class ConnectionTest implements Service, Registerable {
 								</ol>
 							</td>
 						</tr>
+						<tr>
+							<th>Check Ads Status:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-check' ], $url ), 'wcs-google-ads-check' ) ); ?>">Ads Connection Status</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Disconnect Ads:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-disconnect' ), $url ), 'wcs-google-ads-disconnect' ) ); ?>">Ads Disconnect</a>
+								</p>
+							</td>
+						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-google-ads-link' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
@@ -664,6 +680,20 @@ class ConnectionTest implements Service, Registerable {
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
+		}
+
+		if ( 'wcs-google-ads-check' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-check' ) ) {
+			/** @var Proxy $proxy */
+			$proxy    = $this->container->get( Proxy::class );
+			$status = $proxy->get_connected_ads_account();
+			$this->response .= wp_json_encode( $status );
+		}
+
+		if ( 'wcs-google-ads-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-disconnect' ) ) {
+			/** @var Proxy $proxy */
+			$proxy    = $this->container->get( Proxy::class );
+			$status = $proxy->disconnect_ads_account();
+			$this->response .= 'Disconnected ads account' . "\n";
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
