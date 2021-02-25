@@ -53,7 +53,7 @@ class AccountController extends BaseOptionsController {
 
 
 	/**
-	 * @var bool Whether to switch the existing website URL.
+	 * @var bool Whether to allow changes to the existing website URL.
 	 */
 	protected $switch_url = false;
 
@@ -477,13 +477,13 @@ class AccountController extends BaseOptionsController {
 
 	/**
 	 * Ensure the Merchant Center account's Website URL matches the site URL, updating an empty value if
-	 * necessary. Fails if the Merchant Center account has a different Website URL.
+	 * necessary. Throws an exception 409 if there's already a different, claimed website URL.
 	 *
 	 * @param int    $merchant_id      The Merchant Center account to update
 	 * @param string $site_website_url The new website URL
 	 *
 	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
-	 * @throws Exception If there's an error updating the website URL.
+	 * @throws Exception If there's an error updating the website URL, or if .
 	 */
 	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
 		/** @var MC_Account $mc_account */
@@ -495,7 +495,7 @@ class AccountController extends BaseOptionsController {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
 		} elseif ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) && ! $this->switch_url ) {
-			if ( $this->container->get( SiteVerification::class )->is_verified( $account_website_url ) ) {
+			if ( $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
 				$state                              = $this->mc_account_state->get();
 				$state['set_id']['data']['old_url'] = $account_website_url;
 				$state['set_id']['status']          = MerchantAccountState::ACCOUNT_STEP_ERROR;
@@ -504,19 +504,13 @@ class AccountController extends BaseOptionsController {
 				throw new Exception(
 					sprintf(
 						/* translators: 1: is a website URL (without the protocol) */
-						__( 'This Merchant Center account already has a verified URL, %1$s', 'google-listings-and-ads' ),
+						__( 'This Merchant Center account already has a verified and claimed URL, %1$s', 'google-listings-and-ads' ),
 						preg_replace( '#^https?://#', '', $account_website_url )
 					),
 					409
 				);
 			}
 		}
-
-		// Remove and reset website URL to allow re-claiming.
-		$mc_account->setWebsiteUrl( '' );
-		$this->merchant->update_account( $mc_account );
-		$mc_account->setWebsiteUrl( $site_website_url );
-		$this->merchant->update_account( $mc_account );
 
 		return true;
 	}
