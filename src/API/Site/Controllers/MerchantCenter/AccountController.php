@@ -481,6 +481,7 @@ class AccountController extends BaseOptionsController {
 		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
 		// Maybe the existing account is sub-account!
+		$state                               = $this->mc_account_state->get();
 		$state['set_id']['data']['from_mca'] = false;
 		foreach ( $this->middleware->get_merchant_ids() as $existing_account ) {
 			if ( $existing_account['id'] === $account_id ) {
