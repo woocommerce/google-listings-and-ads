@@ -44,6 +44,7 @@ $has_issues = ! empty( $issues );
 		]
 	);
 	?>
+	<?php if ( 0 === 1 ) : // Temporarily hide the sync status. See https://github.com/woocommerce/google-listings-and-ads/issues/152#issuecomment-776408166 ?>
 	<div class="sync-status notice-alt notice-large notice-warning">
 		<p><strong><?php esc_html_e( 'Google sync status', 'google-listings-and-ads' ); ?></strong></p>
 		<p><?php echo $is_synced ? 'Synced' : 'Not synced'; ?></p>
@@ -62,4 +63,5 @@ $has_issues = ! empty( $issues );
 			</div>
 		<?php endif; ?>
 	</div>
+	<?php endif; ?>
 </div>
