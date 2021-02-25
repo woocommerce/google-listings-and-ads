@@ -1,14 +1,9 @@
 /**
- * External dependencies
- */
-import { createInterpolateElement } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
-
-/**
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
 import TitleButtonLayout from '../title-button-layout';
+import AccountId from './account-id';
 
 const ConnectedCard = ( props ) => {
 	const { googleMCAccount } = props;
@@ -17,15 +12,7 @@ const ConnectedCard = ( props ) => {
 		<Section.Card>
 			<Section.Card.Body>
 				<TitleButtonLayout
-					title={ createInterpolateElement(
-						__(
-							'Account <accountnumber />',
-							'google-listings-and-ads'
-						),
-						{
-							accountnumber: <span>{ googleMCAccount.id }</span>,
-						}
-					) }
+					title={ <AccountId id={ googleMCAccount.id } /> }
 				/>
 			</Section.Card.Body>
 		</Section.Card>
