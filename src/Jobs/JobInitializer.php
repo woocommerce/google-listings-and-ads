@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -22,6 +23,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class JobInitializer implements Service, Registerable, Conditional {
 
+	use ValidateInterface;
+
 	/**
 	 * @var JobInterface[]
 	 */
@@ -36,17 +39,9 @@ class JobInitializer implements Service, Registerable, Conditional {
 	 * @throws InvalidArgument When any of the given job classes is not an object.
 	 */
 	public function __construct( array $jobs ) {
-		array_walk(
-			$jobs,
-			function ( $job ) {
-				if ( ! is_object( $job ) ) {
-					throw InvalidArgument::not_object( 'jobs', __METHOD__ );
-				}
-				if ( ! $job instanceof JobInterface ) {
-					throw InvalidClass::should_implement( get_class( $job ), JobInterface::class );
-				}
-			}
-		);
+		foreach ( $jobs as $job ) {
+			$this->validate_instanceof( $job, JobInterface::class );
+		}
 
 		$this->jobs = $jobs;
 	}

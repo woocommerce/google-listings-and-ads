@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunner;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
@@ -34,6 +35,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement
  */
 class JobServiceProvider extends AbstractServiceProvider {
+
+	use ValidateInterface;
 
 	/**
 	 * @var array
@@ -92,11 +95,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 	 * @throws InvalidClass When the given class does not implement the ActionSchedulerJobInterface.
 	 */
 	protected function share_action_scheduler_job( string $class, ...$arguments ) {
-		$implements = class_implements( $class );
-		if ( ! array_key_exists( ActionSchedulerJobInterface::class, $implements ) ) {
-			throw InvalidClass::should_implement( $class, ActionSchedulerJobInterface::class );
-		}
-
+		$this->validate_interface( $class, ActionSchedulerJobInterface::class );
 		$this->share_with_tags(
 			$class,
 			ActionScheduler::class,

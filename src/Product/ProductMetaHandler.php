@@ -151,11 +151,15 @@ class ProductMetaHandler implements Service, Registerable {
 		$prefixed_meta_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
 		$valid_keys         = array_intersect( $prefixed_meta_keys, array_keys( $query_vars ) );
 		foreach ( $valid_keys as $key ) {
-			$query['meta_query'][] = [
+			$meta_query = [
 				'key'     => $key,
-				'value'   => $query_vars[ $key ],
 				'compare' => $query_vars[ self::get_meta_compare_key( $key ) ] ?? '=',
 			];
+			if ( ! in_array( $meta_query['compare'], [ 'EXISTS', 'NOT EXISTS' ], true ) ) {
+				$meta_query['value'] = $query_vars[ $key ];
+			}
+
+			$query['meta_query'][] = $meta_query;
 		}
 
 		return $query;
