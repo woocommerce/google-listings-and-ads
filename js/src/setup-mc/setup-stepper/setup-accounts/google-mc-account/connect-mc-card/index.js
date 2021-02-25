@@ -14,10 +14,11 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetch from '.~/hooks/useApiFetch';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
+import SwitchUrlCard from '../switch-url-card';
 
 const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
-	const [ apiFetch, { loading } ] = useApiFetch();
+	const [ apiFetch, { loading, error, response, options } ] = useApiFetch();
 	const { receiveMCAccount } = useAppDispatch();
 
 	const handleSelectChange = ( optionValue ) => {
@@ -37,6 +38,12 @@ const ConnectMCCard = () => {
 
 		receiveMCAccount( data );
 	};
+
+	if ( response && response.status === 409 ) {
+		return (
+			<SwitchUrlCard id={ options.data.id } message={ error.message } />
+		);
+	}
 
 	return (
 		<Section.Card>
