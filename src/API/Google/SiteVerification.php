@@ -116,31 +116,4 @@ class SiteVerification {
 
 		return true;
 	}
-
-	/**
-	 * Check whether a given site is verified for the account.
-	 *
-	 * @param string $identifier The URL of the site to check verification (including protocol).
-	 * @throws Exception When unable to retrieve list token.
-	 * @return bool True if the site is verified.
-	 */
-	public function is_verified( string $identifier ): bool {
-		/** @var SiteVerificationService $service */
-		$service = $this->container->get( SiteVerificationService::class );
-
-		try {
-			/** @var WebResource $item */
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			foreach ( $service->webResource->listWebResource()->getItems() as $item ) {
-				if ( untrailingslashit( $item->getSite()->getIdentifier() ) === untrailingslashit( $identifier ) ) {
-					return true;
-				}
-			}
-		} catch ( GoogleException $e ) {
-			do_action( 'gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to check site verification.', 'google-listings-and-ads' ) );
-		}
-
-		return false;
-	}
 }
