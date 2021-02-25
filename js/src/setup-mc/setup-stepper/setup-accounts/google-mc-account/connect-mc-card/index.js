@@ -18,12 +18,11 @@ import SwitchUrlCard from '../switch-url-card';
 
 const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
-	const [ apiFetch, { loading, error, response, options } ] = useApiFetch();
+	const [
+		apiFetch,
+		{ loading, error, response, options, reset },
+	] = useApiFetch();
 	const { receiveMCAccount } = useAppDispatch();
-
-	const handleSelectChange = ( optionValue ) => {
-		setValue( optionValue );
-	};
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -41,7 +40,11 @@ const ConnectMCCard = () => {
 
 	if ( response && response.status === 409 ) {
 		return (
-			<SwitchUrlCard id={ options.data.id } message={ error.message } />
+			<SwitchUrlCard
+				id={ options.data.id }
+				message={ error.message }
+				onSelectAnotherAccount={ reset }
+			/>
 		);
 	}
 
@@ -57,7 +60,7 @@ const ConnectMCCard = () => {
 				<ContentButtonLayout>
 					<MerchantCenterSelectControl
 						value={ value }
-						onChange={ handleSelectChange }
+						onChange={ setValue }
 					/>
 					<AppButton
 						isSecondary

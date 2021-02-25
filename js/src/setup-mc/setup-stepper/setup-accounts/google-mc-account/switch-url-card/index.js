@@ -14,7 +14,7 @@ import AccountId from '../account-id';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
-	const { id, message } = props;
+	const { id, message, onSelectAnotherAccount = () => {} } = props;
 
 	return (
 		<Section.Card className="gla-switch-url-card">
@@ -35,9 +35,7 @@ const SwitchUrlCard = ( props ) => {
 						</Subsection.HelperText>
 					</div>
 					<div className="buttons">
-						<AppButton
-						// TODO: handle go back to select another account.
-						>
+						<AppButton onClick={ onSelectAnotherAccount }>
 							{ __(
 								'Select another account',
 								'google-listings-and-ads'
