@@ -340,12 +340,16 @@ class AccountController extends BaseOptionsController {
 						$this->middleware->link_merchant_to_mca();
 						break;
 					case 'claim':
+						// At this step, the website URL is assumed to be correct.
+						// If the URL is already claimed, no claim should be attempted.
+						if ( ! $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+							break;
+						}
+
 						if ( $this->overwrite_claim ) {
 							$this->middleware->claim_merchant_website( true );
 						} else {
-							if ( ! $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
-								$this->merchant->claimwebsite();
-							}
+							$this->merchant->claimwebsite();
 						}
 						break;
 					default:
