@@ -941,7 +941,7 @@ class ConnectionTest implements Service, Registerable {
 			$product = wc_get_product( $id );
 
 			if ( $product instanceof \WC_Product ) {
-				if ( ! $_GET['async'] ) {
+				if ( empty( $_GET['async'] ) ) {
 					/** @var ProductSyncer $product_syncer */
 					$product_syncer = $this->container->get( ProductSyncer::class );
 
@@ -971,7 +971,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-sync-all-products' === $_GET['action'] && check_admin_referer( 'wcs-sync-all-products' ) ) {
-			if ( ! $_GET['async'] ) {
+			if ( empty( $_GET['async'] ) ) {
 				/** @var ProductSyncer $product_syncer */
 				$product_syncer = $this->container->get( ProductSyncer::class );
 
@@ -1004,7 +1004,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-delete-synced-products' === $_GET['action'] && check_admin_referer( 'wcs-delete-synced-products' ) ) {
-			if ( ! $_GET['async'] ) {
+			if ( empty( $_GET['async'] ) ) {
 				/** @var ProductSyncer $product_syncer */
 				$product_syncer = $this->container->get( ProductSyncer::class );
 
