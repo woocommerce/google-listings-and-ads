@@ -463,11 +463,16 @@ class AccountController extends BaseOptionsController {
 				)
 			);
 		}
+		$state = $this->mc_account_state->get();
+
+		// Don't do anything if this step was already finished.
+		if ( MerchantAccountState::ACCOUNT_STEP_DONE === $state['set_id']['status'] ) {
+			return;
+		}
 
 		// Make sure the standalone account has the correct website URL (or fail).
 		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
-		$state                               = $this->mc_account_state->get();
 		$state['set_id']['status']           = MerchantAccountState::ACCOUNT_STEP_DONE;
 		$state['set_id']['data']['from_mca'] = false;
 		$this->mc_account_state->update( $state );
