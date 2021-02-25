@@ -345,7 +345,7 @@ class ConnectionTest implements Service, Registerable {
 												]
 											),
 											'wcs-google-mc-switch-url'
-										) ); ?>">Switch URL</a>
+										) ); ?>" <?php echo ( $_GET['account_id'] ?? false ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Switch URL</a>
 								</p>
 							</td>
 						</tr>
