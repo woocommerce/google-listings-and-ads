@@ -470,7 +470,7 @@ class AccountController extends BaseOptionsController {
 				)
 			);
 		}
-		
+
 		$state = $this->mc_account_state->get();
 
 		// Don't do anything if this step was already finished.
