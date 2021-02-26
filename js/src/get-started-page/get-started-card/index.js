@@ -17,6 +17,7 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import { recordSetupMCEvent } from '../../utils/recordEvent';
 import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import './index.scss';
@@ -60,10 +61,9 @@ const GetStartedCard = () => {
 							),
 							{
 								link: (
-									<Link
-										type="external"
-										target="_blank"
-										rel="noopener noreferrer"
+									<AppDocumentationLink
+										context="get-started"
+										linkId="wp-terms-of-service"
 										href="https://wordpress.com/tos/"
 									/>
 								),
