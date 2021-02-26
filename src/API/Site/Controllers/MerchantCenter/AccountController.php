@@ -494,10 +494,10 @@ class AccountController extends BaseOptionsController {
 			}
 		}
 
-		$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
-		$this->account_state->update( $state );
 		$this->middleware->link_merchant_account( $account_id );
 		$this->merchant->set_id( $account_id );
+		$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
+		$this->account_state->update( $state );
 	}
 
 	/**
