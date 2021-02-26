@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -127,10 +128,16 @@ class BatchProductHelper implements Service {
 	 * @param WC_Product[] $products
 	 *
 	 * @return WC_Product[]
+	 *
+	 * @throws InvalidValue If an invalid product is provided.
 	 */
 	public static function expand_variations( array $products ): array {
 		$all_products = [];
 		foreach ( $products as $product ) {
+			if ( ! $product instanceof WC_Product ) {
+				throw InvalidValue::not_instance_of( WC_Product::class, 'product' );
+			}
+
 			if ( $product instanceof WC_Product_Variable ) {
 				$all_products = array_merge( $all_products, $product->get_available_variations( 'objects' ) );
 			} else {
