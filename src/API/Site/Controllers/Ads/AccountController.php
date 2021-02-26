@@ -5,8 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -21,19 +22,30 @@ defined( 'ABSPATH' ) || exit;
 class AccountController extends BaseController {
 
 	/**
+	 * @var ContainerInterface
+	 */
+	protected $container;
+
+	/**
 	 * @var Middleware
 	 */
 	protected $middleware;
 
 	/**
+	 * @var AdsAccountState
+	 */
+	protected $account_state;
+
+	/**
 	 * BaseController constructor.
 	 *
-	 * @param RESTServer $server
-	 * @param Middleware $middleware
+	 * @param ContainerInterface $container
 	 */
-	public function __construct( RESTServer $server, Middleware $middleware ) {
-		parent::__construct( $server );
-		$this->middleware = $middleware;
+	public function __construct( ContainerInterface $container ) {
+		parent::__construct( $container->get( RESTServer::class ) );
+		$this->middleware    = $container->get( Middleware::class );
+		$this->account_state = $container->get( AdsAccountState::class );
+		$this->container     = $container;
 	}
 
 	/**
