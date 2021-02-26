@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -436,30 +437,40 @@ class ConnectionTest implements Service, Registerable {
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
-							<th>Create Ads Customer:</th>
-							<td>
-								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-create' ], $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer as a sub account</a>
-								</p>
-								<ol>
-									<li>Create account</li>
-									<li>Direct user to billing flow (not implemented yet)</li>
-								</ol>
-							</td>
-						</tr>
-						<tr>
 							<th>Link Google Ads Customer:</th>
 							<td>
 								<p>
 									<label>
-										Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+										Ads ID <input name="ads_id" type="text" value="" />
 									</label>
-									<button class="button">Link existing Google Ads customer to the site</button>
+									<button class="button">Ads account setup</button>
 								</p>
-								<ol>
-									<li>Link to manager account</li>
-									<li>Link to merchant account (not implemented yet)</li>
-								</ol>
+								<?php
+									$ads_account_state = $this->container->get( AdsAccountState::class )->get( false );
+									if ( ! empty( $ads_account_state ) ) :
+								?>
+									<p class="description" style="font-style: italic">
+										( Ads account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::ADS_ID ); ?> ||
+										<?php foreach ( $ads_account_state as $name => $step ) : ?>
+											<?php echo $name . ':' . $step['status']; ?>
+										<?php endforeach; ?>
+										)
+									</p>
+								<?php endif; ?>
+								<p class="description">
+									Begins/continues a multistep account-setup sequence.
+									If no Ads ID is provided, then a sub-account will be created under our manager account.
+									Adds <em>gla_ads_id</em> to site options.
+
+									<h4>Create account steps:</h4>
+									create account &gt;
+									direct user to billing flow (not implemented yet) &gt;
+									link to merchant account (not implemented yet)
+
+									<h4>Link account steps:</h4>
+									link to manager account &gt;
+									link to merchant account (not implemented yet)
+								</p>
 							</td>
 						</tr>
 						<tr>
@@ -479,9 +490,9 @@ class ConnectionTest implements Service, Registerable {
 							</td>
 						</tr>
 					</table>
-					<?php wp_nonce_field( 'wcs-google-ads-link' ); ?>
+					<?php wp_nonce_field( 'wcs-google-ads-setup' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
-					<input name="action" value="wcs-google-ads-link" type="hidden" />
+					<input name="action" value="wcs-google-ads-setup" type="hidden" />
 				</form>
 
 				<hr />
@@ -685,34 +696,16 @@ class ConnectionTest implements Service, Registerable {
 			}
 		}
 
-		if ( 'wcs-google-ads-create' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-create' ) ) {
-			try {
-				/** @var Proxy $proxy */
-				$proxy    = $this->container->get( Proxy::class );
-				$account_id = $proxy->create_ads_account();
-
-				$this->response .= 'Created account: ' . $account_id . "\n";
-			} catch ( \Exception $e ) {
-				$this->response .= 'Error: ' . $e->getMessage();
+		if ( 'wcs-google-ads-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-setup' ) ) {
+			$request = new \WP_REST_Request( 'POST', '/wc/gla/ads/accounts' );
+			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => absint( $_GET['account_id'] ) ] );
 			}
-		}
-
-		if ( 'wcs-google-ads-link' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-link' ) ) {
-
-			if ( empty( $_GET['customer_id'] ) ) {
-				$this->response .= 'Please enter a Customer ID';
-				return;
-			}
-
-			try {
-				/** @var Proxy $proxy */
-				$proxy    = $this->container->get( Proxy::class );
-				$account_id = $proxy->link_ads_account( absint( $_GET['customer_id'] ) );
-
-				$this->response .= 'Linked account: ' . $account_id . "\n";
-			} catch ( \Exception $e ) {
-				$this->response .= 'Error: ' . $e->getMessage();
-			}
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-ads-check' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-check' ) ) {
