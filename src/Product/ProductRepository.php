@@ -99,6 +99,9 @@ class ProductRepository implements Service {
 		$args['limit']  = $limit;
 		$args['offset'] = $offset;
 
+		// include product variations in the query
+		$args['type'] = array_merge( array_keys( wc_get_product_types() ), [ 'variation' ] );
+
 		return wc_get_products( $this->prepare_query_args( $args ) );
 	}
 

@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
@@ -139,7 +140,7 @@ class ConnectionTest implements Service, Registerable {
 					<th><label>WCS Server:</label></th>
 					<td>
 						<p>
-							<code><?php echo defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL : 'http://localhost:5000'; ?></code>
+							<code><?php echo $this->container->get( 'connect_server_root' ); ?></code>
 						</p>
 					</td>
 				</tr>
@@ -287,9 +288,9 @@ class ConnectionTest implements Service, Registerable {
 									<button class="button">MC Account Setup (I & II)</button>
 								</p>
 
-								<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ) ) : ?>
-									<p class="description">
-										( Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
+								<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE ) ) : ?>
+									<p class="description" style="font-style: italic">
+										( Merchant Center account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
 										<?php foreach ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) : ?>
 											<?php echo $name . ':' . $step['status']; ?>
 										<?php endforeach; ?>
@@ -330,6 +331,24 @@ class ConnectionTest implements Service, Registerable {
 							<td>
 								<p>
 									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><a name="overwrite"></a>Switch URL:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php
+									echo esc_url( wp_nonce_url(
+											add_query_arg(
+												[
+													'action' => 'wcs-google-mc-switch-url',
+													'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url',site_url(), $url ),
+													'account_id' => $_GET['account_id'] ?? ''
+												]
+											),
+											'wcs-google-mc-switch-url'
+										) ); ?>" <?php echo ( $_GET['account_id'] ?? false ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Switch URL</a>
 								</p>
 							</td>
 						</tr>
@@ -776,6 +795,18 @@ class ConnectionTest implements Service, Registerable {
 			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
+		if( 'wcs-google-mc-switch-url' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-switch-url' ) ) {
+			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
+			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
+			}
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
+		}
+
 		if ( 'wcs-google-accounts-check' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-check' ) ) {
 			$request         = new \WP_REST_Request( 'GET', '/wc/gla/mc/connection' );
 			$response        = rest_do_request( $request );
@@ -941,7 +972,7 @@ class ConnectionTest implements Service, Registerable {
 			$product = wc_get_product( $id );
 
 			if ( $product instanceof \WC_Product ) {
-				if ( ! $_GET['async'] ) {
+				if ( empty( $_GET['async'] ) ) {
 					/** @var ProductSyncer $product_syncer */
 					$product_syncer = $this->container->get( ProductSyncer::class );
 
@@ -971,7 +1002,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-sync-all-products' === $_GET['action'] && check_admin_referer( 'wcs-sync-all-products' ) ) {
-			if ( ! $_GET['async'] ) {
+			if ( empty( $_GET['async'] ) ) {
 				/** @var ProductSyncer $product_syncer */
 				$product_syncer = $this->container->get( ProductSyncer::class );
 
@@ -1004,7 +1035,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-delete-synced-products' === $_GET['action'] && check_admin_referer( 'wcs-delete-synced-products' ) ) {
-			if ( ! $_GET['async'] ) {
+			if ( empty( $_GET['async'] ) ) {
 				/** @var ProductSyncer $product_syncer */
 				$product_syncer = $this->container->get( ProductSyncer::class );
 
