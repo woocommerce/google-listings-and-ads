@@ -87,7 +87,7 @@ class DeleteAllProducts extends AbstractBatchedActionSchedulerJob {
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	protected function process_items( array $items ) {
-		$products        = $this->product_repository->find_by_ids( $items );
+		$products        = $this->product_repository->find_by_ids_including_variations( $items );
 		$product_entries = $this->batch_product_helper->generate_delete_request_entries( $products );
 		$this->product_syncer->delete_by_batch_requests( $product_entries );
 	}

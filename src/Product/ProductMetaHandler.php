@@ -148,31 +148,22 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @return array modified $query
 	 */
 	protected function handle_query_vars( array $query, array $query_vars ): array {
-		$prefixed_meta_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
-		$valid_keys         = array_intersect( $prefixed_meta_keys, array_keys( $query_vars ) );
-		foreach ( $valid_keys as $key ) {
-			$meta_query = [
-				'key'     => $key,
-				'compare' => $query_vars[ self::get_meta_compare_key( $key ) ] ?? '=',
-			];
-			if ( ! in_array( $meta_query['compare'], [ 'EXISTS', 'NOT EXISTS' ], true ) ) {
-				$meta_query['value'] = $query_vars[ $key ];
-			}
+		if ( ! empty( $query_vars['meta_query'] ) ) {
+			$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
 
-			$query['meta_query'][] = $meta_query;
+			$valid_meta_queries = array_filter(
+				$query_vars['meta_query'],
+				function ( $meta_query, $query_key ) use ( $prefixed_valid_keys ) {
+					return ( is_string( $meta_query ) && 'relation' === $query_key ) ||
+						   ( is_array( $meta_query ) && ! empty( $meta_query['key'] ) && in_array( $meta_query['key'], $prefixed_valid_keys, true ) );
+				},
+				ARRAY_FILTER_USE_BOTH
+			);
+			if ( ! empty( $valid_meta_queries ) ) {
+				$query['meta_query'] = array_merge( $query['meta_query'], $valid_meta_queries );
+			}
 		}
 
 		return $query;
-	}
-
-	/**
-	 * Return the key used for metadata compare query.
-	 *
-	 * @param string $key
-	 *
-	 * @return string
-	 */
-	public static function get_meta_compare_key( string $key ): string {
-		return "{$key}_compare";
 	}
 }

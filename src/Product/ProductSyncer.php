@@ -141,6 +141,8 @@ class ProductSyncer implements Service {
 	/**
 	 * Deletes an array of WooCommerce products from Google Merchant Center.
 	 *
+	 * Note: This method does not automatically delete variations of a parent product. They each must be provided via the $product_entries argument.
+	 *
 	 * @param BatchProductRequestEntry[] $product_entries
 	 *
 	 * @return BatchProductResponse Containing both the deleted and invalid products (including their variation).
