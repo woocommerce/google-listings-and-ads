@@ -19,7 +19,7 @@ import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
-	const { addShippingRate } = useDispatch( STORE_KEY );
+	const { upsertShippingRate } = useDispatch( STORE_KEY );
 	const { code } = useStoreCurrency();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 
@@ -31,12 +31,11 @@ const AddRateModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: call backend API when submit form.
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, rate } = values;
 
 		countryCodes.forEach( ( el ) => {
-			addShippingRate( {
+			upsertShippingRate( {
 				countryCode: el,
 				currency,
 				rate,
