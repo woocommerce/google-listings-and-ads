@@ -18,13 +18,13 @@ defined( 'ABSPATH' ) || exit;
  *
  * @method update_synced_at( int $product_id, $value )
  * @method delete_synced_at( int $product_id )
- * @method get_synced_at( int $product_id )
+ * @method get_synced_at( int $product_id ): int
  * @method update_google_ids( int $product_id, array $value )
  * @method delete_google_ids( int $product_id )
  * @method get_google_ids( int $product_id ): array
  * @method update_visibility( int $product_id, $value )
  * @method delete_visibility( int $product_id )
- * @method get_visibility( int $product_id )
+ * @method get_visibility( int $product_id ): string
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -38,6 +38,12 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_SYNCED_AT,
 		self::KEY_GOOGLE_IDS,
 		self::KEY_VISIBILITY,
+	];
+
+	protected const TYPES = [
+		self::KEY_SYNCED_AT  => 'int',
+		self::KEY_GOOGLE_IDS => 'array',
+		self::KEY_VISIBILITY => 'string',
 	];
 
 	/**
@@ -83,6 +89,14 @@ class ProductMetaHandler implements Service, Registerable {
 	public function update( int $product_id, string $key, $value ) {
 		self::validate_meta_key( $key );
 
+		if ( isset( self::TYPES[ $key ] ) ) {
+			if ( in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
+				$value = wc_bool_to_string( $value );
+			} else {
+				settype( $value, self::TYPES[ $key ] );
+			}
+		}
+
 		update_post_meta( $product_id, $this->prefix_meta_key( $key ), $value );
 	}
 
@@ -109,7 +123,13 @@ class ProductMetaHandler implements Service, Registerable {
 	public function get( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
 
-		return get_post_meta( $product_id, $this->prefix_meta_key( $key ), true );
+		$value = get_post_meta( $product_id, $this->prefix_meta_key( $key ), true );
+
+		if ( isset( self::TYPES[ $key ] ) && in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
+			$value = wc_string_to_bool( $value );
+		}
+
+		return $value;
 	}
 
 	/**
