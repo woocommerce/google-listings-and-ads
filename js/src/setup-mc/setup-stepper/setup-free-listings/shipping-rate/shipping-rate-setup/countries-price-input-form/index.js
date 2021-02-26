@@ -14,11 +14,11 @@ import CountriesPriceInput from '../countries-price-input';
 const CountriesPriceInputForm = ( props ) => {
 	const { initialValue } = props;
 	const [ value, setValue ] = useState( initialValue );
-	const { updateShippingRate } = useDispatch( STORE_KEY );
-	const debouncedUpdateShippingRate = useDebouncedCallback( ( v ) => {
+	const { upsertShippingRate } = useDispatch( STORE_KEY );
+	const debouncedUpsertShippingRate = useDebouncedCallback( ( v ) => {
 		const { countries, currency, price } = v;
 		countries.forEach( async ( el ) => {
-			await updateShippingRate( {
+			await upsertShippingRate( {
 				countryCode: el,
 				currency,
 				rate: price,
@@ -28,7 +28,7 @@ const CountriesPriceInputForm = ( props ) => {
 
 	const handleChange = ( v ) => {
 		setValue( v );
-		debouncedUpdateShippingRate.callback( v );
+		debouncedUpsertShippingRate.callback( v );
 	};
 
 	return <CountriesPriceInput value={ value } onChange={ handleChange } />;

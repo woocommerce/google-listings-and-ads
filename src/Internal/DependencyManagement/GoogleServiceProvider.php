@@ -170,6 +170,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google-sv' )
 		);
+		$this->share(
+			GoogleProductService::class,
+			Google_Service_ShoppingContent::class,
+			Merchant::class
+		);
 	}
 
 	/**
@@ -237,9 +242,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return RawArgument
 	 */
 	protected function get_connect_server_url_root( string $path = '' ): RawArgument {
-		$url = defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' )
-			? WOOCOMMERCE_CONNECT_SERVER_URL
-			: 'https://api.woocommerce.com/';
+		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
+			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'https://api.woocommerce.com/' );
+		}
+		$url = WOOCOMMERCE_CONNECT_SERVER_URL;
 		$url = rtrim( $url, '/' );
 
 		$path = '/' . trim( $path, '/' );
@@ -266,8 +272,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function get_ads_id(): PositiveInteger {
 		/** @var Options $options */
 		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
-		$default = $_GET['customer_id'] ?? 12345; // phpcs:ignore WordPress.Security
-		$ads_id  = intval( $options->get( Options::ADS_ID, $default ) );
+
+		// TODO: Remove overriding with default once ConnectionTest is removed.
+		$default = intval( $_GET['customer_id'] ?? 0 ); // phpcs:ignore WordPress.Security
+		$ads_id  = $default ?: $options->get( Options::ADS_ID );
 
 		return new PositiveInteger( $ads_id );
 	}
@@ -279,9 +287,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function get_merchant_id(): PositiveInteger {
 		/** @var Options $options */
-		$options     = $this->getLeagueContainer()->get( OptionsInterface::class );
-		$default     = $_GET['merchant_id'] ?? 0; // phpcs:ignore WordPress.Security
-		$merchant_id = intval( $options->get( Options::MERCHANT_ID, $default ) );
+		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
+
+		// TODO: Remove overriding with default once ConnectionTest is removed.
+		$default     = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
+		$merchant_id = $default ?: $options->get( Options::MERCHANT_ID );
 
 		return new PositiveInteger( $merchant_id );
 	}

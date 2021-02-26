@@ -48,7 +48,7 @@ export function* fetchShippingRates() {
 	}
 }
 
-export function* addShippingRate( shippingRate ) {
+export function* upsertShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
 
 	try {
@@ -63,43 +63,14 @@ export function* addShippingRate( shippingRate ) {
 		} );
 
 		return {
-			type: TYPES.ADD_SHIPPING_RATE,
+			type: TYPES.UPSERT_SHIPPING_RATE,
 			shippingRate,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add new shipping rate.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
-export function* updateShippingRate( shippingRate ) {
-	const { countryCode, currency, rate } = shippingRate;
-
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates`,
-			method: 'POST',
-			data: {
-				country_code: countryCode,
-				currency,
-				rate,
-			},
-		} );
-
-		return {
-			type: TYPES.UPDATE_SHIPPING_RATE,
-			shippingRate,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to update shipping rate.',
+				'There was an error trying to add / update shipping rate.',
 				'google-listings-and-ads'
 			)
 		);

@@ -34,14 +34,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
-		case TYPES.ADD_SHIPPING_RATE: {
-			const { shippingRate } = action;
-			const newState = cloneDeep( state );
-			newState.mc.shipping.rates.push( shippingRate );
-			return newState;
-		}
-
-		case TYPES.UPDATE_SHIPPING_RATE: {
+		case TYPES.UPSERT_SHIPPING_RATE: {
 			const { shippingRate } = action;
 			const newState = cloneDeep( state );
 			const idx = newState.mc.shipping.rates.findIndex(
