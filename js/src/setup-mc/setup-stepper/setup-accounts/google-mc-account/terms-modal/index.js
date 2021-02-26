@@ -10,32 +10,16 @@ import { createInterpolateElement, useState } from '@wordpress/element';
  */
 import AppModal from '.~/components/app-modal';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import { useAppDispatch } from '.~/data';
-import './index.scss';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import AppButton from '.~/components/app-button';
+import './index.scss';
 
 const TermsModal = ( props ) => {
-	const { onRequestClose } = props;
+	const { onCreateAccount = () => {}, onRequestClose = () => {} } = props;
 	const [ agree, setAgree ] = useState( false );
-	const { receiveMCAccount } = useAppDispatch();
-	const [ fetchCreateMCAccount, { loading } ] = useApiFetchCallback( {
-		path: `/wc/gla/mc/accounts`,
-		method: 'POST',
-	} );
 
-	const handleCreateAccountClick = async () => {
-		try {
-			const data = await fetchCreateMCAccount();
-
-			receiveMCAccount( data );
-
-			onRequestClose();
-		} catch ( error ) {
-			console.log( error );
-
-			// TODO: handle HTTP 503 with retry-after.
-		}
+	const handleCreateAccountClick = () => {
+		onCreateAccount();
+		onRequestClose();
 	};
 
 	return (
@@ -49,7 +33,6 @@ const TermsModal = ( props ) => {
 				<AppButton
 					key="1"
 					isPrimary
-					loading={ loading }
 					disabled={ ! agree }
 					onClick={ handleCreateAccountClick }
 				>

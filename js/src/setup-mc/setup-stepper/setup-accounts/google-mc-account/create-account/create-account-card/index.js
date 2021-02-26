@@ -7,10 +7,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import TitleButtonLayout from '../../title-button-layout';
+import TitleButtonLayout from '../../../title-button-layout';
 import CreateAccountButton from './create-account-button';
 
-const CreateAccountCard = () => {
+const CreateAccountCard = ( props ) => {
+	const { onCreateAccount } = props;
+
 	return (
 		<Section.Card>
 			<Section.Card.Body>
@@ -19,7 +21,11 @@ const CreateAccountCard = () => {
 						'Create your Google Merchant Center account',
 						'google-listings-and-ads'
 					) }
-					button={ <CreateAccountButton /> }
+					button={
+						<CreateAccountButton
+							onCreateAccount={ onCreateAccount }
+						/>
+					}
 				></TitleButtonLayout>
 			</Section.Card.Body>
 		</Section.Card>

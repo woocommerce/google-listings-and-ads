@@ -8,9 +8,10 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import TermsModal from '../terms-modal';
+import TermsModal from '../../terms-modal';
 
-const CreateAccountButton = () => {
+const CreateAccountButton = ( props ) => {
+	const { onCreateAccount } = props;
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleCreateAccountClick = () => {
@@ -27,7 +28,10 @@ const CreateAccountButton = () => {
 				{ __( 'Create Account', 'google-listings-and-ads' ) }
 			</Button>
 			{ isOpen && (
-				<TermsModal onRequestClose={ handleModalRequestClose } />
+				<TermsModal
+					onCreateAccount={ onCreateAccount }
+					onRequestClose={ handleModalRequestClose }
+				/>
 			) }
 		</>
 	);
