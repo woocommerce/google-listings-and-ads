@@ -6,9 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
- * Class BaseEndpoint
+ * Class AccountState
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
 abstract class AccountState implements Service, OptionsAwareInterface {
 

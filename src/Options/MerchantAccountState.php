@@ -1,16 +1,14 @@
 <?php
-/**
- * Global Site Tag functionality - add main script and track conversions.
- *
- * @package Automattic\WooCommerce\GoogleListingsAndAds
- */
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 
 /**
- * Main class for Global Site Tag.
+ * Class MerchantAccountState
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
 class MerchantAccountState extends AccountState {
 
