@@ -8,7 +8,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import TermsModal from './terms-modal';
+import TermsModal from '../terms-modal';
 
 const CreateAccountButton = () => {
 	const [ isOpen, setOpen ] = useState( false );

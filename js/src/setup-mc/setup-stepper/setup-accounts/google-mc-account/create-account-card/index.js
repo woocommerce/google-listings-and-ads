@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '.~/wcdl/section';
 import TitleButtonLayout from '../../title-button-layout';
-import CreateAccountButton from '../create-account-button';
+import CreateAccountButton from './create-account-button';
 
 const CreateAccountCard = () => {
 	return (
