@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use WC_Product;
 use WC_Product_Variable;
+use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -67,6 +68,12 @@ class BatchProductHelper implements Service {
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
 		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
+
+		// mark the parent product as synced if it's a variation
+		$wc_product = wc_get_product( $wc_product_id );
+		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
+			$this->mark_as_synced( new BatchProductEntry( $wc_product->get_parent_id(), $google_product ) );
+		}
 	}
 
 	/**
@@ -76,6 +83,12 @@ class BatchProductHelper implements Service {
 		$wc_product_id = $product_entry->get_wc_product_id();
 		$this->meta_handler->delete_synced_at( $wc_product_id );
 		$this->meta_handler->delete_google_ids( $wc_product_id );
+
+		// mark the parent product as un-synced if it's a variation
+		$wc_product = wc_get_product( $wc_product_id );
+		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
+			$this->mark_as_unsynced( new BatchProductEntry( $wc_product->get_parent_id(), null ) );
+		}
 	}
 
 	/**
