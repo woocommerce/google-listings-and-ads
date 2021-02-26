@@ -87,7 +87,7 @@ class ProductSyncer implements Service {
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$invalid_products[] = $validation_result;
 			} else {
-				$product_entries[] = new BatchProductRequestEntry( $product->get_id(), $adapted_product );
+				$product_entries[ $product->get_id() ] = new BatchProductRequestEntry( $product->get_id(), $adapted_product );
 			}
 		}
 

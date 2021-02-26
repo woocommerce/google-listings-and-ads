@@ -163,7 +163,8 @@ class GoogleProductService implements Service {
 
 			$product_key                   = self::METHOD_INSERT === $method ? 'product' : 'product_id';
 			$request_entry[ $product_key ] = $product_entry->get_product();
-			$request_entries[]             = $request_entry;
+
+			$request_entries[ $request_entry['batchId'] ] = $request_entry;
 		}
 
 		$responses = $this->shopping_service->products->custombatch( new GoogleBatchRequest( [ 'entries' => $request_entries ] ) );

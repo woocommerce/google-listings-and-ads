@@ -139,9 +139,12 @@ class BatchProductHelper implements Service {
 			}
 
 			if ( $product instanceof WC_Product_Variable ) {
-				$all_products = array_merge( $all_products, $product->get_available_variations( 'objects' ) );
+				$variations = $product->get_available_variations( 'objects' );
+				foreach ( $variations as $variation ) {
+					$all_products[ $variation->get_id() ] = $variation;
+				}
 			} else {
-				$all_products[] = $product;
+				$all_products[ $product->get_id() ] = $product;
 			}
 		}
 
