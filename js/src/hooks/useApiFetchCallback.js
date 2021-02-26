@@ -57,7 +57,7 @@ const shouldReturnResponseBody = ( options ) => {
 	return parse;
 };
 
-const useApiFetch = ( options ) => {
+const useApiFetchCallback = ( options ) => {
 	const [ state, dispatch ] = useReducer( reducer, initialState );
 
 	const enhancedApiFetch = async ( overwriteOptions ) => {
@@ -116,4 +116,4 @@ const useApiFetch = ( options ) => {
 	return [ enhancedApiFetch, fetchResult ];
 };
 
-export default useApiFetch;
+export default useApiFetchCallback;

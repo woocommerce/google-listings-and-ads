@@ -11,7 +11,7 @@ import MerchantCenterSelectControl from '.~/components/merchant-center-select-co
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
-import useApiFetch from '.~/hooks/useApiFetch';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
@@ -21,7 +21,7 @@ const ConnectMCCard = () => {
 	const [
 		fetchMCAccounts,
 		{ loading, error, response, options, reset },
-	] = useApiFetch( {
+	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts`,
 		method: 'POST',
 		data: { id: value },

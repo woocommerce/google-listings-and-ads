@@ -9,12 +9,12 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '.~/components/app-button';
 import TitleButtonLayout from '../title-button-layout';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useApiFetch from '.~/hooks/useApiFetch';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
 const ConnectAccount = ( props ) => {
 	const { disabled = false } = props;
 	const { createNotice } = useDispatchCoreNotices();
-	const [ fetchGoogleConnect, { loading, data } ] = useApiFetch( {
+	const [ fetchGoogleConnect, { loading, data } ] = useApiFetchCallback( {
 		path: '/wc/gla/google/connect',
 	} );
 

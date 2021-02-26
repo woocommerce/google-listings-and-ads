@@ -9,11 +9,11 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '.~/components/app-button';
 import TitleButtonLayout from '../title-button-layout';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useApiFetch from '.~/hooks/useApiFetch';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
 const ConnectAccount = () => {
 	const { createNotice } = useDispatchCoreNotices();
-	const [ fetchJetpackConnect, { loading, data } ] = useApiFetch( {
+	const [ fetchJetpackConnect, { loading, data } ] = useApiFetchCallback( {
 		path: '/wc/gla/jetpack/connect',
 	} );
 

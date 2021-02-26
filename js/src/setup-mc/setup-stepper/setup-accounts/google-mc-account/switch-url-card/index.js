@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
-import useApiFetch from '.~/hooks/useApiFetch';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
 import AccountId from '../account-id';
@@ -18,7 +18,7 @@ import './index.scss';
 const SwitchUrlCard = ( props ) => {
 	const { id, message, onSelectAnotherAccount = () => {} } = props;
 	const { receiveMCAccount } = useAppDispatch();
-	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetch( {
+	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/switch-url`,
 		method: 'POST',
 		data: { id },
