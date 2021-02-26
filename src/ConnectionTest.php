@@ -27,6 +27,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
+use WP_REST_Request as Request;
 
 /**
  * Main class for Connection Test.
@@ -697,33 +698,21 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-ads-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-setup' ) ) {
-			$request = new \WP_REST_Request( 'POST', '/wc/gla/ads/accounts' );
+			$request = new Request( 'POST', '/wc/gla/ads/accounts' );
 			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
 				$request->set_body_params( [ 'id' => absint( $_GET['account_id'] ) ] );
 			}
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-ads-check' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-check' ) ) {
-			$request         = new \WP_REST_Request( 'GET', '/wc/gla/ads/connection' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'GET', '/wc/gla/ads/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-ads-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-disconnect' ) ) {
-			$request         = new \WP_REST_Request( 'DELETE', '/wc/gla/ads/connection' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'DELETE', '/wc/gla/ads/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
@@ -745,23 +734,13 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-sv-token' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-token' ) ) {
-			// Full process using REST API
-			$request         = new \WP_REST_Request( 'POST', '/wc/gla/site/verify' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $json;
+			$request = new Request( 'POST', '/wc/gla/site/verify' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-sv-check' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-check' ) ) {
-			// Check using REST API
-			$request         = new \WP_REST_Request( 'GET', '/wc/gla/site/verify' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $json;
+			$request = new Request( 'GET', '/wc/gla/site/verify' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-sv-link' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-link' ) ) {
@@ -777,7 +756,6 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-mc-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-setup' ) ) {
-			// Using REST API
 			add_filter(
 				'woocommerce_gla_site_url',
 				function( $url ) {
@@ -785,58 +763,37 @@ class ConnectionTest implements Service, Registerable {
 				}
 			);
 
-			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
+			$request = new Request( 'POST', '/wc/gla/mc/accounts' );
 			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
 				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
 			}
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-mc-claim-overwrite' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-claim-overwrite' ) ) {
-			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
+			$this->send_rest_request( $request );
 		}
 
 		if( 'wcs-google-mc-switch-url' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-switch-url' ) ) {
-			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
+			$request = new Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
 			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
 				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
 			}
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-accounts-check' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-check' ) ) {
-			$request         = new \WP_REST_Request( 'GET', '/wc/gla/mc/connection' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'GET', '/wc/gla/mc/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-accounts-delete' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-delete' ) ) {
-			$request         = new \WP_REST_Request( 'DELETE', '/wc/gla/mc/connection' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'DELETE', '/wc/gla/mc/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
-			// Using REST API
 			add_filter(
 				'woocommerce_gla_site_url',
 				function ( $url ) {
@@ -1112,5 +1069,19 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		return 'X_JP_Auth ' . join( ' ', $header_pieces );
+	}
+
+	/**
+	 * Send a REST API request and add the response to our buffer.
+	 */
+	private function send_rest_request( Request $request ) {
+		$response = rest_do_request( $request );
+		$server   = rest_get_server();
+		$data     = $server->response_to_data( $response, false );
+		$json     = wp_json_encode( $data, JSON_PRETTY_PRINT );
+
+		$this->response .= 'Request:  ' . $request->get_method() . ' ' . $request->get_route() . PHP_EOL;
+		$this->response .= 'Status:   ' . $response->get_status() . PHP_EOL;
+		$this->response .= 'Response: ' . $json;
 	}
 }
