@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -122,7 +123,7 @@ class SyncerHooks implements Service, Registerable {
 			return;
 		}
 
-		if ( $this->product_helper->is_sync_enabled( $product ) ) {
+		if ( ChannelVisibility::SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
 			// schedule an update job if product sync is enabled.
 			$this->update_products_job->start( [ $product_id ] );
 			$this->set_already_scheduled( $product_id );

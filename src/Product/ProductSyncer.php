@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -77,7 +78,7 @@ class ProductSyncer implements Service {
 		$invalid_products = [];
 		$product_entries  = [];
 		foreach ( $products as $product ) {
-			if ( ! $this->product_helper->is_sync_enabled( $product ) ) {
+			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
 				continue;
 			}
 

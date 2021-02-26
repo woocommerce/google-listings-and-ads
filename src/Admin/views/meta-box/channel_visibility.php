@@ -1,4 +1,7 @@
 <?php
+declare( strict_types=1 );
+
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,7 +18,7 @@ $product_id = $this->product_id;
  */
 $product = $this->product;
 
-$sync_enabled = $this->sync_enabled;
+$visibility = $this->visibility;
 
 /**
  * @var int $synced_at Timestamp
@@ -34,12 +37,12 @@ $has_issues = ! empty( $issues );
 	<?php
 	woocommerce_wp_select(
 		[
-			'id'      => 'sync_enabled',
-			'value'   => $sync_enabled,
+			'id'      => 'visibility',
+			'value'   => $visibility,
 			'label'   => __( 'Google Listing & Ads', 'google-listings-and-ads' ),
 			'options' => [
-				'yes' => __( 'Sync and show', 'google-listings-and-ads' ),
-				'no'  => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
+				ChannelVisibility::SYNC_AND_SHOW      => __( 'Sync and show', 'google-listings-and-ads' ),
+				ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
 			],
 		]
 	);

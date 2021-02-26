@@ -53,10 +53,10 @@ class ProductHelper implements Service {
 	/**
 	 * @param WC_Product $wc_product
 	 *
-	 * @return bool
+	 * @return string
 	 */
-	public function is_sync_enabled( WC_Product $wc_product ): bool {
-		return wc_string_to_bool( $this->meta_handler->get_sync_enabled( $wc_product->get_id() ) );
+	public function get_visibility( WC_Product $wc_product ): string {
+		return $this->meta_handler->get_visibility( $wc_product->get_id() );
 	}
 
 	/**

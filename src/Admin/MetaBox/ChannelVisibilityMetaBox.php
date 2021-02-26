@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 use WP_Post;
 
@@ -86,11 +87,11 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected function get_view_context( WP_Post $post, array $args ): array {
 		$product_id = $post->ID;
 		return [
-			'product_id'   => $product_id,
-			'product'      => wc_get_product( $product_id ),
-			'sync_enabled' => $this->meta_handler->get_sync_enabled( $product_id ),
-			'synced_at'    => $this->meta_handler->get_synced_at( $product_id ),
-			'issues'       => [], // todo: replace this with the list of issues retrieved from Google's Product Statuses API
+			'product_id' => $product_id,
+			'product'    => wc_get_product( $product_id ),
+			'visibility' => $this->meta_handler->get_visibility( $product_id ),
+			'synced_at'  => $this->meta_handler->get_synced_at( $product_id ),
+			'issues'     => [], // todo: replace this with the list of issues retrieved from Google's Product Statuses API
 		];
 	}
 
@@ -109,14 +110,16 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	public function handle_submission( int $product_id ) {
 		// phpcs:disable WordPress.Security.NonceVerification
 		// nonce is verified by self::verify_nonce
-		if ( ! $this->verify_nonce() || ! isset( $_POST['sync_enabled'] ) ) {
+		if ( ! $this->verify_nonce() || ! isset( $_POST['visibility'] ) ) {
 			return;
 		}
 
 		$product = wc_get_product( $product_id );
 		if ( $product instanceof WC_Product ) {
-			$sync_enabled = 'no' !== $_POST['sync_enabled'] ? 'yes' : 'no';
-			$this->meta_handler->update_sync_enabled( $product_id, $sync_enabled );
+			$visibility = empty( $_POST['visibility'] ) ?
+				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
+				ChannelVisibility::cast( sanitize_key( $_POST['visibility'] ) );
+			$this->meta_handler->update_visibility( $product_id, $visibility );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
 	}

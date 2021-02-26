@@ -22,22 +22,22 @@ defined( 'ABSPATH' ) || exit;
  * @method update_google_ids( int $product_id, array $value )
  * @method delete_google_ids( int $product_id )
  * @method get_google_ids( int $product_id ): array
- * @method update_sync_enabled( int $product_id, $value )
- * @method delete_sync_enabled( int $product_id )
- * @method get_sync_enabled( int $product_id )
+ * @method update_visibility( int $product_id, $value )
+ * @method delete_visibility( int $product_id )
+ * @method get_visibility( int $product_id )
  */
 class ProductMetaHandler implements Service, Registerable {
 
 	use PluginHelper;
 
-	public const KEY_SYNCED_AT    = 'synced_at';
-	public const KEY_GOOGLE_IDS   = 'google_ids';
-	public const KEY_SYNC_ENABLED = 'sync_enabled';
+	public const KEY_SYNCED_AT  = 'synced_at';
+	public const KEY_GOOGLE_IDS = 'google_ids';
+	public const KEY_VISIBILITY = 'visibility';
 
 	public const VALID_KEYS = [
 		self::KEY_SYNCED_AT,
 		self::KEY_GOOGLE_IDS,
-		self::KEY_SYNC_ENABLED,
+		self::KEY_VISIBILITY,
 	];
 
 	/**
