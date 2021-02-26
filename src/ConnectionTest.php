@@ -438,13 +438,13 @@ class ConnectionTest implements Service, Registerable {
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
-							<th>Link Google Ads Customer:</th>
+							<th>Ads Account Setup:</th>
 							<td>
 								<p>
 									<label>
 										Ads ID <input name="ads_id" type="text" value="" />
 									</label>
-									<button class="button">Ads account setup</button>
+									<button class="button">Setup an existing account or create a new one</button>
 								</p>
 								<?php
 									$ads_account_state = $this->container->get( AdsAccountState::class )->get( false );
@@ -699,8 +699,8 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-ads-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-setup' ) ) {
 			$request = new Request( 'POST', '/wc/gla/ads/accounts' );
-			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
-				$request->set_body_params( [ 'id' => absint( $_GET['account_id'] ) ] );
+			if ( is_numeric( $_GET['ads_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => absint( $_GET['ads_id'] ) ] );
 			}
 			$this->send_rest_request( $request );
 		}
