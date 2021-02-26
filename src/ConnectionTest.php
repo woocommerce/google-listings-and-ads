@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
@@ -288,10 +289,13 @@ class ConnectionTest implements Service, Registerable {
 									<button class="button">MC Account Setup (I & II)</button>
 								</p>
 
-								<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE ) ) : ?>
+								<?php
+									$mc_account_state = $this->container->get( MerchantAccountState::class )->get( false );
+									if ( ! empty( $mc_account_state ) ) :
+								?>
 									<p class="description" style="font-style: italic">
 										( Merchant Center account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
-										<?php foreach ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) : ?>
+										<?php foreach ( $mc_account_state as $name => $step ) : ?>
 											<?php echo $name . ':' . $step['status']; ?>
 										<?php endforeach; ?>
 										)

@@ -164,8 +164,8 @@ class AccountController extends BaseOptionsController {
 		return function( Request $request ) {
 			$state               = $this->mc_account_state->get( false );
 			$overwrite_necessary = ! empty( $state['claim']['data']['overwrite_required'] );
-			$claim_status        = $state['claim']['status'] ?? MerchantAccountState::ACCOUNT_STEP_PENDING;
-			if ( MerchantAccountState::ACCOUNT_STEP_DONE === $claim_status || ! $overwrite_necessary ) {
+			$claim_status        = $state['claim']['status'] ?? MerchantAccountState::STEP_PENDING;
+			if ( MerchantAccountState::STEP_DONE === $claim_status || ! $overwrite_necessary ) {
 				return new Response(
 					[ 'message' => __( 'Attempting invalid claim overwrite.', 'google-listings-and-ads' ) ],
 					400
@@ -186,8 +186,8 @@ class AccountController extends BaseOptionsController {
 		return function( Request $request ) {
 			$state            = $this->mc_account_state->get();
 			$switch_necessary = ! empty( $state['set_id']['data']['old_url'] );
-			$set_id_status    = $state['set_id']['status'] ?? MerchantAccountState::ACCOUNT_STEP_PENDING;
-			if ( empty( $request['id'] ) || MerchantAccountState::ACCOUNT_STEP_DONE === $set_id_status || ! $switch_necessary ) {
+			$set_id_status    = $state['set_id']['status'] ?? MerchantAccountState::STEP_PENDING;
+			if ( empty( $request['id'] ) || MerchantAccountState::STEP_DONE === $set_id_status || ! $switch_necessary ) {
 				return new Response(
 					[ 'message' => __( 'Attempting invalid URL switch.', 'google-listings-and-ads' ) ],
 					400
@@ -313,7 +313,7 @@ class AccountController extends BaseOptionsController {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		foreach ( $state as $name => &$step ) {
-			if ( MerchantAccountState::ACCOUNT_STEP_DONE === $step['status'] ) {
+			if ( MerchantAccountState::STEP_DONE === $step['status'] ) {
 				continue;
 			}
 
@@ -364,11 +364,11 @@ class AccountController extends BaseOptionsController {
 							)
 						);
 				}
-				$step['status']  = MerchantAccountState::ACCOUNT_STEP_DONE;
+				$step['status']  = MerchantAccountState::STEP_DONE;
 				$step['message'] = '';
 				$this->mc_account_state->update( $state );
 			} catch ( Exception $e ) {
-				$step['status']  = MerchantAccountState::ACCOUNT_STEP_ERROR;
+				$step['status']  = MerchantAccountState::STEP_ERROR;
 				$step['message'] = $e->getMessage();
 
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
@@ -478,7 +478,7 @@ class AccountController extends BaseOptionsController {
 		$state = $this->mc_account_state->get();
 
 		// Don't do anything if this step was already finished.
-		if ( MerchantAccountState::ACCOUNT_STEP_DONE === $state['set_id']['status'] ) {
+		if ( MerchantAccountState::STEP_DONE === $state['set_id']['status'] ) {
 			return;
 		}
 
@@ -495,7 +495,7 @@ class AccountController extends BaseOptionsController {
 			}
 		}
 
-		$state['set_id']['status'] = MerchantAccountState::ACCOUNT_STEP_DONE;
+		$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
 		$this->mc_account_state->update( $state );
 		$this->middleware->link_merchant_account( $account_id );
 		$this->merchant->set_id( $account_id );
@@ -525,7 +525,7 @@ class AccountController extends BaseOptionsController {
 			if ( ! empty( $account_website_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
 				$state                              = $this->mc_account_state->get();
 				$state['set_id']['data']['old_url'] = $account_website_url;
-				$state['set_id']['status']          = MerchantAccountState::ACCOUNT_STEP_ERROR;
+				$state['set_id']['status']          = MerchantAccountState::STEP_ERROR;
 				$this->mc_account_state->update( $state );
 
 				$clean_account_website_url = preg_replace( '#^https?://#', '', untrailingslashit( $account_website_url ) );
