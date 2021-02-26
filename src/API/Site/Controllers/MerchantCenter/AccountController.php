@@ -65,9 +65,8 @@ class AccountController extends BaseOptionsController {
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->middleware = $container->get( Middleware::class );
-		$this->merchant   = $container->get( Merchant::class );
-		$this->set_options_object( $container->get( OptionsInterface::class ) );
+		$this->middleware    = $container->get( Middleware::class );
+		$this->merchant      = $container->get( Merchant::class );
 		$this->account_state = $container->get( MerchantAccountState::class );
 		$this->container     = $container;
 	}
