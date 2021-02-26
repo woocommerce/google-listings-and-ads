@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Button, CheckboxControl } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 
@@ -12,15 +12,30 @@ import AppModal from '.~/components/app-modal';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import { useAppDispatch } from '.~/data';
 import './index.scss';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import AppButton from '.~/components/app-button';
 
 const TermsModal = ( props ) => {
 	const { onRequestClose } = props;
 	const [ agree, setAgree ] = useState( false );
-	const { createMCAccount } = useAppDispatch();
+	const { receiveMCAccount } = useAppDispatch();
+	const [ fetchCreateMCAccount, { loading } ] = useApiFetchCallback( {
+		path: `/wc/gla/mc/accounts`,
+		method: 'POST',
+	} );
 
-	const handleCreateAccountClick = () => {
-		createMCAccount();
-		onRequestClose();
+	const handleCreateAccountClick = async () => {
+		try {
+			const data = await fetchCreateMCAccount();
+
+			receiveMCAccount( data );
+
+			onRequestClose();
+		} catch ( error ) {
+			console.log( error );
+
+			// TODO: handle HTTP 503 with retry-after.
+		}
 	};
 
 	return (
@@ -31,14 +46,15 @@ const TermsModal = ( props ) => {
 				'google-listings-and-ads'
 			) }
 			buttons={ [
-				<Button
+				<AppButton
 					key="1"
 					isPrimary
+					loading={ loading }
 					disabled={ ! agree }
 					onClick={ handleCreateAccountClick }
 				>
 					{ __( 'Create account', 'google-listings-and-ads' ) }
-				</Button>,
+				</AppButton>,
 			] }
 			onRequestClose={ onRequestClose }
 		>
