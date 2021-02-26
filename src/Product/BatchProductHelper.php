@@ -87,6 +87,7 @@ class BatchProductHelper implements Service {
 	 */
 	public function generate_delete_request_entries( array $products ): array {
 		$request_entries = [];
+		$products        = self::expand_variations( $products );
 		foreach ( $products as $product ) {
 			$google_ids = $this->product_helper->get_synced_google_product_ids( $product );
 			if ( empty( $google_ids ) ) {
