@@ -223,17 +223,38 @@ class ProductRepository implements Service {
 			return [];
 		}
 
-		$args['meta_query'] = array_map(
-			function ( $meta_query ) {
-				if ( is_array( $meta_query ) && ! empty( $meta_query['key'] ) && in_array( $meta_query['key'], ProductMetaHandler::VALID_KEYS, true ) ) {
-					$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
-				}
-
-				return $meta_query;
-			},
-			$args['meta_query']
-		);
+		$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
 
 		return $args;
+	}
+
+	/**
+	 * @param array $meta_queries
+	 *
+	 * @return array
+	 */
+	protected function prefix_meta_query_keys( $meta_queries ) {
+		$updated_queries = [];
+		if ( ! is_array( $meta_queries ) ) {
+			return $updated_queries;
+		}
+
+		foreach ( $meta_queries as $key => $meta_query ) {
+			// First-order clause.
+			if ( 'relation' === $key && is_string( $meta_query ) ) {
+				$updated_queries[ $key ] = $meta_query;
+
+				// First-order clause.
+			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && in_array( $meta_query['key'], ProductMetaHandler::VALID_KEYS, true ) ) {
+				$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
+			} else {
+				// Otherwise, it's a nested meta_query, so we recurse.
+				$meta_query = $this->prefix_meta_query_keys( $meta_query );
+			}
+
+			$updated_queries[ $key ] = $meta_query;
+		}
+
+		return $updated_queries;
 	}
 }

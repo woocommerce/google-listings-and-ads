@@ -169,21 +169,54 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	protected function handle_query_vars( array $query, array $query_vars ): array {
 		if ( ! empty( $query_vars['meta_query'] ) ) {
-			$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
-
-			$valid_meta_queries = array_filter(
-				$query_vars['meta_query'],
-				function ( $meta_query, $query_key ) use ( $prefixed_valid_keys ) {
-					return ( is_string( $meta_query ) && 'relation' === $query_key ) ||
-						   ( is_array( $meta_query ) && ! empty( $meta_query['key'] ) && in_array( $meta_query['key'], $prefixed_valid_keys, true ) );
-				},
-				ARRAY_FILTER_USE_BOTH
-			);
-			if ( ! empty( $valid_meta_queries ) ) {
-				$query['meta_query'] = array_merge( $query['meta_query'], $valid_meta_queries );
+			$meta_query = $this->sanitize_meta_query( $query_vars['meta_query'] );
+			if ( ! empty( $meta_query ) ) {
+				$query['meta_query'] = array_merge( $query['meta_query'], $meta_query );
 			}
 		}
 
 		return $query;
+	}
+
+	/**
+	 * Ensure the 'meta_query' argument passed to self::handle_query_vars is well-formed.
+	 *
+	 * @param array $queries Array of meta query clauses.
+	 *
+	 * @return array Sanitized array of meta query clauses.
+	 */
+	protected function sanitize_meta_query( array $queries ): array {
+		$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
+		$clean_queries       = [];
+
+		if ( ! is_array( $queries ) ) {
+			return $clean_queries;
+		}
+
+		foreach ( $queries as $key => $meta_query ) {
+			if ( 'relation' !== $key && ! is_array( $meta_query ) ) {
+				continue;
+			}
+
+			if ( 'relation' === $key && is_string( $meta_query ) ) {
+				$clean_queries[ $key ] = $meta_query;
+
+				// First-order clause.
+			} elseif ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) {
+				if ( in_array( $meta_query['key'], $prefixed_valid_keys, true ) ) {
+					$clean_queries[ $key ] = $meta_query;
+				}
+
+				// Otherwise, it's a nested meta_query, so we recurse.
+			} else {
+				$cleaned_query = $this->sanitize_meta_query( $meta_query );
+
+				if ( ! empty( $cleaned_query ) ) {
+					$clean_queries[ $key ] = $cleaned_query;
+				}
+			}
+		}
+
+		return $clean_queries;
 	}
 }
