@@ -28,7 +28,7 @@ class ExceptionWithResponseData extends Exception implements GoogleListingsAndAd
 	 * @param Throwable|null $previous [optional] The previous throwable used for the exception chaining.
 	 * @param array          $data [optional] Extra data to attach to the exception (ostensibly for use in an HTTP response).
 	 */
-	public function __construct( $message = '', $code = 0, Throwable $previous = null, $data = [] ) {
+	public function __construct( string $message = '', int $code = 0, Throwable $previous = null, $data = [] ) {
 		parent::__construct( $message, $code, $previous );
 
 		if ( ! empty( $data ) && is_array( $data ) ) {
@@ -37,11 +37,11 @@ class ExceptionWithResponseData extends Exception implements GoogleListingsAndAd
 	}
 
 	/**
-	 * @param boolean $with_message include the message in the returned data array.
+	 * @param bool $with_message include the message in the returned data array.
 	 *
 	 * @return array
 	 */
-	public function get_response_data( $with_message = false ): array {
+	public function get_response_data( bool $with_message = false ): array {
 		if ( $with_message ) {
 			return array_merge( [ 'message' => $this->getMessage() ], $this->response_data );
 		}
