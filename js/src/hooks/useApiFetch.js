@@ -52,10 +52,9 @@ const reducer = ( state, action ) => {
 	}
 };
 
-const shouldReturnResponseBody = ( combinedOptions ) => {
-	const { parse } = combinedOptions;
-
-	return parse === undefined || parse === true;
+const shouldReturnResponseBody = ( options ) => {
+	const { parse = true } = options;
+	return parse;
 };
 
 const useApiFetch = ( options ) => {
