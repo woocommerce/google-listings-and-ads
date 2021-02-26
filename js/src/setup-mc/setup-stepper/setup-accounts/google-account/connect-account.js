@@ -19,7 +19,7 @@ const ConnectAccount = ( props ) => {
 	const handleConnectClick = async () => {
 		try {
 			const d = await apiFetch( {
-				path: '/wc/gla/google/connect123',
+				path: '/wc/gla/google/connect',
 			} );
 
 			window.location.href = d.url;
