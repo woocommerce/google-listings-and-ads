@@ -709,17 +709,21 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-ads-check' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-check' ) ) {
-			/** @var Proxy $proxy */
-			$proxy    = $this->container->get( Proxy::class );
-			$status = $proxy->get_connected_ads_account();
-			$this->response .= wp_json_encode( $status );
+			$request         = new \WP_REST_Request( 'GET', '/wc/gla/ads/connection' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-ads-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-disconnect' ) ) {
-			/** @var Proxy $proxy */
-			$proxy    = $this->container->get( Proxy::class );
-			$status = $proxy->disconnect_ads_account();
-			$this->response .= 'Disconnected ads account' . "\n";
+			$request         = new \WP_REST_Request( 'DELETE', '/wc/gla/ads/connection' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
