@@ -18,14 +18,14 @@ import './index.scss';
 const SwitchUrlCard = ( props ) => {
 	const { id, message, onSelectAnotherAccount = () => {} } = props;
 	const { receiveMCAccount } = useAppDispatch();
-	const [ apiFetch, { loading } ] = useApiFetch();
+	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetch( {
+		path: `/wc/gla/mc/accounts/switch-url`,
+		method: 'POST',
+		data: { id },
+	} );
 
 	const handleSwitch = async () => {
-		const account = await apiFetch( {
-			path: `/wc/gla/mc/accounts/switch-url`,
-			method: 'POST',
-			data: { id },
-		} );
+		const account = await fetchMCAccountSwitchUrl();
 
 		receiveMCAccount( account );
 	};

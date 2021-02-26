@@ -19,9 +19,13 @@ import SwitchUrlCard from '../switch-url-card';
 const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
 	const [
-		apiFetch,
+		fetchMCAccounts,
 		{ loading, error, response, options, reset },
-	] = useApiFetch();
+	] = useApiFetch( {
+		path: `/wc/gla/mc/accounts`,
+		method: 'POST',
+		data: { id: value },
+	} );
 	const { receiveMCAccount } = useAppDispatch();
 
 	const handleConnectClick = async () => {
@@ -29,11 +33,7 @@ const ConnectMCCard = () => {
 			return;
 		}
 
-		const data = await apiFetch( {
-			path: `/wc/gla/mc/accounts`,
-			method: 'POST',
-			data: { id: value },
-		} );
+		const data = await fetchMCAccounts();
 
 		receiveMCAccount( data );
 	};

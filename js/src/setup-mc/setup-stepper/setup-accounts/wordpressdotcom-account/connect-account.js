@@ -13,13 +13,13 @@ import useApiFetch from '.~/hooks/useApiFetch';
 
 const ConnectAccount = () => {
 	const { createNotice } = useDispatchCoreNotices();
-	const [ apiFetch, { loading, data } ] = useApiFetch();
+	const [ fetchJetpackConnect, { loading, data } ] = useApiFetch( {
+		path: '/wc/gla/jetpack/connect',
+	} );
 
 	const handleConnectClick = async () => {
 		try {
-			const d = await apiFetch( {
-				path: '/wc/gla/jetpack/connect',
-			} );
+			const d = await fetchJetpackConnect();
 			window.location.href = d.url;
 		} catch ( error ) {
 			createNotice(

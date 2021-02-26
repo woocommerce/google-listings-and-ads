@@ -14,13 +14,13 @@ import useApiFetch from '.~/hooks/useApiFetch';
 const ConnectAccount = ( props ) => {
 	const { disabled = false } = props;
 	const { createNotice } = useDispatchCoreNotices();
-	const [ apiFetch, { loading, data } ] = useApiFetch();
+	const [ fetchGoogleConnect, { loading, data } ] = useApiFetch( {
+		path: '/wc/gla/google/connect',
+	} );
 
 	const handleConnectClick = async () => {
 		try {
-			const d = await apiFetch( {
-				path: '/wc/gla/google/connect',
-			} );
+			const d = await fetchGoogleConnect();
 
 			window.location.href = d.url;
 		} catch ( error ) {
