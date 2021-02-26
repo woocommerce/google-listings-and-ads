@@ -144,6 +144,7 @@ class AccountController extends BaseOptionsController {
 	protected function disconnect_ads_account_callback(): callable {
 		return function() {
 			$this->middleware->disconnect_ads_account();
+			$this->account_state->update( [] );
 
 			return [
 				'status'  => 'success',
