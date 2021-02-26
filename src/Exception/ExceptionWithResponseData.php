@@ -28,7 +28,7 @@ class ExceptionWithResponseData extends Exception implements GoogleListingsAndAd
 	 * @param Throwable|null $previous [optional] The previous throwable used for the exception chaining.
 	 * @param array          $data [optional] Extra data to attach to the exception (ostensibly for use in an HTTP response).
 	 */
-	public function __construct( string $message = '', int $code = 0, Throwable $previous = null, $data = [] ) {
+	public function __construct( string $message = '', int $code = 0, Throwable $previous = null, array $data = [] ) {
 		parent::__construct( $message, $code, $previous );
 
 		if ( ! empty( $data ) && is_array( $data ) ) {
