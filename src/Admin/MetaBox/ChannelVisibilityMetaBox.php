@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
@@ -24,13 +25,20 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected $meta_handler;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * ChannelVisibilityMetaBox constructor.
 	 *
 	 * @param Admin              $admin
 	 * @param ProductMetaHandler $meta_handler
+	 * @param ProductHelper      $product_helper
 	 */
-	public function __construct( Admin $admin, ProductMetaHandler $meta_handler ) {
-		$this->meta_handler = $meta_handler;
+	public function __construct( Admin $admin, ProductMetaHandler $meta_handler, ProductHelper $product_helper ) {
+		$this->meta_handler   = $meta_handler;
+		$this->product_helper = $product_helper;
 		parent::__construct( $admin );
 	}
 
@@ -86,10 +94,11 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 */
 	protected function get_view_context( WP_Post $post, array $args ): array {
 		$product_id = $post->ID;
+		$product    = wc_get_product( $product_id );
 		return [
 			'product_id' => $product_id,
-			'product'    => wc_get_product( $product_id ),
-			'visibility' => $this->meta_handler->get_visibility( $product_id ),
+			'product'    => $product,
+			'visibility' => $this->product_helper->get_visibility( $product ),
 			'synced_at'  => $this->meta_handler->get_synced_at( $product_id ),
 			'issues'     => [], // todo: replace this with the list of issues retrieved from Google's Product Statuses API
 		];
