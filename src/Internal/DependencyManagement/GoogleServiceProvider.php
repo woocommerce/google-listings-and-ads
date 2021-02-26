@@ -170,6 +170,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			Client::class,
 			$this->get_connect_server_url_root( 'google-sv' )
 		);
+		$this->share(
+			GoogleProductService::class,
+			Google_Service_ShoppingContent::class,
+			Merchant::class
+		);
 	}
 
 	/**
@@ -237,9 +242,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return RawArgument
 	 */
 	protected function get_connect_server_url_root( string $path = '' ): RawArgument {
-		$url = defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' )
-			? WOOCOMMERCE_CONNECT_SERVER_URL
-			: 'https://api.woocommerce.com/';
+		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
+			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'https://api.woocommerce.com/' );
+		}
+		$url = WOOCOMMERCE_CONNECT_SERVER_URL;
 		$url = rtrim( $url, '/' );
 
 		$path = '/' . trim( $path, '/' );
