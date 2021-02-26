@@ -223,7 +223,9 @@ class ProductRepository implements Service {
 			return [];
 		}
 
-		$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
+		if ( ! empty( $args['meta_query'] ) ) {
+			$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
+		}
 
 		return $args;
 	}
@@ -233,7 +235,7 @@ class ProductRepository implements Service {
 	 *
 	 * @return array
 	 */
-	protected function prefix_meta_query_keys( $meta_queries ) {
+	protected function prefix_meta_query_keys( array $meta_queries ): array {
 		$updated_queries = [];
 		if ( ! is_array( $meta_queries ) ) {
 			return $updated_queries;
