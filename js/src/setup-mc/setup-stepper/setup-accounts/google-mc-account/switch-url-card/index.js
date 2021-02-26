@@ -21,13 +21,13 @@ const SwitchUrlCard = ( props ) => {
 	const [ apiFetch, { loading } ] = useApiFetch();
 
 	const handleSwitch = async () => {
-		const { data } = await apiFetch( {
+		const account = await apiFetch( {
 			path: `/wc/gla/mc/accounts/switch-url`,
 			method: 'POST',
 			data: { id },
 		} );
 
-		receiveMCAccount( data );
+		receiveMCAccount( account );
 	};
 
 	return (

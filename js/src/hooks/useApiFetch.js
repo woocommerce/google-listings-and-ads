@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useReducer } from '@wordpress/element';
+import { useReducer } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 const TYPES = {
@@ -52,38 +52,62 @@ const reducer = ( state, action ) => {
 	}
 };
 
-const useApiFetch = () => {
+const shouldReturnResponseBody = ( combinedOptions ) => {
+	const { parse } = combinedOptions;
+
+	return parse === undefined || parse === true;
+};
+
+const useApiFetch = ( options ) => {
 	const [ state, dispatch ] = useReducer( reducer, initialState );
 
-	const enhancedApiFetch = useCallback( async ( options ) => {
-		dispatch( { type: TYPES.START, options } );
+	const enhancedApiFetch = async ( overwriteOptions ) => {
+		const combinedOptions = {
+			...options,
+			...overwriteOptions,
+		};
+
+		dispatch( { type: TYPES.START, options: combinedOptions } );
 
 		try {
-			const response = await apiFetch( { ...options, parse: false } );
+			const response = await apiFetch( {
+				...combinedOptions,
+				parse: false,
+			} );
 			const data = response.json && ( await response.json() );
 
 			dispatch( {
 				type: TYPES.FINISH,
 				data,
 				response,
-				options,
+				options: combinedOptions,
 			} );
 
-			return { data, response };
+			return shouldReturnResponseBody( combinedOptions )
+				? data
+				: response;
 		} catch ( e ) {
 			const response = e;
 			const error = response.json
 				? await response.json()
-				: new Error( 'No content in fetch response.' );
+				: new Error( 'No content body in fetch response.' );
 
-			dispatch( { type: TYPES.ERROR, error, response, options } );
-			throw error;
+			dispatch( {
+				type: TYPES.ERROR,
+				error,
+				response,
+				options: combinedOptions,
+			} );
+
+			throw shouldReturnResponseBody( combinedOptions )
+				? error
+				: response;
 		}
-	}, [] );
+	};
 
-	const reset = useCallback( () => {
+	const reset = () => {
 		dispatch( { type: TYPES.RESET } );
-	}, [] );
+	};
 
 	const fetchResult = {
 		...state,

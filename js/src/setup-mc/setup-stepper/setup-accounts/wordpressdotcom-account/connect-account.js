@@ -17,7 +17,7 @@ const ConnectAccount = () => {
 
 	const handleConnectClick = async () => {
 		try {
-			const { data: d } = await apiFetch( {
+			const d = await apiFetch( {
 				path: '/wc/gla/jetpack/connect',
 			} );
 			window.location.href = d.url;
