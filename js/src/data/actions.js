@@ -143,6 +143,90 @@ export function* saveSettings( settings ) {
 	}
 }
 
+export function* fetchJetpackAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/jetpack/connected`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_JETPACK,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Jetpack account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchGoogleAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/connected`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchGoogleMCAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google Merchant Center account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchExistingGoogleMCAccounts() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/accounts`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING,
+			accounts: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting your Google Merchant Center accounts.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchCountries() {
 	try {
 		const response = yield apiFetch( {
@@ -183,6 +267,13 @@ export function* fetchTargetAudience() {
 			)
 		);
 	}
+}
+
+export function receiveMCAccount( account ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+		account,
+	};
 }
 
 export function* saveTargetAudience( targetAudience ) {

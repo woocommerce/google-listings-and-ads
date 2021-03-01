@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -9,13 +8,10 @@ import { __ } from '@wordpress/i18n';
  */
 import Section from '../../../../wcdl/section';
 import DisabledDiv from '../../../../components/disabled-div';
-import TitleButtonLayout from '../title-button-layout';
+import CardContent from './card-content';
 
 const GoogleAccount = ( props ) => {
 	const { disabled = false } = props;
-
-	// TODO: call backend API upon clicking Connect button.
-	const handleConnectClick = () => {};
 
 	return (
 		<DisabledDiv disabled={ disabled }>
@@ -28,24 +24,7 @@ const GoogleAccount = ( props ) => {
 			>
 				<Section.Card>
 					<Section.Card.Body>
-						<TitleButtonLayout
-							title={ __(
-								'Connect your Google account',
-								'google-listings-and-ads'
-							) }
-							button={
-								<Button
-									isSecondary
-									disabled={ disabled }
-									onClick={ handleConnectClick }
-								>
-									{ __(
-										'Connect',
-										'google-listings-and-ads'
-									) }
-								</Button>
-							}
-						/>
+						<CardContent disabled={ disabled } />
 					</Section.Card.Body>
 				</Section.Card>
 			</Section>

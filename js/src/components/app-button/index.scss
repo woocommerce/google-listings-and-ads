@@ -1,0 +1,14 @@
+.app-button {
+	white-space: nowrap;
+
+	svg {
+		width: inherit;
+		height: inherit;
+		max-width: inherit;
+		max-height: inherit;
+
+		circle {
+			stroke: currentColor;
+		}
+	}
+}
