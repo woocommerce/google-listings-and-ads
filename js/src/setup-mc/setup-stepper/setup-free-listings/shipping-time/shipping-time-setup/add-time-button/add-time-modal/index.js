@@ -8,22 +8,17 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import AppModal from '../../../../../../../components/app-modal';
-import AppInputControl from '../../../../../../../components/app-input-control';
+import AppModal from '.~/components/app-modal';
+import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '../../../../components/vertical-gap-layout';
 import AudienceCountrySelect from '../../../../components/audience-country-select';
+import { useAppDispatch } from '.~/data';
+import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddTimeModal = ( props ) => {
 	const { onRequestClose } = props;
-
-	// TODO: get list of countries without price.
-	const countriesWithoutPrice = [
-		{
-			key: 'USA',
-			label: 'United States of America',
-			value: { id: 'USA' },
-		},
-	];
+	const { upsertShippingTime } = useAppDispatch();
+	const remainingCountryCodes = useGetRemainingCountryCodes();
 
 	const handleValidate = () => {
 		const errors = {};
@@ -33,15 +28,23 @@ const AddTimeModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: call backend API when submit form.
-	const handleSubmitCallback = () => {
+	const handleSubmitCallback = ( values ) => {
+		const { countryCodes, time } = values;
+
+		countryCodes.forEach( ( el ) => {
+			upsertShippingTime( {
+				countryCode: el,
+				time,
+			} );
+		} );
+
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countries: countriesWithoutPrice,
+				countryCodes: remainingCountryCodes,
 				time: '',
 			} }
 			validate={ handleValidate }
@@ -77,7 +80,7 @@ const AddTimeModal = ( props ) => {
 								</div>
 								<AudienceCountrySelect
 									multiple
-									{ ...getInputProps( 'countries' ) }
+									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
 							<AppInputControl
