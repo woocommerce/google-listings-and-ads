@@ -15,31 +15,42 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../content-button-layout';
+import ReclaimUrlFailCard from './reclaim-url-fail-card';
 
 const ReclaimUrlCard = ( props ) => {
 	const { websiteUrl } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveMCAccount } = useAppDispatch();
-	const [ fetchClaimOverwrite, { loading } ] = useApiFetchCallback( {
+	const [
+		fetchClaimOverwrite,
+		{ loading, response, reset },
+	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/claim-overwrite`,
 		method: 'POST',
 	} );
 
 	const handleReclaimClick = async () => {
 		try {
-			const data = await fetchClaimOverwrite();
+			const res = await fetchClaimOverwrite( { parse: false } );
+			const data = await res.json();
 
 			receiveMCAccount( data );
 		} catch ( e ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to reclaim your URL. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
+			if ( e.status !== 406 ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to reclaim your URL. Please try again later.',
+						'google-listings-and-ads'
+					)
+				);
+			}
 		}
 	};
+
+	if ( response && response.status === 406 ) {
+		return <ReclaimUrlFailCard onRetry={ reset } />;
+	}
 
 	return (
 		<Section.Card>
