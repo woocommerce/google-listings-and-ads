@@ -31,7 +31,10 @@ const CreateAccount = () => {
 
 			receiveMCAccount( data );
 		} catch ( e ) {
-			if ( e.status !== 503 || e.status !== 403 ) {
+			if ( e.status === 406 ) {
+				const body = await e.json();
+				createNotice( 'error', body.message );
+			} else if ( ! [ 403, 503 ].includes( e.status ) ) {
 				createNotice(
 					'error',
 					__(
