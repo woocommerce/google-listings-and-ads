@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as Ra
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Google_Service_ShoppingContent as ShoppingService;
+use Google_Service_ShoppingContent_BusinessDayConfig;
 use Google_Service_ShoppingContent_DeliveryTime;
 use Google_Service_ShoppingContent_Service;
 use Google_Service_ShoppingContent_ShippingSettings;
@@ -48,8 +49,8 @@ class Settings {
 		/** @var OptionsInterface $options */
 		$options = $this->container->get( OptionsInterface::class );
 
-		$account_id  = 12345; // todo: change this to real value.
 		$merchant_id = $options->get( OptionsInterface::MERCHANT_ID );
+		$account_id  = $merchant_id;
 		$times       = $this->get_times();
 		$settings    = new Google_Service_ShoppingContent_ShippingSettings();
 		$settings->setAccountId( $account_id );
@@ -62,12 +63,10 @@ class Settings {
 			$service = new Google_Service_ShoppingContent_Service();
 			$service->setActive( true );
 			$service->setDeliveryCountry( $country );
+			$service->setCurrency( $shipping_rate['currency'] );
 
 			if ( array_key_exists( $country, $times ) ) {
-				$time = new Google_Service_ShoppingContent_DeliveryTime();
-				$time->setMinTransitTimeInDays( $times[ $country ] );
-				$time->setMaxTransitTimeInDays( $times[ $country ] );
-				$service->setDeliveryTime( $time );
+				$service->setDeliveryTime( $this->create_time_object( intval( $times[ $country ] ) ) );
 			}
 
 			$services[] = $service;
@@ -77,7 +76,7 @@ class Settings {
 
 		/** @var ShoppingService $content_service */
 		$content_service = $this->container->get( ShoppingService::class );
-		$content_service->shippingsettings->update(
+		$result          = $content_service->shippingsettings->update(
 			$merchant_id,
 			$account_id,
 			$settings
@@ -93,5 +92,22 @@ class Settings {
 		$raw = $this->time_query->get_results();
 
 		return wp_list_pluck( $raw, 'time', 'country' );
+	}
+
+	/**
+	 * Create the DeliveryTime object.
+	 *
+	 * @param int $delivery_days
+	 *
+	 * @return Google_Service_ShoppingContent_DeliveryTime
+	 */
+	protected function create_time_object( int $delivery_days ): Google_Service_ShoppingContent_DeliveryTime {
+		$time = new Google_Service_ShoppingContent_DeliveryTime();
+		$time->setMinHandlingTimeInDays( 0 );
+		$time->setMaxHandlingTimeInDays( 0 );
+		$time->setMinTransitTimeInDays( $delivery_days );
+		$time->setMaxTransitTimeInDays( $delivery_days );
+
+		return $time;
 	}
 }
