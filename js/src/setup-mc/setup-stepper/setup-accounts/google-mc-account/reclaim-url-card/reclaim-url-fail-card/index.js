@@ -11,16 +11,17 @@ import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import ContentButtonLayout from '../../../content-button-layout';
+import './index.scss';
 
 const ReclaimUrlFailCard = ( props ) => {
 	const { onRetry = () => {} } = props;
 
 	return (
-		<Section.Card>
+		<Section.Card className="gla-reclaim-url-fail-card">
 			<Section.Card.Body>
 				<ContentButtonLayout>
 					<div>
-						<Subsection.Title>
+						<Subsection.Title className="gla-reclaim-url-fail-card__title">
 							{ __(
 								'We were not able to reclaim this URL.',
 								'google-listings-and-ads'
