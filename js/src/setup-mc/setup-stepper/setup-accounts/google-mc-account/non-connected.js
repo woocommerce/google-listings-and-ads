@@ -19,8 +19,17 @@ const NonConnected = () => {
 		return <SpinnerCard />;
 	}
 
+	const handleShowExisting = () => {
+		setIgnoreExisting( false );
+	};
+
 	if ( existingAccounts.length === 0 || ignoreExisting ) {
-		return <CreateAccount />;
+		return (
+			<CreateAccount
+				allowShowExisting={ ignoreExisting }
+				onShowExisting={ handleShowExisting }
+			/>
+		);
 	}
 
 	const handleCreateNew = () => {

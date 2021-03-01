@@ -13,7 +13,8 @@ import CreatingCard from './creating-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
-const CreateAccount = () => {
+const CreateAccount = ( props ) => {
+	const { allowShowExisting, onShowExisting } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveMCAccount } = useAppDispatch();
 	const [
@@ -59,6 +60,12 @@ const CreateAccount = () => {
 		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
 	}
 
-	return <CreateAccountCard onCreateAccount={ handleCreateAccount } />;
+	return (
+		<CreateAccountCard
+			allowShowExisting={ allowShowExisting }
+			onShowExisting={ onShowExisting }
+			onCreateAccount={ handleCreateAccount }
+		/>
+	);
 };
 export default CreateAccount;
