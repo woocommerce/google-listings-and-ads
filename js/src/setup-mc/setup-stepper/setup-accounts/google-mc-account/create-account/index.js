@@ -5,6 +5,7 @@ import { useAppDispatch } from '.~/data';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import CreateAccountCard from './create-account-card';
 import CreatingCard from './creating-card';
+import ReclaimUrlCard from '../reclaim-url-card';
 
 const CreateAccount = () => {
 	const { receiveMCAccount } = useAppDispatch();
@@ -31,6 +32,10 @@ const CreateAccount = () => {
 				onRetry={ handleCreateAccount }
 			/>
 		);
+	}
+
+	if ( response && response.status === 403 ) {
+		return <ReclaimUrlCard />;
 	}
 
 	return <CreateAccountCard onCreateAccount={ handleCreateAccount } />;

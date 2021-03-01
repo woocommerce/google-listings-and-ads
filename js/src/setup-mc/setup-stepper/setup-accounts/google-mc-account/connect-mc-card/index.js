@@ -15,6 +15,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
+import ReclaimUrlCard from '../reclaim-url-card';
 
 const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
@@ -46,6 +47,10 @@ const ConnectMCCard = () => {
 				onSelectAnotherAccount={ reset }
 			/>
 		);
+	}
+
+	if ( response && response.status === 403 ) {
+		return <ReclaimUrlCard />;
 	}
 
 	return (
