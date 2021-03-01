@@ -60,7 +60,7 @@ const ConnectMCCard = () => {
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
-						'You have an existing Merchant Center account in WooCommerce',
+						'You have existing Merchant Center accounts',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
