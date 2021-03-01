@@ -16,8 +16,10 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
+import AppTextButton from '.~/components/app-text-button';
 
-const ConnectMCCard = () => {
+const ConnectMCCard = ( props ) => {
+	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
 	const [
 		fetchMCAccounts,
@@ -79,6 +81,14 @@ const ConnectMCCard = () => {
 					</AppButton>
 				</ContentButtonLayout>
 			</Section.Card.Body>
+			<Section.Card.Footer>
+				<AppTextButton isSecondary onClick={ onCreateNew }>
+					{ __(
+						'Or, create a new Merchant Center account',
+						'google-listings-and-ads'
+					) }
+				</AppTextButton>
+			</Section.Card.Footer>
 		</Section.Card>
 	);
 };
