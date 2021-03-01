@@ -47,4 +47,16 @@ class InvalidValue extends LogicException implements GoogleListingsAndAdsExcepti
 	public static function not_instance_of( string $class_name, string $key ) {
 		return new static( sprintf( 'The value of %s must be an instance of %s.', $key, $class_name ) );
 	}
+
+	/**
+	 * Create a new instance of the exception when a value is not from a predefined list of allowed values.
+	 *
+	 * @param mixed $key            The name of the value.
+	 * @param array $allowed_values The list of allowed values.
+	 *
+	 * @return static
+	 */
+	public static function not_in_allowed_list( $key, array $allowed_values ): InvalidValue {
+		return new static( sprintf( 'The value of %s must be either of [%s].', $key, implode( ', ', $allowed_values ) ) );
+	}
 }

@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 
 /**
@@ -14,6 +15,8 @@ use WC_Product;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class ProductRepository implements Service {
+
+	public const INCLUDE_VARIATIONS_KEY = 'include_variations';
 
 	use PluginHelper;
 
@@ -67,7 +70,53 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Find and return an array of WooCommerce product objects based on the provided product IDs.
+	 *
+	 * Note: Including product variations.
+	 *
+	 * @param int[] $ids    Array of WooCommerce product IDs
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
+	 *
+	 * @return WC_Product[] Array of WooCommerce product objects
+	 */
+	public function find_by_ids_including_variations( array $ids, int $limit = -1, int $offset = 0 ): array {
+		$args['include'] = $ids;
+
+		// include product variations
+		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
+
+		return $this->find( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product objects already submitted to Google Merchant Center.
+	 *
+	 * Note: Includes product variations.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return WC_Product[] Array of WooCommerce product objects
+	 */
+	public function find_synced_products( int $limit = -1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			[
+				'key'     => ProductMetaHandler::KEY_GOOGLE_IDS,
+				'compare' => 'EXISTS',
+			],
+		];
+
+		// include product variations
+		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
+
+		return $this->find( $args, $limit, $offset );
+	}
+
+	/**
 	 * Find and return an array of WooCommerce product IDs already submitted to Google Merchant Center.
+	 *
+	 * Note: Includes product variations.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
@@ -75,10 +124,65 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$google_id_key          = ProductMetaHandler::KEY_GOOGLE_IDS;
-		$compare_key            = ProductMetaHandler::get_meta_compare_key( $google_id_key );
-		$args[ $google_id_key ] = '';
-		$args[ $compare_key ]   = 'EXISTS';
+		$args['meta_query'] = [
+			[
+				'key'     => ProductMetaHandler::KEY_GOOGLE_IDS,
+				'compare' => 'EXISTS',
+			],
+		];
+
+		// include product variations
+		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product objects ready to be submitted to Google Merchant Center.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return WC_Product[] Array of WooCommerce product objects
+	 */
+	public function find_sync_ready_products( int $limit = - 1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			'relation' => 'OR',
+			[
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => '!=',
+				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+			],
+		];
+
+		return $this->find( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs ready to be submitted to Google Merchant Center.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_sync_ready_product_ids( int $limit = - 1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			'relation' => 'OR',
+			[
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => '!=',
+				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+			],
+		];
 
 		return $this->find_ids( $args, $limit, $offset );
 	}
@@ -100,7 +204,9 @@ class ProductRepository implements Service {
 		$args['offset'] = $offset;
 
 		// include product variations in the query
-		$args['type'] = array_merge( array_keys( wc_get_product_types() ), [ 'variation' ] );
+		if ( isset( $args[ self::INCLUDE_VARIATIONS_KEY ] ) && true === $args[ self::INCLUDE_VARIATIONS_KEY ] ) {
+			$args['type'] = array_merge( array_keys( wc_get_product_types() ), [ 'variation' ] );
+		}
 
 		return wc_get_products( $this->prepare_query_args( $args ) );
 	}
@@ -117,15 +223,40 @@ class ProductRepository implements Service {
 			return [];
 		}
 
-		$valid_keys = array_map( [ ProductMetaHandler::class, 'get_meta_compare_key' ], ProductMetaHandler::VALID_KEYS );
-		$valid_keys = array_merge( $valid_keys, ProductMetaHandler::VALID_KEYS );
-
-		$args_meta_keys = array_intersect( $valid_keys, array_keys( $args ) );
-		foreach ( $args_meta_keys as $key ) {
-			$args[ $this->prefix_meta_key( $key ) ] = $args[ $key ];
-			unset( $args[ $key ] );
+		if ( ! empty( $args['meta_query'] ) ) {
+			$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
 		}
 
 		return $args;
+	}
+
+	/**
+	 * @param array $meta_queries
+	 *
+	 * @return array
+	 */
+	protected function prefix_meta_query_keys( array $meta_queries ): array {
+		$updated_queries = [];
+		if ( ! is_array( $meta_queries ) ) {
+			return $updated_queries;
+		}
+
+		foreach ( $meta_queries as $key => $meta_query ) {
+			// First-order clause.
+			if ( 'relation' === $key && is_string( $meta_query ) ) {
+				$updated_queries[ $key ] = $meta_query;
+
+				// First-order clause.
+			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && in_array( $meta_query['key'], ProductMetaHandler::VALID_KEYS, true ) ) {
+				$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
+			} else {
+				// Otherwise, it's a nested meta_query, so we recurse.
+				$meta_query = $this->prefix_meta_query_keys( $meta_query );
+			}
+
+			$updated_queries[ $key ] = $meta_query;
+		}
+
+		return $updated_queries;
 	}
 }

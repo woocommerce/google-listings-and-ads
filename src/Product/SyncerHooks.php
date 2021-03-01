@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -22,9 +23,18 @@ defined( 'ABSPATH' ) || exit;
 class SyncerHooks implements Service, Registerable {
 
 	/**
-	 * @var BatchProductRequestEntry[]
+	 * Array of booleans mapped to product IDs indicating that they have been already
+	 * scheduled for update or delete during current request. Used to avoid scheduling
+	 * duplicate jobs.
+	 *
+	 * @var bool[]
 	 */
-	protected $delete_requests;
+	protected $already_scheduled = [];
+
+	/**
+	 * @var BatchProductRequestEntry[][]
+	 */
+	protected $delete_requests_map;
 
 	/**
 	 * @var BatchProductHelper
@@ -70,21 +80,33 @@ class SyncerHooks implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
+		$update = function( int $product_id ) {
+			$this->handle_update_product( $product_id );
+		};
+
+		$pre_delete = function( int $product_id ) {
+			$this->handle_pre_delete_product( $product_id );
+		};
+
+		$delete = function( int $product_id ) {
+			$this->handle_delete_product( $product_id );
+		};
+
 		// when a product is added / updated, schedule a update job.
-		add_action( 'woocommerce_new_product', [ $this, 'update_product' ], 90 );
-		add_action( 'woocommerce_update_product', [ $this, 'update_product' ], 90 );
+		add_action( 'woocommerce_new_product', $update, 90 );
+		add_action( 'woocommerce_update_product', $update, 90 );
 
 		// if we don't attach to these we miss product gallery updates.
-		add_action( 'woocommerce_process_product_meta', [ $this, 'update_product' ], 90, 2 );
+		add_action( 'woocommerce_process_product_meta', $update, 90, 2 );
 
 		// when a product is trashed or removed, schedule a delete job.
-		add_action( 'wp_trash_post', [ $this, 'pre_delete_product' ], 90 );
-		add_action( 'before_delete_post', [ $this, 'pre_delete_product' ], 90 );
-		add_action( 'trashed_post', [ $this, 'delete_product' ], 90 );
-		add_action( 'deleted_post', [ $this, 'delete_product' ], 90 );
+		add_action( 'wp_trash_post', $pre_delete, 90 );
+		add_action( 'before_delete_post', $pre_delete, 90 );
+		add_action( 'trashed_post', $delete, 90 );
+		add_action( 'deleted_post', $delete, 90 );
 
 		// when a product is restored from the trash, schedule a update job.
-		add_action( 'untrashed_post', [ $this, 'update_product' ], 90 );
+		add_action( 'untrashed_post', $update, 90 );
 	}
 
 	/**
@@ -94,11 +116,22 @@ class SyncerHooks implements Service, Registerable {
 	 *
 	 * @return void
 	 */
-	public function update_product( int $product_id ) {
-		// bail if it's not a WooCommerce product.
+	protected function handle_update_product( int $product_id ) {
 		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product ) {
+		if ( ! $product instanceof WC_Product || $this->already_scheduled( $product_id ) ) {
+			// bail if it's not a WooCommerce product.
+			return;
+		}
+
+		if ( ChannelVisibility::SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
+			// schedule an update job if product sync is enabled.
 			$this->update_products_job->start( [ $product_id ] );
+			$this->set_already_scheduled( $product_id );
+		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
+			// delete the product from Google Merchant Center if it's already synced AND sync has been disabled.
+			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
+			$this->delete_products_job->start( $this->batch_helper->request_entries_to_id_map( $request_entries ) );
+			$this->set_already_scheduled( $product_id );
 		}
 	}
 
@@ -107,10 +140,10 @@ class SyncerHooks implements Service, Registerable {
 	 *
 	 * @param int $product_id
 	 */
-	public function delete_product( int $product_id ) {
-		if ( isset( $this->delete_requests[ $product_id ] ) ) {
-			$google_product_id = $this->delete_requests[ $product_id ]->get_product();
-			$this->delete_products_job->start( [ $product_id => $google_product_id ] );
+	protected function handle_delete_product( int $product_id ) {
+		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
+			$this->delete_products_job->start( $this->batch_helper->request_entries_to_id_map( $this->delete_requests_map[ $product_id ] ) );
+			$this->set_already_scheduled( $product_id );
 		}
 	}
 
@@ -119,10 +152,28 @@ class SyncerHooks implements Service, Registerable {
 	 *
 	 * @param int $product_id
 	 */
-	public function pre_delete_product( int $product_id ) {
+	protected function handle_pre_delete_product( int $product_id ) {
 		$product = wc_get_product( $product_id );
 		if ( $product instanceof WC_Product && $this->product_helper->is_product_synced( $product ) ) {
-			$this->delete_requests[ $product_id ] = $this->batch_helper->generate_delete_request_entries( [ $product ] )[0];
+			$this->delete_requests_map[ $product_id ] = $this->batch_helper->generate_delete_request_entries( [ $product ] );
 		}
+	}
+
+	/**
+	 * @param int $product_id
+	 *
+	 * @return bool
+	 */
+	protected function already_scheduled( int $product_id ): bool {
+		return isset( $this->already_scheduled[ $product_id ] );
+	}
+
+	/**
+	 * @param int $product_id
+	 *
+	 * @return void
+	 */
+	protected function set_already_scheduled( int $product_id ): void {
+		$this->already_scheduled[ $product_id ] = true;
 	}
 }
