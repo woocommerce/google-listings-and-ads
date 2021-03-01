@@ -46,7 +46,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		ActionSchedulerInterface::class  => true,
 		AsyncActionRunner::class         => true,
 		ActionSchedulerJobMonitor::class => true,
-		JobInitializer::class            => true,
 		SyncerHooks::class               => true,
 		Service::class                   => true,
 	];
@@ -72,10 +71,14 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_action_scheduler_job( UpdateProducts::class, ProductSyncer::class, ProductRepository::class );
 		$this->share_action_scheduler_job( DeleteProducts::class, ProductSyncer::class );
 
-		$this->share_with_tags(
-			JobInitializer::class,
-			JobInterface::class
-		);
+		if ( JobInitializer::is_needed() ) {
+			$this->provides[ JobInitializer::class ] = true;
+			$this->share_with_tags(
+				JobInitializer::class,
+				JobInterface::class,
+				ActionScheduler::class
+			);
+		}
 
 		$this->share_with_tags(
 			SyncerHooks::class,
