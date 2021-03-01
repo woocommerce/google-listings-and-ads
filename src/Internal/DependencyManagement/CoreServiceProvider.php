@@ -6,6 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -15,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
@@ -47,6 +51,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -91,6 +96,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SiteVerificationMeta::class   => true,
 		BatchProductHelper::class     => true,
 		ProductRepository::class      => true,
+		MetaBoxInterface::class       => true,
+		MetaBoxInitializer::class     => true,
+		ViewFactory::class            => true,
 		DebugLogger::class            => true,
 		MerchantAccountState::class   => true,
 		DBInstaller::class            => true,
@@ -128,7 +136,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
+		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class, PHPViewFactory::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
@@ -152,12 +160,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductRepository::class );
-		$this->share_with_tags( ProductHelper::class, ProductMetaHandler::class );
+		$this->share_with_tags( MerchantAccountState::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share_with_tags( BatchProductHelper::class, ProductMetaHandler::class, ProductHelper::class );
 		$this->share_with_tags(
 			ProductSyncer::class,
 			GoogleProductService::class,
 			BatchProductHelper::class,
+			ProductHelper::class,
 			ValidatorInterface::class
 		);
 
@@ -165,6 +175,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			->inflector( TracksAwareInterface::class )
 			->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
+
+		// Share admin meta boxes
+		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class );
+		$this->conditionally_share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class );
+
+		$this->share_with_tags( PHPViewFactory::class );
 
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );

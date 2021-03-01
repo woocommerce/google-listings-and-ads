@@ -21,6 +21,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
@@ -536,7 +537,7 @@ class ConnectionTest implements Service, Registerable {
 								<p>
 									<label for="async-sync-all-products">Async?</label>
 									<input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
-									<button class="button">Sync All Products with Google Merchant Center</button>
+						            <button class="button">Sync All Products with Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
@@ -1014,13 +1015,11 @@ class ConnectionTest implements Service, Registerable {
 			if ( empty( $_GET['async'] ) ) {
 				/** @var ProductSyncer $product_syncer */
 				$product_syncer = $this->container->get( ProductSyncer::class );
+				/** @var ProductRepository $product_repository */
+				$product_repository = $this->container->get( ProductRepository::class );
 
 				try {
-					$products = wc_get_products(
-						[
-							'limit' => -1,
-						]
-					);
+					$products = $product_repository->find_sync_ready_products();
 
 					$result = $product_syncer->update( $products );
 
@@ -1047,13 +1046,11 @@ class ConnectionTest implements Service, Registerable {
 			if ( empty( $_GET['async'] ) ) {
 				/** @var ProductSyncer $product_syncer */
 				$product_syncer = $this->container->get( ProductSyncer::class );
+				/** @var ProductRepository $product_repository */
+				$product_repository = $this->container->get( ProductRepository::class );
 
 				try {
-					$products = wc_get_products(
-						[
-							'limit' => - 1,
-						]
-					);
+					$products = $product_repository->find_synced_products();
 
 					$result = $product_syncer->delete( $products );
 

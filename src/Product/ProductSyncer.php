@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -37,19 +38,27 @@ class ProductSyncer implements Service {
 	protected $validator;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * ProductSyncer constructor.
 	 *
 	 * @param GoogleProductService $google_service
 	 * @param BatchProductHelper   $batch_helper
+	 * @param ProductHelper        $product_helper
 	 * @param ValidatorInterface   $validator
 	 */
 	public function __construct(
 		GoogleProductService $google_service,
 		BatchProductHelper $batch_helper,
+		ProductHelper $product_helper,
 		ValidatorInterface $validator
 	) {
 		$this->google_service = $google_service;
 		$this->batch_helper   = $batch_helper;
+		$this->product_helper = $product_helper;
 		$this->validator      = $validator;
 	}
 
@@ -64,17 +73,21 @@ class ProductSyncer implements Service {
 	 */
 	public function update( array $products ): BatchProductResponse {
 		// prepare and validate products
-		$products         = ProductHelper::expand_variations( $products );
+		$products         = BatchProductHelper::expand_variations( $products );
 		$updated_products = [];
 		$invalid_products = [];
 		$product_entries  = [];
 		foreach ( $products as $product ) {
+			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
+				continue;
+			}
+
 			$adapted_product   = ProductHelper::generate_adapted_product( $product );
 			$validation_result = $this->validate_product( $adapted_product );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$invalid_products[] = $validation_result;
 			} else {
-				$product_entries[] = new BatchProductRequestEntry( $product->get_id(), $adapted_product );
+				$product_entries[ $product->get_id() ] = new BatchProductRequestEntry( $product->get_id(), $adapted_product );
 			}
 		}
 
@@ -110,7 +123,7 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete( array $products ): BatchProductResponse {
-		$products = ProductHelper::expand_variations( $products );
+		$products = BatchProductHelper::expand_variations( $products );
 
 		// filter the synced products
 		$synced_products = $this->batch_helper->filter_synced_products( $products );
@@ -127,6 +140,8 @@ class ProductSyncer implements Service {
 
 	/**
 	 * Deletes an array of WooCommerce products from Google Merchant Center.
+	 *
+	 * Note: This method does not automatically delete variations of a parent product. They each must be provided via the $product_entries argument.
 	 *
 	 * @param BatchProductRequestEntry[] $product_entries
 	 *
