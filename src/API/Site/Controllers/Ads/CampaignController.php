@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
@@ -32,13 +33,19 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected $ads;
 
 	/**
+	 * @var BudgetRecommendationQuery
+	 */
+	protected $budget_recommendation_query;
+
+	/**
 	 * BaseController constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->ads = $container->get( Ads::class );
+		$this->ads                         = $container->get( Ads::class );
+		$this->budget_recommendation_query = $container->get( BudgetRecommendationQuery::class );
 	}
 
 	/**
@@ -83,6 +90,18 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+
+		$this->register_route(
+			'ads/campaigns/budget-recommendation/(?P<country_code>\\w{2})',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_budget_recommendation_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+//					'args'                => $this->get_schema_properties(),
+				],
 			]
 		);
 	}
@@ -204,6 +223,26 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
+		};
+	}
+
+	/**
+	 * @return callable
+	 */
+	protected function get_budget_recommendation_callback(): callable {
+		return function( Request $request ) {
+			$country        = $request->get_param( 'country_code' );
+			$recommendation = $this->budget_recommendation_query->where( 'country', $country )->get_results();
+
+			return $this->prepare_item_for_response(
+				[
+					'country_code'      => $recommendation['country'],
+					'currency'          => $recommendation['currency'],
+					'daily_budget_low'  => $recommendation['daily_budget_low'],
+					'daily_budget_high' => $recommendation['daily_budget_high'],
+				],
+				$request
+			);
 		};
 	}
 
