@@ -372,12 +372,21 @@ class AccountController extends BaseOptionsController {
 				$step['message'] = $e->getMessage();
 
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
+					$data = [
+						'website_url' => $this->strip_url_protocol(
+							apply_filters( 'woocommerce_gla_site_url', site_url() )
+						),
+					];
+
 					if ( $state['set_id']['data']['from_mca'] ?? true ) {
 						$step['data']['overwrite_required'] = true;
+						$e                                  = new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), null, $data );
 					} else {
-						throw new Exception(
+						throw new ExceptionWithResponseData(
 							__( 'Unable to claim website URL with this Merchant Center Account.', 'google-listings-and-ads' ),
-							406
+							406,
+							null,
+							$data
 						);
 					}
 				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
