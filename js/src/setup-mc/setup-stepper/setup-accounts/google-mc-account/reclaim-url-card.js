@@ -12,14 +12,33 @@ import ContentButtonLayout from '../content-button-layout';
 import Subsection from '.~/wcdl/subsection';
 import AppButton from '.~/components/app-button';
 import AccountId from './account-id';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const ReclaimUrlCard = () => {
+	const { createNotice } = useDispatchCoreNotices();
+	const [ fetchClaimOverwrite, { loading } ] = useApiFetchCallback( {
+		path: `/wc/gla/mc/accounts/claim-overwrite`,
+		method: 'POST',
+	} );
+
 	// TODO:
 	const accountId = 123123123;
 	const url = 'http://www.colleenscookies.biz';
 
-	// TODO: add reclaim handler.
-	const handleReclaimClick = () => {};
+	const handleReclaimClick = async () => {
+		try {
+			await fetchClaimOverwrite();
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to reclaim your URL. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
 
 	return (
 		<Section.Card>
@@ -47,7 +66,11 @@ const ReclaimUrlCard = () => {
 							) }
 						</Subsection.HelperText>
 					</div>
-					<AppButton isSecondary onClick={ handleReclaimClick }>
+					<AppButton
+						isSecondary
+						loading={ loading }
+						onClick={ handleReclaimClick }
+					>
 						{ __( 'Reclaim my URL', 'google-listings-and-ads' ) }
 					</AppButton>
 				</ContentButtonLayout>
