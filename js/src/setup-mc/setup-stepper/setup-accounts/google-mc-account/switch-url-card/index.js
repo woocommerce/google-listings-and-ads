@@ -8,6 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import AppButton from '.~/components/app-button';
+import AppTextButton from '.~/components/app-text-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
@@ -62,12 +63,6 @@ const SwitchUrlCard = ( props ) => {
 						</Subsection.HelperText>
 					</div>
 					<div className="buttons">
-						<AppButton onClick={ onSelectAnotherAccount }>
-							{ __(
-								'Select another account',
-								'google-listings-and-ads'
-							) }
-						</AppButton>
 						<AppButton
 							isSecondary
 							loading={ loading }
@@ -81,6 +76,14 @@ const SwitchUrlCard = ( props ) => {
 					</div>
 				</ContentButtonLayout>
 			</Section.Card.Body>
+			<Section.Card.Footer>
+				<AppTextButton isSecondary onClick={ onSelectAnotherAccount }>
+					{ __(
+						'Or, use a different Merchant Center account',
+						'google-listings-and-ads'
+					) }
+				</AppTextButton>
+			</Section.Card.Footer>
 		</Section.Card>
 	);
 };
