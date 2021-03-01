@@ -73,7 +73,9 @@ const useApiFetchCallback = ( options ) => {
 				...combinedOptions,
 				parse: false,
 			} );
-			const data = response.json && ( await response.json() );
+
+			const responseClone = response.clone();
+			const data = responseClone.json && ( await responseClone.json() );
 
 			dispatch( {
 				type: TYPES.FINISH,
@@ -87,8 +89,10 @@ const useApiFetchCallback = ( options ) => {
 				: response;
 		} catch ( e ) {
 			const response = e;
-			const error = response.json
-				? await response.json()
+
+			const responseClone = response.clone();
+			const error = responseClone.json
+				? await responseClone.json()
 				: new Error( 'No content body in fetch response.' );
 
 			dispatch( {
