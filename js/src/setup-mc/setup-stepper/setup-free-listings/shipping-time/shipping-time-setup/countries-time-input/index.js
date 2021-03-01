@@ -7,7 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppInputControl from '../../../../../../components/app-input-control';
+import AppInputControl from '.~/components/app-input-control';
 import More from '../../../components/more';
 import EditTimeButton from './edit-time-button';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';

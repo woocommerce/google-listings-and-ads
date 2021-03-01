@@ -8,7 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppDocumentationLink from '../../../../../components/app-documentation-link';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
 import AddTimeButton from './add-time-button';
 import CountriesTimeInput from './countries-time-input';

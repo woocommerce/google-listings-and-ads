@@ -18,7 +18,7 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import { recordSetupMCEvent } from '../../utils/recordEvent';
+import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import './index.scss';
 

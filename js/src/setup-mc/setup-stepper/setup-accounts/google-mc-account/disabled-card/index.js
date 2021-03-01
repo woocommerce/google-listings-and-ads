@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Section from '../../../../../wcdl/section';
+import Section from '.~/wcdl/section';
 import TitleButtonLayout from '../../title-button-layout';
 
 const DisabledCard = () => {

@@ -7,8 +7,8 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useCountryKeyNameMap from '../../../../../../hooks/useCountryKeyNameMap';
-import AppInputControl from '../../../../../../components/app-input-control';
+import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
+import AppInputControl from '.~/components/app-input-control';
 import More from '../../../components/more';
 import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';

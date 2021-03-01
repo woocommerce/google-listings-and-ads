@@ -9,7 +9,7 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import AppDocumentationLink from '../components/app-documentation-link';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 
 const recordToggleEvent = ( id, isOpened ) => {
 	recordEvent( 'gla_get_started_faq', {

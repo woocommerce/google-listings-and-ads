@@ -9,9 +9,9 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '../../../../../../../../data';
-import AppModal from '../../../../../../../../components/app-modal';
-import AppInputControl from '../../../../../../../../components/app-input-control';
+import { STORE_KEY } from '.~/data';
+import AppModal from '.~/components/app-modal';
+import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
 import AudienceCountrySelect from '../../../../../components/audience-country-select';
 import './index.scss';

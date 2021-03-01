@@ -6,7 +6,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '../data';
+import { STORE_KEY } from '.~/data';
 
 /**
  * Get the supported countries from API. Returns `{ loading, data }`.
