@@ -146,18 +146,7 @@ class ProductRepository implements Service {
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
 	public function find_sync_ready_products( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = [
-			'relation' => 'OR',
-			[
-				'key'     => ProductMetaHandler::KEY_VISIBILITY,
-				'compare' => 'NOT EXISTS',
-			],
-			[
-				'key'     => ProductMetaHandler::KEY_VISIBILITY,
-				'compare' => '!=',
-				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
-			],
-		];
+		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
 
 		return $this->find( $args, $limit, $offset );
 	}
@@ -171,7 +160,16 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_sync_ready_product_ids( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = [
+		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_sync_ready_products_meta_query(): array {
+		return [
 			'relation' => 'OR',
 			[
 				'key'     => ProductMetaHandler::KEY_VISIBILITY,
@@ -181,6 +179,44 @@ class ProductRepository implements Service {
 				'key'     => ProductMetaHandler::KEY_VISIBILITY,
 				'compare' => '!=',
 				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+			],
+		];
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs nearly expired and ready to be re-submitted to Google Merchant Center.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_nearly_expired_product_ids( int $limit = - 1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			'relation' => 'AND',
+			[
+				'relation' => 'OR',
+				[
+					'key'     => ProductMetaHandler::KEY_VISIBILITY,
+					'compare' => 'NOT EXISTS',
+				],
+				[
+					'key'     => ProductMetaHandler::KEY_VISIBILITY,
+					'compare' => '!=',
+					'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+				],
+			],
+			[
+				'relation' => 'OR',
+				[
+					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
+					'compare' => 'NOT EXISTS',
+				],
+				[
+					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
+					'compare' => '<',
+					'value'   => strtotime( '-28 days' ),
+				],
 			],
 		];
 
