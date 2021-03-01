@@ -15,19 +15,15 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../content-button-layout';
-import AccountId from './account-id';
 
-const ReclaimUrlCard = () => {
+const ReclaimUrlCard = ( props ) => {
+	const { websiteUrl } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveMCAccount } = useAppDispatch();
 	const [ fetchClaimOverwrite, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/claim-overwrite`,
 		method: 'POST',
 	} );
-
-	// TODO:
-	const accountId = 123123123;
-	const url = 'http://www.colleenscookies.biz';
 
 	const handleReclaimClick = async () => {
 		try {
@@ -48,9 +44,6 @@ const ReclaimUrlCard = () => {
 	return (
 		<Section.Card>
 			<Section.Card.Body>
-				<Subsection.Title>
-					<AccountId id={ accountId } />
-				</Subsection.Title>
 				<ContentButtonLayout>
 					<div>
 						<Subsection.Title>
@@ -60,7 +53,7 @@ const ReclaimUrlCard = () => {
 									'google-listings-and-ads'
 								),
 								{
-									url: <span>{ url }</span>,
+									url: <span>{ websiteUrl }</span>,
 								}
 							) }
 						</Subsection.Title>

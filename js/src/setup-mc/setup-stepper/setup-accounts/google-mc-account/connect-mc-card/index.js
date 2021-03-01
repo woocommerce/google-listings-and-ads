@@ -52,7 +52,7 @@ const ConnectMCCard = () => {
 	}
 
 	if ( response && response.status === 403 ) {
-		return <ReclaimUrlCard />;
+		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
 	}
 
 	return (
