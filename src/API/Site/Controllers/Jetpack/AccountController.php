@@ -7,6 +7,7 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -81,10 +82,13 @@ class AccountController extends BaseController {
 				$result = $this->manager->register();
 
 				if ( is_wp_error( $result ) ) {
-					return [
-						'status'  => 'error',
-						'message' => $result->get_error_message(),
-					];
+					return new Response(
+						[
+							'status'  => 'error',
+							'message' => $result->get_error_message(),
+						],
+						400
+					);
 				}
 			}
 
