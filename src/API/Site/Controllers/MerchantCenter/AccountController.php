@@ -528,8 +528,8 @@ class AccountController extends BaseOptionsController {
 				$state['set_id']['status']          = MerchantAccountState::ACCOUNT_STEP_ERROR;
 				$this->mc_account_state->update( $state );
 
-				$clean_account_website_url = preg_replace( '#^https?://#', '', untrailingslashit( $account_website_url ) );
-				$clean_site_website_url    = preg_replace( '#^https?://#', '', untrailingslashit( $site_website_url ) );
+				$clean_account_website_url = $this->strip_url_protocol( $account_website_url );
+				$clean_site_website_url    = $this->strip_url_protocol( $site_website_url );
 
 				throw new ExceptionWithResponseData(
 					sprintf(
@@ -572,5 +572,16 @@ class AccountController extends BaseOptionsController {
 				'Retry-After' => $time_to_wait,
 			]
 		);
+	}
+
+	/**
+	 * Removes the protocol (http:// or https://) and trailing slash from the provided URL.
+	 *
+	 * @param string $url
+	 *
+	 * @return string
+	 */
+	private function strip_url_protocol( string $url ): string {
+		return preg_replace( '#^https?://#', '', untrailingslashit( $url ) );
 	}
 }
