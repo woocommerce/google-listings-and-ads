@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
@@ -6,8 +11,10 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import CreateAccountCard from './create-account-card';
 import CreatingCard from './creating-card';
 import ReclaimUrlCard from '../reclaim-url-card';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const CreateAccount = () => {
+	const { createNotice } = useDispatchCoreNotices();
 	const { receiveMCAccount } = useAppDispatch();
 	const [
 		fetchCreateMCAccount,
@@ -19,10 +26,21 @@ const CreateAccount = () => {
 
 	const handleCreateAccount = async () => {
 		try {
-			const data = await fetchCreateMCAccount();
+			const res = await fetchCreateMCAccount( { parse: false } );
+			const data = await res.json();
 
 			receiveMCAccount( data );
-		} catch ( e ) {}
+		} catch ( e ) {
+			if ( e.status !== 503 || e.status !== 403 ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to create Merchant Center account. Please try again later.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+		}
 	};
 
 	if ( loading || ( response && response.status === 503 ) ) {
