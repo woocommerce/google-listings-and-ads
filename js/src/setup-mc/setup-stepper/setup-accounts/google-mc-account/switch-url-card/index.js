@@ -49,10 +49,6 @@ const SwitchUrlCard = ( props ) => {
 					<div>
 						<Subsection.Title>{ message }</Subsection.Title>
 						<Subsection.HelperText>
-							{ __(
-								'If you switch your claimed URL to your new URL, you will lose your claim to the old one. This will cause any existing product listings tied to the old one to stop running.',
-								'google-listings-and-ads'
-							) }
 							{ createInterpolateElement(
 								__(
 									'If you switch your claimed URL to <newurl />, you will lose your claim to <claimedurl />. This will cause any existing product listings tied to <claimedurl /> to stop running.',
