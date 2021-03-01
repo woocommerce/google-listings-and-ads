@@ -14,7 +14,7 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
-import ContentButtonLayout from '../content-button-layout';
+import ContentButtonLayout from '../../content-button-layout';
 import ReclaimUrlFailCard from './reclaim-url-fail-card';
 
 const ReclaimUrlCard = ( props ) => {
