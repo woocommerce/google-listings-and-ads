@@ -21,7 +21,7 @@ const ConnectMCCard = () => {
 	const [ value, setValue ] = useState();
 	const [
 		fetchMCAccounts,
-		{ loading, error, response, options, reset },
+		{ loading, error, response, reset },
 	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts`,
 		method: 'POST',
@@ -42,8 +42,10 @@ const ConnectMCCard = () => {
 	if ( response && response.status === 409 ) {
 		return (
 			<SwitchUrlCard
-				id={ options.data.id }
+				id={ error.id }
 				message={ error.message }
+				claimedUrl={ error.claimed_url }
+				newUrl={ error.new_url }
 				onSelectAnotherAccount={ reset }
 			/>
 		);

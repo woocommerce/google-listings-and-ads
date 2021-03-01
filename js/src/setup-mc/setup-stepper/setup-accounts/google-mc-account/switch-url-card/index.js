@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,7 +17,13 @@ import AccountId from '../account-id';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
-	const { id, message, onSelectAnotherAccount = () => {} } = props;
+	const {
+		id,
+		message,
+		claimedUrl,
+		newUrl,
+		onSelectAnotherAccount = () => {},
+	} = props;
 	const { receiveMCAccount } = useAppDispatch();
 	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/switch-url`,
@@ -45,6 +52,16 @@ const SwitchUrlCard = ( props ) => {
 							{ __(
 								'If you switch your claimed URL to your new URL, you will lose your claim to the old one. This will cause any existing product listings tied to the old one to stop running.',
 								'google-listings-and-ads'
+							) }
+							{ createInterpolateElement(
+								__(
+									'If you switch your claimed URL to <newurl />, you will lose your claim to <claimedurl />. This will cause any existing product listings tied to <claimedurl /> to stop running.',
+									'google-listings-and-ads'
+								),
+								{
+									newurl: <span>{ newUrl }</span>,
+									claimedurl: <span>{ claimedUrl }</span>,
+								}
 							) }
 						</Subsection.HelperText>
 					</div>
