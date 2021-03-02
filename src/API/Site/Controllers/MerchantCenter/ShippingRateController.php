@@ -253,12 +253,6 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'country'      => [
-				'type'        => 'string',
-				'description' => __( 'Country in which the shipping rate applies.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
 			'country_code' => [
 				'type'              => 'string',
 				'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
@@ -318,5 +312,30 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 		$all_rates[ $rate_key ] = $rate;
 
 		return $all_rates;
+	}
+
+	/**
+	 * Retrieves all of the registered additional fields for a given object-type.
+	 *
+	 * @param string $object_type Optional. The object type.
+	 *
+	 * @return array Registered additional fields (if any), empty array if none or if the object type could
+	 *               not be inferred.
+	 */
+	protected function get_additional_fields( $object_type = null ): array {
+		$fields            = parent::get_additional_fields( $object_type );
+		$fields['country'] = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'Country in which the shipping rate applies.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'get_callback' => function( $fields ) {
+				return $this->iso3166_data_provider->alpha2( $fields['country_code'] )['name'];
+			},
+		];
+
+		return $fields;
 	}
 }
