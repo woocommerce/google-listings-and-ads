@@ -6,7 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -18,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class SettingsSyncController extends BaseController {
+
+	use WPErrorTrait;
 
 	/** @var Settings */
 	protected $settings;
@@ -56,15 +60,26 @@ class SettingsSyncController extends BaseController {
 	 */
 	protected function get_sync_endpoint_callback(): callable {
 		return function( Request $request ) {
-			$this->settings->sync_shipping();
+			try {
+				$this->settings->sync_shipping();
 
-			return new Response(
-				[
-					'status'  => 'success',
-					'message' => __( 'Successfully synchronized settings with Google.', 'google-listings-and-ads' ),
-				],
-				201
-			);
+				return new Response(
+					[
+						'status'  => 'success',
+						'message' => __( 'Successfully synchronized settings with Google.', 'google-listings-and-ads' ),
+					],
+					201
+				);
+			} catch ( Exception $e ) {
+				return $this->error_from_exception(
+					$e,
+					'gla_setting_sync_error',
+					[
+						'status'  => 500,
+						'message' => $e->getMessage(),
+					]
+				);
+			}
 		};
 	}
 

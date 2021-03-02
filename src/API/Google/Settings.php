@@ -7,10 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as Ra
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Google_Service_ShoppingContent as ShoppingService;
-use Google_Service_ShoppingContent_BusinessDayConfig;
 use Google_Service_ShoppingContent_DeliveryTime;
+use Google_Service_ShoppingContent_Price;
+use Google_Service_ShoppingContent_RateGroup as RateGroup;
 use Google_Service_ShoppingContent_Service;
 use Google_Service_ShoppingContent_ShippingSettings;
+use Google_Service_ShoppingContent_Value;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -63,7 +65,11 @@ class Settings {
 			$service = new Google_Service_ShoppingContent_Service();
 			$service->setActive( true );
 			$service->setDeliveryCountry( $country );
-			$service->setCurrency( $shipping_rate['currency'] );
+			$service->setRateGroups(
+				[
+					$this->create_rate_group_object( $shipping_rate['currency'], $shipping_rate['rate'] ),
+				]
+			);
 
 			if ( array_key_exists( $country, $times ) ) {
 				$service->setDeliveryTime( $this->create_time_object( intval( $times[ $country ] ) ) );
@@ -76,7 +82,8 @@ class Settings {
 
 		/** @var ShoppingService $content_service */
 		$content_service = $this->container->get( ShoppingService::class );
-		$result          = $content_service->shippingsettings->update(
+
+		return $content_service->shippingsettings->update(
 			$merchant_id,
 			$account_id,
 			$settings
@@ -109,5 +116,27 @@ class Settings {
 		$time->setMaxTransitTimeInDays( $delivery_days );
 
 		return $time;
+	}
+
+	/**
+	 * Create a rate group object for the shopping settings.
+	 *
+	 * @param string $currency
+	 * @param mixed  $rate
+	 *
+	 * @return RateGroup
+	 */
+	protected function create_rate_group_object( string $currency, $rate ): RateGroup {
+		$price = new Google_Service_ShoppingContent_Price();
+		$price->setCurrency( $currency );
+		$price->setValue( $rate );
+
+		$value = new Google_Service_ShoppingContent_Value();
+		$value->setFlatRate( $price );
+
+		$rate_group = new RateGroup();
+		$rate_group->setSingleValue( $value );
+
+		return $rate_group;
 	}
 }
