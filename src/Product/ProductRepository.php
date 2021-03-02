@@ -191,7 +191,7 @@ class ProductRepository implements Service {
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_nearly_expired_product_ids( int $limit = - 1, int $offset = 0 ): array {
+	public function find_expiring_product_ids( int $limit = - 1, int $offset = 0 ): array {
 		$args['meta_query'] = [
 			'relation' => 'AND',
 			[
