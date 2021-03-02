@@ -3,6 +3,7 @@
  */
 import {
 	fetchShippingRates,
+	fetchShippingTimes,
 	fetchSettings,
 	fetchJetpackAccount,
 	fetchGoogleAccount,
@@ -14,6 +15,10 @@ import {
 
 export function* getShippingRates() {
 	yield fetchShippingRates();
+}
+
+export function* getShippingTimes() {
+	yield fetchShippingTimes();
 }
 
 export function* getSettings() {

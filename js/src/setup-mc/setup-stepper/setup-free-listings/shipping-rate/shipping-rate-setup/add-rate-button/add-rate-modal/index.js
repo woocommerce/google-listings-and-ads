@@ -4,22 +4,21 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '.~/data';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
+import { useAppDispatch } from '.~/data';
 import VerticalGapLayout from '../../../../components/vertical-gap-layout';
 import AudienceCountrySelect from '../../../../components/audience-country-select';
-import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
-	const { upsertShippingRate } = useDispatch( STORE_KEY );
+	const { upsertShippingRate } = useAppDispatch();
 	const { code } = useStoreCurrency();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 

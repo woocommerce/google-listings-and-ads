@@ -99,6 +99,84 @@ export function* deleteShippingRate( countryCode ) {
 	}
 }
 
+export function* fetchShippingTimes() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times`,
+		} );
+
+		const shippingTimes = Object.values( response ).map( ( el ) => {
+			return {
+				countryCode: el.country_code,
+				time: el.time,
+			};
+		} );
+
+		return {
+			type: TYPES.RECEIVE_SHIPPING_TIMES,
+			shippingTimes,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading shipping times.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* upsertShippingTime( shippingTime ) {
+	const { countryCode, time } = shippingTime;
+
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times`,
+			method: 'POST',
+			data: {
+				country_code: countryCode,
+				time,
+			},
+		} );
+
+		return {
+			type: TYPES.UPSERT_SHIPPING_TIME,
+			shippingTime,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to add / update shipping time.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* deleteShippingTime( countryCode ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times/${ countryCode }`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DELETE_SHIPPING_TIME,
+			countryCode,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to delete shipping time.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchSettings() {
 	try {
 		const response = yield apiFetch( {

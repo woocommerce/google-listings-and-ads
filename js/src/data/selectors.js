@@ -2,6 +2,10 @@ export const getShippingRates = ( state ) => {
 	return state.mc.shipping.rates;
 };
 
+export const getShippingTimes = ( state ) => {
+	return state.mc.shipping.times;
+};
+
 export const getSettings = ( state ) => {
 	return state.mc.settings;
 };
