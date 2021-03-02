@@ -82,12 +82,15 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				);
 			}
 
-			return [
-				'country_code'      => $recommendation[0]['country'],
-				'currency'          => $recommendation[0]['currency'],
-				'daily_budget_low'  => $recommendation[0]['daily_budget_low'],
-				'daily_budget_high' => $recommendation[0]['daily_budget_high'],
-			];
+			return $this->prepare_item_for_response(
+				[
+					'country_code'      => $recommendation[0]['country'],
+					'currency'          => $recommendation[0]['currency'],
+					'daily_budget_low'  => $recommendation[0]['daily_budget_low'],
+					'daily_budget_high' => $recommendation[0]['daily_budget_high'],
+				],
+				$request
+			);
 		};
 	}
 
@@ -98,39 +101,33 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'      => [
-				'type'        => 'integer',
-				'description' => __( 'ID number.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'name'    => [
-				'type'              => 'string',
-				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
-			],
-			'status'  => [
-				'type'              => 'string',
-				'enum'              => CampaignStatus::labels(),
-				'description'       => __( 'Campaign status.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'amount'  => [
-				'type'              => 'number',
-				'description'       => __( 'Budget amount in the local currency.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
-			],
-			'country' => [
+			'country_code'      => [
 				'type'              => 'string',
 				'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
+				'context'           => [ 'view' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
+				'required'          => true,
+			],
+			'currency'          => [
+				'type'              => 'string',
+				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
+				'context'           => [ 'view' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
+			],
+			'daily_budget_low'  => [
+				'type'              => 'number',
+				'description'       => __( 'The lower limit for the recommended budget.', 'google-listings-and-ads' ),
+				'context'           => [ 'view' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
+			],
+			'daily_budget_high' => [
+				'type'              => 'number',
+				'description'       => __( 'The upper limit for the recommended budget.', 'google-listings-and-ads' ),
+				'context'           => [ 'view' ],
+				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
 		];
