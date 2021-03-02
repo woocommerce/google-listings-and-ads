@@ -100,7 +100,6 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_budget_recommendation_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-//					'args'                => $this->get_schema_properties(),
 				],
 			]
 		);
@@ -232,17 +231,30 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
 			$country        = $request->get_param( 'country_code' );
-			$recommendation = $this->budget_recommendation_query->where( 'country', $country )->get_results();
+			$currency       = get_option( 'woocommerce_currency' );
+			$recommendation = $this
+				->budget_recommendation_query
+				->where( 'country', $country )
+				->where( 'currency', $currency )
+				->get_results();
 
-			return $this->prepare_item_for_response(
-				[
-					'country_code'      => $recommendation['country'],
-					'currency'          => $recommendation['currency'],
-					'daily_budget_low'  => $recommendation['daily_budget_low'],
-					'daily_budget_high' => $recommendation['daily_budget_high'],
-				],
-				$request
-			);
+			if ( ! $recommendation || 1 !== count( $recommendation ) ) {
+				return new Response(
+					[
+						'message'      => __( 'Invalid country/currency combination', 'google-listings-and-ads' ),
+						'country_code' => $country,
+						'currency'     => $currency,
+					],
+					400
+				);
+			}
+
+			return [
+				'country_code'      => $recommendation[0]['country'],
+				'currency'          => $recommendation[0]['currency'],
+				'daily_budget_low'  => $recommendation[0]['daily_budget_low'],
+				'daily_budget_high' => $recommendation[0]['daily_budget_high'],
+			];
 		};
 	}
 
