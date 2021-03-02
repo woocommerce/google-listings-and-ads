@@ -3,7 +3,7 @@
  * Plugin Name: Google Listings and Ads
  * Plugin URL: https://woocommerce.com/
  * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
- * Version: 0.2.0
+ * Version: 0.2.1
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-listings-and-ads
@@ -25,7 +25,7 @@ use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GLA_VERSION', '0.2.0' ); // WRCS: DEFINED_VERSION.
+define( 'GLA_VERSION', '0.2.1' ); // WRCS: DEFINED_VERSION.
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
