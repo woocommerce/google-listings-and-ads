@@ -251,6 +251,10 @@ abstract class Query implements QueryInterface {
 				$value = "'{$this->wpdb->_escape( $where['value'] )}'";
 			}
 
+			if ( count( $where_pieces ) > 1 ) {
+				$where_pieces[] = 'AND';
+			}
+
 			$where_pieces[] = "{$column} {$compare} {$value}";
 		}
 
