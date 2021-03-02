@@ -47,7 +47,7 @@ const CountryNames = ( props ) => {
 	return (
 		<span>
 			<strong>{ firstCountryNames.join( ', ' ) }</strong>
-			<More count={ countries.length - firstN } />
+			<More count={ countries.length - firstCountryNames.length } />
 		</span>
 	);
 };
