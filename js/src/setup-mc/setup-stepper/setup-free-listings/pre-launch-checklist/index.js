@@ -9,9 +9,9 @@ import { CheckboxControl } from '@wordpress/components';
  * Internal dependencies
  */
 
-import HelpPopover from '../../../../components/help-popover';
-import AppDocumentationLink from '../../../../components/app-documentation-link';
-import Section from '../../../../wcdl/section';
+import HelpPopover from '.~/components/help-popover';
+import AppDocumentationLink from '.~/components/app-documentation-link';
+import Section from '.~/wcdl/section';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import './index.scss';
 

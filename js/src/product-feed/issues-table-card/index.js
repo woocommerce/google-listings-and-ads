@@ -7,11 +7,11 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import EditProductLink from '../../components/edit-product-link';
-import HelpPopover from '../../components/help-popover';
-import AppTableCard from '../../components/app-table-card';
-import WarningIcon from '../../components/warning-icon';
-import AppDocumentationLink from '../../components/app-documentation-link';
+import EditProductLink from '.~/components/edit-product-link';
+import HelpPopover from '.~/components/help-popover';
+import AppTableCard from '.~/components/app-table-card';
+import WarningIcon from '.~/components/warning-icon';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 
 const headers = [
 	{

@@ -8,7 +8,7 @@ import { useDebouncedCallback } from 'use-debounce';
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '../../../../../../data';
+import { STORE_KEY } from '.~/data';
 import CountriesPriceInput from '../countries-price-input';
 
 const CountriesPriceInputForm = ( props ) => {

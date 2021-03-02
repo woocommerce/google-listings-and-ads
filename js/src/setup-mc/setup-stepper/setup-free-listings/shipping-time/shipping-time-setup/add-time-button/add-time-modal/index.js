@@ -8,8 +8,8 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import AppModal from '../../../../../../../components/app-modal';
-import AppInputControl from '../../../../../../../components/app-input-control';
+import AppModal from '.~/components/app-modal';
+import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '../../../../components/vertical-gap-layout';
 import AudienceCountrySelect from '../../../../components/audience-country-select';
 

@@ -8,7 +8,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import AppTableCard from '../../components/app-table-card';
+import AppTableCard from '.~/components/app-table-card';
 import RemoveProgramButton from './remove-program-button';
 import EditProgramLink from './edit-program-link';
 import PauseProgramButton from './pause-program-button';
