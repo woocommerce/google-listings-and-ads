@@ -11,10 +11,20 @@ import useTargetAudience from '.~/hooks/useTargetAudience';
 import StepContent from '.~/components/edit-program/step-content';
 import StepContentHeader from '.~/components/edit-program/step-content-header';
 import FormContent from './form-content';
-import '.~/components/edit-program/free-listings/choose-audience/index.scss';
+import './index.scss';
 
+/**
+ * Form to choose audience for free listings.
+ *
+ * To be used in onboardign and further editing.
+ * Does not provide any save strategy, this is to be bound externaly.
+ *
+ * @param {Object} props
+ * @param {string} props.stepHeader Header text to indicate the step number.
+ * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
+ */
 const ChooseAudience = ( props ) => {
-	const { onContinue = () => {} } = props;
+	const { onContinue = () => {}, stepHeader } = props;
 	const { data } = useTargetAudience();
 
 	const handleValidate = () => {
@@ -25,15 +35,11 @@ const ChooseAudience = ( props ) => {
 		return errors;
 	};
 
-	const handleSubmitCallback = () => {
-		onContinue();
-	};
-
 	return (
 		<div className="gla-choose-audience">
 			<StepContent>
 				<StepContentHeader
-					step={ __( 'STEP TWO', 'google-listings-and-ads' ) }
+					step={ stepHeader }
 					title={ __(
 						'Choose your audience',
 						'google-listings-and-ads'
@@ -52,7 +58,7 @@ const ChooseAudience = ( props ) => {
 							countries: data.countries || [],
 						} }
 						validate={ handleValidate }
-						onSubmitCallback={ handleSubmitCallback }
+						onSubmitCallback={ onContinue }
 					>
 						{ ( formProps ) => {
 							return <FormContent formProps={ formProps } />;

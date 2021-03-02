@@ -14,16 +14,13 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import StepContentFooter from '.~/components/edit-program/step-content-footer';
-import SupportedCountrySelect from '.~/components/edit-program/free-listings/choose-audience/supported-country-select';
+import SupportedCountrySelect from './supported-country-select';
 import VerticalGapLayout from '.~/components/edit-program/vertical-gap-layout';
-import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
 
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
-
-	useAutoSaveTargetAudienceEffect( values );
 
 	return (
 		<>

@@ -11,7 +11,7 @@ import GridiconChevronLeft from 'gridicons/dist/chevron-left';
  */
 import FullContainer from '.~/components/full-container';
 import SetupFreeListings from '../setup-mc/setup-stepper/setup-free-listings';
-import ChooseAudience from '../setup-mc/setup-stepper/choose-audience';
+import ChooseAudience from '.~/components/edit-program/free-listings/choose-audience';
 import './index.scss';
 
 /**
@@ -26,7 +26,7 @@ export default function EditFreeCampaign() {
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath( {}, '/google/dashboard' );
 
-	const handleChooseAudienceContinue = () => {
+	const handleChooseAudienceContinue = (/* formData */) => {
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
 	};
 
@@ -63,6 +63,10 @@ export default function EditFreeCampaign() {
 						),
 						content: (
 							<ChooseAudience
+								stepHeader={ __(
+									'STEP ONE',
+									'google-listings-and-ads'
+								) }
 								onContinue={ handleChooseAudienceContinue }
 							/>
 						),
