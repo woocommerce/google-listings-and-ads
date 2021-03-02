@@ -290,31 +290,6 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	}
 
 	/**
-	 * Process a new rate and add it to the other rates.
-	 *
-	 * @param array  $all_rates Array of all rates.
-	 * @param string $rate_key  The rate key.
-	 * @param array  $raw_data  Raw data to process.
-	 *
-	 * @return array
-	 */
-	protected function process_new_rate( array $all_rates, string $rate_key, array $raw_data ): array {
-		// Specifically call the schema method from this class.
-		$schema = self::get_schema_properties();
-
-		$rate = $all_rates[ $rate_key ] ?? [];
-		foreach ( $schema as $key => $property ) {
-			$rate[ $key ] = $raw_data[ $key ] ?? $rate[ $key ] ?? $property['default'] ?? null;
-		}
-
-		// todo: translate the country using WC_Countries class
-		$rate['country']        = $this->iso3166_data_provider->alpha2( $rate_key )['name'];
-		$all_rates[ $rate_key ] = $rate;
-
-		return $all_rates;
-	}
-
-	/**
 	 * Retrieves all of the registered additional fields for a given object-type.
 	 *
 	 * @param string $object_type Optional. The object type.
