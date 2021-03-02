@@ -33,19 +33,13 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected $ads;
 
 	/**
-	 * @var BudgetRecommendationQuery
-	 */
-	protected $budget_recommendation_query;
-
-	/**
 	 * BaseController constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->ads                         = $container->get( Ads::class );
-		$this->budget_recommendation_query = $container->get( BudgetRecommendationQuery::class );
+		$this->ads = $container->get( Ads::class );
 	}
 
 	/**
@@ -90,17 +84,6 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
-			]
-		);
-
-		$this->register_route(
-			'ads/campaigns/budget-recommendation/(?P<country_code>\\w{2})',
-			[
-				[
-					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_budget_recommendation_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-				],
 			]
 		);
 	}
@@ -222,39 +205,6 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
-		};
-	}
-
-	/**
-	 * @return callable
-	 */
-	protected function get_budget_recommendation_callback(): callable {
-		return function( Request $request ) {
-			$country        = $request->get_param( 'country_code' );
-			$currency       = get_option( 'woocommerce_currency' );
-			$recommendation = $this
-				->budget_recommendation_query
-				->where( 'country', $country )
-				->where( 'currency', $currency )
-				->get_results();
-
-			if ( ! $recommendation || 1 !== count( $recommendation ) ) {
-				return new Response(
-					[
-						'message'      => __( 'Invalid country/currency combination', 'google-listings-and-ads' ),
-						'country_code' => $country,
-						'currency'     => $currency,
-					],
-					400
-				);
-			}
-
-			return [
-				'country_code'      => $recommendation[0]['country'],
-				'currency'          => $recommendation[0]['currency'],
-				'daily_budget_low'  => $recommendation[0]['daily_budget_low'],
-				'daily_budget_high' => $recommendation[0]['daily_budget_high'],
-			];
 		};
 	}
 
