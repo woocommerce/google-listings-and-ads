@@ -48,24 +48,34 @@ const CountriesTimeInput = ( props ) => {
 						<div>
 							{ createInterpolateElement(
 								__(
-									`Shipping time for <countries /><more />`,
+									`Shipping time for <countries />`,
 									'google-listings-and-ads'
 								),
 								{
 									countries: (
-										<strong>
+										<>
 											{ selectedCountryCodes.length ===
-											countries.length
-												? __(
+											countries.length ? (
+												<strong>
+													{ __(
 														`all countries`,
 														'google-listings-and-ads'
-												  )
-												: firstCountryNames.join(
-														', '
-												  ) }
-										</strong>
+													) }
+												</strong>
+											) : (
+												<span>
+													<strong>
+														{ firstCountryNames.join(
+															', '
+														) }
+													</strong>
+													<More
+														count={ remainingCount }
+													/>
+												</span>
+											) }
+										</>
 									),
-									more: <More count={ remainingCount } />,
 								}
 							) }
 						</div>
