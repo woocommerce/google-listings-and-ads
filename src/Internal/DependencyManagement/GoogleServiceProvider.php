@@ -117,8 +117,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack->remove( 'http_errors' );
 
 			try {
-				$auth_header = $this->generate_auth_header();
-				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
+				$handler_stack->push( $this->add_auth_header() );
 			} catch ( WPError $error ) {
 				do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in register_guzzle()' );
 				throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
@@ -177,16 +176,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 	}
 
+
 	/**
-	 * @param string $header
-	 * @param string $value
-	 *
 	 * @return callable
 	 */
-	protected function add_header( string $header, string $value ): callable {
-		return function( callable $handler ) use ( $header, $value ) {
-			return function( RequestInterface $request, array $options ) use ( $handler, $header, $value ) {
-				$request = $request->withHeader( $header, $value );
+	protected function add_auth_header(): callable {
+		return function( callable $handler ) {
+			return function( RequestInterface $request, array $options ) use ( $handler ) {
+				$request = $request->withHeader( 'Authorization', $this->generate_auth_header() );
 
 				return $handler( $request, $options );
 			};
