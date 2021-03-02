@@ -19,7 +19,7 @@ const SetupStepper = () => {
 
 	// if there is no savedStep in the database,
 	// savedStep is returned as `false` from the API call.
-	return <SavedSetupStepper savedStep={ savedStep || '1' } />;
+	return <SavedSetupStepper savedStep={ '2' || savedStep || '1' } />;
 };
 
 export default SetupStepper;
