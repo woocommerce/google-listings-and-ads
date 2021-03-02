@@ -10,28 +10,18 @@ import { createInterpolateElement } from '@wordpress/element';
 import AppInputControl from '.~/components/app-input-control';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
-import More from '../../../components/more';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
-
-const firstN = 5;
+import CountryNames from '../../../components/country-names';
 
 const CountriesTimeInput = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, time } = value;
-
-	const keyNameMap = useCountryKeyNameMap();
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
 	if ( ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
-
-	const firstCountryNames = countries
-		.slice( 0, firstN )
-		.map( ( c ) => keyNameMap[ c ] );
-	const remainingCount = countries.length - firstCountryNames.length;
 
 	const handleChange = ( v ) => {
 		onChange( {
@@ -53,28 +43,7 @@ const CountriesTimeInput = ( props ) => {
 								),
 								{
 									countries: (
-										<>
-											{ selectedCountryCodes.length ===
-											countries.length ? (
-												<strong>
-													{ __(
-														`all countries`,
-														'google-listings-and-ads'
-													) }
-												</strong>
-											) : (
-												<span>
-													<strong>
-														{ firstCountryNames.join(
-															', '
-														) }
-													</strong>
-													<More
-														count={ remainingCount }
-													/>
-												</span>
-											) }
-										</>
+										<CountryNames countries={ countries } />
 									),
 								}
 							) }
