@@ -57,6 +57,63 @@ const shouldReturnResponseBody = ( options ) => {
 	return parse;
 };
 
+/**
+ * Hook to make a WordPress API request and handle HTTP status codes.
+ *
+ * ## Motivation
+ *
+ * Handling the status code with `wp-data` would require a store structure for the status code *and*
+ * the response body. Also, the HTTP response status code and data are ephemeral intermediary data
+ * to decide the next action. We don’t need it for the whole application lifetime.
+ * Storing it into wp-data store seems unnecessary.
+ *
+ * ## Example
+ *
+ * ```jsx
+ * const [ fetchMCAccountSwitchUrl, { loading, response } ] = useApiFetchCallback( {
+ * 	path: `/wc/gla/mc/accounts/switch-url`,
+ * 	method: 'POST',
+ * 	data: { id },
+ * } );
+ *
+ * const handleSwitch = async () => {
+ *         // make the apiFetch call here.
+ *         // account is the response body.
+ *         // you can provide option in the function call and it will be merged with the original option.
+ * 	const account = await fetchMCAccountSwitchUrl();
+ *
+ * 	receiveMCAccount( account );
+ * };
+ *
+ * if (response.status === 403) {
+ *     return (
+ *         <span>Oops, HTTP status 403.</span>
+ *     )
+ * }
+ *
+ * return (
+ *     <AppButton
+ *         isSecondary
+ *         loading={ loading }  // show loading indicator when loading is true.
+ *         onClick={ handleSwitch }
+ *     >
+ *         { __(
+ *             'Switch to my new URL',
+ *             'google-listings-and-ads'
+ *         ) }
+ *     </AppButton>
+ * )
+ * ```
+ *
+ * @param {module:wordpress/api-fetch.APIFetchOptions} [options] options to be forwarded to `apiFetch`.
+ *
+ * @return {Array} `[ apiFetchCallback, fetchResult ]`
+ * 		- `apiFetchCallback` is the function to be called to trigger `apiFetch`.
+ * 							You call apiFetchCallback in your event handler.
+ * 		- `fetchResult` is an object containing things about the `apiFetchCallback` that you called:
+ * 							`{ loading, error, data, response, options, reset }`.
+ * 							`reset` is a function to reset things to initial state (clearing error, data, response and options).
+ */
 const useApiFetchCallback = ( options ) => {
 	const [ state, dispatch ] = useReducer( reducer, initialState );
 
