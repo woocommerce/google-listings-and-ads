@@ -180,7 +180,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				try {
 					$request = $request->withHeader( 'Authorization', $this->generate_auth_header() );
 				} catch ( WPError $error ) {
-					do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in register_guzzle()' );
+					do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in add_auth_header()' );
 					throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 				}
 
