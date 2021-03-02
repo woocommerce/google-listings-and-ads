@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Section from '../../../../wcdl/section';
+import Section from '.~/wcdl/section';
 import CardContent from './card-content';
 
 const WordPressDotComAccount = () => {

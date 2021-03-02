@@ -112,11 +112,23 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 
 		// Fields are expected to be an array with a 'get_callback' callable that returns the field value.
 		$fields['locale']   = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'The locale for the site.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
 			'get_callback' => function() use ( $locale ) {
 				return $locale;
 			},
 		];
 		$fields['language'] = [
+			'schema'       => [
+				'type'        => 'string',
+				'description' => __( 'The language to use for product listings.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
 			'get_callback' => function() use ( $locale ) {
 				return Locale::getDisplayLanguage( $locale, $locale );
 			},
@@ -152,18 +164,6 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'language'  => [
-				'type'        => 'string',
-				'description' => __( 'The language to use for product listings.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
-			'locale'    => [
-				'type'        => 'string',
-				'description' => __( 'The locale for the site.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
 			'location'  => [
 				'type'              => 'string',
 				'description'       => __( 'Location where products will be shown.', 'google-listings-and-ads' ),

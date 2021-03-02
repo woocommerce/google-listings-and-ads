@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { recordTableHeaderToggleEvent } from '../../utils/recordEvent';
+import { recordTableHeaderToggleEvent } from '.~/utils/recordEvent';
 
 const recordColumnToggleEvent = ( trackEventReportId, shown, toggled ) => {
 	const status = shown.includes( toggled ) ? 'on' : 'off';

@@ -8,7 +8,7 @@ import { updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import getDateQuery from './getDateQuery';
-import { recordDatepickerUpdateEvent } from '../../utils/recordEvent';
+import { recordDatepickerUpdateEvent } from '.~/utils/recordEvent';
 
 const isoDateFormat = 'YYYY-MM-DD';
 

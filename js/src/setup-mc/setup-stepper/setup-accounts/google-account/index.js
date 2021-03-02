@@ -6,8 +6,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Section from '../../../../wcdl/section';
-import DisabledDiv from '../../../../components/disabled-div';
+import Section from '.~/wcdl/section';
+import DisabledDiv from '.~/components/disabled-div';
 import CardContent from './card-content';
 
 const GoogleAccount = ( props ) => {
