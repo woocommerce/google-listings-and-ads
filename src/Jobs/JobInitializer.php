@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use DateTime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -60,7 +61,8 @@ class JobInitializer implements Registerable, Conditional {
 			}
 
 			if ( $job instanceof RecurringJobInterface && ! $this->action_scheduler->has_scheduled_action( $job->get_start_hook() ) ) {
-				$this->action_scheduler->schedule_immediate_recurring( $job->get_interval(), $job->get_start_hook() );
+				$recurring_date_time = new DateTime( 'tomorrow 3am', wp_timezone() );
+				$this->action_scheduler->schedule_recurring( $recurring_date_time->getTimestamp(), $job->get_interval(), $job->get_start_hook() );
 			}
 		}
 	}

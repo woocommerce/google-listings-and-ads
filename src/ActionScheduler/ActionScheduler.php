@@ -65,14 +65,15 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	/**
 	 * Schedule a recurring action to run now (i.e. in the next available batch), and in the given intervals.
 	 *
+	 * @param int    $timestamp           When the job will run.
 	 * @param int    $interval_in_seconds How long to wait between runs.
 	 * @param string $hook                The hook to trigger.
 	 * @param array  $args                Arguments to pass when the hook triggers.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_immediate_recurring( int $interval_in_seconds, string $hook, array $args = [] ): int {
-		return as_schedule_recurring_action( gmdate( 'U' ) - 1, $interval_in_seconds, $hook, $args, $this->get_slug() );
+	public function schedule_recurring( int $timestamp, int $interval_in_seconds, string $hook, array $args = [] ): int {
+		return as_schedule_recurring_action( $timestamp, $interval_in_seconds, $hook, $args, $this->get_slug() );
 	}
 
 	/**
