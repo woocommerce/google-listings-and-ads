@@ -53,12 +53,12 @@ const ChooseAudience = ( props ) => {
 						} }
 						validate={ handleValidate }
 						onSubmitCallback={ handleSubmitCallback }
-								>
+					>
 						{ ( formProps ) => {
 							return <FormContent formProps={ formProps } />;
 						} }
 					</Form>
-								) }
+				) }
 			</StepContent>
 		</div>
 	);
