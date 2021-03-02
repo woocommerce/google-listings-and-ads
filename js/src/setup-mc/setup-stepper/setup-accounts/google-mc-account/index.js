@@ -6,26 +6,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Section from '../../../../wcdl/section';
-import DisabledDiv from '../../../../components/disabled-div';
-import CreateAccountCard from './create-account-card';
-import ConnectMCCard from './connect-mc-card';
-import DisabledCard from './disabled-card';
+import Section from '.~/wcdl/section';
+import DisabledDiv from '.~/components/disabled-div';
+import SectionContent from './section-content';
 
 const GoogleMCAccount = ( props ) => {
 	const { disabled = false } = props;
-
-	// TODO: check whether user already has MC Account.
-	const hasMCAccount = true;
-
-	let card;
-	if ( disabled ) {
-		card = <DisabledCard />;
-	} else if ( hasMCAccount ) {
-		card = <ConnectMCCard />;
-	} else {
-		card = <CreateAccountCard />;
-	}
 
 	return (
 		<DisabledDiv disabled={ disabled }>
@@ -39,7 +25,7 @@ const GoogleMCAccount = ( props ) => {
 					'google-listings-and-ads'
 				) }
 			>
-				{ card }
+				<SectionContent disabled={ disabled } />
 			</Section>
 		</DisabledDiv>
 	);

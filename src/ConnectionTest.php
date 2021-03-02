@@ -14,9 +14,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
@@ -136,7 +141,7 @@ class ConnectionTest implements Service, Registerable {
 					<th><label>WCS Server:</label></th>
 					<td>
 						<p>
-							<code><?php echo defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ? WOOCOMMERCE_CONNECT_SERVER_URL : 'http://localhost:5000'; ?></code>
+							<code><?php echo $this->container->get( 'connect_server_root' ); ?></code>
 						</p>
 					</td>
 				</tr>
@@ -284,9 +289,9 @@ class ConnectionTest implements Service, Registerable {
 									<button class="button">MC Account Setup (I & II)</button>
 								</p>
 
-								<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ) ) : ?>
-									<p class="description">
-										( Merchant Center connected -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
+								<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE ) ) : ?>
+									<p class="description" style="font-style: italic">
+										( Merchant Center account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
 										<?php foreach ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) : ?>
 											<?php echo $name . ':' . $step['status']; ?>
 										<?php endforeach; ?>
@@ -327,6 +332,24 @@ class ConnectionTest implements Service, Registerable {
 							<td>
 								<p>
 									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><a name="overwrite"></a>Switch URL:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php
+									echo esc_url( wp_nonce_url(
+											add_query_arg(
+												[
+													'action' => 'wcs-google-mc-switch-url',
+													'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url',site_url(), $url ),
+													'account_id' => $_GET['account_id'] ?? ''
+												]
+											),
+											'wcs-google-mc-switch-url'
+										) ); ?>" <?php echo ( $_GET['account_id'] ?? false ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Switch URL</a>
 								</p>
 							</td>
 						</tr>
@@ -413,8 +436,12 @@ class ConnectionTest implements Service, Registerable {
 							<th>Create Ads Customer:</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-create' ], $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer</a>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-create' ], $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer as a sub account</a>
 								</p>
+								<ol>
+									<li>Create account</li>
+									<li>Direct user to billing flow (not implemented yet)</li>
+								</ol>
 							</td>
 						</tr>
 						<tr>
@@ -424,7 +451,27 @@ class ConnectionTest implements Service, Registerable {
 									<label>
 										Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
 									</label>
-									<button class="button">Link Google Ads customer to a Merchant Account</button>
+									<button class="button">Link existing Google Ads customer to the site</button>
+								</p>
+								<ol>
+									<li>Link to manager account</li>
+									<li>Link to merchant account (not implemented yet)</li>
+								</ol>
+							</td>
+						</tr>
+						<tr>
+							<th>Check Ads Status:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-check' ], $url ), 'wcs-google-ads-check' ) ); ?>">Ads Connection Status</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th>Disconnect Ads:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'action' => 'wcs-google-ads-disconnect' ), $url ), 'wcs-google-ads-disconnect' ) ); ?>">Ads Disconnect</a>
 								</p>
 							</td>
 						</tr>
@@ -467,16 +514,18 @@ class ConnectionTest implements Service, Registerable {
 							<th>Sync Product:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-									<label>
-										Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
-									</label>
-									<button class="button">Sync Product with Google Merchant Center</button>
+						<label>
+							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" /></label>
+						</label>
+						<label for="async-sync-product">Async?</label>
+                        <input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+						<button class="button">Sync Product with Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-sync-product' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-product" type="hidden" />
 				</form>
@@ -486,29 +535,34 @@ class ConnectionTest implements Service, Registerable {
 							<th>Sync All Products:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-									<button class="button">Sync All Products with Google Merchant Center</button>
+									<label for="async-sync-all-products">Async?</label>
+									<input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+						            <button class="button">Sync All Products with Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-sync-all-products' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-all-products" type="hidden" />
-				</form>
+						</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
 							<th>Delete All Synced Products:</th>
 							<td>
 								<p>
-									<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
-									<button class="button">Delete All Synced Products from Google Merchant Center</button>
+									<label for="async-delete-synced-products">Async?</label>
+									<input id="async-delete-synced-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+									<button class="button">Delete All Synced Products from Google Merchant Center
+									</button>
 								</p>
 							</td>
 						</tr>
 					</table>
 					<?php wp_nonce_field( 'wcs-delete-synced-products' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-delete-synced-products" type="hidden" />
 				</form>
@@ -629,30 +683,15 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-ads-create' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-create' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/US/create-customer';
-			$args = [
-				'headers' => [
-					'Authorization' => $this->get_auth_header(),
-					'Content-Type'  => 'application/json',
-				],
-				'body'    => wp_json_encode(
-					[
-						'descriptive_name' => 'Connection test account at ' . date( 'Y-m-d h:i:s' ),
-						'currency_code'    => 'USD',
-						'time_zone'        => 'America/New_York',
-					]
-				),
-			];
+			try {
+				/** @var Proxy $proxy */
+				$proxy    = $this->container->get( Proxy::class );
+				$account_id = $proxy->create_ads_account();
 
-			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				$this->response .= $response->get_error_message();
-				return;
+				$this->response .= 'Created account: ' . $account_id . "\n";
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
 			}
-
-			$this->response .= wp_remote_retrieve_body( $response );
 		}
 
 		if ( 'wcs-google-ads-link' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-link' ) ) {
@@ -662,29 +701,29 @@ class ConnectionTest implements Service, Registerable {
 				return;
 			}
 
-			$id   = absint( $_GET['customer_id'] );
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/manager/link-customer';
-			$args = [
-				'headers' => [
-					'Authorization' => $this->get_auth_header(),
-					'Content-Type'  => 'application/json',
-				],
-				'body'    => wp_json_encode(
-					[
-						'client_customer' => $id,
-					]
-				),
-			];
+			try {
+				/** @var Proxy $proxy */
+				$proxy    = $this->container->get( Proxy::class );
+				$account_id = $proxy->link_ads_account( absint( $_GET['customer_id'] ) );
 
-			$this->response = 'POST ' . $url . "\n" . var_export( $args, true ) . "\n";
-
-			$response = wp_remote_post( $url, $args );
-			if ( is_wp_error( $response ) ) {
-				$this->response .= $response->get_error_message();
-				return;
+				$this->response .= 'Linked account: ' . $account_id . "\n";
+			} catch ( \Exception $e ) {
+				$this->response .= 'Error: ' . $e->getMessage();
 			}
+		}
 
-			$this->response .= wp_remote_retrieve_body( $response );
+		if ( 'wcs-google-ads-check' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-check' ) ) {
+			/** @var Proxy $proxy */
+			$proxy    = $this->container->get( Proxy::class );
+			$status = $proxy->get_connected_ads_account();
+			$this->response .= wp_json_encode( $status );
+		}
+
+		if ( 'wcs-google-ads-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-disconnect' ) ) {
+			/** @var Proxy $proxy */
+			$proxy    = $this->container->get( Proxy::class );
+			$status = $proxy->disconnect_ads_account();
+			$this->response .= 'Disconnected ads account' . "\n";
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
@@ -759,6 +798,18 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-mc-claim-overwrite' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-claim-overwrite' ) ) {
 			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
+			$response        = rest_do_request( $request );
+			$server          = rest_get_server();
+			$data            = $server->response_to_data( $response, false );
+			$json            = wp_json_encode( $data );
+			$this->response .= $response->get_status() . ' ' . $json;
+		}
+
+		if( 'wcs-google-mc-switch-url' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-switch-url' ) ) {
+			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
+			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
+			}
 			$response        = rest_do_request( $request );
 			$server          = rest_get_server();
 			$data            = $server->response_to_data( $response, false );
@@ -930,71 +981,95 @@ class ConnectionTest implements Service, Registerable {
 			$id      = absint( $_GET['product_id'] );
 			$product = wc_get_product( $id );
 
-			/** @var ProductSyncer $product_syncer */
-			$product_syncer = $this->container->get( ProductSyncer::class );
+			if ( $product instanceof \WC_Product ) {
+				if ( empty( $_GET['async'] ) ) {
+					/** @var ProductSyncer $product_syncer */
+					$product_syncer = $this->container->get( ProductSyncer::class );
 
-			try {
-				$result = $product_syncer->update( [ $product ] );
+					try {
+						$result = $product_syncer->update( [ $product ] );
 
-				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
-				if ( ! empty( $result->get_errors() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ( $result->get_errors() as  $invalid_product ) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
+						if ( ! empty( $result->get_errors() ) ) {
+							$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+							foreach ( $result->get_errors() as $invalid_product ) {
+								$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+							}
+						}
+					} catch ( ProductSyncerException $exception ) {
+						$this->response = 'Error submitting product to Google: ' . $exception->getMessage();
 					}
+				} else {
+					// schedule a job
+					/** @var UpdateProducts $update_job */
+					$update_job = $this->container->get( UpdateProducts::class );
+					$update_job->start( [ $product->get_id() ] );
+					$this->response = 'Successfully scheduled a job to sync the product ' . $product->get_id();
 				}
-			} catch ( ProductSyncerException $exception ) {
-				$this->response = 'Error submitting product to Google: ' . $exception->getMessage();
+			} else {
+				$this->response = 'Invalid product ID provided: ' . $id;
 			}
 		}
 
 		if ( 'wcs-sync-all-products' === $_GET['action'] && check_admin_referer( 'wcs-sync-all-products' ) ) {
-			/** @var ProductSyncer $product_syncer */
-			$product_syncer = $this->container->get( ProductSyncer::class );
+			if ( empty( $_GET['async'] ) ) {
+				/** @var ProductSyncer $product_syncer */
+				$product_syncer = $this->container->get( ProductSyncer::class );
+				/** @var ProductRepository $product_repository */
+				$product_repository = $this->container->get( ProductRepository::class );
 
-			try {
-				$products = wc_get_products(
-					[
-						'limit' => -1,
-					]
-				);
+				try {
+					$products = $product_repository->find_sync_ready_products();
 
-				$result = $product_syncer->update( $products );
+					$result = $product_syncer->update( $products );
 
-				$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
-				if ( ! empty( $result->get_errors() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ( $result->get_errors() as  $invalid_product ) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+					$this->response .= sprintf( '%s products successfully submitted to Google.', count( $result->get_products() ) ) . "\n";
+					if ( ! empty( $result->get_errors() ) ) {
+						$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+						foreach ( $result->get_errors() as  $invalid_product ) {
+							$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						}
 					}
+				} catch ( ProductSyncerException $exception ) {
+					$this->response = 'Error submitting products to Google: ' . $exception->getMessage();
 				}
-			} catch ( ProductSyncerException $exception ) {
-				$this->response = 'Error submitting products to Google: ' . $exception->getMessage();
+			} else {
+			    // schedule a job
+				/** @var UpdateAllProducts $update_job */
+				$update_job = $this->container->get( UpdateAllProducts::class );
+				$update_job->start();
+				$this->response = 'Successfully scheduled a job to sync all products!';
 			}
 		}
 
 		if ( 'wcs-delete-synced-products' === $_GET['action'] && check_admin_referer( 'wcs-delete-synced-products' ) ) {
-			/** @var ProductSyncer $product_syncer */
-			$product_syncer = $this->container->get( ProductSyncer::class );
+			if ( empty( $_GET['async'] ) ) {
+				/** @var ProductSyncer $product_syncer */
+				$product_syncer = $this->container->get( ProductSyncer::class );
+				/** @var ProductRepository $product_repository */
+				$product_repository = $this->container->get( ProductRepository::class );
 
-			try {
-				$products = wc_get_products(
-					[
-						'limit' => -1,
-					]
-				);
+				try {
+					$products = $product_repository->find_synced_products();
 
-				$result = $product_syncer->delete( $products );
+					$result = $product_syncer->delete( $products );
 
-				$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
-				if ( ! empty( $result->get_errors() ) ) {
-					$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
-					foreach ( $result->get_errors() as  $invalid_product ) {
-						$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+					$this->response .= sprintf( '%s synced products deleted from Google.', count( $result->get_products() ) ) . "\n";
+					if ( ! empty( $result->get_errors() ) ) {
+						$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+						foreach ( $result->get_errors() as $invalid_product ) {
+							$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						}
 					}
+				} catch ( ProductSyncerException $exception ) {
+					$this->response = 'Error deleting products from Google: ' . $exception->getMessage();
 				}
-			} catch ( ProductSyncerException $exception ) {
-				$this->response = 'Error deleting products from Google: ' . $exception->getMessage();
+			} else {
+				// schedule a job
+				/** @var DeleteAllProducts $delete_job */
+				$delete_job = $this->container->get( DeleteAllProducts::class );
+				$delete_job->start();
+				$this->response = 'Successfully scheduled a job to delete all synced products!';
 			}
 		}
 	}

@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { recordSetupMCEvent } from '../../utils/recordEvent';
+import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from './choose-audience';

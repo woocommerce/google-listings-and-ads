@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use WC_Product;
-use WC_Product_Variable;
+use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,31 +52,26 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * @param WC_Product $wc_product
+	 *
+	 * @return string
+	 */
+	public function get_visibility( WC_Product $wc_product ): string {
+		$visibility = $this->meta_handler->get_visibility( $wc_product->get_id() );
+		if ( $wc_product instanceof WC_Product_Variation ) {
+			// todo: we might need to define visibility per variation later.
+			$visibility = $this->meta_handler->get_visibility( $wc_product->get_parent_id() );
+		}
+
+		return $visibility;
+	}
+
+	/**
 	 * @param WC_Product $product
 	 *
 	 * @return WCProductAdapter
 	 */
 	public static function generate_adapted_product( WC_Product $product ): WCProductAdapter {
 		return new WCProductAdapter( [ 'wc_product' => $product ] );
-	}
-
-	/**
-	 * Fetch and return all of the available product variations next to the given products.
-	 *
-	 * @param WC_Product[] $products
-	 *
-	 * @return WC_Product[]
-	 */
-	public static function expand_variations( array $products ): array {
-		$all_products = [];
-		foreach ( $products as $product ) {
-			if ( $product instanceof WC_Product_Variable ) {
-				$all_products = array_merge( $all_products, $product->get_available_variations( 'objects' ) );
-			} else {
-				$all_products[] = $product;
-			}
-		}
-
-		return $all_products;
 	}
 }

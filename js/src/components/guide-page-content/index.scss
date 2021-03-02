@@ -1,0 +1,25 @@
+.gla-guide__page-content {
+	padding: 0 $grid-unit-30;
+
+	&__header {
+		margin: 0 0 $grid-unit-30;
+		line-height: 32px;
+		font-weight: 400;
+		font-size: 24px;
+		color: $gray-900;
+	}
+
+	&__body {
+		line-height: 24px;
+		font-size: 16px;
+		color: $gray-700;
+		> p {
+			line-height: inherit;
+			font-size: inherit;
+		}
+	}
+
+	&__link {
+		text-decoration: none;
+	}
+}

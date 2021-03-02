@@ -6,7 +6,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useDispatchOptions from '../../hooks/useDispatchOptions';
+import useDispatchOptions from '.~/hooks/useDispatchOptions';
 
 /**
  * @typedef {Object} UsePageStepResult

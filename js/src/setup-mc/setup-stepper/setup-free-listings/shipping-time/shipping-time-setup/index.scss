@@ -1,0 +1,15 @@
+.gla-shipping-time-setup {
+	margin-top: calc(var(--main-gap) / 2);
+
+	.countries-time {
+		margin-bottom: calc(var(--main-gap) / 2);
+
+		.countries-time-input-form {
+			max-width: 300px;
+		}
+	}
+
+	.add-time-button {
+		align-self: flex-start;
+	}
+}

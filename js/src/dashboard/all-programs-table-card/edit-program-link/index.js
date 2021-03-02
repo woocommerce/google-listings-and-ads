@@ -7,7 +7,7 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import TrackableLink from '../../../components/trackable-link';
+import TrackableLink from '.~/components/trackable-link';
 
 /**
  * Internal dependencies
