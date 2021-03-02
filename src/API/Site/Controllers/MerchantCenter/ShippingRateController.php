@@ -275,7 +275,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				'default'           => 'USD', // todo: default to store currency.
 			],
 			'rate'         => [
-				'type'              => 'integer',
+				'type'              => 'number',
 				'description'       => __( 'The shipping rate.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
