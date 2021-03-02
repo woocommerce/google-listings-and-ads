@@ -184,7 +184,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 					throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 				}
 
-
 				return $handler( $request, $options );
 			};
 		};
