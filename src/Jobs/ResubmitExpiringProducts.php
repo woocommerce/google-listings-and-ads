@@ -11,13 +11,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ResubmitExpiredProducts
+ * Class ResubmitExpiringProducts
  *
  * Resubmits all WooCommerce products that are nearly expired to Google Merchant Center.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class ResubmitExpiredProducts extends AbstractBatchedActionSchedulerJob implements RecurringJobInterface {
+class ResubmitExpiringProducts extends AbstractBatchedActionSchedulerJob implements RecurringJobInterface {
 
 	/**
 	 * @var ProductSyncer
@@ -54,7 +54,7 @@ class ResubmitExpiredProducts extends AbstractBatchedActionSchedulerJob implemen
 	 * @return string
 	 */
 	public function get_name(): string {
-		return 'resubmit_expired_products';
+		return 'resubmit_expiring_products';
 	}
 
 	/**
