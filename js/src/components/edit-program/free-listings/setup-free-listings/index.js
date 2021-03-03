@@ -11,7 +11,15 @@ import Hero from './hero';
 import useSettings from './useSettings';
 import FormContent from './form-content';
 
-const SetupFreeListings = () => {
+/**
+ * Form to configure free listings.
+ *
+ * Does not provide any save strategy, this is to be bound externaly.
+ *
+ * @param {Object} props
+ * @param {string} props.stepHeader Header text to indicate the step number.
+ */
+const SetupFreeListings = ( { stepHeader } ) => {
 	const { settings } = useSettings();
 
 	if ( ! settings ) {
@@ -31,7 +39,7 @@ const SetupFreeListings = () => {
 
 	return (
 		<div className="gla-setup-free-listings">
-			<Hero />
+			<Hero stepHeader={ stepHeader } />
 			{ /* TODO: 'shippingTimeOption-rows' should be removed, and use shipping time API instead. */ }
 			<Form
 				initialValues={ {

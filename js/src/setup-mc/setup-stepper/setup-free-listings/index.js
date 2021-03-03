@@ -11,7 +11,7 @@ import Hero from '.~/components/edit-program/free-listings/setup-free-listings/h
 import useSettings from '.~/components/edit-program/free-listings/setup-free-listings/useSettings';
 import FormContent from './form-content';
 
-const SetupFreeListings = () => {
+const SetupFreeListings = ( { stepHeader } ) => {
 	const { settings } = useSettings();
 
 	if ( ! settings ) {
@@ -31,7 +31,7 @@ const SetupFreeListings = () => {
 
 	return (
 		<div className="gla-setup-free-listings">
-			<Hero />
+			<Hero stepHeader={ stepHeader } />
 			{ /* TODO: 'shippingTimeOption-rows' should be removed, and use shipping time API instead. */ }
 			<Form
 				initialValues={ {
