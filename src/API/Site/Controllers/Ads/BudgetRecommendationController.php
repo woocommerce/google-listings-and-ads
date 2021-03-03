@@ -63,7 +63,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
 			$country        = $request->get_param( 'country_code' );
-			$currency       = get_option( 'woocommerce_currency' );
+			$currency       = get_woocommerce_currency();
 			$recommendation = $this
 				->budget_recommendation_query
 				->where( 'country', $country )
