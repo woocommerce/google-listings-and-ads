@@ -20,7 +20,7 @@ abstract class StatusMapping {
 	 * @return string
 	 */
 	public static function label( int $number ): string {
-		return isset( self::MAPPING[ $number ] ) ? self::MAPPING[ $number ] : '';
+		return isset( static::MAPPING[ $number ] ) ? static::MAPPING[ $number ] : '';
 	}
 
 	/**
@@ -31,7 +31,7 @@ abstract class StatusMapping {
 	 * @return int
 	 */
 	public static function number( string $label ): int {
-		$key = array_search( $label, self::MAPPING, true );
+		$key = array_search( $label, static::MAPPING, true );
 		return $key ?? 0;
 	}
 
@@ -41,6 +41,6 @@ abstract class StatusMapping {
 	 * @return array
 	 */
 	public static function labels(): array {
-		return array_values( self::MAPPING );
+		return array_values( static::MAPPING );
 	}
 }
