@@ -9,7 +9,7 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import AppInputControl from '.~/components/app-input-control';
-import More from '../../../components/more';
+import More from '.~/components/edit-program/free-listings/setup-free-listings/components/more';
 import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';

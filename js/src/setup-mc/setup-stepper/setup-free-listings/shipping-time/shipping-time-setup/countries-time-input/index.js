@@ -11,7 +11,7 @@ import AppInputControl from '.~/components/app-input-control';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
-import More from '../../../components/more';
+import More from '.~/components/edit-program/free-listings/setup-free-listings/components/more';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
 

@@ -12,7 +12,7 @@ import { useAppDispatch } from '.~/data';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/edit-program/vertical-gap-layout';
-import AudienceCountrySelect from '../../../../../components/audience-country-select';
+import AudienceCountrySelect from '.~/components/edit-program/free-listings/setup-free-listings/components/audience-country-select';
 import './index.scss';
 
 const EditRateModal = ( props ) => {
