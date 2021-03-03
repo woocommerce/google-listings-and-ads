@@ -48,8 +48,10 @@ export default function EditFreeCampaign() {
 					type="wc-admin"
 				>
 					<GridiconChevronLeft size={ 20 } />
-					{ __( 'Dashboard', 'google-listings-and-ads' ) }
 				</Link>
+				<span className="title">
+					{ __( 'Edit free listings', 'google-listings-and-ads' ) }
+				</span>
 			</div>
 			<Stepper
 				className="gla-setup-stepper"
