@@ -10,7 +10,7 @@ import GridiconChevronLeft from 'gridicons/dist/chevron-left';
  * Internal dependencies
  */
 import FullContainer from '.~/components/full-container';
-import SetupFreeListings from '.~/components/edit-program/free-listings/setup-free-listings';
+import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from '.~/components/edit-program/free-listings/choose-audience';
 import './index.scss';
 

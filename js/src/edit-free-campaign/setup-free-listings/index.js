@@ -7,8 +7,8 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
-import Hero from './hero';
-import useSettings from './useSettings';
+import Hero from '.~/components/edit-program/free-listings/setup-free-listings/hero';
+import useSettings from '.~/components/edit-program/free-listings/setup-free-listings/useSettings';
 import FormContent from './form-content';
 
 /**
@@ -50,11 +50,6 @@ const SetupFreeListings = ( { stepHeader } ) => {
 					'shippingTimeOption-rows': [],
 					share_shipping_time: settings.share_shipping_time,
 					tax_rate: settings.tax_rate,
-					website_live: settings.website_live,
-					checkout_process_secure: settings.checkout_process_secure,
-					payment_methods_visible: settings.payment_methods_visible,
-					refund_tos_visible: settings.refund_tos_visible,
-					contact_info_visible: settings.contact_info_visible,
 				} }
 				validate={ handleValidate }
 				onSubmitCallback={ handleSubmitCallback }
