@@ -101,19 +101,19 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	protected function get_schema_properties(): array {
 		return [
+			'currency'          => [
+				'type'              => 'string',
+				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
+				'context'           => [ 'view' ],
+				'validate_callback' => 'rest_validate_request_arg',
+				'required'          => true,
+			],
 			'country_code'      => [
 				'type'              => 'string',
 				'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
-				'required'          => true,
-			],
-			'currency'          => [
-				'type'              => 'string',
-				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
 			'daily_budget_low'  => [
