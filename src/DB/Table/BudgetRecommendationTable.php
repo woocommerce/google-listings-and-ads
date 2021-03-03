@@ -94,6 +94,7 @@ SQL;
 			$sql  = "INSERT INTO `{$this->get_sql_safe_name()}` (currency,country,daily_budget_low,daily_budget_high) VALUES\n";
 			$sql .= implode( ",\n", $placeholders );
 
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$this->wpdb->query( $this->wpdb->prepare( $sql, $values ) );
 		}
 	}
