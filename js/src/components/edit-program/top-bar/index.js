@@ -18,8 +18,9 @@ import './index.scss';
  * @param {Function} props.onBackButtonClick
  * @param {Function} props.children Additional elements to be put in the top bar.
  * @param {string} props.backHref Href for the back button.
+ * @param {string} props.title
  */
-const TopBar = ( { onBackButtonClick, children, backHref } ) => {
+const TopBar = ( { onBackButtonClick, children, backHref, title } ) => {
 	return (
 		<div className="gla-setup-mc-top-bar">
 			<Link
@@ -30,12 +31,7 @@ const TopBar = ( { onBackButtonClick, children, backHref } ) => {
 			>
 				<GridiconChevronLeft />
 			</Link>
-			<span className="title">
-				{ __(
-					'Get started with Google Listings & Ads',
-					'google-listings-and-ads'
-				) }
-			</span>
+			<span className="title">{ title }</span>
 			{ children }
 		</div>
 	);

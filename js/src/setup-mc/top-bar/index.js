@@ -26,6 +26,10 @@ const SetupMCTopBar = () => {
 		<TopBar
 			backHref={ getNewPath( {}, '/google/start' ) }
 			onBackButtonClick={ handleBackButtonClick }
+			title={ __(
+				'Get started with Google Listings & Ads',
+				'google-listings-and-ads'
+			) }
 		>
 			<div className="actions">
 				{ /* TODO: click and navigate to where? */ }

@@ -40,7 +40,10 @@ export default function EditFreeCampaign() {
 	};
 	return (
 		<FullContainer>
-			<TopBar backHref={ dashboardURL } />
+			<TopBar
+				backHref={ dashboardURL }
+				title={ __( 'Edit free listings', 'google-listings-and-ads' ) }
+			/>
 			<Stepper
 				className="gla-setup-stepper"
 				currentStep={ pageStep }
