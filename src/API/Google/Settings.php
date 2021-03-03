@@ -7,12 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as Ra
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Google_Service_ShoppingContent as ShoppingService;
-use Google_Service_ShoppingContent_DeliveryTime;
-use Google_Service_ShoppingContent_Price;
+use Google_Service_ShoppingContent_DeliveryTime as DeliveryTime;
+use Google_Service_ShoppingContent_Price as Price;
 use Google_Service_ShoppingContent_RateGroup as RateGroup;
-use Google_Service_ShoppingContent_Service;
-use Google_Service_ShoppingContent_ShippingSettings;
-use Google_Service_ShoppingContent_Value;
+use Google_Service_ShoppingContent_Service as Service;
+use Google_Service_ShoppingContent_ShippingSettings as ShippingSettings;
+use Google_Service_ShoppingContent_Value as Value;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -54,7 +54,7 @@ class Settings {
 		$merchant_id = $options->get( OptionsInterface::MERCHANT_ID );
 		$account_id  = $merchant_id;
 		$times       = $this->get_times();
-		$settings    = new Google_Service_ShoppingContent_ShippingSettings();
+		$settings    = new ShippingSettings();
 		$settings->setAccountId( $account_id );
 
 		$shipping_rates = $this->rate_query->set_limit( 100 )->get_results();
@@ -62,7 +62,7 @@ class Settings {
 		foreach ( $shipping_rates as $shipping_rate ) {
 			$country = $shipping_rate['country'];
 
-			$service = new Google_Service_ShoppingContent_Service();
+			$service = new Service();
 			$service->setActive( true );
 			$service->setDeliveryCountry( $country );
 			$service->setRateGroups(
@@ -106,10 +106,10 @@ class Settings {
 	 *
 	 * @param int $delivery_days
 	 *
-	 * @return Google_Service_ShoppingContent_DeliveryTime
+	 * @return DeliveryTime
 	 */
-	protected function create_time_object( int $delivery_days ): Google_Service_ShoppingContent_DeliveryTime {
-		$time = new Google_Service_ShoppingContent_DeliveryTime();
+	protected function create_time_object( int $delivery_days ): DeliveryTime {
+		$time = new DeliveryTime();
 		$time->setMinHandlingTimeInDays( 0 );
 		$time->setMaxHandlingTimeInDays( 0 );
 		$time->setMinTransitTimeInDays( $delivery_days );
@@ -127,11 +127,11 @@ class Settings {
 	 * @return RateGroup
 	 */
 	protected function create_rate_group_object( string $currency, $rate ): RateGroup {
-		$price = new Google_Service_ShoppingContent_Price();
+		$price = new Price();
 		$price->setCurrency( $currency );
 		$price->setValue( $rate );
 
-		$value = new Google_Service_ShoppingContent_Value();
+		$value = new Value();
 		$value->setFlatRate( $price );
 
 		$rate_group = new RateGroup();
