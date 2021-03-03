@@ -73,7 +73,7 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 	 *
 	 * @return bool Returns true if the job can start.
 	 */
-	protected function can_start( array $args = [] ): bool {
+	public function can_start( array $args = [] ): bool {
 		return ! $this->is_running( $args ) && $this->is_mc_setup();
 	}
 }
