@@ -335,10 +335,10 @@ class Proxy implements OptionsAwareInterface {
 	 *
 	 * @param int $id Existing account ID.
 	 *
-	 * @return int
+	 * @return array
 	 * @throws Exception When a ClientException is caught or we receive an invalid response.
 	 */
-	public function link_ads_account( int $id ): int {
+	public function link_ads_account( int $id ): array {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -358,7 +358,7 @@ class Proxy implements OptionsAwareInterface {
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
 				$this->update_ads_id( $id );
-				return $id;
+				return [ 'id' => $id ];
 			}
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
