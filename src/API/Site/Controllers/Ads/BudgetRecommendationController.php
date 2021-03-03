@@ -75,8 +75,8 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				return new Response(
 					[
 						'message'      => __( 'Invalid country/currency combination', 'google-listings-and-ads' ),
-						'country_code' => $country,
 						'currency'     => $currency,
+						'country_code' => $country,
 					],
 					400
 				);
@@ -84,8 +84,8 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 
 			return $this->prepare_item_for_response(
 				[
-					'country_code'      => $recommendation[0]['country'],
 					'currency'          => $recommendation[0]['currency'],
+					'country_code'      => $recommendation[0]['country'],
 					'daily_budget_low'  => $recommendation[0]['daily_budget_low'],
 					'daily_budget_high' => $recommendation[0]['daily_budget_high'],
 				],
