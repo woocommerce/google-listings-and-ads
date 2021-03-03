@@ -27,21 +27,13 @@ class Settings {
 	/** @var ContainerInterface */
 	protected $container;
 
-	/** @var RateQuery */
-	protected $rate_query;
-
-	/** @var TimeQuery */
-	protected $time_query;
-
 	/**
 	 * Settings constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
-		$this->container  = $container;
-		$this->rate_query = $container->get( RateQuery::class );
-		$this->time_query = $container->get( TimeQuery::class );
+		$this->container = $container;
 	}
 
 	/**
@@ -50,36 +42,19 @@ class Settings {
 	 * @return ShippingSettings
 	 */
 	public function sync_shipping(): ShippingSettings {
-		/** @var OptionsInterface $options */
-		$options = $this->container->get( OptionsInterface::class );
-
-		$merchant_id = $options->get( OptionsInterface::MERCHANT_ID );
+		// Merchant ID and Account ID seem to be the same value.
+		$merchant_id = $this->get_options_object()->get( OptionsInterface::MERCHANT_ID );
 		$account_id  = $merchant_id;
-		$times       = $this->get_times();
 		$settings    = new ShippingSettings();
 		$settings->setAccountId( $account_id );
 
-		$shipping_rates = $this->rate_query->get_results();
-		$services       = [];
-		foreach ( $shipping_rates as $shipping_rate ) {
-			$country = $shipping_rate['country'];
+		$services = [];
+		foreach ( $this->get_rates() as ['country' => $country, 'currency' => $currency, 'rate' => $rate] ) {
+			$services[] = $this->create_main_service( $country, $currency, $rate );
 
-			$service = new Service();
-			$service->setActive( true );
-			$service->setDeliveryCountry( $country );
-			$service->setCurrency( $shipping_rate['currency'] );
-
-			$service->setRateGroups(
-				[
-					$this->create_rate_group_object( $shipping_rate['currency'], $shipping_rate['rate'] ),
-				]
-			);
-
-			if ( array_key_exists( $country, $times ) ) {
-				$service->setDeliveryTime( $this->create_time_object( intval( $times[ $country ] ) ) );
+			if ( $this->has_free_shipping_option() ) {
+				$services[] = $this->create_free_shipping_service( $country, $currency );
 			}
-
-			$services[] = $service;
 		}
 
 		$settings->setServices( $services );
@@ -100,9 +75,25 @@ class Settings {
 	 * @return array
 	 */
 	protected function get_times(): array {
-		$raw = $this->time_query->get_results();
+		static $times = null;
 
-		return wp_list_pluck( $raw, 'time', 'country' );
+		if ( null === $times ) {
+			$time_query = $this->container->get( TimeQuery::class );
+			$times      = array_column( $time_query->get_results(), 'time', 'country' );
+		}
+
+		return $times;
+	}
+
+	/**
+	 * Get shipping rate data.
+	 *
+	 * @return array
+	 */
+	protected function get_rates(): array {
+		$rate_query = $this->container->get( RateQuery::class );
+
+		return $rate_query->get_results();
 	}
 
 	/**
@@ -120,6 +111,18 @@ class Settings {
 		$time->setMaxTransitTimeInDays( $delivery_days );
 
 		return $time;
+	}
+
+	/**
+	 * Create the array of rate groups for the service.
+	 *
+	 * @param string $currency
+	 * @param mixed  $rate
+	 *
+	 * @return array
+	 */
+	protected function create_rate_groups( string $currency, $rate ): array {
+		return [ $this->create_rate_group_object( $currency, $rate ) ];
 	}
 
 	/**
@@ -142,5 +145,74 @@ class Settings {
 		$rate_group->setSingleValue( $value );
 
 		return $rate_group;
+	}
+
+	/**
+	 * Determine whether free shipping is offered.
+	 *
+	 * @return bool
+	 */
+	protected function has_free_shipping_option(): bool {
+		return boolval(
+			$this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER )['offers_free_shipping'] ?? false
+		);
+	}
+
+	/**
+	 * @return OptionsInterface
+	 */
+	protected function get_options_object(): OptionsInterface {
+		return $this->container->get( OptionsInterface::class );
+	}
+
+	/**
+	 * Create the main shipping service object.
+	 *
+	 * @param string $country
+	 * @param string $currency
+	 * @param mixed  $rate
+	 *
+	 * @return Service
+	 */
+	protected function create_main_service( string $country, string $currency, $rate ): Service {
+		$service = new Service();
+		$service->setActive( true );
+		$service->setDeliveryCountry( $country );
+		$service->setCurrency( $currency );
+		$service->setName(
+			sprintf(
+				/* translators: %s is the 2 character country code */
+				__( 'Google Listings and Ads generated service - %s', 'google-listings-and-ads' ),
+				$country
+			)
+		);
+
+		$service->setRateGroups( $this->create_rate_groups( $currency, $rate ) );
+
+		$times = $this->get_times();
+		if ( array_key_exists( $country, $times ) ) {
+			$service->setDeliveryTime( $this->create_time_object( intval( $times[ $country ] ) ) );
+		}
+
+		return $service;
+	}
+
+	/**
+	 * Create a free shipping service.
+	 *
+	 * @param string $country
+	 * @param string $currency
+	 *
+	 * @return Service
+	 */
+	protected function create_free_shipping_service( string $country, string $currency ): Service {
+		$price = new Price();
+		$price->setValue( 0 );
+		$price->setCurrency( $currency );
+
+		$service = $this->create_main_service( $country, $currency, 0 );
+		$service->setMinimumOrderValue( $price );
+
+		return $service;
 	}
 }
