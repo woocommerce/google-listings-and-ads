@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import AppCountryMultiSelect from '.~/components/app-country-multi-select';
+// import AppCountryMultiSelect from '.~/components/app-country-multi-select';
 
 const AudienceSection = () => {
 	return (
@@ -26,7 +26,7 @@ const AudienceSection = () => {
 				<Section.Card.Body>
 					{ /* TODO: labels and helptext. */ }
 					{ /* TODO: better component composition to use country single select. */ }
-					<AppCountryMultiSelect multiple={ false } />
+					{ /* <AppCountryMultiSelect multiple={ false } /> */ }
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>

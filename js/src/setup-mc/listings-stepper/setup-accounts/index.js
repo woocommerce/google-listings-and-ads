@@ -15,8 +15,8 @@ import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import StepContent from '.~/components/step-content';
 import StepContentHeader from '.~/components/step-content-header';
 import StepContentFooter from '.~/components/step-content-footer';
-import WordPressDotComAccount from './wordpressdotcom-account';
-import GoogleMCAccount from './google-mc-account';
+import WordPressDotComAccount from '.~/components/wordpressdotcom-account';
+import GoogleMCAccount from '.~/components/google-mc-account';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
