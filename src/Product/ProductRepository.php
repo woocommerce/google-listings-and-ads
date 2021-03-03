@@ -239,11 +239,6 @@ class ProductRepository implements Service {
 		$args['limit']  = $limit;
 		$args['offset'] = $offset;
 
-		// include product variations in the query
-		if ( isset( $args[ self::INCLUDE_VARIATIONS_KEY ] ) && true === $args[ self::INCLUDE_VARIATIONS_KEY ] ) {
-			$args['type'] = array_merge( array_keys( wc_get_product_types() ), [ 'variation' ] );
-		}
-
 		return wc_get_products( $this->prepare_query_args( $args ) );
 	}
 
@@ -261,6 +256,14 @@ class ProductRepository implements Service {
 
 		if ( ! empty( $args['meta_query'] ) ) {
 			$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
+		}
+
+		// only include supported product types
+		$args['type'] = $this->get_supported_product_types();
+
+		// include product variations in the query
+		if ( isset( $args[ self::INCLUDE_VARIATIONS_KEY ] ) && true === $args[ self::INCLUDE_VARIATIONS_KEY ] ) {
+			$args['type'][] = 'variation';
 		}
 
 		return $args;
@@ -295,4 +298,14 @@ class ProductRepository implements Service {
 
 		return $updated_queries;
 	}
+
+	/**
+	 * Return the list of supported product types.
+	 *
+	 * @return array
+	 */
+	protected function get_supported_product_types(): array {
+		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable' ] );
+	}
+
 }
