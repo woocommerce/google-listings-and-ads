@@ -6,8 +6,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import SetupStepper from '../../components/setup-stepper';
-import { recordSetupMCEvent } from '../../utils/recordEvent';
+import SetupStepper from '.~/components/setup-stepper';
+import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from './choose-audience';

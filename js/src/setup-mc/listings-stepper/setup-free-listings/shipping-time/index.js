@@ -7,10 +7,10 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import Section from '../../../../wcdl/section';
-import RadioHelperText from '../../../../wcdl/radio-helper-text';
-import AppRadioContentControl from '../../../../components/app-radio-content-control';
-import AppDocumentationLink from '../../../../components/app-documentation-link';
+import Section from '.~/wcdl/section';
+import RadioHelperText from '.~/wcdl/radio-helper-text';
+import AppRadioContentControl from '.~/components/app-radio-content-control';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import ShippingTimeSetup from './shipping-time-setup';
 
@@ -46,22 +46,24 @@ const ShippingTime = ( props ) => {
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
 						<AppRadioContentControl
-							{ ...getInputProps( 'shippingTimeOption' ) }
+							{ ...getInputProps( 'shipping_time' ) }
 							label={ __(
 								'I can estimate a flat shipping time for all my products.',
 								'google-listings-and-ads'
 							) }
-							value="simple"
+							value="flat"
+							collapsible
 						>
 							<ShippingTimeSetup formProps={ formProps } />
 						</AppRadioContentControl>
 						<AppRadioContentControl
-							{ ...getInputProps( 'shippingTimeOption' ) }
+							{ ...getInputProps( 'shipping_time' ) }
 							label={ __(
 								'I cannot estimate a flat shipping time for all my products.',
 								'google-listings-and-ads'
 							) }
-							value="complex"
+							value="manual"
+							collapsible
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

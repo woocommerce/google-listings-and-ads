@@ -10,9 +10,7 @@ import Body from './body';
 import Footer from './footer';
 
 const Card = ( props ) => {
-	const { children } = props;
-
-	return <WPCard size="none">{ children }</WPCard>;
+	return <WPCard { ...props } size="none" />;
 };
 
 Card.Body = Body;

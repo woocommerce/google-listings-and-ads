@@ -7,9 +7,17 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import AppModal from '../../../../components/app-modal';
+import AppModal from '.~/components/app-modal';
 import './index.scss';
 
+/**
+ * Modal window to confirm removing a campaign.
+ *
+ * @param {Object} props
+ * @param {string} props.programId Id of a program to be paused.
+ * @param {Function} props.onRequestClose Callback to be performed once close action is requested.
+ *
+ */
 const RemoveProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
 
@@ -21,6 +29,12 @@ const RemoveProgramModal = ( props ) => {
 	// might need to have a "busy / loading" indicator.
 	// dismiss modal when remove process is done.
 	const handleRemoveCampaignClick = () => {
+		// eslint-disable-next-line no-console
+		console.warn(
+			'The actual remove action is not implemented/integrated yet.',
+			programId
+		);
+
 		onRequestClose();
 	};
 

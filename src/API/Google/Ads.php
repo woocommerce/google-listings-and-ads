@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
@@ -113,7 +115,7 @@ class Ads {
 					'maximize_conversion_value'    => new MaximizeConversionValue(),
 					'shopping_setting'             => new ShoppingSetting(
 						[
-							'merchant_id'   => $this->container->get( 'merchant_id' ),
+							'merchant_id'   => $this->get_merchant_id(),
 							'sales_country' => $params['country'],
 						]
 					),
@@ -481,5 +483,16 @@ class Ads {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the Merchant Center ID.
+	 *
+	 * @return int
+	 */
+	protected function get_merchant_id(): int {
+		/** @var Options $options */
+		$options = $this->container->get( OptionsInterface::class );
+		return $options->get( Options::MERCHANT_ID );
 	}
 }

@@ -7,10 +7,10 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import Section from '../../../../wcdl/section';
-import RadioHelperText from '../../../../wcdl/radio-helper-text';
-import AppRadioContentControl from '../../../../components/app-radio-content-control';
-import AppDocumentationLink from '../../../../components/app-documentation-link';
+import Section from '.~/wcdl/section';
+import RadioHelperText from '.~/wcdl/radio-helper-text';
+import AppRadioContentControl from '.~/components/app-radio-content-control';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 
 const TaxRate = ( props ) => {
@@ -49,12 +49,13 @@ const TaxRate = ( props ) => {
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
 						<AppRadioContentControl
-							{ ...getInputProps( 'taxRateOption' ) }
+							{ ...getInputProps( 'tax_rate' ) }
 							label={ __(
 								'My store uses destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
-							value="yes"
+							value="destination"
+							collapsible
 						>
 							<RadioHelperText>
 								{ __(
@@ -64,12 +65,13 @@ const TaxRate = ( props ) => {
 							</RadioHelperText>
 						</AppRadioContentControl>
 						<AppRadioContentControl
-							{ ...getInputProps( 'taxRateOption' ) }
+							{ ...getInputProps( 'tax_rate' ) }
 							label={ __(
 								'My store does not use destination-based tax rates.',
 								'google-listings-and-ads'
 							) }
-							value="no"
+							value="manual"
+							collapsible
 						>
 							<RadioHelperText>
 								{ createInterpolateElement(

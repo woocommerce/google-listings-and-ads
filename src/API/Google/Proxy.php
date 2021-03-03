@@ -3,7 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use DateTime;
@@ -23,7 +26,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Proxy {
+class Proxy implements OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/**
 	 * @var ContainerInterface
@@ -47,24 +52,21 @@ class Proxy {
 	 */
 	public function get_merchant_ids(): array {
 		try {
-			/** @var ShoppingContent $service */
-			$service  = $this->container->get( ShoppingContent::class );
-			$accounts = $service->accounts->authinfo();
+			/** @var Client $client */
+			$client   = $this->container->get( Client::class );
+			$result   = $client->get( $this->get_manager_url( 'merchant-accounts' ) );
+			$response = json_decode( $result->getBody()->getContents(), true );
 			$ids      = [];
 
-			foreach ( $accounts->getAccountIdentifiers() as $account ) {
-
-				$id = (int) $account->getMerchantID();
-
-				// $id can be NULL if it is a Multi Client Account (MCA)
-				if ( $id ) {
+			if ( 200 === $result->getStatusCode() && is_array( $response ) ) {
+				foreach ( $response as $id ) {
 					$ids[] = $id;
 				}
 			}
 
 			return $ids;
-		} catch ( Exception $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
@@ -138,15 +140,20 @@ class Proxy {
 	 * @return array
 	 */
 	public function get_connected_merchant(): array {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		$id      = intval( $options->get( Options::MERCHANT_ID ) );
+		$id     = $this->get_merchant_id();
+		$status = $id ? 'connected' : 'disconnected';
 
-		// TODO: populate with status from site verification.
+		foreach ( $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) {
+			if ( ! isset( $step['status'] ) || MerchantAccountState::ACCOUNT_STEP_DONE !== $step['status'] ) {
+				$status = 'incomplete';
+				$id     = 0;
+				break;
+			}
+		}
 
 		return [
 			'id'     => $id,
-			'status' => $id ? '' : 'disconnected',
+			'status' => $status,
 		];
 	}
 
@@ -160,17 +167,53 @@ class Proxy {
 	}
 
 	/**
+	 * Link Merchant Center account to MCA.
+	 *
+	 * @return bool
+	 * @throws Exception When a ClientException is caught or we receive an invalid response.
+	 */
+	public function link_merchant_to_mca(): bool {
+		try {
+			/** @var Client $client */
+			$client = $this->container->get( Client::class );
+			$result = $client->post(
+				$this->get_manager_url( 'link-merchant' ),
+				[
+					'body' => json_encode(
+						[
+							'accountId' => $this->get_merchant_id(),
+						]
+					),
+				]
+			);
+
+			$response = json_decode( $result->getBody()->getContents(), true );
+
+			if ( 200 === $result->getStatusCode() && isset( $response['status'] ) && 'success' === $response['status'] ) {
+				return true;
+			}
+
+			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+
+			$error = $response['message'] ?? __( 'Invalid response when linking merchant to MCA', 'google-listings-and-ads' );
+			throw new Exception( $error, $result->getStatusCode() );
+		} catch ( ClientExceptionInterface $e ) {
+			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error linking merchant to MCA: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+		}
+	}
+
+	/**
 	 * Claim the website for a MCA.
 	 *
+	 * @param bool $overwrite To enable claim overwriting.
 	 * @return bool
 	 * @throws Exception When an Exception is caught or we receive an invalid response.
 	 */
-	public function claim_merchant_website(): bool {
+	public function claim_merchant_website( bool $overwrite = false ): bool {
 		try {
-			/** @var Options $options */
-			$options     = $this->container->get( OptionsInterface::class );
-			$merchant_id = intval( $options->get( Options::MERCHANT_ID ) );
-
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
@@ -178,7 +221,8 @@ class Proxy {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $merchant_id,
+							'accountId' => $this->get_merchant_id(),
+							'overwrite' => $overwrite,
 						]
 					),
 				]
@@ -201,6 +245,7 @@ class Proxy {
 			throw new Exception( sprintf( __( 'Error claiming website: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
 		}
 	}
+
 
 	/**
 	 * Get Ads IDs associated with the connected Google account.
@@ -322,6 +367,27 @@ class Proxy {
 	}
 
 	/**
+	 * Get the connected ads account.
+	 *
+	 * @return array
+	 */
+	public function get_connected_ads_account(): array {
+		$id = $this->options->get( Options::ADS_ID );
+
+		return [
+			'id'     => $id,
+			'status' => $id ? 'connected' : 'disconnected',
+		];
+	}
+
+	/**
+	 * Disconnect the connected ads account.
+	 */
+	public function disconnect_ads_account() {
+		$this->update_ads_id( 0 );
+	}
+
+	/**
 	 * Determine whether the TOS have been accepted.
 	 *
 	 * @param string $service Name of service.
@@ -414,6 +480,15 @@ class Proxy {
 	}
 
 	/**
+	 * Get the Merchant Center ID.
+	 *
+	 * @return int
+	 */
+	protected function get_merchant_id(): int {
+		return $this->options->get( Options::MERCHANT_ID );
+	}
+
+	/**
 	 * Update the Merchant Center ID to use for requests.
 	 *
 	 * @param int $id  Merchant ID number.
@@ -421,9 +496,7 @@ class Proxy {
 	 * @return bool
 	 */
 	protected function update_merchant_id( int $id ): bool {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->update( Options::MERCHANT_ID, $id );
+		return $this->options->update( Options::MERCHANT_ID, $id );
 	}
 
 	/**
@@ -434,9 +507,7 @@ class Proxy {
 	 * @return bool
 	 */
 	protected function update_ads_id( int $id ): bool {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->update( Options::ADS_ID, $id );
+		return $this->options->update( Options::ADS_ID, $id );
 	}
 
 	/**

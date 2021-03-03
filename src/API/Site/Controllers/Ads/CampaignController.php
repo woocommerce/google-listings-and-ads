@@ -93,9 +93,15 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 * @return callable
 	 */
 	protected function get_campaigns_callback(): callable {
-		return function() {
+		return function( Request $request ) {
 			try {
-				return array_map( [ $this, 'prepare_item_for_response' ], $this->ads->get_campaigns() );
+				return array_map(
+					function( $campaign ) use ( $request ) {
+						$data = $this->prepare_item_for_response( $campaign, $request );
+						return $this->prepare_response_for_collection( $data );
+					},
+					$this->ads->get_campaigns()
+				);
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
@@ -113,7 +119,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				$fields   = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 				$campaign = $this->ads->create_campaign( $fields );
 
-				return $this->prepare_item_for_response( $campaign );
+				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}
@@ -141,7 +147,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					);
 				}
 
-				return $this->prepare_item_for_response( $campaign );
+				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
 			}

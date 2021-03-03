@@ -1,0 +1,31 @@
+.gla-campaign-creation-success-guide {
+	@include break-small() {
+		max-width: 517px;
+	}
+
+	.components-modal {
+		&__header {
+			position: absolute;
+			width: 100%;
+			margin: 0;
+			border-bottom: none;
+			background: none;
+		}
+
+		&__content {
+			padding-left: 0;
+			padding-right: 0;
+		}
+	}
+
+	.app-modal__footer {
+		margin: var(--main-gap) var(--main-gap) 0;
+	}
+
+	&__header-image {
+		display: flex;
+		justify-content: center;
+		margin-bottom: var(--main-gap);
+		background-color: #f7edf7;
+	}
+}

@@ -81,13 +81,15 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	 * @return array
 	 */
 	protected function prepare_item_schema( array $properties, string $schema_title ): array {
-		return [
-			'$schema'              => 'http://json-schema.org/draft-04/schema#',
-			'title'                => $schema_title,
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'properties'           => $properties,
-		];
+		return $this->add_additional_fields_schema(
+			[
+				'$schema'              => 'http://json-schema.org/draft-04/schema#',
+				'title'                => $schema_title,
+				'type'                 => 'object',
+				'additionalProperties' => false,
+				'properties'           => $properties,
+			]
+		);
 	}
 
 	/**
@@ -123,7 +125,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 		$context  = $request['context'] ?? 'view';
 		$schema   = $this->get_schema_properties();
 		foreach ( $schema as $key => $property ) {
-			$prepared[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
+			$prepared[ $key ] = $item[ $key ] ?? $property['default'] ?? null;
 		}
 
 		$prepared = $this->add_additional_fields_to_object( $prepared, $request );

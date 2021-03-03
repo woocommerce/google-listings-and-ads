@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import TrackableLink from '../../../components/trackable-link';
+import TrackableLink from '.~/components/trackable-link';
 
 /**
  * Internal dependencies

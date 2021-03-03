@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import Subsection from '../../wcdl/subsection';
+import Subsection from '.~/wcdl/subsection';
 import ContentButtonLayout from '../content-button-layout';
 import './index.scss';
 

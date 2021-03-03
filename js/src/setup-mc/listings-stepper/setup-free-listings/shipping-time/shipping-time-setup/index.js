@@ -4,60 +4,71 @@
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import AppDocumentationLink from '../../../../../components/app-documentation-link';
+import AppSpinner from '.~/components/app-spinner';
+import AppDocumentationLink from '.~/components/app-documentation-link';
+import { STORE_KEY } from '.~/data';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import VerticalGapLayout from '../../components/vertical-gap-layout';
-import useGetAudienceCountries from '../../hooks/useGetAudienceCountries';
 import AddTimeButton from './add-time-button';
-import CountriesTimeInput from './countries-time-input';
-
-const formKeys = {
-	rows: 'shippingTimeOption-rows',
-	allowGoogleDataCollection: 'shippingTimeOption-allowGoogleDataCollection',
-};
+import getCountriesTimeArray from './getCountriesTimeArray';
+import CountriesTimeInputForm from './countries-time-input-form';
+import './index.scss';
 
 const ShippingTimeSetup = ( props ) => {
 	const {
-		formProps: { getInputProps, values, setValue },
+		formProps: { getInputProps },
 	} = props;
+	const shippingTimes = useSelect( ( select ) =>
+		select( STORE_KEY ).getShippingTimes()
+	);
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	const audienceCountries = useGetAudienceCountries();
-	const expectedCountryCount = audienceCountries.length;
-	const actualCountryCount = values[ formKeys.rows ].reduce( ( acc, cur ) => {
-		return acc + cur.countries.length;
-	}, 0 );
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
 
-	const handleCountriesTimeChange = ( idx ) => ( countriesPrice ) => {
-		const newValues = [ ...values[ formKeys.rows ] ];
-		newValues[ idx ] = countriesPrice;
-		setValue( formKeys.rows, newValues );
-	};
+	const expectedCountryCount = selectedCountryCodes.length;
+	const actualCountryCount = shippingTimes.length;
+	const remainingCount = expectedCountryCount - actualCountryCount;
+
+	const countriesTimeArray = getCountriesTimeArray( shippingTimes );
 
 	return (
-		<div className="gla-shipping-rate-setup">
+		<div className="gla-shipping-time-setup">
 			<VerticalGapLayout>
-				<div className="countries-price">
+				<div className="countries-time">
 					<VerticalGapLayout>
-						{ values[ formKeys.rows ].map( ( el, idx ) => {
+						{ shippingTimes.length === 0 && (
+							<div className="countries-time-input-form">
+								<CountriesTimeInputForm
+									initialValue={ {
+										countries: selectedCountryCodes,
+										time: '',
+									} }
+								/>
+							</div>
+						) }
+						{ countriesTimeArray.map( ( el ) => {
 							return (
 								<div
-									key={ idx }
-									className="countries-price-input"
+									key={ `${ el.time }-${ el.countries.join(
+										'-'
+									) }` }
+									className="countries-time-input-form"
 								>
-									<CountriesTimeInput
-										value={ el }
-										onChange={ handleCountriesTimeChange(
-											idx
-										) }
+									<CountriesTimeInputForm
+										initialValue={ el }
 									/>
 								</div>
 							);
 						} ) }
-						{ actualCountryCount < expectedCountryCount && (
-							<div className="add-rate-button">
+						{ actualCountryCount >= 1 && remainingCount >= 1 && (
+							<div className="add-time-button">
 								<AddTimeButton />
 							</div>
 						) }
@@ -79,7 +90,7 @@ const ShippingTimeSetup = ( props ) => {
 							),
 						}
 					) }
-					{ ...getInputProps( formKeys.allowGoogleDataCollection ) }
+					{ ...getInputProps( 'share_shipping_time' ) }
 				/>
 			</VerticalGapLayout>
 		</div>

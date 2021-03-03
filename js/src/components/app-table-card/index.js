@@ -7,7 +7,7 @@ import { TableCard } from '@woocommerce/components';
  * Internal dependencies
  */
 import recordColumnToggleEvent from './recordColumnToggleEvent';
-import { recordTableSortEvent } from '../../utils/recordEvent';
+import { recordTableSortEvent } from '.~/utils/recordEvent';
 import './index.scss';
 
 /**
