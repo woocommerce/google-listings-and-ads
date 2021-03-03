@@ -16,7 +16,7 @@ import './index.scss';
 /**
  * Form to choose audience for free listings.
  *
- * To be used in onboardign and further editing.
+ * To be used in onboarding and further editing.
  * Does not provide any save strategy, this is to be bound externaly.
  *
  * @param {Object} props
