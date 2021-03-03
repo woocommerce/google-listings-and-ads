@@ -166,9 +166,15 @@ class AccountController extends BaseController {
 			try {
 				/** @var Merchant $merchant */
 				$merchant = $this->container->get( Merchant::class );
+				if ( ! $merchant->get_id() ) {
+					throw new Exception( 'A Merchant Center account must be connected' );
+				}
 
 				/** @var Ads $ads */
 				$ads = $this->container->get( Ads::class );
+				if ( ! $ads->get_id() ) {
+					throw new Exception( 'An Ads account must be connected' );
+				}
 
 				// Create link for Merchant and accept it in Ads.
 				$merchant->link_ads_id( $ads->get_id() );
