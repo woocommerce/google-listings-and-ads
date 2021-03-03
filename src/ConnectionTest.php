@@ -685,10 +685,10 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-google-ads-create' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-create' ) ) {
 			try {
 				/** @var Proxy $proxy */
-				$proxy    = $this->container->get( Proxy::class );
-				$account_id = $proxy->create_ads_account();
+				$proxy   = $this->container->get( Proxy::class );
+				$account = $proxy->create_ads_account();
 
-				$this->response .= 'Created account: ' . $account_id . "\n";
+				$this->response .= 'Created account: ' . wp_json_encode( $account, JSON_PRETTY_PRINT ) . "\n";
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
@@ -703,10 +703,10 @@ class ConnectionTest implements Service, Registerable {
 
 			try {
 				/** @var Proxy $proxy */
-				$proxy    = $this->container->get( Proxy::class );
-				$account_id = $proxy->link_ads_account( absint( $_GET['customer_id'] ) );
+				$proxy   = $this->container->get( Proxy::class );
+				$account = $proxy->link_ads_account( absint( $_GET['customer_id'] ) );
 
-				$this->response .= 'Linked account: ' . $account_id . "\n";
+				$this->response .= 'Linked account: ' . wp_json_encode( $account, JSON_PRETTY_PRINT ) . "\n";
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
 			}
