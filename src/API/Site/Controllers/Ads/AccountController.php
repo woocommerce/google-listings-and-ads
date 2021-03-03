@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -79,6 +81,17 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/link-merchant',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->link_merchant_account_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -140,6 +153,34 @@ class AccountController extends BaseController {
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
 			];
+		};
+	}
+
+	/**
+	 * Get the callback function for linking a merchant account.
+	 *
+	 * @return callable
+	 */
+	protected function link_merchant_account_callback(): callable {
+		return function() {
+			try {
+				/** @var Merchant $merchant */
+				$merchant = $this->container->get( Merchant::class );
+
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
+
+				// Create link for Merchant and accept it in Ads.
+				$merchant->link_ads_id( $ads->get_id() );
+				$ads->accept_merchant_link( $merchant->get_id() );
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully linked merchant and ads accounts.', 'google-listings-and-ads' ),
+				];
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
