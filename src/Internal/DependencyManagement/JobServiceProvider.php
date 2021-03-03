@@ -76,14 +76,11 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_product_syncer_job( DeleteProducts::class );
 		$this->share_product_syncer_job( ResubmitExpiringProducts::class );
 
-		if ( JobInitializer::is_needed() ) {
-			$this->provides[ JobInitializer::class ] = true;
-			$this->share_with_tags(
-				JobInitializer::class,
-				JobInterface::class,
-				ActionScheduler::class
-			);
-		}
+		$this->conditionally_share_with_tags(
+			JobInitializer::class,
+			JobInterface::class,
+			ActionScheduler::class
+		);
 
 		$this->share_with_tags(
 			SyncerHooks::class,
