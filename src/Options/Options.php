@@ -22,6 +22,7 @@ final class Options implements OptionsInterface, Service {
 
 	private const VALID_OPTIONS = [
 		self::ADS_ID                 => true,
+		self::ADS_BILLING_URL        => true,
 		self::DB_VERSION             => true,
 		self::FILE_VERSION           => true,
 		self::INSTALL_TIMESTAMP      => true,
