@@ -65,6 +65,8 @@ class Settings {
 			$service = new Service();
 			$service->setActive( true );
 			$service->setDeliveryCountry( $country );
+			$service->setCurrency( $shipping_rate['currency'] );
+
 			$service->setRateGroups(
 				[
 					$this->create_rate_group_object( $shipping_rate['currency'], $shipping_rate['rate'] ),
