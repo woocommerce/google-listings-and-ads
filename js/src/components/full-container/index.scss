@@ -3,7 +3,10 @@
 		padding-top: 0;
 
 		// Hide Header, TransientNotices, and StoreAlerts.
-		.woocommerce-transient-notices, .woocommerce-layout__header, .woocommerce-store-alerts, .woocommerce-layout__notice-list {
+		.woocommerce-transient-notices,
+		.woocommerce-layout__header,
+		.woocommerce-store-alerts,
+		.woocommerce-layout__notice-list {
 			display: none;
 		}
 		.woocommerce-layout__primary {
