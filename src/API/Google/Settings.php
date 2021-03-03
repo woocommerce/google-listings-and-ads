@@ -57,7 +57,7 @@ class Settings {
 		$settings    = new ShippingSettings();
 		$settings->setAccountId( $account_id );
 
-		$shipping_rates = $this->rate_query->set_limit( 100 )->get_results();
+		$shipping_rates = $this->rate_query->get_results();
 		$services       = [];
 		foreach ( $shipping_rates as $shipping_rate ) {
 			$country = $shipping_rate['country'];
