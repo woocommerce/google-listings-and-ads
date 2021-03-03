@@ -12,7 +12,6 @@ import FullContainer from '.~/components/full-container';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from '.~/components/edit-program/free-listings/choose-audience';
 import TopBar from '.~/components/edit-program/top-bar';
-import './index.scss';
 
 /**
  * Page Component to edit free campaigns.
