@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_Account as MC_Account;
+use Google_Service_ShoppingContent_AccountAdsLink as MC_Account_Ads_Link;
 use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
 use Google_Service_ShoppingContent_Product as Product;
 use Google\Exception as GoogleException;
@@ -177,8 +178,37 @@ class Merchant {
 			$mc_account = $service->accounts->update( $mc_account->getId(), $mc_account->getId(), $mc_account );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
+			throw new Exception( __( 'Unable to update merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;
+	}
+
+	/**
+	 * Link a Google Ads ID to this Merchant account.
+	 *
+	 * @param int $ads_id Google Ads ID to link.
+	 *
+	 * @return bool
+	 */
+	public function link_ads_id( int $ads_id ): bool {
+		/** @var MC_Account $account */
+		$account = $this->get_account();
+		/** @var MC_Account_Ads_Link[] $ads_links */
+		$ads_links = $account->getAdsLinks();
+
+		// Stop early if we already have a link setup.
+		foreach ( $ads_links as $link ) {
+			if ( $ads_id === absint( $link->getAdsId() ) ) {
+				return false;
+			}
+		}
+
+		$link = new MC_Account_Ads_Link();
+		$link->setAdsId( $ads_id );
+		$link->setStatus( 'active' );
+		$account->setAdsLinks( array_merge( $ads_links, [ $link ] ) );
+		$this->update_account( $account );
+
+		return true;
 	}
 }
