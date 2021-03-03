@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
@@ -69,6 +71,23 @@ class Ads {
 	 */
 	public function get_id(): int {
 		return $this->id->get();
+	}
+
+	/**
+	 * Get billing status.
+	 *
+	 * @return string
+	 */
+	public function get_billing_status(): string {
+		$query    = $this->build_query( [ 'billing_setup.status' ], 'billing_setup' );
+		$response = $this->query( $query );
+
+		foreach ( $response->iterateAllElements() as $row ) {
+			$billing_setup = $row->getBillingSetup();
+			return BillingSetupStatus::label( $billing_setup->getStatus() );
+		}
+
+		return BillingSetupStatus::UNKNOWN;
 	}
 
 	/**

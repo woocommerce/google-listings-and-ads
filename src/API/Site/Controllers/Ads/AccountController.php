@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -79,6 +80,17 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/billing-status',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_billing_status_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -140,6 +152,27 @@ class AccountController extends BaseController {
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
 			];
+		};
+	}
+
+	/**
+	 * Get the callback function for linking a merchant account.
+	 *
+	 * @return callable
+	 */
+	protected function get_billing_status_callback(): callable {
+		return function() {
+			try {
+				/** @var Ads $ads */
+				$ads    = $this->container->get( Ads::class );
+				$status = $ads->get_billing_status();
+
+				return [
+					'status' => $status,
+				];
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
