@@ -9,13 +9,13 @@ import { Button } from '@wordpress/components';
  */
 import StepContent from '.~/components/edit-program/step-content';
 import StepContentFooter from '.~/components/edit-program/step-content-footer';
-import ShippingRate from './shipping-rate';
-import ShippingTime from './shipping-time';
-import TaxRate from './tax-rate';
+import ShippingRate from '.~/components/edit-program/free-listings/setup-free-listings/shipping-rate';
+import ShippingTime from '.~/components/edit-program/free-listings/setup-free-listings/shipping-time';
+import TaxRate from '.~/components/edit-program/free-listings/setup-free-listings/tax-rate';
 import PreLaunchChecklist from './pre-launch-checklist';
 import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
-import useDisplayTaxRate from './useDisplayTaxRate';
+import useDisplayTaxRate from '.~/components/edit-program/free-listings/setup-free-listings/useDisplayTaxRate';
 
 const FormContent = ( props ) => {
 	const { formProps } = props;

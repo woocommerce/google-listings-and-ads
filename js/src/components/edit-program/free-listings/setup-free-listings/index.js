@@ -7,8 +7,8 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
-import Hero from '.~/components/edit-program/free-listings/setup-free-listings/hero';
-import useSettings from '.~/components/edit-program/free-listings/setup-free-listings/useSettings';
+import Hero from './hero';
+import useSettings from './useSettings';
 import FormContent from './form-content';
 
 const SetupFreeListings = () => {
