@@ -18,6 +18,7 @@ import './index.scss';
  *
  * To be used in onboarding and further editing.
  * Does not provide any save strategy, this is to be bound externaly.
+ * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/index.js}.
  *
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.

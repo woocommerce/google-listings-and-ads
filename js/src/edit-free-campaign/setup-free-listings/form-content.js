@@ -14,6 +14,13 @@ import ShippingTime from '.~/components/edit-program/free-listings/setup-free-li
 import TaxRate from '.~/components/edit-program/free-listings/setup-free-listings/tax-rate';
 import useDisplayTaxRate from '.~/components/edit-program/free-listings/setup-free-listings/useDisplayTaxRate';
 
+/**
+ * Form to configure free listigns.
+ * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/form-content.js},
+ * without auto-save functionality.
+ *
+ * @param {Object} props
+ */
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { errors, handleSubmit } = formProps;

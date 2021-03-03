@@ -14,7 +14,8 @@ import FormContent from './form-content';
 /**
  * Form to configure free listings.
  *
- * Does not provide any save strategy, this is to be bound externaly.
+ * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/index.js},
+ * without any save strategy, this is to be bound externaly.
  *
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.

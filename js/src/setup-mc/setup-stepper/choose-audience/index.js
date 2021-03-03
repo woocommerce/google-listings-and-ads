@@ -13,6 +13,12 @@ import StepContentHeader from '.~/components/edit-program/step-content-header';
 import FormContent from './form-content';
 import '.~/components/edit-program/free-listings/choose-audience/index.scss';
 
+/**
+ * Step with a form to choose audience.
+ *
+ * @see .~/components/edit-program/free-listings/choose-audience
+ * @param {Object} props
+ */
 const ChooseAudience = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { data } = useTargetAudience();

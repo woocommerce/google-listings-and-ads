@@ -17,6 +17,13 @@ import StepContentFooter from '.~/components/edit-program/step-content-footer';
 import SupportedCountrySelect from './supported-country-select';
 import VerticalGapLayout from '.~/components/edit-program/vertical-gap-layout';
 
+/**
+ * Form to choose audience.
+ * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/form-content.js}.
+ *
+ * @see .~/components/edit-program/free-listings/choose-audience/form-content
+ * @param {Object} props
+ */
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, getInputProps, handleSubmit } = formProps;
