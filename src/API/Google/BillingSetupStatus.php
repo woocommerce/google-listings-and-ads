@@ -15,6 +15,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
 class BillingSetupStatus extends StatusMapping {
 
 	/**
+	 * Used for return value only. Represents value unknown in this version.
+	 *
+	 * @var string
+	 */
+	public const UNKNOWN = 'unknown';
+
+	/**
 	 * The billing setup is pending approval.
 	 *
 	 * @var string
