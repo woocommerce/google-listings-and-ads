@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Tables
  */
-class BudgetRecommendationTable extends Table {
+class BudgetRecommendationTable extends Table implements FirstInstallInterface {
 
 	/**
 	 * Get the schema for the DB.
@@ -25,8 +26,8 @@ class BudgetRecommendationTable extends Table {
 		return <<< SQL
 CREATE TABLE `{$this->get_sql_safe_name()}` (
     id bigint(20) NOT NULL AUTO_INCREMENT,
-    country varchar(2) NOT NULL,
     currency varchar(3) NOT NULL,
+    country varchar(2) NOT NULL,
     daily_budget_low int(20) NOT NULL,
     daily_budget_high int(20) NOT NULL,
     PRIMARY KEY (id),
@@ -51,10 +52,49 @@ SQL;
 	 */
 	public function get_columns(): array {
 		return [
-			'id'       => true,
-			'country'  => true,
-			'currency' => true,
-			'rate'     => true,
+			'id'                => true,
+			'currency'          => true,
+			'country'           => true,
+			'daily_budget_low'  => true,
+			'daily_budget_high' => true,
 		];
+	}
+
+	/**
+	 * Load packaged recommendation data on the first install of GLA.
+	 */
+	public function first_install(): void {
+		$path = $this->get_root_dir() . '/data/budget-recommendations.csv';
+
+		if ( file_exists( $path ) ) {
+			$csv     = array_map( 'str_getcsv', file( $path ) );
+			$headers = array_shift( $csv );
+			if ( empty( $csv ) ) {
+				return;
+			}
+
+			$values       = [];
+			$placeholders = [];
+
+			// Build placeholders for each row, and add values to data array
+			foreach ( $csv as $row ) {
+
+				if ( empty( $row ) ) {
+					continue;
+				}
+
+				$row_placeholders = [];
+				foreach ( $row as $value ) {
+					$values[]           = $value;
+					$row_placeholders[] = is_numeric( $value ) ? '%d' : '%s';
+				}
+				$placeholders[] = '(' . implode( ', ', $row_placeholders ) . ')';
+			}
+
+			$sql  = "INSERT INTO `{$this->get_sql_safe_name()}` (currency,country,daily_budget_low,daily_budget_high) VALUES\n";
+			$sql .= implode( ",\n", $placeholders );
+
+			$this->wpdb->query( $this->wpdb->prepare( $sql, $values ) );
+		}
 	}
 }
