@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -83,11 +84,40 @@ class BatchProductHelper implements Service {
 		$wc_product_id = $product_entry->get_wc_product_id();
 		$this->meta_handler->delete_synced_at( $wc_product_id );
 		$this->meta_handler->delete_google_ids( $wc_product_id );
+		$this->meta_handler->delete_errors( $wc_product_id );
 
 		// mark the parent product as un-synced if it's a variation
 		$wc_product = wc_get_product( $wc_product_id );
 		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
 			$this->mark_as_unsynced( new BatchProductEntry( $wc_product->get_parent_id(), null ) );
+		}
+	}
+
+	/**
+	 * Marks a WooCommerce product as disapproved and stores the errors in a meta data key.
+	 *
+	 * Note: If a product variation is disapproved then the parent product is also marked as disapproved.
+	 *
+	 * @param BatchInvalidProductEntry $product_entry
+	 */
+	public function mark_as_disapproved( BatchInvalidProductEntry $product_entry ) {
+		$wc_product_id = $product_entry->get_wc_product_id();
+		$errors        = $product_entry->get_errors();
+
+		$this->meta_handler->update_errors( $wc_product_id, $errors );
+
+		// mark the parent product as disapproved if it's a variation
+		$wc_product = wc_get_product( $wc_product_id );
+		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
+			$wc_parent_id = $wc_product->get_parent_id();
+
+			$parent_errors = ! empty( $this->meta_handler->get_errors( $wc_parent_id ) ) ?
+				$this->meta_handler->get_errors( $wc_parent_id ) :
+				[];
+
+			$parent_errors[ $wc_product_id ] = $errors;
+
+			$this->mark_as_disapproved( new BatchInvalidProductEntry( $wc_parent_id, $parent_errors ) );
 		}
 	}
 
