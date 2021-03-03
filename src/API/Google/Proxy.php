@@ -309,7 +309,7 @@ class Proxy implements OptionsAwareInterface {
 				$id = $this->parse_ads_id( $response['resourceName'] );
 				$this->update_ads_id( $id );
 
-				$billing_url = $response['invitation_link'] ?? '';
+				$billing_url = $response['invitationLink'] ?? '';
 				$this->update_billing_url( $billing_url );
 
 				return [
