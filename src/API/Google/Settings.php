@@ -46,8 +46,10 @@ class Settings {
 
 	/**
 	 * Sync the shipping settings with Google.
+	 *
+	 * @return ShippingSettings
 	 */
-	public function sync_shipping() {
+	public function sync_shipping(): ShippingSettings {
 		/** @var OptionsInterface $options */
 		$options = $this->container->get( OptionsInterface::class );
 
