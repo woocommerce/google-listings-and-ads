@@ -16,32 +16,45 @@ const wait = 500;
 // TODO: review the following effect (specifically the useShippingRates and useShippingTimes)
 // after reducer deepClone issue (https://github.com/woocommerce/google-listings-and-ads/issues/270)
 // has been addressed.
-const useAutoClearShippingEffect = ( value ) => {
+const useAutoClearShippingEffect = ( location, countries ) => {
 	const { data: shippingRates } = useShippingRates();
 	const { data: shippingTimes } = useShippingTimes();
 	const { deleteShippingRate, deleteShippingTime } = useAppDispatch();
 
-	const debouncedDelete = useDebouncedCallback( async ( rates, times ) => {
-		rates.forEach( ( el ) => {
+	const debouncedDelete = useDebouncedCallback( async () => {
+		shippingRates.forEach( ( el ) => {
 			deleteShippingRate( el.countryCode );
 		} );
 
-		times.forEach( ( el ) => {
+		shippingTimes.forEach( ( el ) => {
 			deleteShippingTime( el.countryCode );
 		} );
 	}, wait );
 
-	const ref = useRef( null );
+	const locationRef = useRef( null );
+	const countriesRef = useRef( null );
 
 	useEffect( () => {
-		// do not call on first render.
-		if ( ref.current === null ) {
-			ref.current = value;
+		if ( locationRef.current === null && countriesRef.current === null ) {
+			locationRef.current = location;
+			countriesRef.current = countries;
 			return;
 		}
 
-		debouncedDelete.callback( shippingRates, shippingTimes );
-	}, [ debouncedDelete, shippingRates, shippingTimes, value ] );
+		if (
+			( locationRef.current === 'all' && location === 'all' ) ||
+			( locationRef.current === 'selected' &&
+				location === 'selected' &&
+				countriesRef.current.length === countries.length )
+		) {
+			return;
+		}
+
+		locationRef.current = location;
+		countriesRef.current = countries;
+
+		debouncedDelete.callback();
+	}, [ debouncedDelete, location, countries ] );
 };
 
 export default useAutoClearShippingEffect;

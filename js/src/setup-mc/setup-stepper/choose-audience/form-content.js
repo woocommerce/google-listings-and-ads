@@ -26,7 +26,7 @@ const FormContent = ( props ) => {
 	const { locale, language } = values;
 
 	useAutoSaveTargetAudienceEffect( values );
-	useAutoClearShippingEffect( values );
+	useAutoClearShippingEffect( values.location, values.countries );
 
 	return (
 		<>
