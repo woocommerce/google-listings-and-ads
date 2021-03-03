@@ -184,6 +184,24 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * @return array
+	 */
+	protected function get_disapproved_products_meta_query(): array {
+		return [
+			'relation' => 'OR',
+			[
+				'key'     => ProductMetaHandler::KEY_ERRORS,
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => ProductMetaHandler::KEY_ERRORS,
+				'compare' => '=',
+				'value'   => '',
+			],
+		];
+	}
+
+	/**
 	 * Find and return an array of WooCommerce product IDs nearly expired and ready to be re-submitted to Google Merchant Center.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
@@ -194,18 +212,8 @@ class ProductRepository implements Service {
 	public function find_expiring_product_ids( int $limit = - 1, int $offset = 0 ): array {
 		$args['meta_query'] = [
 			'relation' => 'AND',
-			[
-				'relation' => 'OR',
-				[
-					'key'     => ProductMetaHandler::KEY_VISIBILITY,
-					'compare' => 'NOT EXISTS',
-				],
-				[
-					'key'     => ProductMetaHandler::KEY_VISIBILITY,
-					'compare' => '!=',
-					'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
-				],
-			],
+			$this->get_sync_ready_products_meta_query(),
+			$this->get_disapproved_products_meta_query(),
 			[
 				'relation' => 'OR',
 				[
