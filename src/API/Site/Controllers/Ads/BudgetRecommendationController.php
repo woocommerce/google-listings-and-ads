@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -33,13 +31,14 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	protected $budget_recommendation_query;
 
 	/**
-	 * BaseController constructor.
+	 * BudgetRecommendationController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer                $rest_server
+	 * @param BudgetRecommendationQuery $budget_recommendation_query
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->budget_recommendation_query = $container->get( BudgetRecommendationQuery::class );
+	public function __construct( RESTServer $rest_server, BudgetRecommendationQuery $budget_recommendation_query ) {
+		parent::__construct( $rest_server );
+		$this->budget_recommendation_query = $budget_recommendation_query;
 	}
 
 	/**
@@ -141,6 +140,6 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'campaign';
+		return 'budget-recommendation';
 	}
 }
