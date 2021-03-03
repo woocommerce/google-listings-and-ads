@@ -4,10 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 
@@ -20,7 +22,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class SyncerHooks implements Service, Registerable {
+class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
+
+	use MerchantCenterTrait;
 
 	/**
 	 * Array of booleans mapped to product IDs indicating that they have been already
@@ -80,6 +84,11 @@ class SyncerHooks implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
+		// only register the hooks if Merchant Center is set up.
+		if ( ! $this->setup_complete() ) {
+			return;
+		}
+
 		$update = function( int $product_id ) {
 			$this->handle_update_product( $product_id );
 		};
