@@ -98,12 +98,12 @@ class AccountController extends BaseController {
 	protected function create_or_link_account_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$link_id    = absint( $request['id'] );
-				$account_id = $link_id ?
+				$link_id = absint( $request['id'] );
+				$account = $link_id ?
 					$this->middleware->link_ads_account( $link_id ) :
 					$this->middleware->create_ads_account();
 
-				return $this->prepare_item_for_response( [ 'id' => $account_id ], $request );
+				return $this->prepare_item_for_response( $account, $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -144,12 +144,18 @@ class AccountController extends BaseController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id' => [
+			'id'          => [
 				'type'              => 'number',
 				'description'       => __( 'Google Ads Account ID.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
+			],
+			'billing_url' => [
+				'type'        => 'string',
+				'description' => __( 'Billing Flow URL.', 'google-listings-and-ads' ),
+				'context'     => [ 'view', 'edit' ],
+				'readonly'    => true,
 			],
 		];
 	}
