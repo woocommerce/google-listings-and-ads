@@ -7,27 +7,18 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import AppSpinner from '.~/components/app-spinner';
 import useTargetAudience from '.~/hooks/useTargetAudience';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import FormContent from './form-content';
 import './index.scss';
-import useShippingRates from '.~/hooks/useShippingRates';
-import useShippingTimes from '.~/hooks/useShippingTimes';
-import AppSpinner from '.~/components/app-spinner';
 
 const ChooseAudience = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { data } = useTargetAudience();
 
-	// Note: we are loading shipping rates and shipping times early here.
-	// when users change target audience countries,
-	// we want to read the shipping rates and times
-	// and clear them.
-	const { data: shippingRatesData } = useShippingRates();
-	const { data: shippingTimesData } = useShippingTimes();
-
-	if ( ! data || ! shippingRatesData || ! shippingTimesData ) {
+	if ( ! data ) {
 		return <AppSpinner />;
 	}
 
