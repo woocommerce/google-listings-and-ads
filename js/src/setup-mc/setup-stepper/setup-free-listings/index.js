@@ -6,7 +6,7 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import AppSpinner from '../../../components/app-spinner';
+import AppSpinner from '.~/components/app-spinner';
 import Hero from './hero';
 import useSettings from './useSettings';
 import FormContent from './form-content';

@@ -27,7 +27,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     id bigint(20) NOT NULL AUTO_INCREMENT,
     country varchar(2) NOT NULL,
     currency varchar(3) NOT NULL,
-    rate bigint(20) NOT NULL default 0,
+    rate double NOT NULL default 0,
     PRIMARY KEY (id),
     KEY country (country),
     KEY currency (currency)

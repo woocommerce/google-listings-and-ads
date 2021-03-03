@@ -7,20 +7,35 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import WordPressDotComAccount from './wordpressdotcom-account';
-import GoogleAccount from './google-account';
-import GoogleMCAccount from './google-mc-account';
+import useJetpackAccount from '.~/hooks/useJetpackAccount';
+import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
+import AppSpinner from '.~/components/app-spinner';
 import StepContent from '../components/step-content';
 import StepContentHeader from '../components/step-content-header';
 import StepContentFooter from '../components/step-content-footer';
+import WordPressDotComAccount from './wordpressdotcom-account';
+import GoogleAccount from './google-account';
+import GoogleMCAccount from './google-mc-account';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
+	const { jetpack } = useJetpackAccount();
+	const { google } = useGoogleAccount();
+	const { googleMCAccount } = useGoogleMCAccount();
 
-	// TODO: call backend API to check and set the following to true/false.
-	const isGoogleAccountDisabled = true;
-	const isGoogleMCAccountDisabled = true;
-	const isContinueButtonDisabled = false;
+	if (
+		! jetpack ||
+		( jetpack.active === 'yes' &&
+			( ! google || ( google.active === 'yes' && ! googleMCAccount ) ) )
+	) {
+		return <AppSpinner />;
+	}
+
+	const isGoogleAccountDisabled = jetpack.active === 'no';
+	const isGoogleMCAccountDisabled = ! google || google.active === 'no';
+	const isContinueButtonDisabled =
+		! googleMCAccount || googleMCAccount.status === 'disconnected';
 
 	return (
 		<StepContent>

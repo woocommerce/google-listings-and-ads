@@ -10,8 +10,8 @@ import GridiconHelpOutline from 'gridicons/dist/help-outline';
 /**
  * Internal dependencies
  */
-import AppIconButton from '../../components/app-icon-button';
-import { recordSetupMCEvent } from '../../utils/recordEvent';
+import AppIconButton from '.~/components/app-icon-button';
+import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import './index.scss';
 
 const TopBar = () => {

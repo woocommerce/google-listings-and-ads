@@ -7,10 +7,10 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import Section from '../../../../wcdl/section';
-import AppRadioContentControl from '../../../../components/app-radio-content-control';
-import RadioHelperText from '../../../../wcdl/radio-helper-text';
-import AppDocumentationLink from '../../../../components/app-documentation-link';
+import Section from '.~/wcdl/section';
+import AppRadioContentControl from '.~/components/app-radio-content-control';
+import RadioHelperText from '.~/wcdl/radio-helper-text';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '../components/vertical-gap-layout';
 import ShippingRateSetup from './shipping-rate-setup';
 

@@ -18,7 +18,7 @@ import { ITEMS_STORE_NAME } from '@woocommerce/data';
 import {
 	recordDatepickerUpdateEvent,
 	recordFilterEvent,
-} from '../../utils/recordEvent';
+} from '.~/utils/recordEvent';
 import { productsFilter, advancedFilters } from './filter-config';
 
 // TODO: Consider importing it from something like '@woocommerce/wc-admin-settings'.

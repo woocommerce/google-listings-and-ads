@@ -99,6 +99,84 @@ export function* deleteShippingRate( countryCode ) {
 	}
 }
 
+export function* fetchShippingTimes() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times`,
+		} );
+
+		const shippingTimes = Object.values( response ).map( ( el ) => {
+			return {
+				countryCode: el.country_code,
+				time: el.time,
+			};
+		} );
+
+		return {
+			type: TYPES.RECEIVE_SHIPPING_TIMES,
+			shippingTimes,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading shipping times.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* upsertShippingTime( shippingTime ) {
+	const { countryCode, time } = shippingTime;
+
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times`,
+			method: 'POST',
+			data: {
+				country_code: countryCode,
+				time,
+			},
+		} );
+
+		return {
+			type: TYPES.UPSERT_SHIPPING_TIME,
+			shippingTime,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to add / update shipping time.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* deleteShippingTime( countryCode ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times/${ countryCode }`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DELETE_SHIPPING_TIME,
+			countryCode,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to delete shipping time.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchSettings() {
 	try {
 		const response = yield apiFetch( {
@@ -137,6 +215,90 @@ export function* saveSettings( settings ) {
 			error,
 			__(
 				'There was an error trying to save settings.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchJetpackAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/jetpack/connected`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_JETPACK,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Jetpack account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchGoogleAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/connected`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchGoogleMCAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google Merchant Center account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchExistingGoogleMCAccounts() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/accounts`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING,
+			accounts: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting your Google Merchant Center accounts.',
 				'google-listings-and-ads'
 			)
 		);
@@ -183,6 +345,13 @@ export function* fetchTargetAudience() {
 			)
 		);
 	}
+}
+
+export function receiveMCAccount( account ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+		account,
+	};
 }
 
 export function* saveTargetAudience( targetAudience ) {

@@ -7,7 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -20,7 +22,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductSyncer implements Service {
+class ProductSyncer implements Service, OptionsAwareInterface {
+
+	use MerchantCenterTrait;
 
 	/**
 	 * @var GoogleProductService
@@ -72,6 +76,8 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while syncing products with Google Merchant Center.
 	 */
 	public function update( array $products ): BatchProductResponse {
+		$this->validate_merchant_center_setup();
+
 		// prepare and validate products
 		$products         = BatchProductHelper::expand_variations( $products );
 		$updated_products = [];
@@ -123,6 +129,8 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete( array $products ): BatchProductResponse {
+		$this->validate_merchant_center_setup();
+
 		$products = BatchProductHelper::expand_variations( $products );
 
 		// filter the synced products
@@ -150,6 +158,8 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If there are any errors while deleting products from Google Merchant Center.
 	 */
 	public function delete_by_batch_requests( array $product_entries ): BatchProductResponse {
+		$this->validate_merchant_center_setup();
+
 		$deleted_products = [];
 		$invalid_products = [];
 		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $product_entries ) {
@@ -184,5 +194,16 @@ class ProductSyncer implements Service {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Validates whether Merchant Center is set up and connected.
+	 *
+	 * @throws ProductSyncerException If Google Merchant Center is not set up and connected.
+	 */
+	protected function validate_merchant_center_setup(): void {
+		if ( ! $this->setup_complete() ) {
+			throw new ProductSyncerException( __( 'Google Merchant Center has not been set up correctly. Please review your configuration.', 'google-listings-and-ads' ) );
+		}
 	}
 }
