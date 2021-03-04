@@ -18,6 +18,12 @@ import SupportedCountrySelect from '.~/components/edit-program/free-listings/cho
 import VerticalGapLayout from '.~/components/edit-program/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
 
+/**
+ * Form to choose audience that auto-saves.
+ *
+ * @see .~/components/edit-program/free-listings/choose-audience/form-content
+ * @param {Object} props
+ */
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, getInputProps, handleSubmit } = formProps;
