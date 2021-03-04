@@ -4,10 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -22,6 +24,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class BatchProductHelper implements Service {
+
+	use ValidateInterface;
 
 	/**
 	 * @var ProductMetaHandler
@@ -61,6 +65,8 @@ class BatchProductHelper implements Service {
 	public function mark_as_synced( BatchProductEntry $product_entry ) {
 		$wc_product_id  = $product_entry->get_wc_product_id();
 		$google_product = $product_entry->get_google_product();
+
+		$this->validate_instanceof( $google_product, GoogleProduct::class );
 
 		$this->meta_handler->update_synced_at( $wc_product_id, time() );
 
