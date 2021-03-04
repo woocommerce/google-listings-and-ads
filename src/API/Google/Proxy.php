@@ -524,7 +524,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	protected function update_billing_url( string $url ): bool {
-		return $this->options->update( Options::ADS_BILLING_URL, $id );
+		return $this->options->update( Options::ADS_BILLING_URL, $url );
 	}
 
 	/**
