@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as Ra
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Google_Service_ShoppingContent as ShoppingService;
+use Google_Service_ShoppingContent_AccountTax as AccountTax;
+use Google_Service_ShoppingContent_AccountTaxTaxRule as TaxRule;
 use Google_Service_ShoppingContent_DeliveryTime as DeliveryTime;
 use Google_Service_ShoppingContent_Price as Price;
 use Google_Service_ShoppingContent_RateGroup as RateGroup;
@@ -38,15 +40,10 @@ class Settings {
 
 	/**
 	 * Sync the shipping settings with Google.
-	 *
-	 * @return ShippingSettings
 	 */
-	public function sync_shipping(): ShippingSettings {
-		// Merchant ID and Account ID seem to be the same value.
-		$merchant_id = $this->get_options_object()->get( OptionsInterface::MERCHANT_ID );
-		$account_id  = $merchant_id;
-		$settings    = new ShippingSettings();
-		$settings->setAccountId( $account_id );
+	public function sync_shipping() {
+		$settings = new ShippingSettings();
+		$settings->setAccountId( $this->get_account_id() );
 
 		$services = [];
 		foreach ( $this->get_rates() as ['country' => $country, 'currency' => $currency, 'rate' => $rate] ) {
@@ -59,13 +56,45 @@ class Settings {
 
 		$settings->setServices( $services );
 
-		/** @var ShoppingService $content_service */
-		$content_service = $this->container->get( ShoppingService::class );
-
-		return $content_service->shippingsettings->update(
-			$merchant_id,
-			$account_id,
+		$this->get_shopping_service()->shippingsettings->update(
+			$this->get_merchant_id(),
+			$this->get_account_id(),
 			$settings
+		);
+	}
+
+
+	/**
+	 * Whether we should sync tax settings.
+	 *
+	 * @return bool
+	 */
+	protected function should_sync_taxes(): bool {
+		return 'destination' === ( $this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER )['tax_rate'] ?? 'destination' );
+	}
+
+	/**
+	 * Sync tax setting with Google.
+	 */
+	public function sync_taxes() {
+		if ( ! $this->should_sync_taxes() ) {
+			return;
+		}
+
+		$taxes = new AccountTax();
+		$taxes->setAccountId( $this->get_account_id() );
+
+		$tax_rule = new TaxRule();
+		$tax_rule->setUseGlobalRate( true );
+		$tax_rule->setLocationId( 21171 );
+		$tax_rule->setCountry( 'US' );
+
+		$taxes->setRules( [ $tax_rule ] );
+
+		$this->get_shopping_service()->accounttax->update(
+			$this->get_merchant_id(),
+			$this->get_account_id(),
+			$taxes
 		);
 	}
 
@@ -214,5 +243,33 @@ class Settings {
 		$service->setMinimumOrderValue( $price );
 
 		return $service;
+	}
+
+	/**
+	 * Get the Merchant ID
+	 *
+	 * @return int
+	 */
+	protected function get_merchant_id(): int {
+		return $this->get_options_object()->get( OptionsInterface::MERCHANT_ID );
+	}
+
+	/**
+	 * Get the account ID.
+	 *
+	 * @return int
+	 */
+	protected function get_account_id(): int {
+		// todo: there are some cases where this might be different than the Merchant ID.
+		return $this->get_merchant_id();
+	}
+
+	/**
+	 * Get the Shopping Service object.
+	 *
+	 * @return ShoppingService
+	 */
+	protected function get_shopping_service(): ShoppingService {
+		return $this->container->get( ShoppingService::class );
 	}
 }
