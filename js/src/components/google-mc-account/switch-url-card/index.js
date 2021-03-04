@@ -14,7 +14,7 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '../../content-button-layout';
-import AccountId from '../account-id';
+import AccountId from '.~/components/account-id';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
