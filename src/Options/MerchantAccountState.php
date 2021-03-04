@@ -1,70 +1,36 @@
 <?php
-/**
- * Global Site Tag functionality - add main script and track conversions.
- *
- * @package Automattic\WooCommerce\GoogleListingsAndAds
- */
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 /**
- * Main class for Global Site Tag.
+ * Class MerchantAccountState
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
-class MerchantAccountState implements Service, OptionsAwareInterface {
-
-	use OptionsAwareTrait;
-
-	/**
-	 * @var string[]
-	 */
-	public const MERCHANT_ACCOUNT_CREATION_STEPS = [ 'set_id', 'verify', 'link', 'claim' ];
-
-	/** @var int Status value for a pending merchant account creation step */
-	public const ACCOUNT_STEP_PENDING = 0;
-
-	/** @var int Status value for a completed merchant account creation step */
-	public const ACCOUNT_STEP_DONE = 1;
-
-	/** @var int Status value for an unsuccessful merchant account creation step */
-	public const ACCOUNT_STEP_ERROR = - 1;
+class MerchantAccountState extends AccountState {
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
 	public const MC_DELAY_AFTER_CREATE = 90;
 
 	/**
-	 * Retrieve or initialize the MERCHANT_ACCOUNT_STATE Option.
+	 * Return the option name.
 	 *
-	 * @param bool $initialize_if_not_found True to initialize and option array of steps.
-	 *
-	 * @return array The MC creation steps and statuses.
+	 * @return string
 	 */
-	public function get( bool $initialize_if_not_found = true ): array {
-		$state = $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE );
-		if ( empty( $state ) && $initialize_if_not_found ) {
-			$state = [];
-			foreach ( self::MERCHANT_ACCOUNT_CREATION_STEPS as $step ) {
-				$state[ $step ] = [
-					'status'  => self::ACCOUNT_STEP_PENDING,
-					'message' => '',
-					'data'    => [],
-				];
-			}
-			$this->update( $state );
-		}
-
-		return $state;
+	protected function option_name(): string {
+		return OptionsInterface::MERCHANT_ACCOUNT_STATE;
 	}
 
 	/**
-	 * Update the MERCHANT_ACCOUNT_STATE Option.
+	 * Return a list of account creation steps.
 	 *
-	 * @param array $state
+	 * @return string[]
 	 */
-	public function update( array $state ) {
-		$this->options->update( OptionsInterface::MERCHANT_ACCOUNT_STATE, $state );
+	protected function account_creation_steps(): array {
+		return [ 'set_id', 'verify', 'link', 'claim' ];
 	}
 
 	/**
