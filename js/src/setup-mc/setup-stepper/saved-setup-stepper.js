@@ -71,7 +71,14 @@ const SavedSetupStepper = ( props ) => {
 						'Configure your free listings',
 						'google-listings-and-ads'
 					),
-					content: <SetupFreeListings />,
+					content: (
+						<SetupFreeListings
+							stepHeader={ __(
+								'STEP THREE',
+								'google-listings-and-ads'
+							) }
+						/>
+					),
 					onClick: handleStepClick,
 				},
 			] }

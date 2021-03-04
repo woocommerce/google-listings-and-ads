@@ -82,6 +82,10 @@ export default function EditFreeCampaign() {
 						),
 						content: (
 							<SetupFreeListings
+								stepHeader={ __(
+									'STEP TWO',
+									'google-listings-and-ads'
+								) }
 								onContinue={ handleSetupFreeListingsContinue }
 							/>
 						),
