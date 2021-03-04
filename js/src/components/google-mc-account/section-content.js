@@ -1,11 +1,11 @@
 /**
  * Internal dependencies
  */
+import SpinnerCard from '.~/components/spinner-card';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedCard from './connected-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
-import SpinnerCard from './spinner-card';
 
 const SectionContent = ( props ) => {
 	const { disabled } = props;
