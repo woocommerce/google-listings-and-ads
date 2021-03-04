@@ -1,10 +1,9 @@
 /**
  * External dependencies
  */
-import { Link, Stepper } from '@woocommerce/components';
+import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import GridiconChevronLeft from 'gridicons/dist/chevron-left';
 
 /**
  * Internal dependencies
@@ -12,7 +11,7 @@ import GridiconChevronLeft from 'gridicons/dist/chevron-left';
 import FullContainer from '.~/components/full-container';
 import ChooseAudience from '.~/components/edit-program/free-listings/choose-audience';
 import SetupFreeListings from './setup-free-listings';
-import './index.scss';
+import TopBar from '.~/components/edit-program/top-bar';
 
 /**
  * Page Component to edit free campaigns.
@@ -41,18 +40,10 @@ export default function EditFreeCampaign() {
 	};
 	return (
 		<FullContainer>
-			<div className="gla-edit-campaign-top-bar">
-				<Link
-					className="back-button"
-					href={ dashboardURL }
-					type="wc-admin"
-				>
-					<GridiconChevronLeft size={ 20 } />
-				</Link>
-				<span className="title">
-					{ __( 'Edit free listings', 'google-listings-and-ads' ) }
-				</span>
-			</div>
+			<TopBar
+				backHref={ dashboardURL }
+				title={ __( 'Edit free listings', 'google-listings-and-ads' ) }
+			/>
 			<Stepper
 				className="gla-setup-stepper"
 				currentStep={ pageStep }
