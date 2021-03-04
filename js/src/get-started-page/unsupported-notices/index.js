@@ -132,11 +132,11 @@ const UnsupportedCountry = () => {
 
 export default function UnsupportedNotices() {
 	const { mcSupportedLanguage, mcSupportedCountry } = glaData;
-console.log(mcSupportedLanguage, mcSupportedCountry)
+
 	return (
-		<React.Fragment>
+		<>
 			{ ! mcSupportedLanguage && <UnsupportedLanguage /> }
 			{ ! mcSupportedCountry && <UnsupportedCountry /> }
-		</React.Fragment>
+		</>
 	);
 }
