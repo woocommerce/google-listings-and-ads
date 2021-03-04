@@ -104,6 +104,11 @@ class BatchProductHelper implements Service {
 		$wc_product_id = $product_entry->get_wc_product_id();
 		$errors        = $product_entry->get_errors();
 
+		// bail if no errors exist
+		if ( empty( $errors ) ) {
+			return;
+		}
+
 		$this->meta_handler->update_errors( $wc_product_id, $errors );
 
 		// mark the parent product as invalid if it's a variation
