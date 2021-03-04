@@ -17,6 +17,7 @@ import StepContentFooter from '.~/components/step-content-footer';
 import SupportedCountrySelect from './supported-country-select';
 import VerticalGapLayout from '../setup-free-listings/components/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
+import useAutoClearShippingEffect from './useAutoClearShippingEffect';
 import './index.scss';
 
 const FormContent = ( props ) => {
@@ -25,6 +26,7 @@ const FormContent = ( props ) => {
 	const { locale, language } = values;
 
 	useAutoSaveTargetAudienceEffect( values );
+	useAutoClearShippingEffect( values.location, values.countries );
 
 	return (
 		<>
