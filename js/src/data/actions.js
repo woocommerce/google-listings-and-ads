@@ -305,6 +305,48 @@ export function* fetchExistingGoogleMCAccounts() {
 	}
 }
 
+export function* fetchGoogleAdsAccount() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/connection`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS,
+			account: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google Ads account info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* fetchExistingGoogleAdsAccounts() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/accounts`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING,
+			accounts: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting your Google Ads accounts.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchCountries() {
 	try {
 		const response = yield apiFetch( {
@@ -350,6 +392,13 @@ export function* fetchTargetAudience() {
 export function receiveMCAccount( account ) {
 	return {
 		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC,
+		account,
+	};
+}
+
+export function receiveAdsAccount( account ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS,
 		account,
 	};
 }
