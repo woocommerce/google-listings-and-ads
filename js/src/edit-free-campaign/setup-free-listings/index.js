@@ -13,9 +13,9 @@ import FormContent from './form-content';
 
 /**
  * Setup step to configure free listings.
- * Auto-saves changes.
  *
- * @see /js/src/edit-free-campaign/setup-free-listings/index.js
+ * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/index.js},
+ * without any save strategy, this is to be bound externaly.
  */
 const SetupFreeListings = () => {
 	const { settings } = useSettings();
