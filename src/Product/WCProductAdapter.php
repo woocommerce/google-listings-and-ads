@@ -36,6 +36,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 	public const CHANNEL_ONLINE = 'online';
 
+	public const DESTINATION_SHOPPING_ADS  = 'Shopping ads';
+	public const DESTINATION_FREE_LISTINGS = 'Free listings';
+
 	/**
 	 * @var WC_Product WooCommerce product object
 	 */
@@ -93,6 +96,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		$content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
 		$this->setContentLanguage( $content_language );
+
+		$this->setIncludedDestinations( [ self::DESTINATION_SHOPPING_ADS, self::DESTINATION_FREE_LISTINGS ] );
 
 		$this->map_wc_general_attributes()
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
