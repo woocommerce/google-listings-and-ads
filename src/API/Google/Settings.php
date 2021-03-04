@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as RateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_AccountTax as AccountTax;
 use Google_Service_ShoppingContent_AccountTaxTaxRule as TaxRule;
@@ -67,9 +68,15 @@ class Settings {
 	/**
 	 * Whether we should sync tax settings.
 	 *
+	 * This depends on the store being in the US
+	 *
 	 * @return bool
 	 */
 	protected function should_sync_taxes(): bool {
+		if ( 'US' !== $this->get_store_country() ) {
+			return false;
+		}
+
 		return 'destination' === ( $this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER )['tax_rate'] ?? 'destination' );
 	}
 
@@ -86,6 +93,8 @@ class Settings {
 
 		$tax_rule = new TaxRule();
 		$tax_rule->setUseGlobalRate( true );
+
+		// We're only doing this for the US, so hard-code US info.
 		$tax_rule->setLocationId( 21171 );
 		$tax_rule->setCountry( 'US' );
 
@@ -271,5 +280,17 @@ class Settings {
 	 */
 	protected function get_shopping_service(): ShoppingService {
 		return $this->container->get( ShoppingService::class );
+	}
+
+	/**
+	 * Get the country for the store.
+	 *
+	 * @return string
+	 */
+	protected function get_store_country(): string {
+		/** @var WC $wc */
+		$wc = $this->container->get( WC::class );
+
+		return $wc->get_wc_countries()->get_base_country();
 	}
 }
