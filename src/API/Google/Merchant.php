@@ -189,6 +189,7 @@ class Merchant {
 	 * @param int $ads_id Google Ads ID to link.
 	 *
 	 * @return bool
+	 * @throws Exception When unable to retrieve or update account data.
 	 */
 	public function link_ads_id( int $ads_id ): bool {
 		/** @var MC_Account $account */
