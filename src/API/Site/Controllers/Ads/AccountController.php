@@ -303,8 +303,9 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If an error occurs during any step.
 	 */
 	protected function setup_account(): array {
-		$state  = $this->account_state->get();
-		$ads_id = $this->options->get( Options::ADS_ID );
+		$state   = $this->account_state->get();
+		$ads_id  = $this->options->get( Options::ADS_ID );
+		$account = [ 'id' => $ads_id ];
 
 		foreach ( $state as $name => &$step ) {
 			if ( AdsAccountState::STEP_DONE === $step['status'] ) {
@@ -318,7 +319,7 @@ class AccountController extends BaseOptionsController {
 						if ( ! empty( $ads_id ) ) {
 							break;
 						}
-						$ads_id = $this->middleware->create_ads_account();
+						$account = $this->middleware->create_ads_account();
 						break;
 					default:
 						throw new Exception(
@@ -337,6 +338,6 @@ class AccountController extends BaseOptionsController {
 			}
 		}
 
-		return [ 'id' => $ads_id ];
+		return $account;
 	}
 }
