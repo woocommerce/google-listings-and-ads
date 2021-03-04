@@ -215,11 +215,6 @@ class ProductRepository implements Service {
 			$this->get_sync_ready_products_meta_query(),
 			$this->get_disapproved_products_meta_query(),
 			[
-				'relation' => 'AND',
-				[
-					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
-					'compare' => 'EXISTS',
-				],
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
