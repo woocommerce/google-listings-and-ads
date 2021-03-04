@@ -94,19 +94,19 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Marks a WooCommerce product as disapproved and stores the errors in a meta data key.
+	 * Marks a WooCommerce product as invalid and stores the errors in a meta data key.
 	 *
-	 * Note: If a product variation is disapproved then the parent product is also marked as disapproved.
+	 * Note: If a product variation is invalid then the parent product is also marked as invalid.
 	 *
 	 * @param BatchInvalidProductEntry $product_entry
 	 */
-	public function mark_as_disapproved( BatchInvalidProductEntry $product_entry ) {
+	public function mark_as_invalid( BatchInvalidProductEntry $product_entry ) {
 		$wc_product_id = $product_entry->get_wc_product_id();
 		$errors        = $product_entry->get_errors();
 
 		$this->meta_handler->update_errors( $wc_product_id, $errors );
 
-		// mark the parent product as disapproved if it's a variation
+		// mark the parent product as invalid if it's a variation
 		$wc_product = wc_get_product( $wc_product_id );
 		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
 			$wc_parent_id = $wc_product->get_parent_id();
@@ -117,7 +117,7 @@ class BatchProductHelper implements Service {
 
 			$parent_errors[ $wc_product_id ] = $errors;
 
-			$this->mark_as_disapproved( new BatchInvalidProductEntry( $wc_parent_id, $parent_errors ) );
+			$this->mark_as_invalid( new BatchInvalidProductEntry( $wc_parent_id, $parent_errors ) );
 		}
 	}
 

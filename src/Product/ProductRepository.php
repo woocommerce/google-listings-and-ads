@@ -186,7 +186,7 @@ class ProductRepository implements Service {
 	/**
 	 * @return array
 	 */
-	protected function get_disapproved_products_meta_query(): array {
+	protected function get_invalid_products_meta_query(): array {
 		return [
 			'relation' => 'OR',
 			[
@@ -213,7 +213,7 @@ class ProductRepository implements Service {
 		$args['meta_query'] = [
 			'relation' => 'AND',
 			$this->get_sync_ready_products_meta_query(),
-			$this->get_disapproved_products_meta_query(),
+			$this->get_invalid_products_meta_query(),
 			[
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
