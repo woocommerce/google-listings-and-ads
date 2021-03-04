@@ -35,7 +35,6 @@ const EditTimeModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: call backend API when submit form.
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, time } = values;
 

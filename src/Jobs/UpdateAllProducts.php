@@ -3,9 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
 defined( 'ABSPATH' ) || exit;
@@ -17,36 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class UpdateAllProducts extends AbstractBatchedActionSchedulerJob {
-
-	/**
-	 * @var ProductSyncer
-	 */
-	protected $product_syncer;
-
-	/**
-	 * @var ProductRepository
-	 */
-	protected $product_repository;
-
-	/**
-	 * SyncProducts constructor.
-	 *
-	 * @param ActionSchedulerInterface  $action_scheduler
-	 * @param ActionSchedulerJobMonitor $monitor
-	 * @param ProductSyncer             $product_syncer
-	 * @param ProductRepository         $product_repository
-	 */
-	public function __construct(
-		ActionSchedulerInterface $action_scheduler,
-		ActionSchedulerJobMonitor $monitor,
-		ProductSyncer $product_syncer,
-		ProductRepository $product_repository
-	) {
-		$this->product_syncer     = $product_syncer;
-		$this->product_repository = $product_repository;
-		parent::__construct( $action_scheduler, $monitor );
-	}
+class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 
 	/**
 	 * Get the name of the job.

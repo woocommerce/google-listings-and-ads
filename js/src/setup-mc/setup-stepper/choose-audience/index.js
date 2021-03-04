@@ -7,6 +7,7 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import AppSpinner from '.~/components/app-spinner';
 import useTargetAudience from '.~/hooks/useTargetAudience';
 import StepContent from '.~/components/edit-program/step-content';
 import StepContentHeader from '.~/components/edit-program/step-content-header';
@@ -22,6 +23,10 @@ import '.~/components/edit-program/free-listings/choose-audience/index.scss';
 const ChooseAudience = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { data } = useTargetAudience();
+
+	if ( ! data ) {
+		return <AppSpinner />;
+	}
 
 	const handleValidate = () => {
 		const errors = {};

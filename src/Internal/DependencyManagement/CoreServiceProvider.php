@@ -34,11 +34,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -103,6 +104,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ViewFactory::class            => true,
 		DebugLogger::class            => true,
 		MerchantAccountState::class   => true,
+		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
 	];
 
@@ -160,8 +162,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
-		$this->share_with_tags( ProductMetaHandler::class );
+		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
+		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
