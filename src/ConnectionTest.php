@@ -20,12 +20,15 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
+use WP_REST_Request as Request;
 
 /**
  * Main class for Connection Test.
@@ -289,10 +292,13 @@ class ConnectionTest implements Service, Registerable {
 									<button class="button">MC Account Setup (I & II)</button>
 								</p>
 
-								<?php if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE ) ) : ?>
+								<?php
+									$mc_account_state = $this->container->get( MerchantAccountState::class )->get( false );
+									if ( ! empty( $mc_account_state ) ) :
+								?>
 									<p class="description" style="font-style: italic">
 										( Merchant Center account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
-										<?php foreach ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) : ?>
+										<?php foreach ( $mc_account_state as $name => $step ) : ?>
 											<?php echo $name . ':' . $step['status']; ?>
 										<?php endforeach; ?>
 										)
@@ -433,30 +439,40 @@ class ConnectionTest implements Service, Registerable {
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
-							<th>Create Ads Customer:</th>
-							<td>
-								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-ads-create' ], $url ), 'wcs-google-ads-create' ) ); ?>">Create Google Ads customer as a sub account</a>
-								</p>
-								<ol>
-									<li>Create account</li>
-									<li>Direct user to billing flow (not implemented yet)</li>
-								</ol>
-							</td>
-						</tr>
-						<tr>
-							<th>Link Google Ads Customer:</th>
+							<th>Ads Account Setup:</th>
 							<td>
 								<p>
 									<label>
-										Customer ID <input name="customer_id" type="text" value="<?php echo ! empty( $_GET['customer_id'] ) ? intval( $_GET['customer_id'] ) : ''; ?>" />
+										Ads ID <input name="ads_id" type="text" value="" />
 									</label>
-									<button class="button">Link existing Google Ads customer to the site</button>
+									<button class="button">Setup an existing account or create a new one</button>
 								</p>
-								<ol>
-									<li>Link to manager account</li>
-									<li>Link to merchant account (not implemented yet)</li>
-								</ol>
+								<?php
+									$ads_account_state = $this->container->get( AdsAccountState::class )->get( false );
+									if ( ! empty( $ads_account_state ) ) :
+								?>
+									<p class="description" style="font-style: italic">
+										( Ads account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::ADS_ID ); ?> ||
+										<?php foreach ( $ads_account_state as $name => $step ) : ?>
+											<?php echo $name . ':' . $step['status']; ?>
+										<?php endforeach; ?>
+										)
+									</p>
+								<?php endif; ?>
+								<p class="description">
+									Begins/continues a multistep account-setup sequence.
+									If no Ads ID is provided, then a sub-account will be created under our manager account.
+									Adds <em>gla_ads_id</em> to site options.
+
+									<h4>Create account steps:</h4>
+									create account &gt;
+									direct user to billing flow (not implemented yet) &gt;
+									link to merchant account (not implemented yet)
+
+									<h4>Link account steps:</h4>
+									link to manager account &gt;
+									link to merchant account (not implemented yet)
+								</p>
 							</td>
 						</tr>
 						<tr>
@@ -476,9 +492,9 @@ class ConnectionTest implements Service, Registerable {
 							</td>
 						</tr>
 					</table>
-					<?php wp_nonce_field( 'wcs-google-ads-link' ); ?>
+					<?php wp_nonce_field( 'wcs-google-ads-setup' ); ?>
 					<input name="page" value="connection-test-admin-page" type="hidden" />
-					<input name="action" value="wcs-google-ads-link" type="hidden" />
+					<input name="action" value="wcs-google-ads-setup" type="hidden" />
 				</form>
 
 				<hr />
@@ -682,48 +698,22 @@ class ConnectionTest implements Service, Registerable {
 			}
 		}
 
-		if ( 'wcs-google-ads-create' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-create' ) ) {
-			try {
-				/** @var Proxy $proxy */
-				$proxy   = $this->container->get( Proxy::class );
-				$account = $proxy->create_ads_account();
-
-				$this->response .= 'Created account: ' . wp_json_encode( $account, JSON_PRETTY_PRINT ) . "\n";
-			} catch ( \Exception $e ) {
-				$this->response .= 'Error: ' . $e->getMessage();
+		if ( 'wcs-google-ads-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-setup' ) ) {
+			$request = new Request( 'POST', '/wc/gla/ads/accounts' );
+			if ( is_numeric( $_GET['ads_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => absint( $_GET['ads_id'] ) ] );
 			}
-		}
-
-		if ( 'wcs-google-ads-link' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-link' ) ) {
-
-			if ( empty( $_GET['customer_id'] ) ) {
-				$this->response .= 'Please enter a Customer ID';
-				return;
-			}
-
-			try {
-				/** @var Proxy $proxy */
-				$proxy   = $this->container->get( Proxy::class );
-				$account = $proxy->link_ads_account( absint( $_GET['customer_id'] ) );
-
-				$this->response .= 'Linked account: ' . wp_json_encode( $account, JSON_PRETTY_PRINT ) . "\n";
-			} catch ( \Exception $e ) {
-				$this->response .= 'Error: ' . $e->getMessage();
-			}
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-ads-check' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-check' ) ) {
-			/** @var Proxy $proxy */
-			$proxy    = $this->container->get( Proxy::class );
-			$status = $proxy->get_connected_ads_account();
-			$this->response .= wp_json_encode( $status );
+			$request = new Request( 'GET', '/wc/gla/ads/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-ads-disconnect' === $_GET['action'] && check_admin_referer( 'wcs-google-ads-disconnect' ) ) {
-			/** @var Proxy $proxy */
-			$proxy    = $this->container->get( Proxy::class );
-			$status = $proxy->disconnect_ads_account();
-			$this->response .= 'Disconnected ads account' . "\n";
+			$request = new Request( 'DELETE', '/wc/gla/ads/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-mc' === $_GET['action'] && check_admin_referer( 'wcs-google-mc' ) ) {
@@ -745,23 +735,13 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-sv-token' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-token' ) ) {
-			// Full process using REST API
-			$request         = new \WP_REST_Request( 'POST', '/wc/gla/site/verify' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $json;
+			$request = new Request( 'POST', '/wc/gla/site/verify' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-sv-check' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-check' ) ) {
-			// Check using REST API
-			$request         = new \WP_REST_Request( 'GET', '/wc/gla/site/verify' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $json;
+			$request = new Request( 'GET', '/wc/gla/site/verify' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-sv-link' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-link' ) ) {
@@ -777,7 +757,6 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-mc-setup' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-setup' ) ) {
-			// Using REST API
 			add_filter(
 				'woocommerce_gla_site_url',
 				function( $url ) {
@@ -785,58 +764,37 @@ class ConnectionTest implements Service, Registerable {
 				}
 			);
 
-			$request = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts' );
+			$request = new Request( 'POST', '/wc/gla/mc/accounts' );
 			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
 				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
 			}
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-mc-claim-overwrite' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-claim-overwrite' ) ) {
-			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
+			$this->send_rest_request( $request );
 		}
 
 		if( 'wcs-google-mc-switch-url' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-switch-url' ) ) {
-			$request         = new \WP_REST_Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
+			$request = new Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
 			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
 				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
 			}
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-accounts-check' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-check' ) ) {
-			$request         = new \WP_REST_Request( 'GET', '/wc/gla/mc/connection' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'GET', '/wc/gla/mc/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-accounts-delete' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-delete' ) ) {
-			$request         = new \WP_REST_Request( 'DELETE', '/wc/gla/mc/connection' );
-			$response        = rest_do_request( $request );
-			$server          = rest_get_server();
-			$data            = $server->response_to_data( $response, false );
-			$json            = wp_json_encode( $data );
-			$this->response .= $response->get_status() . ' ' . $json;
+			$request = new Request( 'DELETE', '/wc/gla/mc/connection' );
+			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-accounts-claim' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-claim' ) ) {
-			// Using REST API
 			add_filter(
 				'woocommerce_gla_site_url',
 				function ( $url ) {
@@ -1108,5 +1066,19 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		return 'X_JP_Auth ' . join( ' ', $header_pieces );
+	}
+
+	/**
+	 * Send a REST API request and add the response to our buffer.
+	 */
+	private function send_rest_request( Request $request ) {
+		$response = rest_do_request( $request );
+		$server   = rest_get_server();
+		$data     = $server->response_to_data( $response, false );
+		$json     = wp_json_encode( $data, JSON_PRETTY_PRINT );
+
+		$this->response .= 'Request:  ' . $request->get_method() . ' ' . $request->get_route() . PHP_EOL;
+		$this->response .= 'Status:   ' . $response->get_status() . PHP_EOL;
+		$this->response .= 'Response: ' . $json;
 	}
 }

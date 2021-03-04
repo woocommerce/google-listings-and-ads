@@ -7,7 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 const More = ( props ) => {
 	const { count } = props;
 
-	if ( count === 0 ) {
+	if ( count <= 0 ) {
 		return null;
 	}
 

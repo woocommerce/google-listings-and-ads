@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use DateTime;
 use DateTimeZone;
@@ -143,8 +142,8 @@ class Proxy implements OptionsAwareInterface {
 		$id     = $this->get_merchant_id();
 		$status = $id ? 'connected' : 'disconnected';
 
-		foreach ( $this->options->get( OptionsInterface::MERCHANT_ACCOUNT_STATE, [] ) as $name => $step ) {
-			if ( ! isset( $step['status'] ) || MerchantAccountState::ACCOUNT_STEP_DONE !== $step['status'] ) {
+		foreach ( $this->container->get( MerchantAccountState::class )->get( false ) as $name => $step ) {
+			if ( ! isset( $step['status'] ) || MerchantAccountState::STEP_DONE !== $step['status'] ) {
 				$status = 'incomplete';
 				$id     = 0;
 				break;
