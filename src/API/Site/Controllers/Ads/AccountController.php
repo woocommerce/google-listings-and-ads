@@ -3,11 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use Psr\Container\ContainerInterface;
@@ -39,7 +41,7 @@ class AccountController extends BaseOptionsController {
 	protected $account_state;
 
 	/**
-	 * BaseController constructor.
+	 * AccountController constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
@@ -83,6 +85,17 @@ class AccountController extends BaseOptionsController {
 				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->disconnect_ads_account_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+
+		$this->register_route(
+			'ads/link-merchant',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->link_merchant_account_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -154,6 +167,40 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the callback function for linking a merchant account.
+	 *
+	 * @return callable
+	 */
+	protected function link_merchant_account_callback(): callable {
+		return function() {
+			try {
+				/** @var Merchant $merchant */
+				$merchant = $this->container->get( Merchant::class );
+				if ( ! $merchant->get_id() ) {
+					throw new Exception( 'A Merchant Center account must be connected' );
+				}
+
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
+				if ( ! $ads->get_id() ) {
+					throw new Exception( 'An Ads account must be connected' );
+				}
+
+				// Create link for Merchant and accept it in Ads.
+				$merchant->link_ads_id( $ads->get_id() );
+				$ads->accept_merchant_link( $merchant->get_id() );
+
+				return [
+					'status'  => 'success',
+					'message' => __( 'Successfully linked merchant and ads accounts.', 'google-listings-and-ads' ),
+				];
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+		};
+	}
+
+	/**
 	 * Get the item schema for the controller.
 	 *
 	 * @return array
@@ -189,7 +236,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If there is already an Ads account ID.
 	 */
 	private function use_existing_account( int $account_id ) {
-		$ads_id = $this->options->get( OptionsInterface::ADS_ID );
+		$ads_id = $this->options->get( Options::ADS_ID );
 		if ( $ads_id && $ads_id !== $account_id ) {
 			throw new Exception(
 				/* translators: 1: is a numeric account ID */
@@ -219,7 +266,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function setup_account(): array {
 		$state  = $this->account_state->get();
-		$ads_id = $this->options->get( OptionsInterface::ADS_ID );
+		$ads_id = $this->options->get( Options::ADS_ID );
 
 		foreach ( $state as $name => &$step ) {
 			if ( AdsAccountState::STEP_DONE === $step['status'] ) {
