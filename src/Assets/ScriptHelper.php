@@ -65,7 +65,7 @@ trait ScriptHelper {
 	 * @var array
 	 */
 
-	protected $inlineScripts = [];
+	protected $inline_scripts = [];
 	/**
 	 * ScriptHelper constructor.
 	 *
@@ -114,7 +114,7 @@ trait ScriptHelper {
 	 * @return $this
 	 */
 	public function add_inline_script( string $variable_name, array $data ) {
-		$this->inlineScripts[ $variable_name ] = $data;
+		$this->inline_scripts[ $variable_name ] = $data;
 
 		return $this;
 	}
@@ -155,9 +155,9 @@ trait ScriptHelper {
 				wp_localize_script( $this->handle, $object_name, $data_array );
 			}
 
-			foreach ( $this->inlineScripts as $variable_name => $data_array ) {
-				$inline_script = "var $variable_name = " . json_encode($data_array);
-				wp_add_inline_script($this->handle, $inline_script, 'before');
+			foreach ( $this->inline_scripts as $variable_name => $data_array ) {
+				$inline_script = "var $variable_name = " . json_encode( $data_array );
+				wp_add_inline_script( $this->handle, $inline_script, 'before' );
 			}
 
 			wp_enqueue_script( $this->handle );
