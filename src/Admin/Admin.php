@@ -85,7 +85,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
 				]
 			)
-		) )->add_localization(
+		) )->add_inline_script(
 			'glaData',
 			[
 				'mcSetupComplete'     => $this->setup_complete(),

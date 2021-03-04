@@ -60,6 +60,13 @@ trait ScriptHelper {
 	protected $localizations = [];
 
 	/**
+	 * Array of inline scripts to pass generic data from PHP to JavaScript with JSON format.
+	 *
+	 * @var array
+	 */
+
+	protected $inlineScripts = [];
+	/**
 	 * ScriptHelper constructor.
 	 *
 	 * @param string $handle       The script handle.
@@ -99,6 +106,20 @@ trait ScriptHelper {
 	}
 
 	/**
+	 * Add a inline script to pass generic data from PHP to JavaScript.
+	 *
+	 * @param string $variable_name The global JavaScript variable name.
+	 * @param array  $data          Array of data to be encoded to JSON format.
+	 *
+	 * @return $this
+	 */
+	public function add_inline_script( string $variable_name, array $data ) {
+		$this->inlineScripts[ $variable_name ] = $data;
+
+		return $this;
+	}
+
+	/**
 	 * Get the enqueue closure to use.
 	 *
 	 * @return Closure
@@ -132,6 +153,11 @@ trait ScriptHelper {
 
 			foreach ( $this->localizations as $object_name => $data_array ) {
 				wp_localize_script( $this->handle, $object_name, $data_array );
+			}
+
+			foreach ( $this->inlineScripts as $variable_name => $data_array ) {
+				$inline_script = "var $variable_name = " . json_encode($data_array);
+				wp_add_inline_script($this->handle, $inline_script, 'before');
 			}
 
 			wp_enqueue_script( $this->handle );
