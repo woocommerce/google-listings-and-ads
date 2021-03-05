@@ -8,13 +8,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class UpdateAllProducts
+ * Class ResubmitExpiringProducts
  *
- * Submits all WooCommerce products to Google Merchant Center and/or updates the existing ones.
+ * Resubmits all WooCommerce products that are nearly expired to Google Merchant Center.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
+class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implements RecurringJobInterface {
 
 	/**
 	 * Get the name of the job.
@@ -22,7 +22,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return 'update_all_products';
+		return 'resubmit_expiring_products';
 	}
 
 	/**
@@ -35,7 +35,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 * @return array
 	 */
 	public function get_batch( int $batch_number ): array {
-		return $this->product_repository->find_sync_ready_product_ids( $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
+		return $this->product_repository->find_expiring_product_ids( $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
 	/**
@@ -49,5 +49,23 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 		$products = $this->product_repository->find_by_ids( $items );
 
 		$this->product_syncer->update( $products );
+	}
+
+	/**
+	 * Return the recurring job's interval in seconds.
+	 *
+	 * @return int
+	 */
+	public function get_interval(): int {
+		return 24 * 60 * 60; // 24 hours
+	}
+
+	/**
+	 * Get the name of an action hook to attach the job's start method to.
+	 *
+	 * @return string
+	 */
+	public function get_start_hook(): string {
+		return "{$this->get_hook_base_name()}start";
 	}
 }

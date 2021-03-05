@@ -112,7 +112,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @return int
 	 */
 	protected function get_batch_size(): int {
-		return 1000;
+		return 100;
 	}
 
 	/**

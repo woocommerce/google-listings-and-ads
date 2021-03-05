@@ -4,9 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -21,6 +24,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class BatchProductHelper implements Service {
+
+	use ValidateInterface;
 
 	/**
 	 * @var ProductMetaHandler
@@ -61,6 +66,8 @@ class BatchProductHelper implements Service {
 		$wc_product_id  = $product_entry->get_wc_product_id();
 		$google_product = $product_entry->get_google_product();
 
+		$this->validate_instanceof( $google_product, GoogleProduct::class );
+
 		$this->meta_handler->update_synced_at( $wc_product_id, time() );
 
 		// merge and update all google product ids
@@ -83,11 +90,45 @@ class BatchProductHelper implements Service {
 		$wc_product_id = $product_entry->get_wc_product_id();
 		$this->meta_handler->delete_synced_at( $wc_product_id );
 		$this->meta_handler->delete_google_ids( $wc_product_id );
+		$this->meta_handler->delete_errors( $wc_product_id );
 
 		// mark the parent product as un-synced if it's a variation
 		$wc_product = wc_get_product( $wc_product_id );
 		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
 			$this->mark_as_unsynced( new BatchProductEntry( $wc_product->get_parent_id(), null ) );
+		}
+	}
+
+	/**
+	 * Marks a WooCommerce product as invalid and stores the errors in a meta data key.
+	 *
+	 * Note: If a product variation is invalid then the parent product is also marked as invalid.
+	 *
+	 * @param BatchInvalidProductEntry $product_entry
+	 */
+	public function mark_as_invalid( BatchInvalidProductEntry $product_entry ) {
+		$wc_product_id = $product_entry->get_wc_product_id();
+		$errors        = $product_entry->get_errors();
+
+		// bail if no errors exist
+		if ( empty( $errors ) ) {
+			return;
+		}
+
+		$this->meta_handler->update_errors( $wc_product_id, $errors );
+
+		// mark the parent product as invalid if it's a variation
+		$wc_product = wc_get_product( $wc_product_id );
+		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
+			$wc_parent_id = $wc_product->get_parent_id();
+
+			$parent_errors = ! empty( $this->meta_handler->get_errors( $wc_parent_id ) ) ?
+				$this->meta_handler->get_errors( $wc_parent_id ) :
+				[];
+
+			$parent_errors[ $wc_product_id ] = $errors;
+
+			$this->mark_as_invalid( new BatchInvalidProductEntry( $wc_parent_id, $parent_errors ) );
 		}
 	}
 

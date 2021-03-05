@@ -63,6 +63,47 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	}
 
 	/**
+	 * Schedule a recurring action to run now (i.e. in the next available batch), and in the given intervals.
+	 *
+	 * @param int    $timestamp           When the job will run.
+	 * @param int    $interval_in_seconds How long to wait between runs.
+	 * @param string $hook                The hook to trigger.
+	 * @param array  $args                Arguments to pass when the hook triggers.
+	 *
+	 * @return int The action ID.
+	 */
+	public function schedule_recurring( int $timestamp, int $interval_in_seconds, string $hook, array $args = [] ): int {
+		return as_schedule_recurring_action( $timestamp, $interval_in_seconds, $hook, $args, $this->get_slug() );
+	}
+
+	/**
+	 * Schedule an action that recurs on a cron-like schedule.
+	 *
+	 * @param int    $timestamp The first instance of the action will be scheduled to run at a time
+	 *                          calculated after this timestamp matching the cron expression. This
+	 *                          can be used to delay the first instance of the action.
+	 * @param string $schedule  A cron-link schedule string
+	 * @param string $hook      The hook to trigger.
+	 * @param array  $args      Arguments to pass when the hook triggers.
+	 *
+	 * @return int The action ID.
+	 *
+	 * @see http://en.wikipedia.org/wiki/Cron
+	 *   *    *    *    *    *    *
+	 *   ┬    ┬    ┬    ┬    ┬    ┬
+	 *   |    |    |    |    |    |
+	 *   |    |    |    |    |    + year [optional]
+	 *   |    |    |    |    +----- day of week (0 - 7) (Sunday=0 or 7)
+	 *   |    |    |    +---------- month (1 - 12)
+	 *   |    |    +--------------- day of month (1 - 31)
+	 *   |    +-------------------- hour (0 - 23)
+	 *   +------------------------- min (0 - 59)
+	 */
+	public function schedule_cron( int $timestamp, string $schedule, string $hook, array $args = [] ): int {
+		return as_schedule_cron_action( $timestamp, $schedule, $hook, $args, $this->get_slug() );
+	}
+
+	/**
 	 * Enqueue an action to run one time, as soon as possible
 	 *
 	 * @param string $hook  The hook to trigger.

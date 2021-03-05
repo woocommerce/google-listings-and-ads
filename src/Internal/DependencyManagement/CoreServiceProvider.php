@@ -16,7 +16,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
@@ -33,11 +32,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -101,6 +101,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ViewFactory::class            => true,
 		DebugLogger::class            => true,
 		MerchantAccountState::class   => true,
+		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
 	];
 
@@ -157,8 +158,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
-		$this->share_with_tags( ProductMetaHandler::class );
+		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
+		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
@@ -194,26 +196,5 @@ class CoreServiceProvider extends AbstractServiceProvider {
 				return new DBInstaller( ...$arguments );
 			}
 		);
-	}
-
-	/**
-	 * Maybe share a class and add interfaces as tags.
-	 *
-	 * This will also check any classes that implement the Conditional interface and only add them if
-	 * they are needed.
-	 *
-	 * @param string $class        The class name to add.
-	 * @param mixed  ...$arguments Constructor arguments for the class.
-	 */
-	protected function conditionally_share_with_tags( string $class, ...$arguments ) {
-		$implements = class_implements( $class );
-		if ( array_key_exists( Conditional::class, $implements ) ) {
-			/** @var Conditional $class */
-			if ( ! $class::is_needed() ) {
-				return;
-			}
-		}
-
-		$this->share_with_tags( $class, ...$arguments );
 	}
 }

@@ -13,12 +13,15 @@ use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
+use Google\Ads\GoogleAds\V6\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V6\Resources\Campaign;
 use Google\Ads\GoogleAds\V6\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V6\Resources\MerchantCenterLink;
 use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V6\Services\CampaignBudgetOperation;
 use Google\Ads\GoogleAds\V6\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkOperation;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignResult;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignBudgetResult;
 use Google\ApiCore\ApiException;
@@ -494,5 +497,56 @@ class Ads {
 		/** @var Options $options */
 		$options = $this->container->get( OptionsInterface::class );
 		return $options->get( Options::MERCHANT_ID );
+	}
+
+	/**
+	 * Accept a link from a merchant account.
+	 *
+	 * @param int $merchant_id Merchant Center account id.
+	 * @throws Exception When a link has already been accepted or is unavailable.
+	 */
+	public function accept_merchant_link( int $merchant_id ) {
+		$link = $this->get_merchant_link( $merchant_id );
+
+		if ( $link->getStatus() === MerchantCenterLinkStatus::ENABLED ) {
+			throw new Exception( __( 'Merchant link has already been accepted', 'google-listings-and-ads' ) );
+		}
+
+		$link->setStatus( MerchantCenterLinkStatus::ENABLED );
+
+		$operation = new MerchantCenterLinkOperation();
+		$operation->setUpdate( $link );
+		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $link ) );
+
+		$client   = $this->container->get( GoogleAdsClient::class );
+		$response = $client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
+			$this->get_id(),
+			$operation,
+			$this->get_args()
+		);
+	}
+
+	/**
+	 * Get the link from a merchant account.
+	 *
+	 * @param int $merchant_id Merchant Center account id.
+	 *
+	 * @return MerchantCenterLink
+	 * @throws Exception When the merchant link hasn't been created.
+	 */
+	private function get_merchant_link( int $merchant_id ): MerchantCenterLink {
+		$client   = $this->container->get( GoogleAdsClient::class );
+		$response = $client->getMerchantCenterLinkServiceClient()->listMerchantCenterLinks(
+			$this->get_id(),
+			$this->get_args()
+		);
+
+		foreach ( $response->getMerchantCenterLinks() as $link ) {
+			if ( $merchant_id === absint( $link->getId() ) ) {
+				return $link;
+			}
+		}
+
+		throw new Exception( __( 'Merchant link is not available to accept', 'google-listings-and-ads' ) );
 	}
 }

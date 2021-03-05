@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\AsyncActionRunner;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractProductSyncerBatchedJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ActionSchedulerJobMonitor;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
@@ -17,6 +18,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -46,7 +49,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		ActionSchedulerInterface::class  => true,
 		AsyncActionRunner::class         => true,
 		ActionSchedulerJobMonitor::class => true,
-		JobInitializer::class            => true,
 		SyncerHooks::class               => true,
 		Service::class                   => true,
 	];
@@ -67,14 +69,17 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ActionScheduler::class, AsyncActionRunner::class );
 		$this->share_with_tags( ActionSchedulerJobMonitor::class, ActionScheduler::class );
 
-		$this->share_action_scheduler_job( UpdateAllProducts::class, ProductSyncer::class, ProductRepository::class );
-		$this->share_action_scheduler_job( DeleteAllProducts::class, ProductSyncer::class, BatchProductHelper::class, ProductRepository::class );
-		$this->share_action_scheduler_job( UpdateProducts::class, ProductSyncer::class, ProductRepository::class );
-		$this->share_action_scheduler_job( DeleteProducts::class, ProductSyncer::class );
+		// share product syncer jobs
+		$this->share_product_syncer_job( UpdateAllProducts::class );
+		$this->share_product_syncer_job( DeleteAllProducts::class );
+		$this->share_product_syncer_job( UpdateProducts::class );
+		$this->share_product_syncer_job( DeleteProducts::class );
+		$this->share_product_syncer_job( ResubmitExpiringProducts::class );
 
-		$this->share_with_tags(
+		$this->conditionally_share_with_tags(
 			JobInitializer::class,
-			JobInterface::class
+			JobInterface::class,
+			ActionScheduler::class
 		);
 
 		$this->share_with_tags(
@@ -102,5 +107,33 @@ class JobServiceProvider extends AbstractServiceProvider {
 			ActionSchedulerJobMonitor::class,
 			...$arguments
 		);
+	}
+
+	/**
+	 * Share a product syncer job class
+	 *
+	 * @param string $class         The class name to add.
+	 * @param mixed  ...$arguments  Constructor arguments for the class.
+	 *
+	 * @throws InvalidClass When the given class does not implement the ProductSyncerJobInterface.
+	 */
+	protected function share_product_syncer_job( string $class, ...$arguments ) {
+		$this->validate_interface( $class, ProductSyncerJobInterface::class );
+		if ( is_subclass_of( $class, AbstractProductSyncerBatchedJob::class ) ) {
+			$this->share_action_scheduler_job(
+				$class,
+				ProductSyncer::class,
+				ProductRepository::class,
+				BatchProductHelper::class,
+				...$arguments
+			);
+		} else {
+			$this->share_action_scheduler_job(
+				$class,
+				ProductSyncer::class,
+				ProductRepository::class,
+				...$arguments
+			);
+		}
 	}
 }

@@ -146,18 +146,7 @@ class ProductRepository implements Service {
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
 	public function find_sync_ready_products( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = [
-			'relation' => 'OR',
-			[
-				'key'     => ProductMetaHandler::KEY_VISIBILITY,
-				'compare' => 'NOT EXISTS',
-			],
-			[
-				'key'     => ProductMetaHandler::KEY_VISIBILITY,
-				'compare' => '!=',
-				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
-			],
-		];
+		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
 
 		return $this->find( $args, $limit, $offset );
 	}
@@ -171,7 +160,16 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_sync_ready_product_ids( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = [
+		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_sync_ready_products_meta_query(): array {
+		return [
 			'relation' => 'OR',
 			[
 				'key'     => ProductMetaHandler::KEY_VISIBILITY,
@@ -181,6 +179,47 @@ class ProductRepository implements Service {
 				'key'     => ProductMetaHandler::KEY_VISIBILITY,
 				'compare' => '!=',
 				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+			],
+		];
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_invalid_products_meta_query(): array {
+		return [
+			'relation' => 'OR',
+			[
+				'key'     => ProductMetaHandler::KEY_ERRORS,
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => ProductMetaHandler::KEY_ERRORS,
+				'compare' => '=',
+				'value'   => '',
+			],
+		];
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs nearly expired and ready to be re-submitted to Google Merchant Center.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_expiring_product_ids( int $limit = - 1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			'relation' => 'AND',
+			$this->get_sync_ready_products_meta_query(),
+			$this->get_invalid_products_meta_query(),
+			[
+				[
+					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
+					'compare' => '<',
+					'value'   => strtotime( '-28 days' ),
+				],
 			],
 		];
 
@@ -203,11 +242,6 @@ class ProductRepository implements Service {
 		$args['limit']  = $limit;
 		$args['offset'] = $offset;
 
-		// include product variations in the query
-		if ( isset( $args[ self::INCLUDE_VARIATIONS_KEY ] ) && true === $args[ self::INCLUDE_VARIATIONS_KEY ] ) {
-			$args['type'] = array_merge( array_keys( wc_get_product_types() ), [ 'variation' ] );
-		}
-
 		return wc_get_products( $this->prepare_query_args( $args ) );
 	}
 
@@ -225,6 +259,14 @@ class ProductRepository implements Service {
 
 		if ( ! empty( $args['meta_query'] ) ) {
 			$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
+		}
+
+		// only include supported product types
+		$args['type'] = $this->get_supported_product_types();
+
+		// include product variations in the query
+		if ( isset( $args[ self::INCLUDE_VARIATIONS_KEY ] ) && true === $args[ self::INCLUDE_VARIATIONS_KEY ] ) {
+			$args['type'][] = 'variation';
 		}
 
 		return $args;
@@ -259,4 +301,14 @@ class ProductRepository implements Service {
 
 		return $updated_queries;
 	}
+
+	/**
+	 * Return the list of supported product types.
+	 *
+	 * @return array
+	 */
+	protected function get_supported_product_types(): array {
+		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable' ] );
+	}
+
 }
