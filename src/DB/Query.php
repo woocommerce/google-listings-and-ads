@@ -136,6 +136,22 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Gets the first result of the query.
+	 *
+	 * @return array
+	 */
+	public function get_row(): array {
+		if ( null === $this->results ) {
+			$old_limit = $this->limit ?? 0;
+			$this->set_limit( 1 );
+			$this->query_results();
+			$this->set_limit( $old_limit );
+		}
+
+		return $this->results[0] ?? [];
+	}
+
+	/**
 	 * Perform the query and save it to the results.
 	 */
 	protected function query_results() {

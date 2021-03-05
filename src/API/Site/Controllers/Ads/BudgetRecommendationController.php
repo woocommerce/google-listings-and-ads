@@ -62,15 +62,15 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
-			$country        = $request->get_param( 'country_code' );
-			$currency       = get_woocommerce_currency();
+			$country        = strtoupper( $request->get_param( 'country_code' ) );
+			$currency       = strtoupper( get_woocommerce_currency() );
 			$recommendation = $this
 				->budget_recommendation_query
 				->where( 'country', $country )
 				->where( 'currency', $currency )
-				->get_results();
+				->get_row();
 
-			if ( ! $recommendation || 1 !== count( $recommendation ) ) {
+			if ( ! $recommendation ) {
 				return new Response(
 					[
 						'message'      => __( 'Invalid country/currency combination', 'google-listings-and-ads' ),
@@ -83,10 +83,10 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 
 			return $this->prepare_item_for_response(
 				[
-					'currency'          => $recommendation[0]['currency'],
-					'country_code'      => $recommendation[0]['country'],
-					'daily_budget_low'  => $recommendation[0]['daily_budget_low'],
-					'daily_budget_high' => $recommendation[0]['daily_budget_high'],
+					'currency'          => $recommendation['currency'],
+					'country_code'      => $recommendation['country'],
+					'daily_budget_low'  => $recommendation['daily_budget_low'],
+					'daily_budget_high' => $recommendation['daily_budget_high'],
 				],
 				$request
 			);
