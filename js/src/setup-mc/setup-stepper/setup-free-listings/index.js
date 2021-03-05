@@ -41,7 +41,6 @@ const SetupFreeListings = () => {
 		try {
 			await fetchSettingsSync();
 
-			// TODO: redirect and show submission success.
 			getHistory().push(
 				getNewPath(
 					{ guide: 'submission-success' },
