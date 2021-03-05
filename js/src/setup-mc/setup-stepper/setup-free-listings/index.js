@@ -32,14 +32,12 @@ const SetupFreeListings = () => {
 	return (
 		<div className="gla-setup-free-listings">
 			<Hero />
-			{ /* TODO: 'shippingTimeOption-rows' should be removed, and use shipping time API instead. */ }
 			<Form
 				initialValues={ {
 					shipping_rate: settings.shipping_rate,
 					offers_free_shipping: settings.offers_free_shipping,
 					free_shipping_threshold: settings.free_shipping_threshold,
 					shipping_time: settings.shipping_time,
-					'shippingTimeOption-rows': [],
 					share_shipping_time: settings.share_shipping_time,
 					tax_rate: settings.tax_rate,
 					website_live: settings.website_live,
