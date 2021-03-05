@@ -9,8 +9,8 @@ import { Form } from '@woocommerce/components';
  */
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudience from '.~/hooks/useTargetAudience';
-import StepContent from '../components/step-content';
-import StepContentHeader from '../components/step-content-header';
+import StepContent from '.~/components/stepper/step-content';
+import StepContentHeader from '.~/components/stepper/step-content-header';
 import FormContent from './form-content';
 import './index.scss';
 

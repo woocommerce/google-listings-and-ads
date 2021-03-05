@@ -13,7 +13,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
-import StepContentFooter from '../components/step-content-footer';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
 import SupportedCountrySelect from './supported-country-select';
 import VerticalGapLayout from '../setup-free-listings/components/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
