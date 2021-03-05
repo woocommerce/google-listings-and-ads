@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -13,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Tables
  */
-class BudgetRecommendationTable extends Table implements FirstInstallInterface {
+class BudgetRecommendationTable extends Table {
 
 	/**
 	 * Get the schema for the DB.
@@ -34,6 +33,24 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     UNIQUE KEY country_currency (country, currency)
 ) {$this->get_collation()};
 SQL;
+	}
+
+
+	/**
+	 * Install the Database table.
+	 *
+	 * Add data if there is none.
+	 */
+	public function install(): void {
+		parent::install();
+
+		// Load the data if the table is empty.
+		// phpcs:ignore WordPress.DB.PreparedSQL
+		$result = $this->wpdb->get_row( "SELECT COUNT(*) AS count FROM `{$this->get_sql_safe_name()}`" );
+		if ( empty( $result->count ) ) {
+			 $this->load_initial_data();
+		}
+
 	}
 
 	/**
@@ -65,7 +82,7 @@ SQL;
 	 *
 	 * Inserts 500 records at a time.
 	 */
-	public function first_install(): void {
+	private function load_initial_data(): void {
 		$path       = $this->get_root_dir() . '/data/budget-recommendations.csv';
 		$chunk_size = 500;
 
