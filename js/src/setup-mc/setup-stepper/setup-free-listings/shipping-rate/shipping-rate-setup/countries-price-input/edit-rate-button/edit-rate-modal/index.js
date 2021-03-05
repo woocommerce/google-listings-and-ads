@@ -11,7 +11,7 @@ import { Form } from '@woocommerce/components';
 import { useAppDispatch } from '.~/data';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
-import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '../../../../../components/audience-country-select';
 import './index.scss';
 
