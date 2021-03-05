@@ -13,7 +13,7 @@ import AppSpinner from '.~/components/app-spinner';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import { STORE_KEY } from '.~/data';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import VerticalGapLayout from '../../components/vertical-gap-layout';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddTimeButton from './add-time-button';
 import getCountriesTimeArray from './getCountriesTimeArray';
 import CountriesTimeInputForm from './countries-time-input-form';

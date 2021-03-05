@@ -11,7 +11,7 @@ import Section from '.~/wcdl/section';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import VerticalGapLayout from '../components/vertical-gap-layout';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
 const TaxRate = ( props ) => {
 	const {
