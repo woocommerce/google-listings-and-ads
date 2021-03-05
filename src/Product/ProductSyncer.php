@@ -109,8 +109,9 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 				$updated_products = array_merge( $updated_products, $response->get_products() );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
 
-				// update the meta data for the synced products
+				// update the meta data for the synced and invalid products
 				array_walk( $updated_products, [ $this->batch_helper, 'mark_as_synced' ] );
+				array_walk( $invalid_products, [ $this->batch_helper, 'mark_as_invalid' ] );
 			} catch ( GoogleException $exception ) {
 				throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
 			}

@@ -3,11 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use BadMethodCallException;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -25,6 +27,9 @@ defined( 'ABSPATH' ) || exit;
  * @method update_visibility( int $product_id, $value )
  * @method delete_visibility( int $product_id )
  * @method get_visibility( int $product_id ): string
+ * @method update_errors( int $product_id, array $value )
+ * @method delete_errors( int $product_id )
+ * @method get_errors( int $product_id ): array
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -33,17 +38,20 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_SYNCED_AT  = 'synced_at';
 	public const KEY_GOOGLE_IDS = 'google_ids';
 	public const KEY_VISIBILITY = 'visibility';
+	public const KEY_ERRORS     = 'errors';
 
 	public const VALID_KEYS = [
 		self::KEY_SYNCED_AT,
 		self::KEY_GOOGLE_IDS,
 		self::KEY_VISIBILITY,
+		self::KEY_ERRORS,
 	];
 
 	protected const TYPES = [
 		self::KEY_SYNCED_AT  => 'int',
 		self::KEY_GOOGLE_IDS => 'array',
 		self::KEY_VISIBILITY => 'string',
+		self::KEY_ERRORS     => 'array',
 	];
 
 	/**
@@ -88,6 +96,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	public function update( int $product_id, string $key, $value ) {
 		self::validate_meta_key( $key );
+		self::validate_product_id( $product_id );
 
 		if ( isset( self::TYPES[ $key ] ) ) {
 			if ( in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
@@ -108,6 +117,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	public function delete( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
+		self::validate_product_id( $product_id );
 
 		delete_post_meta( $product_id, $this->prefix_meta_key( $key ) );
 	}
@@ -122,6 +132,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	public function get( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
+		self::validate_product_id( $product_id );
 
 		$value = get_post_meta( $product_id, $this->prefix_meta_key( $key ), true );
 
@@ -140,6 +151,17 @@ class ProductMetaHandler implements Service, Registerable {
 	protected static function validate_meta_key( string $key ) {
 		if ( ! in_array( $key, self::VALID_KEYS, true ) ) {
 			throw InvalidMeta::invalid_key( $key );
+		}
+	}
+
+	/**
+	 * @param int $product_id
+	 *
+	 * @throws InvalidArgument If the provided wc_product_id is not a valid WooCommerce product ID.
+	 */
+	protected static function validate_product_id( int $product_id ) {
+		if ( ! wc_get_product( $product_id ) instanceof WC_Product ) {
+			throw new InvalidArgument( 'Invalid WooCommerce product ID provided.' );
 		}
 	}
 
