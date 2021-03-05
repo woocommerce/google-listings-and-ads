@@ -50,7 +50,6 @@ SQL;
 		if ( empty( $result->count ) ) {
 			 $this->load_initial_data();
 		}
-
 	}
 
 	/**
