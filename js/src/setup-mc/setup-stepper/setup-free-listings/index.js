@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -41,6 +42,12 @@ const SetupFreeListings = () => {
 			await fetchSettingsSync();
 
 			// TODO: redirect and show submission success.
+			getHistory().push(
+				getNewPath(
+					{ guide: 'submission-success' },
+					'/google/product-feed'
+				)
+			);
 		} catch ( error ) {
 			createNotice(
 				'error',
