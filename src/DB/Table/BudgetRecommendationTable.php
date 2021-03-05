@@ -62,9 +62,12 @@ SQL;
 
 	/**
 	 * Load packaged recommendation data on the first install of GLA.
+	 *
+	 * Inserts 500 records at a time.
 	 */
 	public function first_install(): void {
-		$path = $this->get_root_dir() . '/data/budget-recommendations.csv';
+		$path       = $this->get_root_dir() . '/data/budget-recommendations.csv';
+		$chunk_size = 500;
 
 		if ( file_exists( $path ) ) {
 			$csv     = array_map( 'str_getcsv', file( $path ) );
@@ -89,13 +92,29 @@ SQL;
 					$row_placeholders[] = is_numeric( $value ) ? '%d' : '%s';
 				}
 				$placeholders[] = '(' . implode( ', ', $row_placeholders ) . ')';
+
+				if ( count( $placeholders ) >= $chunk_size ) {
+					$this->insert_chunk( $placeholders, $values );
+					$placeholders = [];
+					$values       = [];
+				}
 			}
 
-			$sql  = "INSERT INTO `{$this->get_sql_safe_name()}` (currency,country,daily_budget_low,daily_budget_high) VALUES\n";
-			$sql .= implode( ",\n", $placeholders );
-
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$this->wpdb->query( $this->wpdb->prepare( $sql, $values ) );
+			$this->insert_chunk( $placeholders, $values );
 		}
+	}
+
+	/**
+	 * Insert a chunk of budget recommendations
+	 *
+	 * @param string[] $placeholders
+	 * @param array    $values
+	 */
+	private function insert_chunk( array $placeholders, array $values ): void {
+		$sql  = "INSERT INTO `{$this->get_sql_safe_name()}` (currency,country,daily_budget_low,daily_budget_high) VALUES\n";
+		$sql .= implode( ",\n", $placeholders );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$this->wpdb->query( $this->wpdb->prepare( $sql, $values ) );
 	}
 }
