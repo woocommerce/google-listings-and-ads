@@ -28,8 +28,8 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     id bigint(20) NOT NULL AUTO_INCREMENT,
     currency varchar(3) NOT NULL,
     country varchar(2) NOT NULL,
-    daily_budget_low int(20) NOT NULL,
-    daily_budget_high int(20) NOT NULL,
+    daily_budget_low int(11) NOT NULL,
+    daily_budget_high int(11) NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY country_currency (country, currency)
 ) {$this->get_collation()};
