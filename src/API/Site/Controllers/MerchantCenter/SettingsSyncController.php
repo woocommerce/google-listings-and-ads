@@ -72,6 +72,8 @@ class SettingsSyncController extends BaseController {
 					201
 				);
 			} catch ( Exception $e ) {
+				do_action( 'gla_exception', $e, __METHOD__ );
+
 				return $this->error_from_exception(
 					$e,
 					'gla_setting_sync_error',
