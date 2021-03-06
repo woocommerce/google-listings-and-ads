@@ -64,6 +64,8 @@ class SettingsSyncController extends BaseController {
 				$this->settings->sync_taxes();
 				$this->settings->sync_shipping();
 
+				do_action( 'gla_mc_settings_sync' );
+
 				return new Response(
 					[
 						'status'  => 'success',
