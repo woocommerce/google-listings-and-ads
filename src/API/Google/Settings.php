@@ -232,14 +232,18 @@ class Settings {
 	 * @return Service
 	 */
 	protected function create_main_service( string $country, string $currency, $rate ): Service {
+		$unique  = sprintf( '%04x', mt_rand( 0, 0xffff ) );
 		$service = new Service();
 		$service->setActive( true );
 		$service->setDeliveryCountry( $country );
 		$service->setCurrency( $currency );
 		$service->setName(
 			sprintf(
-				/* translators: %s is the 2 character country code */
-				__( 'Google Listings and Ads generated service - %s', 'google-listings-and-ads' ),
+				/* translators: %1 is a random 4-digit string, %2 is the rate, %3 is the currency, %4 is the country code  */
+				__( '[%1$s] Google Listings and Ads generated service - %2$s %3$s to %4$s', 'google-listings-and-ads' ),
+				$unique,
+				$rate,
+				$currency,
 				$country
 			)
 		);
