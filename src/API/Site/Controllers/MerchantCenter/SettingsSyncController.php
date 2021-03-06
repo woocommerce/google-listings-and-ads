@@ -74,13 +74,23 @@ class SettingsSyncController extends BaseController {
 			} catch ( Exception $e ) {
 				do_action( 'gla_exception', $e, __METHOD__ );
 
+				try {
+					$decoded = $this->json_decode_message( $e->getMessage() );
+					$data    = [
+						'status'  => $decoded['code'] ?? 500,
+						'message' => $decoded['message'] ?? '',
+						'data'    => $decoded,
+					];
+				} catch ( Exception $e2 ) {
+					$data = [
+						'status' => 500,
+					];
+				}
+
 				return $this->error_from_exception(
 					$e,
 					'gla_setting_sync_error',
-					[
-						'status'  => 500,
-						'message' => $e->getMessage(),
-					]
+					$data
 				);
 			}
 		};
