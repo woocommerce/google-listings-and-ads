@@ -27,6 +27,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Settings {
 
+	use LocationIDTrait;
+
 	/** @var ContainerInterface */
 	protected $container;
 
@@ -93,10 +95,8 @@ class Settings {
 
 		$tax_rule = new TaxRule();
 		$tax_rule->setUseGlobalRate( true );
-
-		// We're only doing this for the US, so hard-code US info.
-		$tax_rule->setLocationId( 21171 );
-		$tax_rule->setCountry( 'US' );
+		$tax_rule->setLocationId( $this->get_state_id( $this->get_store_state() ) );
+		$tax_rule->setCountry( $this->get_store_country() );
 
 		$taxes->setRules( [ $tax_rule ] );
 
@@ -181,6 +181,14 @@ class Settings {
 
 		$rate_group = new RateGroup();
 		$rate_group->setSingleValue( $value );
+		$rate_group->setName(
+			sprintf(
+				/* translators: %1 is the shipping rate, %2 is the currency (e.g. USD) */
+				__( 'Flat rate - %1$s %2$s', 'google-listings-and-ads' ),
+				$rate,
+				$currency
+			)
+		);
 
 		return $rate_group;
 	}
@@ -292,5 +300,17 @@ class Settings {
 		$wc = $this->container->get( WC::class );
 
 		return $wc->get_wc_countries()->get_base_country();
+	}
+
+	/**
+	 * Get the state for the store.
+	 *
+	 * @return string
+	 */
+	protected function get_store_state(): string {
+		/** @var WC $wc */
+		$wc = $this->container->get( WC::class );
+
+		return $wc->get_wc_countries()->get_base_state();
 	}
 }
