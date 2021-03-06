@@ -66,6 +66,17 @@ class Settings {
 		);
 	}
 
+	/**
+	 * Get the current tax settings from the API.
+	 *
+	 * @return AccountTax
+	 */
+	public function get_taxes(): AccountTax {
+		return $this->get_shopping_service()->accounttax->get(
+			$this->get_merchant_id(),
+			$this->get_account_id()
+		);
+	}
 
 	/**
 	 * Whether we should sync tax settings.
