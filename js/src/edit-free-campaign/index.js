@@ -58,6 +58,10 @@ export default function EditFreeCampaign() {
 						),
 						content: (
 							<ChooseAudience
+								stepHeader={ __(
+									'STEP ONE',
+									'google-listings-and-ads'
+								) }
 								onContinue={ handleChooseAudienceContinue }
 							/>
 						),

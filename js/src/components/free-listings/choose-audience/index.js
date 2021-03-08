@@ -22,10 +22,13 @@ import '.~/components/free-listings/choose-audience/index.scss';
  * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/index.js}.
  *
  * @param {Object} props
+ * @param {string} props.stepHeader Header text to indicate the step number.
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
-const ChooseAudience = ( props ) => {
-	const { onContinue = () => {} } = props;
+export default function ChooseAudience( {
+	stepHeader,
+	onContinue = () => {},
+} ) {
 	const { data } = useTargetAudience();
 
 	if ( ! data ) {
@@ -48,7 +51,7 @@ const ChooseAudience = ( props ) => {
 		<div className="gla-choose-audience">
 			<StepContent>
 				<StepContentHeader
-					step={ __( 'STEP TWO', 'google-listings-and-ads' ) }
+					step={ stepHeader }
 					title={ __(
 						'Choose your audience',
 						'google-listings-and-ads'
@@ -77,6 +80,4 @@ const ChooseAudience = ( props ) => {
 			</StepContent>
 		</div>
 	);
-};
-
-export default ChooseAudience;
+}
