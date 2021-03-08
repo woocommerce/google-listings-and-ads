@@ -16,8 +16,8 @@ import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Step with a form to choose audience.
+ * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/index.js}.
  *
- * @see .~/components/free-listings/choose-audience
  * @param {Object} props
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */

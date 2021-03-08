@@ -22,8 +22,8 @@ import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Form to choose audience.
+ * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/form-content.js}.
  *
- * @see .~/components/free-listings/choose-audience/form-content
  * @param {Object} props
  */
 const FormContent = ( props ) => {
