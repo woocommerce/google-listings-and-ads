@@ -11,6 +11,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import GoogleAccount from '.~/components/google-account';
+import GoogleAdsAccountSection from './google-ads-account-section';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
@@ -32,7 +33,7 @@ const SetupAccounts = ( props ) => {
 				) }
 			/>
 			<GoogleAccount />
-			{ /* TODO: Google Ads Account setup here. */ }
+			<GoogleAdsAccountSection />
 			<StepContentFooter>
 				<Button
 					isPrimary
