@@ -216,6 +216,17 @@ class Settings {
 	}
 
 	/**
+	 * Get the free shipping minimum order value.
+	 *
+	 * @return int
+	 */
+	protected function get_free_shipping_minimum(): int {
+		return intval(
+			$this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER )['free_shipping_threshold']
+		);
+	}
+
+	/**
 	 * @return OptionsInterface
 	 */
 	protected function get_options_object(): OptionsInterface {
@@ -268,7 +279,7 @@ class Settings {
 	 */
 	protected function create_free_shipping_service( string $country, string $currency ): Service {
 		$price = new Price();
-		$price->setValue( 0 );
+		$price->setValue( $this->get_free_shipping_minimum() );
 		$price->setCurrency( $currency );
 
 		$service = $this->create_main_service( $country, $currency, 0 );
