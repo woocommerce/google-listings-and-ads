@@ -1,14 +1,13 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import Section from '../../../../wcdl/section';
-import TitleButtonLayout from '../../../../components/title-button-layout';
+import Section from '.~/wcdl/section';
+import SectionContent from './section-content';
 
 const GoogleAdsAccountSection = () => {
 	return (
@@ -23,24 +22,7 @@ const GoogleAdsAccountSection = () => {
 				</p>
 			}
 		>
-			<Section.Card>
-				<Section.Card.Body>
-					<TitleButtonLayout
-						title={ __(
-							'Create your Google Ads account',
-							'google-listings-and-ads'
-						) }
-						button={
-							<Button isSecondary>
-								{ __(
-									'Create account',
-									'google-listings-and-ads'
-								) }
-							</Button>
-						}
-					/>
-				</Section.Card.Body>
-			</Section.Card>
+			<SectionContent />
 		</Section>
 	);
 };
