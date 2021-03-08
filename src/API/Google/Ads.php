@@ -75,6 +75,34 @@ class Ads {
 	}
 
 	/**
+	 * Get billing status.
+	 *
+	 * @return string
+	 */
+	public function get_billing_status(): string {
+		try {
+			if ( ! $this->get_id() ) {
+				return BillingSetupStatus::UNKNOWN;
+			}
+
+			$query    = $this->build_query( [ 'billing_setup.status' ], 'billing_setup' );
+			$response = $this->query( $query );
+
+			foreach ( $response->iterateAllElements() as $row ) {
+				$billing_setup = $row->getBillingSetup();
+				return BillingSetupStatus::label( $billing_setup->getStatus() );
+			}
+		} catch ( ApiException $e ) {
+			// Do not act upon error as we might not have permission to access this account yet.
+			if ( 'PERMISSION_DENIED' !== $e->getStatus() ) {
+				do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			}
+		}
+
+		return BillingSetupStatus::UNKNOWN;
+	}
+
+	/**
 	 * @return array
 	 * @throws Exception When an ApiException is caught.
 	 */

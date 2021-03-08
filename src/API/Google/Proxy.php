@@ -276,10 +276,10 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Create a new Google Ads account.
 	 *
-	 * @return int
+	 * @return array
 	 * @throws Exception When a ClientException is caught or we receive an invalid response.
 	 */
-	public function create_ads_account(): int {
+	public function create_ads_account(): array {
 		try {
 			$user = wp_get_current_user();
 			$tos  = $this->mark_tos_accepted( 'google-ads', $user->user_email );
@@ -307,7 +307,14 @@ class Proxy implements OptionsAwareInterface {
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
 				$id = $this->parse_ads_id( $response['resourceName'] );
 				$this->update_ads_id( $id );
-				return $id;
+
+				$billing_url = $response['invitationLink'] ?? '';
+				$this->update_billing_url( $billing_url );
+
+				return [
+					'id'          => $id,
+					'billing_url' => $billing_url,
+				];
 			}
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
@@ -327,10 +334,10 @@ class Proxy implements OptionsAwareInterface {
 	 *
 	 * @param int $id Existing account ID.
 	 *
-	 * @return int
+	 * @return array
 	 * @throws Exception When a ClientException is caught or we receive an invalid response.
 	 */
-	public function link_ads_account( int $id ): int {
+	public function link_ads_account( int $id ): array {
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -350,7 +357,7 @@ class Proxy implements OptionsAwareInterface {
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
 				$this->update_ads_id( $id );
-				return $id;
+				return [ 'id' => $id ];
 			}
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
@@ -507,6 +514,17 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	protected function update_ads_id( int $id ): bool {
 		return $this->options->update( Options::ADS_ID, $id );
+	}
+
+	/**
+	 * Update the billing flow URL so we can retrieve it again later.
+	 *
+	 * @param string $url Billing flow URL.
+	 *
+	 * @return bool
+	 */
+	protected function update_billing_url( string $url ): bool {
+		return $this->options->update( Options::ADS_BILLING_URL, $url );
 	}
 
 	/**
