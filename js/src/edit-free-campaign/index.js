@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import SetupFreeListings from '../setup-mc/setup-stepper/setup-free-listings';
-import ChooseAudience from '../setup-mc/setup-stepper/choose-audience';
+import ChooseAudience from '.~/components/free-listings/choose-audience';
 
 /**
  * Page Component to edit free campaigns.

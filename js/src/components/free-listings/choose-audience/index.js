@@ -16,6 +16,9 @@ import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Step with a form to choose audience.
+ *
+ * To be used in onboarding and further editing.
+ * Does not provide any save strategy, this is to be bound externaly.
  * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/index.js}.
  *
  * @param {Object} props

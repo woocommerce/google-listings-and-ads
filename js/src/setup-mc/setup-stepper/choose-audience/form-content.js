@@ -22,6 +22,7 @@ import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Form to choose audience.
+ * Auto-saves.
  *
  * @see .~/components/free-listings/choose-audience/form-content
  * @param {Object} props

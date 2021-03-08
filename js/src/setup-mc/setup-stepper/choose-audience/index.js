@@ -16,6 +16,7 @@ import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Step with a form to choose audience.
+ * Auto-saves.
  *
  * @see .~/components/free-listings/choose-audience
  * @param {Object} props
