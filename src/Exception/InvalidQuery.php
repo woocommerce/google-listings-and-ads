@@ -36,6 +36,15 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	}
 
 	/**
+	 * @param string $relation
+	 *
+	 * @return static
+	 */
+	public static function where_relation( string $relation ): InvalidQuery {
+		return new static( sprintf( 'The where relation value "%s" is not valid.', $relation ) );
+	}
+
+	/**
 	 * Create a new instance of the exception when there is an error inserting data into the DB.
 	 *
 	 * @param string $error

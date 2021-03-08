@@ -4,13 +4,15 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Google\Ads\GoogleAds\V6\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
 
 /**
  * Mapping between Google and internal CampaignStatus
+ * https://developers.google.com/google-ads/api/reference/rpc/v6/CampaignStatusEnum.CampaignStatus
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class CampaignStatus {
+class CampaignStatus extends StatusMapping {
 
 	/**
 	 * Campaign is currently serving ads depending on budget information.
@@ -43,36 +45,4 @@ class CampaignStatus {
 		AdsCampaignStatus::PAUSED  => self::PAUSED,
 		AdsCampaignStatus::REMOVED => self::REMOVED,
 	];
-
-	/**
-	 * Return the status as a label.
-	 *
-	 * @param int $number Status number.
-	 *
-	 * @return string
-	 */
-	public static function label( int $number ): string {
-		return isset( self::MAPPING[ $number ] ) ? self::MAPPING[ $number ] : '';
-	}
-
-	/**
-	 * Return the status as a number.
-	 *
-	 * @param string $label Status label.
-	 *
-	 * @return int
-	 */
-	public static function number( string $label ): int {
-		$key = array_search( $label, self::MAPPING, true );
-		return $key ?? 0;
-	}
-
-	/**
-	 * Return all the status labels.
-	 *
-	 * @return array
-	 */
-	public static function labels(): array {
-		return array_values( self::MAPPING );
-	}
 }

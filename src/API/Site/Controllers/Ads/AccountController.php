@@ -100,6 +100,17 @@ class AccountController extends BaseOptionsController {
 				],
 			]
 		);
+
+		$this->register_route(
+			'ads/billing-status',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_billing_status_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -201,18 +212,45 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the callback function for retrieving the billing setup status.
+	 *
+	 * @return callable
+	 */
+	protected function get_billing_status_callback(): callable {
+		return function() {
+			try {
+				/** @var Ads $ads */
+				$ads    = $this->container->get( Ads::class );
+				$status = $ads->get_billing_status();
+
+				return [
+					'status' => $status,
+				];
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+		};
+	}
+
+	/**
 	 * Get the item schema for the controller.
 	 *
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id' => [
+			'id'          => [
 				'type'              => 'number',
 				'description'       => __( 'Google Ads Account ID.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
+			],
+			'billing_url' => [
+				'type'        => 'string',
+				'description' => __( 'Billing Flow URL.', 'google-listings-and-ads' ),
+				'context'     => [ 'view', 'edit' ],
+				'readonly'    => true,
 			],
 		];
 	}
@@ -265,8 +303,9 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If an error occurs during any step.
 	 */
 	protected function setup_account(): array {
-		$state  = $this->account_state->get();
-		$ads_id = $this->options->get( Options::ADS_ID );
+		$state   = $this->account_state->get();
+		$ads_id  = $this->options->get( Options::ADS_ID );
+		$account = [ 'id' => $ads_id ];
 
 		foreach ( $state as $name => &$step ) {
 			if ( AdsAccountState::STEP_DONE === $step['status'] ) {
@@ -280,7 +319,7 @@ class AccountController extends BaseOptionsController {
 						if ( ! empty( $ads_id ) ) {
 							break;
 						}
-						$ads_id = $this->middleware->create_ads_account();
+						$account = $this->middleware->create_ads_account();
 						break;
 					default:
 						throw new Exception(
@@ -299,6 +338,6 @@ class AccountController extends BaseOptionsController {
 			}
 		}
 
-		return [ 'id' => $ads_id ];
+		return $account;
 	}
 }

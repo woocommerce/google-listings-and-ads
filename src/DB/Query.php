@@ -45,6 +45,13 @@ abstract class Query implements QueryInterface {
 	 */
 	protected $where = [];
 
+	/**
+	 * Where relation for multiple clauses.
+	 *
+	 * @var string
+	 */
+	protected $where_relation;
+
 	/** @var wpdb */
 	protected $wpdb;
 
@@ -76,6 +83,20 @@ abstract class Query implements QueryInterface {
 			'value'   => $value,
 			'compare' => $compare,
 		];
+
+		return $this;
+	}
+
+	/**
+	 * Set the where relation for the query.
+	 *
+	 * @param string $relation
+	 *
+	 * @return QueryInterface
+	 */
+	public function set_where_relation( string $relation ): QueryInterface {
+		$this->validate_where_relation( $relation );
+		$this->where_relation = $relation;
 
 		return $this;
 	}
@@ -136,6 +157,22 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Gets the first result of the query.
+	 *
+	 * @return array
+	 */
+	public function get_row(): array {
+		if ( null === $this->results ) {
+			$old_limit = $this->limit ?? 0;
+			$this->set_limit( 1 );
+			$this->query_results();
+			$this->set_limit( $old_limit );
+		}
+
+		return $this->results[0] ?? [];
+	}
+
+	/**
 	 * Perform the query and save it to the results.
 	 */
 	protected function query_results() {
@@ -177,6 +214,26 @@ abstract class Query implements QueryInterface {
 
 			default:
 				throw InvalidQuery::from_compare( $compare );
+		}
+	}
+
+
+	/**
+	 * Validate that a where relation is valid.
+	 *
+	 * @param string $relation
+	 *
+	 * @throws InvalidQuery When the relation value is not valid.
+	 */
+	protected function validate_where_relation( string $relation ) {
+		switch ( $relation ) {
+			case 'AND':
+			case 'OR':
+				// These are all valid.
+				return;
+
+			default:
+				throw InvalidQuery::where_relation( $relation );
 		}
 	}
 
@@ -249,6 +306,10 @@ abstract class Query implements QueryInterface {
 				);
 			} else {
 				$value = "'{$this->wpdb->_escape( $where['value'] )}'";
+			}
+
+			if ( count( $where_pieces ) > 1 ) {
+				$where_pieces[] = $this->where_relation ?? 'AND';
 			}
 
 			$where_pieces[] = "{$column} {$compare} {$value}";

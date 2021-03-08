@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import TitleButtonLayout from '../../../title-button-layout';
+import TitleButtonLayout from '.~/components/title-button-layout';
 import CreateAccountButton from './create-account-button';
 import AppTextButton from '.~/components/app-text-button';
 

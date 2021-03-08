@@ -10,7 +10,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
-import ContentButtonLayout from '../../../content-button-layout';
+import ContentButtonLayout from '.~/components/content-button-layout';
 import './index.scss';
 
 const ReclaimUrlFailCard = ( props ) => {
