@@ -5,6 +5,17 @@
 		margin-bottom: calc(var(--main-gap) / 3);
 	}
 
+	&__label {
+		font-size: 13px;
+		line-height: 16px;
+	}
+
+	&__helper-text {
+		font-style: italic;
+		font-size: 12px;
+		line-height: 16px;
+	}
+
 	// don't show the default magnifier icon.
 	i.material-icons-outlined {
 		display: none;
