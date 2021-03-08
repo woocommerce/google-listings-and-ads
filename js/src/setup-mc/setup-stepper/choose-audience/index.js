@@ -12,7 +12,7 @@ import useTargetAudience from '.~/hooks/useTargetAudience';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import FormContent from './form-content';
-import './index.scss';
+import '.~/components/free-listings/choose-audience/index.scss';
 
 const ChooseAudience = ( props ) => {
 	const { onContinue = () => {} } = props;
