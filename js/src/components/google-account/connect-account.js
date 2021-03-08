@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '.~/components/app-button';
-import TitleButtonLayout from '../../setup-mc/setup-stepper/setup-accounts/title-button-layout';
+import TitleButtonLayout from '.~/components/title-button-layout';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
