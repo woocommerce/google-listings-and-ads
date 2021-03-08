@@ -83,6 +83,10 @@ class Ads {
 	 */
 	public function get_billing_status(): string {
 		try {
+			if ( ! $this->get_id() ) {
+				return BillingSetupStatus::UNKNOWN;
+			}
+
 			$query    = $this->build_query( [ 'billing_setup.status' ], 'billing_setup' );
 			$response = $this->query( $query );
 
