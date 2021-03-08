@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppSpinner from '.~/components/app-spinner';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
-import TitleButtonLayout from '../title-button-layout';
+import TitleButtonLayout from '.~/components/title-button-layout';
 import ConnectAccount from './connect-account';
 
 const CardContent = ( props ) => {
