@@ -1,51 +1,34 @@
 /**
  * External dependencies
  */
-import { Link } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import GridiconChevronLeft from 'gridicons/dist/chevron-left';
-import GridiconHelpOutline from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies
  */
-import AppIconButton from '../../components/app-icon-button';
-import { recordSetupAdsEvent } from '../../utils/recordEvent';
-import './index.scss';
+import { recordSetupAdsEvent } from '.~/utils/recordEvent';
+import TopBar from '.~/components/stepper/top-bar';
 
-const TopBar = () => {
+const SetupAdsTopBar = () => {
 	const handleBackButtonClick = () => {
 		recordSetupAdsEvent( 'back' );
 	};
 
 	const handleHelpButtonClick = () => {
 		recordSetupAdsEvent( 'help' );
+
+		// TODO: navigate to where upon clicking help link?
 	};
 
 	return (
-		<div className="gla-setup-ads-top-bar">
-			<Link
-				className="back-button"
-				href={ getNewPath( {}, '/google/start' ) }
-				type="wc-admin"
-				onClick={ handleBackButtonClick }
-			>
-				<GridiconChevronLeft />
-			</Link>
-			<span className="title">
-				{ __( 'Set up paid campaign', 'google-listings-and-ads' ) }
-			</span>
-			<div className="actions">
-				{ /* TODO: click and navigate to where? */ }
-				<AppIconButton
-					icon={ <GridiconHelpOutline /> }
-					text={ __( 'Help', 'google-listings-and-ads' ) }
-					onClick={ handleHelpButtonClick }
-				/>
-			</div>
-		</div>
+		<TopBar
+			title={ __( 'Set up paid campaign', 'google-listings-and-ads' ) }
+			backHref={ getNewPath( {}, '/google/dashboard' ) }
+			onBackButtonClick={ handleBackButtonClick }
+			onHelpButtonClick={ handleHelpButtonClick }
+		/>
 	);
 };
 
-export default TopBar;
+export default SetupAdsTopBar;
