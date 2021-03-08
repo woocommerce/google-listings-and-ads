@@ -17,10 +17,14 @@ const GoogleAccount = ( props ) => {
 		<DisabledDiv disabled={ disabled }>
 			<Section
 				title={ __( 'Google account', 'google-listings-and-ads' ) }
-				description={ __(
-					'WooCommerce uses your Google account to sync with Google Merchant Center and Google Ads.',
-					'google-listings-and-ads'
-				) }
+				description={
+					<p>
+						{ __(
+							'WooCommerce uses your Google account to sync with Google Merchant Center and Google Ads.',
+							'google-listings-and-ads'
+						) }
+					</p>
+				}
 			>
 				<Section.Card>
 					<Section.Card.Body>
