@@ -8,7 +8,7 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import ContentButtonLayout from '../../content-button-layout';
+import ContentButtonLayout from '.~/components/content-button-layout';
 import Subsection from '.~/wcdl/subsection';
 import AppButton from '.~/components/app-button';
 
