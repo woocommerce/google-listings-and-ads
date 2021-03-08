@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
+import SupportedCountrySelect from '.~/components/supported-country-select';
 
 const AudienceSection = () => {
 	return (
@@ -23,9 +24,16 @@ const AudienceSection = () => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					{ /* TODO: labels and helptext. */ }
-					{ /* TODO: better component composition to use country single select. */ }
-					{ /* <AppCountryMultiSelect multiple={ false } /> */ }
+					<SupportedCountrySelect
+						label={ __(
+							'Select one country',
+							'google-listings-and-ads'
+						) }
+						helperText={ __(
+							'You can only select one country per campaign. ',
+							'google-listings-and-ads'
+						) }
+					/>
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>
