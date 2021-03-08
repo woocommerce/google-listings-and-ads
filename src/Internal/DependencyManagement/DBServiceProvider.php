@@ -3,8 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -28,10 +30,12 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		ShippingRateTable::class => true,
-		ShippingRateQuery::class => true,
-		ShippingTimeTable::class => true,
-		ShippingTimeQuery::class => true,
+		ShippingRateTable::class         => true,
+		ShippingRateQuery::class         => true,
+		ShippingTimeTable::class         => true,
+		ShippingTimeQuery::class         => true,
+		BudgetRecommendationTable::class => true,
+		BudgetRecommendationQuery::class => true,
 	];
 
 	/**
@@ -54,6 +58,8 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
+		$this->share_table_class( BudgetRecommendationTable::class );
+		$this->add_query_class( BudgetRecommendationQuery::class, BudgetRecommendationTable::class );
 		$this->share_table_class( ShippingRateTable::class );
 		$this->add_query_class( ShippingRateQuery::class, ShippingRateTable::class );
 		$this->share_table_class( ShippingTimeTable::class );
