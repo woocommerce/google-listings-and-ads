@@ -184,10 +184,12 @@ class AccountController extends BaseOptionsController {
 
 				if ( BillingSetupStatus::APPROVED === $status ) {
 					$this->account_state->complete_step( 'billing' );
+					return [ 'status' => $status ];
 				}
 
 				return [
-					'status' => $status,
+					'status'      => $status,
+					'billing_url' => $this->options->get( Options::ADS_BILLING_URL ),
 				];
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
