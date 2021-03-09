@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -178,7 +179,7 @@ class AccountController extends BaseOptionsController {
 				$ads    = $this->container->get( Ads::class );
 				$status = $ads->get_billing_status();
 
-				if ( 'approved' === $status ) {
+				if ( BillingSetupStatus::APPROVED === $status ) {
 					$this->account_state->complete_step( 'billing' );
 				}
 
@@ -285,7 +286,8 @@ class AccountController extends BaseOptionsController {
 						break;
 
 					case 'billing':
-						throw new Exception( __( 'Billing setup must be completed', 'google-listings-and-ads' ) );
+						$this->check_billing_status( $account );
+						break;
 
 					case 'link_merchant':
 						$this->link_merchant_account();
@@ -332,5 +334,27 @@ class AccountController extends BaseOptionsController {
 		// Create link for Merchant and accept it in Ads.
 		$merchant->link_ads_id( $ads->get_id() );
 		$ads->accept_merchant_link( $merchant->get_id() );
+	}
+
+	/**
+	 * Confirm the billing flow has been completed.
+	 *
+	 * @param array $account Account details.
+	 *
+	 * @throws Exception If this step hasn't been completed yet.
+	 */
+	private function check_billing_status( array $account ) {
+		$status = BillingSetupStatus::UNKNOWN;
+
+		// Only check billing status if we haven't just created the account.
+		if ( empty( $account['billing_url'] ) ) {
+			/** @var Ads $ads */
+			$ads    = $this->container->get( Ads::class );
+			$status = $ads->get_billing_status();
+		}
+
+		if ( BillingSetupStatus::APPROVED !== $status ) {
+			throw new Exception( __( 'Billing setup must be completed', 'google-listings-and-ads' ) );
+		}
 	}
 }
