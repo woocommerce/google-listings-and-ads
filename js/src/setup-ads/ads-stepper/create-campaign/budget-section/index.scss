@@ -1,0 +1,10 @@
+.gla-budget-section {
+	&__cost {
+		display: flex;
+		gap: var(--main-gap);
+
+		& > * {
+			flex: 1;
+		}
+	}
+}
