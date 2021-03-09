@@ -361,7 +361,7 @@ class AccountController extends BaseOptionsController {
 		if ( BillingSetupStatus::APPROVED !== $status ) {
 			throw new ExceptionWithResponseData(
 				__( 'Billing setup must be completed.', 'google-listings-and-ads' ),
-				409,
+				428,
 				null,
 				[
 					'billing_url'    => $this->options->get( Options::ADS_BILLING_URL ),
