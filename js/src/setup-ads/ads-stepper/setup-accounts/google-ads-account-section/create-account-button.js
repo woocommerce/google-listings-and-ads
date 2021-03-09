@@ -14,7 +14,7 @@ const CreateAccountButton = ( props ) => {
 	const { onCreateAccount, ...rest } = props;
 	const [ isOpen, setOpen ] = useState( false );
 
-	const handleCreateAccountClick = () => {
+	const handleButtonClick = () => {
 		setOpen( true );
 	};
 
@@ -24,7 +24,7 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			<Button { ...rest } onClick={ handleCreateAccountClick }>
+			<Button { ...rest } onClick={ handleButtonClick }>
 				{ __( 'Create Account', 'google-listings-and-ads' ) }
 			</Button>
 			{ isOpen && (
