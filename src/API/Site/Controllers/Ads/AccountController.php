@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -133,6 +134,8 @@ class AccountController extends BaseOptionsController {
 
 				$account = $this->setup_account();
 				return $this->prepare_item_for_response( $account, $request );
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -341,7 +344,7 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @param array $account Account details.
 	 *
-	 * @throws Exception If this step hasn't been completed yet.
+	 * @throws ExceptionWithResponseData If this step hasn't been completed yet.
 	 */
 	private function check_billing_status( array $account ) {
 		$status = BillingSetupStatus::UNKNOWN;
@@ -354,7 +357,15 @@ class AccountController extends BaseOptionsController {
 		}
 
 		if ( BillingSetupStatus::APPROVED !== $status ) {
-			throw new Exception( __( 'Billing setup must be completed', 'google-listings-and-ads' ) );
+			throw new ExceptionWithResponseData(
+				__( 'Billing setup must be completed.', 'google-listings-and-ads' ),
+				409,
+				null,
+				[
+					'billing_url'    => $this->options->get( Options::ADS_BILLING_URL ),
+					'billing_status' => $status,
+				]
+			);
 		}
 	}
 }
