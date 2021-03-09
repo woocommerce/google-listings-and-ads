@@ -83,4 +83,21 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 			$this->update( $state );
 		}
 	}
+
+	/**
+	 * Returns the name of the last incompleted step.
+	 *
+	 * @return string
+	 */
+	public function last_incomplete_step(): string {
+		$incomplete = '';
+		foreach ( $this->get( false ) as $name => $step ) {
+			if ( ! isset( $step['status'] ) || self::STEP_DONE !== $step['status'] ) {
+				$incomplete = $name;
+				break;
+			}
+		}
+
+		return $incomplete;
+	}
 }
