@@ -68,7 +68,7 @@ const SavedSetupStepper = ( props ) => {
 				{
 					key: '3',
 					label: __(
-						'Configure your free listings',
+						'Configure your product listings',
 						'google-listings-and-ads'
 					),
 					content: <SetupFreeListings />,

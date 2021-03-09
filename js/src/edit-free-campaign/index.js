@@ -66,7 +66,7 @@ export default function EditFreeCampaign() {
 					{
 						key: '2',
 						label: __(
-							'Configure your free listings',
+							'Configure your product listings',
 							'google-listings-and-ads'
 						),
 						content: (
