@@ -99,7 +99,8 @@ class Ads {
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				$billing_setup = $row->getBillingSetup();
-				return BillingSetupStatus::label( $billing_setup->getStatus() );
+				$status        = BillingSetupStatus::label( $billing_setup->getStatus() );
+				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $this->get_id() );
 			}
 		} catch ( ApiException $e ) {
 			// Do not act upon error as we might not have permission to access this account yet.
@@ -108,7 +109,7 @@ class Ads {
 			}
 		}
 
-		return BillingSetupStatus::UNKNOWN;
+		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $this->get_id() );
 	}
 
 	/**
