@@ -11,7 +11,7 @@ import AppInputControl from '.~/components/app-input-control';
 import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-import CountryNames from '../../../components/country-names';
+import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 import './index.scss';
 
 const CountriesPriceInput = ( props ) => {

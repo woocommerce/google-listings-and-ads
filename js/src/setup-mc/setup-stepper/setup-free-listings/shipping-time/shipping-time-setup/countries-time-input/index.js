@@ -12,7 +12,7 @@ import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
-import CountryNames from '../../../components/country-names';
+import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 
 const CountriesTimeInput = ( props ) => {
 	const { value, onChange } = props;
