@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\CastableValueInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ValueInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -169,7 +170,7 @@ final class Options implements OptionsInterface, Service {
 	 * @return mixed
 	 */
 	protected function raw_value( $value ) {
-		return is_object( $value ) && method_exists( $value, 'get' ) ? $value->get() : $value;
+		return $value instanceof ValueInterface ? $value->get() : $value;
 	}
 
 	/**

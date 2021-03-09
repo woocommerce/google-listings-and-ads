@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
@@ -27,6 +28,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\HandlerStack;
 use Jetpack_Options;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -60,6 +62,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
 		SiteVerification::class               => true,
+		Settings::class                       => true,
 	];
 
 	/**
@@ -73,8 +76,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_guzzle();
 		$this->register_ads_client();
 		$this->register_google_classes();
-		$this->add( Proxy::class, $this->getLeagueContainer() );
-		$this->add( Connection::class, $this->getLeagueContainer() );
+		$this->add( Proxy::class, ContainerInterface::class );
+		$this->add( Connection::class, ContainerInterface::class );
+		$this->add( Settings::class, ContainerInterface::class );
 
 		$this->share(
 			Ads::class,

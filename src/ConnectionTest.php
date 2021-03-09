@@ -534,7 +534,7 @@ class ConnectionTest implements Service, Registerable {
 							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" /></label>
 						</label>
 						<label for="async-sync-product">Async?</label>
-                        <input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+						<input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
 						<button class="button">Sync Product with Google Merchant Center</button>
 								</p>
 							</td>
@@ -553,7 +553,7 @@ class ConnectionTest implements Service, Registerable {
 								<p>
 									<label for="async-sync-all-products">Async?</label>
 									<input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
-						            <button class="button">Sync All Products with Google Merchant Center</button>
+									<button class="button">Sync All Products with Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
@@ -562,7 +562,7 @@ class ConnectionTest implements Service, Registerable {
 					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-all-products" type="hidden" />
-						</form>
+				</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
@@ -992,7 +992,7 @@ class ConnectionTest implements Service, Registerable {
 					$this->response = 'Error submitting products to Google: ' . $exception->getMessage();
 				}
 			} else {
-			    // schedule a job
+				// schedule a job
 				/** @var UpdateAllProducts $update_job */
 				$update_job = $this->container->get( UpdateAllProducts::class );
 				$update_job->start();
