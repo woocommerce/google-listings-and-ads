@@ -11,6 +11,7 @@ import {} from '@wordpress/element';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AudienceSection from './audience-section';
 import BudgetSection from './budget-section';
+import FaqsSection from './faqs-section';
 
 const FormContent = ( props ) => {
 	const { formProps } = props;
@@ -19,6 +20,7 @@ const FormContent = ( props ) => {
 		<>
 			<AudienceSection formProps={ formProps } />
 			<BudgetSection formProps={ formProps } />
+			<FaqsSection />
 			<StepContentFooter>
 				<Button isPrimary>
 					{ __( 'Launch campaign', 'google-listings-and-ads' ) }
