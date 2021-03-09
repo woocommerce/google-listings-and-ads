@@ -41,11 +41,13 @@ export default function EditFreeCampaign() {
 	const handleStepClick = ( key ) => {
 		getHistory().push( getNewPath( { pageStep: key } ) );
 	};
-	// TODO: Provide title to the TopBar.
 	// TODO: Wse ChooseAudience and SetupFreeListings customized for this page.
 	return (
 		<FullContainer>
-			<TopBar backHref={ dashboardURL } />
+			<TopBar
+				title={ __( 'Edit free listings', 'google-listings-and-ads' ) }
+				backHref={ dashboardURL }
+			/>
 			<Stepper
 				className="gla-setup-stepper"
 				currentStep={ pageStep }
