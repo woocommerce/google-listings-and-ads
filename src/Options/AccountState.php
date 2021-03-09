@@ -69,4 +69,18 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 	public function update( array $state ) {
 		$this->options->update( $this->option_name(), $state );
 	}
+
+	/**
+	 * Mark a step as completed.
+	 *
+	 * @param string $step Name of the completed step.
+	 */
+	public function complete_step( string $step ) {
+		$state = $this->get( false );
+
+		if ( isset( $state[ $step ] ) ) {
+			$state[ $step ]['status'] = self::STEP_DONE;
+			$this->update( $state );
+		}
+	}
 }

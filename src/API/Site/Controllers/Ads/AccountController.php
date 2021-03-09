@@ -178,6 +178,10 @@ class AccountController extends BaseOptionsController {
 				$ads    = $this->container->get( Ads::class );
 				$status = $ads->get_billing_status();
 
+				if ( 'approved' === $status ) {
+					$this->account_state->complete_step( 'billing' );
+				}
+
 				return [
 					'status' => $status,
 				];
@@ -245,7 +249,10 @@ class AccountController extends BaseOptionsController {
 		}
 
 		$this->middleware->link_ads_account( $account_id );
-		$state['set_id']['status'] = AdsAccountState::STEP_DONE;
+
+		// Skip billing setup flow when using an existing account.
+		$state['set_id']['status']  = AdsAccountState::STEP_DONE;
+		$state['billing']['status'] = AdsAccountState::STEP_DONE;
 		$this->account_state->update( $state );
 	}
 
@@ -276,9 +283,14 @@ class AccountController extends BaseOptionsController {
 						}
 						$account = $this->middleware->create_ads_account();
 						break;
+
+					case 'billing':
+						throw new Exception( __( 'Billing setup must be completed', 'google-listings-and-ads' ) );
+
 					case 'link_merchant':
 						$this->link_merchant_account();
 						break;
+
 					default:
 						throw new Exception(
 							/* translators: 1: is a string representing an unknown step name */
