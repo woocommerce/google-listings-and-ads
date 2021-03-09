@@ -513,6 +513,9 @@ class Proxy implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	protected function update_ads_id( int $id ): bool {
+		/** @var Ads $ads */
+		$ads = $this->container->get( Ads::class );
+		$ads->set_id( $id );
 		return $this->options->update( Options::ADS_ID, $id );
 	}
 

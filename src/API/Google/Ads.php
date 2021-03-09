@@ -75,6 +75,15 @@ class Ads {
 	}
 
 	/**
+	 * Set the ID.
+	 *
+	 * @param int $id
+	 */
+	public function set_id( int $id ): void {
+		$this->id = new PositiveInteger( $id );
+	}
+
+	/**
 	 * Get billing status.
 	 *
 	 * @return string
