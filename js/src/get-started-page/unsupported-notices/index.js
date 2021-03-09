@@ -31,7 +31,6 @@ const useStoreCountry = () => {
 	}
 
 	return {
-		countryCode,
 		countryName: countryNames[ countryCode ].name,
 	};
 };
