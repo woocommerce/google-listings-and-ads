@@ -397,6 +397,7 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function disconnect_ads_account() {
 		$this->update_ads_id( 0 );
+		$this->options->update( Options::ADS_BILLING_URL, '' );
 	}
 
 	/**
