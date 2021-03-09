@@ -4,10 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -91,17 +93,6 @@ class AccountController extends BaseOptionsController {
 		);
 
 		$this->register_route(
-			'ads/link-merchant',
-			[
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->link_merchant_account_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-				],
-			]
-		);
-
-		$this->register_route(
 			'ads/billing-status',
 			[
 				[
@@ -143,6 +134,8 @@ class AccountController extends BaseOptionsController {
 
 				$account = $this->setup_account();
 				return $this->prepare_item_for_response( $account, $request );
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -178,40 +171,6 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the callback function for linking a merchant account.
-	 *
-	 * @return callable
-	 */
-	protected function link_merchant_account_callback(): callable {
-		return function() {
-			try {
-				/** @var Merchant $merchant */
-				$merchant = $this->container->get( Merchant::class );
-				if ( ! $merchant->get_id() ) {
-					throw new Exception( 'A Merchant Center account must be connected' );
-				}
-
-				/** @var Ads $ads */
-				$ads = $this->container->get( Ads::class );
-				if ( ! $ads->get_id() ) {
-					throw new Exception( 'An Ads account must be connected' );
-				}
-
-				// Create link for Merchant and accept it in Ads.
-				$merchant->link_ads_id( $ads->get_id() );
-				$ads->accept_merchant_link( $merchant->get_id() );
-
-				return [
-					'status'  => 'success',
-					'message' => __( 'Successfully linked merchant and ads accounts.', 'google-listings-and-ads' ),
-				];
-			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
-		};
-	}
-
-	/**
 	 * Get the callback function for retrieving the billing setup status.
 	 *
 	 * @return callable
@@ -223,8 +182,14 @@ class AccountController extends BaseOptionsController {
 				$ads    = $this->container->get( Ads::class );
 				$status = $ads->get_billing_status();
 
+				if ( BillingSetupStatus::APPROVED === $status ) {
+					$this->account_state->complete_step( 'billing' );
+					return [ 'status' => $status ];
+				}
+
 				return [
-					'status' => $status,
+					'status'      => $status,
+					'billing_url' => $this->options->get( Options::ADS_BILLING_URL ),
 				];
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
@@ -290,7 +255,10 @@ class AccountController extends BaseOptionsController {
 		}
 
 		$this->middleware->link_ads_account( $account_id );
-		$state['set_id']['status'] = AdsAccountState::STEP_DONE;
+
+		// Skip billing setup flow when using an existing account.
+		$state['set_id']['status']  = AdsAccountState::STEP_DONE;
+		$state['billing']['status'] = AdsAccountState::STEP_DONE;
 		$this->account_state->update( $state );
 	}
 
@@ -302,7 +270,7 @@ class AccountController extends BaseOptionsController {
 	 * @return array The newly created (or pre-existing) Ads ID.
 	 * @throws Exception If an error occurs during any step.
 	 */
-	protected function setup_account(): array {
+	private function setup_account(): array {
 		$state   = $this->account_state->get();
 		$ads_id  = $this->options->get( Options::ADS_ID );
 		$account = [ 'id' => $ads_id ];
@@ -321,6 +289,15 @@ class AccountController extends BaseOptionsController {
 						}
 						$account = $this->middleware->create_ads_account();
 						break;
+
+					case 'billing':
+						$this->check_billing_status( $account );
+						break;
+
+					case 'link_merchant':
+						$this->link_merchant_account();
+						break;
+
 					default:
 						throw new Exception(
 							/* translators: 1: is a string representing an unknown step name */
@@ -339,5 +316,58 @@ class AccountController extends BaseOptionsController {
 		}
 
 		return $account;
+	}
+
+	/**
+	 * Get the callback function for linking a merchant account.
+	 *
+	 * @throws Exception When the merchant or ads account hasn't been set yet.
+	 */
+	private function link_merchant_account() {
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
+		if ( ! $merchant->get_id() ) {
+			throw new Exception( 'A Merchant Center account must be connected' );
+		}
+
+		/** @var Ads $ads */
+		$ads = $this->container->get( Ads::class );
+		if ( ! $ads->get_id() ) {
+			throw new Exception( 'An Ads account must be connected' );
+		}
+
+		// Create link for Merchant and accept it in Ads.
+		$merchant->link_ads_id( $ads->get_id() );
+		$ads->accept_merchant_link( $merchant->get_id() );
+	}
+
+	/**
+	 * Confirm the billing flow has been completed.
+	 *
+	 * @param array $account Account details.
+	 *
+	 * @throws ExceptionWithResponseData If this step hasn't been completed yet.
+	 */
+	private function check_billing_status( array $account ) {
+		$status = BillingSetupStatus::UNKNOWN;
+
+		// Only check billing status if we haven't just created the account.
+		if ( empty( $account['billing_url'] ) ) {
+			/** @var Ads $ads */
+			$ads    = $this->container->get( Ads::class );
+			$status = $ads->get_billing_status();
+		}
+
+		if ( BillingSetupStatus::APPROVED !== $status ) {
+			throw new ExceptionWithResponseData(
+				__( 'Billing setup must be completed.', 'google-listings-and-ads' ),
+				428,
+				null,
+				[
+					'billing_url'    => $this->options->get( Options::ADS_BILLING_URL ),
+					'billing_status' => $status,
+				]
+			);
+		}
 	}
 }

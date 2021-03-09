@@ -76,13 +76,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Proxy::class, $this->getLeagueContainer() );
 		$this->add( Connection::class, $this->getLeagueContainer() );
 
-		$this->add(
+		$this->share(
 			Ads::class,
 			$this->getLeagueContainer(),
 			$this->get_ads_id()
 		);
 
-		$this->add(
+		$this->share(
 			Merchant::class,
 			$this->getLeagueContainer(),
 			$this->get_merchant_id()
