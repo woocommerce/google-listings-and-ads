@@ -146,7 +146,7 @@ class Proxy implements OptionsAwareInterface {
 			'status' => $id ? 'connected' : 'disconnected',
 		];
 
-		$incomplete = $this->container->get( AdsAccountState::class )->last_incomplete_step();
+		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
 		if ( ! empty( $incomplete ) ) {
 			$status['status'] = 'incomplete';
 			$status['step']   = $incomplete;
