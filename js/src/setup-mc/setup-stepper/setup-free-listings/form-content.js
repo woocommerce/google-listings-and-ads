@@ -5,10 +5,10 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import ShippingRate from './shipping-rate';
 import ShippingTime from './shipping-time';
-import TaxRate from './tax-rate';
+import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import PreLaunchChecklist from './pre-launch-checklist';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
-import useDisplayTaxRate from './useDisplayTaxRate';
+import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 
 const FormContent = ( props ) => {
 	const { formProps, submitButton } = props;

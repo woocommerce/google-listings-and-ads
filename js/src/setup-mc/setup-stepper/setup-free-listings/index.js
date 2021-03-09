@@ -9,8 +9,8 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
-import Hero from './hero';
-import useSettings from './useSettings';
+import Hero from '.~/components/free-listings/configure-product-listings/hero';
+import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import FormContent from './form-content';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
