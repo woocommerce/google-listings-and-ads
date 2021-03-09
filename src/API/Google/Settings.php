@@ -45,6 +45,10 @@ class Settings {
 	 * Sync the shipping settings with Google.
 	 */
 	public function sync_shipping() {
+		if ( ! $this->should_sync_shipping() ) {
+			return;
+		}
+
 		$settings = new ShippingSettings();
 		$settings->setAccountId( $this->get_account_id() );
 
@@ -64,6 +68,15 @@ class Settings {
 			$this->get_account_id(),
 			$settings
 		);
+	}
+
+	/**
+	 * Whether we should synchronize settings with the Merchant Center
+	 *
+	 * @return bool
+	 */
+	protected function should_sync_shipping(): bool {
+		return 'flat' === $this->get_settings()['shipping_rate'];
 	}
 
 	/**
@@ -210,9 +223,7 @@ class Settings {
 	 * @return bool
 	 */
 	protected function has_free_shipping_option(): bool {
-		return boolval(
-			$this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER )['offers_free_shipping'] ?? false
-		);
+		return boolval( $this->get_settings()['offers_free_shipping'] ?? false );
 	}
 
 	/**
@@ -221,9 +232,7 @@ class Settings {
 	 * @return int
 	 */
 	protected function get_free_shipping_minimum(): int {
-		return intval(
-			$this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER )['free_shipping_threshold']
-		);
+		return intval( $this->get_settings()['free_shipping_threshold'] );
 	}
 
 	/**
@@ -338,5 +347,14 @@ class Settings {
 		$wc = $this->container->get( WC::class );
 
 		return $wc->get_wc_countries()->get_base_state();
+	}
+
+	/**
+	 * Get the array of settings for the Merchant Center.
+	 *
+	 * @return array
+	 */
+	protected function get_settings(): array {
+		return $this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER );
 	}
 }
