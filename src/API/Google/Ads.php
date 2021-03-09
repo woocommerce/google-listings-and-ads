@@ -540,13 +540,13 @@ class Ads {
 	 * Accept a link from a merchant account.
 	 *
 	 * @param int $merchant_id Merchant Center account id.
-	 * @throws Exception When a link has already been accepted or is unavailable.
+	 * @throws Exception When a link is unavailable.
 	 */
 	public function accept_merchant_link( int $merchant_id ) {
 		$link = $this->get_merchant_link( $merchant_id );
 
 		if ( $link->getStatus() === MerchantCenterLinkStatus::ENABLED ) {
-			throw new Exception( __( 'Merchant link has already been accepted', 'google-listings-and-ads' ) );
+			return;
 		}
 
 		$link->setStatus( MerchantCenterLinkStatus::ENABLED );
