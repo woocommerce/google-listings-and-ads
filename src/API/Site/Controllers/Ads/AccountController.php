@@ -91,17 +91,6 @@ class AccountController extends BaseOptionsController {
 		);
 
 		$this->register_route(
-			'ads/link-merchant',
-			[
-				[
-					'methods'             => TransportMethods::CREATABLE,
-					'callback'            => $this->link_merchant_account_callback(),
-					'permission_callback' => $this->get_permission_callback(),
-				],
-			]
-		);
-
-		$this->register_route(
 			'ads/billing-status',
 			[
 				[
@@ -174,40 +163,6 @@ class AccountController extends BaseOptionsController {
 				'status'  => 'success',
 				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
 			];
-		};
-	}
-
-	/**
-	 * Get the callback function for linking a merchant account.
-	 *
-	 * @return callable
-	 */
-	protected function link_merchant_account_callback(): callable {
-		return function() {
-			try {
-				/** @var Merchant $merchant */
-				$merchant = $this->container->get( Merchant::class );
-				if ( ! $merchant->get_id() ) {
-					throw new Exception( 'A Merchant Center account must be connected' );
-				}
-
-				/** @var Ads $ads */
-				$ads = $this->container->get( Ads::class );
-				if ( ! $ads->get_id() ) {
-					throw new Exception( 'An Ads account must be connected' );
-				}
-
-				// Create link for Merchant and accept it in Ads.
-				$merchant->link_ads_id( $ads->get_id() );
-				$ads->accept_merchant_link( $merchant->get_id() );
-
-				return [
-					'status'  => 'success',
-					'message' => __( 'Successfully linked merchant and ads accounts.', 'google-listings-and-ads' ),
-				];
-			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
 		};
 	}
 
@@ -302,7 +257,7 @@ class AccountController extends BaseOptionsController {
 	 * @return array The newly created (or pre-existing) Ads ID.
 	 * @throws Exception If an error occurs during any step.
 	 */
-	protected function setup_account(): array {
+	private function setup_account(): array {
 		$state   = $this->account_state->get();
 		$ads_id  = $this->options->get( Options::ADS_ID );
 		$account = [ 'id' => $ads_id ];
@@ -320,6 +275,9 @@ class AccountController extends BaseOptionsController {
 							break;
 						}
 						$account = $this->middleware->create_ads_account();
+						break;
+					case 'link_merchant':
+						$this->link_merchant_account();
 						break;
 					default:
 						throw new Exception(
@@ -339,5 +297,28 @@ class AccountController extends BaseOptionsController {
 		}
 
 		return $account;
+	}
+
+	/**
+	 * Get the callback function for linking a merchant account.
+	 *
+	 * @throws Exception When the merchant or ads account hasn't been set yet.
+	 */
+	private function link_merchant_account() {
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
+		if ( ! $merchant->get_id() ) {
+			throw new Exception( 'A Merchant Center account must be connected' );
+		}
+
+		/** @var Ads $ads */
+		$ads = $this->container->get( Ads::class );
+		if ( ! $ads->get_id() ) {
+			throw new Exception( 'An Ads account must be connected' );
+		}
+
+		// Create link for Merchant and accept it in Ads.
+		$merchant->link_ads_id( $ads->get_id() );
+		$ads->accept_merchant_link( $merchant->get_id() );
 	}
 }
