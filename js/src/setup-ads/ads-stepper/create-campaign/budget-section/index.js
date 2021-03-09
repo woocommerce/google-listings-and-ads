@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import AppInputControl from '.~/components/app-input-control';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
+import getMonthlyMaxEstimated from '../getMonthlyMaxEstimated';
 
 const BudgetSection = ( props ) => {
 	const {
