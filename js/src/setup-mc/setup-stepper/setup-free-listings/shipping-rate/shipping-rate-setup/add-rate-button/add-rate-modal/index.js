@@ -13,7 +13,7 @@ import AppInputControl from '.~/components/app-input-control';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import { useAppDispatch } from '.~/data';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AudienceCountrySelect from '../../../../components/audience-country-select';
+import AudienceCountrySelect from '.~/components/audience-country-select';
 import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {
