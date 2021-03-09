@@ -50,7 +50,7 @@ const TermsModal = ( props ) => {
 			<p>
 				{ createInterpolateElement(
 					__(
-						'You agree to comply with Google’s terms and policies, including <policylink>Shopping ads policies</policylink> and <termslink>Google Ads Terms and Conditions</termlink>.',
+						'You agree to comply with Google’s terms and policies, including <policylink>Shopping ads policies</policylink> and <termslink>Google Ads Terms and Conditions</termslink>.',
 						'google-listings-and-ads'
 					),
 					{
@@ -61,7 +61,7 @@ const TermsModal = ( props ) => {
 								href="https://support.google.com/merchants/answer/6149970"
 							/>
 						),
-						termlink: (
+						termslink: (
 							<AppDocumentationLink
 								context="setup-ads"
 								linkId="google-ads-terms-of-service"
