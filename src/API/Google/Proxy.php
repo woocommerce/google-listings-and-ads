@@ -502,6 +502,9 @@ class Proxy implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	protected function update_merchant_id( int $id ): bool {
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
+		$merchant->set_id( $id );
 		return $this->options->update( Options::MERCHANT_ID, $id );
 	}
 
