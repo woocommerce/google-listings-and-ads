@@ -23,6 +23,7 @@ const DEFAULT_STATE = {
 			mc: null,
 			ads: null,
 			existing_mc: null,
+			existing_ads: null,
 		},
 	},
 };
