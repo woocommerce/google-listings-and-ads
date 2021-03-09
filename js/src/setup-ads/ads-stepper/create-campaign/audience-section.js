@@ -9,7 +9,11 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 
-const AudienceSection = () => {
+const AudienceSection = ( props ) => {
+	const {
+		formProps: { getInputProps },
+	} = props;
+
 	return (
 		<Section
 			title={ __( 'Audience', 'google-listings-and-ads' ) }
@@ -33,6 +37,9 @@ const AudienceSection = () => {
 							'You can only select one country per campaign. ',
 							'google-listings-and-ads'
 						) }
+						isSearchable={ false }
+						inlineTags={ false }
+						{ ...getInputProps( 'country' ) }
 					/>
 				</Section.Card.Body>
 			</Section.Card>

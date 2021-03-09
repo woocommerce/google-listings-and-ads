@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
+import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -10,11 +10,21 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AudienceSection from './audience-section';
+import FormContent from './form-content';
 
 const CreateCampaign = () => {
+	const handleValidate = () => {
+		const errors = {};
+
+		// TODO: validation logic.
+
+		return errors;
+	};
+
+	// TODO: handle form submit.
+	const handleSubmitCallback = () => {};
+
 	return (
 		<StepContent>
 			<StepContentHeader
@@ -40,12 +50,19 @@ const CreateCampaign = () => {
 					}
 				) }
 			/>
-			<AudienceSection />
-			<StepContentFooter>
-				<Button isPrimary>
-					{ __( 'Launch campaign', 'google-listings-and-ads' ) }
-				</Button>
-			</StepContentFooter>
+			<Form
+				initialValues={ {
+					name: '',
+					amount: '',
+					country: '',
+				} }
+				validate={ handleValidate }
+				onSubmitCallback={ handleSubmitCallback }
+			>
+				{ ( formProps ) => {
+					return <FormContent formProps={ formProps } />;
+				} }
+			</Form>
 		</StepContent>
 	);
 };
