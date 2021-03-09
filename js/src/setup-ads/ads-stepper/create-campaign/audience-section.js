@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import SupportedCountrySelect from '.~/components/supported-country-select';
+import AudienceCountrySelect from '.~/components/audience-country-select';
 
 const AudienceSection = ( props ) => {
 	const {
@@ -28,7 +28,7 @@ const AudienceSection = ( props ) => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					<SupportedCountrySelect
+					<AudienceCountrySelect
 						label={ __(
 							'Select one country',
 							'google-listings-and-ads'
