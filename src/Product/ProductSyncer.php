@@ -96,6 +96,18 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 			}
 		}
 
+		if ( ! empty( $invalid_products ) ) {
+			do_action( 'gla_batch_update_products_errors', [ $invalid_products ] );
+		}
+
+		do_action(
+			'gla_batch_updated_products',
+			[
+				$updated_products,
+				$invalid_products,
+			]
+		);
+
 		return new BatchProductResponse( $updated_products, $invalid_products );
 	}
 
@@ -151,6 +163,18 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
+
+		if ( ! empty( $invalid_products ) ) {
+			do_action( 'gla_batch_delete_products_errors', [ $invalid_products ] );
+		}
+
+		do_action(
+			'gla_batch_deleted_products',
+			[
+				$deleted_products,
+				$invalid_products,
+			]
+		);
 
 		return new BatchProductResponse( $deleted_products, $invalid_products );
 	}
