@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -13,7 +14,6 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use Google_Service_ShoppingContent as ShoppingContent;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\ApiCore\ApiException;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
@@ -255,8 +255,7 @@ class Proxy implements OptionsAwareInterface {
 		try {
 			/** @var GoogleAdsClient $client */
 			$client    = $this->container->get( GoogleAdsClient::class );
-			$args      = [ 'headers' => $this->container->get( 'connect_server_auth_header' ) ];
-			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers( $args );
+			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers();
 			$ids       = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {

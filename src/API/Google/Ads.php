@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
@@ -412,8 +412,7 @@ class Ads {
 		$client   = $this->container->get( GoogleAdsClient::class );
 		$response = $client->getCampaignServiceClient()->mutateCampaigns(
 			$this->get_id(),
-			[ $operation ],
-			$this->get_args()
+			[ $operation ]
 		);
 
 		return $response->getResults()[0];
@@ -430,8 +429,7 @@ class Ads {
 		$client   = $this->container->get( GoogleAdsClient::class );
 		$response = $client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
 			$this->get_id(),
-			[ $operation ],
-			$this->get_args()
+			[ $operation ]
 		);
 
 		return $response->getResults()[0];
@@ -468,16 +466,7 @@ class Ads {
 		/** @var GoogleAdsClient $client */
 		$client = $this->container->get( GoogleAdsClient::class );
 
-		return $client->getGoogleAdsServiceClient()->search( $this->get_id(), $query, $this->get_args() );
-	}
-
-	/**
-	 * Get request arguments including authentication headers.
-	 *
-	 * @return array
-	 */
-	protected function get_args(): array {
-		return [ 'headers' => $this->container->get( 'connect_server_auth_header' ) ];
+		return $client->getGoogleAdsServiceClient()->search( $this->get_id(), $query );
 	}
 
 	/**
@@ -559,8 +548,7 @@ class Ads {
 		$client   = $this->container->get( GoogleAdsClient::class );
 		$response = $client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
 			$this->get_id(),
-			$operation,
-			$this->get_args()
+			$operation
 		);
 	}
 
@@ -575,8 +563,7 @@ class Ads {
 	private function get_merchant_link( int $merchant_id ): MerchantCenterLink {
 		$client   = $this->container->get( GoogleAdsClient::class );
 		$response = $client->getMerchantCenterLinkServiceClient()->listMerchantCenterLinks(
-			$this->get_id(),
-			$this->get_args()
+			$this->get_id()
 		);
 
 		foreach ( $response->getMerchantCenterLinks() as $link ) {
