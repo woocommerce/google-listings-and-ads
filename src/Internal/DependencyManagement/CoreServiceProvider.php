@@ -164,13 +164,16 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ProductRepository::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
-		$this->share_with_tags( BatchProductHelper::class, ProductMetaHandler::class, ProductHelper::class );
+		$this->share_with_tags(
+			BatchProductHelper::class,
+			ProductMetaHandler::class,
+			ProductHelper::class,
+			ValidatorInterface::class
+		);
 		$this->share_with_tags(
 			ProductSyncer::class,
 			GoogleProductService::class,
-			BatchProductHelper::class,
-			ProductHelper::class,
-			ValidatorInterface::class
+			BatchProductHelper::class
 		);
 
 		// Set up inflector for tracks classes.

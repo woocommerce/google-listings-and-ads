@@ -3,13 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -23,7 +26,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class BatchProductHelper implements Service {
+class BatchProductHelper implements Service, OptionsAwareInterface {
+
+	use MerchantCenterTrait;
 
 	use ValidateInterface;
 
@@ -38,14 +43,21 @@ class BatchProductHelper implements Service {
 	protected $product_helper;
 
 	/**
+	 * @var ValidatorInterface
+	 */
+	protected $validator;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductHelper      $product_helper
+	 * @param ValidatorInterface $validator
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper ) {
+	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper, ValidatorInterface $validator ) {
 		$this->meta_handler   = $meta_handler;
 		$this->product_helper = $product_helper;
+		$this->validator      = $validator;
 	}
 
 	/**
@@ -73,8 +85,15 @@ class BatchProductHelper implements Service {
 		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
-		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getId() ] ) );
+		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
+
+		// check if product is synced completely and remove any previous errors if it is
+		$synced_countries = array_keys( $google_ids );
+		$target_countries = $this->get_target_countries();
+		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
+			$this->meta_handler->delete_errors( $wc_product_id );
+		}
 
 		// mark the parent product as synced if it's a variation
 		$wc_product = wc_get_product( $wc_product_id );
@@ -141,8 +160,12 @@ class BatchProductHelper implements Service {
 	 */
 	public function generate_delete_request_entries( array $products ): array {
 		$request_entries = [];
-		$products        = self::expand_variations( $products );
 		foreach ( $products as $product ) {
+			if ( $product instanceof WC_Product_Variable ) {
+				$request_entries = array_merge( $request_entries, $this->generate_delete_request_entries( $product->get_available_variations( 'objects' ) ) );
+				continue;
+			}
+
 			$google_ids = $this->product_helper->get_synced_google_product_ids( $product );
 			if ( empty( $google_ids ) ) {
 				continue;
@@ -178,31 +201,63 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Fetch and return all of the available product variations next to the given products.
-	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return WC_Product[]
-	 *
-	 * @throws InvalidValue If an invalid product is provided.
+	 * @return BatchProductRequestEntry[]|BatchInvalidProductEntry[]
 	 */
-	public static function expand_variations( array $products ): array {
-		$all_products = [];
+	public function validate_and_generate_update_request_entries( array $products ): array {
+		$request_entries  = [];
+		$target_countries = $this->get_target_countries();
+
 		foreach ( $products as $product ) {
-			if ( ! $product instanceof WC_Product ) {
-				throw InvalidValue::not_instance_of( WC_Product::class, 'product' );
+			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
+				continue;
 			}
 
 			if ( $product instanceof WC_Product_Variable ) {
-				$variations = $product->get_available_variations( 'objects' );
-				foreach ( $variations as $variation ) {
-					$all_products[ $variation->get_id() ] = $variation;
-				}
-			} else {
-				$all_products[ $product->get_id() ] = $product;
+				$request_entries = array_merge( $request_entries, $this->validate_and_generate_update_request_entries( $product->get_available_variations( 'objects' ) ) );
+				continue;
 			}
+
+			// check if the product validates for just one of its target countries
+			$validation_result = $this->validate_product( $this->product_helper->generate_adapted_product( $product, $target_countries[0] ) );
+			if ( $validation_result instanceof BatchInvalidProductEntry ) {
+				$this->mark_as_invalid( $validation_result );
+
+				$request_entries[] = $validation_result;
+			}
+
+			// return batch request entries for each target country
+			$product_entries = array_map(
+				function ( $target_country ) use ( $product ) {
+					return new BatchProductRequestEntry(
+						$product->get_id(),
+						ProductHelper::generate_adapted_product( $product, $target_country )
+					);
+				},
+				$target_countries
+			);
+			$request_entries = array_merge( $request_entries, $product_entries );
 		}
 
-		return $all_products;
+		return $request_entries;
+	}
+
+	/**
+	 * @param WCProductAdapter $product
+	 *
+	 * @return BatchInvalidProductEntry|true
+	 */
+	protected function validate_product( WCProductAdapter $product ) {
+		$violations = $this->validator->validate( $product );
+
+		if ( 0 !== count( $violations ) ) {
+			$invalid_product = new BatchInvalidProductEntry( $product->get_wc_product()->get_id() );
+			$invalid_product->map_validation_violations( $violations );
+
+			return $invalid_product;
+		}
+
+		return true;
 	}
 }
