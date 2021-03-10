@@ -30,8 +30,17 @@ export default function ButtonLink( props ) {
 	const { href, disabled, type, ...restProps } = props;
 	const linkHref = disabled ? null : href;
 	return (
-		<Link href={ linkHref } type={ type } tabIndex={ -1 }>
-			<Button disabled={ disabled } { ...restProps } />
+		<Link
+			href={ linkHref }
+			type={ type }
+			tabIndex={ -1 }
+			aria-disabled={ disabled }
+		>
+			<Button
+				disabled={ disabled }
+				aria-disabled={ disabled }
+				{ ...restProps }
+			/>
 		</Link>
 	);
 }
