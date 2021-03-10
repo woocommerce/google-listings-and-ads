@@ -35,6 +35,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteS
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -156,6 +157,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 
 		// Inbox Notes
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );

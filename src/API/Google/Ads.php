@@ -75,6 +75,15 @@ class Ads {
 	}
 
 	/**
+	 * Set the ID.
+	 *
+	 * @param int $id
+	 */
+	public function set_id( int $id ): void {
+		$this->id = new PositiveInteger( $id );
+	}
+
+	/**
 	 * Get billing status.
 	 *
 	 * @return string
@@ -90,7 +99,8 @@ class Ads {
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				$billing_setup = $row->getBillingSetup();
-				return BillingSetupStatus::label( $billing_setup->getStatus() );
+				$status        = BillingSetupStatus::label( $billing_setup->getStatus() );
+				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $this->get_id() );
 			}
 		} catch ( ApiException $e ) {
 			// Do not act upon error as we might not have permission to access this account yet.
@@ -99,7 +109,7 @@ class Ads {
 			}
 		}
 
-		return BillingSetupStatus::UNKNOWN;
+		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $this->get_id() );
 	}
 
 	/**
@@ -531,13 +541,13 @@ class Ads {
 	 * Accept a link from a merchant account.
 	 *
 	 * @param int $merchant_id Merchant Center account id.
-	 * @throws Exception When a link has already been accepted or is unavailable.
+	 * @throws Exception When a link is unavailable.
 	 */
 	public function accept_merchant_link( int $merchant_id ) {
 		$link = $this->get_merchant_link( $merchant_id );
 
 		if ( $link->getStatus() === MerchantCenterLinkStatus::ENABLED ) {
-			throw new Exception( __( 'Merchant link has already been accepted', 'google-listings-and-ads' ) );
+			return;
 		}
 
 		$link->setStatus( MerchantCenterLinkStatus::ENABLED );

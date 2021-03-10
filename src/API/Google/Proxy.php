@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -139,21 +140,19 @@ class Proxy implements OptionsAwareInterface {
 	 * @return array
 	 */
 	public function get_connected_merchant(): array {
-		$id     = $this->get_merchant_id();
-		$status = $id ? 'connected' : 'disconnected';
+		$id     = $this->options->get( Options::MERCHANT_ID );
+		$status = [
+			'id'     => $id,
+			'status' => $id ? 'connected' : 'disconnected',
+		];
 
-		foreach ( $this->container->get( MerchantAccountState::class )->get( false ) as $name => $step ) {
-			if ( ! isset( $step['status'] ) || MerchantAccountState::STEP_DONE !== $step['status'] ) {
-				$status = 'incomplete';
-				$id     = 0;
-				break;
-			}
+		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
+		if ( ! empty( $incomplete ) ) {
+			$status['status'] = 'incomplete';
+			$status['step']   = $incomplete;
 		}
 
-		return [
-			'id'     => $id,
-			'status' => $status,
-		];
+		return $status;
 	}
 
 	/**
@@ -378,12 +377,19 @@ class Proxy implements OptionsAwareInterface {
 	 * @return array
 	 */
 	public function get_connected_ads_account(): array {
-		$id = $this->options->get( Options::ADS_ID );
-
-		return [
+		$id     = $this->options->get( Options::ADS_ID );
+		$status = [
 			'id'     => $id,
 			'status' => $id ? 'connected' : 'disconnected',
 		];
+
+		$incomplete = $this->container->get( AdsAccountState::class )->last_incomplete_step();
+		if ( ! empty( $incomplete ) ) {
+			$status['status'] = 'incomplete';
+			$status['step']   = $incomplete;
+		}
+
+		return $status;
 	}
 
 	/**
@@ -391,6 +397,7 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function disconnect_ads_account() {
 		$this->update_ads_id( 0 );
+		$this->options->update( Options::ADS_BILLING_URL, '' );
 	}
 
 	/**
@@ -502,6 +509,9 @@ class Proxy implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	protected function update_merchant_id( int $id ): bool {
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
+		$merchant->set_id( $id );
 		return $this->options->update( Options::MERCHANT_ID, $id );
 	}
 
@@ -513,6 +523,9 @@ class Proxy implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	protected function update_ads_id( int $id ): bool {
+		/** @var Ads $ads */
+		$ads = $this->container->get( Ads::class );
+		$ads->set_id( $id );
 		return $this->options->update( Options::ADS_ID, $id );
 	}
 

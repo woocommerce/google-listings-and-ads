@@ -40,7 +40,7 @@ trait MerchantCenterTrait {
 			$country = '';
 		}
 
-		return false;
+		return true;
 	}
 
 	/**
@@ -57,6 +57,6 @@ trait MerchantCenterTrait {
 			$language = '';
 		}
 
-		return false;
+		return true;
 	}
 }

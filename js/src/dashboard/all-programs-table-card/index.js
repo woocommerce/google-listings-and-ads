@@ -71,7 +71,7 @@ const AllProgramsTableCard = ( props ) => {
 			className="gla-all-programs-table-card"
 			title={
 				<div className="gla-all-programs-table-card__header">
-					{ __( 'All Programs', 'google-listings-and-ads' ) }
+					{ __( 'Programs', 'google-listings-and-ads' ) }
 					<Link
 						className={ classnames(
 							'components-button',

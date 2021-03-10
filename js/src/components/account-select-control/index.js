@@ -24,7 +24,7 @@ const AccountSelectControl = ( props ) => {
 		},
 		...accounts.map( ( acc ) => ( {
 			value: acc,
-			label: acc,
+			label: __( 'Account ', 'google-listings-and-ads' ) + acc,
 		} ) ),
 	];
 

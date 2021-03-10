@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import SetupFreeListings from '../setup-mc/setup-stepper/setup-free-listings';
-import ChooseAudience from '../setup-mc/setup-stepper/choose-audience';
+import ChooseAudience from '.~/components/free-listings/choose-audience';
 
 /**
  * Page Component to edit free campaigns.
@@ -41,11 +41,13 @@ export default function EditFreeCampaign() {
 	const handleStepClick = ( key ) => {
 		getHistory().push( getNewPath( { pageStep: key } ) );
 	};
-	// TODO: Provide title to the TopBar.
 	// TODO: Wse ChooseAudience and SetupFreeListings customized for this page.
 	return (
 		<FullContainer>
-			<TopBar backHref={ dashboardURL } />
+			<TopBar
+				title={ __( 'Edit free listings', 'google-listings-and-ads' ) }
+				backHref={ dashboardURL }
+			/>
 			<Stepper
 				className="gla-setup-stepper"
 				currentStep={ pageStep }
@@ -58,6 +60,10 @@ export default function EditFreeCampaign() {
 						),
 						content: (
 							<ChooseAudience
+								stepHeader={ __(
+									'STEP ONE',
+									'google-listings-and-ads'
+								) }
 								onContinue={ handleChooseAudienceContinue }
 							/>
 						),
