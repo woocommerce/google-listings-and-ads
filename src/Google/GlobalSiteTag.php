@@ -48,8 +48,9 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Register the service.
 	 */
 	public function register(): void {
-		// TODO: Inject or load these values.
 		$conversion_action = $this->options->get( Options::ADS_CONVERSION_ACTION );
+
+		// No snippets without conversion action info.
 		if ( ! $conversion_action ) {
 			return;
 		}
