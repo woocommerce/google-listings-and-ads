@@ -105,6 +105,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$handler_stack = HandlerStack::create();
 			$handler_stack->push( $this->add_auth_header() );
 
+			// Override endpoint URL if we are using http locally.
+			if ( 0 === strpos( $this->get_connect_server_url_root()->getValue(), 'http://' ) ) {
+				$handler_stack->push( $this->override_http_url() );
+			}
+
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
 		};
 
@@ -162,6 +167,18 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 					throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 				}
 
+				return $handler( $request, $options );
+			};
+		};
+	}
+
+	/**
+	 * @return callable
+	 */
+	protected function override_http_url(): callable {
+		return function( callable $handler ) {
+			return function( RequestInterface $request, array $options ) use ( $handler ) {
+				$request = $request->withUri( $request->getUri()->withScheme( 'http' ) );
 				return $handler( $request, $options );
 			};
 		};
