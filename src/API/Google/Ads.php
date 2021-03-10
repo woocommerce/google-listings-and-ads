@@ -11,6 +11,7 @@ use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
+use Google\Ads\GoogleAds\V6\Common\TagSnippet;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
 use Google\Ads\GoogleAds\V6\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
@@ -36,7 +37,6 @@ use Google\Ads\GoogleAds\V6\Services\MutateCampaignBudgetResult;
 use Google\Ads\GoogleAds\V6\Services\MutateConversionActionResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\PagedListResponse;
-use Google\Ads\GoogleAds\V6\Common\TagSnippet;
 use Psr\Container\ContainerInterface;
 use Exception;
 
@@ -600,7 +600,7 @@ class Ads {
 	}
 
 	/**
-	 * Create the 'WooCommerce Purchase' conversion action.
+	 * Create the 'Google Listings and Ads purchase action' conversion action.
 	 *
 	 * @return array An array with some conversion action details.
 	 * @throws Exception If the conversion action can't be created or retrieved.
