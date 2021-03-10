@@ -17,11 +17,17 @@ import './index.scss';
  * to be used when configuring a campaign during oboarding and later.
  *
  * @param {Object} props
+ * @param {string} props.title Title to indcate where the user is at.
  * @param {string} props.backHref Href for the back button.
  * @param {Function} props.onBackButtonClick
  * @param {Function} props.onHelpButtonClick
  */
-const TopBar = ( { backHref, onBackButtonClick, onHelpButtonClick } ) => {
+const TopBar = ( {
+	title,
+	backHref,
+	onBackButtonClick,
+	onHelpButtonClick,
+} ) => {
 	return (
 		<div className="gla-stepper-top-bar">
 			<Link
@@ -32,12 +38,7 @@ const TopBar = ( { backHref, onBackButtonClick, onHelpButtonClick } ) => {
 			>
 				<GridiconChevronLeft />
 			</Link>
-			<span className="title">
-				{ __(
-					'Get started with Google Listings & Ads',
-					'google-listings-and-ads'
-				) }
-			</span>
+			<span className="title">{ title }</span>
 			<div className="actions">
 				{ /* TODO: click and navigate to where? */ }
 				<AppIconButton
