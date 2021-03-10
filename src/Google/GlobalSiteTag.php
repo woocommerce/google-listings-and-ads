@@ -146,7 +146,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 			?>
 	<script>
-		gtag('event', 'conversion', {'send_to': '<?php echo esc_js( $aw_conversion_id ); ?>/<?php echo esc_js( $aw_conversion_label ); ?>',
+		gtag('event', 'conversion', {
+			'send_to': '<?php echo esc_js( $aw_conversion_id ); ?>/<?php echo esc_js( $aw_conversion_label ); ?>',
 			'value': '<?php echo esc_js( $order->get_total() ); ?>',
 			'currency': '<?php echo esc_js( $order->get_currency() ); ?>',
 			'transaction_id': '<?php echo esc_js( $order->get_transaction_id() ); ?>'
