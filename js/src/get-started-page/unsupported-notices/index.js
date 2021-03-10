@@ -20,9 +20,7 @@ import './index.scss';
 
 const useStoreCountry = () => {
 	const { data: countryNames } = useGetCountries();
-	const {
-		woocommerce_default_country: countryCode,
-	} = useSelect( ( select ) =>
+	const { woocommerce_default_country: country } = useSelect( ( select ) =>
 		select( SETTINGS_STORE_NAME ).getSetting( 'general', 'general' )
 	);
 
@@ -30,6 +28,7 @@ const useStoreCountry = () => {
 		return {};
 	}
 
+	const [ countryCode ] = country.split( ':' );
 	return {
 		countryName: countryNames[ countryCode ].name,
 	};
