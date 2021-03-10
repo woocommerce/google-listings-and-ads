@@ -61,12 +61,12 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		}
 
 		$this->wc_product = $array['wc_product'];
-		$this->map_woocommerce_product();
-
 		// Google doesn't expect this field, so it's best to remove it
 		unset( $array['wc_product'] );
 
 		parent::mapTypes( $array );
+
+		$this->map_woocommerce_product();
 	}
 
 	/**
@@ -78,12 +78,14 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$dimension_unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
 		$weight_unit    = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
 
-		// set target country
-		$base_country = WC()->countries->get_base_country();
-		$this->setTargetCountry( $base_country );
+		// set target country if null
+		if ( empty( $this->getTargetCountry() ) ) {
+			$base_country = WC()->countries->get_base_country();
+			$this->setTargetCountry( $base_country );
+		}
 
 		// tax is excluded from price in US and CA
-		$this->tax_excluded = in_array( $base_country, [ 'US', 'CA' ], true );
+		$this->tax_excluded = in_array( $this->getTargetCountry(), [ 'US', 'CA' ], true );
 		$this->tax_excluded = apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded );
 
 		$this->setChannel( self::CHANNEL_ONLINE );

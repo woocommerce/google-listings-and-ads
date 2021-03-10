@@ -67,11 +67,17 @@ class ProductHelper implements Service {
 	}
 
 	/**
-	 * @param WC_Product $product
+	 * @param WC_Product  $product
+	 * @param string|null $target_country
 	 *
 	 * @return WCProductAdapter
 	 */
-	public static function generate_adapted_product( WC_Product $product ): WCProductAdapter {
-		return new WCProductAdapter( [ 'wc_product' => $product ] );
+	public static function generate_adapted_product( WC_Product $product, string $target_country = null ): WCProductAdapter {
+		return new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => $target_country,
+			]
+		);
 	}
 }
