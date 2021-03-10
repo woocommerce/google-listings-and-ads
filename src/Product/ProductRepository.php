@@ -16,8 +16,6 @@ use WC_Product;
  */
 class ProductRepository implements Service {
 
-	public const INCLUDE_VARIATIONS_KEY = 'include_variations';
-
 	use PluginHelper;
 
 	/**
@@ -70,29 +68,7 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product objects based on the provided product IDs.
-	 *
-	 * Note: Including product variations.
-	 *
-	 * @param int[] $ids    Array of WooCommerce product IDs
-	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int   $offset Amount to offset product results.
-	 *
-	 * @return WC_Product[] Array of WooCommerce product objects
-	 */
-	public function find_by_ids_including_variations( array $ids, int $limit = -1, int $offset = 0 ): array {
-		$args['include'] = $ids;
-
-		// include product variations
-		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
-
-		return $this->find( $args, $limit, $offset );
-	}
-
-	/**
 	 * Find and return an array of WooCommerce product objects already submitted to Google Merchant Center.
-	 *
-	 * Note: Includes product variations.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
@@ -106,9 +82,6 @@ class ProductRepository implements Service {
 				'compare' => 'EXISTS',
 			],
 		];
-
-		// include product variations
-		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
 
 		return $this->find( $args, $limit, $offset );
 	}
@@ -131,9 +104,6 @@ class ProductRepository implements Service {
 			],
 		];
 
-		// include product variations
-		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
-
 		return $this->find_ids( $args, $limit, $offset );
 	}
 
@@ -146,9 +116,7 @@ class ProductRepository implements Service {
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
 	public function find_sync_ready_products( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
-
-		return $this->find( $args, $limit, $offset );
+		return $this->find( $this->get_sync_ready_products_query_args(), $limit, $offset );
 	}
 
 	/**
@@ -160,9 +128,7 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_sync_ready_product_ids( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
-
-		return $this->find_ids( $args, $limit, $offset );
+		return $this->find_ids( $this->get_sync_ready_products_query_args(), $limit, $offset );
 	}
 
 	/**
@@ -186,7 +152,25 @@ class ProductRepository implements Service {
 	/**
 	 * @return array
 	 */
-	protected function get_invalid_products_meta_query(): array {
+	protected function get_sync_ready_products_query_args(): array {
+		$args = [];
+
+		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
+
+		// don't include variable products in query
+		$args['type']        = $this->get_supported_product_types();
+		$variable_type_index = array_search( 'variable', $args['type'], true );
+		if ( false !== $variable_type_index ) {
+			unset( $args['type'][ $variable_type_index ] );
+		}
+
+		return $args;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_valid_products_meta_query(): array {
 		return [
 			'relation' => 'OR',
 			[
@@ -213,7 +197,7 @@ class ProductRepository implements Service {
 		$args['meta_query'] = [
 			'relation' => 'AND',
 			$this->get_sync_ready_products_meta_query(),
-			$this->get_invalid_products_meta_query(),
+			$this->get_valid_products_meta_query(),
 			[
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
@@ -262,11 +246,8 @@ class ProductRepository implements Service {
 		}
 
 		// only include supported product types
-		$args['type'] = $this->get_supported_product_types();
-
-		// include product variations in the query
-		if ( isset( $args[ self::INCLUDE_VARIATIONS_KEY ] ) && true === $args[ self::INCLUDE_VARIATIONS_KEY ] ) {
-			$args['type'][] = 'variation';
+		if ( empty( $args['type'] ) ) {
+			$args['type'] = $this->get_supported_product_types();
 		}
 
 		return $args;
@@ -308,7 +289,7 @@ class ProductRepository implements Service {
 	 * @return array
 	 */
 	protected function get_supported_product_types(): array {
-		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable' ] );
+		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable', 'variation' ] );
 	}
 
 }
