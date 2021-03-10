@@ -618,7 +618,7 @@ class Ads {
 					[
 						'name'           => sprintf(
 							/* translators: %1 is a random 4-digit string */
-							__( '[%1$s] Google Listings and Ads generated purchase action', 'google-listings-and-ads' ),
+							__( '[%1$s] Google Listings and Ads purchase action', 'google-listings-and-ads' ),
 							$unique
 						),
 						'category'       => ConversionActionCategory::PURCHASE,
