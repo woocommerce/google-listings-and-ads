@@ -8,7 +8,7 @@ import { useState } from '@wordpress/element';
  */
 import ConnectMCCard from './connect-mc-card';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
-import SpinnerCard from './spinner-card';
+import SpinnerCard from '.~/components/spinner-card';
 import CreateAccount from './create-account';
 
 const NonConnected = () => {

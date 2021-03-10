@@ -1,22 +1,22 @@
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
 import TitleButtonLayout from '.~/components/title-button-layout';
 import AccountId from '.~/components/account-id';
+import Section from '.~/wcdl/section';
 
-const ConnectedCard = ( props ) => {
-	const { googleMCAccount } = props;
+const Connected = ( props ) => {
+	const { googleAdsAccount } = props;
 
 	return (
 		<Section.Card>
 			<Section.Card.Body>
 				<TitleButtonLayout
-					title={ <AccountId id={ googleMCAccount.id } /> }
+					title={ <AccountId id={ googleAdsAccount.id } /> }
 				/>
 			</Section.Card.Body>
 		</Section.Card>
 	);
 };
 
-export default ConnectedCard;
+export default Connected;
