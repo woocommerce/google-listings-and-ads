@@ -57,16 +57,23 @@ class JobInitializer implements Registerable, Conditional {
 			$job->init();
 
 			if ( $job instanceof StartOnHookInterface ) {
-				add_action( $job->get_start_hook(), [ $job, 'start' ], 10, 0 );
+				add_action(
+					$job->get_start_hook()->get_hook(),
+					function ( ...$args ) use ( $job ) {
+						$job->start( $args );
+					},
+					10,
+					$job->get_start_hook()->get_argument_count()
+				);
 			}
 
 			if ( $job instanceof RecurringJobInterface &&
-				 ! $this->action_scheduler->has_scheduled_action( $job->get_start_hook() ) &&
+				 ! $this->action_scheduler->has_scheduled_action( $job->get_start_hook()->get_hook() ) &&
 				 $job->can_start() ) {
 
 				$recurring_date_time = new DateTime( 'tomorrow 3am', wp_timezone() );
 				$schedule            = '0 3 * * *'; // 3 am every day
-				$this->action_scheduler->schedule_cron( $recurring_date_time->getTimestamp(), $schedule, $job->get_start_hook() );
+				$this->action_scheduler->schedule_cron( $recurring_date_time->getTimestamp(), $schedule, $job->get_start_hook()->get_hook() );
 			}
 		}
 	}
