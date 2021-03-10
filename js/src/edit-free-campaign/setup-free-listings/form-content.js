@@ -11,8 +11,8 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
-import ShippingRate from '.~/setup-mc/setup-stepper/setup-free-listings/shipping-rate';
-import ShippingTime from '.~/setup-mc/setup-stepper/setup-free-listings/shipping-time';
+import ShippingRate from '.~/components/free-listings/configure-product-listings/shipping-rate';
+import ShippingTime from '.~/components/free-listings/configure-product-listings/shipping-time';
 
 /**
  * Form to configure free listigns.

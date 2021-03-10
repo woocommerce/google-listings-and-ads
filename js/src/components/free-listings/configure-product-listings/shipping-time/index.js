@@ -16,8 +16,7 @@ import ShippingTimeSetup from './shipping-time-setup';
 
 /**
  * Form section to set shipping time per country.
- *
- * @see .~/components/free-listings/configure-product-listings/shipping-time/index.js
+ * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/shipping-time/index.js},
  *
  * @param {Object} props
  */

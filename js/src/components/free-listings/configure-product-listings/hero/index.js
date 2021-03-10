@@ -17,7 +17,7 @@ import './index.scss';
  * @param {string} props.stepHeader Header text to indicate the step number.
  */
 
-const Hero = ( stepHeader ) => {
+const Hero = ( { stepHeader } ) => {
 	return (
 		<div className="gla-setup-free-listing-hero">
 			<StepContentHeader
