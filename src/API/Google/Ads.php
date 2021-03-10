@@ -607,6 +607,8 @@ class Ads {
 	 */
 	public function create_conversion_action(): array {
 		try {
+			$unique = sprintf( '%04x', mt_rand( 0, 0xffff ) );
+
 			/** @var GoogleAdsClient $client */
 			$client = $this->container->get( GoogleAdsClient::class );
 
@@ -614,7 +616,11 @@ class Ads {
 			$conversion_action_operation->setCreate(
 				new ConversionAction(
 					[
-						'name'           => __( 'WooCommerce Purchase', 'google-listings-and-ads' ),
+						'name'           => sprintf(
+							/* translators: %1 is a random 4-digit string */
+							__( '[%1$s] Google Listings and Ads generated purchase action', 'google-listings-and-ads' ),
+							$unique
+						),
 						'category'       => ConversionActionCategory::PURCHASE,
 						'type'           => ConversionActionType::WEBPAGE,
 						'status'         => ConversionActionStatus::ENABLED,
