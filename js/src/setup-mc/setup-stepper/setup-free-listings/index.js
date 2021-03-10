@@ -66,7 +66,9 @@ const SetupFreeListings = () => {
 
 	return (
 		<div className="gla-setup-free-listings">
-			<Hero />
+			<Hero
+				stepHeader={ __( 'STEP THREE', 'google-listings-and-ads' ) }
+			/>
 			<Form
 				initialValues={ {
 					shipping_rate: settings.shipping_rate,

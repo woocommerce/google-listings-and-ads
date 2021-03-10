@@ -16,8 +16,11 @@ import FormContent from './form-content';
  *
  * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/index.js},
  * without any save strategy, this is to be bound externaly.
+ *
+ * @param {Object} props
+ * @param {string} props.stepHeader Header text to indicate the step number.
  */
-const SetupFreeListings = () => {
+const SetupFreeListings = ( { stepHeader } ) => {
 	const { settings } = useSettings();
 
 	if ( ! settings ) {
@@ -37,7 +40,7 @@ const SetupFreeListings = () => {
 
 	return (
 		<div className="gla-setup-free-listings">
-			<Hero />
+			<Hero stepHeader={ stepHeader } />
 			{ /* TODO: 'shippingTimeOption-rows' should be removed, and use shipping time API instead. */ }
 			<Form
 				initialValues={ {

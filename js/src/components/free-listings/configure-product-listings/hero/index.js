@@ -10,12 +10,19 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import { ReactComponent as GoogleFreeListingImage } from './google-free-listing.svg';
 import './index.scss';
 
-const Hero = () => {
+/**
+ * Hero element for free listing configuration.
+ *
+ * @param {Object} props
+ * @param {string} props.stepHeader Header text to indicate the step number.
+ */
+
+const Hero = ( stepHeader ) => {
 	return (
 		<div className="gla-setup-free-listing-hero">
 			<StepContentHeader
 				className="hero-text"
-				step={ __( 'STEP THREE', 'google-listings-and-ads' ) }
+				step={ stepHeader }
 				title={ __(
 					'Configure your product listings',
 					'google-listings-and-ads'
