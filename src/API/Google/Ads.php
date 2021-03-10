@@ -10,22 +10,33 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
+use Google\Ads\GoogleAds\V3\Enums\ConversionActionStatusEnum;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
+use Google\Ads\GoogleAds\V6\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
+use Google\Ads\GoogleAds\V6\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V6\Enums\ConversionActionTypeEnum\ConversionActionType;
 use Google\Ads\GoogleAds\V6\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
+use Google\Ads\GoogleAds\V6\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V6\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V6\Resources\Campaign;
 use Google\Ads\GoogleAds\V6\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V6\Resources\ConversionAction;
+use Google\Ads\GoogleAds\V6\Resources\ConversionAction\ValueSettings;
 use Google\Ads\GoogleAds\V6\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V6\Services\ConversionActionOperation;
 use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V6\Services\CampaignBudgetOperation;
 use Google\Ads\GoogleAds\V6\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkOperation;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignResult;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignBudgetResult;
+use Google\Ads\GoogleAds\V6\Services\MutateConversionActionResult;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\PagedListResponse;
+use Google\Ads\GoogleAds\V6\Common\TagSnippet;
 use Psr\Container\ContainerInterface;
 use Exception;
 
@@ -586,5 +597,82 @@ class Ads {
 		}
 
 		throw new Exception( __( 'Merchant link is not available to accept', 'google-listings-and-ads' ) );
+	}
+
+
+
+	/**
+	 * Get the Conversion Label and Conversion ID from the first Conversion Action retrieved (extracted from
+	 * the tag snippets).
+	 *
+	 * @param mixed|null $id The ID or ResourceName of the conversion action to search for.
+	 *
+	 * @return string[] The info about the conversion action.
+	 * @throws Exception When the conversion identifiers can't be retrieved.
+	 */
+	public function get_conversion_action( $id = null ): array {
+		try {
+			$return = [];
+			$where  = 'conversion_action.status = \'' . ConversionActionStatus::name( ConversionActionStatus::ENABLED ) . '\'';
+
+			if ( ! is_null( $id ) ) {
+				if ( is_numeric( $id ) ) {
+					$where .= ' AND conversion_action.id = ' . intval( $id );
+				} elseif ( preg_match( '#customers/\d+/conversionActions/(\d+)#', $id, $matches ) ) {
+					$where .= ' AND conversion_action.id = ' . intval( $matches[1] );
+				}
+			}
+
+			$q        = $this->build_query(
+				[
+					'conversion_action.id',
+					'conversion_action.name',
+					'conversion_action.tag_snippets',
+					'conversion_action.status',
+				],
+				'conversion_action',
+				$where
+			);
+			$response = $this->query( $q );
+
+			/** @var GoogleAdsRow $row */
+			foreach ( $response->iterateAllElements() as $row ) {
+				$return = $this->convert_conversion_action( $row->getConversionAction() );
+				break;
+			}
+
+			return $return;
+		} catch ( Exception $e ) {
+			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			$message = $e->getMessage();
+			if ( $e instanceof ApiException ) {
+				$message = $e->getBasicMessage();
+			}
+
+			/* translators: %s Error message */
+			throw new Exception( sprintf( __( 'Error retrieving conversion actions: %s', 'google-listings-and-ads' ), $message ) );
+		}
+	}
+
+	private function convert_conversion_action( ConversionAction $conversion_action ) {
+		$return = [
+			'id'     => $conversion_action->getId(),
+			'name'   => $conversion_action->getName(),
+			'status' => ConversionActionStatus::name( $conversion_action->getStatus() ),
+		];
+		/** @var TagSnippet $t */
+		foreach ( $conversion_action->getTagSnippets() as $t ) {
+			if ( $t->getType() !== TrackingCodeType::WEBPAGE ) {
+				continue;
+			}
+			if ( $t->getPageFormat() !== TrackingCodePageFormat::HTML ) {
+				continue;
+			}
+			preg_match( "#send_to': '([^/]+)/([^']+)'#", $t->getEventSnippet(), $matches );
+			$return['conversion_id']    = $matches[1];
+			$return['conversion_label'] = $matches[2];
+			break;
+		}
+		return $return;
 	}
 }
