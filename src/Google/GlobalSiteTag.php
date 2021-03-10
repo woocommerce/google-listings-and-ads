@@ -10,6 +10,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Psr\Container\ContainerInterface;
@@ -17,7 +20,9 @@ use Psr\Container\ContainerInterface;
 /**
  * Main class for Global Site Tag.
  */
-class GlobalSiteTag implements Service, Registerable, Conditional {
+class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/** @var string Developer ID */
 	protected const DEVELOPER_ID = 'dOGY3NW';
@@ -44,8 +49,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 	 */
 	public function register(): void {
 		// TODO: Inject or load these values.
-		$aw_conversion_id    = 'AW-TEST-CODE';
-		$aw_conversion_label = 'CONVERSION_LABEL';
+		$conversion_action = $this->options->get( Options::ADS_CONVERSION_ACTION );
+		if ( ! $conversion_action ) {
+			return;
+		}
+
+		$aw_conversion_id    = $conversion_action['conversion_id'];
+		$aw_conversion_label = $conversion_action['conversion_label'];
 
 		add_action(
 			'wp_head',
@@ -138,7 +148,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional {
 	<script>
 		gtag('event', 'conversion', {'send_to': '<?php echo esc_js( $aw_conversion_id ); ?>/<?php echo esc_js( $aw_conversion_label ); ?>',
 			'value': '<?php echo esc_js( $order->get_total() ); ?>',
-			'currency': '<?php echo esc_js( $order->get_currency() ); ?>'
+			'currency': '<?php echo esc_js( $order->get_currency() ); ?>',
+			'transaction_id': '<?php echo esc_js( $order->get_transaction_id() ); ?>'
 		});
 	</script>
 			<?php
