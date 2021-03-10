@@ -18,6 +18,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
@@ -51,6 +52,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		ActionSchedulerJobMonitor::class => true,
 		SyncerHooks::class               => true,
 		Service::class                   => true,
+		JobRepository::class             => true,
 	];
 
 	/**
@@ -76,9 +78,13 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_product_syncer_job( DeleteProducts::class );
 		$this->share_product_syncer_job( ResubmitExpiringProducts::class );
 
+		$this->share_with_tags(
+			JobRepository::class,
+			JobInterface::class
+		);
 		$this->conditionally_share_with_tags(
 			JobInitializer::class,
-			JobInterface::class,
+			JobRepository::class,
 			ActionScheduler::class
 		);
 
