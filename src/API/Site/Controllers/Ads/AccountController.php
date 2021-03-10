@@ -162,6 +162,7 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->middleware->disconnect_ads_account();
 			$this->account_state->update( [] );
+			$this->options->update( Options::ADS_CONVERSION_ACTION, [] );
 
 			return [
 				'status'  => 'success',

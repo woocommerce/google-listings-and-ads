@@ -25,6 +25,7 @@ final class Options implements OptionsInterface, Service {
 		self::ADS_ACCOUNT_STATE      => true,
 		self::ADS_BILLING_URL        => true,
 		self::ADS_ID                 => true,
+		self::ADS_CONVERSION_ACTION  => true,
 		self::DB_VERSION             => true,
 		self::FILE_VERSION           => true,
 		self::INSTALL_TIMESTAMP      => true,
