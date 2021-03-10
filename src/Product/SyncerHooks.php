@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -65,19 +66,17 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	 *
 	 * @param BatchProductHelper $batch_helper
 	 * @param ProductHelper      $product_helper
-	 * @param UpdateProducts     $update_products_job
-	 * @param DeleteProducts     $delete_products_job
+	 * @param JobRepository      $job_repository
 	 */
 	public function __construct(
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
-		UpdateProducts $update_products_job,
-		DeleteProducts $delete_products_job
+		JobRepository $job_repository
 	) {
 		$this->batch_helper        = $batch_helper;
 		$this->product_helper      = $product_helper;
-		$this->update_products_job = $update_products_job;
-		$this->delete_products_job = $delete_products_job;
+		$this->update_products_job = $job_repository->get( UpdateProducts::class );
+		$this->delete_products_job = $job_repository->get( DeleteProducts::class );
 	}
 
 	/**

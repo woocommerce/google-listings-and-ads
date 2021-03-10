@@ -92,8 +92,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 			SyncerHooks::class,
 			BatchProductHelper::class,
 			ProductHelper::class,
-			UpdateProducts::class,
-			DeleteProducts::class
+			JobRepository::class
 		);
 	}
 
