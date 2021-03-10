@@ -24,7 +24,7 @@ trait GoogleHelper {
 	 *
 	 * @return array
 	 */
-	protected function get_mc_supported_countries( bool $include_beta = false ): array {
+	protected function get_mc_supported_countries_currencies( bool $include_beta = false ): array {
 		$beta_countries = [
 			'DZ' => 'DZD', // Algeria
 			'AO' => 'AOA', // Angola
@@ -124,5 +124,19 @@ trait GoogleHelper {
 		];
 
 		return $include_beta ? array_merge( $supported_countries, $beta_countries ) : $supported_countries;
+	}
+
+	/**
+	 * Get an array of merchant center supported countries.
+	 *
+	 * WooCommerce Countries -> https://github.com/woocommerce/woocommerce/blob/master/i18n/countries.php
+	 * Google Supported Countries -> https://support.google.com/merchants/answer/160637?hl=en
+	 *
+	 * @param bool $include_beta Whether to include countries supported in Beta by Google.
+	 *
+	 * @return string[]
+	 */
+	protected function get_mc_supported_countries( bool $include_beta = false ): array {
+		return array_keys( $this->get_mc_supported_countries_currencies( $include_beta ) );
 	}
 }
