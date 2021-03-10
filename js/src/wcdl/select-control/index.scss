@@ -1,11 +1,28 @@
-.app-country-select {
+.wcdl-select-control {
+	&__label,
+	&__input,
+	&__helper-text {
+		margin-bottom: calc(var(--main-gap) / 3);
+	}
+
+	&__label {
+		font-size: 13px;
+		line-height: 16px;
+	}
+
+	&__helper-text {
+		font-style: italic;
+		font-size: 12px;
+		line-height: 16px;
+	}
+
 	// don't show the default magnifier icon.
 	i.material-icons-outlined {
 		display: none;
 	}
 
 	// CSS hacks to fix the input UI.
-	&.woocommerce-select-control {
+	.woocommerce-select-control {
 		.components-base-control {
 			// remove the coded height 56px that is causing UI problem.
 			height: unset;

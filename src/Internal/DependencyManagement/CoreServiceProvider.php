@@ -26,6 +26,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditFreeCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
@@ -34,6 +35,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteS
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -74,6 +76,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
+		EditFreeCampaign::class       => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
 		GlobalSiteTag::class          => true,
@@ -142,6 +145,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
+		$this->conditionally_share_with_tags( EditFreeCampaign::class );
 		$this->conditionally_share_with_tags( Programs::class );
 		$this->conditionally_share_with_tags( Products::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
@@ -153,6 +157,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 
 		// Inbox Notes
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );

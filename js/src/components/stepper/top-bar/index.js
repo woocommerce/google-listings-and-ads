@@ -17,7 +17,7 @@ import './index.scss';
  * to be used when configuring a campaign during oboarding and later.
  *
  * @param {Object} props
- * @param {string} props.title Title.
+ * @param {string} props.title Title to indicate where the user is at.
  * @param {string} props.backHref Href for the back button.
  * @param {Function} props.onBackButtonClick
  * @param {Function} props.onHelpButtonClick

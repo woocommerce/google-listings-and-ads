@@ -12,6 +12,7 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
+import EditFreeCampaign from './edit-free-campaign';
 import { ProgramsReport, ProductsReport } from './reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
@@ -65,6 +66,20 @@ addFilter(
 				title: __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				container: Dashboard,
 				path: '/google/dashboard',
+				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+			},
+			{
+				breadcrumbs: [
+					[ '', wcSettings.woocommerceTranslation ],
+					[
+						'/marketing',
+						__( 'Marketing', 'google-listings-and-ads' ),
+					],
+					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				],
+				title: __( 'Edit Free Listings', 'google-listings-and-ads' ),
+				container: EditFreeCampaign,
+				path: '/google/edit-free-campaign',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{

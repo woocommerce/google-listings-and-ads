@@ -26,6 +26,9 @@ class WC {
 	 */
 	protected $countries;
 
+	/** @var WC_Countries */
+	protected $wc_countries;
+
 	/**
 	 * WC constructor.
 	 *
@@ -33,6 +36,7 @@ class WC {
 	 */
 	public function __construct( ?WC_Countries $countries = null ) {
 		$countries          = $countries ?? new WC_Countries();
+		$this->wc_countries = $countries;
 		$this->base_country = $countries->get_base_country() ?? 'US';
 		$this->countries    = $countries->get_countries() ?? [];
 	}
@@ -53,5 +57,14 @@ class WC {
 	 */
 	public function get_base_country(): string {
 		return $this->base_country;
+	}
+
+	/**
+	 * Get the WC_Countries object
+	 *
+	 * @return WC_Countries
+	 */
+	public function get_wc_countries(): WC_Countries {
+		return $this->wc_countries;
 	}
 }

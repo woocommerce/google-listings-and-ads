@@ -16,24 +16,21 @@ import RadioHelperText from '.~/wcdl/radio-helper-text';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
-import useAutoClearShippingEffect from './useAutoClearShippingEffect';
 import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Form to choose audience.
- * Auto-saves.
  *
- * @see .~/components/free-listings/choose-audience/form-content
+ * To be used in onboarding and further editing.
+ * Does not provide any save strategy, this is to be bound externaly.
+ * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/form-content.js}.
+ *
  * @param {Object} props
  */
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
-
-	useAutoSaveTargetAudienceEffect( values );
-	useAutoClearShippingEffect( values.location, values.countries );
 
 	return (
 		<>

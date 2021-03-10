@@ -16,14 +16,19 @@ import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
  * Step with a form to choose audience.
- * Auto-saves.
  *
- * @see .~/components/free-listings/choose-audience
+ * To be used in onboarding and further editing.
+ * Does not provide any save strategy, this is to be bound externaly.
+ * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/index.js}.
+ *
  * @param {Object} props
+ * @param {string} props.stepHeader Header text to indicate the step number.
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
-const ChooseAudience = ( props ) => {
-	const { onContinue = () => {} } = props;
+export default function ChooseAudience( {
+	stepHeader,
+	onContinue = () => {},
+} ) {
 	const { data } = useTargetAudience();
 
 	if ( ! data ) {
@@ -46,7 +51,7 @@ const ChooseAudience = ( props ) => {
 		<div className="gla-choose-audience">
 			<StepContent>
 				<StepContentHeader
-					step={ __( 'STEP TWO', 'google-listings-and-ads' ) }
+					step={ stepHeader }
 					title={ __(
 						'Choose your audience',
 						'google-listings-and-ads'
@@ -75,6 +80,4 @@ const ChooseAudience = ( props ) => {
 			</StepContent>
 		</div>
 	);
-};
-
-export default ChooseAudience;
+}

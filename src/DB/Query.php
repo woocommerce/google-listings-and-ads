@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 abstract class Query implements QueryInterface {
 
 	/** @var int */
-	protected $limit = 10;
+	protected $limit;
 
 	/** @var int */
 	protected $offset = 0;
@@ -271,7 +271,9 @@ abstract class Query implements QueryInterface {
 			$pieces[] = "LIMIT {$this->limit}";
 		}
 
-		$pieces[] = "OFFSET {$this->offset}";
+		if ( $this->offset ) {
+			$pieces[] = "OFFSET {$this->offset}";
+		}
 
 		return join( "\n", $pieces );
 	}
