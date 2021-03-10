@@ -43,6 +43,11 @@ class AccountController extends BaseOptionsController {
 	protected $account_state;
 
 	/**
+	 * @var Ads
+	 */
+	protected $ads;
+
+	/**
 	 * AccountController constructor.
 	 *
 	 * @param ContainerInterface $container
@@ -50,6 +55,7 @@ class AccountController extends BaseOptionsController {
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
 		$this->middleware    = $container->get( Middleware::class );
+		$this->ads           = $container->get( Ads::class );
 		$this->account_state = $container->get( AdsAccountState::class );
 		$this->container     = $container;
 	}
@@ -179,9 +185,7 @@ class AccountController extends BaseOptionsController {
 	protected function get_billing_status_callback(): callable {
 		return function() {
 			try {
-				/** @var Ads $ads */
-				$ads    = $this->container->get( Ads::class );
-				$status = $ads->get_billing_status();
+				$status = $this->ads->get_billing_status();
 
 				if ( BillingSetupStatus::APPROVED === $status ) {
 					$this->account_state->complete_step( 'billing' );
@@ -335,15 +339,13 @@ class AccountController extends BaseOptionsController {
 			throw new Exception( 'A Merchant Center account must be connected' );
 		}
 
-		/** @var Ads $ads */
-		$ads = $this->container->get( Ads::class );
-		if ( ! $ads->get_id() ) {
+		if ( ! $this->ads->get_id() ) {
 			throw new Exception( 'An Ads account must be connected' );
 		}
 
 		// Create link for Merchant and accept it in Ads.
-		$merchant->link_ads_id( $ads->get_id() );
-		$ads->accept_merchant_link( $merchant->get_id() );
+		$merchant->link_ads_id( $this->ads->get_id() );
+		$this->ads->accept_merchant_link( $merchant->get_id() );
 	}
 
 	/**
@@ -358,9 +360,7 @@ class AccountController extends BaseOptionsController {
 
 		// Only check billing status if we haven't just created the account.
 		if ( empty( $account['billing_url'] ) ) {
-			/** @var Ads $ads */
-			$ads    = $this->container->get( Ads::class );
-			$status = $ads->get_billing_status();
+			$status = $this->ads->get_billing_status();
 		}
 
 		if ( BillingSetupStatus::APPROVED !== $status ) {
@@ -382,10 +382,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If the conversion action can't be created.
 	 */
 	private function create_conversion_action(): void {
-		/** @var Ads $ads */
-		$ads               = $this->container->get( Ads::class );
-		$conversion_action = $ads->create_conversion_action();
+		$conversion_action = $this->ads->create_conversion_action();
 		$this->options->update( Options::ADS_CONVERSION_ACTION, $conversion_action );
-
 	}
 }
