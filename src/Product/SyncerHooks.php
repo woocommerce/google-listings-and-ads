@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
+use WC_Product_Variable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -131,9 +132,18 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 			return;
 		}
 
+		// schedule an update job if product sync is enabled.
 		if ( ChannelVisibility::SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
-			// schedule an update job if product sync is enabled.
-			$this->update_products_job->start( [ $product_id ] );
+			// queue the variations for update if it's a variable product.
+			$products = $product instanceof WC_Product_Variable ? $product->get_available_variations( 'objects' ) : [ $product ];
+
+			$product_ids = array_map(
+				function ( WC_Product $product ) {
+					return $product->get_id();
+				},
+				$products
+			);
+			$this->update_products_job->start( $product_ids );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
 			// delete the product from Google Merchant Center if it's already synced AND sync has been disabled.
