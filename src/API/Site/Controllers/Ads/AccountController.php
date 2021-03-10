@@ -299,6 +299,10 @@ class AccountController extends BaseOptionsController {
 						$this->link_merchant_account();
 						break;
 
+					case 'conversion_action':
+						$this->create_conversion_action();
+						break;
+
 					default:
 						throw new Exception(
 							/* translators: 1: is a string representing an unknown step name */
@@ -370,5 +374,18 @@ class AccountController extends BaseOptionsController {
 				]
 			);
 		}
+	}
+
+	/**
+	 * Create the generic GLA conversion action and store the details as an option.
+	 *
+	 * @throws Exception If the conversion action can't be created.
+	 */
+	private function create_conversion_action(): void {
+		/** @var Ads $ads */
+		$ads               = $this->container->get( Ads::class );
+		$conversion_action = $ads->create_conversion_action();
+		$this->options->update( Options::ADS_CONVERSION_ACTION, $conversion_action );
+
 	}
 }
