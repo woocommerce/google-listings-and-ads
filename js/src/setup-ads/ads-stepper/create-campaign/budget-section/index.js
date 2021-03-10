@@ -11,6 +11,7 @@ import AppInputControl from '.~/components/app-input-control';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import getMonthlyMaxEstimated from '../getMonthlyMaxEstimated';
 import './index.scss';
+import FreeAdCredit from './free-ad-credit';
 
 const BudgetSection = ( props ) => {
 	const {
@@ -19,6 +20,9 @@ const BudgetSection = ( props ) => {
 	const { code: currencyCode } = useStoreCurrency();
 
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( values.amount );
+
+	// TODO: free ad credit is only applicable for new Google Ads account.
+	const hasFreeAdCredit = true;
 
 	return (
 		<div className="gla-budget-section">
@@ -54,6 +58,7 @@ const BudgetSection = ( props ) => {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
+						{ hasFreeAdCredit && <FreeAdCredit /> }
 					</Section.Card.Body>
 				</Section.Card>
 			</Section>

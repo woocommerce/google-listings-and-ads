@@ -2,6 +2,7 @@
 	&__cost {
 		display: flex;
 		gap: var(--main-gap);
+		margin-bottom: var(--main-gap);
 
 		& > * {
 			flex: 1;
