@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Google\Exception as GoogleException;
 use Google_Service_ShoppingContent as GoogleShoppingService;
-use Google_Service_ShoppingContent_Error as GoogleError;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Google_Service_ShoppingContent_ProductsCustomBatchRequest as GoogleBatchRequest;
 use Google_Service_ShoppingContent_ProductsCustomBatchRequestEntry as GoogleBatchRequestEntry;
@@ -23,6 +22,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
 class GoogleProductService implements Service {
+
+	public const INTERNAL_ERROR_REASON = 'internalError';
 
 	/**
 	 * This is the maximum batch size recommended by Google
@@ -225,14 +226,14 @@ class GoogleProductService implements Service {
 	/**
 	 * @param GoogleBatchResponseEntry $batch_response_entry
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	protected static function get_batch_response_error_messages( GoogleBatchResponseEntry $batch_response_entry ): array {
-		return array_map(
-			function ( GoogleError $error ) {
-				return $error->getMessage();
-			},
-			$batch_response_entry->getErrors()->getErrors()
-		);
+		$errors = [];
+		foreach ( $batch_response_entry->getErrors()->getErrors() as $error ) {
+			$errors[ $error->getReason() ] = $error->getMessage();
+		}
+
+		return $errors;
 	}
 }
