@@ -29,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
 class Proxy implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use ApiExceptionTrait;
 
 	/**
 	 * @var ContainerInterface
@@ -266,6 +267,11 @@ class Proxy implements OptionsAwareInterface {
 			return $ids;
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+
+			// Return an empty list if the user has not signed up to ads yet.
+			if ( $this->has_api_exception_error( $e, 'NOT_ADS_USER' ) ) {
+				return [];
+			}
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
