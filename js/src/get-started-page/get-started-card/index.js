@@ -11,7 +11,7 @@ import {
 } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -26,7 +26,6 @@ const GetStartedCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 	const handleClick = () => {
 		recordSetupMCEvent( 'get_started' );
-		getHistory().push( getNewPath( {}, '/google/setup-mc' ) );
 	};
 
 	return (
@@ -48,6 +47,7 @@ const GetStartedCard = () => {
 					<Button
 						isPrimary
 						disabled={ disableNextStep }
+						href={ getNewPath( {}, '/google/setup-mc' ) }
 						onClick={ handleClick }
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
