@@ -200,7 +200,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	/**
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchProductRequestEntry[]|BatchInvalidProductEntry[]
+	 * @return BatchProductRequestEntry[]
 	 */
 	public function validate_and_generate_update_request_entries( array $products ): array {
 		$request_entries  = [];
@@ -220,8 +220,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 			$validation_result = $this->validate_product( $this->product_helper->generate_adapted_product( $product, $target_countries[0] ) );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation_result );
-
-				$request_entries[] = $validation_result;
+				continue;
 			}
 
 			// return batch request entries for each target country
