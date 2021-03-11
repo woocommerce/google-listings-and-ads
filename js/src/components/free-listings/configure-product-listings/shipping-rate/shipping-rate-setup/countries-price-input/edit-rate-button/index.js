@@ -11,8 +11,16 @@ import { __ } from '@wordpress/i18n';
 import EditRateModal from './edit-rate-modal';
 import './index.scss';
 
-const EditRateButton = ( props ) => {
-	const { rate } = props;
+/**
+ * Triggering button and modal with the
+ * form to edit rate for selected country(-ies).
+ *
+ * @param {Object} props
+ * @param {Object} props.rate
+ * @param {Function} props.onChange Called with list of countries once Delete was requested.
+ * @param {Function} props.onDelete Called with updated `{ countryCodes, currency, price }` value.
+ */
+const EditRateButton = ( { rate, onChange, onDelete } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleClick = () => {
@@ -20,6 +28,15 @@ const EditRateButton = ( props ) => {
 	};
 
 	const handleModalRequestClose = () => {
+		setOpen( false );
+	};
+
+	const handleChange = ( ...args ) => {
+		onChange( ...args );
+		setOpen( false );
+	};
+	const handleDelete = ( value ) => {
+		onDelete( value );
 		setOpen( false );
 	};
 
@@ -35,6 +52,8 @@ const EditRateButton = ( props ) => {
 			{ isOpen && (
 				<EditRateModal
 					rate={ rate }
+					onSubmit={ handleChange }
+					onDelete={ handleDelete }
 					onRequestClose={ handleModalRequestClose }
 				/>
 			) }

@@ -11,7 +11,13 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
  */
 import AddRateModal from './add-rate-modal';
 
-const AddRateButton = () => {
+/**
+ * Triggering button and modal with the
+ * form to add a new rate for selected country(-ies).
+ *
+ * @param {Object} props Props to be forwarded to `AddRateModal`.
+ */
+const AddRateButton = ( props ) => {
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleClick = () => {
@@ -32,7 +38,10 @@ const AddRateButton = () => {
 				{ __( 'Add another rate', 'google-listings-and-ads' ) }
 			</Button>
 			{ isOpen && (
-				<AddRateModal onRequestClose={ handleModalRequestClose } />
+				<AddRateModal
+					onRequestClose={ handleModalRequestClose }
+					{ ...props }
+				/>
 			) }
 		</>
 	);

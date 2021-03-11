@@ -8,23 +8,24 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { useAppDispatch } from '.~/data';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import './index.scss';
 
-const EditRateModal = ( props ) => {
-	const { rate, onRequestClose } = props;
-	const { upsertShippingRate, deleteShippingRate } = useAppDispatch();
-
+/**
+ *Form to edit rate for selected country(-ies).
+ *
+ * @param {Object} props
+ * @param {AggregatedShippingRate} props.rate
+ * @param {function(AggregatedShippingRate): void} props.onSubmit Called with updated value.
+ * @param {function(Array<CountryCode>): void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
+ */
+const EditRateModal = ( { rate, onDelete, onSubmit, onRequestClose } ) => {
 	const handleDeleteClick = () => {
-		rate.countries.forEach( ( el ) => {
-			deleteShippingRate( el );
-		} );
-
-		onRequestClose();
+		onDelete( rate.countries );
 	};
 
 	const handleValidate = () => {
@@ -35,31 +36,19 @@ const EditRateModal = ( props ) => {
 		return errors;
 	};
 
-	const handleSubmitCallback = ( values ) => {
-		const { countryCodes, currency, price } = values;
+	const handleSubmitCallback = ( newAggregatedRate ) => {
+		const remainingCountries = new Set( newAggregatedRate.countries );
+		const removedCountries = rate.countries.filter(
+			( el ) => ! remainingCountries.has( el )
+		);
 
-		countryCodes.forEach( ( el ) => {
-			upsertShippingRate( {
-				countryCode: el,
-				currency,
-				rate: price,
-			} );
-		} );
-
-		const valuesCountrySet = new Set( values.countryCodes );
-		rate.countries.forEach( ( el ) => {
-			if ( ! valuesCountrySet.has( el ) ) {
-				deleteShippingRate( el );
-			}
-		} );
-
-		onRequestClose();
+		onSubmit( newAggregatedRate, removedCountries );
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: rate.countries,
+				countries: rate.countries,
 				currency: rate.currency,
 				price: rate.price,
 			} }
@@ -105,7 +94,7 @@ const EditRateModal = ( props ) => {
 								</div>
 								<AudienceCountrySelect
 									multiple
-									{ ...getInputProps( 'countryCodes' ) }
+									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
 							<AppInputControl
@@ -125,3 +114,9 @@ const EditRateModal = ( props ) => {
 };
 
 export default EditRateModal;
+
+/* eslint-disable jsdoc/valid-types */
+/**
+ * @typedef {import("../../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef {import("../../../countries-form.js").CountryCode} CountryCode
+ */

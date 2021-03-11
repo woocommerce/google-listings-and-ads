@@ -11,16 +11,19 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import { useAppDispatch } from '.~/data';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
-import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
-const AddRateModal = ( props ) => {
-	const { onRequestClose } = props;
-	const { upsertShippingRate } = useAppDispatch();
+/**
+ * Form to add a new rate for selected country(-ies).
+ *
+ * @param {Object} props
+ * @param {Array<CountryCode>} props.countries A list of country codes to choose from.
+ * @param {Function} props.onRequestClose
+ * @param {function(AggregatedShippingRate): void} props.onSubmit Called with submitted value.
+ */
+const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 	const { code } = useStoreCurrency();
-	const remainingCountryCodes = useGetRemainingCountryCodes();
 
 	const handleValidate = () => {
 		const errors = {};
@@ -31,23 +34,14 @@ const AddRateModal = ( props ) => {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		const { countryCodes, currency, rate } = values;
-
-		countryCodes.forEach( ( el ) => {
-			upsertShippingRate( {
-				countryCode: el,
-				currency,
-				rate,
-			} );
-		} );
-
+		onSubmit( values );
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: remainingCountryCodes,
+				countries,
 				currency: code,
 				rate: '',
 			} }
@@ -85,7 +79,7 @@ const AddRateModal = ( props ) => {
 								</div>
 								<AudienceCountrySelect
 									multiple
-									{ ...getInputProps( 'countryCodes' ) }
+									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
 							<AppInputControl
@@ -105,3 +99,8 @@ const AddRateModal = ( props ) => {
 };
 
 export default AddRateModal;
+/* eslint-disable jsdoc/valid-types */
+/**
+ * @typedef {import("../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef {import("../../countries-form.js").CountryCode} CountryCode
+ */
