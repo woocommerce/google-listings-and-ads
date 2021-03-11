@@ -383,11 +383,14 @@ class Proxy implements OptionsAwareInterface {
 			'status' => $id ? 'connected' : 'disconnected',
 		];
 
-		$incomplete = $this->container->get( AdsAccountState::class )->last_incomplete_step();
+		$state      = $this->container->get( AdsAccountState::class );
+		$incomplete = $state->last_incomplete_step();
 		if ( ! empty( $incomplete ) ) {
 			$status['status'] = 'incomplete';
 			$status['step']   = $incomplete;
 		}
+
+		$status += $state->get_step_data( 'set_id' );
 
 		return $status;
 	}
