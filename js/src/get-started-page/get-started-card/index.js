@@ -7,16 +7,16 @@ import {
 	FlexItem,
 	FlexBlock,
 	__experimentalText as Text,
+	Button,
 } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { getNewPath } from '@woocommerce/navigation';
+import { getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import ButtonLink from '.~/components/button-link';
 import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import { glaData } from '.~/constants';
@@ -26,6 +26,7 @@ const GetStartedCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 	const handleClick = () => {
 		recordSetupMCEvent( 'get_started' );
+		getHistory().push( getNewPath( {}, '/google/setup-mc' ) );
 	};
 
 	return (
@@ -44,14 +45,13 @@ const GetStartedCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
-					<ButtonLink
+					<Button
 						isPrimary
 						disabled={ disableNextStep }
-						href={ getNewPath( {}, '/google/setup-mc' ) }
 						onClick={ handleClick }
 					>
 						{ __( 'Get started', 'google-listings-and-ads' ) }
-					</ButtonLink>
+					</Button>
 					<Text className="woocommerce-marketing-google-get-started-card__terms-notice">
 						{ createInterpolateElement(
 							__(
