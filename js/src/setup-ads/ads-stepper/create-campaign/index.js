@@ -54,7 +54,7 @@ const CreateCampaign = () => {
 				initialValues={ {
 					name: '',
 					amount: '',
-					country: '',
+					country: [],
 				} }
 				validate={ handleValidate }
 				onSubmitCallback={ handleSubmitCallback }
