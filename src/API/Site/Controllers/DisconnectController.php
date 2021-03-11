@@ -62,7 +62,7 @@ class DisconnectController extends BaseController {
 					'errors'    => $errors,
 					'responses' => $responses,
 				],
-				200
+				empty( $errors ) ? 200 : 400
 			);
 		};
 	}
