@@ -14,6 +14,8 @@ use Locale;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
+use function wp_get_available_translations;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -108,7 +110,6 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 */
 	protected function get_additional_fields( $object_type = null ): array {
 		$fields = parent::get_additional_fields( $object_type );
-		$locale = $this->wp->get_locale();
 
 		// Fields are expected to be an array with a 'get_callback' callable that returns the field value.
 		$fields['locale']   = [
@@ -118,8 +119,8 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'get_callback' => function() use ( $locale ) {
-				return $locale;
+			'get_callback' => function() {
+				return $this->wp->get_locale();
 			},
 		];
 		$fields['language'] = [
@@ -129,9 +130,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'get_callback' => function() use ( $locale ) {
-				return Locale::getDisplayLanguage( $locale, $locale );
-			},
+			'get_callback' => $this->get_language_callback(),
 		];
 
 		return $fields;
@@ -197,5 +196,32 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 */
 	protected function get_schema_title(): string {
 		return 'target_audience';
+	}
+
+	/**
+	 * Get the callback to provide the language in use for the site.
+	 *
+	 * @return callable
+	 */
+	protected function get_language_callback(): callable {
+		$locale = $this->wp->get_locale();
+
+		// Default to using the Locale class if it is available.
+		if ( class_exists( Locale::class ) ) {
+			return function() use ( $locale ): string {
+				return Locale::getDisplayLanguage( $locale, $locale );
+			};
+		}
+
+		return function() use ( $locale ): string {
+			// en_US isn't provided by the translations API.
+			if ( 'en_US' === $locale ) {
+				return 'English';
+			}
+
+			require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+
+			return wp_get_available_translations()[ $locale ]['native_name'] ?? $locale;
+		};
 	}
 }
