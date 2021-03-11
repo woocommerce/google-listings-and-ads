@@ -58,24 +58,6 @@ const FaqsSection = () => {
 						) }
 					</PanelRow>
 				</PanelBody>
-				<PanelBody
-					initialOpen={ false }
-					title={ __(
-						'What are the terms and conditions for the free ad credit?',
-						'google-listings-and-ads'
-					) }
-					onToggle={ getPanelToggleHandler(
-						'what-are-the-terms-conditions'
-					) }
-				>
-					<PanelRow>
-						{ /* TODO: what is the answer here? */ }
-						{ __(
-							'TODO: placeholder here.',
-							'google-listings-and-ads'
-						) }
-					</PanelRow>
-				</PanelBody>
 			</Panel>
 		</Section>
 	);
