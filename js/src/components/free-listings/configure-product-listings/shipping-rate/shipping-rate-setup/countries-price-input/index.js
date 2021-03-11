@@ -21,9 +21,9 @@ import '../countries-form';
  * and with a modal with more advanced form to select countries.
  *
  * @param {Object} props
- * @param {AggregatedShippingRate} props.value Aggregated rate object to be used as the initial value.
- * @param {function(AggregatedShippingRate): void} props.onChange Called when rate changes.
- * @param {function(Array<CountryCode>): void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
+ * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
+ * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
 const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 	const { countries, currency, price } = value;
@@ -32,17 +32,6 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 	if ( ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
-
-	const handleChange = ( newValue, deletedCountries ) => {
-		onChange(
-			{
-				countries: newValue.countries,
-				currency: newValue.currency,
-				price: newValue.price,
-			},
-			deletedCountries
-		);
-	};
 
 	const handleRateChange = ( v ) => {
 		onChange( {
@@ -71,7 +60,7 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 							) }
 						</div>
 						<EditRateButton
-							onChange={ handleChange }
+							onChange={ onChange }
 							onDelete={ onDelete }
 							rate={ value }
 						/>
@@ -87,7 +76,6 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 
 export default CountriesPriceInput;
 
-/* eslint-disable jsdoc/valid-types */
 /**
  * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef {import("../countries-form.js").CountryCode} CountryCode

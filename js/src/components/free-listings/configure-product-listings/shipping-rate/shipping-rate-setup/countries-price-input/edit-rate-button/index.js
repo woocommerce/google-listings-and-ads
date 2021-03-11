@@ -16,9 +16,9 @@ import './index.scss';
  * form to edit rate for selected country(-ies).
  *
  * @param {Object} props
- * @param {Object} props.rate
- * @param {Function} props.onChange Called with list of countries once Delete was requested.
- * @param {Function} props.onDelete Called with updated `{ countryCodes, currency, price }` value.
+ * @param {AggregatedShippingRate} props.rate
+ * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>) => void} props.onChange Called once the rate is submitted.
+ * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
 const EditRateButton = ( { rate, onChange, onDelete } ) => {
 	const [ isOpen, setOpen ] = useState( false );
@@ -62,3 +62,8 @@ const EditRateButton = ( { rate, onChange, onDelete } ) => {
 };
 
 export default EditRateButton;
+
+/**
+ * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef {import("../countries-form.js").CountryCode} CountryCode
+ */

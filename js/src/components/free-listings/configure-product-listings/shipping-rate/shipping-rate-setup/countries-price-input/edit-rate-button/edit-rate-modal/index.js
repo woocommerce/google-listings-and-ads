@@ -19,8 +19,8 @@ import './index.scss';
  *
  * @param {Object} props
  * @param {AggregatedShippingRate} props.rate
- * @param {function(AggregatedShippingRate): void} props.onSubmit Called with updated value.
- * @param {function(Array<CountryCode>): void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
+ * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
 const EditRateModal = ( { rate, onDelete, onSubmit, onRequestClose } ) => {
@@ -115,7 +115,6 @@ const EditRateModal = ( { rate, onDelete, onSubmit, onRequestClose } ) => {
 
 export default EditRateModal;
 
-/* eslint-disable jsdoc/valid-types */
 /**
  * @typedef {import("../../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef {import("../../../countries-form.js").CountryCode} CountryCode
