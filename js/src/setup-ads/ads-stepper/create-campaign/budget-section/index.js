@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useEffect, useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,8 +12,8 @@ import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import getMonthlyMaxEstimated from '../getMonthlyMaxEstimated';
 import './index.scss';
 import FreeAdCredit from './free-ad-credit';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import BudgetRecommendation from './budget-recommendation';
+import useFetchBudgetRecommendationEffect from './useFetchBudgetRecommendationEffect';
 
 const BudgetSection = ( props ) => {
 	const {
@@ -25,24 +24,9 @@ const BudgetSection = ( props ) => {
 		amount,
 	} = values;
 	const { code: currencyCode } = useStoreCurrency();
-
-	const options = useMemo( () => {
-		return {
-			path: `/wc/gla/ads/campaigns/budget-recommendation/${ selectedCountryCode }`,
-		};
-	}, [ selectedCountryCode ] );
-
-	const [ fetchBudgetRecommendation, { data } ] = useApiFetchCallback(
-		options
+	const { data: recommendation } = useFetchBudgetRecommendationEffect(
+		selectedCountryCode
 	);
-
-	useEffect( () => {
-		if ( ! selectedCountryCode ) {
-			return;
-		}
-
-		fetchBudgetRecommendation();
-	}, [ fetchBudgetRecommendation, selectedCountryCode ] );
 
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( values.amount );
 
@@ -83,13 +67,15 @@ const BudgetSection = ( props ) => {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						{ data && (
+						{ recommendation && (
 							<BudgetRecommendation
-								recommendation={ data }
+								recommendation={ recommendation }
 								showLowerBudgetNotice={
 									amount !== '' &&
 									Number( amount ) <
-										Number( data.daily_budget_low )
+										Number(
+											recommendation.daily_budget_low
+										)
 								}
 							/>
 						) }
