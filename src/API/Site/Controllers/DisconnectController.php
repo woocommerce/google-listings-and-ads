@@ -51,9 +51,9 @@ class DisconnectController extends BaseController {
 			foreach ( $endpoints as $endpoint ) {
 				$response = $this->get_delete_response( $endpoint );
 				if ( 200 !== $response->get_status() ) {
-					$errors[ $endpoint ] = $response->get_data();
+					$errors[ $response->get_matched_route() ] = $response->get_data();
 				} else {
-					$responses[ $endpoint ] = $response->get_data();
+					$responses[ $response->get_matched_route() ] = $response->get_data();
 				}
 			}
 
