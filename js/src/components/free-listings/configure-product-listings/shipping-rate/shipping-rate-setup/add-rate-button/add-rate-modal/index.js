@@ -102,7 +102,6 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 };
 
 export default AddRateModal;
-/* eslint-disable jsdoc/valid-types */
 /**
  * @typedef {import("../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef {import("../../countries-form.js").CountryCode} CountryCode
