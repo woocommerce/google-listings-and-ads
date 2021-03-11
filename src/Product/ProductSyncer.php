@@ -98,15 +98,13 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 
 		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
 		if ( ! empty( $internal_error_products ) ) {
-			do_action( 'gla_batch_retry_update_products', [ $internal_error_products ] );
+			do_action( 'gla_batch_retry_update_products', $internal_error_products );
 		}
 
 		do_action(
 			'gla_batch_updated_products',
-			[
-				$updated_products,
-				$invalid_products,
-			]
+			$updated_products,
+			$invalid_products
 		);
 
 		return new BatchProductResponse( $updated_products, $invalid_products );
@@ -167,15 +165,13 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 
 		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
 		if ( ! empty( $internal_error_products ) ) {
-			do_action( 'gla_batch_retry_delete_products', [ $internal_error_products ] );
+			do_action( 'gla_batch_retry_delete_products', $internal_error_products );
 		}
 
 		do_action(
 			'gla_batch_deleted_products',
-			[
-				$deleted_products,
-				$invalid_products,
-			]
+			$deleted_products,
+			$invalid_products
 		);
 
 		return new BatchProductResponse( $deleted_products, $invalid_products );
