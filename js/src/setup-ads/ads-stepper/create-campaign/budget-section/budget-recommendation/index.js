@@ -20,6 +20,7 @@ const BudgetRecommendation = ( props ) => {
 		currency,
 	} = recommendation;
 	const map = useCountryKeyNameMap();
+	const countryName = map[ countryCode ];
 
 	return (
 		<div className="gla-budget-recommendation">
@@ -28,16 +29,26 @@ const BudgetRecommendation = ( props ) => {
 				<div>
 					{ createInterpolateElement(
 						__(
-							'Most merchants targeting <countryname /> set a daily budget of <low /> to <high /> <currency /> for approximately 10 conversions a week.',
+							'Most merchants targeting <countryname /> set a daily budget of <budgetrange /> for approximately 10 conversions a week.',
 							'google-listings-and-ads'
 						),
 						{
-							countryname: (
-								<strong>{ map[ countryCode ] }</strong>
+							countryname: <strong>{ countryName }</strong>,
+							budgetrange: (
+								<strong>
+									{ createInterpolateElement(
+										__(
+											'<low /> to <high /> <currency />',
+											'google-listings-and-ads'
+										),
+										{
+											low: <>{ dailyBudgetLow }</>,
+											high: <>{ dailyBudgetHigh }</>,
+											currency: <>{ currency }</>,
+										}
+									) }
+								</strong>
 							),
-							low: <strong>{ dailyBudgetLow }</strong>,
-							high: <strong>{ dailyBudgetHigh }</strong>,
-							currency: <strong>{ currency }</strong>,
 						}
 					) }
 				</div>
