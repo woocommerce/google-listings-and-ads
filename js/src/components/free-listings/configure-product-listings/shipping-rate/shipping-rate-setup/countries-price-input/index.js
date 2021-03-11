@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { useDebouncedCallback } from 'use-debounce';
 
 /**
  * Internal dependencies
@@ -16,9 +17,16 @@ import './index.scss';
 import '../countries-form';
 
 /**
+ * The delay between chaning the value an firing onChange callback.
+ */
+const debounceDelay = 1000;
+
+/**
  * Input control to edit a shipping rate.
- * Consists of simple input field to adjust the rate
- * and with a modal with more advanced form to select countries.
+ * Consists of a simple input field to adjust the rate
+ * and with a modal with a more advanced form to select countries.
+ *
+ * The changes made via simple input are debounced, to avoid districting users while typing.
  *
  * @param {Object} props
  * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
@@ -29,17 +37,17 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 	const { countries, currency, price } = value;
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	if ( ! selectedCountryCodes ) {
-		return <AppSpinner />;
-	}
-
-	const handleRateChange = ( v ) => {
+	const debouncedOnChange = useDebouncedCallback( ( updatedPrice ) => {
 		onChange( {
 			countries,
 			currency,
-			price: v,
+			price: updatedPrice,
 		} );
-	};
+	}, debounceDelay );
+
+	if ( ! selectedCountryCodes ) {
+		return <AppSpinner />;
+	}
 
 	return (
 		<div className="gla-countries-price-input">
@@ -68,7 +76,7 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 				}
 				suffix={ currency }
 				value={ price }
-				onChange={ handleRateChange }
+				onChange={ debouncedOnChange.callback }
 			/>
 		</div>
 	);
