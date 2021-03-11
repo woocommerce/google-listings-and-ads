@@ -42,11 +42,13 @@
   "scripts": {
     "post-install-cmd": [
       "Google\\Task\\Composer::cleanup",
-      "php ./bin/prefix-vendor-namespace.php"
+      "php ./bin/prefix-vendor-namespace.php",
+      "bash ./bin/googleads-remove-older-versions.sh"
     ],
     "post-update-cmd": [
       "Google\\Task\\Composer::cleanup",
-      "php ./bin/prefix-vendor-namespace.php"
+      "php ./bin/prefix-vendor-namespace.php",
+      "bash ./bin/googleads-remove-older-versions.sh"
     ]
   },
   "extra": {
