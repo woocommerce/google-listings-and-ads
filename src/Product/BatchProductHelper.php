@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -255,5 +256,25 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Filters the list of invalid product entries and returns an array of WooCommerce product IDs with internal errors
+	 *
+	 * @param BatchInvalidProductEntry[] $args
+	 *
+	 * @return int[] An array of WooCommerce product ids.
+	 */
+	public function get_internal_error_products( array $args ): array {
+		$internal_error_ids = [];
+		foreach ( $args as $invalid_product ) {
+			$product_id = $invalid_product->get_wc_product_id();
+			$errors     = $invalid_product->get_errors();
+			if ( ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] ) ) {
+				$internal_error_ids[ $product_id ] = $product_id;
+			}
+		}
+
+		return $internal_error_ids;
 	}
 }

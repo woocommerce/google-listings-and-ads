@@ -21,7 +21,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitFailedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
@@ -78,7 +77,6 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_product_syncer_job( UpdateProducts::class );
 		$this->share_product_syncer_job( DeleteProducts::class );
 		$this->share_product_syncer_job( ResubmitExpiringProducts::class );
-		$this->share_product_syncer_job( ResubmitFailedProducts::class );
 
 		$this->share_with_tags(
 			JobRepository::class,
