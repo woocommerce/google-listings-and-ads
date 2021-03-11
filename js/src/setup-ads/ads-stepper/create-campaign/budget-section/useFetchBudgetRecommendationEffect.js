@@ -1,33 +1,14 @@
 /**
- * External dependencies
- */
-import { useEffect, useMemo } from '@wordpress/element';
-
-/**
  * Internal dependencies
  */
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
 
 const useFetchBudgetRecommendationEffect = ( countryCode ) => {
-	const options = useMemo( () => {
-		return {
-			path: `/wc/gla/ads/campaigns/budget-recommendation/${ countryCode }`,
-		};
-	}, [ countryCode ] );
+	const options = countryCode && {
+		path: `/wc/gla/ads/campaigns/budget-recommendation/${ countryCode }`,
+	};
 
-	const [ fetchBudgetRecommendation, fetchResult ] = useApiFetchCallback(
-		options
-	);
-
-	useEffect( () => {
-		if ( ! countryCode ) {
-			return;
-		}
-
-		fetchBudgetRecommendation();
-	}, [ fetchBudgetRecommendation, countryCode ] );
-
-	return fetchResult;
+	return useApiFetchEffect( options );
 };
 
 export default useFetchBudgetRecommendationEffect;
