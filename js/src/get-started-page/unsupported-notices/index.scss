@@ -1,0 +1,24 @@
+.gla-get-started-notice {
+	margin: 0 0 $grid-unit-40;
+
+	&.is-error {
+		background-color: #ffcbcb;
+	}
+
+	&.is-warning {
+		background-color: #ffeec1;
+	}
+
+	.components-notice__content {
+		margin-left: $grid-unit-20;
+	}
+
+	&__link {
+		color: currentColor;
+	}
+
+	&__icon {
+		margin-left: 0.2em;
+		vertical-align: middle;
+	}
+}
