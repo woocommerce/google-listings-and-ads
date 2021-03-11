@@ -4,6 +4,7 @@
 import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -12,8 +13,14 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import FormContent from './form-content';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import AppButton from '.~/components/app-button';
 
 const CreateCampaign = () => {
+	const [ fetchCreateCampaign, { loading } ] = useApiFetchCallback();
+	const { createNotice } = useDispatchCoreNotices();
+
 	const handleValidate = () => {
 		const errors = {};
 
@@ -22,8 +29,31 @@ const CreateCampaign = () => {
 		return errors;
 	};
 
-	// TODO: handle form submit.
-	const handleSubmitCallback = () => {};
+	const handleSubmitCallback = async ( values ) => {
+		try {
+			const date = formatDate( 'Y-m-d', new Date() );
+
+			await fetchCreateCampaign( {
+				path: '/wc/gla/ads/campaigns',
+				method: 'POST',
+				data: {
+					name: `Ads Campaign ${ date }`,
+					amount: Number( values.amount ),
+					country: values.country && values.country[ 0 ],
+				},
+			} );
+
+			// TODO: check ads account billing status and show the next page.
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to launch your ads campaign. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
 
 	return (
 		<StepContent>
@@ -52,7 +82,6 @@ const CreateCampaign = () => {
 			/>
 			<Form
 				initialValues={ {
-					name: '',
 					amount: '',
 					country: [],
 				} }
@@ -60,7 +89,25 @@ const CreateCampaign = () => {
 				onSubmitCallback={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
-					return <FormContent formProps={ formProps } />;
+					const { handleSubmit } = formProps;
+
+					return (
+						<FormContent
+							formProps={ formProps }
+							submitButton={
+								<AppButton
+									isPrimary
+									loading={ loading }
+									onClick={ handleSubmit }
+								>
+									{ __(
+										'Launch campaign',
+										'google-listings-and-ads'
+									) }
+								</AppButton>
+							}
+						/>
+					);
 				} }
 			</Form>
 		</StepContent>
