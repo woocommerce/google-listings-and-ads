@@ -51,6 +51,11 @@
       "bash ./bin/googleads-remove-older-versions.sh"
     ]
   },
+  "archive": {
+    "exclude": [
+        "!/js/build"
+    ]
+  },
   "extra": {
     "google/apiclient-services": [
       "ShoppingContent",
