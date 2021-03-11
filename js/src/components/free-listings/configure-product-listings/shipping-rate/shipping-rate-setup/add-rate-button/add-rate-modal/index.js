@@ -64,7 +64,10 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 								isPrimary
 								onClick={ handleSubmit }
 							>
-								{ __( 'Save', 'google-listings-and-ads' ) }
+								{ __(
+									'Add shipping rate',
+									'google-listings-and-ads'
+								) }
 							</Button>,
 						] }
 						onRequestClose={ onRequestClose }

@@ -79,7 +79,10 @@ const EditRateModal = ( { rate, onDelete, onSubmit, onRequestClose } ) => {
 								isPrimary
 								onClick={ handleSubmit }
 							>
-								{ __( 'Save', 'google-listings-and-ads' ) }
+								{ __(
+									'Update shipping rate',
+									'google-listings-and-ads'
+								) }
 							</Button>,
 						] }
 						onRequestClose={ onRequestClose }
