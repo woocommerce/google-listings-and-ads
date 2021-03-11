@@ -208,7 +208,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 
 		// Default to using the Locale class if it is available.
 		if ( class_exists( Locale::class ) ) {
-			return function() use ( $locale ) {
+			return function() use ( $locale ): string {
 				return Locale::getDisplayLanguage( $locale, $locale );
 			};
 		}
@@ -216,7 +216,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 		return function() use ( $locale ): string {
 			// en_US isn't provided by the translations API.
 			if ( 'en_US' === $locale ) {
-				return 'English (United States)';
+				return 'English';
 			}
 
 			require_once ABSPATH . 'wp-admin/includes/translation-install.php';
