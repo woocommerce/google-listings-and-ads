@@ -42,31 +42,9 @@ class BatchProductRequestEntry {
 	}
 
 	/**
-	 * @param int $wc_product_id
-	 *
-	 * @return BatchProductRequestEntry
-	 */
-	public function set_wc_product_id( int $wc_product_id ): BatchProductRequestEntry {
-		$this->wc_product_id = $wc_product_id;
-
-		return $this;
-	}
-
-	/**
 	 * @return WCProductAdapter|string
 	 */
 	public function get_product() {
 		return $this->product;
-	}
-
-	/**
-	 * @param WCProductAdapter|string $product
-	 *
-	 * @return BatchProductRequestEntry
-	 */
-	public function set_product( $product ): BatchProductRequestEntry {
-		$this->product = $product;
-
-		return $this;
 	}
 }
