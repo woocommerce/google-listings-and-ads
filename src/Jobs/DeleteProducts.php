@@ -52,11 +52,13 @@ class DeleteProducts extends AbstractProductSyncerJob {
 	/**
 	 * Start the job.
 	 *
-	 * @param array $args
+	 * @param string[] $args An array of Google product IDs mapped to WooCommerce product IDs as their key.
 	 *
 	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function start( array $args = [] ) {
+		$args = array_filter( $args, 'is_string' );
+
 		if ( empty( $args ) ) {
 			throw JobException::item_not_provided( 'Array of Google product IDs' );
 		}

@@ -62,6 +62,8 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function start( array $args = [] ) {
+		$args = array_filter( $args, 'is_integer' );
+
 		if ( empty( $args ) ) {
 			throw JobException::item_not_provided( 'Array of WooCommerce Product IDs' );
 		}
