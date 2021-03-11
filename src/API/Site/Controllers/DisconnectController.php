@@ -39,20 +39,21 @@ class DisconnectController extends BaseController {
 	 */
 	protected function get_disconnect_callback(): callable {
 		return function( Request $request ) {
-			$raw_responses = [
-				$this->get_delete_response( 'ads/connection' ),
-				$this->get_delete_response( 'mc/connection' ),
-				$this->get_delete_response( 'google/connect' ),
-				$this->get_delete_response( 'jetpack/connect' ),
+			$endpoints = [
+				'ads/connection',
+				'mc/connection',
+				'google/connect',
+				'jetpack/connect',
 			];
 
 			$errors    = [];
 			$responses = [];
-			foreach ( $raw_responses as $response ) {
+			foreach ( $endpoints as $endpoint ) {
+				$response = $this->get_delete_response( $endpoint );
 				if ( 200 !== $response->get_status() ) {
-					$errors[] = $response->get_data();
+					$errors[ $endpoint ] = $response->get_data();
 				} else {
-					$responses[] = $response->get_data();
+					$responses[ $endpoint ] = $response->get_data();
 				}
 			}
 
