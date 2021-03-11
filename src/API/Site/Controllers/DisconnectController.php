@@ -76,7 +76,7 @@ class DisconnectController extends BaseController {
 	protected function get_delete_response( string $path ): Response {
 		$path = ltrim( $path );
 
-		return $this->server->dispatch_request( new Request( 'DELETE', "{$this->get_namespace()}/{$path}" ) );
+		return $this->server->dispatch_request( new Request( 'DELETE', "/{$this->get_namespace()}/{$path}" ) );
 	}
 
 	/**
