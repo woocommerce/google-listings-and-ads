@@ -171,16 +171,12 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 				continue;
 			}
 
-			$product_entries = array_map(
-				function ( string $google_id ) use ( $product ) {
-					return new BatchProductRequestEntry(
-						$product->get_id(),
-						$google_id
-					);
-				},
-				$google_ids
-			);
-			$request_entries = array_merge( $request_entries, $product_entries );
+			foreach ( $google_ids as $google_id ) {
+				$request_entries[] = new BatchProductRequestEntry(
+					$product->get_id(),
+					$google_id
+				);
+			}
 		}
 
 		return $request_entries;
