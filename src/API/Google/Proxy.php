@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -13,7 +15,6 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use Google_Service_ShoppingContent as ShoppingContent;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
 use Google\ApiCore\ApiException;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
@@ -30,6 +31,7 @@ class Proxy implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 	use ApiExceptionTrait;
+	use GoogleHelper;
 
 	/**
 	 * @var ContainerInterface
@@ -256,8 +258,7 @@ class Proxy implements OptionsAwareInterface {
 		try {
 			/** @var GoogleAdsClient $client */
 			$client    = $this->container->get( GoogleAdsClient::class );
-			$args      = [ 'headers' => $this->container->get( 'connect_server_auth_header' ) ];
-			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers( $args );
+			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers();
 			$ids       = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
@@ -286,6 +287,12 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function create_ads_account(): array {
 		try {
+			$country   = WC()->countries->get_base_country();
+			$countries = $this->get_mc_supported_countries();
+			if ( ! array_key_exists( $country, $countries ) ) {
+				throw new Exception( __( 'Store country is not supported', 'google-listings-and-ads' ) );
+			}
+
 			$user = wp_get_current_user();
 			$tos  = $this->mark_tos_accepted( 'google-ads', $user->user_email );
 			if ( ! $tos->accepted() ) {
@@ -295,7 +302,7 @@ class Proxy implements OptionsAwareInterface {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_manager_url( 'US/create-customer' ),
+				$this->get_manager_url( $country . '/create-customer' ),
 				[
 					'body' => json_encode(
 						[
@@ -389,11 +396,14 @@ class Proxy implements OptionsAwareInterface {
 			'status' => $id ? 'connected' : 'disconnected',
 		];
 
-		$incomplete = $this->container->get( AdsAccountState::class )->last_incomplete_step();
+		$state      = $this->container->get( AdsAccountState::class );
+		$incomplete = $state->last_incomplete_step();
 		if ( ! empty( $incomplete ) ) {
 			$status['status'] = 'incomplete';
 			$status['step']   = $incomplete;
 		}
+
+		$status += $state->get_step_data( 'set_id' );
 
 		return $status;
 	}

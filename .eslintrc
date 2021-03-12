@@ -1,3 +1,8 @@
 {
-  "extends": [ "plugin:@woocommerce/eslint-plugin/recommended" ]
+  "extends": [ "plugin:@woocommerce/eslint-plugin/recommended" ],
+  "settings": {
+    "jsdoc": {
+	  "mode": "typescript"
+    }
+  }
 }

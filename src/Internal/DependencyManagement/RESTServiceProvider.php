@@ -7,6 +7,7 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AccountController as AdsAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController as AdsBudgetRecommendationController;
@@ -73,6 +74,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( TargetAudienceController::class, WP::class );
 		$this->share( SupportedCountriesController::class, WC::class );
 		$this->share( SettingsSyncController::class, Settings::class );
+		$this->share( DisconnectController::class );
 	}
 
 	/**

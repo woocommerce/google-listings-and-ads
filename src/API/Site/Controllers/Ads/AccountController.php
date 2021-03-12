@@ -293,6 +293,9 @@ class AccountController extends BaseOptionsController {
 							break;
 						}
 						$account = $this->middleware->create_ads_account();
+
+						$step['data']['sub_account']       = true;
+						$step['data']['created_timestamp'] = time();
 						break;
 
 					case 'billing':
