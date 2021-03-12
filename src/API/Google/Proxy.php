@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -29,6 +30,7 @@ defined( 'ABSPATH' ) || exit;
 class Proxy implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use GoogleHelper;
 
 	/**
 	 * @var ContainerInterface
@@ -279,6 +281,12 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function create_ads_account(): array {
 		try {
+			$country   = WC()->countries->get_base_country();
+			$countries = $this->get_mc_supported_countries();
+			if ( ! array_key_exists( $country, $countries ) ) {
+				throw new Exception( __( 'Store country is not supported', 'google-listings-and-ads' ) );
+			}
+
 			$user = wp_get_current_user();
 			$tos  = $this->mark_tos_accepted( 'google-ads', $user->user_email );
 			if ( ! $tos->accepted() ) {
@@ -288,7 +296,7 @@ class Proxy implements OptionsAwareInterface {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
-				$this->get_manager_url( 'US/create-customer' ),
+				$this->get_manager_url( $country . '/create-customer' ),
 				[
 					'body' => json_encode(
 						[
