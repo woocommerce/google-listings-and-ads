@@ -9,18 +9,30 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
  * Internal dependencies
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
+import useFetchBudgetRecommendationEffect from './useFetchBudgetRecommendationEffect';
 import './index.scss';
 
 const BudgetRecommendation = ( props ) => {
-	const { recommendation, showLowerBudgetNotice } = props;
+	const { countryCode, dailyAverageCost } = props;
+	const { data: recommendation } = useFetchBudgetRecommendationEffect(
+		countryCode
+	);
+	const map = useCountryKeyNameMap();
+
+	if ( ! recommendation ) {
+		return null;
+	}
+
 	const {
-		country_code: countryCode,
 		daily_budget_low: dailyBudgetLow,
 		daily_budget_high: dailyBudgetHigh,
 		currency,
 	} = recommendation;
-	const map = useCountryKeyNameMap();
 	const countryName = map[ countryCode ];
+
+	const showLowerBudgetNotice =
+		dailyAverageCost !== '' &&
+		Number( dailyAverageCost ) < Number( recommendation.daily_budget_low );
 
 	return (
 		<div className="gla-budget-recommendation">

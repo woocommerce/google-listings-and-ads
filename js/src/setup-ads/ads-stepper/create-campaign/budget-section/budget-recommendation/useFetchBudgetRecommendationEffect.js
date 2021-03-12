@@ -10,11 +10,9 @@ import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
  * @return {Object} Budget recommendation.
  */
 const useFetchBudgetRecommendationEffect = ( countryCode ) => {
-	const options = countryCode && {
+	return useApiFetchEffect( {
 		path: `/wc/gla/ads/campaigns/budget-recommendation/${ countryCode }`,
-	};
-
-	return useApiFetchEffect( options );
+	} );
 };
 
 export default useFetchBudgetRecommendationEffect;
