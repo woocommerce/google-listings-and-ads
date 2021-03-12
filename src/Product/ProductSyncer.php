@@ -21,6 +21,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class ProductSyncer implements Service, OptionsAwareInterface {
 
+	public const FAILURE_THRESHOLD        = 5;         // Number of failed attempts allowed per FAILURE_THRESHOLD_WINDOW
+	public const FAILURE_THRESHOLD_WINDOW = '3 hours'; // PHP supported Date and Time format: https://www.php.net/manual/en/datetime.formats.php
+
 	use MerchantCenterTrait;
 
 	/**

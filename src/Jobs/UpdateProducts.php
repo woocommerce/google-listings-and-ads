@@ -45,7 +45,8 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $product_ids ) {
-		$products = $this->product_repository->find_by_ids( $product_ids );
+		$args     = [ 'include' => $product_ids ];
+		$products = $this->product_repository->find_sync_ready_product_ids( $args );
 
 		if ( empty( $products ) ) {
 			throw JobException::item_not_found();

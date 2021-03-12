@@ -33,6 +33,9 @@ defined( 'ABSPATH' ) || exit;
  * @method update_failed_sync_attempts( int $product_id, int $value )
  * @method delete_failed_sync_attempts( int $product_id )
  * @method get_failed_sync_attempts( int $product_id ): int
+ * @method update_sync_failed_at( int $product_id, int $value )
+ * @method delete_sync_failed_at( int $product_id )
+ * @method get_sync_failed_at( int $product_id ): int
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -43,6 +46,7 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_VISIBILITY           = 'visibility';
 	public const KEY_ERRORS               = 'errors';
 	public const KEY_FAILED_SYNC_ATTEMPTS = 'failed_sync_attempts';
+	public const KEY_SYNC_FAILED_AT       = 'sync_failed_at';
 
 	public const VALID_KEYS = [
 		self::KEY_SYNCED_AT,
@@ -50,6 +54,7 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_VISIBILITY,
 		self::KEY_ERRORS,
 		self::KEY_FAILED_SYNC_ATTEMPTS,
+		self::KEY_SYNC_FAILED_AT,
 	];
 
 	protected const TYPES = [
@@ -58,6 +63,7 @@ class ProductMetaHandler implements Service, Registerable {
 		self::KEY_VISIBILITY           => 'string',
 		self::KEY_ERRORS               => 'array',
 		self::KEY_FAILED_SYNC_ATTEMPTS => 'int',
+		self::KEY_SYNC_FAILED_AT       => 'int',
 	];
 
 	/**

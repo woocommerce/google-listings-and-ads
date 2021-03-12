@@ -110,25 +110,27 @@ class ProductRepository implements Service {
 	/**
 	 * Find and return an array of WooCommerce product objects ready to be submitted to Google Merchant Center.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
-	public function find_sync_ready_products( int $limit = - 1, int $offset = 0 ): array {
-		return $this->find( $this->get_sync_ready_products_query_args(), $limit, $offset );
+	public function find_sync_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+		return $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 	}
 
 	/**
 	 * Find and return an array of WooCommerce product IDs ready to be submitted to Google Merchant Center.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_sync_ready_product_ids( int $limit = - 1, int $offset = 0 ): array {
-		return $this->find_ids( $this->get_sync_ready_products_query_args(), $limit, $offset );
+	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+		return $this->find_ids( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 	}
 
 	/**
@@ -136,25 +138,51 @@ class ProductRepository implements Service {
 	 */
 	protected function get_sync_ready_products_meta_query(): array {
 		return [
-			'relation' => 'OR',
+			'relation' => 'AND',
 			[
-				'key'     => ProductMetaHandler::KEY_VISIBILITY,
-				'compare' => 'NOT EXISTS',
+				'relation' => 'OR',
+				[
+					'key'     => ProductMetaHandler::KEY_VISIBILITY,
+					'compare' => 'NOT EXISTS',
+				],
+				[
+					'key'     => ProductMetaHandler::KEY_VISIBILITY,
+					'compare' => '!=',
+					'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+				],
 			],
 			[
-				'key'     => ProductMetaHandler::KEY_VISIBILITY,
-				'compare' => '!=',
-				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+				'relation' => 'OR',
+				[
+					'key'     => ProductMetaHandler::KEY_FAILED_SYNC_ATTEMPTS,
+					'compare' => 'NOT EXISTS',
+				],
+				[
+					// if it has failed less times than the specified threshold
+					'key'     => ProductMetaHandler::KEY_FAILED_SYNC_ATTEMPTS,
+					'compare' => '<=',
+					'value'   => ProductSyncer::FAILURE_THRESHOLD,
+				],
+				[
+					'key'     => ProductMetaHandler::KEY_SYNC_FAILED_AT,
+					'compare' => 'NOT EXISTS',
+				],
+				[
+					// if its sync hasn't failed within the specified window
+					'key'     => ProductMetaHandler::KEY_SYNC_FAILED_AT,
+					'compare' => '<=',
+					'value'   => strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD ) ),
+				],
 			],
 		];
 	}
 
 	/**
+	 * @param array $args Array of WooCommerce args (except 'return'), and product metadata.
+	 *
 	 * @return array
 	 */
-	protected function get_sync_ready_products_query_args(): array {
-		$args = [];
-
+	protected function get_sync_ready_products_query_args( array $args = [] ): array {
 		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
 
 		// don't include variable products in query

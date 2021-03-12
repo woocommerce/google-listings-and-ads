@@ -95,6 +95,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
 			$this->meta_handler->delete_errors( $wc_product_id );
 			$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
+			$this->meta_handler->delete_sync_failed_at( $wc_product_id );
 		}
 
 		// mark the parent product as synced if it's a variation
@@ -113,6 +114,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 		$this->meta_handler->delete_google_ids( $wc_product_id );
 		$this->meta_handler->delete_errors( $wc_product_id );
 		$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
+		$this->meta_handler->delete_sync_failed_at( $wc_product_id );
 
 		// mark the parent product as un-synced if it's a variation
 		$wc_product = wc_get_product( $wc_product_id );
@@ -145,6 +147,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 				$this->meta_handler->get_failed_sync_attempts( $wc_product_id ) :
 				0;
 			$this->meta_handler->update_failed_sync_attempts( $wc_product_id, $failed_attempts + 1 );
+			$this->meta_handler->update_sync_failed_at( $wc_product_id, time() );
 		}
 
 		// mark the parent product as invalid if it's a variation
