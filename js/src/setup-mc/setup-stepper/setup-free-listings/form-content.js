@@ -10,6 +10,13 @@ import PreLaunchChecklist from './pre-launch-checklist';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 
+/**
+ * Form to configure free listings.
+ * Auto-saves changes.
+ *
+ * @see /js/src/edit-free-campaign/setup-free-listings/form-content.js
+ * @param {Object} props
+ */
 const FormContent = ( props ) => {
 	const { formProps, submitButton } = props;
 	const { values } = formProps;

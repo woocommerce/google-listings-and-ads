@@ -8,39 +8,38 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
+import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import ShippingTimeSetup from './shipping-time-setup';
+import ShippingRateSetup from './shipping-rate-setup';
 
 /**
- * Form section to set shipping time per country.
- *
- * @see .~/components/free-listings/configure-product-listings/shipping-time/index.js
+ * Form section to set shipping rate per country.
+ * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/shipping-rate/index.js},
  *
  * @param {Object} props
  */
-const ShippingTime = ( props ) => {
+const ShippingRate = ( props ) => {
 	const { formProps } = props;
 	const { getInputProps } = formProps;
 
 	return (
 		<Section
-			title={ __( 'Shipping time', 'google-listings-and-ads' ) }
+			title={ __( 'Shipping rate', 'google-listings-and-ads' ) }
 			description={
 				<div>
 					<p>
 						{ __(
-							'Your estimated shipping time will be shown to potential customers on Google. ',
+							'Your estimated shipping rate will be shown to potential customers on Google.',
 							'google-listings-and-ads'
 						) }
 					</p>
 					<p>
 						{ /* TODO: Link to read more on shipping rate. */ }
 						<AppDocumentationLink
-							context="setup-mc-shipping-time"
-							linkId="shipping-time-read-more"
+							context="setup-mc-shipping-rate"
+							linkId="shipping-rate-read-more"
 							href="https://docs.woocommerce.com/"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
@@ -53,20 +52,20 @@ const ShippingTime = ( props ) => {
 				<Section.Card.Body>
 					<VerticalGapLayout size="large">
 						<AppRadioContentControl
-							{ ...getInputProps( 'shipping_time' ) }
+							{ ...getInputProps( 'shipping_rate' ) }
 							label={ __(
-								'I can estimate a flat shipping time for all my products.',
+								'I have a fairly simple shipping setup and I can estimate flat shipping rates.',
 								'google-listings-and-ads'
 							) }
 							value="flat"
 							collapsible
 						>
-							<ShippingTimeSetup formProps={ formProps } />
+							<ShippingRateSetup formProps={ formProps } />
 						</AppRadioContentControl>
 						<AppRadioContentControl
-							{ ...getInputProps( 'shipping_time' ) }
+							{ ...getInputProps( 'shipping_rate' ) }
 							label={ __(
-								'I cannot estimate a flat shipping time for all my products.',
+								'I have a more complex shipping setup and I cannot estimate flat shipping rates.',
 								'google-listings-and-ads'
 							) }
 							value="manual"
@@ -81,8 +80,8 @@ const ShippingTime = ( props ) => {
 									{
 										link: (
 											<AppDocumentationLink
-												context="setup-mc-shipping-time"
-												linkId="shipping-time-manual"
+												context="setup-mc-shipping-rate"
+												linkId="shipping-rate-manual"
 												href="https://www.google.com/retail/solutions/merchant-center/"
 											/>
 										),
@@ -97,4 +96,4 @@ const ShippingTime = ( props ) => {
 	);
 };
 
-export default ShippingTime;
+export default ShippingRate;

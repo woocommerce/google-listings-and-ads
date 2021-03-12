@@ -105,7 +105,7 @@ const shouldReturnResponseBody = ( options ) => {
  * )
  * ```
  *
- * @param {module:wordpress/api-fetch.APIFetchOptions} [options] options to be forwarded to `apiFetch`.
+ * @param {import('@wordpress/api-fetch').APIFetchOptions} [options] options to be forwarded to `apiFetch`.
  *
  * @return {Array} `[ apiFetchCallback, fetchResult ]`
  * 		- `apiFetchCallback` is the function to be called to trigger `apiFetch`.

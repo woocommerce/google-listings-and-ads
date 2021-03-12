@@ -17,6 +17,12 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
 
+/**
+ * Setup step to configure free listings.
+ * Auto-saves changes.
+ *
+ * @see /js/src/edit-free-campaign/setup-free-listings/index.js
+ */
 const SetupFreeListings = () => {
 	const { settings } = useSettings();
 	const { createNotice } = useDispatchCoreNotices();
@@ -60,7 +66,9 @@ const SetupFreeListings = () => {
 
 	return (
 		<div className="gla-setup-free-listings">
-			<Hero />
+			<Hero
+				stepHeader={ __( 'STEP THREE', 'google-listings-and-ads' ) }
+			/>
 			<Form
 				initialValues={ {
 					shipping_rate: settings.shipping_rate,

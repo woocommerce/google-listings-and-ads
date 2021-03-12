@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -19,9 +20,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
-use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
 use Google\Client;
 use Google_Service_ShoppingContent;
 use GuzzleHttp\Client as GuzzleClient;
@@ -58,7 +56,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Merchant::class                       => true,
 		Ads::class                            => true,
 		'connect_server_root'                 => true,
-		'connect_server_auth_header'          => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
 		SiteVerification::class               => true,
@@ -97,12 +94,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->getLeagueContainer()
 		);
 
-		try {
-			$auth_header = [ 'Authorization' => $this->generate_auth_header() ];
-		} catch ( WPError $error ) {
-			$auth_header = [];
-		}
-		$this->getLeagueContainer()->add( 'connect_server_auth_header', $auth_header );
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
 	}
 
@@ -112,8 +103,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function register_guzzle() {
 		$callback = function() {
 			$handler_stack = HandlerStack::create();
-			$handler_stack->remove( 'http_errors' );
 			$handler_stack->push( $this->add_auth_header() );
+
+			// Override endpoint URL if we are using http locally.
+			if ( 0 === strpos( $this->get_connect_server_url_root()->getValue(), 'http://' ) ) {
+				$handler_stack->push( $this->override_http_url() );
+			}
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
 		};
@@ -127,23 +122,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function register_ads_client() {
 		$callback = function() {
-			// Using placeholder values, as the middleware server handles the authentication tokens.
-			$oauth = ( new OAuth2TokenBuilder() )
-				->withClientId( 'clientid' )
-				->withClientSecret( 'clientsecret' )
-				->withRefreshToken( 'refreshtoken' )
-				->build();
-
-			// The developer token will be handled by the middleware server.
-			return ( new GoogleAdsClientBuilder() )
-				->withDeveloperToken( 'developertoken' )
-				->withOAuth2Credential( $oauth )
-				->withEndpoint( $this->get_connect_server_endpoint() )
-				->withTransport( 'rest' )
-				->build();
+			return new GoogleAdsClient( $this->get_connect_server_endpoint() );
 		};
 
-		$this->share_concrete( GoogleAdsClient::class, new Definition( GoogleAdsClient::class, $callback ) );
+		$this->share_concrete(
+			GoogleAdsClient::class,
+			new Definition( GoogleAdsClient::class, $callback )
+		)->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
 	}
 
 	/**
@@ -182,6 +167,18 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 					throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 				}
 
+				return $handler( $request, $options );
+			};
+		};
+	}
+
+	/**
+	 * @return callable
+	 */
+	protected function override_http_url(): callable {
+		return function( callable $handler ) {
+			return function( RequestInterface $request, array $options ) use ( $handler ) {
+				$request = $request->withUri( $request->getUri()->withScheme( 'http' ) );
 				return $handler( $request, $options );
 			};
 		};
