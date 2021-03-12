@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class DeleteProducts extends AbstractProductSyncerJob {
+class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInterface {
 
 	/**
 	 * Get the name of the job.
@@ -68,5 +68,14 @@ class DeleteProducts extends AbstractProductSyncerJob {
 		if ( $this->can_start( $id_map ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $id_map ] );
 		}
+	}
+
+	/**
+	 * Get an action hook to attach the job's start method to.
+	 *
+	 * @return StartHook
+	 */
+	public function get_start_hook(): StartHook {
+		return new StartHook( 'gla_batch_retry_delete_products', 1 );
 	}
 }
