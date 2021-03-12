@@ -55,7 +55,12 @@ const SetupBilling = () => {
 				{ billingStatus.status === 'approved' ? (
 					<BillingSavedCard />
 				) : (
-					<SetupCard />
+					<SetupCard
+						billingUrl={
+							billingStatus.billing_url ||
+							'http://www.google.com/'
+						}
+					/>
 				) }
 			</Section>
 			{ billingStatus.status === 'approved' && (
