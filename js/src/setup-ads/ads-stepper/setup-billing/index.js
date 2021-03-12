@@ -26,7 +26,12 @@ const SetupBilling = () => {
 
 	// TODO: should we really create ads campaign in Step 3 here? or maybe just redirect to dashboard page?
 	const handleLaunchClick = () => {
-		getHistory().push( getNewPath( {}, '/google/dashboard' ) );
+		getHistory().push(
+			getNewPath(
+				{ guide: 'campaign-creation-success' },
+				'/google/dashboard'
+			)
+		);
 	};
 
 	return (
