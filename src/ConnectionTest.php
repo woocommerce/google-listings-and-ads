@@ -467,11 +467,13 @@ class ConnectionTest implements Service, Registerable {
 									<h4>Create account steps:</h4>
 									create account &gt;
 									direct user to billing flow &gt;
-									link to merchant account
+									link to merchant account &gt;
+									create conversion action
 
 									<h4>Link account steps:</h4>
 									link to manager account &gt;
-									link to merchant account
+									link to merchant account &gt;
+									create conversion action
 								</p>
 							</td>
 						</tr>

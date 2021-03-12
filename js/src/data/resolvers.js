@@ -9,6 +9,8 @@ import {
 	fetchGoogleAccount,
 	fetchGoogleMCAccount,
 	fetchExistingGoogleMCAccounts,
+	fetchGoogleAdsAccount,
+	fetchExistingGoogleAdsAccounts,
 	fetchCountries,
 	fetchTargetAudience,
 } from './actions';
@@ -39,6 +41,14 @@ export function* getGoogleMCAccount() {
 
 export function* getExistingGoogleMCAccounts() {
 	yield fetchExistingGoogleMCAccounts();
+}
+
+export function* getGoogleAdsAccount() {
+	yield fetchGoogleAdsAccount();
+}
+
+export function* getExistingGoogleAdsAccounts() {
+	yield fetchExistingGoogleAdsAccounts();
 }
 
 export function* getCountries() {

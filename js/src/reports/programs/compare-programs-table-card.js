@@ -16,7 +16,7 @@ import { mockedListingsData, availableMetrics } from './mocked-programs-data'; /
  * All posible metric headers.
  * Sorted in the order we wish to render them.
  *
- * @type {module:app-table-card.Props.headers}
+ * @type {import('.~/components/app-table-card').Props.headers}
  */
 const metricsHeaders = [
 	{
@@ -76,7 +76,7 @@ const CompareProgramsTableCard = ( props ) => {
 	 *
 	 * @param {Array} data
 	 *
-	 * @return {module:app-table-card.Props.headers} All headers.
+	 * @return {import('.~/components/app-table-card').Props.headers} All headers.
 	 */
 	const getHeaders = ( data ) => [
 		{

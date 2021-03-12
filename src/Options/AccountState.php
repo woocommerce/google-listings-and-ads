@@ -100,4 +100,14 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 
 		return $incomplete;
 	}
+
+	/**
+	 * Returns any data from a specific step.
+	 *
+	 * @param string $step Step name.
+	 * @return array
+	 */
+	public function get_step_data( string $step ): array {
+		return $this->get( false )[ $step ]['data'] ?? [];
+	}
 }
