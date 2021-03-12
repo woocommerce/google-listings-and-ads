@@ -71,10 +71,9 @@ const CreateCampaign = () => {
 					{
 						link: (
 							<AppDocumentationLink
-								// TODO: make sure the below URL and trackings are correct.
 								context="setup-ads"
 								linkId="see-what-ads-look-like"
-								href="https://support.google.com/merchants"
+								href="https://support.google.com/google-ads/answer/6275294"
 							/>
 						),
 					}
