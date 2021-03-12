@@ -332,10 +332,7 @@ export function* fetchGoogleAdsAccountBillingStatus() {
 			path: `${ API_NAMESPACE }/ads/billing-status`,
 		} );
 
-		return {
-			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
-			billingStatus: response,
-		};
+		return receiveGoogleAdsAccountBillingStatus( response );
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
@@ -421,6 +418,13 @@ export function receiveAdsAccount( account ) {
 	return {
 		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS,
 		account,
+	};
+}
+
+export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
+		billingStatus,
 	};
 }
 
