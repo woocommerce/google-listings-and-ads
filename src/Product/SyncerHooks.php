@@ -143,12 +143,12 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 				},
 				$products
 			);
-			$this->update_products_job->start( $product_ids );
+			$this->update_products_job->start( [ $product_ids ] );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
 			// delete the product from Google Merchant Center if it's already synced AND sync has been disabled.
 			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
-			$this->delete_products_job->start( $this->batch_helper->request_entries_to_id_map( $request_entries ) );
+			$this->delete_products_job->start( [ BatchProductRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 			$this->set_already_scheduled( $product_id );
 		}
 	}
@@ -160,7 +160,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
-			$this->delete_products_job->start( $this->batch_helper->request_entries_to_id_map( $this->delete_requests_map[ $product_id ] ) );
+			$this->delete_products_job->start( [ BatchProductRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get() ] );
 			$this->set_already_scheduled( $product_id );
 		}
 	}

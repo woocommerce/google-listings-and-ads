@@ -961,7 +961,7 @@ class ConnectionTest implements Service, Registerable {
 					// schedule a job
 					/** @var UpdateProducts $update_job */
 					$update_job = $this->container->get( UpdateProducts::class );
-					$update_job->start( [ $product->get_id() ] );
+					$update_job->start( [ [ $product->get_id() ] ] );
 					$this->response = 'Successfully scheduled a job to sync the product ' . $product->get_id();
 				}
 			} else {

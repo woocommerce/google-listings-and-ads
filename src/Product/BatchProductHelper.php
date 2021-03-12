@@ -184,20 +184,6 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	}
 
 	/**
-	 * @param BatchProductRequestEntry[] $request_entries
-	 *
-	 * @return string[] Array of Google product IDs mapped to WooCommerce product IDs
-	 */
-	public function request_entries_to_id_map( array $request_entries ): array {
-		$id_map = [];
-		foreach ( $request_entries as $request_entry ) {
-			$id_map[ $request_entry->get_wc_product_id() ] = $request_entry->get_product();
-		}
-
-		return $id_map;
-	}
-
-	/**
 	 * @param WC_Product[] $products
 	 *
 	 * @return BatchProductRequestEntry[]
