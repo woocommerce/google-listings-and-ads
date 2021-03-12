@@ -326,6 +326,27 @@ export function* fetchGoogleAdsAccount() {
 	}
 }
 
+export function* fetchGoogleAdsAccountBillingStatus() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/billing-status`,
+		} );
+
+		return {
+			type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
+			billingStatus: response,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading shipping rates.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchExistingGoogleAdsAccounts() {
 	try {
 		const response = yield apiFetch( {

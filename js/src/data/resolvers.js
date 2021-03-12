@@ -10,6 +10,7 @@ import {
 	fetchGoogleMCAccount,
 	fetchExistingGoogleMCAccounts,
 	fetchGoogleAdsAccount,
+	fetchGoogleAdsAccountBillingStatus,
 	fetchExistingGoogleAdsAccounts,
 	fetchCountries,
 	fetchTargetAudience,
@@ -45,6 +46,10 @@ export function* getExistingGoogleMCAccounts() {
 
 export function* getGoogleAdsAccount() {
 	yield fetchGoogleAdsAccount();
+}
+
+export function* getGoogleAdsAccountBillingStatus() {
+	yield fetchGoogleAdsAccountBillingStatus();
 }
 
 export function* getExistingGoogleAdsAccounts() {
