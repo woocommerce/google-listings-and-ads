@@ -30,28 +30,34 @@ defined( 'ABSPATH' ) || exit;
  * @method update_errors( int $product_id, array $value )
  * @method delete_errors( int $product_id )
  * @method get_errors( int $product_id ): array
+ * @method update_failed_sync_attempts( int $product_id, int $value )
+ * @method delete_failed_sync_attempts( int $product_id )
+ * @method get_failed_sync_attempts( int $product_id ): int
  */
 class ProductMetaHandler implements Service, Registerable {
 
 	use PluginHelper;
 
-	public const KEY_SYNCED_AT  = 'synced_at';
-	public const KEY_GOOGLE_IDS = 'google_ids';
-	public const KEY_VISIBILITY = 'visibility';
-	public const KEY_ERRORS     = 'errors';
+	public const KEY_SYNCED_AT            = 'synced_at';
+	public const KEY_GOOGLE_IDS           = 'google_ids';
+	public const KEY_VISIBILITY           = 'visibility';
+	public const KEY_ERRORS               = 'errors';
+	public const KEY_FAILED_SYNC_ATTEMPTS = 'failed_sync_attempts';
 
 	public const VALID_KEYS = [
 		self::KEY_SYNCED_AT,
 		self::KEY_GOOGLE_IDS,
 		self::KEY_VISIBILITY,
 		self::KEY_ERRORS,
+		self::KEY_FAILED_SYNC_ATTEMPTS,
 	];
 
 	protected const TYPES = [
-		self::KEY_SYNCED_AT  => 'int',
-		self::KEY_GOOGLE_IDS => 'array',
-		self::KEY_VISIBILITY => 'string',
-		self::KEY_ERRORS     => 'array',
+		self::KEY_SYNCED_AT            => 'int',
+		self::KEY_GOOGLE_IDS           => 'array',
+		self::KEY_VISIBILITY           => 'string',
+		self::KEY_ERRORS               => 'array',
+		self::KEY_FAILED_SYNC_ATTEMPTS => 'int',
 	];
 
 	/**

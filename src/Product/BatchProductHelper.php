@@ -94,6 +94,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 		$target_countries = $this->get_target_countries();
 		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
 			$this->meta_handler->delete_errors( $wc_product_id );
+			$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
 		}
 
 		// mark the parent product as synced if it's a variation
@@ -111,6 +112,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 		$this->meta_handler->delete_synced_at( $wc_product_id );
 		$this->meta_handler->delete_google_ids( $wc_product_id );
 		$this->meta_handler->delete_errors( $wc_product_id );
+		$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
 
 		// mark the parent product as un-synced if it's a variation
 		$wc_product = wc_get_product( $wc_product_id );
@@ -136,6 +138,14 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 		}
 
 		$this->meta_handler->update_errors( $wc_product_id, $errors );
+
+		if ( $this->has_internal_error( $product_entry ) ) {
+			// update failed sync attempts count in case of internal errors
+			$failed_attempts = ! empty( $this->meta_handler->get_failed_sync_attempts( $wc_product_id ) ) ?
+				$this->meta_handler->get_failed_sync_attempts( $wc_product_id ) :
+				0;
+			$this->meta_handler->update_failed_sync_attempts( $wc_product_id, $failed_attempts + 1 );
+		}
 
 		// mark the parent product as invalid if it's a variation
 		$wc_product = wc_get_product( $wc_product_id );
@@ -244,6 +254,19 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	}
 
 	/**
+	 * Whether the invalid product entry has internal syncing errors
+	 *
+	 * @param BatchInvalidProductEntry $invalid_product_entry
+	 *
+	 * @return bool
+	 */
+	protected function has_internal_error( BatchInvalidProductEntry $invalid_product_entry ): bool {
+		$errors = $invalid_product_entry->get_errors();
+
+		return ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] );
+	}
+
+	/**
 	 * Filters the list of invalid product entries and returns an array of WooCommerce product IDs with internal errors
 	 *
 	 * @param BatchInvalidProductEntry[] $args
@@ -253,9 +276,9 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	public function get_internal_error_products( array $args ): array {
 		$internal_error_ids = [];
 		foreach ( $args as $invalid_product ) {
-			$product_id = $invalid_product->get_wc_product_id();
-			$errors     = $invalid_product->get_errors();
-			if ( ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] ) ) {
+			if ( $this->has_internal_error( $invalid_product ) ) {
+				$product_id = $invalid_product->get_wc_product_id();
+
 				$internal_error_ids[ $product_id ] = $product_id;
 			}
 		}
