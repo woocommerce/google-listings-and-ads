@@ -13,10 +13,12 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
 import './index.scss';
 import AppButton from '.~/components/app-button';
+import useAutoCheckBillingStatusAndRedirectEffect from './useAutoCheckBillingStatusAndRedirectEffect';
 
 const SetupCard = ( props ) => {
 	const { billingUrl } = props;
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	useAutoCheckBillingStatusAndRedirectEffect();
 
 	if ( ! googleAdsAccount ) {
 		return <AppSpinner />;
