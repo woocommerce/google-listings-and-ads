@@ -12,7 +12,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
 use Google\Ads\GoogleAds\Util\V6\GoogleAdsFailures;
 use Google\Auth\Credentials\InsecureCredentials;
-use Google\Auth\FetchAuthTokenInterface;
 use Google\Auth\HttpHandler\HttpHandlerFactory;
 use GuzzleHttp\Client;
 
