@@ -10,8 +10,8 @@ import { __ } from '@wordpress/i18n';
  */
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
-import SetupFreeListings from '../setup-mc/setup-stepper/setup-free-listings';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
+import SetupFreeListings from './setup-free-listings';
 
 /**
  * Page Component to edit free campaigns.
@@ -77,6 +77,10 @@ export default function EditFreeCampaign() {
 						),
 						content: (
 							<SetupFreeListings
+								stepHeader={ __(
+									'STEP TWO',
+									'google-listings-and-ads'
+								) }
 								onContinue={ handleSetupFreeListingsContinue }
 							/>
 						),
