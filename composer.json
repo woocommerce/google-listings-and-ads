@@ -53,7 +53,8 @@
   },
   "archive": {
     "exclude": [
-        "!/js/build"
+      "!/js/build",
+      "!/vendor/*"
     ]
   },
   "extra": {
