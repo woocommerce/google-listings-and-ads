@@ -58,6 +58,12 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected $allow_switch_url = false;
 
+
+	/**
+	 * @var bool Whether to allow changes to the existing Merchant Center product feed(s).
+	 */
+	protected $allow_feed_overwrite = false;
+
 	/**
 	 * AccountController constructor.
 	 *
@@ -110,6 +116,18 @@ class AccountController extends BaseOptionsController {
 				[
 					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->switch_url_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_schema_properties(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+		$this->register_route(
+			'mc/accounts/feed-overwrite',
+			[
+				[
+					'methods'             => TransportMethods::CREATABLE,
+					'callback'            => $this->feed_overwrite_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_schema_properties(),
 				],
@@ -177,7 +195,7 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the callback for creating or linking an account, switching the URL during the set_id step.
+	 * Get the callback for linking an account, switching the URL during the set_id step.
 	 *
 	 * @return callable
 	 */
@@ -194,6 +212,28 @@ class AccountController extends BaseOptionsController {
 			}
 
 			$this->allow_switch_url = true;
+			return $this->set_account_id( $request );
+		};
+	}
+
+	/**
+	 * Get the callback for linking an account, with permission for possible future data feed changes.
+	 *
+	 * @return callable
+	 */
+	protected function feed_overwrite_callback(): callable {
+		return function( Request $request ) {
+			$state               = $this->account_state->get();
+			$overwrite_necessary = $state['set_id']['data']['existing_feeds'] ?? false;
+			$set_id_status       = $state['set_id']['status'] ?? MerchantAccountState::STEP_PENDING;
+			if ( empty( $request['id'] ) || MerchantAccountState::STEP_DONE === $set_id_status || ! $overwrite_necessary ) {
+				return new Response(
+					[ 'message' => __( 'Attempting invalid feed overwrite.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+
+			$this->allow_feed_overwrite = true;
 			return $this->set_account_id( $request );
 		};
 	}
@@ -493,6 +533,9 @@ class AccountController extends BaseOptionsController {
 		// Make sure the existing account has the correct website URL (or fail).
 		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
+		// Make the user confirm other feed overwrite.
+		$this->check_for_existing_feeds( $account_id );
+
 		// Maybe the existing account is sub-account!
 		$state                               = $this->account_state->get();
 		$state['set_id']['data']['from_mca'] = false;
@@ -547,6 +590,7 @@ class AccountController extends BaseOptionsController {
 					409,
 					null,
 					[
+						'action'      => 'switch-url',
 						'id'          => $merchant_id,
 						'claimed_url' => $clean_account_website_url,
 						'new_url'     => $clean_site_website_url,
@@ -590,5 +634,33 @@ class AccountController extends BaseOptionsController {
 	 */
 	private function strip_url_protocol( string $url ): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( $url ) );
+	}
+
+	/**
+	 * Check if the provided existing Merchant Center account has existing product feeds,
+	 * so the user can confirm overwriting them if necessary.
+	 *
+	 * @param int $account_id The account ID to check for existing product feeds.
+	 *
+	 * @throws ExceptionWithResponseData If the account has existing product feeds.
+	 */
+	private function check_for_existing_feeds( int $account_id ): void {
+		if ( ! $this->allow_feed_overwrite && $this->merchant->has_product_feeds( $account_id ) ) {
+			$state                                     = $this->account_state->get();
+			$state['set_id']['data']['existing_feeds'] = true;
+			$state['set_id']['status']                 = MerchantAccountState::STEP_ERROR;
+			$this->account_state->update( $state );
+
+			throw new ExceptionWithResponseData(
+				__( 'This Merchant Center account has an existing product feed.', 'google-listings-and-ads' ),
+				409,
+				null,
+				[
+					'action'  => 'feed-overwrite',
+					'id'      => $account_id,
+					'url' => $this->strip_url_protocol( apply_filters( 'woocommerce_gla_site_url', site_url() ) ),
+				]
+			);
+		}
 	}
 }
