@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useReducer } from '@wordpress/element';
+import { useCallback, useReducer } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 const TYPES = {
@@ -117,53 +117,57 @@ const shouldReturnResponseBody = ( options ) => {
 const useApiFetchCallback = ( options ) => {
 	const [ state, dispatch ] = useReducer( reducer, initialState );
 
-	const enhancedApiFetch = async ( overwriteOptions ) => {
-		const combinedOptions = {
-			...options,
-			...overwriteOptions,
-		};
+	const enhancedApiFetch = useCallback(
+		async ( overwriteOptions ) => {
+			const combinedOptions = {
+				...options,
+				...overwriteOptions,
+			};
 
-		dispatch( { type: TYPES.START, options: combinedOptions } );
+			dispatch( { type: TYPES.START, options: combinedOptions } );
 
-		try {
-			const response = await apiFetch( {
-				...combinedOptions,
-				parse: false,
-			} );
+			try {
+				const response = await apiFetch( {
+					...combinedOptions,
+					parse: false,
+				} );
 
-			const responseClone = response.clone();
-			const data = responseClone.json && ( await responseClone.json() );
+				const responseClone = response.clone();
+				const data =
+					responseClone.json && ( await responseClone.json() );
 
-			dispatch( {
-				type: TYPES.FINISH,
-				data,
-				response,
-				options: combinedOptions,
-			} );
+				dispatch( {
+					type: TYPES.FINISH,
+					data,
+					response,
+					options: combinedOptions,
+				} );
 
-			return shouldReturnResponseBody( combinedOptions )
-				? data
-				: response;
-		} catch ( e ) {
-			const response = e;
+				return shouldReturnResponseBody( combinedOptions )
+					? data
+					: response;
+			} catch ( e ) {
+				const response = e;
 
-			const responseClone = response.clone();
-			const error = responseClone.json
-				? await responseClone.json()
-				: new Error( 'No content body in fetch response.' );
+				const responseClone = response.clone();
+				const error = responseClone.json
+					? await responseClone.json()
+					: new Error( 'No content body in fetch response.' );
 
-			dispatch( {
-				type: TYPES.ERROR,
-				error,
-				response,
-				options: combinedOptions,
-			} );
+				dispatch( {
+					type: TYPES.ERROR,
+					error,
+					response,
+					options: combinedOptions,
+				} );
 
-			throw shouldReturnResponseBody( combinedOptions )
-				? error
-				: response;
-		}
-	};
+				throw shouldReturnResponseBody( combinedOptions )
+					? error
+					: response;
+			}
+		},
+		[ options ]
+	);
 
 	const reset = () => {
 		dispatch( { type: TYPES.RESET } );

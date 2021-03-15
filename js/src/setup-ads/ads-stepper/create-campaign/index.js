@@ -1,20 +1,60 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
+import { Form } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
  */
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AudienceSection from './audience-section';
+import FormContent from './form-content';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import AppButton from '.~/components/app-button';
 
 const CreateCampaign = () => {
+	const [ fetchCreateCampaign, { loading } ] = useApiFetchCallback();
+	const { createNotice } = useDispatchCoreNotices();
+
+	const handleValidate = () => {
+		const errors = {};
+
+		// TODO: validation logic.
+
+		return errors;
+	};
+
+	const handleSubmitCallback = async ( values ) => {
+		try {
+			const date = formatDate( 'Y-m-d', new Date() );
+
+			await fetchCreateCampaign( {
+				path: '/wc/gla/ads/campaigns',
+				method: 'POST',
+				data: {
+					name: `Ads Campaign ${ date }`,
+					amount: Number( values.amount ),
+					country: values.country && values.country[ 0 ],
+				},
+			} );
+
+			// TODO: check ads account billing status and show the next page.
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to launch your ads campaign. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+	};
+
 	return (
 		<StepContent>
 			<StepContentHeader
@@ -31,21 +71,44 @@ const CreateCampaign = () => {
 					{
 						link: (
 							<AppDocumentationLink
-								// TODO: make sure the below URL and trackings are correct.
 								context="setup-ads"
 								linkId="see-what-ads-look-like"
-								href="https://support.google.com/merchants"
+								href="https://support.google.com/google-ads/answer/6275294"
 							/>
 						),
 					}
 				) }
 			/>
-			<AudienceSection />
-			<StepContentFooter>
-				<Button isPrimary>
-					{ __( 'Launch campaign', 'google-listings-and-ads' ) }
-				</Button>
-			</StepContentFooter>
+			<Form
+				initialValues={ {
+					amount: '',
+					country: [],
+				} }
+				validate={ handleValidate }
+				onSubmitCallback={ handleSubmitCallback }
+			>
+				{ ( formProps ) => {
+					const { handleSubmit } = formProps;
+
+					return (
+						<FormContent
+							formProps={ formProps }
+							submitButton={
+								<AppButton
+									isPrimary
+									loading={ loading }
+									onClick={ handleSubmit }
+								>
+									{ __(
+										'Launch campaign',
+										'google-listings-and-ads'
+									) }
+								</AppButton>
+							}
+						/>
+					);
+				} }
+			</Form>
 		</StepContent>
 	);
 };
