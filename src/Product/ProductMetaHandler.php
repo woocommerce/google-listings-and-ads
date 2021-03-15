@@ -48,15 +48,6 @@ class ProductMetaHandler implements Service, Registerable {
 	public const KEY_FAILED_SYNC_ATTEMPTS = 'failed_sync_attempts';
 	public const KEY_SYNC_FAILED_AT       = 'sync_failed_at';
 
-	public const VALID_KEYS = [
-		self::KEY_SYNCED_AT,
-		self::KEY_GOOGLE_IDS,
-		self::KEY_VISIBILITY,
-		self::KEY_ERRORS,
-		self::KEY_FAILED_SYNC_ATTEMPTS,
-		self::KEY_SYNC_FAILED_AT,
-	];
-
 	protected const TYPES = [
 		self::KEY_SYNCED_AT            => 'int',
 		self::KEY_GOOGLE_IDS           => 'array',
@@ -161,9 +152,18 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
 	protected static function validate_meta_key( string $key ) {
-		if ( ! in_array( $key, self::VALID_KEYS, true ) ) {
+		if ( ! self::is_meta_key_valid( $key ) ) {
 			throw InvalidMeta::invalid_key( $key );
 		}
+	}
+
+	/**
+	 * @param string $key
+	 *
+	 * @return bool Whether the meta key is valid.
+	 */
+	public static function is_meta_key_valid( string $key ): bool {
+		return isset( self::TYPES[ $key ] );
 	}
 
 	/**
@@ -220,7 +220,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @return array Sanitized array of meta query clauses.
 	 */
 	protected function sanitize_meta_query( array $queries ): array {
-		$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
+		$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], array_keys( self::TYPES ) );
 		$clean_queries       = [];
 
 		if ( ! is_array( $queries ) ) {

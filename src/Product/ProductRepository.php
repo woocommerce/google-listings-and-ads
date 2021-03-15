@@ -246,7 +246,7 @@ class ProductRepository implements Service {
 	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @link https://github.com/woocommerce/woocommerce/wiki/wc_get_products-and-WC_Product_Query
-	 * @see ProductMetaHandler::VALID_KEYS For the list of meta data that can be used as query arguments.
+	 * @see ProductMetaHandler::TYPES For the list of meta data that can be used as query arguments.
 	 *
 	 * @return WC_Product[]|int[] Array of WooCommerce product objects or IDs, depending on the 'return' argument.
 	 */
@@ -298,7 +298,7 @@ class ProductRepository implements Service {
 				$updated_queries[ $key ] = $meta_query;
 
 				// First-order clause.
-			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && in_array( $meta_query['key'], ProductMetaHandler::VALID_KEYS, true ) ) {
+			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && ProductMetaHandler::is_meta_key_valid( $meta_query['key'] ) ) {
 				$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
 			} else {
 				// Otherwise, it's a nested meta_query, so we recurse.
