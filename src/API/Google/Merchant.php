@@ -37,12 +37,18 @@ class Merchant {
 	protected $id;
 
 	/**
+	 * @var ShoppingService
+	 */
+	protected $service;
+
+	/**
 	 * Merchant constructor.
 	 *
 	 * @param ContainerInterface $container
 	 * @param PositiveInteger    $id
 	 */
 	public function __construct( ContainerInterface $container, PositiveInteger $id ) {
+		$this->service   = $container->get( ShoppingService::class );
 		$this->container = $container;
 		$this->id        = $id;
 	}
@@ -69,9 +75,7 @@ class Merchant {
 	 * @return Product[]
 	 */
 	public function get_products(): array {
-		/** @var ShoppingService $service */
-		$service  = $this->container->get( ShoppingService::class );
-		$products = $service->products->listProducts( $this->get_id() );
+		$products = $this->service->products->listProducts( $this->get_id() );
 		$return   = [];
 
 		while ( ! empty( $products->getResources() ) ) {
@@ -84,7 +88,7 @@ class Merchant {
 				break;
 			}
 
-			$products = $service->products->listProducts(
+			$products = $this->service->products->listProducts(
 				$this->get_id(),
 				[ 'pageToken' => $products->getNextPageToken() ]
 			);
@@ -102,12 +106,9 @@ class Merchant {
 	 * @throws Exception If the website claim fails.
 	 */
 	public function claimwebsite( bool $overwrite = false ): bool {
-		/** @var ShoppingService $service */
-		$service = $this->container->get( ShoppingService::class );
-
 		try {
 			$params = $overwrite ? [ 'overwrite' => true ] : [];
-			$service->accounts->claimwebsite( $this->get_id(), $this->get_id(), $params );
+			$this->service->accounts->claimwebsite( $this->get_id(), $this->get_id(), $params );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
@@ -128,12 +129,10 @@ class Merchant {
 	 * @throws Exception If the account can't be retrieved.
 	 */
 	public function get_account( int $id = 0 ): MC_Account {
-		/** @var ShoppingService $service */
-		$service = $this->container->get( ShoppingService::class );
-		$id      = $id ?: $this->get_id();
+		$id = $id ?: $this->get_id();
 
 		try {
-			$mc_account = $service->accounts->get( $id, $id );
+			$mc_account = $this->service->accounts->get( $id, $id );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
@@ -149,12 +148,10 @@ class Merchant {
 	 * @throws Exception If the account can't be retrieved.
 	 */
 	public function get_accountstatus( int $id = 0 ): MC_Account_Status {
-		/** @var ShoppingService $service */
-		$service = $this->container->get( ShoppingService::class );
-		$id      = $id ?: $this->get_id();
+		$id = $id ?: $this->get_id();
 
 		try {
-			$mc_account_status = $service->accountstatuses->get( $id, $id );
+			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account status.', 'google-listings-and-ads' ), $e->getCode() );
@@ -171,11 +168,8 @@ class Merchant {
 	 * @throws Exception If the account can't be retrieved.
 	 */
 	public function update_account( MC_Account $mc_account ): MC_Account {
-		/** @var ShoppingService $service */
-		$service = $this->container->get( ShoppingService::class );
-
 		try {
-			$mc_account = $service->accounts->update( $mc_account->getId(), $mc_account->getId(), $mc_account );
+			$mc_account = $this->service->accounts->update( $mc_account->getId(), $mc_account->getId(), $mc_account );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to update merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
