@@ -1,27 +1,33 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 import { getHistory, getNewPath } from '@woocommerce/navigation';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
+import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 
 const retryIntervalInSeconds = 10;
 
 const useAutoCheckBillingStatusAndRedirectEffect = async () => {
-	const { receiveGoogleAdsAccountBillingStatus } = useAppDispatch();
+	const { fetchGoogleAdsAccountBillingStatus } = useAppDispatch();
+	const { billingStatus = {} } = useGoogleAdsAccountBillingStatus();
+	const { status } = billingStatus;
 
-	const checkStatusAndRedirect = useCallback( async () => {
-		const billingStatus = await apiFetch( {
-			path: '/wc/gla/ads/billing-status',
-		} );
+	useEffect( () => {
+		const intervalID = setInterval(
+			fetchGoogleAdsAccountBillingStatus,
+			retryIntervalInSeconds * 1000
+		);
 
-		if ( billingStatus.status === 'approved' ) {
-			receiveGoogleAdsAccountBillingStatus( billingStatus );
+		return () => clearInterval( intervalID );
+	}, [ fetchGoogleAdsAccountBillingStatus ] );
+
+	useEffect( () => {
+		if ( status === 'approved' ) {
 			getHistory().push(
 				getNewPath(
 					{ guide: 'campaign-creation-success' },
@@ -29,15 +35,7 @@ const useAutoCheckBillingStatusAndRedirectEffect = async () => {
 				)
 			);
 		}
-	}, [ receiveGoogleAdsAccountBillingStatus ] );
-
-	useEffect( () => {
-		const intervalID = setInterval( () => {
-			checkStatusAndRedirect();
-		}, retryIntervalInSeconds * 1000 );
-
-		return () => clearInterval( intervalID );
-	}, [ checkStatusAndRedirect ] );
+	}, [ status ] );
 };
 
 export default useAutoCheckBillingStatusAndRedirectEffect;
