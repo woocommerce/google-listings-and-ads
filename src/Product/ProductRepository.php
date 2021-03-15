@@ -171,7 +171,7 @@ class ProductRepository implements Service {
 					// if its sync hasn't failed within the specified window
 					'key'     => ProductMetaHandler::KEY_SYNC_FAILED_AT,
 					'compare' => '<=',
-					'value'   => strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD ) ),
+					'value'   => strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) ),
 				],
 			],
 		];
