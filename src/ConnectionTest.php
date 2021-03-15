@@ -334,28 +334,46 @@ class ConnectionTest implements Service, Registerable {
 							</td>
 						</tr>
 						<tr>
-							<th><a name="overwrite"></a>Claim Overwrite:</th>
-							<td>
-								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
-								</p>
-							</td>
-						</tr>
-						<tr>
 							<th><a name="overwrite"></a>Switch URL:</th>
 							<td>
 								<p>
 									<a class="button" href="<?php
 									echo esc_url( wp_nonce_url(
-											add_query_arg(
-												[
-													'action' => 'wcs-google-mc-switch-url',
-													'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url',site_url(), $url ),
-													'account_id' => $_GET['account_id'] ?? ''
-												]
-											),
-											'wcs-google-mc-switch-url'
-										) ); ?>" <?php echo ( $_GET['account_id'] ?? false ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Switch URL</a>
+										add_query_arg(
+											[
+												'action' => 'wcs-google-mc-switch-url',
+												'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url',site_url(), $url ),
+												'account_id' => $_GET['account_id'] ?? ''
+											]
+										),
+										'wcs-google-mc-switch-url'
+									) ); ?>" <?php echo ( $_GET['account_id'] ?? false ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Switch URL</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><a name="overwrite"></a>Feed Overwrite:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php
+									echo esc_url( wp_nonce_url(
+										add_query_arg(
+											[
+												'action' => 'wcs-google-mc-feed-overwrite',
+												'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url',site_url(), $url ),
+												'account_id' => $_GET['account_id'] ?? ''
+											]
+										),
+										'wcs-google-mc-feed-overwrite'
+									) ); ?>" <?php echo ( $_GET['account_id'] ?? false ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Feed Overwrite</a>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th><a name="overwrite"></a>Claim Overwrite:</th>
+							<td>
+								<p>
+									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
 								</p>
 							</td>
 						</tr>
@@ -780,6 +798,14 @@ class ConnectionTest implements Service, Registerable {
 
 		if( 'wcs-google-mc-switch-url' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-switch-url' ) ) {
 			$request = new Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
+			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
+			}
+			$this->send_rest_request( $request );
+		}
+
+		if( 'wcs-google-mc-feed-overwrite' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-feed-overwrite' ) ) {
+			$request = new Request( 'POST', '/wc/gla/mc/accounts/feed-overwrite' );
 			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
 				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
 			}
