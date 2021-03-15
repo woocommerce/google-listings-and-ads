@@ -11,7 +11,7 @@
     "google/apiclient": "^2.7",
     "googleads/google-ads-php": "^6.1",
     "league/container": "^3.3",
-    "league/iso3166": "^3.0",
+    "league/iso3166": "^2.1",
     "symfony/validator": "^5.2",
     "ext-json": "*"
   },
@@ -35,7 +35,7 @@
   },
   "config": {
     "platform": {
-      "php": "7.4"
+      "php": "7.2.34"
     },
     "sort-packages": true
   },
