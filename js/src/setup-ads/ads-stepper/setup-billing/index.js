@@ -71,7 +71,10 @@ const SetupBilling = () => {
 			{ billingStatus.status === 'approved' && (
 				<StepContentFooter>
 					<AppButton isPrimary onClick={ handleLaunchClick }>
-						{ __( 'Launch campaign', 'google-listings-and-ads' ) }
+						{ __(
+							'Launch paid campaign',
+							'google-listings-and-ads'
+						) }
 					</AppButton>
 				</StepContentFooter>
 			) }
