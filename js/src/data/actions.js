@@ -337,7 +337,7 @@ export function* fetchGoogleAdsAccountBillingStatus() {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error loading shipping rates.',
+				'There was an error getting the billing status of your Google Ads account.',
 				'google-listings-and-ads'
 			)
 		);
