@@ -655,9 +655,9 @@ class AccountController extends BaseOptionsController {
 				409,
 				null,
 				[
-					'action'  => 'feed-overwrite',
-					'id'      => $account_id,
-					'url' => $this->strip_url_protocol( apply_filters( 'woocommerce_gla_site_url', site_url() ) ),
+					'action' => 'feed-overwrite',
+					'id'     => $account_id,
+					'url'    => $this->strip_url_protocol( apply_filters( 'woocommerce_gla_site_url', site_url() ) ),
 				]
 			);
 		}
