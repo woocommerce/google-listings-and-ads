@@ -63,7 +63,7 @@ class ReportsController extends BaseReportsController {
 	protected function get_schema_properties(): array {
 		return [
 			'sales'     => [
-				'type'        => 'string',
+				'type'        => 'number',
 				'description' => __( 'Total sales amount.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
@@ -88,7 +88,7 @@ class ReportsController extends BaseReportsController {
 							'context'     => [ 'view', 'edit' ],
 						],
 						'sales'  => [
-							'type'        => 'string',
+							'type'        => 'number',
 							'description' => __( 'Sales amount.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
