@@ -206,4 +206,17 @@ class Merchant {
 
 		return true;
 	}
+
+	/**
+	 * Check whether the default (or provided) Merchant Center account has product/data feeds.
+	 *
+	 * @param int $id Optional - the MC account to check for feeds.
+	 *
+	 * @return bool True if the MC account has existing product feeds.
+	 */
+	public function has_product_feeds( int $id = 0 ): bool {
+		$id    = $id ?: $this->get_id();
+		$feeds = $this->service->datafeeds->listDatafeeds( $id );
+		return ! empty( $feeds->getResources() );
+	}
 }
