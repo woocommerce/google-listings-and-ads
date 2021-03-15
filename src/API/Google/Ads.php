@@ -596,8 +596,7 @@ class Ads {
 			// Create the conversion.
 			$response = $client->getConversionActionServiceClient()->mutateConversionActions(
 				$this->get_id(),
-				[ $conversion_action_operation ],
-				$this->get_args()
+				[ $conversion_action_operation ]
 			);
 
 			/** @var MutateConversionActionResult $added_conversion_action */
@@ -633,7 +632,7 @@ class Ads {
 
 			/** @var ConversionActionServiceClient $ca_client */
 			$ca_client         = $this->container->get( GoogleAdsClient::class )->getConversionActionServiceClient();
-			$conversion_action = $ca_client->getConversionAction( $resource_name, $this->get_args() );
+			$conversion_action = $ca_client->getConversionAction( $resource_name );
 
 			return $this->convert_conversion_action( $conversion_action );
 		} catch ( Exception $e ) {
