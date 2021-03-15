@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Google\ApiCore\ApiException;
+use GuzzleHttp\Exception\BadResponseException;
+use Psr\Http\Client\ClientExceptionInterface;
 
 /**
  * Trait ApiExceptionTrait
@@ -39,5 +41,22 @@ trait ApiExceptionTrait {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get an error message from a ClientException.
+	 *
+	 * @param ClientExceptionInterface $exception Exception to check.
+	 * @param string                   $default   Default error message.
+	 *
+	 * @return string
+	 */
+	protected function client_exception_message( ClientExceptionInterface $exception, string $default ): string {
+		if ( $exception instanceof BadResponseException ) {
+			$response = json_decode( $exception->getResponse()->getBody()->getContents(), true );
+			$message  = $response['message'] ?? false;
+			return $message ? $default . ': ' . $message : $default;
+		}
+		return $default;
 	}
 }
