@@ -1,0 +1,17 @@
+.gla-google-ads-billing-saved-card {
+	&__account-number {
+		margin-bottom: calc(var(--main-gap) / 2);
+	}
+
+	&__description {
+		display: flex;
+		gap: calc(var(--main-gap) / 3);
+		align-items: center;
+		font-style: italic;
+
+		svg {
+			fill: #4ab866;
+			flex: 0 0 auto;
+		}
+	}
+}

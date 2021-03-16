@@ -17,7 +17,8 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 
-const CreateCampaign = () => {
+const CreateCampaign = ( props ) => {
+	const { onContinue = () => {} } = props;
 	const [ fetchCreateCampaign, { loading } ] = useApiFetchCallback();
 	const { createNotice } = useDispatchCoreNotices();
 
@@ -43,7 +44,7 @@ const CreateCampaign = () => {
 				},
 			} );
 
-			// TODO: check ads account billing status and show the next page.
+			onContinue();
 		} catch ( e ) {
 			createNotice(
 				'error',
