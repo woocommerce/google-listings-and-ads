@@ -30,6 +30,8 @@ trait AdsReportTrait {
 	 */
 	public function get_report_data( array $args ): array {
 		try {
+			$args['fields'] = [ 'spend', 'sales' ];
+
 			$this->report_data = [
 				'campaigns' => [],
 				'intervals' => [],
@@ -39,7 +41,7 @@ trait AdsReportTrait {
 
 			$response = $this->query( $this->get_report_query( $args ) );
 			foreach ( $response->iterateAllElements() as $row ) {
-				$this->add_report_row( $row, $args['interval'] ?? '' );
+				$this->add_report_row( $row, $args );
 			}
 
 			return $this->report_data;
@@ -54,57 +56,102 @@ trait AdsReportTrait {
 	/**
 	 * Add data for a report row.
 	 *
-	 * @param GoogleAdsRow $row      Report row.
-	 * @param string       $interval Segment interval.
+	 * @param GoogleAdsRow $row  Report row.
+	 * @param array        $args Request arguments.
 	 */
-	protected function add_report_row( GoogleAdsRow $row, string $interval ) {
-		$campaign_spend = 0;
-		$campaign_sales = 0;
-
+	protected function add_report_row( GoogleAdsRow $row, array $args ) {
 		$campaign = $row->getCampaign();
-		$metrics  = $row->getMetrics();
 		$segments = $row->getSegments();
+		$metrics  = $this->get_report_row_metrics( $row, $args );
 
-		if ( $metrics ) {
-			$campaign_spend = $this->from_micro( $metrics->getCostMicros() );
-			$campaign_sales = $metrics->getConversionsValue();
+		if ( $campaign ) {
+			$campaign_id = $campaign->getId();
+			$this->increase_report_data(
+				'campaigns',
+				(string) $campaign_id,
+				[
+					'id'        => $campaign_id,
+					'name'      => $campaign->getName(),
+					'status'    => CampaignStatus::label( $campaign->getStatus() ),
+					'subtotals' => $metrics,
+				]
+			);
 		}
 
-		if ( $segments && ! empty( $interval ) ) {
-			$index = $this->get_segment_interval( $interval, $segments );
+		if ( $segments && ! empty( $args['interval'] ) ) {
+			$interval = $this->get_segment_interval( $args['interval'], $segments );
 
-			if ( ! isset( $this->report_data['intervals'][ $index ] ) ) {
-				$this->report_data['intervals'][ $index ] = [
-					'interval'  => $index,
-					'subtotals' => [
-						'spend' => $campaign_spend,
-						'sales' => $campaign_sales,
-					],
-				];
-			} else {
-				$this->report_data['intervals'][ $index ]['subtotals']['spend'] += $campaign_spend;
-				$this->report_data['intervals'][ $index ]['subtotals']['sales'] += $campaign_sales;
+			$this->increase_report_data(
+				'intervals',
+				$interval,
+				[
+					'interval'  => $interval,
+					'subtotals' => $metrics,
+				]
+			);
+		}
+
+		$this->increase_report_totals( $metrics );
+	}
+
+	/**
+	 * Get metrics for a report row.
+	 *
+	 * @param GoogleAdsRow $row  Report row.
+	 * @param array        $args Request arguments.
+	 */
+	protected function get_report_row_metrics( GoogleAdsRow $row, array $args ) {
+		$metrics = $row->getMetrics();
+
+		if ( ! $metrics || empty( $args['fields'] ) ) {
+			return [];
+		}
+
+		$data = [];
+		foreach ( $args['fields'] as $field ) {
+			switch ( $field ) {
+				case 'spend':
+					$data['spend'] = $this->from_micro( $metrics->getCostMicros() );
+					break;
+				case 'sales':
+					$data['sales'] = $metrics->getConversionsValue();
+					break;
 			}
 		}
 
-		$campaign_id = $campaign->getId();
-		if ( ! isset( $this->report_data['campaigns'][ $campaign_id ] ) ) {
-			$this->report_data['campaigns'][ $campaign_id ] = [
-				'id'        => $campaign_id,
-				'name'      => $campaign->getName(),
-				'status'    => CampaignStatus::label( $campaign->getStatus() ),
-				'subtotals' => [
-					'spend' => $campaign_spend,
-					'sales' => $campaign_sales,
-				],
-			];
-		} else {
-			$this->report_data['campaigns'][ $campaign_id ]['subtotals']['spend'] += $campaign_spend;
-			$this->report_data['campaigns'][ $campaign_id ]['subtotals']['sales'] += $campaign_sales;
-		}
+		return $data;
+	}
 
-		$this->report_data['spend'] += $campaign_spend;
-		$this->report_data['sales'] += $campaign_sales;
+	/**
+	 * Increase report data by adding the subtotals.
+	 *
+	 * @param string $field Field to increase.
+	 * @param string $index Unique index.
+	 * @param array  $data  Report data.
+	 */
+	protected function increase_report_data( string $field, string $index, array $data ) {
+		if ( ! isset( $this->report_data[ $field ][ $index ] ) ) {
+			$this->report_data[ $field ][ $index ] = $data;
+		} elseif ( ! empty( $data['subtotals'] ) ) {
+			foreach ( $data['subtotals'] as $name => $subtotal ) {
+				$this->report_data[ $field ][ $index ]['subtotals'][ $name ] += $subtotal;
+			}
+		}
+	}
+
+	/**
+	 * Increase report totals.
+	 *
+	 * @param array $data Totals data.
+	 */
+	protected function increase_report_totals( array $data ) {
+		foreach ( $data as $name => $total ) {
+			if ( ! isset( $this->report_data['totals'][ $name ] ) ) {
+				$this->report_data['totals'][ $name ] = $total;
+			} else {
+				$this->report_data['totals'][ $name ] += $total;
+			}
+		}
 	}
 
 	/**
@@ -119,21 +166,10 @@ trait AdsReportTrait {
 			'campaign.id',
 			'campaign.name',
 			'campaign.status',
-			'metrics.cost_micros',
-			'metrics.conversions_value',
 		];
 
-		$segments_field = [
-			'day'     => 'segments.date',
-			'week'    => 'segments.week',
-			'month'   => 'segments.month',
-			'quarter' => 'segments.quarter',
-			'year'    => 'segments.year',
-		];
-
-		if ( ! empty( $args['interval'] ) && array_key_exists( $args['interval'], $segments_field ) ) {
-			$fields[] = $segments_field[ $args['interval'] ];
-		}
+		$fields = $this->add_report_query_fields( $fields, $args );
+		$fields = $this->add_report_query_interval( $fields, $args );
 
 		$condition = [
 			'key'      => 'segments.date',
@@ -145,6 +181,67 @@ trait AdsReportTrait {
 		];
 
 		return $this->build_query( $fields, 'campaign', [ $condition ] );
+	}
+
+	/**
+	 * Add all mapped fields.
+	 *
+	 * @param array $fields List of query fields.
+	 * @param array $args   Query arguments.
+	 *
+	 * @return array
+	 */
+	protected function add_report_query_fields( array $fields, array $args ): array {
+		if ( empty( $args['fields'] ) ) {
+			return $fields;
+		}
+
+		foreach ( $args['fields'] as $field ) {
+			switch ( $field ) {
+				case 'spend':
+					$fields[] = 'metrics.cost_micros';
+					break;
+				case 'sales':
+					$fields[] = 'metrics.conversions_value';
+					break;
+			}
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Add an optional segment interval to the query.
+	 *
+	 * @param array $fields List of query fields.
+	 * @param array $args Query arguments.
+	 *
+	 * @return array
+	 */
+	protected function add_report_query_interval( array $fields, array $args ): array {
+		if ( empty( $args['interval'] ) ) {
+			return $fields;
+		}
+
+		switch ( $args['interval'] ) {
+			case 'day':
+				$fields[] = 'segments.date';
+				break;
+			case 'week':
+				$fields[] = 'segments.week';
+				break;
+			case 'month':
+				$fields[] = 'segments.month';
+				break;
+			case 'quarter':
+				$fields[] = 'segments.quarter';
+				break;
+			case 'year':
+				$fields[] = 'segments.year';
+				break;
+		}
+
+		return $fields;
 	}
 
 	/**

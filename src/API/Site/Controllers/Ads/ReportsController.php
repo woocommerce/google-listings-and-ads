@@ -62,16 +62,6 @@ class ReportsController extends BaseReportsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'sales'     => [
-				'type'        => 'number',
-				'description' => __( 'Total sales amount.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-			],
-			'spend'     => [
-				'type'        => 'number',
-				'description' => __( 'Total spend.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-			],
 			'campaigns' => [
 				'type'  => 'array',
 				'items' => [
@@ -93,28 +83,46 @@ class ReportsController extends BaseReportsController {
 							'description' => __( 'Campaign status.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'subtotals' => [
-							'type'       => 'object',
-							'properties' => [
-								'sales' => [
-									'type'        => 'number',
-									'description' => __( 'Sales amount.', 'google-listings-and-ads' ),
-									'context'     => [ 'view' ],
-								],
-								'spend' => [
-									'type'        => 'number',
-									'description' => __( 'Spend.', 'google-listings-and-ads' ),
-									'context'     => [ 'view' ],
-								],
-							],
-						],
+						'subtotals' => $this->get_totals_schema(),
 					],
 				],
 			],
 			'intervals' => [
 				'type'  => 'array',
 				'items' => [
-					'type' => 'object',
+					'type'       => 'object',
+					'properties' => [
+						'interval'  => [
+							'type'        => 'string',
+							'description' => __( 'ID of this report segment.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'subtotals' => $this->get_totals_schema(),
+					],
+				],
+			],
+			'totals'    => $this->get_totals_schema(),
+		];
+	}
+
+	/**
+	 * Return schema for total fields.
+	 *
+	 * @return array
+	 */
+	protected function get_totals_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'sales' => [
+					'type'        => 'number',
+					'description' => __( 'Sales amount.', 'google-listings-and-ads' ),
+					'context'     => [ 'view' ],
+				],
+				'spend' => [
+					'type'        => 'number',
+					'description' => __( 'Spend amount.', 'google-listings-and-ads' ),
+					'context'     => [ 'view' ],
 				],
 			],
 		];
