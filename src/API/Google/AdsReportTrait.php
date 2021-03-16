@@ -35,6 +35,12 @@ trait AdsReportTrait {
 				$this->add_report_row( $row, $args );
 			}
 
+			// Remove index from arrays to conform to schema.
+			$this->report_data['campaigns'] = array_values( $this->report_data['campaigns'] );
+			if ( isset( $this->report_data['intervals'] ) ) {
+				$this->report_data['intervals'] = array_values( $this->report_data['intervals'] );
+			}
+
 			return $this->report_data;
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
