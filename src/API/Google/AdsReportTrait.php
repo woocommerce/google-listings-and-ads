@@ -30,15 +30,6 @@ trait AdsReportTrait {
 	 */
 	public function get_report_data( array $args ): array {
 		try {
-			$args['fields'] = [ 'spend', 'sales' ];
-
-			$this->report_data = [
-				'campaigns' => [],
-				'intervals' => [],
-				'spend'     => 0,
-				'sales'     => 0,
-			];
-
 			$response = $this->query( $this->get_report_query( $args ) );
 			foreach ( $response->iterateAllElements() as $row ) {
 				$this->add_report_row( $row, $args );
@@ -110,6 +101,12 @@ trait AdsReportTrait {
 		$data = [];
 		foreach ( $args['fields'] as $field ) {
 			switch ( $field ) {
+				case 'clicks':
+					$data['clicks'] = $metrics->getClicks();
+					break;
+				case 'impressions':
+					$data['impressions'] = $metrics->getImpressions();
+					break;
 				case 'spend':
 					$data['spend'] = $this->from_micro( $metrics->getCostMicros() );
 					break;
@@ -198,6 +195,12 @@ trait AdsReportTrait {
 
 		foreach ( $args['fields'] as $field ) {
 			switch ( $field ) {
+				case 'clicks':
+					$fields[] = 'metrics.clicks';
+					break;
+				case 'impressions':
+					$fields[] = 'metrics.impressions';
+					break;
 				case 'spend':
 					$fields[] = 'metrics.cost_micros';
 					break;
