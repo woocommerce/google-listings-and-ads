@@ -607,7 +607,12 @@ class Ads {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 			$message = $e->getMessage();
 			if ( $e instanceof ApiException ) {
-				$message = $e->getBasicMessage();
+
+				if ( $this->has_api_exception_error( $e, 'DUPLICATE_NAME' ) ) {
+					$message = __( 'A conversion action with this name already exists', 'google-listings-and-ads' );
+				} else {
+					$message = $e->getBasicMessage();
+				}
 			}
 
 			/* translators: %s Error message */
