@@ -7,12 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\QueryTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Exception;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\V6\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V6\Resources\MerchantCenterLink;
 use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkOperation;
 use Google\ApiCore\ApiException;
-use Exception;
 use Google\ApiCore\ValidationException;
 
 defined( 'ABSPATH' ) || exit;
