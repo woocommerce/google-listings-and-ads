@@ -575,10 +575,13 @@ class Ads {
 			$conversion_action_operation->setCreate(
 				new ConversionAction(
 					[
-						'name'           => sprintf(
+						'name'           => apply_filters(
+							'woocommerce_gla_conversion_action_name',
+							sprintf(
 							/* translators: %1 is a random 4-digit string */
-							__( '[%1$s] Google Listings and Ads purchase action', 'google-listings-and-ads' ),
-							$unique
+								__( '[%1$s] Google Listings and Ads purchase action', 'google-listings-and-ads' ),
+								$unique
+							)
 						),
 						'category'       => ConversionActionCategory::PURCHASE,
 						'type'           => ConversionActionType::WEBPAGE,
