@@ -100,7 +100,7 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 		}
 
 		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
-		if ( ! empty( $internal_error_products ) ) {
+		if ( ! empty( $internal_error_products ) && apply_filters( 'gla_products_update_retry_on_failure', true, $invalid_products ) ) {
 			do_action( 'gla_batch_retry_update_products', $internal_error_products );
 		}
 
@@ -167,7 +167,7 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 		}
 
 		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
-		if ( ! empty( $internal_error_products ) ) {
+		if ( ! empty( $internal_error_products ) && apply_filters( 'gla_products_delete_retry_on_failure', true, $invalid_products ) ) {
 			$id_map     = BatchProductRequestEntry::convert_to_id_map( $product_entries );
 			$failed_ids = array_intersect( $id_map->get(), $internal_error_products );
 
