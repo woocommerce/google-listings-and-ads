@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0ddfa81df3e1a977ccd0c3334a46ef38",
+    "content-hash": "1e414ae986b0c345e5f03e9632e30b9c",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1222,21 +1222,21 @@
         },
         {
             "name": "league/container",
-            "version": "3.3.4",
+            "version": "3.3.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/container.git",
-                "reference": "40aed0f11d16bc23f9d04a27acc3549cd1bb42ab"
+                "reference": "048ab87810f508dbedbcb7ae941b606eb8ee353b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/container/zipball/40aed0f11d16bc23f9d04a27acc3549cd1bb42ab",
-                "reference": "40aed0f11d16bc23f9d04a27acc3549cd1bb42ab",
+                "url": "https://api.github.com/repos/thephpleague/container/zipball/048ab87810f508dbedbcb7ae941b606eb8ee353b",
+                "reference": "048ab87810f508dbedbcb7ae941b606eb8ee353b",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.0 || ^8.0",
-                "psr/container": "^1.0"
+                "psr/container": "^1.0.0 || ^2.0.0"
             },
             "provide": {
                 "psr/container-implementation": "^1.0"
@@ -1289,7 +1289,7 @@
             ],
             "support": {
                 "issues": "https://github.com/thephpleague/container/issues",
-                "source": "https://github.com/thephpleague/container/tree/3.3.4"
+                "source": "https://github.com/thephpleague/container/tree/3.3.5"
             },
             "funding": [
                 {
@@ -1297,28 +1297,27 @@
                     "type": "github"
                 }
             ],
-            "time": "2021-02-22T10:35:05+00:00"
+            "time": "2021-03-16T09:42:56+00:00"
         },
         {
             "name": "league/iso3166",
-            "version": "2.1.5",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/iso3166.git",
-                "reference": "aed3b32fc293afdf2c6c6a322c2408eb5d20804a"
+                "reference": "9976d382f270ad3f3df8a68719beb7a7179ffa1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/iso3166/zipball/aed3b32fc293afdf2c6c6a322c2408eb5d20804a",
-                "reference": "aed3b32fc293afdf2c6c6a322c2408eb5d20804a",
+                "url": "https://api.github.com/repos/thephpleague/iso3166/zipball/9976d382f270ad3f3df8a68719beb7a7179ffa1e",
+                "reference": "9976d382f270ad3f3df8a68719beb7a7179ffa1e",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.0"
+                "php": "^7.3|^8.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.12",
-                "phpunit/phpunit": "^5.7.11 || ^6.0 || ^7.0"
+                "phpunit/phpunit": "^9.0"
             },
             "type": "library",
             "extra": {
@@ -1355,7 +1354,7 @@
                 "issues": "https://github.com/thephpleague/iso3166/issues",
                 "source": "https://github.com/thephpleague/iso3166"
             },
-            "time": "2020-01-29T07:08:12+00:00"
+            "time": "2020-12-05T06:50:42+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -1732,22 +1731,27 @@
         },
         {
             "name": "psr/container",
-            "version": "1.1.1",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/container.git",
-                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf"
+                "reference": "68f5200c33f18c018db17eb869d4b0f97da17cad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/container/zipball/8622567409010282b7aeebe4bb841fe98b58dcaf",
-                "reference": "8622567409010282b7aeebe4bb841fe98b58dcaf",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/68f5200c33f18c018db17eb869d4b0f97da17cad",
+                "reference": "68f5200c33f18c018db17eb869d4b0f97da17cad",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2.0"
             },
             "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Psr\\Container\\": "src/"
@@ -1774,9 +1778,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-fig/container/issues",
-                "source": "https://github.com/php-fig/container/tree/1.1.1"
+                "source": "https://github.com/php-fig/container/tree/2.0.0"
             },
-            "time": "2021-03-05T17:36:06+00:00"
+            "time": "2021-03-05T16:02:18+00:00"
         },
         {
             "name": "psr/http-client",
@@ -4403,12 +4407,12 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.1",
+        "php": ">=7.3",
         "ext-json": "*"
     },
     "platform-dev": [],
     "platform-overrides": {
-        "php": "7.2.34"
+        "php": "7.3.27"
     },
     "plugin-api-version": "2.0.0"
 }

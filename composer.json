@@ -1,17 +1,18 @@
 {
   "name": "woocommerce/google-listings-and-ads",
   "type": "wordpress-plugin",
+  "description": "Native integration with Google that allows merchants to easily display their products across Google’s network.",
   "prefer-stable": true,
   "minimum-stability": "dev",
   "require": {
-    "php": ">=7.1",
+    "php": ">=7.3",
     "automattic/jetpack-autoloader": "^2.4",
     "automattic/jetpack-config": "^1.4",
     "automattic/jetpack-connection": "^1.20",
     "google/apiclient": "^2.7",
     "googleads/google-ads-php": "^6.1",
     "league/container": "^3.3",
-    "league/iso3166": "^2.1",
+    "league/iso3166": "^3.0",
     "symfony/validator": "^5.2",
     "ext-json": "*"
   },
@@ -35,7 +36,7 @@
   },
   "config": {
     "platform": {
-      "php": "7.2.34"
+      "php": "7.3.27"
     },
     "sort-packages": true
   },
