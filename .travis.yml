@@ -17,9 +17,8 @@ cache:
 
 # Test supported versions of PHP, WP and WC and the WC master branch.
 php:
-  - 7.1
-  - 7.2
   - 7.3
+  - 7.4
 
 env:
   global:
@@ -38,7 +37,7 @@ matrix:
   fast_finish: true
   include:
     - name: "Coding standard check"
-      php: 7.3
+      php: 7.4
       env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=cs WP_MULTISITE=0
 
 before_script:
@@ -50,7 +49,7 @@ before_script:
       echo "xdebug.ini does not exist"
     fi
   - nvm install 10
-  - composer update
+  - composer install
 #  - bash tests/install/install-wp-tests.sh
 
 script:
