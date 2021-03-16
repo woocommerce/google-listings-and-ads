@@ -40,13 +40,15 @@ abstract class BaseReportsController extends BaseController {
 	 */
 	protected function prepare_query_arguments( Request $request ) {
 		$args = [
-			'before' => $request['before'],
-			'after'  => $request['after'],
+			'before'   => $request['before'],
+			'after'    => $request['after'],
+			'interval' => $request['interval'],
 		];
 
 		$defaults = [
-			'before' => TimeInterval::default_before(),
-			'after'  => TimeInterval::default_after(),
+			'before'   => TimeInterval::default_before(),
+			'after'    => TimeInterval::default_after(),
+			'interval' => '',
 		];
 
 		$args = wp_parse_args( $args, $defaults );

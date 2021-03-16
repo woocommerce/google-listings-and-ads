@@ -77,33 +77,44 @@ class ReportsController extends BaseReportsController {
 				'items' => [
 					'type'       => 'object',
 					'properties' => [
-						'id'     => [
+						'id'        => [
 							'type'        => 'integer',
 							'description' => __( 'ID number.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'name'   => [
+						'name'      => [
 							'type'        => 'string',
 							'description' => __( 'Campaign name.', 'google-listings-and-ads' ),
 							'context'     => [ 'view', 'edit' ],
 						],
-						'sales'  => [
-							'type'        => 'number',
-							'description' => __( 'Sales amount.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'spend'  => [
-							'type'        => 'number',
-							'description' => __( 'Spend.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'status' => [
+						'status'    => [
 							'type'        => 'string',
 							'enum'        => CampaignStatus::labels(),
 							'description' => __( 'Campaign status.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
+						'subtotals' => [
+							'type'       => 'object',
+							'properties' => [
+								'sales' => [
+									'type'        => 'number',
+									'description' => __( 'Sales amount.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+								'spend' => [
+									'type'        => 'number',
+									'description' => __( 'Spend.', 'google-listings-and-ads' ),
+									'context'     => [ 'view' ],
+								],
+							],
+						],
 					],
+				],
+			],
+			'intervals' => [
+				'type'  => 'array',
+				'items' => [
+					'type' => 'object',
 				],
 			],
 		];
