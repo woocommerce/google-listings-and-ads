@@ -153,11 +153,11 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * The job is considered to be running if a "create_batch" action is currently pending or in-progress.
 	 *
-	 * @param array $args
+	 * @param array|null $args
 	 *
 	 * @return bool
 	 */
-	protected function is_running( array $args = [] ): bool {
+	protected function is_running( $args = [] ): bool {
 		return $this->action_scheduler->has_scheduled_action( $this->get_create_batch_hook(), $args );
 	}
 

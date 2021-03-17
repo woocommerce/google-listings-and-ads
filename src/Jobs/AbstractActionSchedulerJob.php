@@ -43,11 +43,11 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	/**
 	 * Can the job start.
 	 *
-	 * @param array $args
+	 * @param array|null $args
 	 *
 	 * @return bool Returns true if the job can start.
 	 */
-	public function can_start( array $args = [] ): bool {
+	public function can_start( $args = [] ): bool {
 		return ! $this->is_running( $args );
 	}
 
@@ -56,11 +56,11 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 *
 	 * The job is considered to be running if the "process_item" action is currently pending or in-progress.
 	 *
-	 * @param array $args
+	 * @param array|null $args
 	 *
 	 * @return bool
 	 */
-	protected function is_running( array $args = [] ): bool {
+	protected function is_running( $args = [] ): bool {
 		return $this->action_scheduler->has_scheduled_action( $this->get_process_item_hook(), $args );
 	}
 
