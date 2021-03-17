@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
@@ -16,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 trait MerchantCenterTrait {
 
 	use OptionsAwareTrait;
+	use GoogleHelper;
 
 	/**
 	 * Get whether Merchant Center setup is completed.
@@ -54,9 +56,9 @@ trait MerchantCenterTrait {
 	protected function is_language_supported( string $language = '' ): bool {
 		// Default to base site language
 		if ( empty( $language ) ) {
-			$language = '';
+			$language = substr( get_locale(), 0, 2 );
 		}
 
-		return true;
+		return in_array( $language, $this->get_mc_supported_languages(), true );
 	}
 }
