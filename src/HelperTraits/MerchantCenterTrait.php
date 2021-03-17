@@ -59,6 +59,10 @@ trait MerchantCenterTrait {
 			$language = substr( get_locale(), 0, 2 );
 		}
 
-		return in_array( $language, $this->get_mc_supported_languages(), true );
+		return in_array(
+			strtolower( $language ),
+			$this->get_mc_supported_languages(),
+			true
+		);
 	}
 }
