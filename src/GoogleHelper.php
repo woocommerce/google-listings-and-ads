@@ -11,7 +11,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 trait GoogleHelper {
 
 	/**
-	 * Get an array of merchant center supported countries and currencies.
+	 * Get an array of Google Merchant Center supported countries and currencies.
 	 *
 	 * Note - Other currencies may be supported using currency conversion.
 	 *
