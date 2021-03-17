@@ -44,15 +44,13 @@ class RefreshSyncedProducts extends AbstractProductSyncerBatchedJob {
 	 * @param array $args
 	 */
 	public function start( array $args = [] ) {
-		if ( $this->can_start( $args ) ) {
-			$args = $args[0] ?? [];
-			$ids  = array_filter( $args, 'is_integer' );
+		$args = $args[0] ?? [];
+		$ids  = array_filter( $args, 'is_integer' );
 
-			if ( ! empty( $ids ) ) {
-				$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $ids ] );
-			} else {
-				parent::start();
-			}
+		if ( ! empty( $ids ) ) {
+			$this->schedule_process_action( $ids );
+		} else {
+			parent::start();
 		}
 	}
 
