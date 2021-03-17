@@ -23,22 +23,24 @@ trait AdsReportTrait {
 	/**
 	 * Get report data for campaigns.
 	 *
-	 * @param array $args Query arguments.
+	 * @param string $type Report type (campaigns or products).
+	 * @param array  $args Query arguments.
 	 *
 	 * @return array
 	 * @throws Exception If the report data can't be retrieved.
 	 */
-	public function get_report_data( array $args ): array {
+	public function get_report_data( string $type, array $args ): array {
 		try {
-			$response = $this->query( $this->get_report_query( $args ) );
+			$response = $this->query( $this->get_report_query( $type, $args ) );
 			foreach ( $response->iterateAllElements() as $row ) {
-				$this->add_report_row( $row, $args );
+				$this->add_report_row( $type, $row, $args );
 			}
 
 			// Remove index from arrays to conform to schema.
-			$this->report_data['campaigns'] = array_values( $this->report_data['campaigns'] );
-			if ( isset( $this->report_data['intervals'] ) ) {
-				$this->report_data['intervals'] = array_values( $this->report_data['intervals'] );
+			foreach ( [ 'products', 'campaigns', 'intervals' ] as $key ) {
+				if ( isset( $this->report_data[ $key ] ) ) {
+					$this->report_data[ $key ] = array_values( $this->report_data[ $key ] );
+				}
 			}
 
 			return $this->report_data;
@@ -53,15 +55,29 @@ trait AdsReportTrait {
 	/**
 	 * Add data for a report row.
 	 *
+	 * @param string       $type Report type (campaigns or products).
 	 * @param GoogleAdsRow $row  Report row.
 	 * @param array        $args Request arguments.
 	 */
-	protected function add_report_row( GoogleAdsRow $row, array $args ) {
+	protected function add_report_row( string $type, GoogleAdsRow $row, array $args ) {
 		$campaign = $row->getCampaign();
 		$segments = $row->getSegments();
 		$metrics  = $this->get_report_row_metrics( $row, $args );
 
-		if ( $campaign ) {
+		if ( 'products' === $type && $segments ) {
+			$product_id = $segments->getProductItemId();
+			$this->increase_report_data(
+				'products',
+				(string) $product_id,
+				[
+					'id'        => $product_id,
+					'name'      => $segments->getProductTitle(),
+					'subtotals' => $metrics,
+				]
+			);
+		}
+
+		if ( 'campaigns' === $type && $campaign ) {
 			$campaign_id = $campaign->getId();
 			$this->increase_report_data(
 				'campaigns',
@@ -119,6 +135,9 @@ trait AdsReportTrait {
 				case 'sales':
 					$data['sales'] = $metrics->getConversionsValue();
 					break;
+				case 'conversions':
+					$data['conversions'] = $metrics->getConversions();
+					break;
 			}
 		}
 
@@ -160,16 +179,24 @@ trait AdsReportTrait {
 	/**
 	 * Get report query.
 	 *
-	 * @param array $args Query arguments.
+	 * @param string $type Report type (campaigns or products).
+	 * @param array  $args Query arguments.
 	 *
 	 * @return string
 	 */
-	protected function get_report_query( array $args ): string {
-		$fields = [
-			'campaign.id',
-			'campaign.name',
-			'campaign.status',
-		];
+	protected function get_report_query( string $type, array $args ): string {
+		if ( 'products' === $type ) {
+			$fields = [
+				'segments.product_item_id',
+				'segments.product_title',
+			];
+		} else {
+			$fields = [
+				'campaign.id',
+				'campaign.name',
+				'campaign.status',
+			];
+		}
 
 		$fields = $this->add_report_query_fields( $fields, $args );
 		$fields = $this->add_report_query_interval( $fields, $args );
@@ -183,7 +210,7 @@ trait AdsReportTrait {
 			],
 		];
 
-		return $this->build_query( $fields, 'campaign', [ $condition ] );
+		return $this->build_query( $fields, 'shopping_performance_view', [ $condition ] );
 	}
 
 	/**
@@ -212,6 +239,9 @@ trait AdsReportTrait {
 					break;
 				case 'sales':
 					$fields[] = 'metrics.conversions_value';
+					break;
+				case 'conversions':
+					$fields[] = 'metrics.conversions';
 					break;
 			}
 		}

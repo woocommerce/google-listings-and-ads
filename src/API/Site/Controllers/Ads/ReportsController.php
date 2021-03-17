@@ -25,11 +25,23 @@ class ReportsController extends BaseReportsController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'ads/reports',
+			'ads/reports/programs',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_reports_callback(),
+					'callback'            => $this->get_programs_report_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
+
+		$this->register_route(
+			'ads/reports/products',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_products_report_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -38,16 +50,34 @@ class ReportsController extends BaseReportsController {
 	}
 
 	/**
-	 * Get the callback function for the reports request.
+	 * Get the callback function for the programs report request.
 	 *
 	 * @return callable
 	 */
-	protected function get_reports_callback(): callable {
+	protected function get_programs_report_callback(): callable {
 		return function( Request $request ) {
 			try {
 				/** @var Ads $ads */
 				$ads  = $this->container->get( Ads::class );
-				$data = $ads->get_report_data( $this->prepare_query_arguments( $request ) );
+				$data = $ads->get_report_data( 'campaigns', $this->prepare_query_arguments( $request ) );
+				return $this->prepare_item_for_response( $data, $request );
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function for the products report request.
+	 *
+	 * @return callable
+	 */
+	protected function get_products_report_callback(): callable {
+		return function( Request $request ) {
+			try {
+				/** @var Ads $ads */
+				$ads  = $this->container->get( Ads::class );
+				$data = $ads->get_report_data( 'products', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
@@ -62,6 +92,25 @@ class ReportsController extends BaseReportsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
+			'products'  => [
+				'type'  => 'array',
+				'items' => [
+					'type'       => 'object',
+					'properties' => [
+						'id'        => [
+							'type'        => 'string',
+							'description' => __( 'Product ID.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'name'      => [
+							'type'        => 'string',
+							'description' => __( 'Product name.', 'google-listings-and-ads' ),
+							'context'     => [ 'view', 'edit' ],
+						],
+						'subtotals' => $this->get_totals_schema(),
+					],
+				],
+			],
 			'campaigns' => [
 				'type'  => 'array',
 				'items' => [
@@ -114,14 +163,29 @@ class ReportsController extends BaseReportsController {
 		return [
 			'type'       => 'object',
 			'properties' => [
-				'sales' => [
+				'clicks'      => [
+					'type'        => 'integer',
+					'description' => __( 'Clicks.', 'google-listings-and-ads' ),
+					'context'     => [ 'view' ],
+				],
+				'impressions' => [
+					'type'        => 'integer',
+					'description' => __( 'Impressions.', 'google-listings-and-ads' ),
+					'context'     => [ 'view' ],
+				],
+				'sales'       => [
 					'type'        => 'number',
 					'description' => __( 'Sales amount.', 'google-listings-and-ads' ),
 					'context'     => [ 'view' ],
 				],
-				'spend' => [
+				'spend'       => [
 					'type'        => 'number',
 					'description' => __( 'Spend amount.', 'google-listings-and-ads' ),
+					'context'     => [ 'view' ],
+				],
+				'conversions' => [
+					'type'        => 'number',
+					'description' => __( 'Conversions.', 'google-listings-and-ads' ),
 					'context'     => [ 'view' ],
 				],
 			],
