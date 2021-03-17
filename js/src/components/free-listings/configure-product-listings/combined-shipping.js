@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -24,7 +24,20 @@ import './combined-shipping.scss';
  * @param {Object} props.formProps
  */
 const CombinedShipping = ( { formProps } ) => {
-	const { getInputProps } = formProps;
+	const { getInputProps, values } = formProps;
+
+	// Note: since we only use `shipping_rate` to determine how to syncboth shipping rates and times,
+	//       so here also only apply `shipping_rate` to initial form data and sync its manipulation.
+	// Please refer to the `should_sync_shipping` method in ~/src/API/Google/Settings.php
+	const [ shipping, setShipping ] = useState( values.shipping_rate );
+	const shippingProps = {
+		...getInputProps( 'shipping_rate' ),
+		onChange( value ) {
+			setShipping( value );
+			getInputProps( 'shipping_rate' ).onChange( value );
+			getInputProps( 'shipping_time' ).onChange( value );
+		},
+	};
 
 	return (
 		<Section
@@ -55,7 +68,7 @@ const CombinedShipping = ( { formProps } ) => {
 					<Section.Card.Body>
 						<VerticalGapLayout size="large">
 							<AppRadioContentControl
-								{ ...getInputProps( 'shipping_rate' ) }
+								{ ...shippingProps }
 								label={ __(
 									'I have a fairly simple shipping setup and I can estimate flat shipping rates and times.',
 									'google-listings-and-ads'
@@ -64,7 +77,7 @@ const CombinedShipping = ( { formProps } ) => {
 								collapsible
 							/>
 							<AppRadioContentControl
-								{ ...getInputProps( 'shipping_rate' ) }
+								{ ...shippingProps }
 								label={ __(
 									'I have a more complex shipping setup and I cannot estimate flat shipping rates and times.',
 									'google-listings-and-ads'
@@ -94,7 +107,7 @@ const CombinedShipping = ( { formProps } ) => {
 					</Section.Card.Body>
 				</Section.Card>
 
-				{ formProps.values.shipping_rate === 'flat' && (
+				{ shipping === 'flat' && (
 					<>
 						<Section.Card>
 							<Section.Card.Body>
