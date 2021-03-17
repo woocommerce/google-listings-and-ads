@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use WC_Countries;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -29,20 +30,22 @@ trait MerchantCenterTrait {
 	}
 
 	/**
-	 * Get whether the country is supported by the Merchant Center
+	 * Get whether the country is supported by the Merchant Center.
 	 *
-	 * TODO: actually determine if supported
-	 *
-	 * @param  string $country
-	 * @return bool
+	 * @param  string $country Optional - to check a country other than the site country.
+	 * @return bool True if the country is in the list of MC-supported countries.
 	 */
 	protected function is_country_supported( string $country = '' ): bool {
 		// Default to WooCommerce store country
 		if ( empty( $country ) ) {
-			$country = '';
+			$wc_countries = WC()->countries ?? new WC_Countries();
+			$country      = $wc_countries->get_base_country();
 		}
 
-		return true;
+		return array_key_exists(
+			strtoupper( $country ),
+			$this->get_mc_supported_countries()
+		);
 	}
 
 	/**
