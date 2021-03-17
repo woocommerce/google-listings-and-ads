@@ -18,8 +18,6 @@ trait GoogleHelper {
 	 * WooCommerce Countries -> https://github.com/woocommerce/woocommerce/blob/master/i18n/countries.php
 	 * Google Supported Countries -> https://support.google.com/merchants/answer/160637?hl=en
 	 *
-	 * Commented out countries are "listed" as beta countries.
-	 *
 	 * @param bool $include_beta Whether to include countries supported in Beta by Google.
 	 *
 	 * @return array
