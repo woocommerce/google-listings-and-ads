@@ -12,9 +12,9 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import ShippingRateSetup from './shipping-rate/shipping-rate-setup';
-import ShippingTimeSetup from './shipping-time/shipping-time-setup';
-import './combined-shipping.scss';
+import ShippingRateSetup from '../shipping-rate/shipping-rate-setup';
+import ShippingTimeSetup from '../shipping-time/shipping-time-setup';
+import './index.scss';
 
 /**
  * Form section to set shipping rate and price per country.
