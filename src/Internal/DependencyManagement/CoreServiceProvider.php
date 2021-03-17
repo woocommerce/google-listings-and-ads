@@ -161,7 +161,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share_with_tags( ProductRepository::class );
+		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share_with_tags(

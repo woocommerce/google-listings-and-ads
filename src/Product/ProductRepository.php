@@ -19,6 +19,20 @@ class ProductRepository implements Service {
 	use PluginHelper;
 
 	/**
+	 * @var ProductMetaHandler
+	 */
+	protected $meta_handler;
+
+	/**
+	 * ProductRepository constructor.
+	 *
+	 * @param ProductMetaHandler $meta_handler
+	 */
+	public function __construct( ProductMetaHandler $meta_handler ) {
+		$this->meta_handler = $meta_handler;
+	}
+
+	/**
 	 * Find and return an array of WooCommerce product objects based on the provided arguments.
 	 *
 	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
@@ -119,7 +133,9 @@ class ProductRepository implements Service {
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
 	public function find_sync_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): array {
-		return $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
+		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
+
+		return $this->filter_without_recent_sync_failure( $results, false );
 	}
 
 	/**
@@ -132,23 +148,36 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
-		return $this->find_ids( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
+		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
+
+		return $this->filter_without_recent_sync_failure( $results, true );
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs already submitted or ready to be submitted to Google Merchant Center.
+	 * Filters and returns a list of products that have not failed to sync recently
 	 *
-	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
-	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int   $offset Amount to offset product results.
+	 * @param WC_Product[] $products
+	 * @param bool         $return_ids
 	 *
-	 * @return int[] Array of WooCommerce product IDs
+	 * @return WC_Product[]
 	 */
-	public function find_sync_ready_or_synced_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query']      = $this->get_sync_ready_products_meta_query();
-		$args['meta_query'][0][] = $this->get_synced_products_meta_query()[0];
+	protected function filter_without_recent_sync_failure( array $products, $return_ids = false ): array {
+		$results = [];
+		foreach ( $products as $product ) {
+			$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product->get_id() );
+			$failed_at       = $this->meta_handler->get_sync_failed_at( $product->get_id() );
 
-		return $this->find_ids( $args, $limit, $offset );
+			// if it has failed less times than the specified threshold OR if syncing it hasn't failed within the specified window
+			if ( empty( $failed_attempts ) ||
+				 empty( $failed_at ) ||
+				 $failed_attempts <= ProductSyncer::FAILURE_THRESHOLD ||
+				 $failed_at <= strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) ) ) {
+
+				$results[] = $return_ids ? $product->get_id() : $product;
+			}
+		}
+
+		return $results;
 	}
 
 	/**
@@ -156,41 +185,15 @@ class ProductRepository implements Service {
 	 */
 	protected function get_sync_ready_products_meta_query(): array {
 		return [
-			'relation' => 'AND',
+			'relation' => 'OR',
 			[
-				'relation' => 'OR',
-				[
-					'key'     => ProductMetaHandler::KEY_VISIBILITY,
-					'compare' => 'NOT EXISTS',
-				],
-				[
-					'key'     => ProductMetaHandler::KEY_VISIBILITY,
-					'compare' => '!=',
-					'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
-				],
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => 'NOT EXISTS',
 			],
 			[
-				'relation' => 'OR',
-				[
-					'key'     => ProductMetaHandler::KEY_FAILED_SYNC_ATTEMPTS,
-					'compare' => 'NOT EXISTS',
-				],
-				[
-					// if it has failed less times than the specified threshold
-					'key'     => ProductMetaHandler::KEY_FAILED_SYNC_ATTEMPTS,
-					'compare' => '<=',
-					'value'   => ProductSyncer::FAILURE_THRESHOLD,
-				],
-				[
-					'key'     => ProductMetaHandler::KEY_SYNC_FAILED_AT,
-					'compare' => 'NOT EXISTS',
-				],
-				[
-					// if its sync hasn't failed within the specified window
-					'key'     => ProductMetaHandler::KEY_SYNC_FAILED_AT,
-					'compare' => '<=',
-					'value'   => strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) ),
-				],
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => '!=',
+				'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
 			],
 		];
 	}
@@ -211,6 +214,22 @@ class ProductRepository implements Service {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs already submitted or ready to be submitted to Google Merchant Center.
+	 *
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_sync_ready_or_synced_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+		$args['meta_query']   = $this->get_sync_ready_products_meta_query();
+		$args['meta_query'][] = $this->get_synced_products_meta_query()[0];
+
+		return $this->find_ids( $args, $limit, $offset );
 	}
 
 	/**
@@ -288,7 +307,7 @@ class ProductRepository implements Service {
 		}
 
 		if ( ! empty( $args['meta_query'] ) ) {
-			$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
+			$args['meta_query'] = $this->meta_handler->prefix_meta_query_keys( $args['meta_query'] );
 		}
 
 		// only include supported product types
@@ -297,36 +316,6 @@ class ProductRepository implements Service {
 		}
 
 		return $args;
-	}
-
-	/**
-	 * @param array $meta_queries
-	 *
-	 * @return array
-	 */
-	protected function prefix_meta_query_keys( array $meta_queries ): array {
-		$updated_queries = [];
-		if ( ! is_array( $meta_queries ) ) {
-			return $updated_queries;
-		}
-
-		foreach ( $meta_queries as $key => $meta_query ) {
-			// First-order clause.
-			if ( 'relation' === $key && is_string( $meta_query ) ) {
-				$updated_queries[ $key ] = $meta_query;
-
-				// First-order clause.
-			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && ProductMetaHandler::is_meta_key_valid( $meta_query['key'] ) ) {
-				$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
-			} else {
-				// Otherwise, it's a nested meta_query, so we recurse.
-				$meta_query = $this->prefix_meta_query_keys( $meta_query );
-			}
-
-			$updated_queries[ $key ] = $meta_query;
-		}
-
-		return $updated_queries;
 	}
 
 	/**
