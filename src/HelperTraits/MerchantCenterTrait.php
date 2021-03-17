@@ -46,12 +46,10 @@ trait MerchantCenterTrait {
 	}
 
 	/**
-	 * Get whether the language is supported by the Merchant Center
+	 * Get whether the language is supported by the Merchant Center.
 	 *
-	 * TODO: actually determine if supported
-	 *
-	 * @param  string $language
-	 * @return bool
+	 * @param  string $language Optional - to check a language other than the site language.
+	 * @return bool True if the language is in the list of MC-supported languages.
 	 */
 	protected function is_language_supported( string $language = '' ): bool {
 		// Default to base site language
