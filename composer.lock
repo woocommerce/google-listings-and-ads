@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e033a4120d064ca4388e5c257b03f631",
+    "content-hash": "c4fb934f5225ac6eee150f954a959c12",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -888,35 +888,34 @@
         },
         {
             "name": "googleads/google-ads-php",
-            "version": "v6.1.0",
+            "version": "v7.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleads/google-ads-php.git",
-                "reference": "aae0d03b6221d8420d5ab46aa3709a2b018deba1"
+                "reference": "3ac94411427b1b1ab19ee95fadc6e7780f49d595"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/aae0d03b6221d8420d5ab46aa3709a2b018deba1",
-                "reference": "aae0d03b6221d8420d5ab46aa3709a2b018deba1",
+                "url": "https://api.github.com/repos/googleads/google-ads-php/zipball/3ac94411427b1b1ab19ee95fadc6e7780f49d595",
+                "reference": "3ac94411427b1b1ab19ee95fadc6e7780f49d595",
                 "shasum": ""
             },
             "require": {
                 "google/gax": "^1.5.0",
                 "google/protobuf": "^3.14.0",
-                "monolog/monolog": "^1.23.0 || ^2.0",
-                "php": ">=7.2",
+                "monolog/monolog": "^2.0",
+                "php": ">=7.3",
                 "ulrichsg/getopt-php": "^3.4"
             },
             "require-dev": {
                 "ext-bcmath": "*",
-                "phpunit/phpunit": "^7.5 || ^9.3",
-                "react/http": "^0.8.3",
+                "phpunit/phpunit": "^9.5",
+                "react/http": "^1.2.0",
                 "squizlabs/php_codesniffer": "^3.5"
             },
             "suggest": {
                 "ext-protobuf": "For better performance, use the C implementation of Protobuf",
                 "google/protobuf": "In case the C implementation of Protobuf is not suitable, use the PHP one",
-                "php-64bit": ">=7.2",
                 "react/http": "To run the AuthenticateInWebApplication.php example"
             },
             "type": "library",
@@ -940,9 +939,9 @@
             "description": "Google Ads API client for PHP",
             "support": {
                 "issues": "https://github.com/googleads/google-ads-php/issues",
-                "source": "https://github.com/googleads/google-ads-php/tree/v6.1.0"
+                "source": "https://github.com/googleads/google-ads-php/tree/v7.0.0"
             },
-            "time": "2020-12-11T05:37:03+00:00"
+            "time": "2021-02-19T03:40:23+00:00"
         },
         {
             "name": "grpc/grpc",
