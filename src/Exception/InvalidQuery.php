@@ -97,4 +97,13 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	public static function empty_where(): InvalidQuery {
 		return new static( 'Where clause cannot be an empty array.' );
 	}
+
+	/**
+	 * Create a new instance of the exception when an empty set of columns is provided.
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function empty_columns(): InvalidQuery {
+		return new static( 'Columns list cannot be an empty array.' );
+	}
 }

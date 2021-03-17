@@ -53,7 +53,7 @@ abstract class BaseReportsController extends BaseController {
 			'fields'   => [],
 		];
 
-		$args = wp_parse_args( $args, $defaults );
+		$args = wp_parse_args( array_filter( $args ), $defaults );
 		$this->normalize_timezones( $args, $defaults );
 		return $args;
 	}

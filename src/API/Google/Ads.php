@@ -58,11 +58,9 @@ class Ads implements OptionsAwareInterface {
 		}
 
 		try {
+			$results = $this->query( new AdsBillingStatusQuery() );
 
-			$query    = $this->build_query( [ 'billing_setup.status' ], 'billing_setup' );
-			$response = $this->query( $query );
-
-			foreach ( $response->iterateAllElements() as $row ) {
+			foreach ( $results->iterateAllElements() as $row ) {
 				$billing_setup = $row->getBillingSetup();
 				$status        = BillingSetupStatus::label( $billing_setup->getStatus() );
 				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $ads_id );

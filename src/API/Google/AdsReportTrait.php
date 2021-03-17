@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsReportQuery;
 use DateTime;
 use Exception;
 use Google\Ads\GoogleAds\V6\Common\Segments;
@@ -31,8 +32,15 @@ trait AdsReportTrait {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
-			$response = $this->query( $this->get_report_query( $type, $args ) );
-			foreach ( $response->iterateAllElements() as $row ) {
+			$results = $this->query(
+				( new AdsReportQuery( $type ) )
+				->fields( $args['fields'] )
+				->segment_interval( $args['interval'] )
+				->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' )
+				->get_query()
+			);
+
+			foreach ( $results->iterateAllElements() as $row ) {
 				$this->add_report_row( $type, $row, $args );
 			}
 
@@ -174,113 +182,6 @@ trait AdsReportTrait {
 				$this->report_data['totals'][ $name ] += $total;
 			}
 		}
-	}
-
-	/**
-	 * Get report query.
-	 *
-	 * @param string $type Report type (campaigns or products).
-	 * @param array  $args Query arguments.
-	 *
-	 * @return string
-	 */
-	protected function get_report_query( string $type, array $args ): string {
-		if ( 'products' === $type ) {
-			$fields = [
-				'segments.product_item_id',
-				'segments.product_title',
-			];
-		} else {
-			$fields = [
-				'campaign.id',
-				'campaign.name',
-				'campaign.status',
-			];
-		}
-
-		$fields = $this->add_report_query_fields( $fields, $args );
-		$fields = $this->add_report_query_interval( $fields, $args );
-
-		$condition = [
-			'key'      => 'segments.date',
-			'operator' => 'BETWEEN',
-			'value'    => [
-				$args['after'],
-				$args['before'],
-			],
-		];
-
-		return $this->build_query( $fields, 'shopping_performance_view', [ $condition ] );
-	}
-
-	/**
-	 * Add all mapped fields.
-	 *
-	 * @param array $fields List of query fields.
-	 * @param array $args   Query arguments.
-	 *
-	 * @return array
-	 */
-	protected function add_report_query_fields( array $fields, array $args ): array {
-		if ( empty( $args['fields'] ) ) {
-			return $fields;
-		}
-
-		foreach ( $args['fields'] as $field ) {
-			switch ( $field ) {
-				case 'clicks':
-					$fields[] = 'metrics.clicks';
-					break;
-				case 'impressions':
-					$fields[] = 'metrics.impressions';
-					break;
-				case 'spend':
-					$fields[] = 'metrics.cost_micros';
-					break;
-				case 'sales':
-					$fields[] = 'metrics.conversions_value';
-					break;
-				case 'conversions':
-					$fields[] = 'metrics.conversions';
-					break;
-			}
-		}
-
-		return $fields;
-	}
-
-	/**
-	 * Add an optional segment interval to the query.
-	 *
-	 * @param array $fields List of query fields.
-	 * @param array $args Query arguments.
-	 *
-	 * @return array
-	 */
-	protected function add_report_query_interval( array $fields, array $args ): array {
-		if ( empty( $args['interval'] ) ) {
-			return $fields;
-		}
-
-		switch ( $args['interval'] ) {
-			case 'day':
-				$fields[] = 'segments.date';
-				break;
-			case 'week':
-				$fields[] = 'segments.week';
-				break;
-			case 'month':
-				$fields[] = 'segments.month';
-				break;
-			case 'quarter':
-				$fields[] = 'segments.quarter';
-				break;
-			case 'year':
-				$fields[] = 'segments.year';
-				break;
-		}
-
-		return $fields;
 	}
 
 	/**

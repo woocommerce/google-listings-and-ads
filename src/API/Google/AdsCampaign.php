@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -71,10 +72,14 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function get_campaigns(): array {
 		try {
-			$return   = [];
-			$response = $this->query( $this->get_campaign_query() );
+			$return  = [];
+			$results = $this->query(
+				( new AdsCampaignQuery() )
+					->where( 'campaign.status', 'REMOVED', '!=' )
+					->get_query()
+			);
 
-			foreach ( $response->iterateAllElements() as $row ) {
+			foreach ( $result->iterateAllElements() as $row ) {
 				$return[] = $this->convert_campaign( $row );
 			}
 
@@ -150,9 +155,13 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$response = $this->query( $this->get_campaign_query( $id ) );
+			$results = $this->query(
+				( new AdsCampaignQuery() )
+					->where( 'campaign.id', $id )
+					->get_query()
+			);
 
-			foreach ( $response->iterateAllElements() as $row ) {
+			foreach ( $results->iterateAllElements() as $row ) {
 				return $this->convert_campaign( $row );
 			}
 
@@ -238,27 +247,6 @@ class AdsCampaign implements OptionsAwareInterface {
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error deleting campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
 		}
-	}
-
-	/**
-	 * Get campaign query.
-	 *
-	 * @param int $id Optional ID to retrieve a specific campaign.
-	 *
-	 * @return string
-	 */
-	protected function get_campaign_query( int $id = 0 ): string {
-		return $this->build_query(
-			[
-				'campaign.id',
-				'campaign.name',
-				'campaign.status',
-				'campaign.shopping_setting.sales_country',
-				'campaign_budget.amount_micros',
-			],
-			'campaign',
-			$id ? "campaign.id = {$id}" : "campaign.status != 'REMOVED'"
-		);
 	}
 
 	/**
