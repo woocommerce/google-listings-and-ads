@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -41,6 +42,15 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	}
 
 	/**
+	 * Init the batch schedule for the job.
+	 *
+	 * The job name is used to generate the schedule event name.
+	 */
+	public function init(): void {
+		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ] );
+	}
+
+	/**
 	 * Can the job start.
 	 *
 	 * @param array|null $args
@@ -49,6 +59,38 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 */
 	public function can_start( $args = [] ): bool {
 		return ! $this->is_running( $args );
+	}
+
+	/**
+	 * Process batch items.
+	 *
+	 * @param array $items A single batch from the get_batch() method.
+	 *
+	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
+	 */
+	abstract protected function process_items( array $items );
+
+	/**
+	 * Handles processing single item action hook.
+	 *
+	 * @hooked gla/jobs/{$job_name}/process_item
+	 *
+	 * @param array $items The job items from the current batch.
+	 *
+	 * @throws Exception If an error occurs.
+	 */
+	public function handle_process_items_action( array $items ) {
+		$this->monitor->validate_failure_rate( $this );
+
+		try {
+			$this->process_items( $items );
+		} catch ( Exception $exception ) {
+			// reschedule on failure
+			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
+
+			// throw the exception again so that it can be logged
+			throw $exception;
+		}
 	}
 
 	/**

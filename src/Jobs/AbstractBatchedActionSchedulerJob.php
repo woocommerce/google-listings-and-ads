@@ -35,22 +35,13 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	abstract protected function get_batch( int $batch_number ): array;
 
 	/**
-	 * Process batch items.
-	 *
-	 * @param array $items A single batch from the get_batch() method.
-	 *
-	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
-	 */
-	abstract protected function process_items( array $items );
-
-	/**
 	 * Init the batch schedule for the job.
 	 *
 	 * The job name is used to generate the schedule event name.
 	 */
 	public function init(): void {
 		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ] );
-		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ] );
+		parent::init();
 	}
 
 	/**
@@ -125,19 +116,6 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	}
 
 	/**
-	 * Handles processing single item action hook.
-	 *
-	 * @hooked gla/jobs/{$job_name}/process_item
-	 *
-	 * @param array $items The job items from the current batch.
-	 *
-	 * @throws Exception If an error occurs.
-	 */
-	public function handle_process_items_action( array $items ) {
-		$this->process_items( $items );
-	}
-
-	/**
 	 * Schedule a new "create batch" action to run immediately.
 	 *
 	 * @param int $batch_number The batch number for the new batch.
@@ -149,7 +127,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	}
 
 	/**
-	 * Schedule a new "create batch" action to run immediately.
+	 * Schedule a new "process" action to run immediately.
 	 *
 	 * @param array $items
 	 */

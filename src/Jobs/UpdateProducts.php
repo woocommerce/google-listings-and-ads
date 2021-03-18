@@ -28,15 +28,6 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	}
 
 	/**
-	 * Init the job.
-	 *
-	 * The job name is used to generate the schedule event name.
-	 */
-	public function init(): void {
-		add_action( $this->get_process_item_hook(), [ $this, 'process_items' ], 10, 1 );
-	}
-
-	/**
 	 * Process an item.
 	 *
 	 * @param int[] $product_ids An array of WooCommerce product ids.

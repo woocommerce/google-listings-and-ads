@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Google\Exception as GoogleException;
+use Exception;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -94,7 +94,7 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 				// update the meta data for the synced and invalid products
 				array_walk( $updated_products, [ $this->batch_helper, 'mark_as_synced' ] );
 				array_walk( $invalid_products, [ $this->batch_helper, 'mark_as_invalid' ] );
-			} catch ( GoogleException $exception ) {
+			} catch ( Exception $exception ) {
 				throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
@@ -161,7 +161,7 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
 
 				array_walk( $deleted_products, [ $this->batch_helper, 'mark_as_unsynced' ] );
-			} catch ( GoogleException $exception ) {
+			} catch ( Exception $exception ) {
 				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}

@@ -30,15 +30,6 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	}
 
 	/**
-	 * Init the job.
-	 *
-	 * The job name is used to generate the schedule event name.
-	 */
-	public function init(): void {
-		add_action( $this->get_process_item_hook(), [ $this, 'process_items' ], 10, 1 );
-	}
-
-	/**
 	 * Process an item.
 	 *
 	 * @param string[] $product_id_map An array of Google product IDs mapped to WooCommerce product IDs as their key.
