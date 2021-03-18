@@ -13,25 +13,20 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import useTargetAudience from '.~/hooks/useTargetAudience';
-import useGetCountries from '.~/hooks/useGetCountries';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import { glaData } from '.~/constants';
 import './index.scss';
 
-const useStoreCountry = () => {
-	const { data: countryNames } = useGetCountries();
-	const { woocommerce_default_country: country } = useSelect( ( select ) =>
-		select( SETTINGS_STORE_NAME ).getSetting( 'general', 'general' )
-	);
-
-	if ( ! countryNames ) {
-		return {};
-	}
-
-	const [ countryCode ] = country.split( ':' );
-	return {
-		countryName: countryNames[ countryCode ].name,
-	};
+const useStoreCountryName = () => {
+	return useSelect( ( select ) => {
+		const { getSetting } = select( SETTINGS_STORE_NAME );
+		const countryNames = getSetting( 'wc_admin', 'countries' );
+		const general = getSetting( 'general', 'general' );
+		const [ countryCode ] = general.woocommerce_default_country.split(
+			':'
+		);
+		return countryNames[ countryCode ];
+	} );
 };
 
 const ExternalIcon = () => (
@@ -86,7 +81,7 @@ const UnsupportedLanguage = () => {
 };
 
 const UnsupportedCountry = () => {
-	const { countryName } = useStoreCountry();
+	const countryName = useStoreCountryName();
 
 	if ( ! countryName ) {
 		return null;
