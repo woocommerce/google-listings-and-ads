@@ -11,7 +11,7 @@ import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillin
 
 const retryIntervalInSeconds = 10;
 
-const useAutoCheckBillingStatusEffect = ( onSetupComplete = () => {} ) => {
+const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 	const { fetchGoogleAdsAccountBillingStatus } = useAppDispatch();
 	const { billingStatus = {} } = useGoogleAdsAccountBillingStatus();
 	const { status } = billingStatus;
@@ -27,9 +27,9 @@ const useAutoCheckBillingStatusEffect = ( onSetupComplete = () => {} ) => {
 
 	useEffect( () => {
 		if ( status === 'approved' ) {
-			onSetupComplete();
+			onStatusApproved();
 		}
-	}, [ status, onSetupComplete ] );
+	}, [ status, onStatusApproved ] );
 };
 
 export default useAutoCheckBillingStatusEffect;
