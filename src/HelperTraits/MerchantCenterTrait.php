@@ -4,9 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use WC_Countries;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,6 +21,7 @@ trait MerchantCenterTrait {
 
 	use OptionsAwareTrait;
 	use GoogleHelper;
+	use ContainerAwareTrait;
 
 	/**
 	 * Get whether Merchant Center setup is completed.
@@ -26,7 +29,7 @@ trait MerchantCenterTrait {
 	 * @return bool
 	 */
 	protected function setup_complete(): bool {
-		return boolval( $this->options->get( OptionsInterface::MC_SETUP_COMPLETED_AT, false ) );
+		return boolval( $this->options->get( Options::MC_SETUP_COMPLETED_AT, false ) );
 	}
 
 	/**
@@ -38,8 +41,7 @@ trait MerchantCenterTrait {
 	protected function is_country_supported( string $country = '' ): bool {
 		// Default to WooCommerce store country
 		if ( empty( $country ) ) {
-			$wc_countries = WC()->countries ?? new WC_Countries();
-			$country      = $wc_countries->get_base_country();
+			$country = $this->container->get( WC::class )->get_base_country();
 		}
 
 		return array_key_exists(
@@ -57,7 +59,7 @@ trait MerchantCenterTrait {
 	protected function is_language_supported( string $language = '' ): bool {
 		// Default to base site language
 		if ( empty( $language ) ) {
-			$language = substr( get_locale(), 0, 2 );
+			$language = substr( $this->container->get( WP::class )->get_locale(), 0, 2 );
 		}
 
 		return in_array(
