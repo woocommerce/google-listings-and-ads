@@ -4,8 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ProductsController extends BaseController {
+class ProductsController extends BaseOptionsController {
 
 	/**
 	 * The merchant object.
@@ -33,6 +34,11 @@ class ProductsController extends BaseController {
 	 * @var ContainerInterface
 	 */
 	protected $container;
+
+	/**
+	 * The time the statistics option should live.
+	 */
+	public const STATISTICS_LIFETIME = HOUR_IN_SECONDS;
 
 	/**
 	 * ProductsController constructor.
@@ -50,11 +56,11 @@ class ProductsController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'mc/product-summary',
+			'mc/product-statistics',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_product_summary_callback(),
+					'callback'            => $this->get_product_statistics_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -66,20 +72,30 @@ class ProductsController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_product_summary_callback(): callable {
+	protected function get_product_statistics_callback(): callable {
 		return function() {
 			return $this->get_product_status_stats();
 		};
 	}
 
 	/**
-	 * Get the global product status summary array.
+	 * Get the global product status statistics array.
 	 *
 	 * @return array
 	 * @throws Exception If the Merchant account can't be retrieved.
 	 */
 	protected function get_product_status_stats(): array {
-		$account_stats = [
+
+		// Use the cached values if valid.
+		$product_statistics = $this->options->get( Options::MC_PRODUCT_STATISTICS );
+		$timestamp          = $product_statistics['timestamp'] ?? 0;
+		$statistics         = $product_statistics['product_statistics'] ?? false;
+		if ( $statistics && $timestamp >= time() - self::STATISTICS_LIFETIME ) {
+			jplog('cached');
+			return $statistics;
+		}
+
+		$product_stats = [
 			'active'      => 0,
 			'expiring'    => 0,
 			'pending'     => 0,
@@ -90,17 +106,26 @@ class ProductsController extends BaseController {
 		foreach ( $this->merchant->get_accountstatus()->getProducts() as $product ) {
 			/** @var \Google_Service_ShoppingContent_AccountStatusProducts $product */
 			$stats                         = $product->getStatistics();
-			$account_stats['active']      += intval( $stats->getActive() );
-			$account_stats['expiring']    += intval( $stats->getExpiring() );
-			$account_stats['pending']     += intval( $stats->getPending() );
-			$account_stats['disapproved'] += intval( $stats->getDisapproved() );
+			$product_stats['active']      += intval( $stats->getActive() );
+			$product_stats['expiring']    += intval( $stats->getExpiring() );
+			$product_stats['pending']     += intval( $stats->getPending() );
+			$product_stats['disapproved'] += intval( $stats->getDisapproved() );
 		}
 
 		/** @var ProductRepository $product_repository */
 		$product_repository          = $this->container->get( ProductRepository::class );
-		$account_stats['not_synced'] = count( $product_repository->find_sync_pending_product_ids() );
+		$product_stats['not_synced'] = count( $product_repository->find_sync_pending_product_ids() );
 
-		return $account_stats;
+		// Update the cached values
+		$this->options->update(
+			Options::MC_PRODUCT_STATISTICS,
+			[
+				'timestamp'          => time(),
+				'product_statistics' => $product_stats,
+			]
+		);
+
+		return $product_stats;
 
 	}
 
@@ -121,6 +146,6 @@ class ProductsController extends BaseController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'product_summary';
+		return 'product_statistics';
 	}
 }
