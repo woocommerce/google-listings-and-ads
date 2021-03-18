@@ -5,20 +5,27 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 
 /**
  * Class Dashboard
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class Dashboard implements Service, Registerable {
+class Dashboard implements Service, Registerable, OptionsAwareInterface {
 
 	use MenuFixesTrait;
+	use MerchantCenterTrait;
 
 	/**
 	 * Register a service.
 	 */
 	public function register(): void {
+		if ( ! $this->setup_complete() ) {
+			return;
+		}
+
 		add_filter(
 			'woocommerce_marketing_menu_items',
 			function( $menu_items ) {
