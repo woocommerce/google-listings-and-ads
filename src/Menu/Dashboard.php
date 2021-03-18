@@ -51,7 +51,7 @@ class Dashboard implements Service, Registerable, OptionsAwareInterface {
 	protected function add_items( array $items ): array {
 		$items[] = [
 			'id'         => 'google-dashboard',
-			'title'      => __( 'Google (Dashboard)', 'google-listings-and-ads' ),
+			'title'      => __( 'Google', 'google-listings-and-ads' ),
 			'path'       => '/google/dashboard',
 			'capability' => 'manage_woocommerce',
 		];
