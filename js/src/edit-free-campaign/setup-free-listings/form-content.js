@@ -11,8 +11,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
-import ShippingRate from '.~/components/free-listings/configure-product-listings/shipping-rate';
-import ShippingTime from '.~/components/free-listings/configure-product-listings/shipping-time';
+import CombinedShipping from '.~/components/free-listings/configure-product-listings/combined-shipping';
 
 /**
  * Form to configure free listigns.
@@ -30,8 +29,7 @@ const FormContent = ( props ) => {
 
 	return (
 		<StepContent>
-			<ShippingRate formProps={ formProps } />
-			<ShippingTime formProps={ formProps } />
+			<CombinedShipping formProps={ formProps } />
 			{ displayTaxRate && <TaxRate formProps={ formProps } /> }
 			<StepContentFooter>
 				<Button
