@@ -57,7 +57,17 @@ class ProductsController extends BaseOptionsController {
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
-					'callback'            => $this->get_product_statistics_callback(),
+					'callback'            => $this->get_product_statistics_read_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
+			'mc/product-statistics/refresh',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_product_statistics_refresh_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -65,13 +75,23 @@ class ProductsController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the callback function for returning supported countries.
+	 * Get the callback function for returning product statistics.
 	 *
 	 * @return callable
 	 */
-	protected function get_product_statistics_callback(): callable {
+	protected function get_product_statistics_read_callback(): callable {
 		return function() {
 			return $this->get_product_status_stats();
+		};
+	}
+	/**
+	 * Get the callback function for getting re-calculated product statistics.
+	 *
+	 * @return callable
+	 */
+	protected function get_product_statistics_refresh_callback(): callable {
+		return function() {
+			return $this->refresh_product_status_stats();
 		};
 	}
 
@@ -83,6 +103,17 @@ class ProductsController extends BaseOptionsController {
 	 */
 	protected function get_product_status_stats(): array {
 		return $this->container->get( ProductStatistics::class )->get();
+
+	}
+
+	/**
+	 * Get the global product status statistics array.
+	 *
+	 * @return array
+	 * @throws Exception If the Merchant account status can't be retrieved.
+	 */
+	protected function refresh_product_status_stats(): array {
+		return $this->container->get( ProductStatistics::class )->recalculate();
 
 	}
 

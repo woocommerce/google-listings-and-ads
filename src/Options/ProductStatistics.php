@@ -42,13 +42,12 @@ class ProductStatistics implements Service, OptionsAwareInterface, ContainerAwar
 	public function get( bool $refresh_if_necessary = true ): array {
 		$product_statistics = $this->options->get( Options::MC_PRODUCT_STATISTICS, [] );
 		$timestamp          = $product_statistics[ self::TIMESTAMP_KEY ] ?? 0;
-		$stats              = $product_statistics[ self::STATISTICS_KEY ] ?? [];
 
 		if ( $refresh_if_necessary && $timestamp < time() - self::STATISTICS_LIFETIME ) {
-			$stats = $this->recalculate();
+			$product_statistics = $this->recalculate();
 		}
 
-		return $stats;
+		return $product_statistics;
 	}
 
 	/**
@@ -79,16 +78,15 @@ class ProductStatistics implements Service, OptionsAwareInterface, ContainerAwar
 		$product_repository          = $this->container->get( ProductRepository::class );
 		$product_stats['not_synced'] = count( $product_repository->find_sync_pending_product_ids() );
 
-		// Update the cached values
-		$this->options->update(
-			Options::MC_PRODUCT_STATISTICS,
-			[
-				self::TIMESTAMP_KEY  => time(),
-				self::STATISTICS_KEY => $product_stats,
-			]
-		);
+		$product_statistics = [
+			self::TIMESTAMP_KEY  => time(),
+			self::STATISTICS_KEY => $product_stats,
+		];
 
-		return $product_stats;
+		// Update the cached values
+		$this->options->update( Options::MC_PRODUCT_STATISTICS, $product_statistics );
+
+		return $product_statistics;
 	}
 
 	/**
