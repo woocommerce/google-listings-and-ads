@@ -230,6 +230,7 @@ class AccountController extends BaseOptionsController {
 
 			$this->account_state->update( [] );
 			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
+			$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 
 			return [
 				'status'  => 'success',
