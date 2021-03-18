@@ -84,10 +84,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$this->setTargetCountry( $base_country );
 		}
 
-		// tax is excluded from price in US and CA
-		$this->tax_excluded = in_array( $this->getTargetCountry(), [ 'US', 'CA' ], true );
-		$this->tax_excluded = apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded );
-
 		$this->setChannel( self::CHANNEL_ONLINE );
 
 		// todo: this is temporary, modify or remove this when the GTIN, MPN etc. functionalities are implemented.
@@ -287,11 +283,21 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
+	 * Sets whether tax is excluded from product price.
+	 */
+	protected function map_tax_excluded() {
+		// tax is excluded from price in US and CA
+		$this->tax_excluded = in_array( $this->getTargetCountry(), [ 'US', 'CA' ], true );
+		$this->tax_excluded = apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded );
+	}
+
+	/**
 	 * Map the prices (base and sale price) for the product.
 	 *
 	 * @return $this
 	 */
 	protected function map_wc_prices() {
+		$this->map_tax_excluded();
 		$this->map_wc_product_price( $this->wc_product );
 
 		if ( $this->is_variable() ) {
@@ -523,5 +529,17 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 */
 	public function get_wc_product(): WC_Product {
 		return $this->wc_product;
+	}
+
+	/**
+	 * @param string $targetCountry
+	 *
+	 * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	 */
+	public function setTargetCountry( $targetCountry ) {
+		parent::setTargetCountry( $targetCountry );
+
+		// we need to reset the prices because tax is based on the country
+		$this->map_wc_prices();
 	}
 }

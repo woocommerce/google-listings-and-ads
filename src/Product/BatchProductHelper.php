@@ -216,7 +216,8 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 			}
 
 			// check if the product validates for just one of its target countries
-			$validation_result = $this->validate_product( $this->product_helper->generate_adapted_product( $product, $target_countries[0] ) );
+			$adapted_product   = $this->product_helper->generate_adapted_product( $product, $target_countries[0] );
+			$validation_result = $this->validate_product( $adapted_product );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation_result );
 				continue;
@@ -224,10 +225,13 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 
 			// return batch request entries for each target country
 			$product_entries = array_map(
-				function ( $target_country ) use ( $product ) {
+				function ( $target_country ) use ( $product, $adapted_product ) {
+					$target_product = clone $adapted_product;
+					$target_product->setTargetCountry( $target_country );
+
 					return new BatchProductRequestEntry(
 						$product->get_id(),
-						ProductHelper::generate_adapted_product( $product, $target_country )
+						$target_product
 					);
 				},
 				$target_countries
