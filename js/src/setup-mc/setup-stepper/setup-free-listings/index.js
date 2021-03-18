@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
-import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -47,12 +47,12 @@ const SetupFreeListings = () => {
 		try {
 			await fetchSettingsSync();
 
-			getHistory().push(
-				getNewPath(
-					{ guide: 'submission-success' },
-					'/google/product-feed'
-				)
-			);
+			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
+			const path = `/wp-admin/${ getNewPath(
+				{ guide: 'submission-success' },
+				'/google/product-feed'
+			) }`;
+			window.location.href = path;
 		} catch ( error ) {
 			createNotice(
 				'error',
