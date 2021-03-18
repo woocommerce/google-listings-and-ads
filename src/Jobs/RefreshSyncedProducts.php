@@ -33,7 +33,8 @@ class RefreshSyncedProducts extends AbstractProductSyncerBatchedJob {
 	protected function get_batch_size(): int {
 		// calculate batch size considering target audiences per product
 		$batch_size = (int) floor( 100 / count( $this->get_target_countries() ) );
-		return max( $batch_size, 1 );
+		// between 2 and 50 products per batch
+		return min( max( $batch_size, 2 ), 50 );
 	}
 
 	/**
