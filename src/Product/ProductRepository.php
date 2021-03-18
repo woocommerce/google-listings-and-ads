@@ -217,22 +217,6 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs already submitted or ready to be submitted to Google Merchant Center.
-	 *
-	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
-	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int   $offset Amount to offset product results.
-	 *
-	 * @return int[] Array of WooCommerce product IDs
-	 */
-	public function find_sync_ready_or_synced_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query']   = $this->get_sync_ready_products_meta_query();
-		$args['meta_query'][] = $this->get_synced_products_meta_query()[0];
-
-		return $this->find_ids( $args, $limit, $offset );
-	}
-
-	/**
 	 * @return array
 	 */
 	protected function get_valid_products_meta_query(): array {
