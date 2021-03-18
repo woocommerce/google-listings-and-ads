@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement, useState } from '@wordpress/element';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -29,11 +29,10 @@ const CombinedShipping = ( { formProps } ) => {
 	// Note: since we only use `shipping_rate` to determine how to syncboth shipping rates and times,
 	//       so here also only apply `shipping_rate` to initial form data and sync its manipulation.
 	// Please refer to the `should_sync_shipping` method in ~/src/API/Google/Settings.php
-	const [ shipping, setShipping ] = useState( values.shipping_rate );
+	const shipping = values.shipping_rate;
 	const shippingProps = {
 		...getInputProps( 'shipping_rate' ),
 		onChange( value ) {
-			setShipping( value );
 			getInputProps( 'shipping_rate' ).onChange( value );
 			getInputProps( 'shipping_time' ).onChange( value );
 		},
