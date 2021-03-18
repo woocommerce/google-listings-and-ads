@@ -194,7 +194,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function generate_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
-		$token   = $manager->get_access_token( false, false, false );
+		$token   = $manager->get_tokens()->get_access_token( false, false, false );
 		$this->check_for_wp_error( $token );
 
 		[ $key, $secret ] = explode( '.', $token->secret );
