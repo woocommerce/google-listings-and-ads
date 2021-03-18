@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import { getHistory, getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,7 +11,9 @@ import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillin
 
 const retryIntervalInSeconds = 10;
 
-const useAutoCheckBillingStatusAndRedirectEffect = () => {
+const useAutoCheckBillingStatusAndRedirectEffect = (
+	onSetupComplete = () => {}
+) => {
 	const { fetchGoogleAdsAccountBillingStatus } = useAppDispatch();
 	const { billingStatus = {} } = useGoogleAdsAccountBillingStatus();
 	const { status } = billingStatus;
@@ -28,14 +29,9 @@ const useAutoCheckBillingStatusAndRedirectEffect = () => {
 
 	useEffect( () => {
 		if ( status === 'approved' ) {
-			getHistory().push(
-				getNewPath(
-					{ guide: 'campaign-creation-success' },
-					'/google/dashboard'
-				)
-			);
+			onSetupComplete();
 		}
-	}, [ status ] );
+	}, [ status, onSetupComplete ] );
 };
 
 export default useAutoCheckBillingStatusAndRedirectEffect;

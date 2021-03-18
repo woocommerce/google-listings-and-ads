@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -16,22 +17,52 @@ import SetupCard from './setup-card';
 import BillingSavedCard from './billing-saved-card';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
-const SetupBilling = () => {
+const SetupBilling = ( props ) => {
+	const { formProps } = props;
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
+	const [ fetchCreateCampaign, { loading } ] = useApiFetchCallback();
+	const { createNotice } = useDispatchCoreNotices();
 
 	if ( ! billingStatus ) {
 		return <AppSpinner />;
 	}
 
-	// TODO: should we really create ads campaign in Step 3 here? or maybe just redirect to dashboard page?
-	const handleLaunchClick = () => {
-		getHistory().push(
-			getNewPath(
-				{ guide: 'campaign-creation-success' },
-				'/google/dashboard'
-			)
-		);
+	const handleLaunchCampaign = async () => {
+		const {
+			values: { amount, country },
+		} = formProps;
+
+		try {
+			const date = formatDate( 'Y-m-d', new Date() );
+
+			await fetchCreateCampaign( {
+				path: '/wc/gla/ads/campaigns',
+				method: 'POST',
+				data: {
+					name: `Ads Campaign ${ date }`,
+					amount: Number( amount ),
+					country: country && country[ 0 ],
+				},
+			} );
+
+			getHistory().push(
+				getNewPath(
+					{ guide: 'campaign-creation-success' },
+					'/google/dashboard'
+				)
+			);
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to launch your ads campaign. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
 	};
 
 	return (
@@ -61,16 +92,18 @@ const SetupBilling = () => {
 					<BillingSavedCard />
 				) : (
 					<SetupCard
-						billingUrl={
-							billingStatus.billing_url ||
-							'http://www.google.com/'
-						}
+						billingUrl={ billingStatus.billing_url }
+						onSetupComplete={ handleLaunchCampaign }
 					/>
 				) }
 			</Section>
 			{ billingStatus.status === 'approved' && (
 				<StepContentFooter>
-					<AppButton isPrimary onClick={ handleLaunchClick }>
+					<AppButton
+						isPrimary
+						loading={ loading }
+						onClick={ handleLaunchCampaign }
+					>
 						{ __(
 							'Launch paid campaign',
 							'google-listings-and-ads'

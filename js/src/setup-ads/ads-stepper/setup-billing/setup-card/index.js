@@ -16,9 +16,9 @@ import AppButton from '.~/components/app-button';
 import useAutoCheckBillingStatusAndRedirectEffect from './useAutoCheckBillingStatusAndRedirectEffect';
 
 const SetupCard = ( props ) => {
-	const { billingUrl } = props;
+	const { billingUrl, onSetupComplete } = props;
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	useAutoCheckBillingStatusAndRedirectEffect();
+	useAutoCheckBillingStatusAndRedirectEffect( onSetupComplete );
 
 	if ( ! googleAdsAccount ) {
 		return <AppSpinner />;
