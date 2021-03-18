@@ -39,6 +39,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -106,6 +107,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantAccountState::class   => true,
 		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
+		ProductStatistics::class      => true,
 	];
 
 	/**
@@ -165,9 +167,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
+		$this->share_with_tags( ProductStatistics::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class );
-		$this->share_with_tags( MerchantAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share_with_tags( BatchProductHelper::class, ProductMetaHandler::class, ProductHelper::class );
 		$this->share_with_tags(
