@@ -575,10 +575,13 @@ class Ads {
 			$conversion_action_operation->setCreate(
 				new ConversionAction(
 					[
-						'name'           => sprintf(
-							/* translators: %1 is a random 4-digit string */
-							__( '[%1$s] Google Listings and Ads purchase action', 'google-listings-and-ads' ),
-							$unique
+						'name'           => apply_filters(
+							'woocommerce_gla_conversion_action_name',
+							sprintf(
+								/* translators: %1 is a random 4-digit string */
+								__( '[%1$s] Google Listings and Ads purchase action', 'google-listings-and-ads' ),
+								$unique
+							)
 						),
 						'category'       => ConversionActionCategory::PURCHASE,
 						'type'           => ConversionActionType::WEBPAGE,
@@ -607,7 +610,12 @@ class Ads {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 			$message = $e->getMessage();
 			if ( $e instanceof ApiException ) {
-				$message = $e->getBasicMessage();
+
+				if ( $this->has_api_exception_error( $e, 'DUPLICATE_NAME' ) ) {
+					$message = __( 'A conversion action with this name already exists', 'google-listings-and-ads' );
+				} else {
+					$message = $e->getBasicMessage();
+				}
 			}
 
 			/* translators: %s Error message */
