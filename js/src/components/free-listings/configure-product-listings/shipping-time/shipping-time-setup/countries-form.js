@@ -40,6 +40,13 @@ export default function ShippingCountriesForm( {
 	// Group countries with the same time.
 	const countriesTimeArray = getCountriesTimeArray( shippingTimes );
 
+	if ( countriesTimeArray.length === 0 ) {
+		countriesTimeArray.push( {
+			countries: selectedCountryCodes,
+			time: '',
+		} );
+	}
+
 	// TODO: move those handlers up to the ancestors and consider optimizing upserting.
 	function handleDelete( deletedCountries ) {
 		updateShippingTimes(
@@ -75,21 +82,10 @@ export default function ShippingCountriesForm( {
 	return (
 		<div className="countries-time">
 			<VerticalGapLayout>
-				{ shippingTimes.length === 0 && (
-					<div className="countries-time-input-form">
-						<CountriesTimeInput
-							value={ {
-								countries: selectedCountryCodes,
-								time: '',
-							} }
-							onChange={ handleChange }
-						/>
-					</div>
-				) }
 				{ countriesTimeArray.map( ( el ) => {
 					return (
 						<div
-							key={ `${ el.time }-${ el.countries.join( '-' ) }` }
+							key={ el.countries.join( '-' ) }
 							className="countries-time-input-form"
 						>
 							<CountriesTimeInput
