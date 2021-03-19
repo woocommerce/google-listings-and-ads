@@ -14,7 +14,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
@@ -100,8 +99,8 @@ class ConnectionTest implements Service, Registerable {
 	protected function render_admin_page() {
 		/** @var Manager $manager */
 		$manager    = $this->container->get( Manager::class );
-		$blog_token = $manager->get_access_token();
-		$user_token = $manager->get_access_token( get_current_user_id() );
+		$blog_token = $manager->get_tokens()->get_access_token();
+		$user_token = $manager->get_tokens()->get_access_token( get_current_user_id() );
 		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
 		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
 
@@ -466,12 +465,14 @@ class ConnectionTest implements Service, Registerable {
 
 									<h4>Create account steps:</h4>
 									create account &gt;
-									direct user to billing flow (not implemented yet) &gt;
-									link to merchant account (not implemented yet)
+									direct user to billing flow &gt;
+									link to merchant account &gt;
+									create conversion action
 
 									<h4>Link account steps:</h4>
 									link to manager account &gt;
-									link to merchant account (not implemented yet)
+									link to merchant account &gt;
+									create conversion action
 								</p>
 							</td>
 						</tr>
@@ -534,7 +535,7 @@ class ConnectionTest implements Service, Registerable {
 							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" /></label>
 						</label>
 						<label for="async-sync-product">Async?</label>
-                        <input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+						<input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
 						<button class="button">Sync Product with Google Merchant Center</button>
 								</p>
 							</td>
@@ -553,7 +554,7 @@ class ConnectionTest implements Service, Registerable {
 								<p>
 									<label for="async-sync-all-products">Async?</label>
 									<input id="async-sync-all-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
-						            <button class="button">Sync All Products with Google Merchant Center</button>
+									<button class="button">Sync All Products with Google Merchant Center</button>
 								</p>
 							</td>
 						</tr>
@@ -562,7 +563,7 @@ class ConnectionTest implements Service, Registerable {
 					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-sync-all-products" type="hidden" />
-						</form>
+				</form>
 				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
 					<table class="form-table" role="presentation">
 						<tr>
@@ -992,7 +993,7 @@ class ConnectionTest implements Service, Registerable {
 					$this->response = 'Error submitting products to Google: ' . $exception->getMessage();
 				}
 			} else {
-			    // schedule a job
+				// schedule a job
 				/** @var UpdateAllProducts $update_job */
 				$update_job = $this->container->get( UpdateAllProducts::class );
 				$update_job->start();
@@ -1040,7 +1041,7 @@ class ConnectionTest implements Service, Registerable {
 	private function get_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->container->get( Manager::class );
-		$token   = $manager->get_access_token();
+		$token   = $manager->get_tokens()->get_access_token();
 
 		[ $token_key, $token_secret ] = explode( '.', $token->secret );
 

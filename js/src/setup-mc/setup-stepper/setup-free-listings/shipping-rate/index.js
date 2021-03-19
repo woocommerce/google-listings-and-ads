@@ -11,9 +11,16 @@ import Section from '.~/wcdl/section';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import VerticalGapLayout from '../components/vertical-gap-layout';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import ShippingRateSetup from './shipping-rate-setup';
 
+/**
+ * Form section to set shipping rate per country.
+ *
+ * @see .~/components/free-listings/configure-product-listings/shipping-rate/index.js
+ *
+ * @param {Object} props
+ */
 const ShippingRate = ( props ) => {
 	const { formProps } = props;
 	const { getInputProps } = formProps;

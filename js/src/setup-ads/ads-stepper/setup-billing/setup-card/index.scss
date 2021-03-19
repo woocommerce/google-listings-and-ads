@@ -1,0 +1,11 @@
+.gla-google-ads-billing-setup-card {
+	&__account-number {
+		margin-bottom: calc(var(--main-gap) / 2);
+	}
+
+	&__description {
+		display: flex;
+		gap: calc(var(--main-gap) * 2);
+		font-style: italic;
+	}
+}

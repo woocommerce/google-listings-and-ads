@@ -11,9 +11,16 @@ import Section from '.~/wcdl/section';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppRadioContentControl from '.~/components/app-radio-content-control';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import VerticalGapLayout from '../components/vertical-gap-layout';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import ShippingTimeSetup from './shipping-time-setup';
 
+/**
+ * Form section to set shipping time per country.
+ *
+ * @see .~/components/free-listings/configure-product-listings/shipping-time/index.js
+ *
+ * @param {Object} props
+ */
 const ShippingTime = ( props ) => {
 	const { formProps } = props;
 	const { getInputProps } = formProps;

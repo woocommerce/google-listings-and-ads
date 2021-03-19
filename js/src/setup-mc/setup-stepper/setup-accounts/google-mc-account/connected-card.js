@@ -2,8 +2,8 @@
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import TitleButtonLayout from '../title-button-layout';
-import AccountId from './account-id';
+import TitleButtonLayout from '.~/components/title-button-layout';
+import AccountId from '.~/components/account-id';
 
 const ConnectedCard = ( props ) => {
 	const { googleMCAccount } = props;

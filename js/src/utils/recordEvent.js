@@ -52,4 +52,11 @@ export const recordPreLaunchChecklistCompleteEvent = () => {
 	recordEvent( 'gla_pre_launch_checklist_complete' );
 };
 
+export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
+	recordEvent( 'gla_setup_ads', {
+		target,
+		trigger,
+	} );
+};
+
 export default recordEvent;

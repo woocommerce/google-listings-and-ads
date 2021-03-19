@@ -1,0 +1,28 @@
+.gla-budget-recommendation {
+	font-style: italic;
+	margin-bottom: var(--main-gap);
+
+	&__recommendation,
+	&__low-budget {
+		display: flex;
+		gap: calc(var(--main-gap) / 3);
+
+		> svg {
+			flex: 1 0 auto;
+		}
+	}
+
+	&__recommendation {
+		margin-bottom: calc(var(--main-gap) / 2);
+
+		svg {
+			fill: #949494;
+		}
+	}
+
+	&__low-budget {
+		svg {
+			fill: #f0b849;
+		}
+	}
+}

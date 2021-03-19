@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -16,8 +17,8 @@ import './index.scss';
 const EditProgramLink = ( props ) => {
 	const { programId } = props;
 
-	// TODO: what is the external URL for editing the program.
-	const url = `https://example.com/${ programId }`;
+	// TODO: Check if that free or paid campaign.
+	const url = getNewPath( { programId }, '/google/edit-free-campaign' );
 
 	return (
 		<TrackableLink

@@ -11,14 +11,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 trait GoogleHelper {
 
 	/**
-	 * Get an array of merchant center supported countries and currencies.
+	 * Get an array of Google Merchant Center supported countries and currencies.
 	 *
 	 * Note - Other currencies may be supported using currency conversion.
 	 *
 	 * WooCommerce Countries -> https://github.com/woocommerce/woocommerce/blob/master/i18n/countries.php
 	 * Google Supported Countries -> https://support.google.com/merchants/answer/160637?hl=en
-	 *
-	 * Commented out countries are "listed" as beta countries.
 	 *
 	 * @param bool $include_beta Whether to include countries supported in Beta by Google.
 	 *
@@ -127,7 +125,7 @@ trait GoogleHelper {
 	}
 
 	/**
-	 * Get an array of merchant center supported countries.
+	 * Get an array of Google Merchant Center supported countries.
 	 *
 	 * WooCommerce Countries -> https://github.com/woocommerce/woocommerce/blob/master/i18n/countries.php
 	 * Google Supported Countries -> https://support.google.com/merchants/answer/160637?hl=en
@@ -138,5 +136,51 @@ trait GoogleHelper {
 	 */
 	protected function get_mc_supported_countries( bool $include_beta = false ): array {
 		return array_keys( $this->get_mc_supported_countries_currencies( $include_beta ) );
+	}
+
+	/**
+	 * Get an array of Google Merchant Center supported languages (ISO 639-1).
+	 *
+	 * WooCommerce Languages -> https://translate.wordpress.org/projects/wp-plugins/woocommerce/
+	 * Google Supported Languages -> https://support.google.com/merchants/answer/160637?hl=en
+	 * ISO 639-1 -> https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+	 *
+	 * @return array
+	 */
+	protected function get_mc_supported_languages(): array {
+		// Repeated values removed:
+		// 'pt', // Brazilian Portuguese
+		// 'zh', // Simplified Chinese*
+
+		return [
+			'ar', // Arabic
+			'cs', // Czech
+			'da', // Danish
+			'nl', // Dutch
+			'en', // English
+			'fi', // Finnish
+			'fr', // French
+			'de', // German
+			'he', // Hebrew
+			'hu', // Hungarian
+			'id', // Indonesian
+			'it', // Italian
+			'ja', // Japanese
+			'ko', // Korean
+			'el', // Modern Greek
+			'no', // Norwegian
+			'pl', // Polish
+			'pt', // Portuguese
+			'ro', // Romanian
+			'ru', // Russian
+			'sk', // Slovak
+			'es', // Spanish
+			'sv', // Swedish
+			'th', // Thai
+			'zh', // Traditional Chinese
+			'tr', // Turkish
+			'uk', // Ukrainian
+			'vi', // Vietnamese
+		];
 	}
 }

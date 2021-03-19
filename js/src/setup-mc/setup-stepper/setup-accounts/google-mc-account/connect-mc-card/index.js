@@ -13,7 +13,7 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
-import ContentButtonLayout from '../../content-button-layout';
+import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import AppTextButton from '.~/components/app-text-button';

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Exception;
 
+use Exception;
 use Throwable;
 use WP_Error;
 
@@ -41,5 +42,22 @@ trait WPErrorTrait {
 	 */
 	protected function error_from_exception( Throwable $e, string $code, array $data = [] ): WP_Error {
 		return new WP_Error( $code, $e->getMessage(), $data );
+	}
+
+	/**
+	 * Try to decode a JSON string.
+	 *
+	 * @param string $message
+	 *
+	 * @return array
+	 * @throws Exception When the JSON could not be decoded.
+	 */
+	protected function json_decode_message( string $message ): array {
+		$decoded = json_decode( $message, true );
+		if ( null === $decoded || JSON_ERROR_NONE !== json_last_error() ) {
+			throw new Exception( 'Could not decode JSON' );
+		}
+
+		return $decoded;
 	}
 }

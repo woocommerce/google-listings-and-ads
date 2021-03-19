@@ -29,6 +29,11 @@ All event names are prefixed by `wcadmin_gla_`.
   * `id`: (faq identifier)
   * `href`
 
+* `get_started_notice_link_click` - Clicking on a text link within the notice on the Get Started page
+  * `link_id`: link identifier
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
+
 * `table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
   * `column`: name of the column
@@ -67,6 +72,11 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `modal_content_link_click` - Clicking on a text link within the modal content
   * `context`: indicate which link is clicked
+  * `href`: link's URL
+
+* `google_ads_account_link_click` - Clicking on a Google Ads account text link.
+  * `context`: indicate which page / module the link is in
+  * `link_id`: a unique ID for the link within the page / module
   * `href`: link's URL
 
 <!-- -- >

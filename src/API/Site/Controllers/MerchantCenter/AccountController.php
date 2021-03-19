@@ -230,6 +230,7 @@ class AccountController extends BaseOptionsController {
 
 			$this->account_state->update( [] );
 			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
+			$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 
 			return [
 				'status'  => 'success',
@@ -333,7 +334,6 @@ class AccountController extends BaseOptionsController {
 						$merchant_id                       = $this->middleware->create_merchant_account();
 						$step['data']['from_mca']          = true;
 						$step['data']['created_timestamp'] = time();
-						$this->merchant->set_id( $merchant_id );
 						break;
 					case 'verify':
 						$this->verify_site();
@@ -504,7 +504,6 @@ class AccountController extends BaseOptionsController {
 		}
 
 		$this->middleware->link_merchant_account( $account_id );
-		$this->merchant->set_id( $account_id );
 		$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
 		$this->account_state->update( $state );
 	}

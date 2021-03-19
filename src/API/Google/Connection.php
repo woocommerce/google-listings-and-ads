@@ -17,6 +17,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Connection {
 
+	use ApiExceptionTrait;
+
 	/**
 	 * @var ContainerInterface
 	 */
@@ -112,8 +114,7 @@ class Connection {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving status: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ) );
 		}
 	}
 

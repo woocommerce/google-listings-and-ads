@@ -26,6 +26,18 @@ export const getExistingGoogleMCAccounts = ( state ) => {
 	return state.mc.accounts.existing_mc;
 };
 
+export const getGoogleAdsAccount = ( state ) => {
+	return state.mc.accounts.ads;
+};
+
+export const getGoogleAdsAccountBillingStatus = ( state ) => {
+	return state.mc.accounts.ads_billing_status;
+};
+
+export const getExistingGoogleAdsAccounts = ( state ) => {
+	return state.mc.accounts.existing_ads;
+};
+
 export const getCountries = ( state ) => {
 	return state.mc.countries;
 };

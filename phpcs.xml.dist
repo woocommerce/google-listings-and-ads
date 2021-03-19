@@ -82,6 +82,7 @@
 		<properties>
 			<property name="exclude" type="array">
 				<element value="json_encode"/>
+				<element value="rand"/>
 			</property>
 		</properties>
 	</rule>

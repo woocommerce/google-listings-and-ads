@@ -9,7 +9,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import AppInputControl from '.~/components/app-input-control';
-import VerticalGapLayout from '../../components/vertical-gap-layout';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddRateButton from './add-rate-button';
 import { STORE_KEY } from '.~/data';
 import CountriesPriceInputForm from './countries-price-input-form';
