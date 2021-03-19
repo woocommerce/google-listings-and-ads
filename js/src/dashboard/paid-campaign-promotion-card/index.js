@@ -3,11 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getNewPath } from '@woocommerce/navigation';
-import {
-	Card,
-	CardHeader,
-	__experimentalText as Text,
-} from '@wordpress/components';
+import { Card, CardHeader } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 
 /**
@@ -24,7 +20,7 @@ const PromotionContent = ( { adsAccount } ) => {
 
 	return (
 		<>
-			<Text variant="body">
+			<p className="gla-dashboard__performance__promotion-text">
 				{ showFreeCredit
 					? __(
 							'Create your first campaign and get up to $150* free',
@@ -34,7 +30,7 @@ const PromotionContent = ( { adsAccount } ) => {
 							'Create your first campaign',
 							'google-listings-and-ads'
 					  ) }
-			</Text>
+			</p>
 			<TrackableLink
 				className="components-button is-secondary is-small"
 				eventName="gla_dashboard_link_clicked"
@@ -55,9 +51,7 @@ function PaidCampaignPromotionCard( { title } ) {
 
 	return (
 		<Card>
-			<CardHeader size="medium">
-				<Text variant="title.small">{ title }</Text>
-			</CardHeader>
+			<CardHeader size="medium">{ title }</CardHeader>
 			<div className="gla-dashboard__performance__promotion-container">
 				{ googleAdsAccount ? (
 					<PromotionContent adsAccount={ googleAdsAccount } />
