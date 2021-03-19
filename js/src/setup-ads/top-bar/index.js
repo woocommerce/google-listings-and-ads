@@ -10,8 +10,26 @@ import { __ } from '@wordpress/i18n';
 import { recordSetupAdsEvent } from '.~/utils/recordEvent';
 import TopBar from '.~/components/stepper/top-bar';
 
-const SetupAdsTopBar = () => {
+const SetupAdsTopBar = ( props ) => {
+	const { formProps } = props;
+	const { touched } = formProps;
+	const shouldPreventClose = Object.entries( touched ).length >= 1;
+
 	const handleBackButtonClick = () => {
+		if ( shouldPreventClose ) {
+			// eslint-disable-next-line no-alert
+			const result = window.confirm(
+				__(
+					'You have unsaved campaign data. Are you sure you want to leave?',
+					'google-listings-and-ads'
+				)
+			);
+
+			if ( ! result ) {
+				return false;
+			}
+		}
+
 		recordSetupAdsEvent( 'back' );
 	};
 

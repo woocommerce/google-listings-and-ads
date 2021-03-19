@@ -7,6 +7,7 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import AdsStepper from './ads-stepper';
+import SetupAdsTopBar from './top-bar';
 
 const SetupAdsFormContent = ( props ) => {
 	const { formProps } = props;
@@ -31,7 +32,12 @@ const SetupAdsFormContent = ( props ) => {
 		};
 	}, [ shouldPreventClose ] );
 
-	return <AdsStepper formProps={ formProps } />;
+	return (
+		<>
+			<SetupAdsTopBar formProps={ formProps } />
+			<AdsStepper formProps={ formProps } />
+		</>
+	);
 };
 
 export default SetupAdsFormContent;
