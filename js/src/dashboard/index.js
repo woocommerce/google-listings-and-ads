@@ -21,6 +21,8 @@ import './index.scss';
 const Dashboard = () => {
 	const { adsSetupComplete } = glaData;
 	// TODO: this data should come from backend API.
+	//       And also, reconsider that would it better to encapsulate the `adsSetupComplete` and
+	//       `paidPerformanceTitle` into a new component and conditionally render different content.
 	const data = {
 		freeListing: {
 			netSales: {
