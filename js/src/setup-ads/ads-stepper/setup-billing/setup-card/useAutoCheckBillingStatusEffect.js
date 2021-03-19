@@ -1,42 +1,33 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
+import useWindowFocusRef from '.~/hooks/useWindowFocusRef';
 
 const retryIntervalInSeconds = 10;
 
 const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
-	// used to keep track whether current window is in focus.
-	const focusRef = useRef( true );
-
+	const focusRef = useWindowFocusRef();
 	const { fetchGoogleAdsAccountBillingStatus } = useAppDispatch();
 	const { billingStatus = {} } = useGoogleAdsAccountBillingStatus();
 	const { status } = billingStatus;
 
-	// check billing status when window got focus
-	// and set the focusRef accordingly.
+	// check billing status when window got focus.
 	useEffect( () => {
 		const handleWindowFocus = () => {
-			focusRef.current = true;
 			fetchGoogleAdsAccountBillingStatus();
 		};
 
-		const handleWindowBlur = () => {
-			focusRef.current = false;
-		};
-
 		window.addEventListener( 'focus', handleWindowFocus );
-		window.addEventListener( 'blur', handleWindowBlur );
 
 		return () => {
 			window.removeEventListener( 'focus', handleWindowFocus );
-			window.removeEventListener( 'blur', handleWindowBlur );
 		};
 	}, [ fetchGoogleAdsAccountBillingStatus ] );
 
@@ -49,7 +40,7 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 		}, retryIntervalInSeconds * 1000 );
 
 		return () => clearInterval( intervalID );
-	}, [ fetchGoogleAdsAccountBillingStatus ] );
+	}, [ fetchGoogleAdsAccountBillingStatus, focusRef ] );
 
 	useEffect( () => {
 		if ( status === 'approved' ) {
