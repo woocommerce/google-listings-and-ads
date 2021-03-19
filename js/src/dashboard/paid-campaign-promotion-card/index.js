@@ -22,21 +22,19 @@ const PromotionContent = ( { adsAccount } ) => {
 	const showFreeCredit =
 		adsAccount.sub_account || adsAccount.status === 'disconnected';
 
-	let promoteText = __(
-		'Create your first campaign',
-		'google-listings-and-ads'
-	);
-
-	if ( showFreeCredit ) {
-		promoteText += __(
-			' and get up to $150* free',
-			'google-listings-and-ads'
-		);
-	}
-
 	return (
 		<>
-			<Text variant="body">{ promoteText }</Text>
+			<Text variant="body">
+				{ showFreeCredit
+					? __(
+							'Create your first campaign and get up to $150* free',
+							'google-listings-and-ads'
+					  )
+					: __(
+							'Create your first campaign',
+							'google-listings-and-ads'
+					  ) }
+			</Text>
 			<TrackableLink
 				className="components-button is-secondary is-small"
 				eventName="gla_dashboard_link_clicked"
