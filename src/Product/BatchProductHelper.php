@@ -76,51 +76,24 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	 * @param BatchProductEntry $product_entry
 	 */
 	public function mark_as_synced( BatchProductEntry $product_entry ) {
-		$wc_product_id  = $product_entry->get_wc_product_id();
+		$wc_product     = wc_get_product( $product_entry->get_wc_product_id() );
 		$google_product = $product_entry->get_google_product();
 
+		$this->validate_instanceof( $wc_product, WC_Product::class );
 		$this->validate_instanceof( $google_product, GoogleProduct::class );
 
-		$this->meta_handler->update_synced_at( $wc_product_id, time() );
-
-		// merge and update all google product ids
-		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
-		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
-		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
-		$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
-
-		// check if product is synced completely and remove any previous errors if it is
-		$synced_countries = array_keys( $google_ids );
-		$target_countries = $this->get_target_countries();
-		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
-			$this->meta_handler->delete_errors( $wc_product_id );
-			$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
-			$this->meta_handler->delete_sync_failed_at( $wc_product_id );
-		}
-
-		// mark the parent product as synced if it's a variation
-		$wc_product = wc_get_product( $wc_product_id );
-		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
-			$this->mark_as_synced( new BatchProductEntry( $wc_product->get_parent_id(), $google_product ) );
-		}
+		$this->product_helper->mark_as_synced( $wc_product, $google_product );
 	}
 
 	/**
 	 * @param BatchProductEntry $product_entry
 	 */
 	public function mark_as_unsynced( BatchProductEntry $product_entry ) {
-		$wc_product_id = $product_entry->get_wc_product_id();
-		$this->meta_handler->delete_synced_at( $wc_product_id );
-		$this->meta_handler->delete_google_ids( $wc_product_id );
-		$this->meta_handler->delete_errors( $wc_product_id );
-		$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
-		$this->meta_handler->delete_sync_failed_at( $wc_product_id );
+		$wc_product = wc_get_product( $product_entry->get_wc_product_id() );
 
-		// mark the parent product as un-synced if it's a variation
-		$wc_product = wc_get_product( $wc_product_id );
-		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
-			$this->mark_as_unsynced( new BatchProductEntry( $wc_product->get_parent_id(), null ) );
-		}
+		$this->validate_instanceof( $wc_product, WC_Product::class );
+
+		$this->product_helper->mark_as_unsynced( $wc_product );
 	}
 
 	/**
@@ -131,38 +104,12 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	 * @param BatchInvalidProductEntry $product_entry
 	 */
 	public function mark_as_invalid( BatchInvalidProductEntry $product_entry ) {
-		$wc_product_id = $product_entry->get_wc_product_id();
-		$errors        = $product_entry->get_errors();
+		$wc_product = wc_get_product( $product_entry->get_wc_product_id() );
+		$errors     = $product_entry->get_errors();
 
-		// bail if no errors exist
-		if ( empty( $errors ) ) {
-			return;
-		}
+		$this->validate_instanceof( $wc_product, WC_Product::class );
 
-		$this->meta_handler->update_errors( $wc_product_id, $errors );
-
-		if ( $this->has_internal_error( $product_entry ) ) {
-			// update failed sync attempts count in case of internal errors
-			$failed_attempts = ! empty( $this->meta_handler->get_failed_sync_attempts( $wc_product_id ) ) ?
-				$this->meta_handler->get_failed_sync_attempts( $wc_product_id ) :
-				0;
-			$this->meta_handler->update_failed_sync_attempts( $wc_product_id, $failed_attempts + 1 );
-			$this->meta_handler->update_sync_failed_at( $wc_product_id, time() );
-		}
-
-		// mark the parent product as invalid if it's a variation
-		$wc_product = wc_get_product( $wc_product_id );
-		if ( $wc_product instanceof WC_Product_Variation && ! empty( $wc_product->get_parent_id() ) ) {
-			$wc_parent_id = $wc_product->get_parent_id();
-
-			$parent_errors = ! empty( $this->meta_handler->get_errors( $wc_parent_id ) ) ?
-				$this->meta_handler->get_errors( $wc_parent_id ) :
-				[];
-
-			$parent_errors[ $wc_product_id ] = $errors;
-
-			$this->mark_as_invalid( new BatchInvalidProductEntry( $wc_parent_id, $parent_errors ) );
-		}
+		$this->product_helper->mark_as_invalid( $wc_product, $errors );
 	}
 
 	/**
@@ -261,19 +208,6 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	}
 
 	/**
-	 * Whether the invalid product entry has internal syncing errors
-	 *
-	 * @param BatchInvalidProductEntry $invalid_product_entry
-	 *
-	 * @return bool
-	 */
-	protected function has_internal_error( BatchInvalidProductEntry $invalid_product_entry ): bool {
-		$errors = $invalid_product_entry->get_errors();
-
-		return ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] );
-	}
-
-	/**
 	 * Filters the list of invalid product entries and returns an array of WooCommerce product IDs with internal errors
 	 *
 	 * @param BatchInvalidProductEntry[] $args
@@ -283,7 +217,8 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	public function get_internal_error_products( array $args ): array {
 		$internal_error_ids = [];
 		foreach ( $args as $invalid_product ) {
-			if ( $this->has_internal_error( $invalid_product ) ) {
+			$errors = $invalid_product->get_errors();
+			if ( ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] ) ) {
 				$product_id = $invalid_product->get_wc_product_id();
 
 				$internal_error_ids[ $product_id ] = $product_id;
