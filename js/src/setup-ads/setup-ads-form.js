@@ -6,7 +6,7 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import AdsStepper from './ads-stepper';
+import SetupAdsFormContent from './setup-ads-form-content';
 
 const SetupAdsForm = () => {
 	const handleValidate = () => {
@@ -26,7 +26,7 @@ const SetupAdsForm = () => {
 			validate={ handleValidate }
 		>
 			{ ( formProps ) => {
-				return <AdsStepper formProps={ formProps } />;
+				return <SetupAdsFormContent formProps={ formProps } />;
 			} }
 		</Form>
 	);
