@@ -1,15 +1,12 @@
-.gla-dashboard__performance {
-	.components-card > div:not(.components-card__header) {
-		// Make card contents within a row have the same height
-		flex: 1;
-	}
-
+.gla-paid-campaign-promotion-card {
 	.components-card__header {
 		line-height: 28px;
 		font-size: 20px;
 	}
 
-	&__promotion-container {
+	&__body {
+		// Make card contents within a row have the same height
+		flex: 1;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -21,7 +18,7 @@
 		color: #757575;
 	}
 
-	&__promotion-text {
+	&__text {
 		margin: 0;
 	}
 

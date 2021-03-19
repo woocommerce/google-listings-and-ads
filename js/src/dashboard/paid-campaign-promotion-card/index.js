@@ -20,7 +20,7 @@ const PromotionContent = ( { adsAccount } ) => {
 
 	return (
 		<>
-			<p className="gla-dashboard__performance__promotion-text">
+			<p className="gla-paid-campaign-promotion-card__text">
 				{ showFreeCredit
 					? __(
 							'Create your first campaign and get up to $150* free',
@@ -50,9 +50,9 @@ function PaidCampaignPromotionCard( { title } ) {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	return (
-		<Card>
+		<Card className="gla-paid-campaign-promotion-card">
 			<CardHeader size="medium">{ title }</CardHeader>
-			<div className="gla-dashboard__performance__promotion-container">
+			<div className="gla-paid-campaign-promotion-card__body">
 				{ googleAdsAccount ? (
 					<PromotionContent adsAccount={ googleAdsAccount } />
 				) : (
