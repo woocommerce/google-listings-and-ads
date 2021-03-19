@@ -11,8 +11,16 @@ import { __ } from '@wordpress/i18n';
 import EditTimeModal from './edit-time-modal';
 import './index.scss';
 
-const EditTimeButton = ( props ) => {
-	const { time } = props;
+/**
+ * Triggering button and modal with the
+ * form to edit time for selected country(-ies).
+ *
+ * @param {Object} props
+ * @param {AggregatedShippingTime} props.time
+ * @param {(newTime: AggregatedShippingTime, deletedCountries: Array<CountryCode>) => void} props.onChange Called once the time is submitted.
+ * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
+ */
+const EditTimeButton = ( { time, onChange, onDelete } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleClick = () => {
@@ -20,6 +28,15 @@ const EditTimeButton = ( props ) => {
 	};
 
 	const handleModalRequestClose = () => {
+		setOpen( false );
+	};
+
+	const handleChange = ( ...args ) => {
+		onChange( ...args );
+		setOpen( false );
+	};
+	const handleDelete = ( value ) => {
+		onDelete( value );
 		setOpen( false );
 	};
 
@@ -35,6 +52,8 @@ const EditTimeButton = ( props ) => {
 			{ isOpen && (
 				<EditTimeModal
 					time={ time }
+					onSubmit={ handleChange }
+					onDelete={ handleDelete }
 					onRequestClose={ handleModalRequestClose }
 				/>
 			) }
@@ -43,3 +62,8 @@ const EditTimeButton = ( props ) => {
 };
 
 export default EditTimeButton;
+
+/**
+ * @typedef {import("../countries-form.js").AggregatedShippingTime} AggregatedShippingTime
+ * @typedef {import("../countries-form.js").CountryCode} CountryCode
+ */
