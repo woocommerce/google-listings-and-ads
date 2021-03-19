@@ -9,11 +9,11 @@ import { __ } from '@wordpress/i18n';
  */
 import { recordSetupAdsEvent } from '.~/utils/recordEvent';
 import TopBar from '.~/components/stepper/top-bar';
+import isFormTouched from '../is-form-touched';
 
 const SetupAdsTopBar = ( props ) => {
 	const { formProps } = props;
-	const { touched } = formProps;
-	const shouldPreventClose = Object.entries( touched ).length >= 1;
+	const shouldPreventClose = isFormTouched( formProps );
 
 	const handleBackButtonClick = () => {
 		if ( shouldPreventClose ) {

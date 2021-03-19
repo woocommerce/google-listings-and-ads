@@ -7,12 +7,12 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import AdsStepper from './ads-stepper';
+import isFormTouched from './is-form-touched';
 import SetupAdsTopBar from './top-bar';
 
 const SetupAdsFormContent = ( props ) => {
 	const { formProps } = props;
-	const { touched } = formProps;
-	const shouldPreventClose = Object.entries( touched ).length >= 1;
+	const shouldPreventClose = isFormTouched( formProps );
 
 	useEffect( () => {
 		const eventListener = ( e ) => {
