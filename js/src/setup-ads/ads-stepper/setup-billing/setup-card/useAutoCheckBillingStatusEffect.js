@@ -10,7 +10,7 @@ import { useAppDispatch } from '.~/data';
 import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import useWindowFocusRef from '.~/hooks/useWindowFocusRef';
 
-const retryIntervalInSeconds = 10;
+const pollIntervalInSeconds = 30;
 
 const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 	const focusRef = useWindowFocusRef();
@@ -37,7 +37,7 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 			if ( focusRef.current ) {
 				fetchGoogleAdsAccountBillingStatus();
 			}
-		}, retryIntervalInSeconds * 1000 );
+		}, pollIntervalInSeconds * 1000 );
 
 		return () => clearInterval( intervalID );
 	}, [ fetchGoogleAdsAccountBillingStatus, focusRef ] );
