@@ -6,9 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use WP_REST_Response as Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use Psr\Container\ContainerInterface;
@@ -23,11 +22,11 @@ defined( 'ABSPATH' ) || exit;
 class ProductsController extends BaseOptionsController {
 
 	/**
-	 * The merchant object.
+	 * The ProductStatistics object.
 	 *
-	 * @var Merchant
+	 * @var ProductStatistics
 	 */
-	protected $merchant;
+	protected $product_statistics;
 
 	/**
 	 * The container object.
@@ -44,8 +43,8 @@ class ProductsController extends BaseOptionsController {
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->merchant  = $container->get( Merchant::class );
-		$this->container = $container;
+		$this->product_statistics = $container->get( ProductStatistics::class );
+		$this->container          = $container;
 	}
 
 	/**
@@ -98,23 +97,28 @@ class ProductsController extends BaseOptionsController {
 	/**
 	 * Get the global product status statistics array.
 	 *
-	 * @return array
-	 * @throws Exception If the Merchant account status can't be retrieved.
+	 * @return array|Response
 	 */
-	protected function get_product_status_stats(): array {
-		return $this->container->get( ProductStatistics::class )->get();
+	protected function get_product_status_stats() {
+		try {
+			return $this->product_statistics->get();
+		} catch ( Exception $e ) {
+			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+		}
 
 	}
 
 	/**
 	 * Get the global product status statistics array.
 	 *
-	 * @return array
-	 * @throws Exception If the Merchant account status can't be retrieved.
+	 * @return array|Response
 	 */
-	protected function refresh_product_status_stats(): array {
-		return $this->container->get( ProductStatistics::class )->recalculate();
-
+	protected function refresh_product_status_stats() {
+		try {
+			return $this->product_statistics->recalculate();
+		} catch ( Exception $e ) {
+			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+		}
 	}
 
 	/**
@@ -123,7 +127,20 @@ class ProductsController extends BaseOptionsController {
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
-		return [];
+		return [
+			'timestamp'  => [
+				'type'        => 'number',
+				'description' => __( 'Timestamp reflecting when the statistics were last retrieved.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'statistics' => [
+				'type'        => 'array',
+				'description' => __( 'Merchant Center product statistics.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+		];
 	}
 
 	/**
