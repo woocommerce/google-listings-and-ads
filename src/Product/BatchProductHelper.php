@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
@@ -16,7 +17,6 @@ use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
-use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -117,7 +117,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	 *
 	 * @param WC_Product[] $products
 	 *
-	 * @return BatchProductRequestEntry[]
+	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_delete_request_entries( array $products ): array {
 		$request_entries = [];
@@ -133,7 +133,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 			}
 
 			foreach ( $google_ids as $google_id ) {
-				$request_entries[] = new BatchProductRequestEntry(
+				$request_entries[] = new BatchProductIDRequestEntry(
 					$product->get_id(),
 					$google_id
 				);

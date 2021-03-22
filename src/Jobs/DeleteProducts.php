@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ProductIDMap;
 
@@ -37,7 +37,7 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $product_id_map ) {
-		$product_entries = BatchProductRequestEntry::create_from_id_map( new ProductIDMap( $product_id_map ) );
+		$product_entries = BatchProductIDRequestEntry::create_from_id_map( new ProductIDMap( $product_id_map ) );
 		$this->product_syncer->delete_by_batch_requests( $product_entries );
 	}
 

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
@@ -125,7 +126,6 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 	public function delete( array $products ): BatchProductResponse {
 		$this->validate_merchant_center_setup();
 
-		// filter the synced products
 		$synced_products = $this->batch_helper->filter_synced_products( $products );
 		$product_entries = $this->batch_helper->generate_delete_request_entries( $synced_products );
 
@@ -137,7 +137,7 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 	 *
 	 * Note: This method does not automatically delete variations of a parent product. They each must be provided via the $product_entries argument.
 	 *
-	 * @param BatchProductRequestEntry[] $product_entries
+	 * @param BatchProductIDRequestEntry[] $product_entries
 	 *
 	 * @return BatchProductResponse Containing both the deleted and invalid products (including their variation).
 	 *
@@ -168,7 +168,7 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 
 		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
 		if ( ! empty( $internal_error_products ) && apply_filters( 'gla_products_delete_retry_on_failure', true, $invalid_products ) ) {
-			$id_map     = BatchProductRequestEntry::convert_to_id_map( $product_entries );
+			$id_map     = BatchProductIDRequestEntry::convert_to_id_map( $product_entries );
 			$failed_ids = array_intersect( $id_map->get(), $internal_error_products );
 
 			do_action( 'gla_batch_retry_delete_products', $failed_ids );

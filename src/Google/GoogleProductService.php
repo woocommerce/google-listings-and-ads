@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Google\Exception as GoogleException;
 use Google_Service_ShoppingContent as GoogleShoppingService;
@@ -22,6 +23,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
 class GoogleProductService implements Service {
+
+	use ValidateInterface;
 
 	public const INTERNAL_ERROR_REASON = 'internalError';
 
@@ -95,7 +98,7 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param BatchProductRequestEntry[] $products
+	 * @param BatchProductIDRequestEntry[] $products
 	 *
 	 * @return BatchProductResponse
 	 *
@@ -125,7 +128,7 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param BatchProductRequestEntry[] $products
+	 * @param BatchProductIDRequestEntry[] $products
 	 *
 	 * @return BatchProductResponse
 	 *
@@ -140,8 +143,8 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param BatchProductRequestEntry[] $products
-	 * @param string                     $method
+	 * @param BatchProductRequestEntry[]|BatchProductIDRequestEntry[] $products
+	 * @param string                                                  $method
 	 *
 	 * @return BatchProductResponse
 	 *
@@ -157,7 +160,7 @@ class GoogleProductService implements Service {
 
 		$batch_id = 0;
 		foreach ( $products as $product_entry ) {
-			$this->validate_batch_method_product( $method, $product_entry->get_product() );
+			$this->validate_batch_request_entry( $product_entry, $method );
 
 			$request_entry = new GoogleBatchRequestEntry(
 				[
@@ -167,9 +170,12 @@ class GoogleProductService implements Service {
 				]
 			);
 
-			$product_key                   = self::METHOD_INSERT === $method ? 'product' : 'product_id';
-			$request_entry[ $product_key ] = $product_entry->get_product();
-			$request_entries[]             = $request_entry;
+			if ( $product_entry instanceof BatchProductRequestEntry ) {
+				$request_entry['product'] = $product_entry->get_product();
+			} else {
+				$request_entry['product_id'] = $product_entry->get_product_id();
+			}
+			$request_entries[] = $request_entry;
 
 			$batch_id_product_map[ $batch_id ] = $product_entry->get_wc_product_id();
 
@@ -210,16 +216,16 @@ class GoogleProductService implements Service {
 	}
 
 	/**
-	 * @param string               $method
-	 * @param GoogleProduct|string $product
+	 * @param BatchProductRequestEntry|BatchProductIDRequestEntry $request_entry
+	 * @param string                                              $method
 	 *
 	 * @throws InvalidValue If the product type is invalid for the batch method.
 	 */
-	protected function validate_batch_method_product( string $method, $product ) {
-		if ( self::METHOD_INSERT === $method && ! $product instanceof GoogleProduct ) {
-			throw InvalidValue::not_instance_of( GoogleProduct::class, 'product' );
-		} elseif ( in_array( $method, [ self::METHOD_GET, self::METHOD_DELETE ], true ) && ! is_string( $product ) ) {
-			throw InvalidValue::not_string( 'product' );
+	protected function validate_batch_request_entry( $request_entry, string $method ) {
+		if ( self::METHOD_INSERT === $method ) {
+			$this->validate_instanceof( $request_entry, BatchProductRequestEntry::class );
+		} else {
+			$this->validate_instanceof( $request_entry, BatchProductIDRequestEntry::class );
 		}
 	}
 
