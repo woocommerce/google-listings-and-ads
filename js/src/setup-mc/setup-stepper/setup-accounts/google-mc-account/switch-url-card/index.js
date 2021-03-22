@@ -16,6 +16,7 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import AccountId from '.~/components/account-id';
 import './index.scss';
+import OverwriteFeedCard from '../overwrite-feed-card';
 
 const SwitchUrlCard = ( props ) => {
 	const {
@@ -26,11 +27,24 @@ const SwitchUrlCard = ( props ) => {
 		onSelectAnotherAccount = () => {},
 	} = props;
 	const { receiveMCAccount } = useAppDispatch();
-	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetchCallback( {
+	const [
+		fetchMCAccountSwitchUrl,
+		{ loading, response, error },
+	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/switch-url`,
 		method: 'POST',
 		data: { id },
 	} );
+
+	if ( response?.status === 409 && error?.action === 'feed-overwrite' ) {
+		return (
+			<OverwriteFeedCard
+				id={ error.id }
+				url={ error.url }
+				onSelectAnotherAccount={ onSelectAnotherAccount }
+			/>
+		);
+	}
 
 	const handleSwitch = async () => {
 		const account = await fetchMCAccountSwitchUrl();
