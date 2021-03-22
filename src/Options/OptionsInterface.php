@@ -14,6 +14,7 @@ interface OptionsInterface {
 	public const ADS_BILLING_URL        = 'ads_billing_url';
 	public const ADS_ID                 = 'ads_id';
 	public const ADS_CONVERSION_ACTION  = 'ads_conversion_action';
+	public const ADS_SETUP_COMPLETED_AT = 'ads_setup_completed_at';
 	public const DB_VERSION             = 'db_version';
 	public const FILE_VERSION           = 'file_version';
 	public const INSTALL_TIMESTAMP      = 'install_timestamp';

@@ -9,15 +9,20 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import TabNav from '../tab-nav';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummaryCard from './summary-card';
+import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
 import './index.scss';
 
 const Dashboard = () => {
+	const { adsSetupComplete } = glaData;
 	// TODO: this data should come from backend API.
+	//       And also, reconsider that would it better to encapsulate the `adsSetupComplete` and
+	//       `paidPerformanceTitle` into a new component and conditionally render different content.
 	const data = {
 		freeListing: {
 			netSales: {
@@ -41,6 +46,10 @@ const Dashboard = () => {
 		},
 	};
 	const trackEventReportId = 'dashboard';
+	const paidPerformanceTitle = __(
+		'Performance (Paid Campaigns)',
+		'woocommerce-admin'
+	);
 
 	return (
 		<div className="gla-dashboard">
@@ -71,23 +80,28 @@ const Dashboard = () => {
 						delta={ data.freeListing.totalSpend.delta }
 					/>
 				</SummaryCard>
-				<SummaryCard
-					title={ __(
-						'Performance (Paid Campaigns)',
-						'woocommerce-admin'
-					) }
-				>
-					<SummaryNumber
-						label={ __( 'Net Sales', 'google-listings-and-ads' ) }
-						value={ data.paidCampaigns.netSales.value }
-						delta={ data.paidCampaigns.netSales.delta }
-					/>
-					<SummaryNumber
-						label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-						value={ data.paidCampaigns.totalSpend.value }
-						delta={ data.paidCampaigns.totalSpend.delta }
-					/>
-				</SummaryCard>
+				{ adsSetupComplete ? (
+					<SummaryCard title={ paidPerformanceTitle }>
+						<SummaryNumber
+							label={ __(
+								'Net Sales',
+								'google-listings-and-ads'
+							) }
+							value={ data.paidCampaigns.netSales.value }
+							delta={ data.paidCampaigns.netSales.delta }
+						/>
+						<SummaryNumber
+							label={ __(
+								'Total Spend',
+								'google-listings-and-ads'
+							) }
+							value={ data.paidCampaigns.totalSpend.value }
+							delta={ data.paidCampaigns.totalSpend.delta }
+						/>
+					</SummaryCard>
+				) : (
+					<PaidCampaignPromotionCard title={ paidPerformanceTitle } />
+				) }
 			</div>
 			<div className="gla-dashboard__programs">
 				<CampaignCreationSuccessGuide />
