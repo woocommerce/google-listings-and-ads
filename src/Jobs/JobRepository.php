@@ -20,12 +20,12 @@ class JobRepository implements Service {
 	/**
 	 * @var JobInterface[]
 	 */
-	protected $jobs;
+	protected $jobs = [];
 
 	/**
 	 * @var string[]
 	 */
-	protected $jobs_class_name_map;
+	protected $jobs_class_name_map = [];
 
 	/**
 	 * JobRepository constructor.
