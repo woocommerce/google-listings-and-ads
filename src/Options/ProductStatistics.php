@@ -80,7 +80,7 @@ class ProductStatistics implements Service, ContainerAwareInterface {
 		];
 
 		// Update the cached values
-		$this->container->get( TransientsInterface::class )->set( Transients::MC_PRODUCT_STATISTICS, $product_statistics, self::STATISTICS_LIFETIME );
+		$this->container->get( TransientsInterface::class )->set( Transients::MC_PRODUCT_STATISTICS, $product_statistics, $this->get_statistics_lifetime() );
 
 		return $product_statistics;
 	}
@@ -90,5 +90,14 @@ class ProductStatistics implements Service, ContainerAwareInterface {
 	 */
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_PRODUCT_STATISTICS );
+	}
+
+	/**
+	 * Allows a hook to modify the statistics lifetime.
+	 *
+	 * @return int
+	 */
+	private function get_statistics_lifetime(): int {
+		return apply_filters( 'woocommerce_gla_product_statistics_lifetime', self::STATISTICS_LIFETIME );
 	}
 }
