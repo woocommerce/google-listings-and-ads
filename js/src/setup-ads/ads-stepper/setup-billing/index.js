@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { getHistory, getNewPath } from '@woocommerce/navigation';
 import { format as formatDate } from '@wordpress/date';
@@ -21,20 +22,17 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const SetupBilling = ( props ) => {
-	const { formProps } = props;
+	const {
+		formProps: {
+			values: { amount, country: countryArr },
+		},
+	} = props;
+	const country = countryArr && countryArr[ 0 ];
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
 	const [ fetchCreateCampaign, { loading } ] = useApiFetchCallback();
 	const { createNotice } = useDispatchCoreNotices();
 
-	if ( ! billingStatus ) {
-		return <AppSpinner />;
-	}
-
-	const handleLaunchCampaign = async () => {
-		const {
-			values: { amount, country },
-		} = formProps;
-
+	const handleLaunchCampaign = useCallback( async () => {
 		try {
 			const date = formatDate( 'Y-m-d', new Date() );
 
@@ -44,7 +42,7 @@ const SetupBilling = ( props ) => {
 				data: {
 					name: `Ads Campaign ${ date }`,
 					amount: Number( amount ),
-					country: country && country[ 0 ],
+					country,
 				},
 			} );
 
@@ -63,7 +61,11 @@ const SetupBilling = ( props ) => {
 				)
 			);
 		}
-	};
+	}, [ amount, country, createNotice, fetchCreateCampaign ] );
+
+	if ( ! billingStatus ) {
+		return <AppSpinner />;
+	}
 
 	return (
 		<StepContent>
