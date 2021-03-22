@@ -13,7 +13,7 @@ interface TransientsInterface {
 	public const MC_PRODUCT_STATISTICS = 'mc_product_statistics';
 
 	/**
-	 * Get an transient.
+	 * Get a transient.
 	 *
 	 * @param string $name    The transient name.
 	 * @param mixed  $default A default value for the transient.
@@ -34,7 +34,7 @@ interface TransientsInterface {
 	public function set( string $name, $value, int $expiration = 0 ): bool;
 
 	/**
-	 * Delete an transient.
+	 * Delete a transient.
 	 *
 	 * @param string $name The transient name.
 	 *

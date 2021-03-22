@@ -31,7 +31,7 @@ final class Transients implements TransientsInterface, Service {
 	protected $transients = [];
 
 	/**
-	 * Get an transient.
+	 * Get a transient.
 	 *
 	 * @param string $name    The transient name.
 	 * @param mixed  $default A default value for the transient.
@@ -76,7 +76,7 @@ final class Transients implements TransientsInterface, Service {
 	}
 
 	/**
-	 * Delete an transient.
+	 * Delete a transient.
 	 *
 	 * @param string $name The transient name.
 	 *
@@ -103,7 +103,7 @@ final class Transients implements TransientsInterface, Service {
 	}
 
 	/**
-	 * Prefix an transient name with the plugin prefix.
+	 * Prefix a transient name with the plugin prefix.
 	 *
 	 * @param string $name
 	 *
