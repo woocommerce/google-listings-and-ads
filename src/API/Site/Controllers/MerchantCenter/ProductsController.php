@@ -10,7 +10,6 @@ use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
