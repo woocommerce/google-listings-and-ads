@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidOption;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use GetOpt\ArgumentException\Invalid;
 
 defined( 'ABSPATH' ) || exit;
 
