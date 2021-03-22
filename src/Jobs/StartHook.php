@@ -16,6 +16,7 @@ class StartHook {
 	 * @var string
 	 */
 	protected $hook;
+
 	/**
 	 * @var int
 	 */
