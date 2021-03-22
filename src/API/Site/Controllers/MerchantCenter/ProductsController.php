@@ -59,7 +59,8 @@ class ProductsController extends BaseOptionsController {
 					'callback'            => $this->get_product_statistics_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-			]
+				'schema' => $this->get_api_response_schema_callback(),
+			],
 		);
 		$this->register_route(
 			'mc/product-statistics/refresh',
@@ -69,7 +70,8 @@ class ProductsController extends BaseOptionsController {
 					'callback'            => $this->get_product_statistics_refresh_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
-			]
+				'schema' => $this->get_api_response_schema_callback(),
+			],
 		);
 	}
 
