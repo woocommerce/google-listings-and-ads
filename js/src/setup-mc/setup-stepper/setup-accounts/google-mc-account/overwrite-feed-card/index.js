@@ -16,9 +16,11 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import AccountId from '.~/components/account-id';
 import './index.scss';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const OverwriteFeedCard = ( props ) => {
 	const { id, url, onSelectAnotherAccount = () => {} } = props;
+	const { createNotice } = useDispatchCoreNotices();
 	const { receiveMCAccount } = useAppDispatch();
 	const [ fetchMCAccountOverwriteFeed, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/feed-overwrite`,
@@ -27,9 +29,19 @@ const OverwriteFeedCard = ( props ) => {
 	} );
 
 	const handleOverwriteFeed = async () => {
-		const account = await fetchMCAccountOverwriteFeed();
+		try {
+			const account = await fetchMCAccountOverwriteFeed();
 
-		receiveMCAccount( account );
+			receiveMCAccount( account );
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to overwrite your feed. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
 	};
 
 	return (
