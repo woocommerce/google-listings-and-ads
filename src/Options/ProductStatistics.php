@@ -15,9 +15,8 @@ use Exception;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
-class ProductStatistics implements Service, OptionsAwareInterface, ContainerAwareInterface {
+class ProductStatistics implements Service, ContainerAwareInterface {
 
-	use OptionsAwareTrait;
 	use ContainerAwareTrait;
 
 	/**
@@ -32,18 +31,15 @@ class ProductStatistics implements Service, OptionsAwareInterface, ContainerAwar
 	private const STATISTICS_KEY = 'statistics';
 
 	/**
-	 * Retrieve or initialize the product_statistics option.
-	 *
-	 * @param bool $refresh_if_necessary True to initialize or refresh the stats if necessary.
+	 * Retrieve or initialize the product_statistics option. Refresh if the statistics have gone stale.
 	 *
 	 * @return array The account creation steps and statuses.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function get( bool $refresh_if_necessary = true ): array {
-		$product_statistics = $this->options->get( Options::MC_PRODUCT_STATISTICS, [] );
-		$timestamp          = $product_statistics[ self::TIMESTAMP_KEY ] ?? 0;
+	public function get(): array {
+		$product_statistics = $this->container->get( TransientsInterface::class )->get( Transients::MC_PRODUCT_STATISTICS, null );
 
-		if ( $refresh_if_necessary && $timestamp < time() - self::STATISTICS_LIFETIME ) {
+		if ( is_null( $product_statistics ) ) {
 			$product_statistics = $this->recalculate();
 		}
 
@@ -84,7 +80,7 @@ class ProductStatistics implements Service, OptionsAwareInterface, ContainerAwar
 		];
 
 		// Update the cached values
-		$this->options->update( Options::MC_PRODUCT_STATISTICS, $product_statistics );
+		$this->container->get( TransientsInterface::class )->set( Transients::MC_PRODUCT_STATISTICS, $product_statistics, self::STATISTICS_LIFETIME );
 
 		return $product_statistics;
 	}
@@ -93,6 +89,6 @@ class ProductStatistics implements Service, OptionsAwareInterface, ContainerAwar
 	 * Delete the cached statistics.
 	 */
 	public function delete(): void {
-		$this->options->delete( Options::MC_PRODUCT_STATISTICS );
+		$this->container->get( TransientsInterface::class )->delete( Transients::MC_PRODUCT_STATISTICS );
 	}
 }
