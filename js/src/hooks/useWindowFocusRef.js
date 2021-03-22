@@ -3,6 +3,11 @@
  */
 import { useEffect, useRef } from '@wordpress/element';
 
+/**
+ * Returns a ref object with a Boolean `current` property that indicates whether the window has focus.
+ *
+ * @return {Object} ref object.
+ */
 const useWindowFocusRef = () => {
 	const focusRef = useRef( true );
 

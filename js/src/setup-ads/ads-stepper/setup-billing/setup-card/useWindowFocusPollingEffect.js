@@ -8,19 +8,27 @@ import { useEffect } from '@wordpress/element';
  */
 import useWindowFocusRef from '.~/hooks/useWindowFocusRef';
 
-const useWindowFocusPollingEffect = ( fn = () => {}, intervalInSeconds ) => {
+/**
+ * Execute a callback function at every interval only when the window has focus.
+ *
+ * @param {Function} callback Function to be executed.
+ * @param {number} intervalInSeconds Interval in seconds.
+ */
+const useWindowFocusCallbackIntervalEffect = (
+	callback = () => {},
+	intervalInSeconds
+) => {
 	const focusRef = useWindowFocusRef();
 
-	// poll for billing status only when window is in focus.
 	useEffect( () => {
 		const intervalID = setInterval( () => {
 			if ( focusRef.current ) {
-				fn();
+				callback();
 			}
 		}, intervalInSeconds * 1000 );
 
 		return () => clearInterval( intervalID );
-	}, [ fn, focusRef, intervalInSeconds ] );
+	}, [ callback, focusRef, intervalInSeconds ] );
 };
 
-export default useWindowFocusPollingEffect;
+export default useWindowFocusCallbackIntervalEffect;
