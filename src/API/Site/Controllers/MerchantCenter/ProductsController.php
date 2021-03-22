@@ -90,35 +90,23 @@ class ProductsController extends BaseOptionsController {
 	 */
 	protected function get_product_statistics_refresh_callback(): callable {
 		return function() {
-			return $this->refresh_product_status_stats();
+			return $this->get_product_status_stats( true );
 		};
 	}
 
 	/**
 	 * Get the global product status statistics array.
 	 *
+	 * @param bool $refresh True to force a refresh of the product status statistics.
 	 * @return array|Response
 	 */
-	protected function get_product_status_stats() {
+	protected function get_product_status_stats( bool $refresh = false ) {
 		try {
-			return $this->product_statistics->get();
+			return $refresh ? $this->product_statistics->recalculate() : $this->product_statistics->get();
 		} catch ( Exception $e ) {
 			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 		}
 
-	}
-
-	/**
-	 * Get the global product status statistics array.
-	 *
-	 * @return array|Response
-	 */
-	protected function refresh_product_status_stats() {
-		try {
-			return $this->product_statistics->recalculate();
-		} catch ( Exception $e ) {
-			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-		}
 	}
 
 	/**
@@ -130,13 +118,13 @@ class ProductsController extends BaseOptionsController {
 		return [
 			'timestamp'  => [
 				'type'        => 'number',
-				'description' => __( 'Timestamp reflecting when the statistics were last retrieved.', 'google-listings-and-ads' ),
+				'description' => __( 'Timestamp reflecting when the product status statistics were last generated.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
 			'statistics' => [
 				'type'        => 'array',
-				'description' => __( 'Merchant Center product statistics.', 'google-listings-and-ads' ),
+				'description' => __( 'Merchant Center product status statistics.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
