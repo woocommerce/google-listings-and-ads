@@ -1,27 +1,36 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useCallback } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
-import useGoogleAdsAccountBillingStatus from '.~/hooks/useGoogleAdsAccountBillingStatus';
 import useWindowFocusRef from '.~/hooks/useWindowFocusRef';
 
 const pollIntervalInSeconds = 30;
 
 const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 	const focusRef = useWindowFocusRef();
-	const { fetchGoogleAdsAccountBillingStatus } = useAppDispatch();
-	const { billingStatus = {} } = useGoogleAdsAccountBillingStatus();
-	const { status } = billingStatus;
+	const { receiveGoogleAdsAccountBillingStatus } = useAppDispatch();
+
+	const checkStatus = useCallback( async () => {
+		const billingStatus = await apiFetch( {
+			path: '/wc/gla/ads/billing-status',
+		} );
+
+		if ( billingStatus.status === 'approved' ) {
+			await onStatusApproved();
+			receiveGoogleAdsAccountBillingStatus( billingStatus );
+		}
+	}, [ onStatusApproved, receiveGoogleAdsAccountBillingStatus ] );
 
 	// check billing status when window got focus.
 	useEffect( () => {
 		const handleWindowFocus = () => {
-			fetchGoogleAdsAccountBillingStatus();
+			checkStatus();
 		};
 
 		window.addEventListener( 'focus', handleWindowFocus );
@@ -29,24 +38,18 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 		return () => {
 			window.removeEventListener( 'focus', handleWindowFocus );
 		};
-	}, [ fetchGoogleAdsAccountBillingStatus ] );
+	}, [ checkStatus ] );
 
 	// poll for billing status only when window is in focus.
 	useEffect( () => {
 		const intervalID = setInterval( () => {
 			if ( focusRef.current ) {
-				fetchGoogleAdsAccountBillingStatus();
+				checkStatus();
 			}
 		}, pollIntervalInSeconds * 1000 );
 
 		return () => clearInterval( intervalID );
-	}, [ fetchGoogleAdsAccountBillingStatus, focusRef ] );
-
-	useEffect( () => {
-		if ( status === 'approved' ) {
-			onStatusApproved();
-		}
-	}, [ status, onStatusApproved ] );
+	}, [ checkStatus, focusRef ] );
 };
 
 export default useAutoCheckBillingStatusEffect;
