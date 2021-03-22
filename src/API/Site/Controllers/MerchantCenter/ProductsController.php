@@ -121,10 +121,37 @@ class ProductsController extends BaseOptionsController {
 				'readonly'    => true,
 			],
 			'statistics' => [
-				'type'        => 'array',
+				'type'        => 'object',
 				'description' => __( 'Merchant Center product status statistics.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
+				'properties'  => [
+					'active'      => [
+						'type'        => 'integer',
+						'description' => __( 'Active products.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'expiring'    => [
+						'type'        => 'integer',
+						'description' => __( 'Expiring products.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'pending'     => [
+						'type'        => 'number',
+						'description' => __( 'Pending products.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'disapproved' => [
+						'type'        => 'number',
+						'description' => __( 'Disapproved products.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+					'not_synced'  => [
+						'type'        => 'number',
+						'description' => __( 'Products not uploaded.', 'google-listings-and-ads' ),
+						'context'     => [ 'view' ],
+					],
+				],
 			],
 		];
 	}
