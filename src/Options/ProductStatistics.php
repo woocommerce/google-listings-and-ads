@@ -62,6 +62,12 @@ class ProductStatistics implements Service, ContainerAwareInterface {
 		];
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
+
+		// Save a request if no MC account connected.
+		if ( ! $merchant->get_id() ) {
+			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
+		}
+
 		foreach ( $merchant->get_accountstatus()->getProducts() as $product ) {
 			$stats                         = $product->getStatistics();
 			$product_stats['active']      += intval( $stats->getActive() );
