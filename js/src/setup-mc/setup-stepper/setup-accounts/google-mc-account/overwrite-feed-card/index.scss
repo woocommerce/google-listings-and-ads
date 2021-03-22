@@ -1,0 +1,11 @@
+.gla-overwrite-feed-card {
+	div.buttons {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--main-gap) / 3);
+
+		button {
+			justify-content: center;
+		}
+	}
+}
