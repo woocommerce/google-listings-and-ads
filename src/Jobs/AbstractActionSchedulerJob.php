@@ -62,15 +62,6 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	}
 
 	/**
-	 * Process batch items.
-	 *
-	 * @param array $items A single batch from the get_batch() method.
-	 *
-	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
-	 */
-	abstract protected function process_items( array $items );
-
-	/**
 	 * Handles processing single item action hook.
 	 *
 	 * @hooked gla/jobs/{$job_name}/process_item
@@ -125,4 +116,13 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	public function get_process_item_hook(): string {
 		return "{$this->get_hook_base_name()}process_item";
 	}
+
+	/**
+	 * Process batch items.
+	 *
+	 * @param array $items A single batch from the get_batch() method.
+	 *
+	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
+	 */
+	abstract protected function process_items( array $items );
 }

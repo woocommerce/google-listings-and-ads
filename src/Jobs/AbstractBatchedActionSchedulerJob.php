@@ -22,19 +22,6 @@ defined( 'ABSPATH' ) || exit;
 abstract class AbstractBatchedActionSchedulerJob extends AbstractActionSchedulerJob implements BatchedActionSchedulerJobInterface {
 
 	/**
-	 * Get a single batch of items.
-	 *
-	 * If no items are returned the job will stop.
-	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
-	 *
-	 * @return array
-	 *
-	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
-	 */
-	abstract protected function get_batch( int $batch_number ): array;
-
-	/**
 	 * Init the batch schedule for the job.
 	 *
 	 * The job name is used to generate the schedule event name.
@@ -172,5 +159,18 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	protected function handle_complete( int $final_batch_number ) {
 		// Optionally over-ride this method in child class.
 	}
+
+	/**
+	 * Get a single batch of items.
+	 *
+	 * If no items are returned the job will stop.
+	 *
+	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 *
+	 * @return array
+	 *
+	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
+	 */
+	abstract protected function get_batch( int $batch_number ): array;
 
 }
