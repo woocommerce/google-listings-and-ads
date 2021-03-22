@@ -52,7 +52,7 @@ class GetStarted implements Service, Registerable, OptionsAwareInterface {
 	protected function add_items( array $items ): array {
 		$items[] = [
 			'id'         => 'google-start',
-			'title'      => __( 'Google', 'google-listings-and-ads' ),
+			'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 			'path'       => '/google/start',
 			'capability' => 'manage_woocommerce',
 		];
