@@ -3,11 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
 use WP_REST_Response as Response;
+use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use Psr\Container\ContainerInterface;
@@ -79,8 +79,15 @@ class ProductsController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_product_statistics_read_callback(): callable {
-		return function() {
-			return $this->get_product_status_stats();
+		return function( Request $request ) {
+			try {
+				return $this->prepare_item_for_response(
+					$this->get_product_status_stats(),
+					$request
+				);
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 	/**
@@ -89,8 +96,15 @@ class ProductsController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_product_statistics_refresh_callback(): callable {
-		return function() {
-			return $this->get_product_status_stats( true );
+		return function( Request $request ) {
+			try {
+				return $this->prepare_item_for_response(
+					$this->get_product_status_stats( true ),
+					$request
+				);
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
@@ -99,14 +113,10 @@ class ProductsController extends BaseOptionsController {
 	 *
 	 * @param bool $refresh True to force a refresh of the product status statistics.
 	 * @return array|Response
+	 * @throws Exception If unable to retrieve the account status.
 	 */
 	protected function get_product_status_stats( bool $refresh = false ) {
-		try {
-			return $refresh ? $this->product_statistics->recalculate() : $this->product_statistics->get();
-		} catch ( Exception $e ) {
-			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-		}
-
+		return $refresh ? $this->product_statistics->recalculate() : $this->product_statistics->get();
 	}
 
 	/**
