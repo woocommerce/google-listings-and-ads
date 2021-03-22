@@ -28,23 +28,17 @@ class ProductsController extends BaseOptionsController {
 	 */
 	protected $product_statistics;
 
-	/**
-	 * The container object.
-	 *
-	 * @var ContainerInterface
-	 */
-	protected $container;
 
 
 	/**
 	 * ProductsController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer        $server
+	 * @param ProductStatistics $product_statistics
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->product_statistics = $container->get( ProductStatistics::class );
-		$this->container          = $container;
+	public function __construct( RESTServer $server, ProductStatistics $product_statistics ) {
+		parent::__construct( $server );
+		$this->product_statistics = $product_statistics;
 	}
 
 	/**
