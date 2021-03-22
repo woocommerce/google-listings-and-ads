@@ -66,7 +66,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	/**
 	 * @var RefreshSyncedProducts
 	 */
-	private $refresh_products_job;
+	protected $refresh_products_job;
 
 	/**
 	 * SyncerHooks constructor.
