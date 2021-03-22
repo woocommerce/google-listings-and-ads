@@ -54,11 +54,9 @@ const OverwriteFeedCard = ( props ) => {
 							) }
 						</Subsection.Title>
 						<Subsection.HelperText>
-							{ createInterpolateElement(
-								__(
-									'If you click ‘Overwrite my feed’ and complete the setup, your product feed and all existing settings would be overwritten by this WooCommerce integration.',
-									'google-listings-and-ads'
-								)
+							{ __(
+								'If you click ‘Overwrite my feed’ and complete the setup, your existing product feed and settings will be overwritten by this WooCommerce integration.',
+								'google-listings-and-ads'
 							) }
 						</Subsection.HelperText>
 					</div>
