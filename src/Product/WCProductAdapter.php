@@ -288,7 +288,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	protected function map_tax_excluded() {
 		// tax is excluded from price in US and CA
 		$this->tax_excluded = in_array( $this->getTargetCountry(), [ 'US', 'CA' ], true );
-		$this->tax_excluded = apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded );
+		$this->tax_excluded = boolval( apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded ) );
 	}
 
 	/**
