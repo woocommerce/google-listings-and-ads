@@ -153,34 +153,34 @@ trait GoogleHelper {
 		// 'zh', // Simplified Chinese*
 
 		return [
-			'ar', // Arabic
-			'cs', // Czech
-			'da', // Danish
-			'nl', // Dutch
-			'en', // English
-			'fi', // Finnish
-			'fr', // French
-			'de', // German
-			'he', // Hebrew
-			'hu', // Hungarian
-			'id', // Indonesian
-			'it', // Italian
-			'ja', // Japanese
-			'ko', // Korean
-			'el', // Modern Greek
-			'no', // Norwegian
-			'pl', // Polish
-			'pt', // Portuguese
-			'ro', // Romanian
-			'ru', // Russian
-			'sk', // Slovak
-			'es', // Spanish
-			'sv', // Swedish
-			'th', // Thai
-			'zh', // Traditional Chinese
-			'tr', // Turkish
-			'uk', // Ukrainian
-			'vi', // Vietnamese
+			'ar' => 'ar', // Arabic
+			'cs' => 'cs', // Czech
+			'da' => 'da', // Danish
+			'nl' => 'nl', // Dutch
+			'en' => 'en', // English
+			'fi' => 'fi', // Finnish
+			'fr' => 'fr', // French
+			'de' => 'de', // German
+			'he' => 'he', // Hebrew
+			'hu' => 'hu', // Hungarian
+			'id' => 'id', // Indonesian
+			'it' => 'it', // Italian
+			'ja' => 'ja', // Japanese
+			'ko' => 'ko', // Korean
+			'el' => 'el', // Modern Greek
+			'no' => 'no', // Norwegian
+			'pl' => 'pl', // Polish
+			'pt' => 'pt', // Portuguese
+			'ro' => 'ro', // Romanian
+			'ru' => 'ru', // Russian
+			'sk' => 'sk', // Slovak
+			'es' => 'es', // Spanish
+			'sv' => 'sv', // Swedish
+			'th' => 'th', // Thai
+			'zh' => 'zh', // Traditional Chinese
+			'tr' => 'tr', // Turkish
+			'uk' => 'uk', // Ukrainian
+			'vi' => 'vi', // Vietnamese
 		];
 	}
 }

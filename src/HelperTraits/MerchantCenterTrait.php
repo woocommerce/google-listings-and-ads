@@ -44,10 +44,9 @@ trait MerchantCenterTrait {
 			$country = $this->container->get( WC::class )->get_base_country();
 		}
 
-		return in_array(
+		return array_key_exists(
 			strtoupper( $country ),
-			$this->get_mc_supported_countries(),
-			true
+			$this->get_mc_supported_countries_currencies()
 		);
 	}
 
@@ -63,10 +62,9 @@ trait MerchantCenterTrait {
 			$language = substr( $this->container->get( WP::class )->get_locale(), 0, 2 );
 		}
 
-		return in_array(
+		return array_key_exists(
 			strtolower( $language ),
-			$this->get_mc_supported_languages(),
-			true
+			$this->get_mc_supported_languages()
 		);
 	}
 
