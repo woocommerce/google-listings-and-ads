@@ -32,11 +32,21 @@ const CountriesTimeInput = ( { value, onChange, onDelete } ) => {
 		return <AppSpinner />;
 	}
 
-	const handleChange = ( v ) => {
-		onChange( {
-			countries,
-			time: v,
-		} );
+	const handleBlur = ( e ) => {
+		const { value: nextTime } = e.target;
+
+		if ( nextTime === time ) {
+			return;
+		}
+
+		if ( nextTime === '' ) {
+			onDelete( countries );
+		} else {
+			onChange( {
+				countries,
+				time: nextTime,
+			} );
+		}
 	};
 
 	return (
@@ -66,7 +76,7 @@ const CountriesTimeInput = ( { value, onChange, onDelete } ) => {
 				}
 				suffix={ __( 'days', 'google-listings-and-ads' ) }
 				value={ time }
-				onChange={ handleChange }
+				onBlur={ handleBlur }
 			/>
 		</div>
 	);
