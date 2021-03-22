@@ -8,12 +8,9 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
-import useWindowFocusRef from '.~/hooks/useWindowFocusRef';
-
-const pollIntervalInSeconds = 30;
+import useWindowFocusPollingEffect from './useWindowFocusPollingEffect';
 
 const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
-	const focusRef = useWindowFocusRef();
 	const { receiveGoogleAdsAccountBillingStatus } = useAppDispatch();
 
 	const checkStatus = useCallback( async () => {
@@ -40,16 +37,7 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 		};
 	}, [ checkStatus ] );
 
-	// poll for billing status only when window is in focus.
-	useEffect( () => {
-		const intervalID = setInterval( () => {
-			if ( focusRef.current ) {
-				checkStatus();
-			}
-		}, pollIntervalInSeconds * 1000 );
-
-		return () => clearInterval( intervalID );
-	}, [ checkStatus, focusRef ] );
+	useWindowFocusPollingEffect( checkStatus, 30 );
 };
 
 export default useAutoCheckBillingStatusEffect;
