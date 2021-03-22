@@ -80,14 +80,7 @@ class ProductsController extends BaseOptionsController {
 	 */
 	protected function get_product_statistics_read_callback(): callable {
 		return function( Request $request ) {
-			try {
-				return $this->prepare_item_for_response(
-					$this->get_product_status_stats(),
-					$request
-				);
-			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
+			return $this->get_product_status_stats( $request );
 		};
 	}
 	/**
@@ -97,26 +90,26 @@ class ProductsController extends BaseOptionsController {
 	 */
 	protected function get_product_statistics_refresh_callback(): callable {
 		return function( Request $request ) {
-			try {
-				return $this->prepare_item_for_response(
-					$this->get_product_status_stats( true ),
-					$request
-				);
-			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
+			return $this->get_product_status_stats( $request, true );
 		};
 	}
 
 	/**
 	 * Get the global product status statistics array.
 	 *
-	 * @param bool $refresh True to force a refresh of the product status statistics.
-	 * @return array|Response
-	 * @throws Exception If unable to retrieve the account status.
+	 * @param Request $request
+	 * @param bool    $refresh True to force a refresh of the product status statistics.
+	 * @return Response
 	 */
-	protected function get_product_status_stats( bool $refresh = false ) {
-		return $refresh ? $this->product_statistics->recalculate() : $this->product_statistics->get();
+	protected function get_product_status_stats( Request $request, bool $refresh = false ): Response {
+		try {
+			return $this->prepare_item_for_response(
+				$refresh ? $this->product_statistics->recalculate() : $this->product_statistics->get(),
+				$request
+			);
+		} catch ( Exception $e ) {
+			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+		}
 	}
 
 	/**
