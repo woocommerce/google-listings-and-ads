@@ -78,9 +78,9 @@ class RefreshSyncedProducts extends AbstractProductSyncerBatchedJob {
 		$products = $this->product_repository->find_by_ids( $items );
 
 		// delete the products but do not retry on failure because it will be handled by this job
-		add_filter( 'gla_products_delete_retry_on_failure', '__return_false()' );
+		add_filter( 'gla_products_delete_retry_on_failure', '__return_false' );
 		$delete_results = $this->product_syncer->delete( $products );
-		remove_filter( 'gla_products_delete_retry_on_failure', '__return_false()' );
+		remove_filter( 'gla_products_delete_retry_on_failure', '__return_false' );
 
 		// if there were any errors while deleting, schedule a retry job for the errored products and don't submit them in the current batch
 		// this will make sure we completely delete the products first before resubmitting them
