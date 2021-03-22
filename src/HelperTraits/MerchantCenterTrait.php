@@ -74,7 +74,7 @@ trait MerchantCenterTrait {
 	 * @return string[] List of target countries specified in options. Defaults to WooCommerce store base country.
 	 */
 	protected function get_target_countries(): array {
-		$target_countries = [ WC()->countries->get_base_country() ];
+		$target_countries = [ $this->container->get( WC::class )->get_base_country() ];
 
 		$target_audience = $this->options->get( Options::TARGET_AUDIENCE );
 		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
