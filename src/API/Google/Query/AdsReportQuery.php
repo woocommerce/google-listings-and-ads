@@ -13,14 +13,22 @@ defined( 'ABSPATH' ) || exit;
 class AdsReportQuery extends Query {
 
 	/**
+	 * Type of report (campaigns or products).
+	 *
+	 * @var string
+	 */
+	protected $type = 'campaigns';
+
+	/**
 	 * Query constructor.
 	 *
 	 * @param string $type Report type (campaigns or products).
 	 */
 	public function __construct( string $type ) {
+		$this->type = $type;
 		parent::__construct( 'shopping_performance_view' );
 
-		if ( 'products' === $type ) {
+		if ( 'products' === $this->type ) {
 			$columns = [
 				'segments.product_item_id',
 				'segments.product_title',
@@ -87,5 +95,26 @@ class AdsReportQuery extends Query {
 		);
 
 		return $this;
+	}
+
+	/**
+	 * Filter the query by a list of ID's.
+	 *
+	 * @param array $ids list of ID's to filter by.
+	 *
+	 * @return $this
+	 */
+	public function filter( array $ids ): QueryInterface {
+		if ( empty( $ids ) ) {
+			return $this;
+		}
+
+		if ( 'products' === $this->type ) {
+			$column = 'segments.product_item_id';
+		} else {
+			$column = 'campaign.id';
+		}
+
+		return $this->where( $column, $ids, 'IN' );
 	}
 }

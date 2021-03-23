@@ -44,6 +44,7 @@ abstract class BaseReportsController extends BaseController {
 			'after'    => $request['after'],
 			'interval' => $request['interval'],
 			'fields'   => $request['fields'],
+			'ids'      => wp_parse_list( $request['ids'] ),
 		];
 
 		$defaults = [
@@ -51,6 +52,7 @@ abstract class BaseReportsController extends BaseController {
 			'after'    => TimeInterval::default_after(),
 			'interval' => '',
 			'fields'   => [],
+			'ids'      => [],
 		];
 
 		$args = wp_parse_args( array_filter( $args ), $defaults );

@@ -243,6 +243,6 @@ abstract class Query implements QueryInterface {
 			return (string) $value;
 		}
 
-		return add_slashes( (string) $value );
+		return addslashes( (string) $value );
 	}
 }
