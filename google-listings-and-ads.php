@@ -3,15 +3,15 @@
  * Plugin Name: Google Listings and Ads
  * Plugin URL: https://woocommerce.com/
  * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
- * Version: 0.2.2
+ * Version: 0.3.0
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-listings-and-ads
  * Requires at least: 5.3
- * Requires PHP: 7.1
+ * Requires PHP: 7.3
  *
  * WC requires at least: 4.5
- * WC tested up to: 4.8
+ * WC tested up to: 5.1
  * Woo:
  *
  * @package WooCommerce\Admin
@@ -21,15 +21,21 @@ use Automattic\Jetpack\Config;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\VersionValidator;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GLA_VERSION', '0.2.2' ); // WRCS: DEFINED_VERSION.
+define( 'GLA_VERSION', '0.3.0' ); // WRCS: DEFINED_VERSION.
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
 if ( ! Autoloader::init() ) {
+	return;
+}
+
+// Validate the versions of everything our plugin depends on.
+if ( ! ( new VersionValidator() )->validate() ) {
 	return;
 }
 

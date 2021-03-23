@@ -11,7 +11,6 @@ use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
 use Google_Service_ShoppingContent_Product as Product;
 use Google\Exception as GoogleException;
 use Exception;
-use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,11 +22,11 @@ defined( 'ABSPATH' ) || exit;
 class Merchant {
 
 	/**
-	 * The container object.
+	 * The shopping service.
 	 *
-	 * @var ContainerInterface
+	 * @var ShoppingService
 	 */
-	protected $container;
+	protected $service;
 
 	/**
 	 * The merchant ID.
@@ -37,20 +36,14 @@ class Merchant {
 	protected $id;
 
 	/**
-	 * @var ShoppingService
-	 */
-	protected $service;
-
-	/**
 	 * Merchant constructor.
 	 *
-	 * @param ContainerInterface $container
-	 * @param PositiveInteger    $id
+	 * @param ShoppingService $service
+	 * @param PositiveInteger $id
 	 */
-	public function __construct( ContainerInterface $container, PositiveInteger $id ) {
-		$this->service   = $container->get( ShoppingService::class );
-		$this->container = $container;
-		$this->id        = $id;
+	public function __construct( ShoppingService $service, PositiveInteger $id ) {
+		$this->service = $service;
+		$this->id      = $id;
 	}
 
 	/**
@@ -186,9 +179,7 @@ class Merchant {
 	 * @throws Exception When unable to retrieve or update account data.
 	 */
 	public function link_ads_id( int $ads_id ): bool {
-		/** @var MC_Account $account */
-		$account = $this->get_account();
-		/** @var MC_Account_Ads_Link[] $ads_links */
+		$account   = $this->get_account();
 		$ads_links = $account->getAdsLinks();
 
 		// Stop early if we already have a link setup.

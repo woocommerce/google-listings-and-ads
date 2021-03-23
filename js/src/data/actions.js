@@ -326,6 +326,24 @@ export function* fetchGoogleAdsAccount() {
 	}
 }
 
+export function* fetchGoogleAdsAccountBillingStatus() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/billing-status`,
+		} );
+
+		return receiveGoogleAdsAccountBillingStatus( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error getting the billing status of your Google Ads account.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchExistingGoogleAdsAccounts() {
 	try {
 		const response = yield apiFetch( {
@@ -400,6 +418,13 @@ export function receiveAdsAccount( account ) {
 	return {
 		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS,
 		account,
+	};
+}
+
+export function receiveGoogleAdsAccountBillingStatus( billingStatus ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS,
+		billingStatus,
 	};
 }
 

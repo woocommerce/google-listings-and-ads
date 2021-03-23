@@ -184,6 +184,26 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Find and return an array of WooCommerce product IDs already awaiting sync to Google Merchant Center.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_sync_pending_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			[
+				'key'     => ProductMetaHandler::KEY_GOOGLE_IDS,
+				'compare' => 'NOT EXISTS',
+			],
+			$this->get_sync_ready_products_meta_query(),
+		];
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
 	 * @return array
 	 */
 	protected function get_invalid_products_meta_query(): array {

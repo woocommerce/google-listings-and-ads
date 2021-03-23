@@ -24,6 +24,7 @@ const DEFAULT_STATE = {
 			ads: null,
 			existing_mc: null,
 			existing_ads: null,
+			ads_billing_status: null,
 		},
 	},
 };
@@ -134,6 +135,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { account } = action;
 			const newState = cloneDeep( state );
 			newState.mc.accounts.ads = account;
+			return newState;
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS: {
+			const { billingStatus } = action;
+			const newState = cloneDeep( state );
+			newState.mc.accounts.ads_billing_status = billingStatus;
 			return newState;
 		}
 

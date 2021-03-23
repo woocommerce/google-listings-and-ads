@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -10,11 +9,13 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AudienceSection from './audience-section';
+import FormContent from './form-content';
+import AppButton from '.~/components/app-button';
 
-const CreateCampaign = () => {
+const CreateCampaign = ( props ) => {
+	const { formProps, onContinue = () => {} } = props;
+
 	return (
 		<StepContent>
 			<StepContentHeader
@@ -31,21 +32,22 @@ const CreateCampaign = () => {
 					{
 						link: (
 							<AppDocumentationLink
-								// TODO: make sure the below URL and trackings are correct.
 								context="setup-ads"
 								linkId="see-what-ads-look-like"
-								href="https://support.google.com/merchants"
+								href="https://support.google.com/google-ads/answer/6275294"
 							/>
 						),
 					}
 				) }
 			/>
-			<AudienceSection />
-			<StepContentFooter>
-				<Button isPrimary>
-					{ __( 'Launch campaign', 'google-listings-and-ads' ) }
-				</Button>
-			</StepContentFooter>
+			<FormContent
+				formProps={ formProps }
+				submitButton={
+					<AppButton isPrimary onClick={ onContinue }>
+						{ __( 'Continue', 'google-listings-and-ads' ) }
+					</AppButton>
+				}
+			/>
 		</StepContent>
 	);
 };

@@ -10,19 +10,27 @@ import { useState } from '@wordpress/element';
  */
 import SetupAccounts from './setup-accounts';
 import CreateCampaign from './create-campaign';
+import SetupBilling from './setup-billing';
 import './index.scss';
 
-const AdsStepper = () => {
+const AdsStepper = ( props ) => {
+	const { formProps } = props;
+
 	// TODO: call API and check if users have already done the account setup,
 	// we can straight away bring them to step 2.
 	const [ step, setStep ] = useState( '1' );
 
+	// TOOD: figure out when to allow and not to allow step click.
 	const handleStepClick = ( value ) => {
 		setStep( value );
 	};
 
 	const handleSetupAccountsContinue = () => {
 		setStep( '2' );
+	};
+
+	const handleCreateCampaignContinue = () => {
+		setStep( '3' );
 	};
 
 	return (
@@ -52,7 +60,18 @@ const AdsStepper = () => {
 						'Create your paid campaign',
 						'google-listings-and-ads'
 					),
-					content: <CreateCampaign />,
+					content: (
+						<CreateCampaign
+							formProps={ formProps }
+							onContinue={ handleCreateCampaignContinue }
+						/>
+					),
+					onClick: handleStepClick,
+				},
+				{
+					key: '3',
+					label: __( 'Set up billing', 'google-listings-and-ads' ),
+					content: <SetupBilling formProps={ formProps } />,
 					onClick: handleStepClick,
 				},
 			] }

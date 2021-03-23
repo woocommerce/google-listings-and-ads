@@ -7,8 +7,13 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
+import AudienceCountrySelect from '.~/components/audience-country-select';
 
-const AudienceSection = () => {
+const AudienceSection = ( props ) => {
+	const {
+		formProps: { getInputProps },
+	} = props;
+
 	return (
 		<Section
 			title={ __( 'Audience', 'google-listings-and-ads' ) }
@@ -23,9 +28,19 @@ const AudienceSection = () => {
 		>
 			<Section.Card>
 				<Section.Card.Body>
-					{ /* TODO: labels and helptext. */ }
-					{ /* TODO: better component composition to use country single select. */ }
-					{ /* <AppCountryMultiSelect multiple={ false } /> */ }
+					<AudienceCountrySelect
+						label={ __(
+							'Select one country',
+							'google-listings-and-ads'
+						) }
+						helperText={ __(
+							'You can only select one country per campaign. ',
+							'google-listings-and-ads'
+						) }
+						isSearchable={ false }
+						inlineTags={ false }
+						{ ...getInputProps( 'country' ) }
+					/>
 				</Section.Card.Body>
 			</Section.Card>
 		</Section>

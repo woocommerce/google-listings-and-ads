@@ -8,13 +8,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDepen
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\AdsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
@@ -25,10 +26,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Pages
  */
-class Admin implements Service, Registerable, Conditional, OptionsAwareInterface {
+class Admin implements Service, Registerable, Conditional, OptionsAwareInterface, ContainerAwareInterface {
 
 	use AdminConditional;
 	use AssetsAwareness;
+	use AdsTrait;
 	use MerchantCenterTrait;
 	use PluginHelper;
 
@@ -91,6 +93,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				'mcSetupComplete'     => $this->setup_complete(),
 				'mcSupportedCountry'  => $this->is_country_supported(),
 				'mcSupportedLanguage' => $this->is_language_supported(),
+				'adsSetupComplete'    => $this->is_ads_setup_complete(),
 			]
 		);
 

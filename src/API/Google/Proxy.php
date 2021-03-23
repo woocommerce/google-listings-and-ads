@@ -71,8 +71,7 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving accounts', 'google-listings-and-ads' ) ) );
 		}
 	}
 
@@ -119,8 +118,7 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error creating account: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+			throw new Exception( $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ) );
 		}
 	}
 
@@ -201,8 +199,7 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error linking merchant to MCA: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+			throw new Exception( $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ) );
 		}
 	}
 
@@ -242,8 +239,7 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error claiming website: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+			throw new Exception( $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ) );
 		}
 	}
 
@@ -336,8 +332,7 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error creating account: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+			throw new Exception( $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ) );
 		}
 	}
 
@@ -379,8 +374,7 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error linking account: %s', 'google-listings-and-ads' ), $e->getMessage() ) );
+			throw new Exception( $this->client_exception_message( $e, __( 'Error linking account', 'google-listings-and-ads' ) ) );
 		}
 	}
 

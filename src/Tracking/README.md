@@ -74,6 +74,14 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which link is clicked
   * `href`: link's URL
 
+* `google_ads_account_link_click` - Clicking on a Google Ads account text link.
+  * `context`: indicate which page / module the link is in
+  * `link_id`: a unique ID for the link within the page / module
+
+* `dashboard_link_clicked` - Clicking on a link within the dashboard page
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.

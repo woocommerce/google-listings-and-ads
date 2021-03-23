@@ -14,7 +14,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
@@ -100,8 +99,8 @@ class ConnectionTest implements Service, Registerable {
 	protected function render_admin_page() {
 		/** @var Manager $manager */
 		$manager    = $this->container->get( Manager::class );
-		$blog_token = $manager->get_access_token();
-		$user_token = $manager->get_access_token( get_current_user_id() );
+		$blog_token = $manager->get_tokens()->get_access_token();
+		$user_token = $manager->get_tokens()->get_access_token( get_current_user_id() );
 		$user_data  = $manager->get_connected_user_data( get_current_user_id() );
 		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
 
@@ -1068,7 +1067,7 @@ class ConnectionTest implements Service, Registerable {
 	private function get_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->container->get( Manager::class );
-		$token   = $manager->get_access_token();
+		$token   = $manager->get_tokens()->get_access_token();
 
 		[ $token_key, $token_secret ] = explode( '.', $token->secret );
 
