@@ -2,16 +2,11 @@
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
-## Prerequisites (TBC)
+## Prerequisites
 
  - WordPress 5.3+
  - WooCommerce 4.5+
- - PHP 7.0+
-
-Current considerations...
- - PHP 7.2 is recommended but [Woo still supports 7.0](https://docs.woocommerce.com/document/update-php-wordpress/)
- - We're using new 7.1+ syntax - will assess closer to launch whether we revert to 7.0 compatibility syntax
- - We're building using React UI elements (available in WP 5.3) which was only bumped to be the minimum for WC 4.5
+ - PHP 7.3+
 
 ## Development
 

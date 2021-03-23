@@ -36,11 +36,15 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -100,16 +104,18 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductSyncer::class          => true,
 		ProductHelper::class          => true,
 		ProductMetaHandler::class     => true,
-		SiteVerificationMeta::class  => true,
-		BatchProductHelper::class    => true,
-		ProductRepository::class     => true,
-		MetaBoxInterface::class      => true,
-		MetaBoxInitializer::class    => true,
-		ViewFactory::class           => true,
-		DebugLogger::class           => true,
-		MerchantAccountState::class  => true,
-		AdsAccountState::class       => true,
-		DBInstaller::class           => true,
+		SiteVerificationMeta::class   => true,
+		BatchProductHelper::class     => true,
+		ProductRepository::class      => true,
+		MetaBoxInterface::class       => true,
+		MetaBoxInitializer::class     => true,
+		ViewFactory::class            => true,
+		DebugLogger::class            => true,
+		MerchantAccountState::class   => true,
+		AdsAccountState::class        => true,
+		DBInstaller::class            => true,
+		ProductStatistics::class      => true,
+		TransientsInterface::class    => true,
 		MerchantCenterService::class => true,
 	];
 
@@ -125,6 +131,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share our interfaces, possibly with concrete objects.
 		$this->share_concrete( AssetsHandlerInterface::class, AssetsHandler::class );
+		$this->share_concrete( TransientsInterface::class, Transients::class );
 		$this->share_concrete(
 			TracksInterface::class,
 			$this->share_with_tags( Tracks::class, TracksProxy::class )
@@ -169,6 +176,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
+		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 
 		// Inbox Notes
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
@@ -176,9 +184,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
+		$this->share_with_tags( ProductStatistics::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
-		$this->share_with_tags( MerchantAccountState::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,

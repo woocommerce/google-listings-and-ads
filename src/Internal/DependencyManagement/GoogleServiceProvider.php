@@ -85,7 +85,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$this->share(
 			Merchant::class,
-			$this->getLeagueContainer(),
+			Google_Service_ShoppingContent::class,
 			$this->get_merchant_id()
 		);
 

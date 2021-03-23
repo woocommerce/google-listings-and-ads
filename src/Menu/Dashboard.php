@@ -51,7 +51,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 	protected function add_items( array $items ): array {
 		$items[] = [
 			'id'         => 'google-dashboard',
-			'title'      => __( 'Google', 'google-listings-and-ads' ),
+			'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 			'path'       => '/google/dashboard',
 			'capability' => 'manage_woocommerce',
 		];
