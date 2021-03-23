@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDepen
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\AdsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -29,6 +30,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 
 	use AdminConditional;
 	use AssetsAwareness;
+	use AdsTrait;
 	use MerchantCenterTrait;
 	use PluginHelper;
 
@@ -91,6 +93,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 				'mcSetupComplete'     => $this->setup_complete(),
 				'mcSupportedCountry'  => $this->is_country_supported(),
 				'mcSupportedLanguage' => $this->is_language_supported(),
+				'adsSetupComplete'    => $this->is_ads_setup_complete(),
 			]
 		);
 
