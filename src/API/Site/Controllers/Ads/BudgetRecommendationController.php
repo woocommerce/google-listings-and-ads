@@ -9,8 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Exception;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
