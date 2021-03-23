@@ -18,6 +18,7 @@ import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import AppTextButton from '.~/components/app-text-button';
 import OverwriteFeedCard from '../overwrite-feed-card';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const ConnectMCCard = ( props ) => {
 	const { onCreateNew = () => {} } = props;
@@ -31,15 +32,29 @@ const ConnectMCCard = ( props ) => {
 		data: { id: value },
 	} );
 	const { receiveMCAccount } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
 			return;
 		}
 
-		const account = await fetchConnectMCAccount();
+		try {
+			const res = await fetchConnectMCAccount( { parse: false } );
+			const account = await res.json();
 
-		receiveMCAccount( account );
+			receiveMCAccount( account );
+		} catch ( e ) {
+			if ( ! [ 403, 409 ].includes( e.status ) ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to create Merchant Center account. Please try again later.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+		}
 	};
 
 	if ( response?.status === 409 ) {
