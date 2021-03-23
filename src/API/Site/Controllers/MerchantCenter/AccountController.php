@@ -234,9 +234,9 @@ class AccountController extends BaseOptionsController {
 			$this->options->delete( OptionsInterface::MC_SETUP_SAVED_SETUP );
 			$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 			$this->options->delete( OptionsInterface::MERCHANT_CENTER );
-			$this->options->delete( OptionsInterface::MERCHANT_ID );
 			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 			$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
+
 			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
 
 			return [
