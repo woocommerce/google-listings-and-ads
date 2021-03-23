@@ -2,14 +2,12 @@
  * Internal dependencies
  */
 import FullScreen from '.~/components/full-screen';
-import SetupAdsTopBar from './top-bar';
-import AdsStepper from './ads-stepper';
+import SetupAdsForm from './setup-ads-form';
 
 const SetupAds = () => {
 	return (
 		<FullScreen>
-			<SetupAdsTopBar />
-			<AdsStepper />
+			<SetupAdsForm />
 		</FullScreen>
 	);
 };
