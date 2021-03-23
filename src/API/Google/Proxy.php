@@ -257,6 +257,7 @@ class Proxy implements OptionsAwareInterface {
 			$ids       = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
+				/** @var string $name */
 				$ids[] = $this->parse_ads_id( $name );
 			}
 
@@ -555,14 +556,14 @@ class Proxy implements OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function new_account_name(): string {
-		$site_title = get_bloginfo( 'name' );
-		return $site_title;
+		return get_bloginfo( 'name' );
 	}
 
 	/**
 	 * Get a timezone string from WP Settings.
 	 *
 	 * @return string
+	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	protected function get_site_timezone_string(): string {
 		$timezone = wp_timezone_string();
