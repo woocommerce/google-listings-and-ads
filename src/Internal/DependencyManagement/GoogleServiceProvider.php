@@ -266,7 +266,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		// TODO: Remove overriding with default once ConnectionTest is removed.
 		$default = intval( $_GET['customer_id'] ?? 0 ); // phpcs:ignore WordPress.Security
-		$ads_id  = $default ?: $options->get( Options::ADS_ID );
+		$ads_id  = $default ?: $options->get( OptionsInterface::ADS_ID );
 
 		return new PositiveInteger( $ads_id );
 	}
@@ -282,7 +282,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		// TODO: Remove overriding with default once ConnectionTest is removed.
 		$default     = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
-		$merchant_id = $default ?: $options->get( Options::MERCHANT_ID );
+		$merchant_id = $default ?: $options->get( OptionsInterface::MERCHANT_ID );
 
 		return new PositiveInteger( $merchant_id );
 	}
