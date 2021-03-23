@@ -42,8 +42,8 @@ const BudgetSection = ( props ) => {
 				}
 			>
 				<Section.Card>
-					<Section.Card.Body>
-						<div className="gla-budget-section__cost">
+					<Section.Card.Body className="gla-budget-section__card-body">
+						<div className="gla-budget-section__card-body__cost">
 							<AppInputControl
 								label={ __(
 									'Daily average cost',
