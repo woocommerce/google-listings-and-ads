@@ -17,12 +17,14 @@ import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import AppTextButton from '.~/components/app-text-button';
+import OverwriteFeedCard from '../overwrite-feed-card';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const ConnectMCCard = ( props ) => {
 	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
 	const [
-		fetchMCAccounts,
+		fetchConnectMCAccount,
 		{ loading, error, response, reset },
 	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts`,
@@ -30,27 +32,51 @@ const ConnectMCCard = ( props ) => {
 		data: { id: value },
 	} );
 	const { receiveMCAccount } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
 			return;
 		}
 
-		const data = await fetchMCAccounts();
+		try {
+			const res = await fetchConnectMCAccount( { parse: false } );
+			const account = await res.json();
 
-		receiveMCAccount( data );
+			receiveMCAccount( account );
+		} catch ( e ) {
+			if ( ! [ 403, 409 ].includes( e.status ) ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to create Merchant Center account. Please try again later.',
+						'google-listings-and-ads'
+					)
+				);
+			}
+		}
 	};
 
-	if ( response && response.status === 409 ) {
-		return (
-			<SwitchUrlCard
-				id={ error.id }
-				message={ error.message }
-				claimedUrl={ error.claimed_url }
-				newUrl={ error.new_url }
-				onSelectAnotherAccount={ reset }
-			/>
-		);
+	if ( response?.status === 409 ) {
+		if ( error?.action === 'switch-url' ) {
+			return (
+				<SwitchUrlCard
+					id={ error.id }
+					message={ error.message }
+					claimedUrl={ error.claimed_url }
+					newUrl={ error.new_url }
+					onSelectAnotherAccount={ reset }
+				/>
+			);
+		} else if ( error?.action === 'feed-overwrite' ) {
+			return (
+				<OverwriteFeedCard
+					id={ error.id }
+					url={ error.url }
+					onSelectAnotherAccount={ reset }
+				/>
+			);
+		}
 	}
 
 	if ( response && response.status === 403 ) {

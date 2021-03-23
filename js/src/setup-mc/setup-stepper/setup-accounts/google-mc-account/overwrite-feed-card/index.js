@@ -16,44 +16,36 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import AccountId from '.~/components/account-id';
 import './index.scss';
-import OverwriteFeedCard from '../overwrite-feed-card';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
-const SwitchUrlCard = ( props ) => {
-	const {
-		id,
-		message,
-		claimedUrl,
-		newUrl,
-		onSelectAnotherAccount = () => {},
-	} = props;
+const OverwriteFeedCard = ( props ) => {
+	const { id, url, onSelectAnotherAccount = () => {} } = props;
+	const { createNotice } = useDispatchCoreNotices();
 	const { receiveMCAccount } = useAppDispatch();
-	const [
-		fetchMCAccountSwitchUrl,
-		{ loading, response, error },
-	] = useApiFetchCallback( {
-		path: `/wc/gla/mc/accounts/switch-url`,
+	const [ fetchMCAccountOverwriteFeed, { loading } ] = useApiFetchCallback( {
+		path: `/wc/gla/mc/accounts/feed-overwrite`,
 		method: 'POST',
 		data: { id },
 	} );
 
-	if ( response?.status === 409 && error?.action === 'feed-overwrite' ) {
-		return (
-			<OverwriteFeedCard
-				id={ error.id }
-				url={ error.url }
-				onSelectAnotherAccount={ onSelectAnotherAccount }
-			/>
-		);
-	}
+	const handleOverwriteFeed = async () => {
+		try {
+			const account = await fetchMCAccountOverwriteFeed();
 
-	const handleSwitch = async () => {
-		const account = await fetchMCAccountSwitchUrl();
-
-		receiveMCAccount( account );
+			receiveMCAccount( account );
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'Unable to overwrite your feed. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
 	};
 
 	return (
-		<Section.Card className="gla-switch-url-card">
+		<Section.Card className="gla-overwrite-feed-card">
 			<Section.Card.Body>
 				<ContentButtonLayout>
 					<Subsection.Title>
@@ -62,17 +54,21 @@ const SwitchUrlCard = ( props ) => {
 				</ContentButtonLayout>
 				<ContentButtonLayout>
 					<div>
-						<Subsection.Title>{ message }</Subsection.Title>
-						<Subsection.HelperText>
+						<Subsection.Title>
 							{ createInterpolateElement(
 								__(
-									'If you switch your claimed URL to <newurl />, you will lose your claim to <claimedurl />. This will cause any existing product listings tied to <claimedurl /> to stop running.',
+									'Your URL, <url />, has an existing product feed in Google Merchant Center.',
 									'google-listings-and-ads'
 								),
 								{
-									newurl: <span>{ newUrl }</span>,
-									claimedurl: <span>{ claimedUrl }</span>,
+									url: <span>{ url }</span>,
 								}
+							) }
+						</Subsection.Title>
+						<Subsection.HelperText>
+							{ __(
+								'If you click ‘Overwrite my feed’ and complete the setup, your existing product feed and settings will be overwritten by this WooCommerce integration.',
+								'google-listings-and-ads'
 							) }
 						</Subsection.HelperText>
 					</div>
@@ -80,10 +76,10 @@ const SwitchUrlCard = ( props ) => {
 						<AppButton
 							isSecondary
 							loading={ loading }
-							onClick={ handleSwitch }
+							onClick={ handleOverwriteFeed }
 						>
 							{ __(
-								'Switch to my new URL',
+								'Overwrite my feed',
 								'google-listings-and-ads'
 							) }
 						</AppButton>
@@ -102,4 +98,4 @@ const SwitchUrlCard = ( props ) => {
 	);
 };
 
-export default SwitchUrlCard;
+export default OverwriteFeedCard;
