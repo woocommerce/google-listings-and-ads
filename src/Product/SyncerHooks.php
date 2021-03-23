@@ -4,14 +4,14 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 use WC_Product_Variable;
@@ -25,9 +25,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
+class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface {
 
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 
 	/**
 	 * Array of booleans mapped to product IDs indicating that they have been already
@@ -92,7 +92,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	 */
 	public function register(): void {
 		// only register the hooks if Merchant Center is set up.
-		if ( ! $this->setup_complete() ) {
+		if ( ! $this->merchant_center->is_setup_complete() ) {
 			return;
 		}
 

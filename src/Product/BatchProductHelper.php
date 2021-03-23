@@ -9,9 +9,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -27,9 +27,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class BatchProductHelper implements Service, OptionsAwareInterface {
+class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 
 	use ValidateInterface;
 
@@ -150,7 +150,7 @@ class BatchProductHelper implements Service, OptionsAwareInterface {
 	 */
 	public function validate_and_generate_update_request_entries( array $products ): array {
 		$request_entries  = [];
-		$target_countries = $this->get_target_countries();
+		$target_countries = $this->merchant_center->get_target_countries();
 
 		foreach ( $products as $product ) {
 			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {

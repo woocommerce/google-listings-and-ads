@@ -8,13 +8,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDepen
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
@@ -25,11 +24,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Pages
  */
-class Admin implements Service, Registerable, Conditional, OptionsAwareInterface, ContainerAwareInterface {
+class Admin implements Service, Registerable, Conditional, MerchantCenterAwareInterface {
 
 	use AdminConditional;
 	use AssetsAwareness;
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -88,9 +87,9 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		) )->add_inline_script(
 			'glaData',
 			[
-				'mcSetupComplete'     => $this->setup_complete(),
-				'mcSupportedCountry'  => $this->is_country_supported(),
-				'mcSupportedLanguage' => $this->is_language_supported(),
+				'mcSetupComplete'     => $this->merchant_center->is_setup_complete(),
+				'mcSupportedCountry'  => $this->merchant_center->is_country_supported(),
+				'mcSupportedLanguage' => $this->merchant_center->is_language_supported(),
 			]
 		);
 
@@ -112,7 +111,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		$plugin_links = [];
 
 		// Display settings url if setup is complete otherwise link to get started page
-		if ( $this->setup_complete() ) {
+		if ( $this->merchant_center->is_setup_complete() ) {
 			$plugin_links[] = sprintf(
 				'<a href="%1$s">%2$s</a>',
 				esc_attr( $this->get_settings_url() ),

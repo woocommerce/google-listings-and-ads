@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,9 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class UpdateAllProducts extends AbstractProductSyncerBatchedJob implements OptionsAwareInterface {
-
-	use MerchantCenterTrait;
+class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 
 	/**
 	 * Get the name of the job.
@@ -35,7 +31,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob implements Optio
 	 * @return int
 	 */
 	protected function get_batch_size(): int {
-		$batch_size = (int) floor( 200 / count( $this->get_target_countries() ) );
+		$batch_size = (int) floor( 200 / count( $this->merchant_center->get_target_countries() ) );
 		// between 2 and 50 products per batch
 		return min( max( $batch_size, 2 ), 50 );
 	}

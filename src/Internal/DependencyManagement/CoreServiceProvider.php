@@ -31,6 +31,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -45,6 +47,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -96,16 +100,17 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductSyncer::class          => true,
 		ProductHelper::class          => true,
 		ProductMetaHandler::class     => true,
-		SiteVerificationMeta::class   => true,
-		BatchProductHelper::class     => true,
-		ProductRepository::class      => true,
-		MetaBoxInterface::class       => true,
-		MetaBoxInitializer::class     => true,
-		ViewFactory::class            => true,
-		DebugLogger::class            => true,
-		MerchantAccountState::class   => true,
-		AdsAccountState::class        => true,
-		DBInstaller::class            => true,
+		SiteVerificationMeta::class  => true,
+		BatchProductHelper::class    => true,
+		ProductRepository::class     => true,
+		MetaBoxInterface::class      => true,
+		MetaBoxInitializer::class    => true,
+		ViewFactory::class           => true,
+		DebugLogger::class           => true,
+		MerchantAccountState::class  => true,
+		AdsAccountState::class       => true,
+		DBInstaller::class           => true,
+		MerchantCenterService::class => true,
 	];
 
 	/**
@@ -130,6 +135,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			->inflector( OptionsAwareInterface::class )
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
+
+		// Set up MerchantCenter service, and inflect classes that need it.
+		$this->share_with_tags( MerchantCenterService::class, OptionsInterface::class, WC::class, WP::class );
+		$this->getLeagueContainer()
+			->inflector( MerchantCenterAwareInterface::class )
+			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
