@@ -168,10 +168,12 @@ class ProductRepository implements Service {
 			$failed_at       = $this->meta_handler->get_sync_failed_at( $product->get_id() );
 
 			// if it has failed less times than the specified threshold OR if syncing it hasn't failed within the specified window
-			if ( empty( $failed_attempts ) ||
-				 empty( $failed_at ) ||
-				 $failed_attempts <= ProductSyncer::FAILURE_THRESHOLD ||
-				 $failed_at <= strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) ) ) {
+			if (
+				empty( $failed_attempts ) ||
+				empty( $failed_at ) ||
+				$failed_attempts <= ProductSyncer::FAILURE_THRESHOLD ||
+				$failed_at <= strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) )
+			) {
 
 				$results[] = $return_ids ? $product->get_id() : $product;
 			}
