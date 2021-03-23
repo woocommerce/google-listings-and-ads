@@ -31,6 +31,7 @@ class ReportsController extends BaseReportsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_programs_report_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -43,6 +44,7 @@ class ReportsController extends BaseReportsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_products_report_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]

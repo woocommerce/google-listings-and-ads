@@ -33,19 +33,67 @@ abstract class BaseReportsController extends BaseController {
 	}
 
 	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params() {
+		return [
+			'context'  => $this->get_context_param( [ 'default' => 'view' ] ),
+			'after'    => [
+				'description'       => __( 'Limit response to resources published after a given ISO8601 compliant date.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'format'            => 'date',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'before'   => [
+				'description'       => __( 'Limit response to resources published before a given ISO8601 compliant date.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'format'            => 'date',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'interval' => [
+				'description'       => __( 'Time interval to use for buckets in the returned data.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => 'week',
+				'enum'              => [
+					'day',
+					'week',
+					'month',
+					'quarter',
+					'year',
+				],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'ids'      => [
+				'description'       => __( 'Limit result to items with specified ids.', 'google-listings-and-ads' ),
+				'type'              => 'array',
+				'sanitize_callback' => 'wp_parse_id_list',
+				'validate_callback' => 'rest_validate_request_arg',
+				'items'             => [
+					'type' => 'integer',
+				],
+			],
+			'fields'   => [
+				'description'       => __( 'Limit stats fields to the specified items.', 'google-listings-and-ads' ),
+				'type'              => 'array',
+				'sanitize_callback' => 'wp_parse_slug_list',
+				'validate_callback' => 'rest_validate_request_arg',
+				'items'             => [
+					'type' => 'string',
+				],
+			],
+		];
+	}
+
+	/**
 	 * Maps query arguments from the REST request.
 	 *
 	 * @param Request $request REST Request.
 	 * @return array
 	 */
 	protected function prepare_query_arguments( Request $request ) {
-		$args = [
-			'before'   => $request['before'],
-			'after'    => $request['after'],
-			'interval' => $request['interval'],
-			'fields'   => $request['fields'],
-			'ids'      => wp_parse_list( $request['ids'] ),
-		];
+		$args = array_intersect_key( $request->get_query_params(), $this->get_collection_params() );
 
 		$defaults = [
 			'before'   => TimeInterval::default_before(),
@@ -55,7 +103,7 @@ abstract class BaseReportsController extends BaseController {
 			'ids'      => [],
 		];
 
-		$args = wp_parse_args( array_filter( $args ), $defaults );
+		$args = wp_parse_args( $args, $defaults );
 		$this->normalize_timezones( $args, $defaults );
 		return $args;
 	}
