@@ -29,7 +29,7 @@ trait MerchantCenterTrait {
 	 * @return bool
 	 */
 	protected function setup_complete(): bool {
-		return boolval( $this->options->get( OptionsInterface::MC_SETUP_COMPLETED_AT, false ) );
+		return boolval( $this->options->get( Options::MC_SETUP_COMPLETED_AT, false ) );
 	}
 
 	/**
