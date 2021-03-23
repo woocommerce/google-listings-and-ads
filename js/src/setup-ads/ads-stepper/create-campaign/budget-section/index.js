@@ -13,7 +13,7 @@ import getMonthlyMaxEstimated from '../getMonthlyMaxEstimated';
 import './index.scss';
 import FreeAdCredit from './free-ad-credit';
 import BudgetRecommendation from './budget-recommendation';
-import useFreeAdCredit from './use-free-ad-credit';
+import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 
 const BudgetSection = ( props ) => {
 	const {
