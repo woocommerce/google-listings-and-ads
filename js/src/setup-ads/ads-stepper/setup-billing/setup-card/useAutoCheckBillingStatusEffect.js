@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useCallback } from '@wordpress/element';
+import { useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -23,19 +23,6 @@ const useAutoCheckBillingStatusEffect = ( onStatusApproved = () => {} ) => {
 			receiveGoogleAdsAccountBillingStatus( billingStatus );
 		}
 	}, [ onStatusApproved, receiveGoogleAdsAccountBillingStatus ] );
-
-	// check billing status when window got focus.
-	useEffect( () => {
-		const handleWindowFocus = () => {
-			checkStatus();
-		};
-
-		window.addEventListener( 'focus', handleWindowFocus );
-
-		return () => {
-			window.removeEventListener( 'focus', handleWindowFocus );
-		};
-	}, [ checkStatus ] );
 
 	useWindowFocusCallbackIntervalEffect( checkStatus, 30 );
 };

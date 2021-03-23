@@ -1,23 +1,23 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 
 /**
- * Returns a ref object with a Boolean `current` property that indicates whether the window has focus.
+ * Returns a Boolean value indicating whether the window has focus.
  *
- * @return {Object} ref object.
+ * @return {boolean} Boolean value indicating whether the window has focus.
  */
-const useWindowFocusRef = () => {
-	const focusRef = useRef( true );
+const useWindowFocus = () => {
+	const [ isFocus, setFocus ] = useState( document.hasFocus() );
 
 	useEffect( () => {
 		const handleWindowFocus = () => {
-			focusRef.current = true;
+			setFocus( true );
 		};
 
 		const handleWindowBlur = () => {
-			focusRef.current = false;
+			setFocus( false );
 		};
 
 		window.addEventListener( 'focus', handleWindowFocus );
@@ -29,7 +29,7 @@ const useWindowFocusRef = () => {
 		};
 	}, [] );
 
-	return focusRef;
+	return isFocus;
 };
 
-export default useWindowFocusRef;
+export default useWindowFocus;
