@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\MenuFixesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 

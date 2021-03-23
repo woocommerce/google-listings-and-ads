@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\View;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Exception;
-use Throwable;
 
 defined( 'ABSPATH' ) || exit;
 

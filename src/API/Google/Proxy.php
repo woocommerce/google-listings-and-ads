@@ -7,14 +7,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use Google_Service_ShoppingContent as ShoppingContent;
 use Google\ApiCore\ApiException;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
@@ -141,7 +140,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return array
 	 */
 	public function get_connected_merchant(): array {
-		$id     = $this->options->get( Options::MERCHANT_ID );
+		$id     = $this->options->get( OptionsInterface::MERCHANT_ID );
 		$status = [
 			'id'     => $id,
 			'status' => $id ? 'connected' : 'disconnected',
@@ -258,6 +257,7 @@ class Proxy implements OptionsAwareInterface {
 			$ids       = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
+				/** @var string $name */
 				$ids[] = $this->parse_ads_id( $name );
 			}
 
@@ -384,7 +384,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return array
 	 */
 	public function get_connected_ads_account(): array {
-		$id     = $this->options->get( Options::ADS_ID );
+		$id     = $this->options->get( OptionsInterface::ADS_ID );
 		$status = [
 			'id'     => $id,
 			'status' => $id ? 'connected' : 'disconnected',
@@ -407,7 +407,7 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function disconnect_ads_account() {
 		$this->update_ads_id( 0 );
-		$this->options->update( Options::ADS_BILLING_URL, '' );
+		$this->options->update( OptionsInterface::ADS_BILLING_URL, '' );
 	}
 
 	/**
@@ -508,7 +508,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return int
 	 */
 	protected function get_merchant_id(): int {
-		return $this->options->get( Options::MERCHANT_ID );
+		return $this->options->get( OptionsInterface::MERCHANT_ID );
 	}
 
 	/**
@@ -522,7 +522,7 @@ class Proxy implements OptionsAwareInterface {
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
 		$merchant->set_id( $id );
-		return $this->options->update( Options::MERCHANT_ID, $id );
+		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
 	}
 
 	/**
@@ -536,7 +536,7 @@ class Proxy implements OptionsAwareInterface {
 		/** @var Ads $ads */
 		$ads = $this->container->get( Ads::class );
 		$ads->set_id( $id );
-		return $this->options->update( Options::ADS_ID, $id );
+		return $this->options->update( OptionsInterface::ADS_ID, $id );
 	}
 
 	/**
@@ -547,7 +547,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return bool
 	 */
 	protected function update_billing_url( string $url ): bool {
-		return $this->options->update( Options::ADS_BILLING_URL, $url );
+		return $this->options->update( OptionsInterface::ADS_BILLING_URL, $url );
 	}
 
 	/**
@@ -556,14 +556,14 @@ class Proxy implements OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function new_account_name(): string {
-		$site_title = get_bloginfo( 'name' );
-		return $site_title;
+		return get_bloginfo( 'name' );
 	}
 
 	/**
 	 * Get a timezone string from WP Settings.
 	 *
 	 * @return string
+	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	protected function get_site_timezone_string(): string {
 		$timezone = wp_timezone_string();

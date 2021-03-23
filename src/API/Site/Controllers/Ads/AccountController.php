@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use Psr\Container\ContainerInterface;
@@ -168,7 +168,7 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->middleware->disconnect_ads_account();
 			$this->account_state->update( [] );
-			$this->options->update( Options::ADS_CONVERSION_ACTION, [] );
+			$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, [] );
 
 			return [
 				'status'  => 'success',
@@ -194,7 +194,7 @@ class AccountController extends BaseOptionsController {
 
 				return [
 					'status'      => $status,
-					'billing_url' => $this->options->get( Options::ADS_BILLING_URL ),
+					'billing_url' => $this->options->get( OptionsInterface::ADS_BILLING_URL ),
 				];
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
@@ -244,7 +244,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If there is already an Ads account ID.
 	 */
 	private function use_existing_account( int $account_id ) {
-		$ads_id = $this->options->get( Options::ADS_ID );
+		$ads_id = $this->options->get( OptionsInterface::ADS_ID );
 		if ( $ads_id && $ads_id !== $account_id ) {
 			throw new Exception(
 				/* translators: 1: is a numeric account ID */
@@ -277,7 +277,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	private function setup_account(): array {
 		$state   = $this->account_state->get();
-		$ads_id  = $this->options->get( Options::ADS_ID );
+		$ads_id  = $this->options->get( OptionsInterface::ADS_ID );
 		$account = [ 'id' => $ads_id ];
 
 		foreach ( $state as $name => &$step ) {
@@ -372,7 +372,7 @@ class AccountController extends BaseOptionsController {
 				428,
 				null,
 				[
-					'billing_url'    => $this->options->get( Options::ADS_BILLING_URL ),
+					'billing_url'    => $this->options->get( OptionsInterface::ADS_BILLING_URL ),
 					'billing_status' => $status,
 				]
 			);
@@ -386,6 +386,6 @@ class AccountController extends BaseOptionsController {
 	 */
 	private function create_conversion_action(): void {
 		$conversion_action = $this->ads->create_conversion_action();
-		$this->options->update( Options::ADS_CONVERSION_ACTION, $conversion_action );
+		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $conversion_action );
 	}
 }
