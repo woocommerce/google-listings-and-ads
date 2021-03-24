@@ -13,6 +13,7 @@ import getMonthlyMaxEstimated from '../getMonthlyMaxEstimated';
 import './index.scss';
 import FreeAdCredit from './free-ad-credit';
 import BudgetRecommendation from './budget-recommendation';
+import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 
 const BudgetSection = ( props ) => {
 	const {
@@ -23,11 +24,9 @@ const BudgetSection = ( props ) => {
 		amount,
 	} = values;
 	const { code: currencyCode } = useStoreCurrency();
+	const hasFreeAdCredit = useFreeAdCredit();
 
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( values.amount );
-
-	// TODO: free ad credit is only applicable for new Google Ads account.
-	const hasFreeAdCredit = true;
 
 	return (
 		<div className="gla-budget-section">
@@ -43,8 +42,8 @@ const BudgetSection = ( props ) => {
 				}
 			>
 				<Section.Card>
-					<Section.Card.Body>
-						<div className="gla-budget-section__cost">
+					<Section.Card.Body className="gla-budget-section__card-body">
+						<div className="gla-budget-section__card-body__cost">
 							<AppInputControl
 								label={ __(
 									'Daily average cost',
