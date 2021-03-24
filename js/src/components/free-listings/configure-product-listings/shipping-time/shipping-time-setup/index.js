@@ -4,76 +4,39 @@
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
-import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import useShippingTimes from '.~/hooks/useShippingTimes';
 import AppSpinner from '.~/components/app-spinner';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import { STORE_KEY } from '.~/data';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AddTimeButton from './add-time-button';
-import getCountriesTimeArray from './getCountriesTimeArray';
-import CountriesTimeInputForm from './countries-time-input-form';
+import ShippingCountriesForm from './countries-form';
 import './index.scss';
 
 const ShippingTimeSetup = ( props ) => {
 	const {
 		formProps: { getInputProps },
 	} = props;
-	const shippingTimes = useSelect( ( select ) =>
-		select( STORE_KEY ).getShippingTimes()
-	);
+	const {
+		loading: loadingShippingTimes,
+		data: shippingTimes,
+	} = useShippingTimes();
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	if ( ! selectedCountryCodes ) {
+	if ( ! selectedCountryCodes || loadingShippingTimes ) {
 		return <AppSpinner />;
 	}
-
-	const expectedCountryCount = selectedCountryCodes.length;
-	const actualCountryCount = shippingTimes.length;
-	const remainingCount = expectedCountryCount - actualCountryCount;
-
-	const countriesTimeArray = getCountriesTimeArray( shippingTimes );
 
 	return (
 		<div className="gla-shipping-time-setup">
 			<VerticalGapLayout>
-				<div className="countries-time">
-					<VerticalGapLayout>
-						{ shippingTimes.length === 0 && (
-							<div className="countries-time-input-form">
-								<CountriesTimeInputForm
-									initialValue={ {
-										countries: selectedCountryCodes,
-										time: '',
-									} }
-								/>
-							</div>
-						) }
-						{ countriesTimeArray.map( ( el ) => {
-							return (
-								<div
-									key={ `${ el.time }-${ el.countries.join(
-										'-'
-									) }` }
-									className="countries-time-input-form"
-								>
-									<CountriesTimeInputForm
-										initialValue={ el }
-									/>
-								</div>
-							);
-						} ) }
-						{ actualCountryCount >= 1 && remainingCount >= 1 && (
-							<div className="add-time-button">
-								<AddTimeButton />
-							</div>
-						) }
-					</VerticalGapLayout>
-				</div>
+				<ShippingCountriesForm
+					shippingTimes={ shippingTimes }
+					selectedCountryCodes={ selectedCountryCodes }
+				/>
 				<CheckboxControl
 					label={ createInterpolateElement(
 						__(

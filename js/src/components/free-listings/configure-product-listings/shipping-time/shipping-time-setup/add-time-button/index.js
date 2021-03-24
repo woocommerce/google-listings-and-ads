@@ -11,7 +11,13 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
  */
 import AddTimeModal from './add-time-modal';
 
-const AddTimeButton = () => {
+/**
+ * Triggering button and modal with the
+ * form to add a new time for selected country(-ies).
+ *
+ * @param {Object} props Props to be forwarded to `AddTimeModal`.
+ */
+const AddTimeButton = ( props ) => {
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleClick = () => {
@@ -32,7 +38,10 @@ const AddTimeButton = () => {
 				{ __( 'Add another time', 'google-listings-and-ads' ) }
 			</Button>
 			{ isOpen && (
-				<AddTimeModal onRequestClose={ handleModalRequestClose } />
+				<AddTimeModal
+					onRequestClose={ handleModalRequestClose }
+					{ ...props }
+				/>
 			) }
 		</>
 	);

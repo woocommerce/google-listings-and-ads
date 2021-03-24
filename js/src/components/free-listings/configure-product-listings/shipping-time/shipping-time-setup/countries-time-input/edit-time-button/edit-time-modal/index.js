@@ -13,18 +13,19 @@ import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import './index.scss';
-import { useAppDispatch } from '.~/data';
 
-const EditTimeModal = ( props ) => {
-	const { time: groupedTime, onRequestClose } = props;
-	const { upsertShippingTime, deleteShippingTime } = useAppDispatch();
-
+/**
+ *Form to edit time for selected country(-ies).
+ *
+ * @param {Object} props
+ * @param {AggregatedShippingTime} props.time
+ * @param {(newTime: AggregatedShippingTime, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the time is submitted.
+ * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
+ */
+const EditTimeModal = ( { time, onDelete, onSubmit, onRequestClose } ) => {
 	const handleDeleteClick = () => {
-		groupedTime.countries.forEach( ( el ) => {
-			deleteShippingTime( el );
-		} );
-
-		onRequestClose();
+		onDelete( time.countries );
 	};
 
 	const handleValidate = () => {
@@ -35,31 +36,20 @@ const EditTimeModal = ( props ) => {
 		return errors;
 	};
 
-	const handleSubmitCallback = ( values ) => {
-		const { countryCodes, time } = values;
+	const handleSubmitCallback = ( newAggregatedTime ) => {
+		const remainingCountries = new Set( newAggregatedTime.countries );
+		const removedCountries = time.countries.filter(
+			( el ) => ! remainingCountries.has( el )
+		);
 
-		countryCodes.forEach( ( el ) => {
-			upsertShippingTime( {
-				countryCode: el,
-				time,
-			} );
-		} );
-
-		const valuesCountrySet = new Set( values.countryCodes );
-		groupedTime.countries.forEach( ( el ) => {
-			if ( ! valuesCountrySet.has( el ) ) {
-				deleteShippingTime( el );
-			}
-		} );
-
-		onRequestClose();
+		onSubmit( newAggregatedTime, removedCountries );
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: groupedTime.countries,
-				time: groupedTime.time,
+				countries: time.countries,
+				time: time.time,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
@@ -88,7 +78,10 @@ const EditTimeModal = ( props ) => {
 								isPrimary
 								onClick={ handleSubmit }
 							>
-								{ __( 'Save', 'google-listings-and-ads' ) }
+								{ __(
+									'Update shipping time',
+									'google-listings-and-ads'
+								) }
 							</Button>,
 						] }
 						onRequestClose={ onRequestClose }
@@ -103,7 +96,7 @@ const EditTimeModal = ( props ) => {
 								</div>
 								<AudienceCountrySelect
 									multiple
-									{ ...getInputProps( 'countryCodes' ) }
+									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
 							<AppInputControl
@@ -126,3 +119,8 @@ const EditTimeModal = ( props ) => {
 };
 
 export default EditTimeModal;
+
+/**
+ * @typedef {import("../../../countries-form.js").AggregatedShippingTime} AggregatedShippingTime
+ * @typedef {import("../../../countries-form.js").CountryCode} CountryCode
+ */
