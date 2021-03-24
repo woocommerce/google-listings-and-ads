@@ -32,16 +32,7 @@ trait AdsReportTrait {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
-			$query = ( new AdsReportQuery( $type ) )
-				->fields( $args['fields'] )
-				->segment_interval( $args['interval'] )
-				->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' );
-
-			if ( ! empty( $args['ids'] ) ) {
-				$query->filter( $args['ids'] );
-			}
-
-			$results = $this->query( $query->get_query() );
+			$results = $this->query( ( new AdsReportQuery( $type, $args ) )->get_query() );
 
 			foreach ( $results->iterateAllElements() as $row ) {
 				$this->add_report_row( $type, $row, $args );

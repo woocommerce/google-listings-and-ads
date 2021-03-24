@@ -23,8 +23,9 @@ class AdsReportQuery extends Query {
 	 * Query constructor.
 	 *
 	 * @param string $type Report type (campaigns or products).
+	 * @param array  $args Query arguments.
 	 */
-	public function __construct( string $type ) {
+	public function __construct( string $type, array $args ) {
 		$this->type = $type;
 		parent::__construct( 'shopping_performance_view' );
 
@@ -42,6 +43,22 @@ class AdsReportQuery extends Query {
 		}
 
 		$this->columns( $columns );
+
+		if ( ! empty( $args['fields'] ) ) {
+			$this->fields( $args['fields'] );
+		}
+
+		if ( ! empty( $args['interval'] ) ) {
+			$this->segment_interval( $args['interval'] );
+		}
+
+		if ( ! empty( $args['after'] ) && ! empty( $args['before'] ) ) {
+			$this->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' );
+		}
+
+		if ( ! empty( $args['ids'] ) ) {
+			$this->filter( $args['ids'] );
+		}
 	}
 
 	/**
