@@ -82,6 +82,9 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which link is clicked
   * `href`: link's URL
 
+* `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
+  * `context`: indicate which page the link is in.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
