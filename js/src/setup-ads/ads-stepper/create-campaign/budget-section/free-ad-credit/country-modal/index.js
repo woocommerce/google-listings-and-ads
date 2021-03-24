@@ -9,8 +9,11 @@ import { __ } from '@wordpress/i18n';
 import AppModal from '.~/components/app-modal';
 import countryAmount from './country-amount';
 import './index.scss';
+import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 
 const CountryModal = ( props ) => {
+	const map = useCountryKeyNameMap();
+
 	return (
 		<AppModal
 			className="gla-free-ad-credit-country-modal"
@@ -29,11 +32,11 @@ const CountryModal = ( props ) => {
 			<table>
 				<tbody>
 					{ countryAmount.map( ( el, idx ) => {
-						const [ country, amount ] = el;
+						const [ countryCode, amount ] = el;
 
 						return (
 							<tr key={ idx }>
-								<td>{ country }</td>
+								<td>{ map[ countryCode ] }</td>
 								<td>{ amount }</td>
 							</tr>
 						);
