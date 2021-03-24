@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 import GridiconGift from 'gridicons/dist/gift';
 
 /**
@@ -10,8 +10,20 @@ import GridiconGift from 'gridicons/dist/gift';
  */
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import './index.scss';
+import TrackableLink from '.~/components/trackable-link';
+import CountryModal from './country-modal';
 
 const FreeAdCredit = () => {
+	const [ showModal, setShowModal ] = useState( false );
+
+	const handleClick = () => {
+		setShowModal( true );
+	};
+
+	const handleRequestClose = () => {
+		setShowModal( false );
+	};
+
 	return (
 		<div className="gla-free-ad-credit">
 			<GridiconGift />
@@ -30,12 +42,14 @@ const FreeAdCredit = () => {
 						),
 						{
 							checklink: (
-								// TODO: need to change this.
-								// Upon click, this should upon up a free credit modal, instead of going to an external site.
-								<AppDocumentationLink
-									context="setup-ads"
-									linkId="check-free-ad-credit-in-country"
-									href="https://support.google.com/adspolicy/answer/54818"
+								<TrackableLink
+									eventName="gla_free_ad_credit_country_click"
+									eventProps={ {
+										context: 'setup-ads',
+									} }
+									href="#"
+									type="wp-admin"
+									onClick={ handleClick }
 								/>
 							),
 						}
@@ -52,6 +66,9 @@ const FreeAdCredit = () => {
 						) }
 					</AppDocumentationLink>
 				</div>
+				{ showModal && (
+					<CountryModal onRequestClose={ handleRequestClose } />
+				) }
 			</div>
 		</div>
 	);

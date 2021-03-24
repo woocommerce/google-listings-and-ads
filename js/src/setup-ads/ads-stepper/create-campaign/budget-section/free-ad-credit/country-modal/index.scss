@@ -1,0 +1,18 @@
+.gla-free-ad-credit-country-modal {
+	max-width: 600px;
+	overflow: auto;
+
+	table {
+		margin: auto;
+
+		tbody {
+			td:nth-child(1) {
+				font-weight: 600;
+			}
+
+			td:nth-child(2) {
+				text-align: right;
+			}
+		}
+	}
+}
