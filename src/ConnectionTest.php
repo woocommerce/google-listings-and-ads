@@ -105,7 +105,7 @@ class ConnectionTest implements Service, Registerable {
 		$url        = admin_url( 'admin.php?page=connection-test-admin-page' );
 
 		if ( ! empty( $_GET['google-mc'] ) && 'connected' === $_GET['google-mc'] ) {
-			$this->response .= 'Google Merchant Center connected successfully.';
+			$this->response .= 'Google Account connected successfully.';
 		}
 
 		if ( ! empty( $_GET['google-manager'] ) && 'connected' === $_GET['google-manager'] ) {

@@ -20,7 +20,7 @@ addFilter(
 			{
 				key: 'gla_complete_setup',
 				title: __(
-					'Setup Google Listings & Ads',
+					'Set up Google Listings & Ads',
 					'google-listings-and-ads'
 				),
 				completed: glaTaskData.isComplete,
