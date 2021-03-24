@@ -44,18 +44,19 @@ abstract class BaseReportsController extends BaseController {
 				'description'       => __( 'Limit response to resources published after a given ISO8601 compliant date.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'date',
+				'default'           => '-7 days',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'before'   => [
 				'description'       => __( 'Limit response to resources published before a given ISO8601 compliant date.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'date',
+				'default'           => 'now',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'interval' => [
 				'description'       => __( 'Time interval to use for buckets in the returned data.', 'google-listings-and-ads' ),
 				'type'              => 'string',
-				'default'           => 'week',
 				'enum'              => [
 					'day',
 					'week',
@@ -93,29 +94,20 @@ abstract class BaseReportsController extends BaseController {
 	 * @return array
 	 */
 	protected function prepare_query_arguments( Request $request ) {
-		$args = array_intersect_key( $request->get_query_params(), $this->get_collection_params() );
+		$params   = $this->get_collection_params();
+		$defaults = wp_list_pluck( $params, 'default' );
+		$args     = wp_parse_args( array_intersect_key( $request->get_query_params(), $params ), $defaults );
 
-		$defaults = [
-			'before'   => TimeInterval::default_before(),
-			'after'    => TimeInterval::default_after(),
-			'interval' => '',
-			'fields'   => [],
-			'ids'      => [],
-		];
-
-		$args = wp_parse_args( $args, $defaults );
-		$this->normalize_timezones( $args, $defaults );
+		$this->normalize_timezones( $args );
 		return $args;
 	}
 
 	/**
-	 * Converts input datetime parameters to local timezone. If there are no inputs from the user in query_args,
-	 * uses default from $defaults.
+	 * Converts input datetime parameters to local timezone.
 	 *
 	 * @param array $query_args Array of query arguments.
-	 * @param array $defaults Array of default values.
 	 */
-	protected function normalize_timezones( &$query_args, $defaults ) {
+	protected function normalize_timezones( &$query_args ) {
 		$local_tz = new \DateTimeZone( wc_timezone_string() );
 		foreach ( [ 'before', 'after' ] as $query_arg_key ) {
 			if ( isset( $query_args[ $query_arg_key ] ) && is_string( $query_args[ $query_arg_key ] ) ) {
@@ -127,8 +119,6 @@ abstract class BaseReportsController extends BaseController {
 			} elseif ( isset( $query_args[ $query_arg_key ] ) && is_a( $query_args[ $query_arg_key ], 'DateTime' ) ) {
 				// In case timezone is in other timezone, convert to local timezone.
 				$query_args[ $query_arg_key ]->setTimezone( $local_tz );
-			} else {
-				$query_args[ $query_arg_key ] = isset( $defaults[ $query_arg_key ] ) ? $defaults[ $query_arg_key ] : null;
 			}
 		}
 	}
