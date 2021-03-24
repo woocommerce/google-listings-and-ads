@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { createInterpolateElement, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,12 +18,8 @@ import AccountSubsection from './account-subsection';
 import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
 
 const withPrefix = ( id ) => {
-	return createInterpolateElement(
-		__( 'Account <id />', 'google-listings-and-ads' ),
-		{
-			id: <>{ id }</>,
-		}
-	);
+	// translators: %s: user's account ID
+	return sprintf( __( 'Account %s', 'google-listings-and-ads' ), id );
 };
 
 export default function DisconnectAccounts() {
