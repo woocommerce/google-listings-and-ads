@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -11,6 +12,7 @@ import { __ } from '@wordpress/i18n';
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
+import useTargetAudience from '.~/hooks/useTargetAudience';
 import SetupFreeListings from './setup-free-listings';
 
 /**
@@ -22,6 +24,32 @@ import SetupFreeListings from './setup-free-listings';
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
+	const { data: savedTargetAudienceData } = useTargetAudience();
+
+	// Render empty instance without data before the data is available.
+	if ( ! savedTargetAudienceData ) {
+		return <EditFreeCampaignWithoutData key="loading" />;
+	}
+	return (
+		<EditFreeCampaignWithoutData
+			key="loaded"
+			initialData={ savedTargetAudienceData }
+		/>
+	);
+}
+
+/**
+ * Initialdata-less base for EditFreeCampaign.
+ * Needed to pass asynchronous initial data to `useState` hook.
+ *
+ * @param {Object} props
+ * @param {Object} props.initialData
+ */
+function EditFreeCampaignWithoutData( { initialData } ) {
+	const [ targetAudienceData, updateTargetAudienceData ] = useState(
+		initialData
+	);
+
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(
 		// Clear the step we were at, but perserve programId to be able to highlight the program.
@@ -29,7 +57,8 @@ export default function EditFreeCampaign() {
 		'/google/dashboard'
 	);
 
-	const handleChooseAudienceContinue = () => {
+	const handleChooseAudienceContinue = ( newTargetAudienceData ) => {
+		updateTargetAudienceData( newTargetAudienceData );
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
 	};
 
@@ -64,6 +93,7 @@ export default function EditFreeCampaign() {
 									'STEP ONE',
 									'google-listings-and-ads'
 								) }
+								initialData={ targetAudienceData }
 								onContinue={ handleChooseAudienceContinue }
 							/>
 						),
