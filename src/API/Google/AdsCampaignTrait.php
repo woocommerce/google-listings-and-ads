@@ -176,10 +176,8 @@ trait AdsCampaignTrait {
 			$resource_name = ResourceNames::forCampaign( $this->get_id(), $campaign_id );
 			$operation     = new CampaignOperation();
 			$operation->setRemove( $resource_name );
-			$deleted_campaign    = $this->mutate_campaign( $operation );
-			$deleted_campaign_id = $this->parse_id( $deleted_campaign->getResourceName(), 'campaigns' );
-
-			return $deleted_campaign_id;
+			$deleted_campaign = $this->mutate_campaign( $operation );
+			return $this->parse_id( $deleted_campaign->getResourceName(), 'campaigns' );
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
