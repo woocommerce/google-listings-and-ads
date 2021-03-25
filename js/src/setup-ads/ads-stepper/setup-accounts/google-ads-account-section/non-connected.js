@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { useState } from '@wordpress/element';
+
+/**
  * Internal dependencies
  */
 import CreateAccount from './create-account';
@@ -8,16 +13,30 @@ import ConnectAds from './connect-ads';
 
 const NonConnected = () => {
 	const { existingAccounts } = useExistingGoogleAdsAccounts();
+	const [ ignoreExisting, setIgnoreExisting ] = useState( false );
 
 	if ( ! existingAccounts ) {
 		return <SpinnerCard />;
 	}
 
-	if ( existingAccounts.length === 0 ) {
-		return <CreateAccount />;
+	const handleShowExisting = () => {
+		setIgnoreExisting( false );
+	};
+
+	if ( existingAccounts.length === 0 || ignoreExisting ) {
+		return (
+			<CreateAccount
+				allowShowExisting={ ignoreExisting }
+				onShowExisting={ handleShowExisting }
+			/>
+		);
 	}
 
-	return <ConnectAds />;
+	const handleCreateNew = () => {
+		setIgnoreExisting( true );
+	};
+
+	return <ConnectAds onCreateNew={ handleCreateNew } />;
 };
 
 export default NonConnected;
