@@ -53,12 +53,7 @@ trait AdsReportTrait {
 				$this->report_data['next_page'] = $page->getNextPageToken();
 			}
 
-			// Remove index from arrays to conform to schema.
-			foreach ( [ 'products', 'campaigns', 'intervals' ] as $key ) {
-				if ( isset( $this->report_data[ $key ] ) ) {
-					$this->report_data[ $key ] = array_values( $this->report_data[ $key ] );
-				}
-			}
+			$this->remove_report_indexes( [ 'products', 'campaigns', 'intervals' ] );
 
 			return $this->report_data;
 		} catch ( ApiException $e ) {

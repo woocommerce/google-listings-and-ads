@@ -30,6 +30,7 @@ class ReportsController extends BaseReportsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_reports_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -55,13 +56,46 @@ class ReportsController extends BaseReportsController {
 	}
 
 	/**
+	 * Add collection parameters.
+	 *
+	 * @param array $params Initial set of collection parameters.
+	 *
+	 * @return array
+	 */
+	protected function add_collection_parameters( array $params ): array {
+		$params['interval'] = [
+			'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
+			'type'              => 'string',
+			'enum'              => [
+				'day',
+			],
+			'validate_callback' => 'rest_validate_request_arg',
+		];
+		return $params;
+	}
+
+	/**
 	 * Get the item schema for the controller.
 	 *
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'totals' => $this->get_totals_schema(),
+			'intervals' => [
+				'type'  => 'array',
+				'items' => [
+					'type'       => 'object',
+					'properties' => [
+						'interval'  => [
+							'type'        => 'string',
+							'description' => __( 'ID of this report segment.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'subtotals' => $this->get_totals_schema(),
+					],
+				],
+			],
+			'totals'    => $this->get_totals_schema(),
 		];
 	}
 

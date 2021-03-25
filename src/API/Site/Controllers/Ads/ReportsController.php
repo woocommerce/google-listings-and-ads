@@ -88,6 +88,29 @@ class ReportsController extends BaseReportsController {
 	}
 
 	/**
+	 * Add collection parameters.
+	 *
+	 * @param array $params Initial set of collection parameters.
+	 *
+	 * @return array
+	 */
+	protected function add_collection_parameters( array $params ): array {
+		$params['interval'] = [
+			'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
+			'type'              => 'string',
+			'enum'              => [
+				'day',
+				'week',
+				'month',
+				'quarter',
+				'year',
+			],
+			'validate_callback' => 'rest_validate_request_arg',
+		];
+		return $params;
+	}
+
+	/**
 	 * Get the item schema for the controller.
 	 *
 	 * @return array

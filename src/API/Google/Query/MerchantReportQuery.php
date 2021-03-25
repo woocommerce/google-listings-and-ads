@@ -35,6 +35,8 @@ class MerchantReportQuery extends Query {
 		if ( ! empty( $args['orderby'] ) ) {
 			$this->set_order( $args['orderby'], $args['order'] );
 		}
+
+		$this->where( 'segments.program', 'FREE_PRODUCT_LISTING' );
 	}
 
 	/**

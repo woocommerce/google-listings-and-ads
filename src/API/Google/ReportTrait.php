@@ -44,4 +44,17 @@ trait ReportTrait {
 			}
 		}
 	}
+
+	/**
+	 * Remove indexes from report data to conform to schema.
+	 *
+	 * @param array $fields Fields to reindex.
+	 */
+	protected function remove_report_indexes( array $fields ) {
+		foreach ( $fields as $key ) {
+			if ( isset( $this->report_data[ $key ] ) ) {
+				$this->report_data[ $key ] = array_values( $this->report_data[ $key ] );
+			}
+		}
+	}
 }

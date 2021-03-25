@@ -37,7 +37,7 @@ abstract class BaseReportsController extends BaseController {
 	 * @return array
 	 */
 	public function get_collection_params() {
-		return [
+		$params = [
 			'context'   => $this->get_context_param( [ 'default' => 'view' ] ),
 			'after'     => [
 				'description'       => __( 'Limit response to data after a given ISO8601 compliant date.', 'google-listings-and-ads' ),
@@ -51,18 +51,6 @@ abstract class BaseReportsController extends BaseController {
 				'type'              => 'string',
 				'format'            => 'date',
 				'default'           => 'now',
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'interval'  => [
-				'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
-				'type'              => 'string',
-				'enum'              => [
-					'day',
-					'week',
-					'month',
-					'quarter',
-					'year',
-				],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'ids'       => [
@@ -110,6 +98,8 @@ abstract class BaseReportsController extends BaseController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
+
+		return $this->add_collection_parameters( $params );
 	}
 
 	/**
