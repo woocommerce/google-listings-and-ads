@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '.~/data';
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
@@ -27,6 +28,7 @@ import SetupFreeListings from './setup-free-listings';
 export default function EditFreeCampaign() {
 	const { data: savedTargetAudience } = useTargetAudience();
 	const { settings: savedSettings } = useSettings();
+	const { saveTargetAudience, saveSettings } = useAppDispatch();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience
@@ -55,7 +57,11 @@ export default function EditFreeCampaign() {
 
 	const handleSetupFreeListingsContinue = () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
-		// TODO: Save the data.
+		// TODO: consider pararelizing those requests.
+		saveTargetAudience( targetAudience );
+		saveSettings( settings );
+		// TODO: save batched shipping times and rates
+		// TODO: Call setting sync
 		getHistory().push( dashboardURL );
 	};
 
