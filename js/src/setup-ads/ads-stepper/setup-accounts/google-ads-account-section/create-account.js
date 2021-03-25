@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -15,25 +16,38 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const CreateAccount = () => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { receiveAdsAccount } = useAppDispatch();
-	const [ fetchCreateAdsAccount, { loading } ] = useApiFetchCallback( {
+	const { fetchGoogleAdsAccount } = useAppDispatch();
+	const [ fetchAccountLoading, setFetchAccountLoading ] = useState( false );
+	const [
+		fetchCreateAdsAccount,
+		{ loading: createLoading },
+	] = useApiFetchCallback( {
 		path: `/wc/gla/ads/accounts`,
 		method: 'POST',
 	} );
 
 	const handleCreateAccount = async () => {
 		try {
-			const data = await fetchCreateAdsAccount();
-			receiveAdsAccount( data );
+			await fetchCreateAdsAccount( { parse: false } );
 		} catch ( e ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to create Google Ads account. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
+			// for status code 428, we want to allow users to continue and proceed,
+			// so we swallow the error for status code 428,
+			// and only display error message and exit this function for non-428 error.
+			if ( e.status !== 428 ) {
+				createNotice(
+					'error',
+					__(
+						'Unable to create Google Ads account. Please try again later.',
+						'google-listings-and-ads'
+					)
+				);
+				return;
+			}
 		}
+
+		setFetchAccountLoading( true );
+		await fetchGoogleAdsAccount();
+		setFetchAccountLoading( false );
 	};
 
 	return (
@@ -47,7 +61,7 @@ const CreateAccount = () => {
 					button={
 						<CreateAccountButton
 							isSecondary
-							loading={ loading }
+							loading={ createLoading || fetchAccountLoading }
 							onCreateAccount={ handleCreateAccount }
 						/>
 					}
