@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
@@ -12,6 +14,7 @@ use Google\Ads\GoogleAds\V6\Resources\Campaign;
 use Google\Ads\GoogleAds\V6\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V6\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V6\Services\MutateCampaignResult;
 use Google\ApiCore\ApiException;
 use Exception;
 
@@ -22,6 +25,9 @@ use Exception;
  */
 trait AdsCampaignTrait {
 
+	use AdsQueryTrait;
+	use ApiExceptionTrait;
+	use MicroTrait;
 
 	/**
 	 * @return array
@@ -242,4 +248,22 @@ trait AdsCampaignTrait {
 
 		return $data;
 	}
+
+	/**
+	 * Run a single mutate campaign operation.
+	 *
+	 * @param CampaignOperation $operation Operation we would like to run.
+	 *
+	 * @return MutateCampaignResult
+	 */
+	protected function mutate_campaign( CampaignOperation $operation ): MutateCampaignResult {
+		$client   = $this->container->get( GoogleAdsClient::class );
+		$response = $client->getCampaignServiceClient()->mutateCampaigns(
+			$this->get_id(),
+			[ $operation ]
+		);
+
+		return $response->getResults()[0];
+	}
+
 }
