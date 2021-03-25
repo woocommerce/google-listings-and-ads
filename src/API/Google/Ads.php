@@ -62,7 +62,6 @@ class Ads implements OptionsAwareInterface {
 	 * Get billing status.
 	 *
 	 * @return string
-	 * @throws ValidationException if there are no billing setups found
 	 */
 	public function get_billing_status(): string {
 		try {
@@ -83,6 +82,9 @@ class Ads implements OptionsAwareInterface {
 			if ( 'PERMISSION_DENIED' !== $e->getStatus() ) {
 				do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 			}
+		} catch ( ValidationException $e ) {
+			// If no billing setups are found, just return UNKNOWN
+			return BillingSetupStatus::UNKNOWN;
 		}
 
 		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $this->get_id() );
