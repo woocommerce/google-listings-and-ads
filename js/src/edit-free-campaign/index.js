@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -24,31 +24,17 @@ import SetupFreeListings from './setup-free-listings';
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
-	const { data: savedTargetAudienceData } = useTargetAudience();
+	const { data: savedTargetAudience } = useTargetAudience();
 
-	// Render empty instance without data before the data is available.
-	if ( ! savedTargetAudienceData ) {
-		return <EditFreeCampaignWithoutData key="loading" />;
-	}
-	return (
-		<EditFreeCampaignWithoutData
-			key="loaded"
-			initialData={ savedTargetAudienceData }
-		/>
+	const [ targetAudience, updateTargetAudience ] = useState(
+		savedTargetAudience
 	);
-}
 
-/**
- * Initialdata-less base for EditFreeCampaign.
- * Needed to pass asynchronous initial data to `useState` hook.
- *
- * @param {Object} props
- * @param {Object} props.initialData
- */
-function EditFreeCampaignWithoutData( { initialData } ) {
-	const [ targetAudienceData, updateTargetAudienceData ] = useState(
-		initialData
-	);
+	useEffect( () => {
+		if ( savedTargetAudience ) {
+			updateTargetAudience( savedTargetAudience );
+		}
+	}, [ savedTargetAudience ] );
 
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(
@@ -57,8 +43,7 @@ function EditFreeCampaignWithoutData( { initialData } ) {
 		'/google/dashboard'
 	);
 
-	const handleChooseAudienceContinue = ( newTargetAudienceData ) => {
-		updateTargetAudienceData( newTargetAudienceData );
+	const handleChooseAudienceContinue = () => {
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
 	};
 
@@ -93,7 +78,10 @@ function EditFreeCampaignWithoutData( { initialData } ) {
 									'STEP ONE',
 									'google-listings-and-ads'
 								) }
-								initialData={ targetAudienceData }
+								initialData={ targetAudience }
+								onChange={ ( change, newTargetAudience ) =>
+									updateTargetAudience( newTargetAudience )
+								}
 								onContinue={ handleChooseAudienceContinue }
 							/>
 						),
