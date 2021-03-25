@@ -273,7 +273,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
 				'required'          => true,
-			],
+			]
 		];
 	}
 
