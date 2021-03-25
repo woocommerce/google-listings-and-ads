@@ -8,7 +8,6 @@ import { Form } from '@woocommerce/components';
  */
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
-import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import FormContent from './form-content';
 
 /**
@@ -19,10 +18,16 @@ import FormContent from './form-content';
  *
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.
+ * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
+ * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
-const SetupFreeListings = ( { stepHeader } ) => {
-	const { settings } = useSettings();
-
+const SetupFreeListings = ( {
+	stepHeader,
+	settings,
+	onChange = () => {},
+	onContinue = () => {},
+} ) => {
 	if ( ! settings ) {
 		return <AppSpinner />;
 	}
@@ -34,10 +39,6 @@ const SetupFreeListings = ( { stepHeader } ) => {
 
 		return errors;
 	};
-
-	// TODO: call backend API when submit form.
-	const handleSubmitCallback = () => {};
-
 	return (
 		<div className="gla-setup-free-listings">
 			<Hero stepHeader={ stepHeader } />
@@ -55,8 +56,9 @@ const SetupFreeListings = ( { stepHeader } ) => {
 					refund_tos_visible: settings.refund_tos_visible,
 					contact_info_visible: settings.contact_info_visible,
 				} }
+				onChangeCallback={ onChange }
 				validate={ handleValidate }
-				onSubmitCallback={ handleSubmitCallback }
+				onSubmitCallback={ onContinue }
 			>
 				{ ( formProps ) => {
 					return <FormContent formProps={ formProps } />;

@@ -13,6 +13,7 @@ import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
 import useTargetAudience from '.~/hooks/useTargetAudience';
+import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import SetupFreeListings from './setup-free-listings';
 
 /**
@@ -25,16 +26,21 @@ import SetupFreeListings from './setup-free-listings';
  */
 export default function EditFreeCampaign() {
 	const { data: savedTargetAudience } = useTargetAudience();
+	const { settings: savedSettings } = useSettings();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience
 	);
+	const [ settings, updateSettings ] = useState( savedSettings );
 
 	useEffect( () => {
 		if ( savedTargetAudience ) {
 			updateTargetAudience( savedTargetAudience );
 		}
-	}, [ savedTargetAudience ] );
+		if ( savedSettings ) {
+			updateSettings( savedSettings );
+		}
+	}, [ savedTargetAudience, savedSettings ] );
 
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(
@@ -48,7 +54,8 @@ export default function EditFreeCampaign() {
 	};
 
 	const handleSetupFreeListingsContinue = () => {
-		// TODO: Make SetupFreeListings actually call this callback.
+		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
+		// TODO: Save the data.
 		getHistory().push( dashboardURL );
 	};
 
@@ -99,6 +106,10 @@ export default function EditFreeCampaign() {
 									'STEP TWO',
 									'google-listings-and-ads'
 								) }
+								settings={ settings }
+								onChange={ ( change, newSettings ) => {
+									updateSettings( newSettings );
+								} }
 								onContinue={ handleSetupFreeListingsContinue }
 							/>
 						),
