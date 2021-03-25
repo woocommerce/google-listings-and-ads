@@ -11,6 +11,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
@@ -887,12 +888,12 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-campaign-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-campaign-lib' ) ) {
 			try {
-				/** @var Ads $ads */
-				$ads = $this->container->get( Ads::class );
+				/** @var AdsCampaign $ads_campaign */
+				$ads_campaign = $this->container->get( AdsCampaign::class );
 
-				$this->response = "Proxied request > get ad campaigns {$ads->get_id()}\n";
+				$this->response = "Proxied request > get ad campaigns {$ads_campaign->get_id()}\n";
 
-				$campaigns = $ads->get_campaigns();
+				$campaigns = $ads_campaign->get_campaigns();
 				if ( empty( $campaigns ) ) {
 					$this->response .= 'No campaigns found';
 				} else {
