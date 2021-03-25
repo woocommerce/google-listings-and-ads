@@ -42,14 +42,7 @@ class Ads implements OptionsAwareInterface, ContainerAwareInterface {
 	use ApiExceptionTrait;
 	use AdsCampaignTrait;
 	use AdsQueryTrait;
-
-	/**
-	 * The ads account ID.
-	 *
-	 * @var PositiveInteger
-	 */
-	protected $id;
-
+	use AdsIdTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -67,24 +60,6 @@ class Ads implements OptionsAwareInterface, ContainerAwareInterface {
 	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
 		$this->client = $client;
 		$this->id     = $id;
-	}
-
-	/**
-	 * Get the ID.
-	 *
-	 * @return int
-	 */
-	public function get_id(): int {
-		return $this->id->get();
-	}
-
-	/**
-	 * Set the ID.
-	 *
-	 * @param int $id
-	 */
-	public function set_id( int $id ): void {
-		$this->id = new PositiveInteger( $id );
 	}
 
 	/**

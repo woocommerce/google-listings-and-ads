@@ -22,15 +22,8 @@ use Google\ApiCore\ApiException;
 class AdsCampaignBudget {
 
 	use AdsQueryTrait;
+	use AdsIdTrait;
 	use MicroTrait;
-
-
-	/**
-	 * The ads account ID.
-	 *
-	 * @var PositiveInteger
-	 */
-	protected $id;
 
 	/**
 	 * The Google Ads Client.
@@ -48,24 +41,6 @@ class AdsCampaignBudget {
 	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
 		$this->client = $client;
 		$this->id     = $id;
-	}
-
-	/**
-	 * Get the ID.
-	 *
-	 * @return int
-	 */
-	public function get_id(): int {
-		return $this->id->get();
-	}
-
-	/**
-	 * Set the ID.
-	 *
-	 * @param int $id
-	 */
-	public function set_id( int $id ): void {
-		$this->id = new PositiveInteger( $id );
 	}
 
 	/**
