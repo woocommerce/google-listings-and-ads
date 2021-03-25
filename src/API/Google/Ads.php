@@ -34,10 +34,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Ads implements OptionsAwareInterface, ContainerAwareInterface {
+class Ads implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
-	use ContainerAwareTrait;
 	use ApiExceptionTrait;
 	use AdsQueryTrait;
 	use AdsIdTrait;

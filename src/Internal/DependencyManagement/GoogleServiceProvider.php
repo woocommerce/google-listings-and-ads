@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 use Exception;
 use Google\Client;
 use Google_Service_ShoppingContent;
+use Google_Service_SiteVerification;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\HandlerStack;
@@ -154,7 +155,7 @@ AdsGroup::class,
 			$this->get_connect_server_url_root( 'google-mc' )
 		);
 		$this->add(
-			\Google_Service_SiteVerification::class,
+			Google_Service_SiteVerification::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google-sv' )
 		);
