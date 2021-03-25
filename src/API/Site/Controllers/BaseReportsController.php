@@ -121,7 +121,7 @@ abstract class BaseReportsController extends BaseController {
 	 */
 	protected function prepare_query_arguments( Request $request ) {
 		$params   = $this->get_collection_params();
-		$defaults = wp_list_pluck( $params, 'default' );
+		$defaults = array_column( $params, 'default' );
 		$args     = wp_parse_args( array_intersect_key( $request->get_query_params(), $params ), $defaults );
 
 		$this->normalize_timezones( $args );
