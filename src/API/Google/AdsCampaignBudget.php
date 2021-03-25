@@ -5,22 +5,68 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V6\Services\CampaignBudgetOperation;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignBudgetResult;
 use Exception;
+use Google\ApiCore\ApiException;
 
 /**
- * Trait AdsCampaignBudgetTrait
+ * Class AdsCampaignBudgetTrait
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-trait AdsCampaignBudgetTrait {
+class AdsCampaignBudget {
 
 	use AdsQueryTrait;
 	use MicroTrait;
+
+
+	/**
+	 * The ads account ID.
+	 *
+	 * @var PositiveInteger
+	 */
+	protected $id;
+
+	/**
+	 * The Google Ads Client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $client;
+
+	/**
+	 * Ads constructor.
+	 *
+	 * @param GoogleAdsClient $client
+	 * @param PositiveInteger $id
+	 */
+	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
+		$this->client = $client;
+		$this->id     = $id;
+	}
+
+	/**
+	 * Get the ID.
+	 *
+	 * @return int
+	 */
+	public function get_id(): int {
+		return $this->id->get();
+	}
+
+	/**
+	 * Set the ID.
+	 *
+	 * @param int $id
+	 */
+	public function set_id( int $id ): void {
+		$this->id = new PositiveInteger( $id );
+	}
 
 	/**
 	 * Creates a new campaign budget.
@@ -28,8 +74,9 @@ trait AdsCampaignBudgetTrait {
 	 * @param float $amount Budget amount in the local currency.
 	 *
 	 * @return string Resource name of the newly created budget.
+	 * @throws ApiException if the campaign budget can't be created.
 	 */
-	protected function create_campaign_budget( float $amount ): string {
+	public function create_campaign_budget( float $amount ): string {
 		$budget = new CampaignBudget(
 			[
 				'amount_micros'     => $this->to_micro( $amount ),
@@ -47,12 +94,14 @@ trait AdsCampaignBudgetTrait {
 	/**
 	 * Updates a new campaign budget.
 	 *
-	 * @param int   $campaign_id Campaign ID.
-	 * @param float $amount      Budget amount in the local currency.
+	 * @param int $campaign_id Campaign ID.
+	 * @param float $amount Budget amount in the local currency.
 	 *
 	 * @return string Resource name of the updated budget.
+	 * @throws ApiException if the campaign budget can't be mutated.
+	 * @throws Exception if no linked budget has been found.
 	 */
-	protected function edit_campaign_budget( int $campaign_id, float $amount ): string {
+	public function edit_campaign_budget( int $campaign_id, float $amount ): string {
 		$budget_id = $this->get_budget_from_campaign( $campaign_id );
 		$budget    = new CampaignBudget(
 			[
@@ -75,7 +124,7 @@ trait AdsCampaignBudgetTrait {
 	 * @param int $campaign_id Campaign ID.
 	 *
 	 * @return int
-	 * @throws Exception When no linked budget has been found.
+	 * @throws Exception if no linked budget has been found.
 	 */
 	protected function get_budget_from_campaign( int $campaign_id ): int {
 		$query    = $this->build_query( [ 'campaign.campaign_budget' ], 'campaign', "campaign.id = {$campaign_id}" );
@@ -96,6 +145,7 @@ trait AdsCampaignBudgetTrait {
 	 * @param CampaignBudgetOperation $operation Operation we would like to run.
 	 *
 	 * @return MutateCampaignBudgetResult
+	 * @throws ApiException if the remote call to mutate the campaign budget fails.
 	 */
 	protected function mutate_budget( CampaignBudgetOperation $operation ): MutateCampaignBudgetResult {
 		$response = $this->client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(

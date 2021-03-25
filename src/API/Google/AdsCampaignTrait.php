@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
@@ -29,6 +28,12 @@ trait AdsCampaignTrait {
 	use ApiExceptionTrait;
 	use MicroTrait;
 	use AdsGroupTrait;
+
+
+	/**
+	 * @var AdsCampaignBudget $ads_campaign_budget
+	 */
+	protected $ads_campaign_budget;
 
 	/**
 	 * @return array
@@ -63,7 +68,7 @@ trait AdsCampaignTrait {
 	 */
 	public function create_campaign( array $params ): array {
 		try {
-			$budget = $this->create_campaign_budget( $params['amount'] );
+			$budget = $this->get_ads_campaign_budget()->create_campaign_budget( $params['amount'] );
 
 			$campaign = new Campaign(
 				[
@@ -100,9 +105,9 @@ trait AdsCampaignTrait {
 				'id'     => $campaign_id,
 				'status' => CampaignStatus::ENABLED,
 			] + $params + [
-				'ad_group_id' => $this->parse_id( $created_ad_group_resource_name, 'adGroups'),
-				'ad_group_ad_id' => $this->parse_id( $created_ad_group_ad_resource_name, 'adGroupAds'),
-				'ad_group_criteria_id' => $this->parse_id( $created_shopping_listing_group_resource_name, 'adGroupCriteria'),
+				'ad_group_id'          => $this->parse_id( $created_ad_group_resource_name, 'adGroups' ),
+				'ad_group_ad_id'       => $this->parse_id( $created_ad_group_ad_resource_name, 'adGroupAds' ),
+				'ad_group_criteria_id' => $this->parse_id( $created_shopping_listing_group_resource_name, 'adGroupCriteria' ),
 			];
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
@@ -162,7 +167,7 @@ trait AdsCampaignTrait {
 				$campaign_fields['status'] = CampaignStatus::number( $params['status'] );
 			}
 			if ( ! empty( $params['amount'] ) ) {
-				$this->edit_campaign_budget( $campaign_id, $params['amount'] );
+				$this->get_ads_campaign_budget()->edit_campaign_budget( $campaign_id, $params['amount'] );
 			}
 
 			if ( count( $campaign_fields ) > 1 ) {
@@ -277,6 +282,15 @@ trait AdsCampaignTrait {
 		);
 
 		return $response->getResults()[0];
+	}
+
+	private function get_ads_campaign_budget(): AdsCampaignBudget {
+		if ( empty( $this->ads_campaign_budget ) ) {
+			/** @var AdsCampaignBudget $ads_campaign_budget */
+			$this->ads_campaign_budget = $this->container->get( AdsCampaignBudget::class );
+			$this->ads_campaign_budget->set_id( $this->get_id() );
+		}
+		return $this->ads_campaign_budget;
 	}
 
 }

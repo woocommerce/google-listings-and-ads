@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -33,12 +35,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Ads implements OptionsAwareInterface {
+class Ads implements OptionsAwareInterface, ContainerAwareInterface {
 
 	use OptionsAwareTrait;
+	use ContainerAwareTrait;
 	use ApiExceptionTrait;
 	use AdsCampaignTrait;
-	use AdsCampaignBudgetTrait;
 	use AdsQueryTrait;
 
 	/**
@@ -59,12 +61,12 @@ class Ads implements OptionsAwareInterface {
 	/**
 	 * Ads constructor.
 	 *
-	 * @param GoogleAdsClient    $client
-	 * @param PositiveInteger    $id
+	 * @param GoogleAdsClient $client
+	 * @param PositiveInteger $id
 	 */
 	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
 		$this->client = $client;
-		$this->id = $id;
+		$this->id     = $id;
 	}
 
 	/**
