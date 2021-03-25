@@ -27,13 +27,18 @@ trait AdsCampaignTrait {
 	use AdsQueryTrait;
 	use ApiExceptionTrait;
 	use MicroTrait;
-	use AdsGroupTrait;
 
 
 	/**
 	 * @var AdsCampaignBudget $ads_campaign_budget
 	 */
 	protected $ads_campaign_budget;
+
+
+	/**
+	 * @var AdsGroup $ads_group
+	 */
+	protected $ads_group;
 
 	/**
 	 * @return array
@@ -93,13 +98,13 @@ trait AdsCampaignTrait {
 			$campaign_id      = $this->parse_id( $created_campaign->getResourceName(), 'campaigns' );
 
 			// Create Smart Shopping ad group.
-			$created_ad_group_resource_name = $this->create_ad_group( $created_campaign->getResourceName(), $params['name'] );
+			$created_ad_group_resource_name = $this->get_ads_group()->create_ad_group( $created_campaign->getResourceName(), $params['name'] );
 
 			// Create Smart Shopping ad group ad.
-			$created_ad_group_ad_resource_name = $this->create_ad_group_ad( $created_ad_group_resource_name );
+			$created_ad_group_ad_resource_name = $this->get_ads_group()->create_ad_group_ad( $created_ad_group_resource_name );
 
 			// Create ad group criterion containing listing group.
-			$created_shopping_listing_group_resource_name = $this->create_shopping_listing_group( $created_ad_group_resource_name );
+			$created_shopping_listing_group_resource_name = $this->get_ads_group()->create_shopping_listing_group( $created_ad_group_resource_name );
 
 			return [
 				'id'     => $campaign_id,
@@ -291,6 +296,15 @@ trait AdsCampaignTrait {
 			$this->ads_campaign_budget->set_id( $this->get_id() );
 		}
 		return $this->ads_campaign_budget;
+	}
+
+	private function get_ads_group(): AdsGroup {
+		if ( empty( $this->ads_group ) ) {
+			/** @var AdsGroup $ads_group */
+			$this->ads_group = $this->container->get( AdsGroup::class );
+			$this->ads_group->set_id( $this->get_id() );
+		}
+		return $this->ads_group;
 	}
 
 }

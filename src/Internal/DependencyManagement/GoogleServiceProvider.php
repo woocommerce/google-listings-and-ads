@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
@@ -57,6 +58,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Merchant::class                       => true,
 		Ads::class                            => true,
 		AdsCampaignBudget::class              => true,
+		AdsGroup::class                       => true,
 		'connect_server_root'                 => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
@@ -82,6 +84,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$ads_id = $this->get_ads_id();
 		$this->share( Ads::class, GoogleAdsClient::class, $ads_id );
 		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class, $ads_id );
+		$this->share( AdsGroup::class, GoogleAdsClient::class, $ads_id );
 
 		$this->share(
 			Merchant::class,

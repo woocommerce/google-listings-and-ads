@@ -69,7 +69,7 @@ class AdsCampaignBudget {
 	/**
 	 * Updates a new campaign budget.
 	 *
-	 * @param int $campaign_id Campaign ID.
+	 * @param int   $campaign_id Campaign ID.
 	 * @param float $amount Budget amount in the local currency.
 	 *
 	 * @return string Resource name of the updated budget.
