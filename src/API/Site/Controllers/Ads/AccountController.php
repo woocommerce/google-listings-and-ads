@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
@@ -48,16 +49,22 @@ class AccountController extends BaseOptionsController {
 	protected $ads;
 
 	/**
+	 * @var AdsConversionAction
+	 */
+	protected $ads_conversion_action;
+
+	/**
 	 * AccountController constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->middleware    = $container->get( Middleware::class );
-		$this->ads           = $container->get( Ads::class );
-		$this->account_state = $container->get( AdsAccountState::class );
-		$this->container     = $container;
+		$this->middleware            = $container->get( Middleware::class );
+		$this->ads                   = $container->get( Ads::class );
+		$this->account_state         = $container->get( AdsAccountState::class );
+		$this->ads_conversion_action = $container->get( AdsConversionAction::class );
+		$this->container             = $container;
 	}
 
 	/**
@@ -385,7 +392,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If the conversion action can't be created.
 	 */
 	private function create_conversion_action(): void {
-		$conversion_action = $this->ads->create_conversion_action();
+		$conversion_action = $this->ads_conversion_action->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $conversion_action );
 	}
 }
