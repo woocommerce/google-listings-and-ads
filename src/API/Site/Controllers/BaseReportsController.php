@@ -41,21 +41,21 @@ abstract class BaseReportsController extends BaseController {
 		return [
 			'context'   => $this->get_context_param( [ 'default' => 'view' ] ),
 			'after'     => [
-				'description'       => __( 'Limit response to resources published after a given ISO8601 compliant date.', 'google-listings-and-ads' ),
+				'description'       => __( 'Limit response to data after a given ISO8601 compliant date.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'date',
 				'default'           => '-7 days',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'before'    => [
-				'description'       => __( 'Limit response to resources published before a given ISO8601 compliant date.', 'google-listings-and-ads' ),
+				'description'       => __( 'Limit response to data before a given ISO8601 compliant date.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'date',
 				'default'           => 'now',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'interval'  => [
-				'description'       => __( 'Time interval to use for buckets in the returned data.', 'google-listings-and-ads' ),
+				'description'       => __( 'Time interval to use for segments in the returned data.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'enum'              => [
 					'day',
@@ -76,7 +76,7 @@ abstract class BaseReportsController extends BaseController {
 				],
 			],
 			'fields'    => [
-				'description'       => __( 'Limit stats fields to the specified items.', 'google-listings-and-ads' ),
+				'description'       => __( 'Limit totals to a set of fields.', 'google-listings-and-ads' ),
 				'type'              => 'array',
 				'sanitize_callback' => 'wp_parse_slug_list',
 				'validate_callback' => 'rest_validate_request_arg',
@@ -92,12 +92,12 @@ abstract class BaseReportsController extends BaseController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'orderby'   => [
-				'description'       => __( 'Sort collection by object attribute.', 'google-listings-and-ads' ),
+				'description'       => __( 'Sort collection by attribute.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'per_page'  => [
-				'description'       => __( 'Maximum number of items to be returned in result set.', 'google-listings-and-ads' ),
+				'description'       => __( 'Maximum number of rows to be returned in result data.', 'google-listings-and-ads' ),
 				'type'              => 'integer',
 				'default'           => 200,
 				'minimum'           => 1,
