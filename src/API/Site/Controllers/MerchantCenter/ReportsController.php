@@ -61,10 +61,29 @@ class ReportsController extends BaseReportsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'clicks' => [
-				'type'        => 'number',
-				'description' => __( 'Total amount of clicks.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
+			'totals' => $this->get_totals_schema(),
+		];
+	}
+
+	/**
+	 * Return schema for total fields.
+	 *
+	 * @return array
+	 */
+	protected function get_totals_schema(): array {
+		return [
+			'type'       => 'object',
+			'properties' => [
+				'clicks'      => [
+					'type'        => 'integer',
+					'description' => __( 'Clicks.', 'google-listings-and-ads' ),
+					'context'     => [ 'view' ],
+				],
+				'impressions' => [
+					'type'        => 'integer',
+					'description' => __( 'Impressions.', 'google-listings-and-ads' ),
+					'context'     => [ 'view' ],
+				],
 			],
 		];
 	}

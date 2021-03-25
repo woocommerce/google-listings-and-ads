@@ -14,9 +14,27 @@ class MerchantReportQuery extends Query {
 
 	/**
 	 * Query constructor.
+	 *
+	 * @param array $args Query arguments.
 	 */
-	public function __construct() {
+	public function __construct( array $args ) {
 		parent::__construct( 'MerchantPerformanceView' );
+
+		if ( ! empty( $args['fields'] ) ) {
+			$this->fields( $args['fields'] );
+		}
+
+		if ( ! empty( $args['interval'] ) ) {
+			$this->segment_interval( $args['interval'] );
+		}
+
+		if ( ! empty( $args['after'] ) && ! empty( $args['before'] ) ) {
+			$this->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' );
+		}
+
+		if ( ! empty( $args['orderby'] ) ) {
+			$this->set_order( $args['orderby'], $args['order'] );
+		}
 	}
 
 	/**
@@ -32,14 +50,7 @@ class MerchantReportQuery extends Query {
 			'impressions' => 'metrics.impressions',
 		];
 
-		$this->add_columns(
-			array_map(
-				function( $field ) use ( $map ) {
-					return $map[ $field ] ?? null;
-				},
-				$fields
-			)
-		);
+		$this->add_columns( array_intersect_key( $map, array_flip( $fields ) ) );
 
 		return $this;
 	}
@@ -60,11 +71,9 @@ class MerchantReportQuery extends Query {
 			'year'    => 'segments.year',
 		];
 
-		$this->add_columns(
-			[
-				$map[ $interval ] ?? null,
-			]
-		);
+		if ( isset( $map[ $interval ] ) ) {
+			$this->add_columns( [ $interval => $map[ $interval ] ] );
+		}
 
 		return $this;
 	}

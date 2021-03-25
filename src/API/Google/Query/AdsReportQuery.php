@@ -102,11 +102,9 @@ class AdsReportQuery extends Query {
 			'year'    => 'segments.year',
 		];
 
-		$this->add_columns(
-			[
-				$map[ $interval ] ?? null,
-			]
-		);
+		if ( isset( $map[ $interval ] ) ) {
+			$this->add_columns( [ $interval => $map[ $interval ] ] );
+		}
 
 		return $this;
 	}

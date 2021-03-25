@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google_Service_ShoppingContent as ShoppingService;
@@ -11,7 +10,6 @@ use Google_Service_ShoppingContent_Account as MC_Account;
 use Google_Service_ShoppingContent_AccountAdsLink as MC_Account_Ads_Link;
 use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
 use Google_Service_ShoppingContent_Product as Product;
-use Google_Service_ShoppingContent_SearchRequest as SearchRequest;
 use Google\Exception as GoogleException;
 use Exception;
 
@@ -25,6 +23,8 @@ defined( 'ABSPATH' ) || exit;
 class Merchant implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+
+	use MerchantReportTrait;
 
 	/**
 	 * The shopping service.
@@ -175,41 +175,5 @@ class Merchant implements OptionsAwareInterface {
 		$this->update_account( $account );
 
 		return true;
-	}
-
-	/**
-	 * Get report data for free listings.
-	 *
-	 * @param array $args Query arguments.
-	 *
-	 * @return array
-	 * @throws Exception If the report data can't be retrieved.
-	 */
-	public function get_report_data( array $args ): array {
-		try {
-			$request = new SearchRequest();
-			$request->setQuery(
-				( new MerchantReportQuery() )
-				->fields( $args['fields'] )
-				->segment_interval( $args['interval'] )
-				->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' )
-				->get_query()
-			);
-
-			/** @var ShoppingService $service */
-			$service = $this->container->get( ShoppingService::class );
-			$results = $service->reports->search( $this->get_id(), $request );
-			$clicks  = 0;
-
-			foreach ( $results->getResults() as $row ) {
-				$metrics = $row->getMetrics();
-				$clicks += $metrics->getClicks();
-			}
-
-			return [ 'clicks' => $clicks ];
-		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve report data.', 'google-listings-and-ads' ), $e->getCode() );
-		}
 	}
 }
