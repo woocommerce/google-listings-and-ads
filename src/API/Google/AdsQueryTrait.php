@@ -39,8 +39,8 @@ trait AdsQueryTrait {
 	 * Run a Google Ads Query.
 	 *
 	 * @param GoogleAdsClient $client Google Ads client.
-	 * @param int $ads_id Ads ID account to run query against.
-	 * @param string $query Query to run.
+	 * @param int             $ads_id Ads ID account to run query against.
+	 * @param string          $query Query to run.
 	 *
 	 * @return PagedListResponse
 	 * @throws ApiException
@@ -59,7 +59,7 @@ trait AdsQueryTrait {
 	 * @throws Exception When unable to parse resource ID.
 	 */
 	protected function parse_id( string $name, string $resource ): int {
-		if ( ! preg_match( '/' . preg_quote( $resource, '/' ) . '/([0-9]+)/', $name, $matches ) || empty( $matches[1] ) ) {
+		if ( ! preg_match( '#' . preg_quote( $resource, '#' ) . '/([0-9]+)#', $name, $matches ) || empty( $matches[1] ) ) {
 			throw new Exception( __( 'Invalid resource ID', 'google-listings-and-ads' ) );
 		}
 
