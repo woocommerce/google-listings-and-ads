@@ -84,6 +84,18 @@ abstract class BaseReportsController extends BaseController {
 					'type' => 'string',
 				],
 			],
+			'order'    => [
+				'description'       => __( 'Order sort attribute ascending or descending.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'default'           => 'desc',
+				'enum'              => [ 'asc', 'desc' ],
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'orderby'  => [
+				'description'       => __( 'Sort collection by object attribute.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
 		];
 	}
 

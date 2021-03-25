@@ -44,6 +44,20 @@ abstract class Query implements QueryInterface {
 	protected $where_relation;
 
 	/**
+	 * Order sort attribute.
+	 *
+	 * @var string
+	 */
+	protected $order = 'ASC';
+
+	/**
+	 * Column to order by.
+	 *
+	 * @var string
+	 */
+	protected $orderby;
+
+	/**
 	 * Query constructor.
 	 *
 	 * @param string $resource
@@ -113,6 +127,26 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Set ordering information for the query.
+	 *
+	 * @param string $column
+	 * @param string $order
+	 *
+	 * @return QueryInterface
+	 * @throws InvalidQuery When the given column is not in the list of included columns.
+	 */
+	public function set_order( string $column, string $order = 'ASC' ): QueryInterface {
+		if ( ! array_key_exists( $column, $this->columns ) ) {
+			throw InvalidQuery::invalid_order_column( $column );
+		}
+
+		$this->orderby = $this->columns[ $column ];
+		$this->order   = $this->normalize_order( $order );
+
+		return $this;
+	}
+
+	/**
 	 * Get the built query.
 	 *
 	 * @return string
@@ -165,6 +199,21 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Normalize the string for the order.
+	 *
+	 * Converts the string to uppercase, and will return only DESC or ASC.
+	 *
+	 * @param string $order
+	 *
+	 * @return string
+	 */
+	protected function normalize_order( string $order ): string {
+		$order = strtoupper( $order );
+
+		return 'DESC' === $order ? $order : 'ASC';
+	}
+
+	/**
 	 * Build the query and return the query string.
 	 *
 	 * @return string
@@ -179,6 +228,10 @@ abstract class Query implements QueryInterface {
 		$columns = join( ',', $this->columns );
 		$pieces  = [ "SELECT {$columns} FROM {$this->resource}" ];
 		$pieces  = array_merge( $pieces, $this->generate_where_pieces() );
+
+		if ( $this->orderby ) {
+			$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
+		}
 
 		return join( ' ', $pieces );
 	}

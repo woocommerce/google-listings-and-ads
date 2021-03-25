@@ -31,14 +31,14 @@ class AdsReportQuery extends Query {
 
 		if ( 'products' === $this->type ) {
 			$columns = [
-				'segments.product_item_id',
-				'segments.product_title',
+				'id'   => 'segments.product_item_id',
+				'name' => 'segments.product_title',
 			];
 		} else {
 			$columns = [
-				'campaign.id',
-				'campaign.name',
-				'campaign.status',
+				'id'     => 'campaign.id',
+				'name'   => 'campaign.name',
+				'status' => 'campaign.status',
 			];
 		}
 
@@ -59,6 +59,10 @@ class AdsReportQuery extends Query {
 		if ( ! empty( $args['ids'] ) ) {
 			$this->filter( $args['ids'] );
 		}
+
+		if ( ! empty( $args['orderby'] ) ) {
+			$this->set_order( $args['orderby'], $args['order'] );
+		}
 	}
 
 	/**
@@ -77,14 +81,7 @@ class AdsReportQuery extends Query {
 			'conversions' => 'metrics.conversions',
 		];
 
-		$this->add_columns(
-			array_map(
-				function( $field ) use ( $map ) {
-					return $map[ $field ] ?? null;
-				},
-				$fields
-			)
-		);
+		$this->add_columns( array_intersect_key( $map, array_flip( $fields ) ) );
 
 		return $this;
 	}
