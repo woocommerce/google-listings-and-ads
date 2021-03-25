@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\V6\Common\TagSnippet;
@@ -40,7 +39,6 @@ class Ads implements OptionsAwareInterface, ContainerAwareInterface {
 	use OptionsAwareTrait;
 	use ContainerAwareTrait;
 	use ApiExceptionTrait;
-	use AdsCampaignTrait;
 	use AdsQueryTrait;
 	use AdsIdTrait;
 
@@ -89,15 +87,6 @@ class Ads implements OptionsAwareInterface, ContainerAwareInterface {
 		}
 
 		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $this->get_id() );
-	}
-
-	/**
-	 * Get the Merchant Center ID.
-	 *
-	 * @return int
-	 */
-	protected function get_merchant_id(): int {
-		return $this->options->get( OptionsInterface::MERCHANT_ID );
 	}
 
 	/**

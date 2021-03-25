@@ -4,6 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
@@ -18,27 +23,50 @@ use Google\ApiCore\ApiException;
 use Exception;
 
 /**
- * Trait AdsCampaignTrait
+ * Class AdsCampaign
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-trait AdsCampaignTrait {
+class AdsCampaign implements OptionsAwareInterface {
 
 	use AdsQueryTrait;
+	use AdsIdTrait;
 	use ApiExceptionTrait;
+	use OptionsAwareTrait;
 	use MicroTrait;
 
+	/**
+	 * The Google Ads Client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $client;
 
 	/**
 	 * @var AdsCampaignBudget $ads_campaign_budget
 	 */
 	protected $ads_campaign_budget;
 
-
 	/**
 	 * @var AdsGroup $ads_group
 	 */
 	protected $ads_group;
+
+
+	/**
+	 * Ads constructor.
+	 *
+	 * @param GoogleAdsClient   $client
+	 * @param AdsCampaignBudget $ads_campaign_budget
+	 * @param AdsGroup          $ads_group
+	 * @param PositiveInteger   $id
+	 */
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $ads_campaign_budget, AdsGroup $ads_group, PositiveInteger $id ) {
+		$this->client              = $client;
+		$this->ads_campaign_budget = $ads_campaign_budget;
+		$this->ads_group           = $ads_group;
+		$this->id                  = $id;
+	}
 
 	/**
 	 * @return array
@@ -73,7 +101,7 @@ trait AdsCampaignTrait {
 	 */
 	public function create_campaign( array $params ): array {
 		try {
-			$budget = $this->get_ads_campaign_budget()->create_campaign_budget( $params['amount'] );
+			$budget = $this->ads_campaign_budget->create_campaign_budget( $params['amount'] );
 
 			$campaign = new Campaign(
 				[
@@ -98,13 +126,13 @@ trait AdsCampaignTrait {
 			$campaign_id      = $this->parse_id( $created_campaign->getResourceName(), 'campaigns' );
 
 			// Create Smart Shopping ad group.
-			$created_ad_group_resource_name = $this->get_ads_group()->create_ad_group( $created_campaign->getResourceName(), $params['name'] );
+			$created_ad_group_resource_name = $this->ads_group->create_ad_group( $created_campaign->getResourceName(), $params['name'] );
 
 			// Create Smart Shopping ad group ad.
-			$created_ad_group_ad_resource_name = $this->get_ads_group()->create_ad_group_ad( $created_ad_group_resource_name );
+			$created_ad_group_ad_resource_name = $this->ads_group->create_ad_group_ad( $created_ad_group_resource_name );
 
 			// Create ad group criterion containing listing group.
-			$created_shopping_listing_group_resource_name = $this->get_ads_group()->create_shopping_listing_group( $created_ad_group_resource_name );
+			$created_shopping_listing_group_resource_name = $this->ads_group->create_shopping_listing_group( $created_ad_group_resource_name );
 
 			return [
 				'id'     => $campaign_id,
@@ -172,7 +200,7 @@ trait AdsCampaignTrait {
 				$campaign_fields['status'] = CampaignStatus::number( $params['status'] );
 			}
 			if ( ! empty( $params['amount'] ) ) {
-				$this->get_ads_campaign_budget()->edit_campaign_budget( $campaign_id, $params['amount'] );
+				$this->ads_campaign_budget->edit_campaign_budget( $campaign_id, $params['amount'] );
 			}
 
 			if ( count( $campaign_fields ) > 1 ) {
@@ -279,6 +307,7 @@ trait AdsCampaignTrait {
 	 * @param CampaignOperation $operation Operation we would like to run.
 	 *
 	 * @return MutateCampaignResult
+	 * @throws ApiException if the campaign mutate fails
 	 */
 	protected function mutate_campaign( CampaignOperation $operation ): MutateCampaignResult {
 		$response = $this->client->getCampaignServiceClient()->mutateCampaigns(
@@ -289,22 +318,12 @@ trait AdsCampaignTrait {
 		return $response->getResults()[0];
 	}
 
-	private function get_ads_campaign_budget(): AdsCampaignBudget {
-		if ( empty( $this->ads_campaign_budget ) ) {
-			/** @var AdsCampaignBudget $ads_campaign_budget */
-			$this->ads_campaign_budget = $this->container->get( AdsCampaignBudget::class );
-			$this->ads_campaign_budget->set_id( $this->get_id() );
-		}
-		return $this->ads_campaign_budget;
+	/**
+	 * Get the Merchant Center ID.
+	 *
+	 * @return int
+	 */
+	protected function get_merchant_id(): int {
+		return $this->options->get( OptionsInterface::MERCHANT_ID );
 	}
-
-	private function get_ads_group(): AdsGroup {
-		if ( empty( $this->ads_group ) ) {
-			/** @var AdsGroup $ads_group */
-			$this->ads_group = $this->container->get( AdsGroup::class );
-			$this->ads_group->set_id( $this->get_id() );
-		}
-		return $this->ads_group;
-	}
-
 }
