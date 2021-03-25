@@ -261,7 +261,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			],
 			'amount'  => [
 				'type'              => 'number',
-				'description'       => __( 'Budget amount in the local currency.', 'google-listings-and-ads' ),
+				'description'       => __( 'Daily budget amount in the local currency.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
