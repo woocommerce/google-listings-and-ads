@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Exception;
+use Google\ApiCore\ApiException;
 use Google\ApiCore\PagedListResponse;
 
 /**
@@ -36,12 +38,15 @@ trait AdsQueryTrait {
 	/**
 	 * Run a Google Ads Query.
 	 *
+	 * @param GoogleAdsClient $client Google Ads client.
+	 * @param int $ads_id Ads ID account to run query against.
 	 * @param string $query Query to run.
 	 *
 	 * @return PagedListResponse
+	 * @throws ApiException
 	 */
-	protected function query( string $query ): PagedListResponse {
-		return $this->client->getGoogleAdsServiceClient()->search( $this->get_id(), $query );
+	protected function query( GoogleAdsClient $client, int $ads_id, string $query ): PagedListResponse {
+		return $client->getGoogleAdsServiceClient()->search( $ads_id, $query );
 	}
 
 	/**

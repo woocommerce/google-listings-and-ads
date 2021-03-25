@@ -75,7 +75,7 @@ class AdsCampaign implements OptionsAwareInterface {
 	public function get_campaigns(): array {
 		try {
 			$return   = [];
-			$response = $this->query( $this->get_campaign_query() );
+			$response = $this->query( $this->client, $this->get_id(), $this->get_campaign_query() );
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				$return[] = $this->convert_campaign( $row );
@@ -164,7 +164,7 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$response = $this->query( $this->get_campaign_query( $id ) );
+			$response = $this->query(  $this->client, $this->get_id(), $this->get_campaign_query( $id ) );
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				return $this->convert_campaign( $row );

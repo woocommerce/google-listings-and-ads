@@ -103,7 +103,7 @@ class AdsCampaignBudget {
 	 */
 	protected function get_budget_from_campaign( int $campaign_id ): int {
 		$query    = $this->build_query( [ 'campaign.campaign_budget' ], 'campaign', "campaign.id = {$campaign_id}" );
-		$response = $this->query( $query );
+		$response = $this->query( $this->client, $this->get_id(), $query );
 
 		foreach ( $response->iterateAllElements() as $row ) {
 			$campaign = $row->getCampaign();

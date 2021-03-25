@@ -4,8 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
@@ -26,6 +24,7 @@ use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkOperation;
 use Google\Ads\GoogleAds\V6\Services\MutateConversionActionResult;
 use Google\ApiCore\ApiException;
 use Exception;
+use Google\ApiCore\ValidationException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -63,6 +62,7 @@ class Ads implements OptionsAwareInterface {
 	 * Get billing status.
 	 *
 	 * @return string
+	 * @throws ValidationException if there are no billing setups found
 	 */
 	public function get_billing_status(): string {
 		try {
@@ -71,7 +71,7 @@ class Ads implements OptionsAwareInterface {
 			}
 
 			$query    = $this->build_query( [ 'billing_setup.status' ], 'billing_setup' );
-			$response = $this->query( $query );
+			$response = $this->query( $this->client, $this->get_id(), $query );
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				$billing_setup = $row->getBillingSetup();
@@ -107,7 +107,7 @@ class Ads implements OptionsAwareInterface {
 		$operation->setUpdate( $link );
 		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $link ) );
 
-		$response = $this->client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
+		$this->client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
 			$this->get_id(),
 			$operation
 		);
