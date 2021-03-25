@@ -21,6 +21,7 @@ use Google\Ads\GoogleAds\V6\Services\AdGroupOperation;
 use Google\Ads\GoogleAds\V6\Services\MutateAdGroupAdResult;
 use Google\Ads\GoogleAds\V6\Services\MutateAdGroupCriterionResult;
 use Google\Ads\GoogleAds\V6\Services\MutateAdGroupResult;
+use Google\ApiCore\ApiException;
 
 /**
  * Class AdsGroup
@@ -54,6 +55,7 @@ class AdsGroup {
 	 * @param string $campaign_name
 	 *
 	 * @return string
+	 * @throws ApiException if the ad group isn't created
 	 */
 	public function create_ad_group( string $campaign_resource_name, string $campaign_name = '' ): string {
 		$adGroup = new AdGroup(
@@ -73,6 +75,12 @@ class AdsGroup {
 		return $created_ad_group->getResourceName();
 	}
 
+	/**
+	 * @param AdGroupOperation $operation
+	 *
+	 * @return MutateAdGroupResult
+	 * @throws ApiException if the mutate call fails
+	 */
 	public function mutate_ad_group( AdGroupOperation $operation ): MutateAdGroupResult {
 		$response = $this->client->getAdGroupServiceClient()->mutateAdGroups(
 			$this->get_id(),
@@ -82,7 +90,12 @@ class AdsGroup {
 		return $response->getResults()[0];
 	}
 
-
+	/**
+	 * @param string $ad_group_resource_name
+	 *
+	 * @return string
+	 * @throws ApiException if the ad group ad isn't created
+	 */
 	public function create_ad_group_ad( string $ad_group_resource_name ): string {
 		$adGroupAd = new AdGroupAd(
 			[
@@ -100,6 +113,12 @@ class AdsGroup {
 		return $created_ad_group_ad->getResourceName();
 	}
 
+	/**
+	 * @param AdGroupAdOperation $operation
+	 *
+	 * @return MutateAdGroupAdResult
+	 * @throws ApiException if the mutate call fails
+	 */
 	public function mutate_ad_group_ad( AdGroupAdOperation $operation ): MutateAdGroupAdResult {
 		$response = $this->client->getAdGroupAdServiceClient()->mutateAdGroupAds(
 			$this->get_id(),
@@ -109,7 +128,12 @@ class AdsGroup {
 		return $response->getResults()[0];
 	}
 
-
+	/**
+	 * @param string $ad_group_resource_name
+	 *
+	 * @return string
+	 * @throws ApiException if the ad group criterion isn't created
+	 */
 	public function create_shopping_listing_group( string $ad_group_resource_name ): string {
 		// Creates a new ad group criterion. This will contain a listing group.
 		// This will be the listing group for 'All products' and will contain a single root node.
@@ -132,6 +156,12 @@ class AdsGroup {
 		return $created_ad_group_ad->getResourceName();
 	}
 
+	/**
+	 * @param AdGroupCriterionOperation $operation
+	 *
+	 * @return MutateAdGroupCriterionResult
+	 * @throws ApiException if the mutate call fails
+	 */
 	public function mutate_shopping_listing_group( AdGroupCriterionOperation $operation ): MutateAdGroupCriterionResult {
 		$response = $this->client->getAdGroupCriterionServiceClient()->mutateAdGroupCriteria(
 			$this->get_id(),
