@@ -3,14 +3,12 @@
 	overflow: auto;
 
 	table {
-		margin: auto;
+		margin-left: calc(var(--large-gap) * 2);
+		border-spacing: calc(var(--main-gap) / 3 * 2) 0;
 
 		tbody {
 			td:nth-child(1) {
 				font-weight: 600;
-			}
-
-			td:nth-child(2) {
 				text-align: right;
 			}
 		}
