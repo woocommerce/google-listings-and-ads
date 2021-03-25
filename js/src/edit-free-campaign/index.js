@@ -55,13 +55,18 @@ export default function EditFreeCampaign() {
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
 	};
 
-	const handleSetupFreeListingsContinue = () => {
+	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
-		// TODO: consider pararelizing those requests.
-		saveTargetAudience( targetAudience );
-		saveSettings( settings );
-		// TODO: save batched shipping times and rates
-		// TODO: Call setting sync
+		//       Put Submit button in pending state.
+		await Promise.allSettled( [
+			saveTargetAudience( targetAudience ),
+			saveSettings( settings ),
+			// TODO: save batched shipping times and rates
+		] );
+		// TODO: Call setting sync.
+		// TODO notify errors.
+
+		// Enable the submit button.
 		getHistory().push( dashboardURL );
 	};
 
