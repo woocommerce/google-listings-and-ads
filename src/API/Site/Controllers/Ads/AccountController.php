@@ -314,7 +314,7 @@ class AccountController extends BaseOptionsController {
 						break;
 
 					case 'conversion_action':
-						$this->create_conversion_action();
+						$this->create_conversion_action( $account );
 						break;
 
 					default:
@@ -389,9 +389,12 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * Create the generic GLA conversion action and store the details as an option.
 	 *
+	 * @param array $account Account details.
+	 *
 	 * @throws Exception If the conversion action can't be created.
 	 */
-	private function create_conversion_action(): void {
+	private function create_conversion_action( array $account ): void {
+		$this->ads_conversion_action->set_id( $account['id'] );
 		$conversion_action = $this->ads_conversion_action->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $conversion_action );
 	}
