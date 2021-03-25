@@ -79,7 +79,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$this->share(
 			Ads::class,
-			$this->getLeagueContainer(),
+			GoogleAdsClient::class,
 			$this->get_ads_id()
 		);
 

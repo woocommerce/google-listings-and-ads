@@ -4,7 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Util\FieldMasks;
@@ -23,7 +24,6 @@ use Google\Ads\GoogleAds\V6\Services\ConversionActionServiceClient;
 use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkOperation;
 use Google\Ads\GoogleAds\V6\Services\MutateConversionActionResult;
 use Google\ApiCore\ApiException;
-use Psr\Container\ContainerInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -33,19 +33,13 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Ads {
+class Ads implements OptionsAwareInterface {
 
+	use OptionsAwareTrait;
 	use ApiExceptionTrait;
 	use AdsCampaignTrait;
 	use AdsCampaignBudgetTrait;
 	use AdsQueryTrait;
-
-	/**
-	 * The container object.
-	 *
-	 * @var ContainerInterface
-	 */
-	protected $container;
 
 	/**
 	 * The ads account ID.
@@ -54,15 +48,23 @@ class Ads {
 	 */
 	protected $id;
 
+
+	/**
+	 * The Google Ads Client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $client;
+
 	/**
 	 * Ads constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param GoogleAdsClient    $client
 	 * @param PositiveInteger    $id
 	 */
-	public function __construct( ContainerInterface $container, PositiveInteger $id ) {
-		$this->container = $container;
-		$this->id        = $id;
+	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
+		$this->client = $client;
+		$this->id = $id;
 	}
 
 	/**
@@ -118,9 +120,7 @@ class Ads {
 	 * @return int
 	 */
 	protected function get_merchant_id(): int {
-		/** @var Options $options */
-		$options = $this->container->get( OptionsInterface::class );
-		return $options->get( OptionsInterface::MERCHANT_ID );
+		return $this->options->get( OptionsInterface::MERCHANT_ID );
 	}
 
 	/**
@@ -142,8 +142,7 @@ class Ads {
 		$operation->setUpdate( $link );
 		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $link ) );
 
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
+		$response = $this->client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
 			$this->get_id(),
 			$operation
 		);
@@ -158,12 +157,12 @@ class Ads {
 	 * @throws Exception When the merchant link hasn't been created.
 	 */
 	private function get_merchant_link( int $merchant_id ): MerchantCenterLink {
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getMerchantCenterLinkServiceClient()->listMerchantCenterLinks(
+		$response = $this->client->getMerchantCenterLinkServiceClient()->listMerchantCenterLinks(
 			$this->get_id()
 		);
 
 		foreach ( $response->getMerchantCenterLinks() as $link ) {
+			/** @var MerchantCenterLink $link */
 			if ( $merchant_id === absint( $link->getId() ) ) {
 				return $link;
 			}
@@ -181,9 +180,6 @@ class Ads {
 	public function create_conversion_action(): array {
 		try {
 			$unique = sprintf( '%04x', mt_rand( 0, 0xffff ) );
-
-			/** @var GoogleAdsClient $client */
-			$client = $this->container->get( GoogleAdsClient::class );
 
 			$conversion_action_operation = new ConversionActionOperation();
 			$conversion_action_operation->setCreate(
@@ -211,7 +207,7 @@ class Ads {
 			);
 
 			// Create the conversion.
-			$response = $client->getConversionActionServiceClient()->mutateConversionActions(
+			$response = $this->client->getConversionActionServiceClient()->mutateConversionActions(
 				$this->get_id(),
 				[ $conversion_action_operation ]
 			);
@@ -252,8 +248,7 @@ class Ads {
 				$resource_name = ConversionActionServiceClient::conversionActionName( $this->get_id(), $resource_name );
 			}
 
-			/** @var ConversionActionServiceClient $ca_client */
-			$ca_client         = $this->container->get( GoogleAdsClient::class )->getConversionActionServiceClient();
+			$ca_client         = $this->client->getConversionActionServiceClient();
 			$conversion_action = $ca_client->getConversionAction( $resource_name );
 
 			return $this->convert_conversion_action( $conversion_action );

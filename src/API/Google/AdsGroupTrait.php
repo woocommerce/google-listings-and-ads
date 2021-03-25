@@ -58,9 +58,7 @@ trait AdsGroupTrait {
 	}
 
 	protected function mutate_ad_group( AdGroupOperation $operation ): MutateAdGroupResult {
-		/** @var GoogleAdsClient $client */
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getAdGroupServiceClient()->mutateAdGroups(
+		$response = $this->client->getAdGroupServiceClient()->mutateAdGroups(
 			$this->get_id(),
 			[ $operation ]
 		);
@@ -85,9 +83,7 @@ trait AdsGroupTrait {
 	}
 
 	protected function mutate_ad_group_ad( AdGroupAdOperation $operation ): MutateAdGroupAdResult {
-		/** @var GoogleAdsClient $client */
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getAdGroupAdServiceClient()->mutateAdGroupAds(
+		$response = $this->client->getAdGroupAdServiceClient()->mutateAdGroupAds(
 			$this->get_id(),
 			[ $operation ]
 		);
@@ -117,9 +113,7 @@ trait AdsGroupTrait {
 	}
 
 	protected function mutate_shopping_listing_group( AdGroupCriterionOperation $operation ): MutateAdGroupCriterionResult {
-		/** @var GoogleAdsClient $client */
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getAdGroupCriterionServiceClient()->mutateAdGroupCriteria(
+		$response = $this->client->getAdGroupCriterionServiceClient()->mutateAdGroupCriteria(
 			$this->get_id(),
 			[ $operation ]
 		);

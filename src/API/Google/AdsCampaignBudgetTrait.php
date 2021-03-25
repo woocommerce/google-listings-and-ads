@@ -98,8 +98,7 @@ trait AdsCampaignBudgetTrait {
 	 * @return MutateCampaignBudgetResult
 	 */
 	protected function mutate_budget( CampaignBudgetOperation $operation ): MutateCampaignBudgetResult {
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
+		$response = $this->client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
 			$this->get_id(),
 			[ $operation ]
 		);

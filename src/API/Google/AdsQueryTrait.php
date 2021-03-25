@@ -42,10 +42,7 @@ trait AdsQueryTrait {
 	 * @return PagedListResponse
 	 */
 	protected function query( string $query ): PagedListResponse {
-		/** @var GoogleAdsClient $client */
-		$client = $this->container->get( GoogleAdsClient::class );
-
-		return $client->getGoogleAdsServiceClient()->search( $this->get_id(), $query );
+		return $this->client->getGoogleAdsServiceClient()->search( $this->get_id(), $query );
 	}
 
 	/**

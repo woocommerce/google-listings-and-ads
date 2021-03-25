@@ -271,8 +271,7 @@ trait AdsCampaignTrait {
 	 * @return MutateCampaignResult
 	 */
 	protected function mutate_campaign( CampaignOperation $operation ): MutateCampaignResult {
-		$client   = $this->container->get( GoogleAdsClient::class );
-		$response = $client->getCampaignServiceClient()->mutateCampaigns(
+		$response = $this->client->getCampaignServiceClient()->mutateCampaigns(
 			$this->get_id(),
 			[ $operation ]
 		);
