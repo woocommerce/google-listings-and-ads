@@ -29,7 +29,7 @@ addFilter(
 					getHistory().push( getNewPath( {}, '/google/start' ) );
 				},
 				visible: true,
-				time: __( '30 minutes', 'google-listings-and-ads' ),
+				time: __( '20 minutes', 'google-listings-and-ads' ),
 				isDismissable: true,
 			},
 		];
