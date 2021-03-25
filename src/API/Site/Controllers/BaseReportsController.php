@@ -39,22 +39,22 @@ abstract class BaseReportsController extends BaseController {
 	 */
 	public function get_collection_params() {
 		return [
-			'context'  => $this->get_context_param( [ 'default' => 'view' ] ),
-			'after'    => [
+			'context'   => $this->get_context_param( [ 'default' => 'view' ] ),
+			'after'     => [
 				'description'       => __( 'Limit response to resources published after a given ISO8601 compliant date.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'date',
 				'default'           => '-7 days',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'before'   => [
+			'before'    => [
 				'description'       => __( 'Limit response to resources published before a given ISO8601 compliant date.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'format'            => 'date',
 				'default'           => 'now',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'interval' => [
+			'interval'  => [
 				'description'       => __( 'Time interval to use for buckets in the returned data.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'enum'              => [
@@ -66,7 +66,7 @@ abstract class BaseReportsController extends BaseController {
 				],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'ids'      => [
+			'ids'       => [
 				'description'       => __( 'Limit result to items with specified ids.', 'google-listings-and-ads' ),
 				'type'              => 'array',
 				'sanitize_callback' => 'wp_parse_id_list',
@@ -75,7 +75,7 @@ abstract class BaseReportsController extends BaseController {
 					'type' => 'integer',
 				],
 			],
-			'fields'   => [
+			'fields'    => [
 				'description'       => __( 'Limit stats fields to the specified items.', 'google-listings-and-ads' ),
 				'type'              => 'array',
 				'sanitize_callback' => 'wp_parse_slug_list',
@@ -84,15 +84,29 @@ abstract class BaseReportsController extends BaseController {
 					'type' => 'string',
 				],
 			],
-			'order'    => [
+			'order'     => [
 				'description'       => __( 'Order sort attribute ascending or descending.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => 'desc',
 				'enum'              => [ 'asc', 'desc' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'orderby'  => [
+			'orderby'   => [
 				'description'       => __( 'Sort collection by object attribute.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'per_page'  => [
+				'description'       => __( 'Maximum number of items to be returned in result set.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'default'           => 200,
+				'minimum'           => 1,
+				'maximum'           => 1000,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'next_page' => [
+				'description'       => __( 'Token to retrieve the next page.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 			],

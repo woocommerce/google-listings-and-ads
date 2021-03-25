@@ -32,10 +32,26 @@ trait AdsReportTrait {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
-			$results = $this->query( ( new AdsReportQuery( $type, $args ) )->get_query() );
+			$query_args = [];
 
-			foreach ( $results->iterateAllElements() as $row ) {
+			if ( ! empty( $args['per_page'] ) ) {
+				$query_args['pageSize'] = $args['per_page'];
+			}
+
+			if ( ! empty( $args['next_page'] ) ) {
+				$query_args['pageToken'] = $args['next_page'];
+			}
+
+			$results = $this->query( ( new AdsReportQuery( $type, $args ) )->get_query(), $query_args );
+			$page    = $results->getPage();
+
+			// Iterate only this page (iterateAllElements will iterate all pages).
+			foreach ( $page->getIterator() as $row ) {
 				$this->add_report_row( $type, $row, $args );
+			}
+
+			if ( $page->hasNextPage() ) {
+				$this->report_data['next_page'] = $page->getNextPageToken();
 			}
 
 			// Remove index from arrays to conform to schema.
