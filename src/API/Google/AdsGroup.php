@@ -51,13 +51,35 @@ class AdsGroup {
 	}
 
 	/**
+	 * Set up the additional objects for the specified campaign:
+	 * Ad group
+	 * Ad group ad
+	 * Listing group
+	 *
+	 * @param string $campaign_resource_name
+	 * @param string $campaign_name
+	 *
+	 * @throws ApiException
+	 */
+	public function set_up_for_campaign( string $campaign_resource_name, string $campaign_name = '' ) {
+		// Create Smart Shopping ad group.
+		$created_ad_group_resource_name = $this->create_ad_group( $campaign_resource_name, $campaign_name );
+
+		// Create Smart Shopping ad group ad.
+		$this->create_ad_group_ad( $created_ad_group_resource_name );
+
+		// Create ad group criterion containing listing group.
+		$this->create_shopping_listing_group( $created_ad_group_resource_name );
+	}
+
+	/**
 	 * @param string $campaign_resource_name
 	 * @param string $campaign_name
 	 *
 	 * @return string
 	 * @throws ApiException if the ad group isn't created
 	 */
-	public function create_ad_group( string $campaign_resource_name, string $campaign_name = '' ): string {
+	protected function create_ad_group( string $campaign_resource_name, string $campaign_name = '' ): string {
 		$adGroup = new AdGroup(
 			[
 				'name'     => $campaign_name . ' Ad Group',
@@ -81,7 +103,7 @@ class AdsGroup {
 	 * @return MutateAdGroupResult
 	 * @throws ApiException if the mutate call fails
 	 */
-	public function mutate_ad_group( AdGroupOperation $operation ): MutateAdGroupResult {
+	protected function mutate_ad_group( AdGroupOperation $operation ): MutateAdGroupResult {
 		$response = $this->client->getAdGroupServiceClient()->mutateAdGroups(
 			$this->get_id(),
 			[ $operation ]
@@ -96,7 +118,7 @@ class AdsGroup {
 	 * @return string
 	 * @throws ApiException if the ad group ad isn't created
 	 */
-	public function create_ad_group_ad( string $ad_group_resource_name ): string {
+	protected function create_ad_group_ad( string $ad_group_resource_name ): string {
 		$adGroupAd = new AdGroupAd(
 			[
 				'ad'       => new Ad( [ 'shopping_smart_ad' => new ShoppingSmartAdInfo() ] ),
@@ -119,7 +141,7 @@ class AdsGroup {
 	 * @return MutateAdGroupAdResult
 	 * @throws ApiException if the mutate call fails
 	 */
-	public function mutate_ad_group_ad( AdGroupAdOperation $operation ): MutateAdGroupAdResult {
+	protected function mutate_ad_group_ad( AdGroupAdOperation $operation ): MutateAdGroupAdResult {
 		$response = $this->client->getAdGroupAdServiceClient()->mutateAdGroupAds(
 			$this->get_id(),
 			[ $operation ]
@@ -134,7 +156,7 @@ class AdsGroup {
 	 * @return string
 	 * @throws ApiException if the ad group criterion isn't created
 	 */
-	public function create_shopping_listing_group( string $ad_group_resource_name ): string {
+	protected function create_shopping_listing_group( string $ad_group_resource_name ): string {
 		// Creates a new ad group criterion. This will contain a listing group.
 		// This will be the listing group for 'All products' and will contain a single root node.
 		$adGroupCriterion = new AdGroupCriterion(
@@ -162,7 +184,7 @@ class AdsGroup {
 	 * @return MutateAdGroupCriterionResult
 	 * @throws ApiException if the mutate call fails
 	 */
-	public function mutate_shopping_listing_group( AdGroupCriterionOperation $operation ): MutateAdGroupCriterionResult {
+	protected function mutate_shopping_listing_group( AdGroupCriterionOperation $operation ): MutateAdGroupCriterionResult {
 		$response = $this->client->getAdGroupCriterionServiceClient()->mutateAdGroupCriteria(
 			$this->get_id(),
 			[ $operation ]

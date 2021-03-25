@@ -92,7 +92,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			AdsCampaign::class,
 			GoogleAdsClient::class,
 			AdsCampaignBudget::class,
-AdsGroup::class,
+			AdsGroup::class,
 			$ads_id
 		);
 

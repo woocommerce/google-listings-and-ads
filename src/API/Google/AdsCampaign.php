@@ -125,23 +125,12 @@ class AdsCampaign implements OptionsAwareInterface {
 			$created_campaign = $this->mutate_campaign( $operation );
 			$campaign_id      = $this->parse_id( $created_campaign->getResourceName(), 'campaigns' );
 
-			// Create Smart Shopping ad group.
-			$created_ad_group_resource_name = $this->ads_group->create_ad_group( $created_campaign->getResourceName(), $params['name'] );
-
-			// Create Smart Shopping ad group ad.
-			$created_ad_group_ad_resource_name = $this->ads_group->create_ad_group_ad( $created_ad_group_resource_name );
-
-			// Create ad group criterion containing listing group.
-			$created_shopping_listing_group_resource_name = $this->ads_group->create_shopping_listing_group( $created_ad_group_resource_name );
+			$this->ads_group->set_up_for_campaign( $created_campaign->getResourceName(), $params['name'] );
 
 			return [
 				'id'     => $campaign_id,
 				'status' => CampaignStatus::ENABLED,
-			] + $params + [
-				'ad_group_id'          => $this->parse_id( $created_ad_group_resource_name, 'adGroups' ),
-				'ad_group_ad_id'       => $this->parse_id( $created_ad_group_ad_resource_name, 'adGroupAds' ),
-				'ad_group_criteria_id' => $this->parse_id( $created_shopping_listing_group_resource_name, 'adGroupCriteria' ),
-			];
+			] + $params;
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
