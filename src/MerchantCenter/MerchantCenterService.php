@@ -26,11 +26,15 @@ class MerchantCenterService implements Service {
 	protected $options;
 
 	/**
+	 * WooCommerce proxy service
+	 *
 	 * @var WC
 	 */
 	protected $WC;
 
 	/**
+	 * WordPress proxy service
+	 *
 	 * @var WP
 	 */
 	protected $WP;
@@ -39,13 +43,13 @@ class MerchantCenterService implements Service {
 	 * MerchantCenterService constructor.
 	 *
 	 * @param OptionsInterface $options
-	 * @param WC               $WC
-	 * @param WP               $WP
+	 * @param WC               $wc
+	 * @param WP               $wp
 	 */
-	public function __construct( OptionsInterface $options, WC $WC, WP $WP ) {
+	public function __construct( OptionsInterface $options, WC $wc, WP $wp ) {
 		$this->options = $options;
-		$this->WC      = $WC;
-		$this->WP      = $WP;
+		$this->WC      = $wc;
+		$this->WP      = $wp;
 	}
 
 	/**
@@ -54,7 +58,7 @@ class MerchantCenterService implements Service {
 	 * @return bool
 	 */
 	public function is_setup_complete(): bool {
-		return boolval( $this->options->get( Options::MC_SETUP_COMPLETED_AT, false ) );
+		return boolval( $this->options->get( OptionsInterface::MC_SETUP_COMPLETED_AT, false ) );
 	}
 
 	/**
@@ -99,7 +103,7 @@ class MerchantCenterService implements Service {
 	public function get_target_countries(): array {
 		$target_countries = [ $this->WC->get_base_country() ];
 
-		$target_audience = $this->options->get( Options::TARGET_AUDIENCE );
+		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
 		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
 			return $target_countries;
 		}

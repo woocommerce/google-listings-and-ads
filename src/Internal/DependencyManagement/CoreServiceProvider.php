@@ -116,7 +116,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DBInstaller::class            => true,
 		ProductStatistics::class      => true,
 		TransientsInterface::class    => true,
-		MerchantCenterService::class => true,
+		MerchantCenterService::class  => true,
 	];
 
 	/**
