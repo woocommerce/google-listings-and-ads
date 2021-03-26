@@ -12,14 +12,16 @@ import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
-import { useAppDispatch } from '.~/data';
-import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
-const AddTimeModal = ( props ) => {
-	const { onRequestClose } = props;
-	const { upsertShippingTime } = useAppDispatch();
-	const remainingCountryCodes = useGetRemainingCountryCodes();
-
+/**
+ * Form to add a new time for selected country(-ies).
+ *
+ * @param {Object} props
+ * @param {Array<CountryCode>} props.countries A list of country codes to choose from.
+ * @param {Function} props.onRequestClose
+ * @param {function(AggregatedShippingTime): void} props.onSubmit Called with submitted value.
+ */
+const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 	const handleValidate = () => {
 		const errors = {};
 
@@ -29,22 +31,14 @@ const AddTimeModal = ( props ) => {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		const { countryCodes, time } = values;
-
-		countryCodes.forEach( ( el ) => {
-			upsertShippingTime( {
-				countryCode: el,
-				time,
-			} );
-		} );
-
+		onSubmit( values );
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countryCodes: remainingCountryCodes,
+				countries,
 				time: '',
 			} }
 			validate={ handleValidate }
@@ -65,7 +59,10 @@ const AddTimeModal = ( props ) => {
 								isPrimary
 								onClick={ handleSubmit }
 							>
-								{ __( 'Save', 'google-listings-and-ads' ) }
+								{ __(
+									'Add shipping time',
+									'google-listings-and-ads'
+								) }
 							</Button>,
 						] }
 						onRequestClose={ onRequestClose }
@@ -80,7 +77,7 @@ const AddTimeModal = ( props ) => {
 								</div>
 								<AudienceCountrySelect
 									multiple
-									{ ...getInputProps( 'countryCodes' ) }
+									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
 							<AppInputControl
@@ -103,3 +100,8 @@ const AddTimeModal = ( props ) => {
 };
 
 export default AddTimeModal;
+
+/**
+ * @typedef {import("../../countries-form.js").AggregatedShippingTime} AggregatedShippingTime
+ * @typedef {import("../../countries-form.js").CountryCode} CountryCode
+ */

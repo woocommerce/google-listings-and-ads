@@ -506,7 +506,7 @@ class Ads {
 	protected function get_merchant_id(): int {
 		/** @var Options $options */
 		$options = $this->container->get( OptionsInterface::class );
-		return $options->get( Options::MERCHANT_ID );
+		return $options->get( OptionsInterface::MERCHANT_ID );
 	}
 
 	/**

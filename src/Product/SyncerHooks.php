@@ -147,7 +147,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 		}
 
 		// schedule an update job if product sync is enabled.
-		if ( ChannelVisibility::SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
+		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->product_helper->get_visibility( $product ) ) {
 			// queue the variations for update if it's a variable product.
 			$products = $product instanceof WC_Product_Variable ? $product->get_available_variations( 'objects' ) : [ $product ];
 

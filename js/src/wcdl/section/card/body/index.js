@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { CardBody } from '@wordpress/components';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -9,9 +10,14 @@ import { CardBody } from '@wordpress/components';
 import './index.scss';
 
 const Body = ( props ) => {
-	const { children } = props;
+	const { className, ...rest } = props;
 
-	return <CardBody className="wcdl-section-card-body">{ children }</CardBody>;
+	return (
+		<CardBody
+			className={ classnames( 'wcdl-section-card-body', className ) }
+			{ ...rest }
+		></CardBody>
+	);
 };
 
 export default Body;

@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Google_Service_ShoppingContent_Account as MC_Account;
@@ -228,13 +230,18 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->middleware->disconnect_merchant();
 
-			$this->account_state->update( [] );
-			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 			$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
+			$this->options->delete( OptionsInterface::MC_SETUP_SAVED_STEP );
+			$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
+			$this->options->delete( OptionsInterface::MERCHANT_CENTER );
+			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
+			$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
+
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
 
 			return [
 				'status'  => 'success',
-				'message' => __( 'Successfully disconnected.', 'google-listings-and-ads' ),
+				'message' => __( 'Merchant Center account successfully disconnected.', 'google-listings-and-ads' ),
 			];
 		};
 	}
