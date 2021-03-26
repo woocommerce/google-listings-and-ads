@@ -1,13 +1,14 @@
 /**
  * External dependencies
  */
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import toAccountText from '.~/utils/toAccountText';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -16,11 +17,6 @@ import Section from '.~/wcdl/section';
 import DisconnectSection from './disconnect-section';
 import AccountSubsection from './account-subsection';
 import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
-
-const withPrefix = ( id ) => {
-	// translators: %s: user's account ID
-	return sprintf( __( 'Account %s', 'google-listings-and-ads' ), id );
-};
 
 export default function DisconnectAccounts() {
 	const { jetpack } = useJetpackAccount();
@@ -66,13 +62,13 @@ export default function DisconnectAccounts() {
 						'Google Merchant Center',
 						'google-listings-and-ads'
 					) }
-					info={ withPrefix( googleMCAccount?.id ) }
+					info={ toAccountText( googleMCAccount?.id ) }
 					helperContent={ requiredText }
 				/>
 				{ hasAdsAccount && (
 					<AccountSubsection
 						title={ __( 'Google Ads', 'google-listings-and-ads' ) }
-						info={ withPrefix( googleAdsAccount?.id ) }
+						info={ toAccountText( googleAdsAccount?.id ) }
 						helperContent={
 							<Button
 								isDestructive
