@@ -1,19 +1,20 @@
 /**
  * External dependencies
  */
-import { useSelect, useDispatch } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 import { useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
+import { useAppDispatch } from '.~/data';
 import useGoogleAccount from './useGoogleAccount';
 
 const useGoogleAdsAccount = () => {
 	const { google, isResolving } = useGoogleAccount();
 
-	const dispatcher = useDispatch( STORE_KEY );
+	const dispatcher = useAppDispatch();
 	const refetchGoogleAdsAccount = useCallback( () => {
 		dispatcher.invalidateResolution( 'getGoogleAdsAccount', [] );
 	}, [ dispatcher ] );
