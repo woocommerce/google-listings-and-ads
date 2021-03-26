@@ -49,7 +49,7 @@ export default function DisconnectAccounts() {
 	const requiredText = __( 'Required', 'google-listings-and-ads' );
 
 	return (
-		<DisconnectSection isLoading={ isLoading }>
+		<DisconnectSection showLoadingSpinnerOnly={ isLoading }>
 			<Section.Card.Body>
 				<AccountSubsection
 					title={ __( 'WordPress.com', 'google-listings-and-ads' ) }

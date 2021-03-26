@@ -9,7 +9,10 @@ import { __ } from '@wordpress/i18n';
 import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
 
-export default function DisconnectSection( { isLoading, children } ) {
+export default function DisconnectSection( {
+	showLoadingSpinnerOnly,
+	children,
+} ) {
 	return (
 		<Section
 			title={ __( 'Linked accounts', 'google-listings-and-ads' ) }
@@ -19,7 +22,7 @@ export default function DisconnectSection( { isLoading, children } ) {
 			) }
 		>
 			<Section.Card>
-				{ isLoading ? <AppSpinner /> : children }
+				{ showLoadingSpinnerOnly ? <AppSpinner /> : children }
 			</Section.Card>
 		</Section>
 	);
