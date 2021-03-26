@@ -15,7 +15,7 @@ use Exception;
 use Google\ApiCore\ApiException;
 
 /**
- * Class AdsCampaignBudgetTrait
+ * Class AdsCampaignBudget
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
