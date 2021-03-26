@@ -46,16 +46,20 @@ export default function DisconnectAccounts() {
 		return <Button onClick={ dismissModal }>Back</Button>;
 	}
 
+	const requiredText = __( 'Required', 'google-listings-and-ads' );
+
 	return (
 		<DisconnectSection isLoading={ isLoading }>
 			<Section.Card.Body>
 				<AccountSubsection
 					title={ __( 'WordPress.com', 'google-listings-and-ads' ) }
 					info={ jetpack?.email }
+					helperContent={ requiredText }
 				/>
 				<AccountSubsection
 					title={ __( 'Google', 'google-listings-and-ads' ) }
 					info={ google?.email }
+					helperContent={ requiredText }
 				/>
 				<AccountSubsection
 					title={ __(
@@ -63,23 +67,25 @@ export default function DisconnectAccounts() {
 						'google-listings-and-ads'
 					) }
 					info={ withPrefix( googleMCAccount?.id ) }
+					helperContent={ requiredText }
 				/>
 				{ hasAdsAccount && (
 					<AccountSubsection
 						title={ __( 'Google Ads', 'google-listings-and-ads' ) }
 						info={ withPrefix( googleAdsAccount?.id ) }
-					>
-						<Button
-							isDestructive
-							isLink
-							onClick={ openDisconnectAdsAccountModal }
-						>
-							{ __(
-								'Disconnect Google Ads account only',
-								'google-listings-and-ads'
-							) }
-						</Button>
-					</AccountSubsection>
+						helperContent={
+							<Button
+								isDestructive
+								isLink
+								onClick={ openDisconnectAdsAccountModal }
+							>
+								{ __(
+									'Disconnect Google Ads account only',
+									'google-listings-and-ads'
+								) }
+							</Button>
+						}
+					/>
 				) }
 			</Section.Card.Body>
 			<Section.Card.Footer>
