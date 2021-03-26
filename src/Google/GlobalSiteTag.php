@@ -12,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Psr\Container\ContainerInterface;
@@ -48,7 +48,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Register the service.
 	 */
 	public function register(): void {
-		$conversion_action = $this->options->get( Options::ADS_CONVERSION_ACTION );
+		$conversion_action = $this->options->get( OptionsInterface::ADS_CONVERSION_ACTION );
 
 		// No snippets without conversion action info.
 		if ( ! $conversion_action ) {

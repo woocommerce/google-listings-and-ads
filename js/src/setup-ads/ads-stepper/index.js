@@ -13,11 +13,14 @@ import CreateCampaign from './create-campaign';
 import SetupBilling from './setup-billing';
 import './index.scss';
 
-const AdsStepper = () => {
+const AdsStepper = ( props ) => {
+	const { formProps } = props;
+
 	// TODO: call API and check if users have already done the account setup,
 	// we can straight away bring them to step 2.
 	const [ step, setStep ] = useState( '1' );
 
+	// TOOD: figure out when to allow and not to allow step click.
 	const handleStepClick = ( value ) => {
 		setStep( value );
 	};
@@ -59,6 +62,7 @@ const AdsStepper = () => {
 					),
 					content: (
 						<CreateCampaign
+							formProps={ formProps }
 							onContinue={ handleCreateCampaignContinue }
 						/>
 					),
@@ -67,7 +71,7 @@ const AdsStepper = () => {
 				{
 					key: '3',
 					label: __( 'Set up billing', 'google-listings-and-ads' ),
-					content: <SetupBilling />,
+					content: <SetupBilling formProps={ formProps } />,
 					onClick: handleStepClick,
 				},
 			] }
