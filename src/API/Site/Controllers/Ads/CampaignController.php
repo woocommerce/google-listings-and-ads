@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
@@ -27,9 +27,9 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	use CountryCodeTrait;
 
 	/**
-	 * @var Ads
+	 * @var AdsCampaign
 	 */
-	protected $ads;
+	protected $ads_campaign;
 
 	/**
 	 * BaseController constructor.
@@ -38,7 +38,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->ads = $container->get( Ads::class );
+		$this->ads_campaign = $container->get( AdsCampaign::class );
 	}
 
 	/**
@@ -100,7 +100,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 						$data = $this->prepare_item_for_response( $campaign, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->ads->get_campaigns()
+					$this->ads_campaign->get_campaigns()
 				);
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], 400 );
@@ -117,7 +117,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 		return function( Request $request ) {
 			try {
 				$fields   = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
-				$campaign = $this->ads->create_campaign( $fields );
+				$campaign = $this->ads_campaign->create_campaign( $fields );
 
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
@@ -135,7 +135,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 		return function( Request $request ) {
 			try {
 				$id       = absint( $request['id'] );
-				$campaign = $this->ads->get_campaign( $id );
+				$campaign = $this->ads_campaign->get_campaign( $id );
 
 				if ( empty( $campaign ) ) {
 					return new Response(
@@ -173,7 +173,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					);
 				}
 
-				$campaign_id = $this->ads->edit_campaign( absint( $request['id'] ), $fields );
+				$campaign_id = $this->ads_campaign->edit_campaign( absint( $request['id'] ), $fields );
 
 				return [
 					'status'  => 'success',
@@ -194,7 +194,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected function delete_campaign_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$deleted_id = $this->ads->delete_campaign( absint( $request['id'] ) );
+				$deleted_id = $this->ads_campaign->delete_campaign( absint( $request['id'] ) );
 
 				return [
 					'status'  => 'success',
@@ -261,7 +261,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			],
 			'amount'  => [
 				'type'              => 'number',
-				'description'       => __( 'Budget amount in the local currency.', 'google-listings-and-ads' ),
+				'description'       => __( 'Daily budget amount in the local currency.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
