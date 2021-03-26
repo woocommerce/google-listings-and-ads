@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
@@ -149,6 +150,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
+		$this->share_with_tags( AdsService::class, OptionsInterface::class );
+
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
 		$installer_definition->setConcrete(
@@ -158,7 +161,13 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class, PHPViewFactory::class );
+		$this->conditionally_share_with_tags(
+			Admin::class,
+			AssetsHandlerInterface::class,
+			PHPViewFactory::class,
+			MerchantCenterService::class,
+			AdsService::class
+		);
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
