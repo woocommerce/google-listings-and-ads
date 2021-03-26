@@ -12,8 +12,10 @@ import CreateAccountButton from './create-account-button';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import AppTextButton from '.~/components/app-text-button';
 
-const CreateAccount = () => {
+const CreateAccount = ( props ) => {
+	const { allowShowExisting, onShowExisting } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { receiveAdsAccount } = useAppDispatch();
 	const [ fetchCreateAdsAccount, { loading } ] = useApiFetchCallback( {
@@ -53,6 +55,16 @@ const CreateAccount = () => {
 					}
 				/>
 			</Section.Card.Body>
+			{ allowShowExisting && (
+				<Section.Card.Footer>
+					<AppTextButton isSecondary onClick={ onShowExisting }>
+						{ __(
+							'Or, use your existing Google Ads account',
+							'google-listings-and-ads'
+						) }
+					</AppTextButton>
+				</Section.Card.Footer>
+			) }
 		</Section.Card>
 	);
 };

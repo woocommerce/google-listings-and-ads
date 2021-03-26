@@ -15,8 +15,10 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
+import AppTextButton from '.~/components/app-text-button';
 
-const ConnectAds = () => {
+const ConnectAds = ( props ) => {
+	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
 	const [ fetchConnectAdsAccount, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/ads/accounts`,
@@ -70,6 +72,14 @@ const ConnectAds = () => {
 					</AppButton>
 				</ContentButtonLayout>
 			</Section.Card.Body>
+			<Section.Card.Footer>
+				<AppTextButton isSecondary onClick={ onCreateNew }>
+					{ __(
+						'Or, create a new Google Ads account',
+						'google-listings-and-ads'
+					) }
+				</AppTextButton>
+			</Section.Card.Footer>
 		</Section.Card>
 	);
 };
