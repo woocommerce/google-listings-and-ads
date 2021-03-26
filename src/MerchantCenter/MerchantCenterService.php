@@ -29,14 +29,14 @@ class MerchantCenterService implements Service {
 	 *
 	 * @var WC
 	 */
-	protected $WC;
+	protected $wc;
 
 	/**
 	 * WordPress proxy service
 	 *
 	 * @var WP
 	 */
-	protected $WP;
+	protected $wp;
 
 	/**
 	 * MerchantCenterService constructor.
@@ -47,8 +47,8 @@ class MerchantCenterService implements Service {
 	 */
 	public function __construct( OptionsInterface $options, WC $wc, WP $wp ) {
 		$this->options = $options;
-		$this->WC      = $wc;
-		$this->WP      = $wp;
+		$this->wc      = $wc;
+		$this->wp      = $wp;
 	}
 
 	/**
@@ -69,7 +69,7 @@ class MerchantCenterService implements Service {
 	public function is_country_supported( string $country = '' ): bool {
 		// Default to WooCommerce store country
 		if ( empty( $country ) ) {
-			$country = $this->WC->get_base_country();
+			$country = $this->wc->get_base_country();
 		}
 
 		return array_key_exists(
@@ -87,7 +87,7 @@ class MerchantCenterService implements Service {
 	public function is_language_supported( string $language = '' ): bool {
 		// Default to base site language
 		if ( empty( $language ) ) {
-			$language = substr( $this->WP->get_locale(), 0, 2 );
+			$language = substr( $this->wp->get_locale(), 0, 2 );
 		}
 
 		return array_key_exists(
@@ -100,7 +100,7 @@ class MerchantCenterService implements Service {
 	 * @return string[] List of target countries specified in options. Defaults to WooCommerce store base country.
 	 */
 	public function get_target_countries(): array {
-		$target_countries = [ $this->WC->get_base_country() ];
+		$target_countries = [ $this->wc->get_base_country() ];
 
 		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
 		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
