@@ -34,7 +34,7 @@ class AdsService implements Service {
 	 *
 	 * @return bool
 	 */
-	public function is_ads_setup_complete(): bool {
+	public function is_setup_complete(): bool {
 		return boolval( $this->options->get( OptionsInterface::ADS_SETUP_COMPLETED_AT, false ) );
 	}
 

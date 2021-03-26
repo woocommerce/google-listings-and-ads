@@ -103,7 +103,7 @@ class Admin implements Service, Registerable, Conditional {
 				'mcSetupComplete'     => $this->merchant_center->is_setup_complete(),
 				'mcSupportedCountry'  => $this->merchant_center->is_country_supported(),
 				'mcSupportedLanguage' => $this->merchant_center->is_language_supported(),
-				'adsSetupComplete'    => $this->ads->is_ads_setup_complete(),
+				'adsSetupComplete'    => $this->ads->is_setup_complete(),
 			]
 		);
 
