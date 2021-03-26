@@ -49,7 +49,7 @@ class AdsCampaignBudget {
 	 * @param float $amount Budget amount in the local currency.
 	 *
 	 * @return string Resource name of the newly created budget.
-	 * @throws ApiException if the campaign budget can't be created.
+	 * @throws ApiException If the campaign budget can't be created.
 	 */
 	public function create_campaign_budget( float $amount ): string {
 		$budget = new CampaignBudget(
@@ -73,8 +73,8 @@ class AdsCampaignBudget {
 	 * @param float $amount Budget amount in the local currency.
 	 *
 	 * @return string Resource name of the updated budget.
-	 * @throws ApiException if the campaign budget can't be mutated.
-	 * @throws Exception if no linked budget has been found.
+	 * @throws ApiException If the campaign budget can't be mutated.
+	 * @throws Exception If no linked budget has been found.
 	 */
 	public function edit_campaign_budget( int $campaign_id, float $amount ): string {
 		$budget_id = $this->get_budget_from_campaign( $campaign_id );
@@ -99,7 +99,7 @@ class AdsCampaignBudget {
 	 * @param int $campaign_id Campaign ID.
 	 *
 	 * @return int
-	 * @throws Exception if no linked budget has been found.
+	 * @throws Exception If no linked budget has been found.
 	 */
 	protected function get_budget_from_campaign( int $campaign_id ): int {
 		$query    = $this->build_query( [ 'campaign.campaign_budget' ], 'campaign', "campaign.id = {$campaign_id}" );
@@ -120,7 +120,7 @@ class AdsCampaignBudget {
 	 * @param CampaignBudgetOperation $operation Operation we would like to run.
 	 *
 	 * @return MutateCampaignBudgetResult
-	 * @throws ApiException if the remote call to mutate the campaign budget fails.
+	 * @throws ApiException If the remote call to mutate the campaign budget fails.
 	 */
 	protected function mutate_budget( CampaignBudgetOperation $operation ): MutateCampaignBudgetResult {
 		$response = $this->client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(

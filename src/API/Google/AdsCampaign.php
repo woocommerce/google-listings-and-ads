@@ -296,7 +296,7 @@ class AdsCampaign implements OptionsAwareInterface {
 	 * @param CampaignOperation $operation Operation we would like to run.
 	 *
 	 * @return MutateCampaignResult
-	 * @throws ApiException if the campaign mutate fails
+	 * @throws ApiException If the campaign mutate fails.
 	 */
 	protected function mutate_campaign( CampaignOperation $operation ): MutateCampaignResult {
 		$response = $this->client->getCampaignServiceClient()->mutateCampaigns(

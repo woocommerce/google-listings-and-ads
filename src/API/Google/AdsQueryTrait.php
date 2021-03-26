@@ -43,7 +43,7 @@ trait AdsQueryTrait {
 	 * @param string          $query Query to run.
 	 *
 	 * @return PagedListResponse
-	 * @throws ApiException
+	 * @throws ApiException If the search call fails.
 	 */
 	protected function query( GoogleAdsClient $client, int $ads_id, string $query ): PagedListResponse {
 		return $client->getGoogleAdsServiceClient()->search( $ads_id, $query );
