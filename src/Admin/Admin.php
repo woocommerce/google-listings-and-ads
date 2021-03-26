@@ -54,10 +54,10 @@ class Admin implements Service, Registerable, Conditional {
 	 * @param AdsService             $ads
 	 */
 	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads ) {
-		$this->assets_handler = $assets_handler;
-		$this->view_factory   = $view_factory;
+		$this->assets_handler  = $assets_handler;
+		$this->view_factory    = $view_factory;
 		$this->merchant_center = $merchant_center;
-		$this->ads = $ads;
+		$this->ads             = $ads;
 	}
 
 	/**
