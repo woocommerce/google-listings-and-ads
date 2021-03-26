@@ -54,7 +54,7 @@ class AdsCampaign implements OptionsAwareInterface {
 
 
 	/**
-	 * Ads constructor.
+	 * AdsCampaign constructor.
 	 *
 	 * @param GoogleAdsClient   $client
 	 * @param AdsCampaignBudget $ads_campaign_budget

@@ -33,7 +33,7 @@ class AdsCampaignBudget {
 	protected $client;
 
 	/**
-	 * Ads constructor.
+	 * AdsCampaignBudget constructor.
 	 *
 	 * @param GoogleAdsClient $client
 	 * @param PositiveInteger $id

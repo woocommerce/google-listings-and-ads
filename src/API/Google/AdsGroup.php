@@ -43,7 +43,7 @@ class AdsGroup {
 	protected $client;
 
 	/**
-	 * Ads constructor.
+	 * AdsGroup constructor.
 	 *
 	 * @param GoogleAdsClient $client
 	 * @param PositiveInteger $id

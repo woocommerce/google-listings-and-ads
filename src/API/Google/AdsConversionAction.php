@@ -37,7 +37,7 @@ class AdsConversionAction {
 	protected $client;
 
 	/**
-	 * Ads constructor.
+	 * AdsConversionAction constructor.
 	 *
 	 * @param GoogleAdsClient $client
 	 * @param PositiveInteger $id
