@@ -15,7 +15,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 /**
  * Make API call to complete Google Ads account setup.
  */
-const completeGoogleAdsAccountSetup = async () => {
+const completeGoogleAdsAccountSetup = () => {
 	return apiFetch( {
 		path: `/wc/gla/ads/accounts`,
 		method: 'POST',
