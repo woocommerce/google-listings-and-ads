@@ -6,8 +6,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,16 +41,30 @@ class MerchantCenterService implements Service {
 	protected $wp;
 
 	/**
+	 * @var Middleware
+	 */
+	protected $middleware;
+
+	/**
+	 * @var TransientsInterface
+	 */
+	protected $transients;
+
+	/**
 	 * MerchantCenterService constructor.
 	 *
-	 * @param OptionsInterface $options
-	 * @param WC               $wc
-	 * @param WP               $wp
+	 * @param OptionsInterface    $options
+	 * @param WC                  $wc
+	 * @param WP                  $wp
+	 * @param Middleware          $middleware
+	 * @param TransientsInterface $transients
 	 */
-	public function __construct( OptionsInterface $options, WC $wc, WP $wp ) {
-		$this->options = $options;
-		$this->wc      = $wc;
-		$this->wp      = $wp;
+	public function __construct( OptionsInterface $options, WC $wc, WP $wp, Middleware $middleware, TransientsInterface $transients ) {
+		$this->options    = $options;
+		$this->wc         = $wc;
+		$this->wp         = $wp;
+		$this->middleware = $middleware;
+		$this->transients = $transients;
 	}
 
 	/**
@@ -115,5 +131,21 @@ class MerchantCenterService implements Service {
 		}
 
 		return $target_countries;
+	}
+
+	/**
+	 * Disconnect Merchant Center account
+	 */
+	public function disconnect() {
+		$this->middleware->disconnect_merchant();
+
+		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
+		$this->options->delete( OptionsInterface::MC_SETUP_SAVED_STEP );
+		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
+		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
+		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
+		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
+
+		$this->transients->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
 	}
 }
