@@ -11,12 +11,14 @@ import { STORE_KEY } from '.~/data/constants';
 import { useAppDispatch } from '.~/data';
 import useGoogleAccount from './useGoogleAccount';
 
+const googleAdsAccountSelector = 'getGoogleAdsAccount';
+
 const useGoogleAdsAccount = () => {
 	const { google, isResolving } = useGoogleAccount();
 
 	const dispatcher = useAppDispatch();
 	const refetchGoogleAdsAccount = useCallback( () => {
-		dispatcher.invalidateResolution( 'getGoogleAdsAccount', [] );
+		dispatcher.invalidateResolution( googleAdsAccountSelector, [] );
 	}, [ dispatcher ] );
 
 	return useSelect( ( select ) => {
@@ -27,9 +29,9 @@ const useGoogleAdsAccount = () => {
 			};
 		}
 
-		const acc = select( STORE_KEY ).getGoogleAdsAccount();
+		const acc = select( STORE_KEY )[ googleAdsAccountSelector ]();
 		const isResolvingGoogleAdsAccount = select( STORE_KEY ).isResolving(
-			'getGoogleAdsAccount'
+			googleAdsAccountSelector
 		);
 
 		return {
