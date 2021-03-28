@@ -12,6 +12,7 @@ import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
 import SetupFreeListings from './setup-free-listings';
+import useBeforeUnloadPromptEffect from '.~/hooks/useBeforeUnloadPromptEffect';
 
 /**
  * Page Component to edit free campaigns.
@@ -22,6 +23,10 @@ import SetupFreeListings from './setup-free-listings';
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
+	// TODO: implement the check for dirty state.
+	const didSomethingChanged = true;
+	useBeforeUnloadPromptEffect( didSomethingChanged );
+
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(
 		// Clear the step we were at, but perserve programId to be able to highlight the program.
