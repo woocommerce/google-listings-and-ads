@@ -5,6 +5,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -74,6 +75,7 @@ export default function EditFreeCampaign() {
 		// TODO notify errors.
 		// TODO: Enable the submit button.
 
+		recordEvent( 'gla_free_campaign_edited' );
 		getHistory().push( dashboardURL );
 	};
 

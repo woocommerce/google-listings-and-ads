@@ -82,6 +82,8 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which link is clicked
   * `href`: link's URL
 
+* `gla_free_campaign_edited` - Saving changes to the free campaign.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
