@@ -1,4 +1,8 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+/**
  * Internal dependencies
  */
 import useBeforeUnloadPromptEffect from '.~/hooks/useBeforeUnloadPromptEffect';
@@ -10,11 +14,17 @@ const SetupAdsFormContent = ( props ) => {
 	const { formProps } = props;
 	const shouldPreventClose = isFormDirty( formProps );
 
-	useBeforeUnloadPromptEffect( shouldPreventClose );
+	useBeforeUnloadPromptEffect(
+		shouldPreventClose,
+		__(
+			'You have unsaved campaign data. Are you sure you want to leave?',
+			'google-listings-and-ads'
+		)
+	);
 
 	return (
 		<>
-			<SetupAdsTopBar formProps={ formProps } />
+			<SetupAdsTopBar />
 			<AdsStepper formProps={ formProps } />
 		</>
 	);

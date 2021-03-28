@@ -9,27 +9,12 @@ import { __ } from '@wordpress/i18n';
  */
 import { recordSetupAdsEvent } from '.~/utils/recordEvent';
 import TopBar from '.~/components/stepper/top-bar';
-import isFormDirty from '../is-form-dirty';
 
-const SetupAdsTopBar = ( props ) => {
-	const { formProps } = props;
-	const shouldPreventClose = isFormDirty( formProps );
-
+const SetupAdsTopBar = () => {
+	// We record the intent to go back or to help - clicking buttons.
+	// Those events are fired before the actual navigation happens.
+	// The navigation itself may or maynot be blocked, for example to avoid leaving unsaved chanes.
 	const handleBackButtonClick = () => {
-		if ( shouldPreventClose ) {
-			// eslint-disable-next-line no-alert
-			const result = window.confirm(
-				__(
-					'You have unsaved campaign data. Are you sure you want to leave?',
-					'google-listings-and-ads'
-				)
-			);
-
-			if ( ! result ) {
-				return false;
-			}
-		}
-
 		recordSetupAdsEvent( 'back' );
 	};
 
