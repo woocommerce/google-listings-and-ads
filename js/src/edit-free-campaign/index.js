@@ -15,6 +15,7 @@ import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
 import useTargetAudience from '.~/hooks/useTargetAudience';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
 
 /**
@@ -44,6 +45,11 @@ export default function EditFreeCampaign() {
 		}
 	}, [ savedTargetAudience, savedSettings ] );
 
+	const [ fetchSettingsSync ] = useApiFetchCallback( {
+		path: `/wc/gla/mc/settings/sync`,
+		method: 'POST',
+	} );
+
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(
 		// Clear the step we were at, but perserve programId to be able to highlight the program.
@@ -63,10 +69,11 @@ export default function EditFreeCampaign() {
 			saveSettings( settings ),
 			// TODO: save batched shipping times and rates
 		] );
-		// TODO: Call setting sync.
+		// Synce data with once our changes are saved, even partially succesfully.
+		await fetchSettingsSync();
 		// TODO notify errors.
+		// TODO: Enable the submit button.
 
-		// Enable the submit button.
 		getHistory().push( dashboardURL );
 	};
 
