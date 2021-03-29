@@ -26,6 +26,7 @@ class Ads implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 	use ApiExceptionTrait;
 	use AdsQueryTrait;
+	use AdsReportTrait;
 
 	/**
 	 * The Google Ads Client.

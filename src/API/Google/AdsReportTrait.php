@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use DateTime;
 use Exception;
 use Google\Ads\GoogleAds\V6\Common\Segments;
@@ -19,6 +20,7 @@ use Google\ApiCore\ApiException;
 trait AdsReportTrait {
 
 	use ReportTrait;
+	use MicroTrait;
 
 	/**
 	 * Get report data for campaigns.
