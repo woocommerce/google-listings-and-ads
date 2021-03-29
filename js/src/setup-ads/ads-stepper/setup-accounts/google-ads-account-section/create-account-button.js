@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
@@ -9,6 +8,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import TermsModal from './terms-modal';
+import AppButton from '.~/components/app-button';
 
 const CreateAccountButton = ( props ) => {
 	const { onCreateAccount, ...rest } = props;
@@ -24,9 +24,9 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			<Button { ...rest } onClick={ handleButtonClick }>
+			<AppButton { ...rest } onClick={ handleButtonClick }>
 				{ __( 'Create Account', 'google-listings-and-ads' ) }
-			</Button>
+			</AppButton>
 			{ isOpen && (
 				<TermsModal
 					onCreateAccount={ onCreateAccount }
