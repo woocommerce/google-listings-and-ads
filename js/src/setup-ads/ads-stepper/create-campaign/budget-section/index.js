@@ -14,6 +14,7 @@ import './index.scss';
 import FreeAdCredit from './free-ad-credit';
 import BudgetRecommendation from './budget-recommendation';
 import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
+import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 
 const BudgetSection = ( props ) => {
 	const {
@@ -24,9 +25,22 @@ const BudgetSection = ( props ) => {
 		amount,
 	} = values;
 	const { code: currencyCode } = useStoreCurrency();
+	const { formatDecimalString } = useCurrencyFactory();
 	const hasFreeAdCredit = useFreeAdCredit();
 
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( values.amount );
+
+	// format the amount input on blur.
+	const handleAmountBlur = () => {
+		const { value, onChange, onBlur } = getInputProps( 'amount' );
+		const newValue = formatDecimalString( value );
+
+		if ( newValue !== value ) {
+			onChange( newValue );
+		}
+
+		onBlur();
+	};
 
 	return (
 		<div className="gla-budget-section">
@@ -51,6 +65,7 @@ const BudgetSection = ( props ) => {
 								) }
 								suffix={ currencyCode }
 								{ ...getInputProps( 'amount' ) }
+								onBlur={ handleAmountBlur }
 							/>
 							<AppInputControl
 								disabled
@@ -59,7 +74,9 @@ const BudgetSection = ( props ) => {
 									'google-listings-and-ads'
 								) }
 								suffix={ currencyCode }
-								value={ monthlyMaxEstimated }
+								value={ formatDecimalString(
+									monthlyMaxEstimated
+								) }
 							/>
 						</div>
 						{ selectedCountryCode && (

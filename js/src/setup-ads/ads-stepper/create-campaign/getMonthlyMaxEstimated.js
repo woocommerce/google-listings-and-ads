@@ -11,8 +11,6 @@
  * @param {number} dailyAverageCost The daily average cost provided by user.
  */
 const getMonthlyMaxEstimated = ( dailyAverageCost ) => {
-	// TODO: format the result based on the store currency settings.
-	// might need to use https://www.npmjs.com/package/@woocommerce/number.
 	return dailyAverageCost * 30.4;
 };
 
