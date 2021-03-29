@@ -96,6 +96,11 @@ class ReportsController extends BaseReportsController {
 				],
 			],
 			'totals'    => $this->get_totals_schema(),
+			'next_page' => [
+				'type'        => 'string',
+				'description' => __( 'Token to retrieve the next page of results.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+			],
 		];
 	}
 

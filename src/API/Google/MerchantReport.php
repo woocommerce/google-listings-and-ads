@@ -56,8 +56,20 @@ class MerchantReport implements OptionsAwareInterface {
 
 			$results = $this->service->reports->search( $this->options->get_merchant_id(), $request );
 
+			if ( ! empty( $args['per_page'] ) ) {
+				$request->setPageSize( $args['per_page'] );
+			}
+
+			if ( ! empty( $args['next_page'] ) ) {
+				$request->setPageToken( $args['next_page'] );
+			}
+
 			foreach ( $results->getResults() as $row ) {
 				$this->add_report_row( $row, $args );
+			}
+
+			if ( $results->getNextPageToken() ) {
+				$this->report_data['next_page'] = $results->getNextPageToken();
 			}
 
 			$this->remove_report_indexes( [ 'intervals' ] );
