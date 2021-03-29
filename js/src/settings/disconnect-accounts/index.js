@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
@@ -41,13 +42,22 @@ export default function DisconnectAccounts() {
 	const openDisconnectAdsAccountModal = () => setOpenedModal( ADS_ACCOUNT );
 	const dismissModal = () => setOpenedModal( null );
 
+	// The re-fetch of Google ads account will be triggered within the resolvers.
+	// Here only need to handle the all accounts disconnection case.
 	const handleDisconnected = () => {
-		// The re-fetch of Google ads account will be triggered within the resolvers.
-		// Here only need to handle the all accounts disconnection case.
+		const eventArgs = [
+			'gla_disconnected_accounts',
+			{ context: openedModal },
+		];
+
 		if ( openedModal === ALL_ACCOUNTS ) {
+			queueRecordEvent( ...eventArgs );
+
 			// Force reload WC admin page to initiate the Get Started page.
 			const path = `/wp-admin/${ getNewPath( null, '/google/start' ) }`;
 			window.location.href = path;
+		} else {
+			recordEvent( ...eventArgs );
 		}
 	};
 
