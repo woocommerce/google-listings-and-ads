@@ -122,6 +122,8 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	public function generate_delete_request_entries( array $products ): array {
 		$request_entries = [];
 		foreach ( $products as $product ) {
+			$this->validate_instanceof( $product, WC_Product::class );
+
 			if ( $product instanceof WC_Product_Variable ) {
 				$request_entries = array_merge( $request_entries, $this->generate_delete_request_entries( $product->get_available_variations( 'objects' ) ) );
 				continue;
@@ -153,6 +155,8 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 		$target_countries = $this->merchant_center->get_target_countries();
 
 		foreach ( $products as $product ) {
+			$this->validate_instanceof( $product, WC_Product::class );
+
 			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
 				continue;
 			}
