@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Googl
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -18,6 +19,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Onboarding
  */
 class SiteVerificationController extends BaseOptionsController {
+
+	use EmptySchemaPropertiesTrait;
 
 	/**
 	 * @var SiteVerification
@@ -177,15 +180,6 @@ class SiteVerificationController extends BaseOptionsController {
 					'message'  => $verified ? __( 'Site already verified.', 'google-listings-and-ads' ) : __( 'Site not verified.', 'google-listings-and-ads' ),
 				];
 			};
-	}
-
-	/**
-	 * Get the item schema for the controller.
-	 *
-	 * @return array
-	 */
-	protected function get_schema_properties(): array {
-		return [];
 	}
 
 	/**
