@@ -13,8 +13,8 @@ import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
-import DisconnectSection from './disconnect-section';
 import AccountSubsection from './account-subsection';
 import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
 
@@ -45,56 +45,83 @@ export default function DisconnectAccounts() {
 	const requiredText = __( 'Required', 'google-listings-and-ads' );
 
 	return (
-		<DisconnectSection showLoadingSpinnerOnly={ isLoading }>
-			<Section.Card.Body>
-				<AccountSubsection
-					title={ __( 'WordPress.com', 'google-listings-and-ads' ) }
-					info={ jetpack?.email }
-					helperContent={ requiredText }
-				/>
-				<AccountSubsection
-					title={ __( 'Google', 'google-listings-and-ads' ) }
-					info={ google?.email }
-					helperContent={ requiredText }
-				/>
-				<AccountSubsection
-					title={ __(
-						'Google Merchant Center',
-						'google-listings-and-ads'
-					) }
-					info={ toAccountText( googleMCAccount?.id ) }
-					helperContent={ requiredText }
-				/>
-				{ hasAdsAccount && (
-					<AccountSubsection
-						title={ __( 'Google Ads', 'google-listings-and-ads' ) }
-						info={ toAccountText( googleAdsAccount?.id ) }
-						helperContent={
+		<Section
+			title={ __( 'Linked accounts', 'google-listings-and-ads' ) }
+			description={ __(
+				'A Wordpress.com account, Google account, and Google Merchant Center account are required to use this extension in WooCommerce.',
+				'google-listings-and-ads'
+			) }
+		>
+			<Section.Card>
+				{ isLoading ? (
+					<AppSpinner />
+				) : (
+					<>
+						<Section.Card.Body>
+							<AccountSubsection
+								title={ __(
+									'WordPress.com',
+									'google-listings-and-ads'
+								) }
+								info={ jetpack.email }
+								helperContent={ requiredText }
+							/>
+							<AccountSubsection
+								title={ __(
+									'Google',
+									'google-listings-and-ads'
+								) }
+								info={ google.email }
+								helperContent={ requiredText }
+							/>
+							<AccountSubsection
+								title={ __(
+									'Google Merchant Center',
+									'google-listings-and-ads'
+								) }
+								info={ toAccountText( googleMCAccount.id ) }
+								helperContent={ requiredText }
+							/>
+							{ hasAdsAccount && (
+								<AccountSubsection
+									title={ __(
+										'Google Ads',
+										'google-listings-and-ads'
+									) }
+									info={ toAccountText(
+										googleAdsAccount.id
+									) }
+									helperContent={
+										<Button
+											isDestructive
+											isLink
+											onClick={
+												openDisconnectAdsAccountModal
+											}
+										>
+											{ __(
+												'Disconnect Google Ads account only',
+												'google-listings-and-ads'
+											) }
+										</Button>
+									}
+								/>
+							) }
+						</Section.Card.Body>
+						<Section.Card.Footer>
 							<Button
 								isDestructive
-								isLink
-								onClick={ openDisconnectAdsAccountModal }
+								onClick={ openDisconnectAllAccountsModal }
 							>
 								{ __(
-									'Disconnect Google Ads account only',
+									'Disconnect all accounts',
 									'google-listings-and-ads'
 								) }
 							</Button>
-						}
-					/>
+						</Section.Card.Footer>
+					</>
 				) }
-			</Section.Card.Body>
-			<Section.Card.Footer>
-				<Button
-					isDestructive
-					onClick={ openDisconnectAllAccountsModal }
-				>
-					{ __(
-						'Disconnect all accounts',
-						'google-listings-and-ads'
-					) }
-				</Button>
-			</Section.Card.Footer>
-		</DisconnectSection>
+			</Section.Card>
+		</Section>
 	);
 }
