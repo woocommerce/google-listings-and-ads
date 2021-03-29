@@ -138,6 +138,19 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
+		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS: {
+			return {
+				...state,
+				mc: {
+					...state.mc,
+					accounts: {
+						...state.mc.accounts,
+						ads: DEFAULT_STATE.mc.accounts.ads,
+					},
+				},
+			};
+		}
+
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS: {
 			const { billingStatus } = action;
 			const newState = cloneDeep( state );
@@ -166,6 +179,8 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
+		// Page will be reload after all accounts have been disconnected, so no need to mutate state.
+		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:
 			return state;
 	}
