@@ -24,8 +24,6 @@ class Merchant implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
 
-	use MerchantReportTrait;
-
 	/**
 	 * The shopping service.
 	 *

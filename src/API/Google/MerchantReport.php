@@ -5,9 +5,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
 use Exception;
 use Google\Exception as GoogleException;
+use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_ReportRow as ReportRow;
 use Google_Service_ShoppingContent_SearchRequest as SearchRequest;
 use Google_Service_ShoppingContent_Segments as Segments;
@@ -17,9 +20,26 @@ use Google_Service_ShoppingContent_Segments as Segments;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-trait MerchantReportTrait {
+class MerchantReport implements OptionsAwareInterface {
 
+	use OptionsAwareTrait;
 	use ReportTrait;
+
+	/**
+	 * The shopping service.
+	 *
+	 * @var ShoppingService
+	 */
+	protected $service;
+
+	/**
+	 * Merchant Report constructor.
+	 *
+	 * @param ShoppingService $service
+	 */
+	public function __construct( ShoppingService $service ) {
+		$this->service = $service;
+	}
 
 	/**
 	 * Get report data for free listings.
@@ -34,7 +54,7 @@ trait MerchantReportTrait {
 			$request = new SearchRequest();
 			$request->setQuery( ( new MerchantReportQuery( $args ) )->get_query() );
 
-			$results = $this->service->reports->search( $this->get_id(), $request );
+			$results = $this->service->reports->search( $this->options->get_merchant_id(), $request );
 
 			foreach ( $results->getResults() as $row ) {
 				$this->add_report_row( $row, $args );

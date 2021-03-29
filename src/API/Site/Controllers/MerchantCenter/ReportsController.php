@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Exception;
@@ -45,8 +45,8 @@ class ReportsController extends BaseReportsController {
 	protected function get_reports_callback(): callable {
 		return function( Request $request ) {
 			try {
-				/** @var Merchant $merchant */
-				$merchant = $this->container->get( Merchant::class );
+				/** @var MerchantReport $merchant */
+				$merchant = $this->container->get( MerchantReport::class );
 				$data     = $merchant->get_report_data( $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {
