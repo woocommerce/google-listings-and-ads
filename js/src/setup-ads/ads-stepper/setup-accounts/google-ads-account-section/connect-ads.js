@@ -14,7 +14,7 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import { useAppDispatch } from '.~/data';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppTextButton from '.~/components/app-text-button';
 
 const ConnectAds = ( props ) => {
@@ -25,7 +25,7 @@ const ConnectAds = ( props ) => {
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { receiveAdsAccount } = useAppDispatch();
+	const { refetchGoogleAdsAccount, isResolving } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
@@ -34,9 +34,8 @@ const ConnectAds = ( props ) => {
 		}
 
 		try {
-			const data = await fetchConnectAdsAccount();
-
-			receiveAdsAccount( data );
+			await fetchConnectAdsAccount();
+			refetchGoogleAdsAccount();
 		} catch ( error ) {
 			createNotice(
 				'error',
@@ -64,7 +63,7 @@ const ConnectAds = ( props ) => {
 					/>
 					<AppButton
 						isSecondary
-						loading={ loading }
+						loading={ loading || isResolving }
 						disabled={ ! value }
 						onClick={ handleConnectClick }
 					>
