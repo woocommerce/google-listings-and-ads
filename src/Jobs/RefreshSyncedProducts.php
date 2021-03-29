@@ -31,7 +31,7 @@ class RefreshSyncedProducts extends AbstractProductSyncerBatchedJob {
 	 * @return int
 	 */
 	protected function get_batch_size(): int {
-		$batch_size = (int) floor( 100 / count( $this->get_target_countries() ) );
+		$batch_size = (int) floor( 100 / count( $this->merchant_center->get_target_countries() ) );
 		// between 2 and 50 products per batch
 		return min( max( $batch_size, 2 ), 50 );
 	}

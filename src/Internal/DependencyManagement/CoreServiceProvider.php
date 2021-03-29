@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
@@ -31,6 +32,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -49,6 +52,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -112,6 +117,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DBInstaller::class            => true,
 		ProductStatistics::class      => true,
 		TransientsInterface::class    => true,
+		MerchantCenterService::class  => true,
 	];
 
 	/**
@@ -138,6 +144,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->inflector( OptionsAwareInterface::class )
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
+		// Set up MerchantCenter service, and inflect classes that need it.
+		$this->share_with_tags( MerchantCenterService::class, OptionsInterface::class, WC::class, WP::class, TransientsInterface::class );
+		$this->getLeagueContainer()
+			->inflector( MerchantCenterAwareInterface::class )
+			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
+
+		$this->share_with_tags( AdsService::class, OptionsInterface::class );
+
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
 		$installer_definition->setConcrete(
@@ -147,7 +161,13 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class, PHPViewFactory::class );
+		$this->conditionally_share_with_tags(
+			Admin::class,
+			AssetsHandlerInterface::class,
+			PHPViewFactory::class,
+			MerchantCenterService::class,
+			AdsService::class
+		);
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );

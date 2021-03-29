@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  */
 abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob implements ProductSyncerJobInterface {
 
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 
 	/**
 	 * @var ProductSyncer
@@ -54,7 +54,7 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	 * @return bool
 	 */
 	public function is_mc_setup(): bool {
-		return $this->setup_complete();
+		return $this->merchant_center->is_setup_complete();
 	}
 
 	/**

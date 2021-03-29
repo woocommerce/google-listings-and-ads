@@ -4,9 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
@@ -18,9 +18,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductHelper implements Service, OptionsAwareInterface {
+class ProductHelper implements Service, MerchantCenterAwareInterface {
 
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 
 	/**
 	 * @var ProductMetaHandler
@@ -53,7 +53,7 @@ class ProductHelper implements Service, OptionsAwareInterface {
 
 		// check if product is synced completely and remove any previous errors if it is
 		$synced_countries = array_keys( $google_ids );
-		$target_countries = $this->get_target_countries();
+		$target_countries = $this->merchant_center->get_target_countries();
 		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
 			$this->meta_handler->delete_errors( $wc_product_id );
 			$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );

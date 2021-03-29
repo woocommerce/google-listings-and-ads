@@ -7,9 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Exception;
 use WC_Product;
 
@@ -20,12 +20,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductSyncer implements Service, OptionsAwareInterface {
+class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 	public const FAILURE_THRESHOLD        = 5;         // Number of failed attempts allowed per FAILURE_THRESHOLD_WINDOW
 	public const FAILURE_THRESHOLD_WINDOW = '3 hours'; // PHP supported Date and Time format: https://www.php.net/manual/en/datetime.formats.php
 
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 
 	/**
 	 * @var GoogleProductService
@@ -189,7 +189,7 @@ class ProductSyncer implements Service, OptionsAwareInterface {
 	 * @throws ProductSyncerException If Google Merchant Center is not set up and connected.
 	 */
 	protected function validate_merchant_center_setup(): void {
-		if ( ! $this->setup_complete() ) {
+		if ( ! $this->merchant_center->is_setup_complete() ) {
 			throw new ProductSyncerException( __( 'Google Merchant Center has not been set up correctly. Please review your configuration.', 'google-listings-and-ads' ) );
 		}
 	}
