@@ -10,7 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
  *
  * @param {boolean} shouldPreventClose Boolean flag, whether the prompt should be shown.
  * @param {string} message Message to be shown. Note, some browsers may not support this when unloading the page.
- * @param {( location: Object ) => boolean} [preventLocation] Function to filter specific loations for blocking when navigatiing using woocommerce/navigation.
+ * @param {( location: Object ) => boolean} [preventLocation] Function to filter specific locations for blocking when navigating using woocommerce/navigation.
  */
 export default function useBeforeUnloadPromptEffect(
 	shouldPreventClose,
