@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -60,7 +60,7 @@ class ReportsController extends BaseReportsController {
 		return function( Request $request ) {
 			try {
 				/** @var Ads $ads */
-				$ads  = $this->container->get( Ads::class );
+				$ads  = $this->container->get( AdsReport::class );
 				$data = $ads->get_report_data( 'campaigns', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {
@@ -78,7 +78,7 @@ class ReportsController extends BaseReportsController {
 		return function( Request $request ) {
 			try {
 				/** @var Ads $ads */
-				$ads  = $this->container->get( Ads::class );
+				$ads  = $this->container->get( AdsReport::class );
 				$data = $ads->get_report_data( 'products', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {

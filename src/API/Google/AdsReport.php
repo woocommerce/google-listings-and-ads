@@ -6,6 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
 use Exception;
 use Google\Ads\GoogleAds\V6\Common\Segments;
@@ -13,14 +16,32 @@ use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
 
 /**
- * Trait AdsReportTrait
+ * Class AdsReport
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-trait AdsReportTrait {
+class AdsReport implements OptionsAwareInterface {
 
-	use ReportTrait;
+	use AdsQueryTrait;
 	use MicroTrait;
+	use OptionsAwareTrait;
+	use ReportTrait;
+
+	/**
+	 * The Google Ads Client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $client;
+
+	/**
+	 * AdsReport constructor.
+	 *
+	 * @param GoogleAdsClient $client
+	 */
+	public function __construct( GoogleAdsClient $client ) {
+		$this->client = $client;
+	}
 
 	/**
 	 * Get report data for campaigns.

@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
@@ -62,8 +63,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Ads::class                            => true,
 		AdsCampaign::class                    => true,
 		AdsCampaignBudget::class              => true,
-		AdsGroup::class                       => true,
 		AdsConversionAction::class            => true,
+		AdsGroup::class                       => true,
+		AdsReport::class                      => true,
 		'connect_server_root'                 => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
@@ -90,6 +92,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsGroup::class, GoogleAdsClient::class );
+		$this->share( AdsReport::class, GoogleAdsClient::class );
 		$this->share(
 			AdsCampaign::class,
 			GoogleAdsClient::class,
