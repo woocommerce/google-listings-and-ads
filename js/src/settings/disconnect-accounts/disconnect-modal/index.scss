@@ -1,0 +1,19 @@
+.gla-disconnect-accounts-modal {
+	@include break-small() {
+		max-width: 600px;
+	}
+
+	.components-modal__header-heading {
+		display: flex;
+		align-items: center;
+	}
+
+	.gridicon.gridicons-notice-outline {
+		margin-right: $grid-unit-10;
+		fill: $alert-red;
+	}
+
+	.components-base-control {
+		margin: var(--main-gap) 0 var(--large-gap);
+	}
+}
