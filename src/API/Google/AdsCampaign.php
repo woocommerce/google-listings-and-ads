@@ -79,7 +79,7 @@ class AdsCampaign implements OptionsAwareInterface {
 					->get_query()
 			);
 
-			foreach ( $result->iterateAllElements() as $row ) {
+			foreach ( $results->iterateAllElements() as $row ) {
 				$return[] = $this->convert_campaign( $row );
 			}
 

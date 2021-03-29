@@ -167,6 +167,7 @@ abstract class Query implements QueryInterface {
 			case '=':
 			case '>':
 			case '<':
+			case '!=':
 			case 'IN':
 			case 'NOT IN':
 			case 'BETWEEN':
