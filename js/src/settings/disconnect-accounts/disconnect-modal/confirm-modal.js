@@ -27,15 +27,15 @@ const textDict = {
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting my WordPress.com account, Google account, Google Merchant Center account and Google Ads account from this extension.',
+				'I understand that I am disconnecting any WordPress.com account, Google account, Google Merchant Center account and Google Ads account connected to this extension.',
 				'google-listings-and-ads'
 			),
 			__(
-				'My Product Feed will also be disconnected from my Google Merchant Centre account. Any free listings and/or paid campaigns will be paused.',
+				'Any product feed created by this WooCommerce extension will be deleted.',
 				'google-listings-and-ads'
 			),
 			__(
-				'All my configurations for the Google Listings & Ads extension in WooCommerce will be deleted. This cannot be undone.',
+				'Any associated free listings and/or paid campaigns created by this WooCommerce extension will be paused. This cannot be undone.',
 				'google-listings-and-ads'
 			),
 		],
@@ -53,15 +53,15 @@ const textDict = {
 		),
 		contents: [
 			__(
-				'I understand that I am disconnecting my Google Ads account.',
+				'I understand that I am disconnecting my Google Ads account from this WooCommerce extension.',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any paid campaigns will be paused.',
+				'Any paid campaigns created by this WooCommerce extension will be paused.',
 				'google-listings-and-ads'
 			),
 			__(
-				'All my configurations for Google Ads specific to WooCommerce will be deleted. This cannot be undone.',
+				'Configurations for Google Ads created through WooCommerce may also be lost. This cannot be undone.',
 				'google-listings-and-ads'
 			),
 		],
