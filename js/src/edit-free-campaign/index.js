@@ -21,13 +21,13 @@ import useBeforeUnloadPromptEffect from '.~/hooks/useBeforeUnloadPromptEffect';
  * @return {boolean} `true` if given location is not another step of our form.
  */
 function isNotOurStep( location ) {
-	const allowList = [
+	const allowList = new Set( [
 		'/' + getNewPath( { pageStep: 1 } ),
 		'/' + getNewPath( { pageStep: 2 } ),
-	];
+	] );
 	// TODO: Explore if we can make thich check cleaner given `history`'s API.
 	const destination = location.pathname + location.search;
-	return ! allowList.includes( destination );
+	return ! allowList.has( destination );
 }
 
 /**
