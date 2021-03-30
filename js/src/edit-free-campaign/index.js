@@ -22,6 +22,7 @@ import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
  */
 function isNotOurStep( location ) {
 	const allowList = new Set( [
+		'/' + getNewPath( { pageStep: undefined } ),
 		'/' + getNewPath( { pageStep: 1 } ),
 		'/' + getNewPath( { pageStep: 2 } ),
 	] );
