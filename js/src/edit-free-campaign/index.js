@@ -63,24 +63,30 @@ export default function EditFreeCampaign() {
 			const didSettingsChanged = ! isEqual( settings, savedSettings );
 			const didAnythingChanged = didAudienceChanged || didSettingsChanged;
 
-			// allow the user to navigate between form steps without the prompt.
-			const allowList = new Set( [
-				'/' + getNewPath( { pageStep: undefined } ),
-				'/' + getNewPath( { pageStep: 1 } ),
-				'/' + getNewPath( { pageStep: 2 } ),
-			] );
+			/**
+			 * Function use to allow the user to navigate between form steps without the prompt.
+			 *
+			 * @param {Object} loc Location object given by the `getHistory().block` callback argument.
+			 * @return {boolean} `true` if given location is not another step of our form.
+			 */
+			function isNotOurStep( loc ) {
+				// loc may be undefined, when it is called by browser's beforeunload event.
+				// in that case, we just return true to prompt user.
+				if ( ! loc ) {
+					return true;
+				}
 
-			// location may be undefined, when it is called by browser's beforeunload event.
-			// location is truthy when it is called by @woocommerce/navigation.
-			// TODO: Explore if we can make thich check cleaner given `history`'s API.
-			const destination = location
-				? location.pathname + location.search
-				: '';
+				const allowList = new Set( [
+					'/' + getNewPath( { pageStep: undefined } ),
+					'/' + getNewPath( { pageStep: 1 } ),
+					'/' + getNewPath( { pageStep: 2 } ),
+				] );
+				// TODO: Explore if we can make thich check cleaner given `history`'s API.
+				const destination = loc.pathname + loc.search;
+				return ! allowList.has( destination );
+			}
 
-			return (
-				didAnythingChanged ||
-				( destination && ! allowList.has( destination ) )
-			);
+			return didAnythingChanged && isNotOurStep( location );
 		},
 		[ savedSettings, savedTargetAudience, settings, targetAudience ]
 	);
