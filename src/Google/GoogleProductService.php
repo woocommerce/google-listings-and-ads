@@ -195,7 +195,7 @@ class GoogleProductService implements Service {
 		 */
 		foreach ( $responses as $response ) {
 			// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			// WooCommerce product ID is provided and returned as part of batchId
+			// WooCommerce product ID is mapped to batchId when sending the request
 			$wc_product_id = $batch_id_product_map[ $response->batchId ];
 
 			if ( empty( $response->getErrors() ) ) {
