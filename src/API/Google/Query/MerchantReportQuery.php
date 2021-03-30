@@ -13,12 +13,29 @@ defined( 'ABSPATH' ) || exit;
 class MerchantReportQuery extends Query {
 
 	/**
+	 * Type of report (free_listings or products).
+	 *
+	 * @var string
+	 */
+	protected $type = 'free_listings';
+
+	/**
 	 * Query constructor.
 	 *
-	 * @param array $args Query arguments.
+	 * @param string $type Report type (campaigns or products).
+	 * @param array  $args Query arguments.
 	 */
-	public function __construct( array $args ) {
+	public function __construct( string $type, array $args ) {
+		$this->type = $type;
 		parent::__construct( 'MerchantPerformanceView' );
+
+		if ( 'products' === $this->type ) {
+			$this->columns(
+				[
+					'id' => 'segments.offer_id',
+				]
+			);
+		}
 
 		if ( ! empty( $args['fields'] ) ) {
 			$this->fields( $args['fields'] );

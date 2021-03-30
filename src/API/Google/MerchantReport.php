@@ -44,15 +44,16 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Get report data for free listings.
 	 *
-	 * @param array $args Query arguments.
+	 * @param string $type Report type (free_listings or products).
+	 * @param array  $args Query arguments.
 	 *
 	 * @return array
 	 * @throws Exception If the report data can't be retrieved.
 	 */
-	public function get_report_data( array $args ): array {
+	public function get_report_data( string $type, array $args ): array {
 		try {
 			$request = new SearchRequest();
-			$request->setQuery( ( new MerchantReportQuery( $args ) )->get_query() );
+			$request->setQuery( ( new MerchantReportQuery( $type, $args ) )->get_query() );
 
 			$results = $this->service->reports->search( $this->options->get_merchant_id(), $request );
 
@@ -65,14 +66,14 @@ class MerchantReport implements OptionsAwareInterface {
 			}
 
 			foreach ( $results->getResults() as $row ) {
-				$this->add_report_row( $row, $args );
+				$this->add_report_row( $type, $row, $args );
 			}
 
 			if ( $results->getNextPageToken() ) {
 				$this->report_data['next_page'] = $results->getNextPageToken();
 			}
 
-			$this->remove_report_indexes( [ 'intervals' ] );
+			$this->remove_report_indexes( [ 'products', 'free_listings', 'intervals' ] );
 
 			return $this->report_data;
 		} catch ( GoogleException $e ) {
@@ -84,12 +85,35 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Add data for a report row.
 	 *
+	 * @param string    $type Report type (free_listings or products).
 	 * @param ReportRow $row  Report row.
 	 * @param array     $args Request arguments.
 	 */
-	protected function add_report_row( ReportRow $row, array $args ) {
+	protected function add_report_row( string $type, ReportRow $row, array $args ) {
 		$segments = $row->getSegments();
 		$metrics  = $this->get_report_row_metrics( $row, $args );
+
+		if ( 'free_listings' === $type ) {
+			$this->increase_report_data(
+				'free_listings',
+				'free',
+				[
+					'subtotals' => $metrics,
+				]
+			);
+		}
+
+		if ( 'products' === $type && $segments ) {
+			$product_id = $segments->getOfferId();
+			$this->increase_report_data(
+				'products',
+				(string) $product_id,
+				[
+					'id'        => $product_id,
+					'subtotals' => $metrics,
+				]
+			);
+		}
 
 		if ( $segments && ! empty( $args['interval'] ) ) {
 			$interval = $this->get_segment_interval( $args['interval'], $segments );
@@ -124,10 +148,10 @@ class MerchantReport implements OptionsAwareInterface {
 		foreach ( $args['fields'] as $field ) {
 			switch ( $field ) {
 				case 'clicks':
-					$data['clicks'] = $metrics->getClicks();
+					$data['clicks'] = (int) $metrics->getClicks();
 					break;
 				case 'impressions':
-					$data['impressions'] = $metrics->getImpressions();
+					$data['impressions'] = (int) $metrics->getImpressions();
 					break;
 			}
 		}
