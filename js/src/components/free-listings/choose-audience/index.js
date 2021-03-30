@@ -8,7 +8,6 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
-import useTargetAudience from '.~/hooks/useTargetAudience';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import FormContent from './form-content';
@@ -23,15 +22,17 @@ import '.~/components/free-listings/choose-audience/index.scss';
  *
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.
+ * @param {string} [props.initialData] Target audience data, if not given AppSinner will be rendered.
+ * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
 export default function ChooseAudience( {
 	stepHeader,
+	initialData,
+	onChange = () => {},
 	onContinue = () => {},
 } ) {
-	const { data } = useTargetAudience();
-
-	if ( ! data ) {
+	if ( ! initialData ) {
 		return <AppSpinner />;
 	}
 
@@ -41,10 +42,6 @@ export default function ChooseAudience( {
 		// TODO: validation logic.
 
 		return errors;
-	};
-
-	const handleSubmitCallback = () => {
-		onContinue();
 	};
 
 	return (
@@ -61,16 +58,17 @@ export default function ChooseAudience( {
 						'google-listings-and-ads'
 					) }
 				/>
-				{ data && (
+				{ initialData && (
 					<Form
 						initialValues={ {
-							locale: data.locale,
-							language: data.language,
-							location: data.location,
-							countries: data.countries || [],
+							locale: initialData.locale,
+							language: initialData.language,
+							location: initialData.location,
+							countries: initialData.countries || [],
 						} }
 						validate={ handleValidate }
-						onSubmitCallback={ handleSubmitCallback }
+						onSubmitCallback={ onContinue }
+						onChangeCallback={ onChange }
 					>
 						{ ( formProps ) => {
 							return <FormContent formProps={ formProps } />;
