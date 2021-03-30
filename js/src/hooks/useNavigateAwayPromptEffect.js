@@ -12,7 +12,7 @@ import { getHistory } from '@woocommerce/navigation';
  * @param {string} message Message to be shown. Note, some browsers may not support this when unloading the page.
  * @param {( location: Object ) => boolean} [preventLocation] Function to filter specific locations for blocking when navigating using woocommerce/navigation.
  */
-export default function useBeforeUnloadPromptEffect(
+export default function useNavigateAwayPromptEffect(
 	shouldPreventClose,
 	message = '',
 	preventLocation = () => true

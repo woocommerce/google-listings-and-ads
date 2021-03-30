@@ -12,7 +12,7 @@ import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
 import SetupFreeListings from './setup-free-listings';
-import useBeforeUnloadPromptEffect from '.~/hooks/useBeforeUnloadPromptEffect';
+import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -43,7 +43,7 @@ export default function EditFreeCampaign() {
 	const didAnythingChanged = true;
 
 	// Confirm leaving the page, if there are any changes and the user is navigating away from our stepper.
-	useBeforeUnloadPromptEffect(
+	useNavigateAwayPromptEffect(
 		didAnythingChanged,
 		__(
 			'You have unsaved campaign data. Are you sure you want to leave?',
