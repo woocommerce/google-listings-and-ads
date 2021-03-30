@@ -78,12 +78,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$dimension_unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
 		$weight_unit    = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
 
-		// set target country if null
-		if ( empty( $this->getTargetCountry() ) ) {
-			$base_country = WC()->countries->get_base_country();
-			$this->setTargetCountry( $base_country );
-		}
-
 		$this->setChannel( self::CHANNEL_ONLINE );
 
 		// todo: this is temporary, modify or remove this when the GTIN, MPN etc. functionalities are implemented.

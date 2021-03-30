@@ -165,12 +165,12 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
-	 * @param WC_Product  $product
-	 * @param string|null $target_country
+	 * @param WC_Product $product
+	 * @param string     $target_country
 	 *
 	 * @return WCProductAdapter
 	 */
-	public static function generate_adapted_product( WC_Product $product, string $target_country = null ): WCProductAdapter {
+	public static function generate_adapted_product( WC_Product $product, string $target_country ): WCProductAdapter {
 		return new WCProductAdapter(
 			[
 				'wc_product'    => $product,
