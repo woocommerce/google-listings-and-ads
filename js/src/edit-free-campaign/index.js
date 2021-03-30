@@ -77,7 +77,10 @@ export default function EditFreeCampaign() {
 				? location.pathname + location.search
 				: '';
 
-			return didAnythingChanged || ! allowList.has( destination );
+			return (
+				didAnythingChanged ||
+				( destination && ! allowList.has( destination ) )
+			);
 		},
 		[ savedSettings, savedTargetAudience, settings, targetAudience ]
 	);
