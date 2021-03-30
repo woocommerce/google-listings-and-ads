@@ -179,7 +179,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
-		// Page will be reload after all accounts have been disconnected, so no need to mutate state.
+		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:
 			return state;
