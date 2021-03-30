@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
 use Google_Service_ShoppingContent_Price;
 use Google_Service_ShoppingContent_Product;
+use Google_Service_ShoppingContent_ProductShipping;
 use Google_Service_ShoppingContent_ProductShippingDimension;
 use Google_Service_ShoppingContent_ProductShippingWeight;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -89,6 +90,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$this->map_wc_general_attributes()
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
 			 ->map_wc_availability()
+			 ->map_wc_product_shipping()
 			 ->map_wc_shipping_dimensions( $dimension_unit )
 			 ->map_wc_shipping_weight( $weight_unit )
 			 ->map_wc_prices();
@@ -196,6 +198,23 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		// todo: include 'preorder' status (maybe a new field for products / or using an extension?)
 		$availability = $this->wc_product->is_in_stock() ? self::AVAILABILITY_IN_STOCK : self::AVAILABILITY_OUT_OF_STOCK;
 		$this->setAvailability( $availability );
+
+		return $this;
+	}
+
+	/**
+	 * Map the shipping information for WooCommerce product.
+	 *
+	 * @return $this
+	 */
+	protected function map_wc_product_shipping(): WCProductAdapter {
+		$this->setShipping(
+			new Google_Service_ShoppingContent_ProductShipping(
+				[
+					'country' => $this->getTargetCountry(),
+				]
+			)
+		);
 
 		return $this;
 	}
@@ -535,5 +554,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		// we need to reset the prices because tax is based on the country
 		$this->map_wc_prices();
+
+		// product shipping information is also country based
+		$this->map_wc_product_shipping();
 	}
 }
