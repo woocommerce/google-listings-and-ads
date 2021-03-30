@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useState, useCallback } from '@wordpress/element';
 import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
@@ -20,23 +20,6 @@ import useSettings from '.~/components/free-listings/configure-product-listings/
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
-
-/**
- * Function use to allow the user to navigate between form steps without the prompt.
- *
- * @param {Object} location Location object given by the `getHistory().block` callback argument.
- * @return {boolean} `true` if given location is not another step of our form.
- */
-function isNotOurStep( location ) {
-	const allowList = new Set( [
-		'/' + getNewPath( { pageStep: undefined } ),
-		'/' + getNewPath( { pageStep: 1 } ),
-		'/' + getNewPath( { pageStep: 2 } ),
-	] );
-	// TODO: Explore if we can make thich check cleaner given `history`'s API.
-	const destination = location.pathname + location.search;
-	return ! allowList.has( destination );
-}
 
 /**
  * Page Component to edit free campaigns.
@@ -70,19 +53,42 @@ export default function EditFreeCampaign() {
 		method: 'POST',
 	} );
 
-	// Check what've changed to show prompt, and send requests only to save changed things.
-	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
-	const didSettingsChanged = ! isEqual( settings, savedSettings );
-	const didAnythingChanged = didAudienceChanged || didSettingsChanged;
+	const promptFn = useCallback(
+		( location ) => {
+			// Check what've changed to show prompt, and send requests only to save changed things.
+			const didAudienceChanged = ! isEqual(
+				targetAudience,
+				savedTargetAudience
+			);
+			const didSettingsChanged = ! isEqual( settings, savedSettings );
+			const didAnythingChanged = didAudienceChanged || didSettingsChanged;
+
+			// allow the user to navigate between form steps without the prompt.
+			const allowList = new Set( [
+				'/' + getNewPath( { pageStep: undefined } ),
+				'/' + getNewPath( { pageStep: 1 } ),
+				'/' + getNewPath( { pageStep: 2 } ),
+			] );
+
+			// location may be undefined, when it is called by browser's beforeunload event.
+			// location is truthy when it is called by @woocommerce/navigation.
+			// TODO: Explore if we can make thich check cleaner given `history`'s API.
+			const destination = location
+				? location.pathname + location.search
+				: '';
+
+			return didAnythingChanged || ! allowList.has( destination );
+		},
+		[ savedSettings, savedTargetAudience, settings, targetAudience ]
+	);
 
 	// Confirm leaving the page, if there are any changes and the user is navigating away from our stepper.
 	useNavigateAwayPromptEffect(
-		didAnythingChanged,
 		__(
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
 		),
-		isNotOurStep
+		promptFn
 	);
 
 	const { pageStep = '1' } = getQuery();

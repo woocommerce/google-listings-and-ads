@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useCallback } from '@wordpress/element';
+
 /**
  * Internal dependencies
  */
@@ -12,14 +14,17 @@ import SetupAdsTopBar from './top-bar';
 
 const SetupAdsFormContent = ( props ) => {
 	const { formProps } = props;
-	const shouldPreventClose = isFormDirty( formProps );
+
+	const promptFn = useCallback( () => {
+		return isFormDirty( formProps );
+	}, [ formProps ] );
 
 	useNavigateAwayPromptEffect(
-		shouldPreventClose,
 		__(
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
-		)
+		),
+		promptFn
 	);
 
 	return (
