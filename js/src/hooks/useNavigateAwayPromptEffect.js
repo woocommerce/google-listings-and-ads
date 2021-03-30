@@ -14,7 +14,7 @@ import { getHistory } from '@woocommerce/navigation';
  */
 export default function useNavigateAwayPromptEffect(
 	shouldPreventClose,
-	message = '',
+	message,
 	preventLocation = () => true
 ) {
 	useEffect( () => {
