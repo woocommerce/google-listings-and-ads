@@ -114,6 +114,7 @@ export default function ConfirmModal( {
 					{ title }
 				</>
 			}
+			isDismissible={ ! isDisconnecting }
 			buttons={ [
 				<Button
 					key="1"
@@ -142,6 +143,7 @@ export default function ConfirmModal( {
 			<CheckboxControl
 				label={ confirmation }
 				checked={ isAgreed }
+				disabled={ isDisconnecting }
 				onChange={ setAgreed }
 			/>
 		</AppModal>
