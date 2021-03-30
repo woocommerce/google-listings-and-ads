@@ -852,13 +852,15 @@ class ConnectionTest implements Service, Registerable {
 		if ( 'wcs-google-mc-proxy' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-proxy' ) ) {
 			/** @var Merchant $merchant */
 			$merchant = $this->container->get( Merchant::class );
+			/** @var OptionsInterface $options */
+			$options = $this->container->get( OptionsInterface::class );
 
-			if ( empty( $merchant->get_id() ) ) {
+			if ( empty( $options->get_merchant_id() ) ) {
 				$this->response .= 'Please enter a Merchant ID';
 				return;
 			}
 
-			$this->response = "Proxied request > get products for merchant {$merchant->get_id()}\n";
+			$this->response = "Proxied request > get products for merchant {$options->get_merchant_id()}\n";
 
 			$products = $merchant->get_products();
 			if ( empty( $products ) ) {
@@ -890,8 +892,10 @@ class ConnectionTest implements Service, Registerable {
 			try {
 				/** @var AdsCampaign $ads_campaign */
 				$ads_campaign = $this->container->get( AdsCampaign::class );
+				/** @var OptionsInterface $options */
+				$options = $this->container->get( OptionsInterface::class );
 
-				$this->response = "Proxied request > get ad campaigns {$ads_campaign->get_id()}\n";
+				$this->response = "Proxied request > get ad campaigns {$options->get_ads_id()}\n";
 
 				$campaigns = $ads_campaign->get_campaigns();
 				if ( empty( $campaigns ) ) {

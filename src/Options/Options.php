@@ -117,6 +117,28 @@ final class Options implements OptionsInterface, Service {
 	}
 
 	/**
+	 * Helper function to retrieve the Ads Account ID.
+	 *
+	 * @return int
+	 */
+	public function get_ads_id(): int {
+		// TODO: Remove overriding with default once ConnectionTest is removed.
+		$default = intval( $_GET['customer_id'] ?? 0 ); // phpcs:ignore WordPress.Security
+		return $default ?: $this->get( self::ADS_ID );
+	}
+
+	/**
+	 * Helper function to retrieve the Merchant Account ID.
+	 *
+	 * @return int
+	 */
+	public function get_merchant_id(): int {
+		// TODO: Remove overriding with default once ConnectionTest is removed.
+		$default = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
+		return $default ?: $this->get( self::MERCHANT_ID );
+	}
+
+	/**
 	 * Ensure that a given option key is valid.
 	 *
 	 * @param string $name The option name.
