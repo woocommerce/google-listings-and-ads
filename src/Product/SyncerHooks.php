@@ -132,7 +132,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 			return;
 		}
 
-		if ( ChannelVisibility::SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
+		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->product_helper->get_visibility( $product ) ) {
 			// schedule an update job if product sync is enabled.
 			$this->update_products_job->start( [ $product_id ] );
 			$this->set_already_scheduled( $product_id );

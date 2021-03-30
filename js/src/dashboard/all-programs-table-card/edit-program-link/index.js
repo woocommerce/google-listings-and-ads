@@ -17,15 +17,13 @@ import './index.scss';
 const EditProgramLink = ( props ) => {
 	const { programId } = props;
 
-	// TODO: Check if that free or paid campaign.
+	// TODO: Check if that's a free or paid campaign.
 	const url = getNewPath( { programId }, '/google/edit-free-campaign' );
 
 	return (
 		<TrackableLink
 			eventName="gla_dashboard_edit_program_click"
 			eventProps={ { programId, url } }
-			type="external"
-			target="_blank"
 			href={ url }
 			className="edit-program-link"
 		>

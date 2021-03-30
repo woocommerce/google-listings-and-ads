@@ -5,6 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
@@ -22,6 +26,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 use Exception;
 use Google\Client;
 use Google_Service_ShoppingContent;
+use Google_Service_SiteVerification;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\HandlerStack;
@@ -55,6 +60,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Proxy::class                          => true,
 		Merchant::class                       => true,
 		Ads::class                            => true,
+		AdsCampaign::class                    => true,
+		AdsCampaignBudget::class              => true,
+		AdsGroup::class                       => true,
+		AdsConversionAction::class            => true,
 		'connect_server_root'                 => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
@@ -77,10 +86,17 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Connection::class, ContainerInterface::class );
 		$this->add( Settings::class, ContainerInterface::class );
 
+		$ads_id = $this->get_ads_id();
+		$this->share( Ads::class, GoogleAdsClient::class, $ads_id );
+		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class, $ads_id );
+		$this->share( AdsConversionAction::class, GoogleAdsClient::class, $ads_id );
+		$this->share( AdsGroup::class, GoogleAdsClient::class, $ads_id );
 		$this->share(
-			Ads::class,
-			$this->getLeagueContainer(),
-			$this->get_ads_id()
+			AdsCampaign::class,
+			GoogleAdsClient::class,
+			AdsCampaignBudget::class,
+			AdsGroup::class,
+			$ads_id
 		);
 
 		$this->share(
@@ -142,7 +158,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google-mc' )
 		);
 		$this->add(
-			\Google_Service_SiteVerification::class,
+			Google_Service_SiteVerification::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google-sv' )
 		);

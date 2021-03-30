@@ -20,7 +20,7 @@ addFilter(
 			{
 				key: 'gla_complete_setup',
 				title: __(
-					'Setup Google Listings & Ads',
+					'Set up Google Listings & Ads',
 					'google-listings-and-ads'
 				),
 				completed: glaTaskData.isComplete,
@@ -29,7 +29,7 @@ addFilter(
 					getHistory().push( getNewPath( {}, '/google/start' ) );
 				},
 				visible: true,
-				time: __( '30 minutes', 'google-listings-and-ads' ),
+				time: __( '20 minutes', 'google-listings-and-ads' ),
 				isDismissable: true,
 			},
 		];

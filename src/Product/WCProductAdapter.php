@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
@@ -29,6 +30,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class WCProductAdapter extends Google_Service_ShoppingContent_Product implements Validatable {
+	use PluginHelper;
+
 	public const AVAILABILITY_IN_STOCK     = 'in stock';
 	public const AVAILABILITY_OUT_OF_STOCK = 'out of stock';
 
@@ -94,7 +97,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
 		$this->setContentLanguage( $content_language );
 
-		$this->map_wc_general_attributes()
+		$this->map_wc_product_id()
+			 ->map_wc_general_attributes()
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
 			 ->map_wc_availability()
 			 ->map_wc_shipping_dimensions( $dimension_unit )
@@ -108,8 +112,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 * @return $this
 	 */
 	protected function map_wc_general_attributes() {
-		$this->setOfferId( $this->wc_product->get_id() );
-
 		$this->setTitle( $this->wc_product->get_title() );
 		$this->setDescription( $this->get_wc_product_description() );
 		$this->setLink( $this->wc_product->get_permalink() );
@@ -121,6 +123,18 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		} elseif ( $this->is_variable() ) {
 			$this->setItemGroupId( $this->wc_product->get_id() );
 		}
+
+		return $this;
+	}
+
+	/**
+	 * Map the WooCommerce product ID.
+	 *
+	 * @return $this
+	 */
+	protected function map_wc_product_id(): WCProductAdapter {
+		$offer_id = "{$this->get_slug()}_{$this->wc_product->get_id()}";
+		$this->setOfferId( $offer_id );
 
 		return $this;
 	}

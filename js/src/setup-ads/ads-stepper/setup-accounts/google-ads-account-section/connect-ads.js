@@ -14,16 +14,18 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import { useAppDispatch } from '.~/data';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import AppTextButton from '.~/components/app-text-button';
 
-const ConnectAds = () => {
+const ConnectAds = ( props ) => {
+	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
 	const [ fetchConnectAdsAccount, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/ads/accounts`,
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { receiveAdsAccount } = useAppDispatch();
+	const { refetchGoogleAdsAccount, isResolving } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
@@ -32,9 +34,8 @@ const ConnectAds = () => {
 		}
 
 		try {
-			const data = await fetchConnectAdsAccount();
-
-			receiveAdsAccount( data );
+			await fetchConnectAdsAccount();
+			refetchGoogleAdsAccount();
 		} catch ( error ) {
 			createNotice(
 				'error',
@@ -62,7 +63,7 @@ const ConnectAds = () => {
 					/>
 					<AppButton
 						isSecondary
-						loading={ loading }
+						loading={ loading || isResolving }
 						disabled={ ! value }
 						onClick={ handleConnectClick }
 					>
@@ -70,6 +71,14 @@ const ConnectAds = () => {
 					</AppButton>
 				</ContentButtonLayout>
 			</Section.Card.Body>
+			<Section.Card.Footer>
+				<AppTextButton isSecondary onClick={ onCreateNew }>
+					{ __(
+						'Or, create a new Google Ads account',
+						'google-listings-and-ads'
+					) }
+				</AppTextButton>
+			</Section.Card.Footer>
 		</Section.Card>
 	);
 };
