@@ -88,7 +88,7 @@ export default function ConfirmModal( {
 		onRequestClose();
 	};
 
-	const handleConfirmClick = async () => {
+	const handleConfirmClick = () => {
 		const disconnect =
 			disconnectTarget === ALL_ACCOUNTS
 				? dispatcher.disconnectAllAccounts
