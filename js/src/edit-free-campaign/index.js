@@ -6,6 +6,7 @@ import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 import { recordEvent } from '@woocommerce/tracks';
+import isEqual from 'lodash/isEqual';
 
 /**
  * Internal dependencies
@@ -69,8 +70,10 @@ export default function EditFreeCampaign() {
 		method: 'POST',
 	} );
 
-	// TODO: Implement the check for dirty state.
-	const didAnythingChanged = true;
+	// Check what've changed to show prompt, and send requests only to save changed things.
+	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
+	const didSettingsChanged = ! isEqual( settings, savedSettings );
+	const didAnythingChanged = didAudienceChanged || didSettingsChanged;
 
 	// Confirm leaving the page, if there are any changes and the user is navigating away from our stepper.
 	useNavigateAwayPromptEffect(
