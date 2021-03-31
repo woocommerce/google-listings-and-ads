@@ -8,14 +8,14 @@ import { getHistory } from '@woocommerce/navigation';
  * Show prompt when the user tries to unload/leave the page.
  * Adds and removed `beforeunload` event listener according to the given flag.
  *
- * @param {boolean} shouldPreventClose Boolean flag, whether the prompt should be shown.
  * @param {string} message Message to be shown. Note, some browsers may not support this when unloading the page.
- * @param {( location: Object ) => boolean} [preventLocation] Function to filter specific locations for blocking when navigating using woocommerce/navigation.
+ * @param {boolean} shouldBlock Boolean flag, whether the prompt should be shown.
+ * @param {( location: Object ) => boolean} [blockedLocation] Function to filter specific locations for blocking when navigating using woocommerce/navigation.
  */
 export default function useNavigateAwayPromptEffect(
-	shouldPreventClose,
 	message,
-	preventLocation = () => true
+	shouldBlock,
+	blockedLocation = () => true
 ) {
 	useEffect( () => {
 		// Bind beforeunload event for non `woocommerce/navigation` links and reloads.
@@ -27,7 +27,7 @@ export default function useNavigateAwayPromptEffect(
 			e.returnValue = message;
 		};
 
-		if ( shouldPreventClose ) {
+		if ( shouldBlock ) {
 			window.addEventListener( 'beforeunload', eventListener );
 		}
 		// Block woocommerce/navigation.
@@ -36,7 +36,7 @@ export default function useNavigateAwayPromptEffect(
 			// getHistory().block( ( { location, retry } ) => {
 
 			// Return the message / truthy value to show a prompt.
-			if ( shouldPreventClose && preventLocation( location ) ) {
+			if ( shouldBlock && blockedLocation( location ) ) {
 				return message;
 			}
 		} );
@@ -45,5 +45,5 @@ export default function useNavigateAwayPromptEffect(
 			unblock();
 			window.removeEventListener( 'beforeunload', eventListener );
 		};
-	}, [ message, shouldPreventClose, preventLocation ] );
+	}, [ message, shouldBlock, blockedLocation ] );
 }

@@ -15,11 +15,11 @@ const SetupAdsFormContent = ( props ) => {
 	const shouldPreventClose = isFormDirty( formProps );
 
 	useNavigateAwayPromptEffect(
-		shouldPreventClose,
 		__(
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
-		)
+		),
+		shouldPreventClose
 	);
 
 	return (

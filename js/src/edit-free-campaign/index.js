@@ -77,11 +77,11 @@ export default function EditFreeCampaign() {
 
 	// Confirm leaving the page, if there are any changes and the user is navigating away from our stepper.
 	useNavigateAwayPromptEffect(
-		didAnythingChanged,
 		__(
 			'You have unsaved campaign data. Are you sure you want to leave?',
 			'google-listings-and-ads'
 		),
+		didAnythingChanged,
 		isNotOurStep
 	);
 
