@@ -1,5 +1,5 @@
 const initialValues = {
-	amount: '',
+	amount: 0,
 	country: [],
 };
 
