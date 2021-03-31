@@ -10,7 +10,7 @@ import { numberFormat } from '@woocommerce/number';
  *
  * The formatted string does not contain currency code or symbol.
  */
-const usePriceFormat = () => {
+const useCurrencyFormat = () => {
 	const currencySetting = useSelect( ( select ) => {
 		return select( SETTINGS_STORE_NAME ).getSetting(
 			'wc_admin',
@@ -23,4 +23,4 @@ const usePriceFormat = () => {
 	};
 };
 
-export default usePriceFormat;
+export default useCurrencyFormat;

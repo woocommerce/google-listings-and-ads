@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import usePriceFormat from '.~/hooks/usePriceFormat';
+import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppInputControl from '.~/components/app-input-control';
 import parseStringToNumber from './parseStringToNumber';
@@ -9,7 +9,7 @@ import parseStringToNumber from './parseStringToNumber';
 const AppInputPriceControl = ( props ) => {
 	const { value, onChange = () => {}, onBlur = () => {}, ...rest } = props;
 	const currencySetting = useStoreCurrency();
-	const priceFormat = usePriceFormat();
+	const priceFormat = useCurrencyFormat();
 
 	const stringValue = priceFormat( value );
 	const handleChange = ( v ) => {
