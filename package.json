@@ -46,7 +46,6 @@
 	},
 	"dependencies": {
 		"@woocommerce/components": "^5.1.2",
-		"@woocommerce/currency": "^3.0.0",
 		"@woocommerce/data": "^1.1.1",
 		"@woocommerce/date": "^2.1.0",
 		"@woocommerce/navigation": "^5.2.0",
