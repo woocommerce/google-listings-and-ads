@@ -1,0 +1,94 @@
+#!/usr/bin/env php
+<?php
+/**
+ * @file
+ * Git pre-push hook to check coding standards before pushing.
+ */
+
+/**
+ * The SHA1 ID of an empty branch.
+ */
+define ('SHA1_EMPTY', '0000000000000000000000000000000000000000');
+
+$file_list = [];
+$full_check = FALSE;
+
+// Loop over the commits.
+while ($commit = trim(fgets(STDIN))) {
+  list ($local_ref, $local_sha, $remote_ref, $remote_sha) = explode(' ', $commit);
+
+  // Skip the coding standards check if we are deleting a branch or if there is
+  // no local branch.
+  if ($local_ref === '(delete)' || $local_sha === SHA1_EMPTY) {
+    exit(0);
+  }
+
+  // Do a full check if this is a new branch.
+  if ($remote_sha === SHA1_EMPTY) {
+    $full_check = TRUE;
+    break;
+  }
+
+  // Escape shell command arguments. These should normally be safe since they
+  // only contain SHA numbers, but you never know.
+  foreach (['local_sha', 'remote_sha'] as $argument) {
+    $$argument = escapeshellcmd($$argument);
+  }
+
+  $command = "git diff-tree --no-commit-id --name-only -r '$local_sha' '$remote_sha'";
+  $file_list = array_merge($file_list, explode("\n", `$command`));
+}
+
+// Remove duplicates, empty lines and files that no longer exist in the branch.
+$file_list = array_unique(array_filter($file_list, function ($file) {
+  return !empty($file) && file_exists($file);
+}));
+
+// If a phpcs.xml file is present and contains a list of extensions, remove all
+// files that do not match the extensions from the list.
+if (file_exists('phpcs.xml')) {
+  $configuration = simplexml_load_file('phpcs.xml');
+  $extensions = [];
+  foreach ($configuration->xpath('/ruleset/arg[@name="extensions"]') as $argument) {
+    // The list of extensions is comma separated.
+    foreach (explode(',', (string) $argument['value']) as $extension) {
+      // The type of file can be specified using a slash (e.g. 'module/php') so
+      // only keep the part before the slash.
+      if (($position = strpos($extension, '/')) !== FALSE) {
+        $extension = substr($extension, 0, $position);
+      }
+      $extensions[$extension] = $extension;
+    }
+  }
+
+  if (!empty($extensions)) {
+    $file_list = array_filter($file_list, function ($file) use ($extensions) {
+      return array_key_exists(pathinfo($file, PATHINFO_EXTENSION), $extensions);
+    });
+  }
+}
+
+if (empty($file_list) && !$full_check) {
+  exit(0);
+}
+
+// Get the path to the PHP CodeSniffer binary from composer.json.
+$command = getcwd() . '/vendor/bin/phpcs';
+if ($composer_json = json_decode(file_get_contents(getcwd() . '/composer.json'))) {
+  if (!empty($composer_json->config->{'bin-dir'})) {
+    $bin_dir = escapeshellcmd(trim($composer_json->config->{'bin-dir'}, '/'));
+    $command = getcwd() . '/' . $bin_dir . '/phpcs';
+  }
+}
+
+// Check if the PHP CodeSniffer binary is present.
+if (!is_executable($command)) {
+  echo "error: PHP CodeSniffer binary not found at $command\n";
+  exit(1);
+}
+
+// Run PHP CodeSniffer and exit.
+$file_filter = $full_check ? '' : " '" . implode("' '", $file_list) . "'";
+passthru($command . $file_filter, $return_value);
+
+exit($return_value);

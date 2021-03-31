@@ -46,7 +46,7 @@
       "Google\\Task\\Composer::cleanup",
       "php ./bin/prefix-vendor-namespace.php",
       "bash ./bin/googleads-remove-older-versions.sh",
-      "[ ! -h ./.git/hooks/pre-push ] && ln -s ./bin/pre-push.sh ./.git/hooks/pre-push"
+      "bash ./bin/link-pre-push-phpcs.sh"
     ],
     "post-install-cmd": ["@woogle-setup"],
     "post-update-cmd": ["@woogle-setup"]
