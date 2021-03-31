@@ -17,9 +17,11 @@ use Google\Ads\GoogleAds\V6\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelT
 use Google\Ads\GoogleAds\V6\Resources\Campaign;
 use Google\Ads\GoogleAds\V6\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V6\Services\CampaignOperation;
+use Google\Ads\GoogleAds\V6\Services\CampaignServiceClient;
 use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignResult;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\ValidationException;
 use Exception;
 
 /**
@@ -123,7 +125,7 @@ class AdsCampaign implements OptionsAwareInterface {
 			$operation = new CampaignOperation();
 			$operation->setCreate( $campaign );
 			$created_campaign = $this->mutate_campaign( $operation );
-			$campaign_id      = $this->parse_id( $created_campaign->getResourceName(), 'campaigns' );
+			$campaign_id      = $this->parse_campaign_id( $created_campaign->getResourceName() );
 
 			$this->ads_group->set_up_for_campaign( $created_campaign->getResourceName(), $params['name'] );
 
@@ -198,7 +200,7 @@ class AdsCampaign implements OptionsAwareInterface {
 				$operation->setUpdate( $campaign );
 				$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $campaign ) );
 				$edited_campaign = $this->mutate_campaign( $operation );
-				$campaign_id     = $this->parse_id( $edited_campaign->getResourceName(), 'campaigns' );
+				$campaign_id     = $this->parse_campaign_id( $edited_campaign->getResourceName() );
 			}
 
 			return $campaign_id;
@@ -224,7 +226,7 @@ class AdsCampaign implements OptionsAwareInterface {
 			$operation     = new CampaignOperation();
 			$operation->setRemove( $resource_name );
 			$deleted_campaign = $this->mutate_campaign( $operation );
-			return $this->parse_id( $deleted_campaign->getResourceName(), 'campaigns' );
+			return $this->parse_campaign_id( $deleted_campaign->getResourceName() );
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
 
@@ -314,5 +316,22 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	protected function get_merchant_id(): int {
 		return $this->options->get( OptionsInterface::MERCHANT_ID );
+	}
+
+	/**
+	 * Convert ID from a resource name to an int.
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_campaign_id( string $name ): int {
+		try {
+			$parts = CampaignServiceClient::parseName( $name );
+			return absint( $parts['campaign_id'] );
+		} catch ( ValidationException $e ) {
+			throw new Exception( __( 'Invalid campaign ID', 'google-listings-and-ads' ) );
+		}
 	}
 }
