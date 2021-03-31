@@ -4,22 +4,21 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '../../../../../../../data';
-import AppModal from '../../../../../../../components/app-modal';
-import AppInputControl from '../../../../../../../components/app-input-control';
-import VerticalGapLayout from '../../../../components/vertical-gap-layout';
-import AudienceCountrySelect from '../../../../components/audience-country-select';
-import useStoreCurrency from '../../../../../../../hooks/useStoreCurrency';
+import AppModal from '.~/components/app-modal';
+import AppInputControl from '.~/components/app-input-control';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
+import { useAppDispatch } from '.~/data';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import AudienceCountrySelect from '.~/components/audience-country-select';
 import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
-	const { addShippingRate } = useDispatch( STORE_KEY );
+	const { upsertShippingRate } = useAppDispatch();
 	const { code } = useStoreCurrency();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 
@@ -31,12 +30,11 @@ const AddRateModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: call backend API when submit form.
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, rate } = values;
 
 		countryCodes.forEach( ( el ) => {
-			addShippingRate( {
+			upsertShippingRate( {
 				countryCode: el,
 				currency,
 				rate,

@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { recordSetupMCEvent } from '../../utils/recordEvent';
+import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from './choose-audience';
@@ -68,7 +68,7 @@ const SavedSetupStepper = ( props ) => {
 				{
 					key: '3',
 					label: __(
-						'Configure your free listings',
+						'Configure your product listings',
 						'google-listings-and-ads'
 					),
 					content: <SetupFreeListings />,

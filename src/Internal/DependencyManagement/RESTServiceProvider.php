@@ -4,25 +4,29 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\Jetpack\Connection\Manager;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\AccountController as AdsAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController as AdsBudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController as AdsCampaignController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\SiteVerificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController as MerchantCenterAccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductsController as MerchantCenterProductsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsSyncController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\TargetAudienceController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -58,11 +62,13 @@ class RESTServiceProvider extends AbstractServiceProvider {
 	public function register() {
 		$this->share( SettingsController::class );
 		$this->share( ConnectionController::class );
-		$this->share( AdsAccountController::class, Middleware::class );
+		$this->share_with_container( AdsAccountController::class );
 		$this->share_with_container( AdsCampaignController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class );
 		$this->share_with_container( MerchantCenterAccountController::class );
+		$this->share( MerchantCenterProductsController::class, ProductStatistics::class );
+		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class );
 		$this->share_with_container( ShippingRateBatchController::class );
 		$this->share_with_container( ShippingRateController::class );
 		$this->share_with_container( ShippingTimeBatchController::class );
@@ -70,6 +76,8 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SiteVerificationController::class, SiteVerification::class );
 		$this->share( TargetAudienceController::class, WP::class );
 		$this->share( SupportedCountriesController::class, WC::class );
+		$this->share( SettingsSyncController::class, Settings::class );
+		$this->share( DisconnectController::class );
 	}
 
 	/**

@@ -8,17 +8,22 @@ import { Form } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import AppModal from '../../../../../../../../components/app-modal';
-import AppInputControl from '../../../../../../../../components/app-input-control';
-import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
-import AudienceCountrySelect from '../../../../../components/audience-country-select';
+import AppModal from '.~/components/app-modal';
+import AppInputControl from '.~/components/app-input-control';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import AudienceCountrySelect from '.~/components/audience-country-select';
 import './index.scss';
+import { useAppDispatch } from '.~/data';
 
 const EditTimeModal = ( props ) => {
-	const { time, onRequestClose } = props;
+	const { time: groupedTime, onRequestClose } = props;
+	const { upsertShippingTime, deleteShippingTime } = useAppDispatch();
 
-	// TODO: call API to delete the time.
 	const handleDeleteClick = () => {
+		groupedTime.countries.forEach( ( el ) => {
+			deleteShippingTime( el );
+		} );
+
 		onRequestClose();
 	};
 
@@ -30,16 +35,31 @@ const EditTimeModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: call backend API when submit form.
-	const handleSubmitCallback = () => {
+	const handleSubmitCallback = ( values ) => {
+		const { countryCodes, time } = values;
+
+		countryCodes.forEach( ( el ) => {
+			upsertShippingTime( {
+				countryCode: el,
+				time,
+			} );
+		} );
+
+		const valuesCountrySet = new Set( values.countryCodes );
+		groupedTime.countries.forEach( ( el ) => {
+			if ( ! valuesCountrySet.has( el ) ) {
+				deleteShippingTime( el );
+			}
+		} );
+
 		onRequestClose();
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countries: time.countries,
-				time: time.time,
+				countryCodes: groupedTime.countries,
+				time: groupedTime.time,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
@@ -83,7 +103,7 @@ const EditTimeModal = ( props ) => {
 								</div>
 								<AudienceCountrySelect
 									multiple
-									{ ...getInputProps( 'countries' ) }
+									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
 							<AppInputControl

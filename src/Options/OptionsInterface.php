@@ -10,11 +10,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface OptionsInterface {
 
+	public const ADS_ACCOUNT_STATE      = 'ads_account_state';
+	public const ADS_BILLING_URL        = 'ads_billing_url';
 	public const ADS_ID                 = 'ads_id';
+	public const ADS_CONVERSION_ACTION  = 'ads_conversion_action';
+	public const ADS_SETUP_COMPLETED_AT = 'ads_setup_completed_at';
 	public const DB_VERSION             = 'db_version';
 	public const FILE_VERSION           = 'file_version';
 	public const INSTALL_TIMESTAMP      = 'install_timestamp';
 	public const MC_SETUP_COMPLETED_AT  = 'mc_setup_completed_at';
+	public const MC_SETUP_SAVED_STEP    = 'setup_mc_saved_step';
 	public const MERCHANT_ACCOUNT_STATE = 'merchant_account_state';
 	public const MERCHANT_CENTER        = 'merchant_center';
 	public const MERCHANT_ID            = 'merchant_id';

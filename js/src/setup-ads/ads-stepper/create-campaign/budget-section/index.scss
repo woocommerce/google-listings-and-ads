@@ -1,0 +1,16 @@
+.gla-budget-section {
+	&__card-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--main-gap);
+
+		&__cost {
+			display: flex;
+			gap: var(--main-gap);
+
+			& > * {
+				flex: 1;
+			}
+		}
+	}
+}

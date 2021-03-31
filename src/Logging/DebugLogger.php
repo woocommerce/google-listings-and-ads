@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Logging;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Exception;
+use WC_Logger;
 
 /**
  * Class DebugLogger
@@ -40,6 +42,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 			add_action( 'gla_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_mc_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_ads_client_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'gla_sv_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_guzzle_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_guzzle_invalid_response', [ $this, 'log_response' ], 10, 2 );
 		}

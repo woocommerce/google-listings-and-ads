@@ -1,5 +1,15 @@
+/**
+ * Internal dependencies
+ */
+import FullScreen from '.~/components/full-screen';
+import SetupAdsForm from './setup-ads-form';
+
 const SetupAds = () => {
-	return <p>Setup Google Ads</p>;
+	return (
+		<FullScreen>
+			<SetupAdsForm />
+		</FullScreen>
+	);
 };
 
 export default SetupAds;

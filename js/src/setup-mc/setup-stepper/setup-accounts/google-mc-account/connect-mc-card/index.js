@@ -1,60 +1,96 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import Section from '../../../../../wcdl/section';
-import Subsection from '../../../../../wcdl/subsection';
-import MerchantCenterSelectControl from '../../../../../components/merchant-center-select-control';
-import ContentButtonLayout from '../../content-button-layout';
+import MerchantCenterSelectControl from '.~/components/merchant-center-select-control';
+import AppButton from '.~/components/app-button';
+import Section from '.~/wcdl/section';
+import Subsection from '.~/wcdl/subsection';
+import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import { useAppDispatch } from '.~/data';
+import ContentButtonLayout from '.~/components/content-button-layout';
+import SwitchUrlCard from '../switch-url-card';
+import ReclaimUrlCard from '../reclaim-url-card';
+import AppTextButton from '.~/components/app-text-button';
 
-const CreateMCCard = () => {
+const ConnectMCCard = ( props ) => {
+	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
+	const [
+		fetchMCAccounts,
+		{ loading, error, response, reset },
+	] = useApiFetchCallback( {
+		path: `/wc/gla/mc/accounts`,
+		method: 'POST',
+		data: { id: value },
+	} );
+	const { receiveMCAccount } = useAppDispatch();
 
-	const handleSelectChange = ( optionValue ) => {
-		setValue( optionValue );
+	const handleConnectClick = async () => {
+		if ( ! value ) {
+			return;
+		}
+
+		const data = await fetchMCAccounts();
+
+		receiveMCAccount( data );
 	};
 
-	// TOOD: call API to connect existing merchant center.
-	const handleConnectClick = () => {};
+	if ( response && response.status === 409 ) {
+		return (
+			<SwitchUrlCard
+				id={ error.id }
+				message={ error.message }
+				claimedUrl={ error.claimed_url }
+				newUrl={ error.new_url }
+				onSelectAnotherAccount={ reset }
+			/>
+		);
+	}
 
-	// TOOD: call API to create new merchant center.
-	const handleCreateNewClick = () => {};
+	if ( response && response.status === 403 ) {
+		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
+	}
 
 	return (
 		<Section.Card>
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
-						'Connect your Merchant Center',
+						'You have existing Merchant Center accounts',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
 				<ContentButtonLayout>
 					<MerchantCenterSelectControl
 						value={ value }
-						onChange={ handleSelectChange }
+						onChange={ setValue }
 					/>
-					<Button isSecondary onClick={ handleConnectClick }>
+					<AppButton
+						isSecondary
+						loading={ loading }
+						disabled={ ! value }
+						onClick={ handleConnectClick }
+					>
 						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</Button>
+					</AppButton>
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<Button isLink onClick={ handleCreateNewClick }>
+				<AppTextButton isSecondary onClick={ onCreateNew }>
 					{ __(
 						'Or, create a new Merchant Center account',
 						'google-listings-and-ads'
 					) }
-				</Button>
+				</AppTextButton>
 			</Section.Card.Footer>
 		</Section.Card>
 	);
 };
 
-export default CreateMCCard;
+export default ConnectMCCard;

@@ -55,7 +55,11 @@ class Installer implements Service, FirstInstallInterface, InstallableInterface 
 	 * Logic to run when the plugin is first installed.
 	 */
 	public function first_install(): void {
-		$this->install();
+		foreach ( $this->tables as $table ) {
+			if ( $table instanceof FirstInstallInterface ) {
+				$table->first_install();
+			}
+		}
 	}
 
 	/**

@@ -6,6 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
@@ -13,8 +16,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
@@ -23,18 +26,27 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditFreeCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
@@ -45,6 +57,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -67,6 +80,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
+		EditFreeCampaign::class       => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
 		GlobalSiteTag::class          => true,
@@ -87,9 +101,17 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductHelper::class          => true,
 		ProductMetaHandler::class     => true,
 		SiteVerificationMeta::class   => true,
+		BatchProductHelper::class     => true,
+		ProductRepository::class      => true,
+		MetaBoxInterface::class       => true,
+		MetaBoxInitializer::class     => true,
+		ViewFactory::class            => true,
 		DebugLogger::class            => true,
 		MerchantAccountState::class   => true,
+		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
+		ProductStatistics::class      => true,
+		TransientsInterface::class    => true,
 	];
 
 	/**
@@ -104,6 +126,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share our interfaces, possibly with concrete objects.
 		$this->share_concrete( AssetsHandlerInterface::class, AssetsHandler::class );
+		$this->share_concrete( TransientsInterface::class, Transients::class );
 		$this->share_concrete(
 			TracksInterface::class,
 			$this->share_with_tags( Tracks::class, TracksProxy::class )
@@ -124,11 +147,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 
 		// Share our regular service classes.
-		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class );
+		$this->conditionally_share_with_tags( Admin::class, AssetsHandlerInterface::class, PHPViewFactory::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
+		$this->conditionally_share_with_tags( EditFreeCampaign::class );
 		$this->conditionally_share_with_tags( Programs::class );
 		$this->conditionally_share_with_tags( Products::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
@@ -140,18 +164,24 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
+		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 
 		// Inbox Notes
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
-		$this->share( ProductMetaHandler::class );
-		$this->share( MerchantAccountState::class );
+		$this->share_with_tags( AdsAccountState::class );
+		$this->share_with_tags( MerchantAccountState::class );
+		$this->share_with_tags( ProductStatistics::class );
+		$this->share_with_tags( ProductMetaHandler::class );
+		$this->share_with_tags( ProductRepository::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
-		$this->share(
+		$this->share_with_tags( BatchProductHelper::class, ProductMetaHandler::class, ProductHelper::class );
+		$this->share_with_tags(
 			ProductSyncer::class,
 			GoogleProductService::class,
-			ProductMetaHandler::class,
+			BatchProductHelper::class,
 			ProductHelper::class,
 			ValidatorInterface::class
 		);
@@ -160,6 +190,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			->inflector( TracksAwareInterface::class )
 			->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
+
+		// Share admin meta boxes
+		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class );
+		$this->conditionally_share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class );
+
+		$this->share_with_tags( PHPViewFactory::class );
 
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
@@ -173,26 +209,5 @@ class CoreServiceProvider extends AbstractServiceProvider {
 				return new DBInstaller( ...$arguments );
 			}
 		);
-	}
-
-	/**
-	 * Maybe share a class and add interfaces as tags.
-	 *
-	 * This will also check any classes that implement the Conditional interface and only add them if
-	 * they are needed.
-	 *
-	 * @param string $class        The class name to add.
-	 * @param mixed  ...$arguments Constructor arguments for the class.
-	 */
-	protected function conditionally_share_with_tags( string $class, ...$arguments ) {
-		$implements = class_implements( $class );
-		if ( array_key_exists( Conditional::class, $implements ) ) {
-			/** @var Conditional $class */
-			if ( ! $class::is_needed() ) {
-				return;
-			}
-		}
-
-		$this->share_with_tags( $class, ...$arguments );
 	}
 }

@@ -54,19 +54,18 @@ const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
 	);
 };
 
-const marketingMenu = document.querySelector(
-	'#toplevel_page_woocommerce-marketing'
-);
-const dashboardMenu = marketingMenu.querySelector(
-	"a[href='admin.php?page=wc-admin&path=/google/dashboard']"
-).parentElement;
-
 const TabNav = ( props ) => {
 	const { initialName } = props;
 	const activeClass = 'is-active';
 
 	useEffect( () => {
 		// Highlight the wp-admin dashboard menu
+		const marketingMenu = document.querySelector(
+			'#toplevel_page_woocommerce-marketing'
+		);
+		const dashboardMenu = marketingMenu.querySelector(
+			"a[href='admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard']"
+		).parentElement;
 		marketingMenu.classList.add( 'current', 'wp-has-current-submenu' );
 		dashboardMenu.classList.add( 'current' );
 	} );

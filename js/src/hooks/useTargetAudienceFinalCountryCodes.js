@@ -6,7 +6,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '../data';
+import { STORE_KEY } from '.~/data';
 
 /**
  * Gets the final country codes from the Target Audience page.
@@ -15,8 +15,10 @@ import { STORE_KEY } from '../data';
  *
  * `loading` is true when both `getTargetAudience` and `getCountries` are still resolving.
  *
- * `data` is an array of all supported country codes when users selected `all` in target audience page;
- * else, an array of selected country codes in target audience page.
+ * `data` is:
+ * - `undefined` when loading is in progress;
+ * - an array of all supported country codes when users chose `all` in target audience page;
+ * - an array of selected country codes when users chose `selected` in target audience page.
  */
 const useTargetAudienceFinalCountryCodes = () => {
 	return useSelect( ( select ) => {
@@ -38,7 +40,7 @@ const useTargetAudienceFinalCountryCodes = () => {
 
 		return {
 			loading,
-			data: ! loading && data,
+			data,
 		};
 	} );
 };

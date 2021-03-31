@@ -74,7 +74,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_meta_key_prefix(): string {
-		return '_wc_gla';
+		return "_wc_{$this->get_slug()}";
 	}
 
 	/**
@@ -124,5 +124,14 @@ trait PluginHelper {
 	 */
 	protected function get_documentation_url(): string {
 		return 'https://docs.woocommerce.com/document/google-listings-and-ads/';
+	}
+
+	/**
+	 * Check whether debugging mode is enabled.
+	 *
+	 * @return bool Whether debugging mode is enabled.
+	 */
+	protected function is_debug_mode(): bool {
+		return defined( 'WP_DEBUG' ) && WP_DEBUG;
 	}
 }

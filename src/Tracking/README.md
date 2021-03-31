@@ -29,6 +29,11 @@ All event names are prefixed by `wcadmin_gla_`.
   * `id`: (faq identifier)
   * `href`
 
+* `get_started_notice_link_click` - Clicking on a text link within the notice on the Get Started page
+  * `link_id`: link identifier
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
+
 * `table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
   * `column`: name of the column
@@ -54,6 +59,33 @@ All event names are prefixed by `wcadmin_gla_`.
 * `setup_mc` - Setup Merchant Center
   * `target`: button ID
   * `trigger`: action (e.g. `click`)
+
+* `modal_open` - A modal is opend
+  * `context`: indicate which modal is opened
+
+* `modal_closed` - A modal is closed
+  * `context`: indicate which modal is closed
+  * `action`: indicate the modal is closed by what action (e.g. `confirm`|`dismiss` | `create-another-campaign`)
+    * `confirm` is used when the confirm button on the modal is clicked
+    * `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
+    * `create-another-campaign` is used when the button "Create another campaign" is clicked
+
+* `modal_content_link_click` - Clicking on a text link within the modal content
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
+
+* `google_ads_account_link_click` - Clicking on a Google Ads account text link.
+  * `context`: indicate which page / module the link is in
+  * `link_id`: a unique ID for the link within the page / module
+
+* `dashboard_link_clicked` - Clicking on a link within the dashboard page
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
+
+* `gla_free_campaign_edited` - Saving changes to the free campaign.
+
+* `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
+  * `context`: indicate which page the link is in.
 
 <!-- -- >
 ## Developer Info

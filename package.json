@@ -9,8 +9,12 @@
 		"url": "git@github.com:woocommerce/google-listings-and-ads.git"
 	},
 	"scripts": {
-		"build": "NODE_ENV=production wp-scripts build",
+		"prebuild": "rm -rf vendor",
+		"build": "composer install --no-dev && NODE_ENV=production wp-scripts build",
+		"postbuild": "npm run archive",
 		"dev": "NODE_ENV=development wp-scripts build",
+		"archive": "composer archive --file=$npm_package_name --format=zip",
+		"postarchive": "rm -rf $npm_package_name && unzip $npm_package_name.zip -d $npm_package_name && rm $npm_package_name.zip && zip -r $npm_package_name.zip $npm_package_name && rm -rf $npm_package_name",
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"format:js": "wp-scripts format-js",
@@ -42,6 +46,7 @@
 	},
 	"dependencies": {
 		"@woocommerce/components": "^5.1.2",
+		"@woocommerce/currency": "^3.0.0",
 		"@woocommerce/data": "^1.1.1",
 		"@woocommerce/date": "^2.1.0",
 		"@woocommerce/navigation": "^5.2.0",

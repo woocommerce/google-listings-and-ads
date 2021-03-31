@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\CastableValueInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ValueInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,11 +22,16 @@ final class Options implements OptionsInterface, Service {
 	use PluginHelper;
 
 	private const VALID_OPTIONS = [
+		self::ADS_ACCOUNT_STATE      => true,
+		self::ADS_BILLING_URL        => true,
 		self::ADS_ID                 => true,
+		self::ADS_CONVERSION_ACTION  => true,
+		self::ADS_SETUP_COMPLETED_AT => true,
 		self::DB_VERSION             => true,
 		self::FILE_VERSION           => true,
 		self::INSTALL_TIMESTAMP      => true,
 		self::MC_SETUP_COMPLETED_AT  => true,
+		self::MC_SETUP_SAVED_STEP    => true,
 		self::MERCHANT_ACCOUNT_STATE => true,
 		self::MERCHANT_CENTER        => true,
 		self::MERCHANT_ID            => true,
@@ -167,7 +173,7 @@ final class Options implements OptionsInterface, Service {
 	 * @return mixed
 	 */
 	protected function raw_value( $value ) {
-		return is_object( $value ) && method_exists( $value, 'get' ) ? $value->get() : $value;
+		return $value instanceof ValueInterface ? $value->get() : $value;
 	}
 
 	/**

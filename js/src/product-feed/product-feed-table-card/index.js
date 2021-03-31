@@ -9,8 +9,8 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import EditProductLink from '../../components/edit-product-link';
-import AppTableCard from '../../components/app-table-card';
+import EditProductLink from '.~/components/edit-product-link';
+import AppTableCard from '.~/components/app-table-card';
 
 /**
  * All programs table, with compare feature.

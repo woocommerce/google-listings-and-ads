@@ -5,12 +5,18 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -18,15 +24,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
-use Google\Ads\GoogleAds\Lib\OAuth2TokenBuilder;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClient;
-use Google\Ads\GoogleAds\Lib\V6\GoogleAdsClientBuilder;
 use Google\Client;
 use Google_Service_ShoppingContent;
+use Google_Service_SiteVerification;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\HandlerStack;
 use Jetpack_Options;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -55,11 +60,15 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Proxy::class                          => true,
 		Merchant::class                       => true,
 		Ads::class                            => true,
+		AdsCampaign::class                    => true,
+		AdsCampaignBudget::class              => true,
+		AdsGroup::class                       => true,
+		AdsConversionAction::class            => true,
 		'connect_server_root'                 => true,
-		'connect_server_auth_header'          => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
 		SiteVerification::class               => true,
+		Settings::class                       => true,
 	];
 
 	/**
@@ -73,25 +82,27 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_guzzle();
 		$this->register_ads_client();
 		$this->register_google_classes();
-		$this->add( Proxy::class, $this->getLeagueContainer() );
-		$this->add( Connection::class, $this->getLeagueContainer() );
+		$this->add( Proxy::class, ContainerInterface::class );
+		$this->add( Connection::class, ContainerInterface::class );
+		$this->add( Settings::class, ContainerInterface::class );
 
-		$this->add(
-			Ads::class,
-			$this->getLeagueContainer(),
-			$this->get_ads_id()
+		$ads_id = $this->get_ads_id();
+		$this->share( Ads::class, GoogleAdsClient::class, $ads_id );
+		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class, $ads_id );
+		$this->share( AdsConversionAction::class, GoogleAdsClient::class, $ads_id );
+		$this->share( AdsGroup::class, GoogleAdsClient::class, $ads_id );
+		$this->share(
+			AdsCampaign::class,
+			GoogleAdsClient::class,
+			AdsCampaignBudget::class,
+			AdsGroup::class,
+			$ads_id
 		);
 
-		$this->add(
+		$this->share(
 			Merchant::class,
-			$this->getLeagueContainer(),
-			$this->get_merchant_id()
-		);
-
-		$this->add(
-			GoogleProductService::class,
 			Google_Service_ShoppingContent::class,
-			Merchant::class
+			$this->get_merchant_id()
 		);
 
 		$this->add(
@@ -99,12 +110,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->getLeagueContainer()
 		);
 
-		try {
-			$auth_header = [ 'Authorization' => $this->generate_auth_header() ];
-		} catch ( WPError $error ) {
-			$auth_header = [];
-		}
-		$this->getLeagueContainer()->add( 'connect_server_auth_header', $auth_header );
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
 	}
 
@@ -114,14 +119,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function register_guzzle() {
 		$callback = function() {
 			$handler_stack = HandlerStack::create();
-			$handler_stack->remove( 'http_errors' );
+			$handler_stack->push( $this->add_auth_header() );
 
-			try {
-				$auth_header = $this->generate_auth_header();
-				$handler_stack->push( $this->add_header( 'Authorization', $auth_header ) );
-			} catch ( WPError $error ) {
-				do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in register_guzzle()' );
-				throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
+			// Override endpoint URL if we are using http locally.
+			if ( 0 === strpos( $this->get_connect_server_url_root()->getValue(), 'http://' ) ) {
+				$handler_stack->push( $this->override_http_url() );
 			}
 
 			return new GuzzleClient( [ 'handler' => $handler_stack ] );
@@ -136,23 +138,13 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function register_ads_client() {
 		$callback = function() {
-			// Using placeholder values, as the middleware server handles the authentication tokens.
-			$oauth = ( new OAuth2TokenBuilder() )
-				->withClientId( 'clientid' )
-				->withClientSecret( 'clientsecret' )
-				->withRefreshToken( 'refreshtoken' )
-				->build();
-
-			// The developer token will be handled by the middleware server.
-			return ( new GoogleAdsClientBuilder() )
-				->withDeveloperToken( 'developertoken' )
-				->withOAuth2Credential( $oauth )
-				->withEndpoint( $this->get_connect_server_endpoint() )
-				->withTransport( 'rest' )
-				->build();
+			return new GoogleAdsClient( $this->get_connect_server_endpoint() );
 		};
 
-		$this->share_concrete( GoogleAdsClient::class, new Definition( GoogleAdsClient::class, $callback ) );
+		$this->share_concrete(
+			GoogleAdsClient::class,
+			new Definition( GoogleAdsClient::class, $callback )
+		)->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
 	}
 
 	/**
@@ -166,23 +158,43 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google-mc' )
 		);
 		$this->add(
-			\Google_Service_SiteVerification::class,
+			Google_Service_SiteVerification::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google-sv' )
 		);
+		$this->share(
+			GoogleProductService::class,
+			Google_Service_ShoppingContent::class,
+			Merchant::class
+		);
+	}
+
+
+	/**
+	 * @return callable
+	 */
+	protected function add_auth_header(): callable {
+		return function( callable $handler ) {
+			return function( RequestInterface $request, array $options ) use ( $handler ) {
+				try {
+					$request = $request->withHeader( 'Authorization', $this->generate_auth_header() );
+				} catch ( WPError $error ) {
+					do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in add_auth_header()' );
+					throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
+				}
+
+				return $handler( $request, $options );
+			};
+		};
 	}
 
 	/**
-	 * @param string $header
-	 * @param string $value
-	 *
 	 * @return callable
 	 */
-	protected function add_header( string $header, string $value ): callable {
-		return function( callable $handler ) use ( $header, $value ) {
-			return function( RequestInterface $request, array $options ) use ( $handler, $header, $value ) {
-				$request = $request->withHeader( $header, $value );
-
+	protected function override_http_url(): callable {
+		return function( callable $handler ) {
+			return function( RequestInterface $request, array $options ) use ( $handler ) {
+				$request = $request->withUri( $request->getUri()->withScheme( 'http' ) );
 				return $handler( $request, $options );
 			};
 		};
@@ -198,7 +210,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function generate_auth_header(): string {
 		/** @var Manager $manager */
 		$manager = $this->getLeagueContainer()->get( Manager::class );
-		$token   = $manager->get_access_token( false, false, false );
+		$token   = $manager->get_tokens()->get_access_token( false, false, false );
 		$this->check_for_wp_error( $token );
 
 		[ $key, $secret ] = explode( '.', $token->secret );
@@ -237,9 +249,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return RawArgument
 	 */
 	protected function get_connect_server_url_root( string $path = '' ): RawArgument {
-		$url = defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' )
-			? WOOCOMMERCE_CONNECT_SERVER_URL
-			: 'https://api.woocommerce.com/';
+		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
+			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'https://api.woocommerce.com/' );
+		}
+		$url = WOOCOMMERCE_CONNECT_SERVER_URL;
 		$url = rtrim( $url, '/' );
 
 		$path = '/' . trim( $path, '/' );
@@ -266,8 +279,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function get_ads_id(): PositiveInteger {
 		/** @var Options $options */
 		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
-		$default = $_GET['customer_id'] ?? 12345; // phpcs:ignore WordPress.Security
-		$ads_id  = intval( $options->get( Options::ADS_ID, $default ) );
+
+		// TODO: Remove overriding with default once ConnectionTest is removed.
+		$default = intval( $_GET['customer_id'] ?? 0 ); // phpcs:ignore WordPress.Security
+		$ads_id  = $default ?: $options->get( OptionsInterface::ADS_ID );
 
 		return new PositiveInteger( $ads_id );
 	}
@@ -279,9 +294,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function get_merchant_id(): PositiveInteger {
 		/** @var Options $options */
-		$options     = $this->getLeagueContainer()->get( OptionsInterface::class );
-		$default     = $_GET['merchant_id'] ?? 0; // phpcs:ignore WordPress.Security
-		$merchant_id = intval( $options->get( Options::MERCHANT_ID, $default ) );
+		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
+
+		// TODO: Remove overriding with default once ConnectionTest is removed.
+		$default     = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
+		$merchant_id = $default ?: $options->get( OptionsInterface::MERCHANT_ID );
 
 		return new PositiveInteger( $merchant_id );
 	}

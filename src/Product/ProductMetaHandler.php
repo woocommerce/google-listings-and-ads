@@ -3,11 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use BadMethodCallException;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,10 +20,16 @@ defined( 'ABSPATH' ) || exit;
  *
  * @method update_synced_at( int $product_id, $value )
  * @method delete_synced_at( int $product_id )
- * @method get_synced_at( int $product_id )
+ * @method get_synced_at( int $product_id ): int
  * @method update_google_ids( int $product_id, array $value )
  * @method delete_google_ids( int $product_id )
  * @method get_google_ids( int $product_id ): array
+ * @method update_visibility( int $product_id, $value )
+ * @method delete_visibility( int $product_id )
+ * @method get_visibility( int $product_id ): string
+ * @method update_errors( int $product_id, array $value )
+ * @method delete_errors( int $product_id )
+ * @method get_errors( int $product_id ): array
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -29,10 +37,21 @@ class ProductMetaHandler implements Service, Registerable {
 
 	public const KEY_SYNCED_AT  = 'synced_at';
 	public const KEY_GOOGLE_IDS = 'google_ids';
+	public const KEY_VISIBILITY = 'visibility';
+	public const KEY_ERRORS     = 'errors';
 
 	public const VALID_KEYS = [
 		self::KEY_SYNCED_AT,
 		self::KEY_GOOGLE_IDS,
+		self::KEY_VISIBILITY,
+		self::KEY_ERRORS,
+	];
+
+	protected const TYPES = [
+		self::KEY_SYNCED_AT  => 'int',
+		self::KEY_GOOGLE_IDS => 'array',
+		self::KEY_VISIBILITY => 'string',
+		self::KEY_ERRORS     => 'array',
 	];
 
 	/**
@@ -77,6 +96,15 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	public function update( int $product_id, string $key, $value ) {
 		self::validate_meta_key( $key );
+		self::validate_product_id( $product_id );
+
+		if ( isset( self::TYPES[ $key ] ) ) {
+			if ( in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
+				$value = wc_bool_to_string( $value );
+			} else {
+				settype( $value, self::TYPES[ $key ] );
+			}
+		}
 
 		update_post_meta( $product_id, $this->prefix_meta_key( $key ), $value );
 	}
@@ -89,6 +117,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	public function delete( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
+		self::validate_product_id( $product_id );
 
 		delete_post_meta( $product_id, $this->prefix_meta_key( $key ) );
 	}
@@ -103,8 +132,15 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	public function get( int $product_id, string $key ) {
 		self::validate_meta_key( $key );
+		self::validate_product_id( $product_id );
 
-		return get_post_meta( $product_id, $this->prefix_meta_key( $key ), true );
+		$value = get_post_meta( $product_id, $this->prefix_meta_key( $key ), true );
+
+		if ( isset( self::TYPES[ $key ] ) && in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
+			$value = wc_string_to_bool( $value );
+		}
+
+		return $value;
 	}
 
 	/**
@@ -119,10 +155,28 @@ class ProductMetaHandler implements Service, Registerable {
 	}
 
 	/**
+	 * @param int $product_id
+	 *
+	 * @throws InvalidArgument If the provided wc_product_id is not a valid WooCommerce product ID.
+	 */
+	protected static function validate_product_id( int $product_id ) {
+		if ( ! wc_get_product( $product_id ) instanceof WC_Product ) {
+			throw new InvalidArgument( 'Invalid WooCommerce product ID provided.' );
+		}
+	}
+
+	/**
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', [ $this, 'handle_query_vars' ], 10, 2 );
+		add_filter(
+			'woocommerce_product_data_store_cpt_get_products_query',
+			function ( array $query, array $query_vars ) {
+				return $this->handle_query_vars( $query, $query_vars );
+			},
+			10,
+			2
+		);
 	}
 
 	/**
@@ -135,16 +189,56 @@ class ProductMetaHandler implements Service, Registerable {
 	 *
 	 * @return array modified $query
 	 */
-	public function handle_query_vars( array $query, array $query_vars ): array {
-		$prefixed_meta_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
-		$valid_keys         = array_intersect( $prefixed_meta_keys, array_flip( $query_vars ) );
-		foreach ( $valid_keys as $key ) {
-			$query['meta_query'][] = [
-				'key'   => $key,
-				'value' => $query_vars[ $key ],
-			];
+	protected function handle_query_vars( array $query, array $query_vars ): array {
+		if ( ! empty( $query_vars['meta_query'] ) ) {
+			$meta_query = $this->sanitize_meta_query( $query_vars['meta_query'] );
+			if ( ! empty( $meta_query ) ) {
+				$query['meta_query'] = array_merge( $query['meta_query'], $meta_query );
+			}
 		}
 
 		return $query;
+	}
+
+	/**
+	 * Ensure the 'meta_query' argument passed to self::handle_query_vars is well-formed.
+	 *
+	 * @param array $queries Array of meta query clauses.
+	 *
+	 * @return array Sanitized array of meta query clauses.
+	 */
+	protected function sanitize_meta_query( array $queries ): array {
+		$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
+		$clean_queries       = [];
+
+		if ( ! is_array( $queries ) ) {
+			return $clean_queries;
+		}
+
+		foreach ( $queries as $key => $meta_query ) {
+			if ( 'relation' !== $key && ! is_array( $meta_query ) ) {
+				continue;
+			}
+
+			if ( 'relation' === $key && is_string( $meta_query ) ) {
+				$clean_queries[ $key ] = $meta_query;
+
+				// First-order clause.
+			} elseif ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) {
+				if ( in_array( $meta_query['key'], $prefixed_valid_keys, true ) ) {
+					$clean_queries[ $key ] = $meta_query;
+				}
+
+				// Otherwise, it's a nested meta_query, so we recurse.
+			} else {
+				$cleaned_query = $this->sanitize_meta_query( $meta_query );
+
+				if ( ! empty( $cleaned_query ) ) {
+					$clean_queries[ $key ] = $cleaned_query;
+				}
+			}
+		}
+
+		return $clean_queries;
 	}
 }

@@ -150,12 +150,17 @@ class GoogleProductService implements Service {
 	protected function custom_batch( array $products, string $method ): BatchProductResponse {
 		$merchant_id     = $this->merchant->get_id();
 		$request_entries = [];
+
+		// An array of WooCommerce product IDs mapped to each batch ID. Used to parse Google's batch response.
+		$batch_id_product_map = [];
+
+		$batch_id = 0;
 		foreach ( $products as $product_entry ) {
 			$this->validate_batch_method_product( $method, $product_entry->get_product() );
 
 			$request_entry = new GoogleBatchRequestEntry(
 				[
-					'batchId'    => $product_entry->get_wc_product_id(),
+					'batchId'    => $batch_id,
 					'merchantId' => $merchant_id,
 					'method'     => $method,
 				]
@@ -164,19 +169,24 @@ class GoogleProductService implements Service {
 			$product_key                   = self::METHOD_INSERT === $method ? 'product' : 'product_id';
 			$request_entry[ $product_key ] = $product_entry->get_product();
 			$request_entries[]             = $request_entry;
+
+			$batch_id_product_map[ $batch_id ] = $product_entry->get_wc_product_id();
+
+			$batch_id++;
 		}
 
 		$responses = $this->shopping_service->products->custombatch( new GoogleBatchRequest( [ 'entries' => $request_entries ] ) );
 
-		return $this->parse_batch_responses( $responses );
+		return $this->parse_batch_responses( $responses, $batch_id_product_map );
 	}
 
 	/**
 	 * @param GoogleBatchResponse $responses
+	 * @param int[]               $batch_id_product_map An array of WooCommerce product IDs mapped to each batch ID. Used to parse Google's batch response.
 	 *
 	 * @return BatchProductResponse
 	 */
-	protected function parse_batch_responses( GoogleBatchResponse $responses ): BatchProductResponse {
+	protected function parse_batch_responses( GoogleBatchResponse $responses, array $batch_id_product_map ): BatchProductResponse {
 		$result_products = [];
 		$errors          = [];
 
@@ -185,8 +195,8 @@ class GoogleProductService implements Service {
 		 */
 		foreach ( $responses as $response ) {
 			// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			// WooCommerce product ID is provided and returned as batchId
-			$wc_product_id = $response->batchId;
+			// WooCommerce product ID is mapped to batchId when sending the request
+			$wc_product_id = $batch_id_product_map[ $response->batchId ];
 
 			if ( empty( $response->getErrors() ) ) {
 				$result_products[] = new BatchProductEntry( $wc_product_id, $response->getProduct() );

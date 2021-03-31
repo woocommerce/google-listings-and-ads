@@ -13,18 +13,27 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
-import StepContentFooter from '../components/step-content-footer';
-import SupportedCountrySelect from './supported-country-select';
-import VerticalGapLayout from '../setup-free-listings/components/vertical-gap-layout';
+import StepContentFooter from '.~/components/stepper/step-content-footer';
+import SupportedCountrySelect from '.~/components/supported-country-select';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
-import './index.scss';
+import useAutoClearShippingEffect from './useAutoClearShippingEffect';
+import '.~/components/free-listings/choose-audience/index.scss';
 
+/**
+ * Form to choose audience.
+ * Auto-saves.
+ *
+ * @see .~/components/free-listings/choose-audience/form-content
+ * @param {Object} props
+ */
 const FormContent = ( props ) => {
 	const { formProps } = props;
 	const { values, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
 
 	useAutoSaveTargetAudienceEffect( values );
+	useAutoClearShippingEffect( values.location, values.countries );
 
 	return (
 		<>

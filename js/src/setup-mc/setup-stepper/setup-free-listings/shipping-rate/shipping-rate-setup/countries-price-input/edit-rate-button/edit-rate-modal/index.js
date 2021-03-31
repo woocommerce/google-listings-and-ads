@@ -4,26 +4,20 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import { STORE_KEY } from '../../../../../../../../data';
-import AppModal from '../../../../../../../../components/app-modal';
-import AppInputControl from '../../../../../../../../components/app-input-control';
-import VerticalGapLayout from '../../../../../components/vertical-gap-layout';
-import AudienceCountrySelect from '../../../../../components/audience-country-select';
+import { useAppDispatch } from '.~/data';
+import AppModal from '.~/components/app-modal';
+import AppInputControl from '.~/components/app-input-control';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import AudienceCountrySelect from '.~/components/audience-country-select';
 import './index.scss';
 
 const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
-
-	const {
-		addShippingRate,
-		updateShippingRate,
-		deleteShippingRate,
-	} = useDispatch( STORE_KEY );
+	const { upsertShippingRate, deleteShippingRate } = useAppDispatch();
 
 	const handleDeleteClick = () => {
 		rate.countries.forEach( ( el ) => {
@@ -41,25 +35,15 @@ const EditRateModal = ( props ) => {
 		return errors;
 	};
 
-	// TODO: might need to rework this when backend API changes are done.
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, price } = values;
 
-		const originalCountrySet = new Set( rate.countries );
 		countryCodes.forEach( ( el ) => {
-			if ( ! originalCountrySet.has( el ) ) {
-				addShippingRate( {
-					countryCode: el,
-					currency,
-					rate: price,
-				} );
-			} else {
-				updateShippingRate( {
-					countryCode: el,
-					currency,
-					rate: price,
-				} );
-			}
+			upsertShippingRate( {
+				countryCode: el,
+				currency,
+				rate: price,
+			} );
 		} );
 
 		const valuesCountrySet = new Set( values.countryCodes );

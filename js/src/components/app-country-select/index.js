@@ -1,15 +1,13 @@
 /**
  * External dependencies
  */
-import { SelectControl } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
-import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
+import SelectControl from '.~/wcdl/select-control';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
-import './index.scss';
 
 /**
  * Returns a SelectControl component with list of countries.
@@ -33,13 +31,7 @@ import './index.scss';
  * @param {Object} props React props.
  */
 const AppCountrySelect = ( props ) => {
-	const {
-		options = [],
-		value = [],
-		className = '',
-		onChange = () => {},
-		...rest
-	} = props;
+	const { options = [], value = [], onChange = () => {}, ...rest } = props;
 	const keyNameMap = useCountryKeyNameMap();
 	const labelledOptions = options.map( ( option ) => {
 		return {
@@ -59,7 +51,6 @@ const AppCountrySelect = ( props ) => {
 
 	return (
 		<SelectControl
-			className={ classnames( 'app-country-select', className ) }
 			isSearchable
 			inlineTags
 			options={ labelledOptions }

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -18,7 +19,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 *
 	 * @var string
 	 */
-	private $registration_hook = 'woocommerce_loaded';
+	private const SERVICE_REGISTRATION_HOOK = 'plugins_loaded';
 
 	/**
 	 * @var ContainerInterface
@@ -80,7 +81,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 */
 	public function register(): void {
 		add_action(
-			$this->registration_hook,
+			self::SERVICE_REGISTRATION_HOOK,
 			function() {
 				$this->register_services();
 			},
@@ -91,6 +92,11 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			'init',
 			function() {
 				$this->container->get( AssetsHandlerInterface::class )->register();
+
+				// register the job initializer only if it is available. see JobInitializer::is_needed.
+				if ( $this->container->has( JobInitializer::class ) ) {
+					$this->container->get( JobInitializer::class )->register();
+				}
 			}
 		);
 	}

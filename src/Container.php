@@ -8,9 +8,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\CoreServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\DBServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\JobServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ProxyServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\RESTServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ThirdPartyServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container as LeagueContainer;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -45,6 +47,7 @@ final class Container implements ContainerInterface {
 		RESTServiceProvider::class,
 		ThirdPartyServiceProvider::class,
 		GoogleServiceProvider::class,
+		JobServiceProvider::class,
 		DBServiceProvider::class,
 	];
 
@@ -63,6 +66,8 @@ final class Container implements ContainerInterface {
 	public function __construct( ?LeagueContainer $container = null ) {
 		$this->container = $container ?? new LeagueContainer();
 		$this->container->share( ContainerInterface::class, $this );
+		$this->container->inflector( ContainerAwareInterface::class )
+			->invokeMethod( 'set_container', [ ContainerInterface::class ] );
 
 		foreach ( $this->service_providers as $service_provider_class ) {
 			$this->container->addServiceProvider( $service_provider_class );
