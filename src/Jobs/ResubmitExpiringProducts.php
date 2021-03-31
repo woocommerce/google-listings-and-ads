@@ -63,9 +63,9 @@ class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implement
 	/**
 	 * Get the name of an action hook to attach the job's start method to.
 	 *
-	 * @return string
+	 * @return StartHook
 	 */
-	public function get_start_hook(): string {
-		return "{$this->get_hook_base_name()}start";
+	public function get_start_hook(): StartHook {
+		return new StartHook( "{$this->get_hook_base_name()}start" );
 	}
 }

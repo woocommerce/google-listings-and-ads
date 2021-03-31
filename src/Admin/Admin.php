@@ -4,19 +4,17 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\AdsTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
@@ -26,12 +24,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Pages
  */
-class Admin implements Service, Registerable, Conditional, OptionsAwareInterface, ContainerAwareInterface {
+class Admin implements Service, Registerable, Conditional {
 
 	use AdminConditional;
 	use AssetsAwareness;
-	use AdsTrait;
-	use MerchantCenterTrait;
 	use PluginHelper;
 
 	/**
@@ -40,14 +36,28 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 	protected $view_factory;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
+	 * @var AdsService
+	 */
+	protected $ads;
+
+	/**
 	 * Admin constructor.
 	 *
 	 * @param AssetsHandlerInterface $assets_handler
 	 * @param ViewFactory            $view_factory
+	 * @param MerchantCenterService  $merchant_center
+	 * @param AdsService             $ads
 	 */
-	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory ) {
-		$this->assets_handler = $assets_handler;
-		$this->view_factory   = $view_factory;
+	public function __construct( AssetsHandlerInterface $assets_handler, ViewFactory $view_factory, MerchantCenterService $merchant_center, AdsService $ads ) {
+		$this->assets_handler  = $assets_handler;
+		$this->view_factory    = $view_factory;
+		$this->merchant_center = $merchant_center;
+		$this->ads             = $ads;
 	}
 
 	/**
@@ -90,10 +100,10 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		) )->add_inline_script(
 			'glaData',
 			[
-				'mcSetupComplete'     => $this->setup_complete(),
-				'mcSupportedCountry'  => $this->is_country_supported(),
-				'mcSupportedLanguage' => $this->is_language_supported(),
-				'adsSetupComplete'    => $this->is_ads_setup_complete(),
+				'mcSetupComplete'     => $this->merchant_center->is_setup_complete(),
+				'mcSupportedCountry'  => $this->merchant_center->is_country_supported(),
+				'mcSupportedLanguage' => $this->merchant_center->is_language_supported(),
+				'adsSetupComplete'    => $this->ads->is_setup_complete(),
 			]
 		);
 
@@ -115,7 +125,7 @@ class Admin implements Service, Registerable, Conditional, OptionsAwareInterface
 		$plugin_links = [];
 
 		// Display settings url if setup is complete otherwise link to get started page
-		if ( $this->setup_complete() ) {
+		if ( $this->merchant_center->is_setup_complete() ) {
 			$plugin_links[] = sprintf(
 				'<a href="%1$s">%2$s</a>',
 				esc_attr( $this->get_settings_url() ),

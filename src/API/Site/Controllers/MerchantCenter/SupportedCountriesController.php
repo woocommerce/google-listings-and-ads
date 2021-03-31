@@ -74,7 +74,7 @@ class SupportedCountriesController extends BaseController {
 	 */
 	protected function get_supported_countries(): array {
 		$all_countries = $this->wc->get_countries();
-		$mc_countries  = $this->get_mc_supported_countries();
+		$mc_countries  = $this->get_mc_supported_countries_currencies();
 
 		$supported = [];
 		foreach ( $mc_countries as $country => $currency ) {

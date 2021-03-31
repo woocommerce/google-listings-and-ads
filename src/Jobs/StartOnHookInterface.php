@@ -15,10 +15,10 @@ defined( 'ABSPATH' ) || exit;
 interface StartOnHookInterface extends ActionSchedulerJobInterface {
 
 	/**
-	 * Get the name of an action hook to attach the job's start method to.
+	 * Get an action hook to attach the job's start method to.
 	 *
-	 * @return string
+	 * @return StartHook
 	 */
-	public function get_start_hook(): string;
+	public function get_start_hook(): StartHook;
 
 }

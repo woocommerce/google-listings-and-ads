@@ -5,24 +5,24 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 
 /**
  * Class GetStarted
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
-class GetStarted implements Service, Registerable, OptionsAwareInterface {
+class GetStarted implements Service, Registerable, MerchantCenterAwareInterface {
 
 	use MenuFixesTrait;
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 
 	/**
 	 * Register a service.
 	 */
 	public function register(): void {
-		if ( $this->setup_complete() ) {
+		if ( $this->merchant_center->is_setup_complete() ) {
 			return;
 		}
 

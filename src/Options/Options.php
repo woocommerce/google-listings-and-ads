@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidOption;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\CastableValueInterface;
@@ -84,7 +85,12 @@ final class Options implements OptionsInterface, Service {
 		$this->validate_option_key( $name );
 		$value                  = $this->maybe_convert_value( $name, $value );
 		$this->options[ $name ] = $value;
-		return add_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
+
+		$result = add_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
+
+		do_action( "gla_options_updated_{$name}", $value );
+
+		return $result;
 	}
 
 	/**
@@ -99,7 +105,12 @@ final class Options implements OptionsInterface, Service {
 		$this->validate_option_key( $name );
 		$value                  = $this->maybe_convert_value( $name, $value );
 		$this->options[ $name ] = $value;
-		return update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
+
+		$result = update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
+
+		do_action( "gla_options_updated_{$name}", $value );
+
+		return $result;
 	}
 
 	/**
@@ -113,7 +124,11 @@ final class Options implements OptionsInterface, Service {
 		$this->validate_option_key( $name );
 		unset( $this->options[ $name ] );
 
-		return delete_option( $this->prefix_name( $name ) );
+		$result = delete_option( $this->prefix_name( $name ) );
+
+		do_action( "gla_options_deleted_{$name}" );
+
+		return $result;
 	}
 
 	/**

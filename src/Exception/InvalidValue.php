@@ -37,6 +37,17 @@ class InvalidValue extends LogicException implements GoogleListingsAndAdsExcepti
 	}
 
 	/**
+	 * Create a new instance of the exception when a value is not a string.
+	 *
+	 * @param string $key The name of the value.
+	 *
+	 * @return static
+	 */
+	public static function not_integer( string $key ): InvalidValue {
+		return new static( sprintf( 'The value of %s must be of type integer.', $key ) );
+	}
+
+	/**
 	 * Create a new instance of the exception when a value is not an instance of a given class.
 	 *
 	 * @param string $class_name The name of the class that the value must be an instance of.
