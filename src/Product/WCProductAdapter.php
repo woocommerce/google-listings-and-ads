@@ -105,7 +105,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_general_attributes() {
+	protected function map_wc_general_attributes(): WCProductAdapter {
 		$this->setTitle( $this->wc_product->get_title() );
 		$this->setDescription( $this->get_wc_product_description() );
 		$this->setLink( $this->wc_product->get_permalink() );
@@ -166,7 +166,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_product_image( string $image_size ) {
+	protected function map_wc_product_image( string $image_size ): WCProductAdapter {
 		$image_id          = $this->wc_product->get_image_id();
 		$gallery_image_ids = $this->wc_product->get_gallery_image_ids();
 
@@ -208,7 +208,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_availability() {
+	protected function map_wc_availability(): WCProductAdapter {
 		// todo: include 'preorder' status (maybe a new field for products / or using an extension?)
 		$availability = $this->wc_product->is_in_stock() ? self::AVAILABILITY_IN_STOCK : self::AVAILABILITY_OUT_OF_STOCK;
 		$this->setAvailability( $availability );
@@ -240,7 +240,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_shipping_dimensions( $unit = 'cm' ) {
+	protected function map_wc_shipping_dimensions( $unit = 'cm' ): WCProductAdapter {
 		$length = $this->wc_product->get_length();
 		$width  = $this->wc_product->get_width();
 		$height = $this->wc_product->get_height();
@@ -290,7 +290,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_shipping_weight( $unit = 'g' ) {
+	protected function map_wc_shipping_weight( $unit = 'g' ): WCProductAdapter {
 		// Use g if the unit isn't supported.
 		if ( ! in_array( $unit, [ 'g', 'lbs', 'oz' ], true ) ) {
 			$unit = 'g';
@@ -323,7 +323,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_prices() {
+	protected function map_wc_prices(): WCProductAdapter {
 		$this->map_tax_excluded();
 		$this->map_wc_product_price( $this->wc_product );
 
@@ -340,7 +340,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function maybe_map_wc_children_prices() {
+	protected function maybe_map_wc_children_prices(): WCProductAdapter {
 		if ( ! $this->wc_product->has_child() ) {
 			return $this;
 		}
@@ -395,7 +395,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_product_price( WC_Product $product ) {
+	protected function map_wc_product_price( WC_Product $product ): WCProductAdapter {
 		// set regular price
 		$regular_price = $product->get_regular_price();
 		if ( '' !== $regular_price ) {
@@ -425,7 +425,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_product_sale_price( WC_Product $product ) {
+	protected function map_wc_product_sale_price( WC_Product $product ): WCProductAdapter {
 		// Grab the sale price of the base product. Some plugins (Dynamic
 		// pricing as an example) filter the active price, but not the sale
 		// price. If the active price < the regular price treat it as a sale
