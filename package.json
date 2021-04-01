@@ -36,6 +36,7 @@
 	},
 	"devDependencies": {
 		"@testing-library/react": "^11.1.0",
+		"@testing-library/react-hooks": "^5.1.1",
 		"@woocommerce/eslint-plugin": "^1.0.0-beta.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
 		"@wordpress/e2e-test-utils": "^4.15.0",
