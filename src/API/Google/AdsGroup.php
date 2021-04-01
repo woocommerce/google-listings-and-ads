@@ -4,7 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\V6\Common\ListingGroupInfo;
 use Google\Ads\GoogleAds\V6\Common\ShoppingSmartAdInfo;
 use Google\Ads\GoogleAds\V6\Enums\AdGroupAdStatusEnum\AdGroupAdStatus;
@@ -31,9 +32,9 @@ use Google\ApiCore\ApiException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsGroup {
+class AdsGroup implements OptionsAwareInterface {
 
-	use AdsIdTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -46,11 +47,9 @@ class AdsGroup {
 	 * AdsGroup constructor.
 	 *
 	 * @param GoogleAdsClient $client
-	 * @param PositiveInteger $id
 	 */
-	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
+	public function __construct( GoogleAdsClient $client ) {
 		$this->client = $client;
-		$this->id     = $id;
 	}
 
 	/**
@@ -108,7 +107,7 @@ class AdsGroup {
 	 */
 	protected function mutate_ad_group( AdGroupOperation $operation ): MutateAdGroupResult {
 		$response = $this->client->getAdGroupServiceClient()->mutateAdGroups(
-			$this->get_id(),
+			$this->options->get_ads_id(),
 			[ $operation ]
 		);
 
@@ -146,7 +145,7 @@ class AdsGroup {
 	 */
 	protected function mutate_ad_group_ad( AdGroupAdOperation $operation ): MutateAdGroupAdResult {
 		$response = $this->client->getAdGroupAdServiceClient()->mutateAdGroupAds(
-			$this->get_id(),
+			$this->options->get_ads_id(),
 			[ $operation ]
 		);
 
@@ -184,7 +183,7 @@ class AdsGroup {
 	 */
 	protected function mutate_shopping_listing_group( AdGroupCriterionOperation $operation ): MutateAdGroupCriterionResult {
 		$response = $this->client->getAdGroupCriterionServiceClient()->mutateAdGroupCriteria(
-			$this->get_id(),
+			$this->options->get_ads_id(),
 			[ $operation ]
 		);
 

@@ -86,24 +86,18 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Connection::class, ContainerInterface::class );
 		$this->add( Settings::class, ContainerInterface::class );
 
-		$ads_id = $this->get_ads_id();
-		$this->share( Ads::class, GoogleAdsClient::class, $ads_id );
-		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class, $ads_id );
-		$this->share( AdsConversionAction::class, GoogleAdsClient::class, $ads_id );
-		$this->share( AdsGroup::class, GoogleAdsClient::class, $ads_id );
+		$this->share( Ads::class, GoogleAdsClient::class );
+		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class );
+		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
+		$this->share( AdsGroup::class, GoogleAdsClient::class );
 		$this->share(
 			AdsCampaign::class,
 			GoogleAdsClient::class,
 			AdsCampaignBudget::class,
-			AdsGroup::class,
-			$ads_id
+			AdsGroup::class
 		);
 
-		$this->share(
-			Merchant::class,
-			Google_Service_ShoppingContent::class,
-			$this->get_merchant_id()
-		);
+		$this->share( Merchant::class, Google_Service_ShoppingContent::class );
 
 		$this->add(
 			SiteVerification::class,
@@ -269,22 +263,6 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google-ads' )->getValue() );
 		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
 		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
-	}
-
-	/**
-	 * Get the ads ID to use for requests.
-	 *
-	 * @return PositiveInteger
-	 */
-	protected function get_ads_id(): PositiveInteger {
-		/** @var Options $options */
-		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
-
-		// TODO: Remove overriding with default once ConnectionTest is removed.
-		$default = intval( $_GET['customer_id'] ?? 0 ); // phpcs:ignore WordPress.Security
-		$ads_id  = $default ?: $options->get( OptionsInterface::ADS_ID );
-
-		return new PositiveInteger( $ads_id );
 	}
 
 	/**

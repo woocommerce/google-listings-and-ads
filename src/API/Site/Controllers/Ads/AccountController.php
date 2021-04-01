@@ -314,7 +314,7 @@ class AccountController extends BaseOptionsController {
 						break;
 
 					case 'conversion_action':
-						$this->create_conversion_action( $account );
+						$this->create_conversion_action();
 						break;
 
 					default:
@@ -345,17 +345,17 @@ class AccountController extends BaseOptionsController {
 	private function link_merchant_account() {
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
-		if ( ! $merchant->get_id() ) {
+		if ( ! $this->options->get_merchant_id() ) {
 			throw new Exception( 'A Merchant Center account must be connected' );
 		}
 
-		if ( ! $this->ads->get_id() ) {
+		if ( ! $this->options->get_ads_id() ) {
 			throw new Exception( 'An Ads account must be connected' );
 		}
 
 		// Create link for Merchant and accept it in Ads.
-		$merchant->link_ads_id( $this->ads->get_id() );
-		$this->ads->accept_merchant_link( $merchant->get_id() );
+		$merchant->link_ads_id( $this->options->get_ads_id() );
+		$this->ads->accept_merchant_link( $this->options->get_merchant_id() );
 	}
 
 	/**
@@ -389,12 +389,9 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * Create the generic GLA conversion action and store the details as an option.
 	 *
-	 * @param array $account Account details.
-	 *
 	 * @throws Exception If the conversion action can't be created.
 	 */
-	private function create_conversion_action( array $account ): void {
-		$this->ads_conversion_action->set_id( $account['id'] );
+	private function create_conversion_action(): void {
 		$conversion_action = $this->ads_conversion_action->create_conversion_action();
 		$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, $conversion_action );
 	}
