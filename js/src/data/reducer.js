@@ -29,6 +29,18 @@ const DEFAULT_STATE = {
 	},
 };
 
+const getNextStateForShipping = ( state ) => {
+	return {
+		...state,
+		mc: {
+			...state.mc,
+			shipping: {
+				...state.mc.shipping,
+			},
+		},
+	};
+};
+
 const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
 		case TYPES.RECEIVE_SHIPPING_RATES: {
@@ -63,6 +75,39 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
+		case TYPES.UPSERT_SHIPPING_RATES: {
+			const nextState = getNextStateForShipping( state );
+			const { countryCodes, currency, rate } = action.shippingRate;
+			const rates = [ ...state.mc.shipping.rates ];
+
+			countryCodes.forEach( ( countryCode ) => {
+				const shippingRate = { countryCode, currency, rate };
+				const idx = rates.findIndex(
+					( el ) => el.countryCode === countryCode
+				);
+
+				if ( idx >= 0 ) {
+					rates[ idx ] = shippingRate;
+				} else {
+					rates.push( shippingRate );
+				}
+			} );
+
+			nextState.mc.shipping.rates = rates;
+			return nextState;
+		}
+
+		case TYPES.DELETE_SHIPPING_RATES: {
+			const nextState = getNextStateForShipping( state );
+			const countryCodeSet = new Set( action.countryCodes );
+			const rates = state.mc.shipping.rates.filter(
+				( el ) => ! countryCodeSet.has( el.countryCode )
+			);
+
+			nextState.mc.shipping.rates = rates;
+			return nextState;
+		}
+
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
 			const { shippingTimes } = action;
 			const newState = cloneDeep( state );
@@ -93,6 +138,39 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				( el ) => el.countryCode !== countryCode
 			);
 			return newState;
+		}
+
+		case TYPES.UPSERT_SHIPPING_TIMES: {
+			const nextState = getNextStateForShipping( state );
+			const { countryCodes, time } = action.shippingTime;
+			const times = [ ...state.mc.shipping.times ];
+
+			countryCodes.forEach( ( countryCode ) => {
+				const shippingTime = { countryCode, time };
+				const idx = times.findIndex(
+					( el ) => el.countryCode === countryCode
+				);
+
+				if ( idx >= 0 ) {
+					times[ idx ] = shippingTime;
+				} else {
+					times.push( shippingTime );
+				}
+			} );
+
+			nextState.mc.shipping.times = times;
+			return nextState;
+		}
+
+		case TYPES.DELETE_SHIPPING_TIMES: {
+			const nextState = getNextStateForShipping( state );
+			const countryCodeSet = new Set( action.countryCodes );
+			const times = state.mc.shipping.times.filter(
+				( el ) => ! countryCodeSet.has( el.countryCode )
+			);
+
+			nextState.mc.shipping.times = times;
+			return nextState;
 		}
 
 		case TYPES.RECEIVE_SETTINGS:

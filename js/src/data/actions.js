@@ -99,6 +99,60 @@ export function* deleteShippingRate( countryCode ) {
 	}
 }
 
+export function* upsertShippingRates( shippingRate ) {
+	const { countryCodes, currency, rate } = shippingRate;
+
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+			method: 'POST',
+			data: {
+				country_codes: countryCodes,
+				currency,
+				rate,
+			},
+		} );
+
+		return {
+			type: TYPES.UPSERT_SHIPPING_RATES,
+			shippingRate,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to add / update shipping rates.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* deleteShippingRates( countryCodes ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+			method: 'DELETE',
+			data: {
+				country_codes: countryCodes,
+			},
+		} );
+
+		return {
+			type: TYPES.DELETE_SHIPPING_RATES,
+			countryCodes,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to delete shipping rates.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* fetchShippingTimes() {
 	try {
 		const response = yield apiFetch( {
@@ -171,6 +225,59 @@ export function* deleteShippingTime( countryCode ) {
 			error,
 			__(
 				'There was an error trying to delete shipping time.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* upsertShippingTimes( shippingTime ) {
+	const { countryCodes, time } = shippingTime;
+
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
+			method: 'POST',
+			data: {
+				country_codes: countryCodes,
+				time,
+			},
+		} );
+
+		return {
+			type: TYPES.UPSERT_SHIPPING_TIMES,
+			shippingTime,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to add / update shipping times.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* deleteShippingTimes( countryCodes ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
+			method: 'DELETE',
+			data: {
+				country_codes: countryCodes,
+			},
+		} );
+
+		return {
+			type: TYPES.DELETE_SHIPPING_TIMES,
+			countryCodes,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to delete shipping times.',
 				'google-listings-and-ads'
 			)
 		);
