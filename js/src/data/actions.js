@@ -326,6 +326,50 @@ export function* fetchGoogleAdsAccount() {
 	}
 }
 
+export function* disconnectGoogleAdsAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/connection`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to disconnect your Google Ads account. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
+export function* disconnectAllAccounts() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/connections`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_ALL,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to disconnect all your accounts. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
 export function* fetchGoogleAdsAccountBillingStatus() {
 	try {
 		const response = yield apiFetch( {
