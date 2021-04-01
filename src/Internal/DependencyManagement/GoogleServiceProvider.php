@@ -20,9 +20,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
@@ -268,21 +265,5 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google-ads' )->getValue() );
 		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
 		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
-	}
-
-	/**
-	 * Get the merchant ID to use for requests.
-	 *
-	 * @return PositiveInteger
-	 */
-	protected function get_merchant_id(): PositiveInteger {
-		/** @var Options $options */
-		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
-
-		// TODO: Remove overriding with default once ConnectionTest is removed.
-		$default     = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
-		$merchant_id = $default ?: $options->get( OptionsInterface::MERCHANT_ID );
-
-		return new PositiveInteger( $merchant_id );
 	}
 }
