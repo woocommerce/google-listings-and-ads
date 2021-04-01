@@ -6,8 +6,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import toAccountText from '.~/utils/toAccountText';
 import AppSpinner from '.~/components/app-spinner';
-import AccountId from '.~/components/account-id';
 import TitleButtonLayout from '.~/components/title-button-layout';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
@@ -34,7 +34,7 @@ const SetupCard = ( props ) => {
 				<Section.Card.Body>
 					<div className="gla-google-ads-billing-setup-card__account-number">
 						<TitleButtonLayout
-							title={ <AccountId id={ googleAdsAccount.id } /> }
+							title={ toAccountText( googleAdsAccount.id ) }
 						/>
 					</div>
 					<div className="gla-google-ads-billing-setup-card__description">

@@ -19,17 +19,17 @@ class BatchProductRequestEntry {
 	protected $wc_product_id;
 
 	/**
-	 * @var WCProductAdapter|string The Google product object or its REST ID.
+	 * @var WCProductAdapter The Google product object
 	 */
 	protected $product;
 
 	/**
 	 * BatchProductRequestEntry constructor.
 	 *
-	 * @param int                     $wc_product_id
-	 * @param WCProductAdapter|string $product
+	 * @param int              $wc_product_id
+	 * @param WCProductAdapter $product
 	 */
-	public function __construct( int $wc_product_id, $product ) {
+	public function __construct( int $wc_product_id, WCProductAdapter $product ) {
 		$this->wc_product_id = $wc_product_id;
 		$this->product       = $product;
 	}
@@ -42,31 +42,9 @@ class BatchProductRequestEntry {
 	}
 
 	/**
-	 * @param int $wc_product_id
-	 *
-	 * @return BatchProductRequestEntry
+	 * @return WCProductAdapter
 	 */
-	public function set_wc_product_id( int $wc_product_id ): BatchProductRequestEntry {
-		$this->wc_product_id = $wc_product_id;
-
-		return $this;
-	}
-
-	/**
-	 * @return WCProductAdapter|string
-	 */
-	public function get_product() {
+	public function get_product(): WCProductAdapter {
 		return $this->product;
-	}
-
-	/**
-	 * @param WCProductAdapter|string $product
-	 *
-	 * @return BatchProductRequestEntry
-	 */
-	public function set_product( $product ): BatchProductRequestEntry {
-		$this->product = $product;
-
-		return $this;
 	}
 }

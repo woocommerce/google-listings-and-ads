@@ -30,28 +30,31 @@ defined( 'ABSPATH' ) || exit;
  * @method update_errors( int $product_id, array $value )
  * @method delete_errors( int $product_id )
  * @method get_errors( int $product_id ): array
+ * @method update_failed_sync_attempts( int $product_id, int $value )
+ * @method delete_failed_sync_attempts( int $product_id )
+ * @method get_failed_sync_attempts( int $product_id ): int
+ * @method update_sync_failed_at( int $product_id, int $value )
+ * @method delete_sync_failed_at( int $product_id )
+ * @method get_sync_failed_at( int $product_id ): int
  */
 class ProductMetaHandler implements Service, Registerable {
 
 	use PluginHelper;
 
-	public const KEY_SYNCED_AT  = 'synced_at';
-	public const KEY_GOOGLE_IDS = 'google_ids';
-	public const KEY_VISIBILITY = 'visibility';
-	public const KEY_ERRORS     = 'errors';
-
-	public const VALID_KEYS = [
-		self::KEY_SYNCED_AT,
-		self::KEY_GOOGLE_IDS,
-		self::KEY_VISIBILITY,
-		self::KEY_ERRORS,
-	];
+	public const KEY_SYNCED_AT            = 'synced_at';
+	public const KEY_GOOGLE_IDS           = 'google_ids';
+	public const KEY_VISIBILITY           = 'visibility';
+	public const KEY_ERRORS               = 'errors';
+	public const KEY_FAILED_SYNC_ATTEMPTS = 'failed_sync_attempts';
+	public const KEY_SYNC_FAILED_AT       = 'sync_failed_at';
 
 	protected const TYPES = [
-		self::KEY_SYNCED_AT  => 'int',
-		self::KEY_GOOGLE_IDS => 'array',
-		self::KEY_VISIBILITY => 'string',
-		self::KEY_ERRORS     => 'array',
+		self::KEY_SYNCED_AT            => 'int',
+		self::KEY_GOOGLE_IDS           => 'array',
+		self::KEY_VISIBILITY           => 'string',
+		self::KEY_ERRORS               => 'array',
+		self::KEY_FAILED_SYNC_ATTEMPTS => 'int',
+		self::KEY_SYNC_FAILED_AT       => 'int',
 	];
 
 	/**
@@ -149,9 +152,18 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
 	protected static function validate_meta_key( string $key ) {
-		if ( ! in_array( $key, self::VALID_KEYS, true ) ) {
+		if ( ! self::is_meta_key_valid( $key ) ) {
 			throw InvalidMeta::invalid_key( $key );
 		}
+	}
+
+	/**
+	 * @param string $key
+	 *
+	 * @return bool Whether the meta key is valid.
+	 */
+	public static function is_meta_key_valid( string $key ): bool {
+		return isset( self::TYPES[ $key ] );
 	}
 
 	/**
@@ -208,7 +220,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @return array Sanitized array of meta query clauses.
 	 */
 	protected function sanitize_meta_query( array $queries ): array {
-		$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], self::VALID_KEYS );
+		$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], array_keys( self::TYPES ) );
 		$clean_queries       = [];
 
 		if ( ! is_array( $queries ) ) {
@@ -241,4 +253,35 @@ class ProductMetaHandler implements Service, Registerable {
 
 		return $clean_queries;
 	}
+
+	/**
+	 * @param array $meta_queries
+	 *
+	 * @return array
+	 */
+	public function prefix_meta_query_keys( array $meta_queries ): array {
+		$updated_queries = [];
+		if ( ! is_array( $meta_queries ) ) {
+			return $updated_queries;
+		}
+
+		foreach ( $meta_queries as $key => $meta_query ) {
+			// First-order clause.
+			if ( 'relation' === $key && is_string( $meta_query ) ) {
+				$updated_queries[ $key ] = $meta_query;
+
+				// First-order clause.
+			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && self::is_meta_key_valid( $meta_query['key'] ) ) {
+				$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
+			} else {
+				// Otherwise, it's a nested meta_query, so we recurse.
+				$meta_query = $this->prefix_meta_query_keys( $meta_query );
+			}
+
+			$updated_queries[ $key ] = $meta_query;
+		}
+
+		return $updated_queries;
+	}
+
 }

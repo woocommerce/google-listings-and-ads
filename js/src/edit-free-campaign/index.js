@@ -6,6 +6,7 @@ import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 import { recordEvent } from '@woocommerce/tracks';
+import isEqual from 'lodash/isEqual';
 
 /**
  * Internal dependencies
@@ -18,6 +19,24 @@ import useTargetAudience from '.~/hooks/useTargetAudience';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
+import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
+
+/**
+ * Function use to allow the user to navigate between form steps without the prompt.
+ *
+ * @param {Object} location Location object given by the `getHistory().block` callback argument.
+ * @return {boolean} `true` if given location is not another step of our form.
+ */
+function isNotOurStep( location ) {
+	const allowList = new Set( [
+		'/' + getNewPath( { pageStep: undefined } ),
+		'/' + getNewPath( { pageStep: 1 } ),
+		'/' + getNewPath( { pageStep: 2 } ),
+	] );
+	// TODO: Explore if we can make thich check cleaner given `history`'s API.
+	const destination = location.pathname + location.search;
+	return ! allowList.has( destination );
+}
 
 /**
  * Page Component to edit free campaigns.
@@ -50,6 +69,21 @@ export default function EditFreeCampaign() {
 		path: `/wc/gla/mc/settings/sync`,
 		method: 'POST',
 	} );
+
+	// Check what've changed to show prompt, and send requests only to save changed things.
+	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
+	const didSettingsChanged = ! isEqual( settings, savedSettings );
+	const didAnythingChanged = didAudienceChanged || didSettingsChanged;
+
+	// Confirm leaving the page, if there are any changes and the user is navigating away from our stepper.
+	useNavigateAwayPromptEffect(
+		__(
+			'You have unsaved campaign data. Are you sure you want to leave?',
+			'google-listings-and-ads'
+		),
+		didAnythingChanged,
+		isNotOurStep
+	);
 
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(

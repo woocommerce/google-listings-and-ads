@@ -8,10 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Google_Service_ShoppingContent_Account as MC_Account;
@@ -50,6 +49,11 @@ class AccountController extends BaseOptionsController {
 	protected $account_state;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * @var bool Whether to perform website claim with overwrite.
 	 */
 	protected $overwrite_claim = false;
@@ -67,10 +71,11 @@ class AccountController extends BaseOptionsController {
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->middleware    = $container->get( Middleware::class );
-		$this->merchant      = $container->get( Merchant::class );
-		$this->account_state = $container->get( MerchantAccountState::class );
-		$this->container     = $container;
+		$this->middleware      = $container->get( Middleware::class );
+		$this->merchant        = $container->get( Merchant::class );
+		$this->account_state   = $container->get( MerchantAccountState::class );
+		$this->merchant_center = $container->get( MerchantCenterService::class );
+		$this->container       = $container;
 	}
 
 	/**
@@ -228,16 +233,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function disconnect_merchant_callback(): callable {
 		return function() {
-			$this->middleware->disconnect_merchant();
-
-			$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
-			$this->options->delete( OptionsInterface::MC_SETUP_SAVED_STEP );
-			$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
-			$this->options->delete( OptionsInterface::MERCHANT_CENTER );
-			$this->options->delete( OptionsInterface::SITE_VERIFICATION );
-			$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
-
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
+			$this->merchant_center->disconnect();
 
 			return [
 				'status'  => 'success',

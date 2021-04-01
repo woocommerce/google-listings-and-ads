@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
+import toAccountText from '.~/utils/toAccountText';
 import './index.scss';
 
 const AccountSelectControl = ( props ) => {
@@ -24,7 +25,7 @@ const AccountSelectControl = ( props ) => {
 		},
 		...accounts.map( ( acc ) => ( {
 			value: acc,
-			label: __( 'Account ', 'google-listings-and-ads' ) + acc,
+			label: toAccountText( acc ),
 		} ) ),
 	];
 

@@ -16,9 +16,21 @@ use WC_Product;
  */
 class ProductRepository implements Service {
 
-	public const INCLUDE_VARIATIONS_KEY = 'include_variations';
-
 	use PluginHelper;
+
+	/**
+	 * @var ProductMetaHandler
+	 */
+	protected $meta_handler;
+
+	/**
+	 * ProductRepository constructor.
+	 *
+	 * @param ProductMetaHandler $meta_handler
+	 */
+	public function __construct( ProductMetaHandler $meta_handler ) {
+		$this->meta_handler = $meta_handler;
+	}
 
 	/**
 	 * Find and return an array of WooCommerce product objects based on the provided arguments.
@@ -70,29 +82,7 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product objects based on the provided product IDs.
-	 *
-	 * Note: Including product variations.
-	 *
-	 * @param int[] $ids    Array of WooCommerce product IDs
-	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int   $offset Amount to offset product results.
-	 *
-	 * @return WC_Product[] Array of WooCommerce product objects
-	 */
-	public function find_by_ids_including_variations( array $ids, int $limit = -1, int $offset = 0 ): array {
-		$args['include'] = $ids;
-
-		// include product variations
-		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
-
-		return $this->find( $args, $limit, $offset );
-	}
-
-	/**
 	 * Find and return an array of WooCommerce product objects already submitted to Google Merchant Center.
-	 *
-	 * Note: Includes product variations.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
@@ -100,15 +90,7 @@ class ProductRepository implements Service {
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
 	public function find_synced_products( int $limit = -1, int $offset = 0 ): array {
-		$args['meta_query'] = [
-			[
-				'key'     => ProductMetaHandler::KEY_GOOGLE_IDS,
-				'compare' => 'EXISTS',
-			],
-		];
-
-		// include product variations
-		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
+		$args['meta_query'] = $this->get_synced_products_meta_query();
 
 		return $this->find( $args, $limit, $offset );
 	}
@@ -124,45 +106,80 @@ class ProductRepository implements Service {
 	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$args['meta_query'] = [
+		$args['meta_query'] = $this->get_synced_products_meta_query();
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_synced_products_meta_query(): array {
+		return [
 			[
 				'key'     => ProductMetaHandler::KEY_GOOGLE_IDS,
 				'compare' => 'EXISTS',
 			],
 		];
-
-		// include product variations
-		$args[ self::INCLUDE_VARIATIONS_KEY ] = true;
-
-		return $this->find_ids( $args, $limit, $offset );
 	}
 
 	/**
 	 * Find and return an array of WooCommerce product objects ready to be submitted to Google Merchant Center.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
-	public function find_sync_ready_products( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
+	public function find_sync_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->find( $args, $limit, $offset );
+		return $this->filter_without_recent_sync_failure( $results, false );
 	}
 
 	/**
 	 * Find and return an array of WooCommerce product IDs ready to be submitted to Google Merchant Center.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_sync_ready_product_ids( int $limit = - 1, int $offset = 0 ): array {
-		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
+	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->find_ids( $args, $limit, $offset );
+		return $this->filter_without_recent_sync_failure( $results, true );
+	}
+
+	/**
+	 * Filters and returns a list of products that have not failed to sync recently
+	 *
+	 * @param WC_Product[] $products
+	 * @param bool         $return_ids
+	 *
+	 * @return WC_Product[]
+	 */
+	protected function filter_without_recent_sync_failure( array $products, $return_ids = false ): array {
+		$results = [];
+		foreach ( $products as $product ) {
+			$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product->get_id() );
+			$failed_at       = $this->meta_handler->get_sync_failed_at( $product->get_id() );
+
+			// if it has failed less times than the specified threshold OR if syncing it hasn't failed within the specified window
+			if (
+				empty( $failed_attempts ) ||
+				empty( $failed_at ) ||
+				$failed_attempts <= ProductSyncer::FAILURE_THRESHOLD ||
+				$failed_at <= strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) )
+			) {
+
+				$results[] = $return_ids ? $product->get_id() : $product;
+			}
+		}
+
+		return $results;
 	}
 
 	/**
@@ -204,9 +221,27 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * @param array $args Array of WooCommerce args (except 'return'), and product metadata.
+	 *
 	 * @return array
 	 */
-	protected function get_invalid_products_meta_query(): array {
+	protected function get_sync_ready_products_query_args( array $args = [] ): array {
+		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
+
+		// don't include variable products in query
+		$args['type']        = $this->get_supported_product_types();
+		$variable_type_index = array_search( 'variable', $args['type'], true );
+		if ( false !== $variable_type_index ) {
+			unset( $args['type'][ $variable_type_index ] );
+		}
+
+		return $args;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_valid_products_meta_query(): array {
 		return [
 			'relation' => 'OR',
 			[
@@ -233,7 +268,7 @@ class ProductRepository implements Service {
 		$args['meta_query'] = [
 			'relation' => 'AND',
 			$this->get_sync_ready_products_meta_query(),
-			$this->get_invalid_products_meta_query(),
+			$this->get_valid_products_meta_query(),
 			[
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
@@ -254,7 +289,7 @@ class ProductRepository implements Service {
 	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @link https://github.com/woocommerce/woocommerce/wiki/wc_get_products-and-WC_Product_Query
-	 * @see ProductMetaHandler::VALID_KEYS For the list of meta data that can be used as query arguments.
+	 * @see ProductMetaHandler::TYPES For the list of meta data that can be used as query arguments.
 	 *
 	 * @return WC_Product[]|int[] Array of WooCommerce product objects or IDs, depending on the 'return' argument.
 	 */
@@ -278,48 +313,15 @@ class ProductRepository implements Service {
 		}
 
 		if ( ! empty( $args['meta_query'] ) ) {
-			$args['meta_query'] = $this->prefix_meta_query_keys( $args['meta_query'] );
+			$args['meta_query'] = $this->meta_handler->prefix_meta_query_keys( $args['meta_query'] );
 		}
 
 		// only include supported product types
-		$args['type'] = $this->get_supported_product_types();
-
-		// include product variations in the query
-		if ( isset( $args[ self::INCLUDE_VARIATIONS_KEY ] ) && true === $args[ self::INCLUDE_VARIATIONS_KEY ] ) {
-			$args['type'][] = 'variation';
+		if ( empty( $args['type'] ) ) {
+			$args['type'] = $this->get_supported_product_types();
 		}
 
 		return $args;
-	}
-
-	/**
-	 * @param array $meta_queries
-	 *
-	 * @return array
-	 */
-	protected function prefix_meta_query_keys( array $meta_queries ): array {
-		$updated_queries = [];
-		if ( ! is_array( $meta_queries ) ) {
-			return $updated_queries;
-		}
-
-		foreach ( $meta_queries as $key => $meta_query ) {
-			// First-order clause.
-			if ( 'relation' === $key && is_string( $meta_query ) ) {
-				$updated_queries[ $key ] = $meta_query;
-
-				// First-order clause.
-			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && in_array( $meta_query['key'], ProductMetaHandler::VALID_KEYS, true ) ) {
-				$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
-			} else {
-				// Otherwise, it's a nested meta_query, so we recurse.
-				$meta_query = $this->prefix_meta_query_keys( $meta_query );
-			}
-
-			$updated_queries[ $key ] = $meta_query;
-		}
-
-		return $updated_queries;
 	}
 
 	/**
@@ -328,7 +330,7 @@ class ProductRepository implements Service {
 	 * @return array
 	 */
 	protected function get_supported_product_types(): array {
-		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable' ] );
+		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable', 'variation' ] );
 	}
 
 }

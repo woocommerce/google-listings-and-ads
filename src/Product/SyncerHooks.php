@@ -3,15 +3,18 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
+use WC_Product_Variable;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,9 +25,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
+class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface {
 
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 
 	/**
 	 * Array of booleans mapped to product IDs indicating that they have been already
@@ -36,7 +39,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	protected $already_scheduled = [];
 
 	/**
-	 * @var BatchProductRequestEntry[][]
+	 * @var BatchProductIDRequestEntry[][]
 	 */
 	protected $delete_requests_map;
 
@@ -61,23 +64,27 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	protected $delete_products_job;
 
 	/**
+	 * @var RefreshSyncedProducts
+	 */
+	protected $refresh_products_job;
+
+	/**
 	 * SyncerHooks constructor.
 	 *
 	 * @param BatchProductHelper $batch_helper
 	 * @param ProductHelper      $product_helper
-	 * @param UpdateProducts     $update_products_job
-	 * @param DeleteProducts     $delete_products_job
+	 * @param JobRepository      $job_repository
 	 */
 	public function __construct(
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
-		UpdateProducts $update_products_job,
-		DeleteProducts $delete_products_job
+		JobRepository $job_repository
 	) {
-		$this->batch_helper        = $batch_helper;
-		$this->product_helper      = $product_helper;
-		$this->update_products_job = $update_products_job;
-		$this->delete_products_job = $delete_products_job;
+		$this->batch_helper         = $batch_helper;
+		$this->product_helper       = $product_helper;
+		$this->update_products_job  = $job_repository->get( UpdateProducts::class );
+		$this->delete_products_job  = $job_repository->get( DeleteProducts::class );
+		$this->refresh_products_job = $job_repository->get( RefreshSyncedProducts::class );
 	}
 
 	/**
@@ -85,7 +92,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	 */
 	public function register(): void {
 		// only register the hooks if Merchant Center is set up.
-		if ( ! $this->setup_complete() ) {
+		if ( ! $this->merchant_center->is_setup_complete() ) {
 			return;
 		}
 
@@ -116,6 +123,13 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 
 		// when a product is restored from the trash, schedule a update job.
 		add_action( 'untrashed_post', $update, 90 );
+
+		// re-sync all products once the target audience option changes
+		$refresh = function() {
+			$this->refresh_products_job->start();
+		};
+		add_action( 'gla_options_updated_target_audience', $refresh, 90 );
+		add_action( 'gla_options_deleted_target_audience', $refresh, 90 );
 	}
 
 	/**
@@ -132,14 +146,23 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 			return;
 		}
 
+		// schedule an update job if product sync is enabled.
 		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->product_helper->get_visibility( $product ) ) {
-			// schedule an update job if product sync is enabled.
-			$this->update_products_job->start( [ $product_id ] );
+			// queue the variations for update if it's a variable product.
+			$products = $product instanceof WC_Product_Variable ? $product->get_available_variations( 'objects' ) : [ $product ];
+
+			$product_ids = array_map(
+				function ( WC_Product $product ) {
+					return $product->get_id();
+				},
+				$products
+			);
+			$this->update_products_job->start( [ $product_ids ] );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
 			// delete the product from Google Merchant Center if it's already synced AND sync has been disabled.
 			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
-			$this->delete_products_job->start( $this->batch_helper->request_entries_to_id_map( $request_entries ) );
+			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 			$this->set_already_scheduled( $product_id );
 		}
 	}
@@ -151,7 +174,7 @@ class SyncerHooks implements Service, Registerable, OptionsAwareInterface {
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
-			$this->delete_products_job->start( $this->batch_helper->request_entries_to_id_map( $this->delete_requests_map[ $product_id ] ) );
+			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get() ] );
 			$this->set_already_scheduled( $product_id );
 		}
 	}

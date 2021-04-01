@@ -64,7 +64,7 @@ class ProductStatistics implements Service, ContainerAwareInterface {
 		$merchant = $this->container->get( Merchant::class );
 
 		// Save a request if no MC account connected.
-		if ( ! $merchant->get_id() ) {
+		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 

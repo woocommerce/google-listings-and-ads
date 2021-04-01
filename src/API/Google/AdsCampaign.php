@@ -7,8 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Common\MaximizeConversionValue;
@@ -32,7 +30,6 @@ use Exception;
 class AdsCampaign implements OptionsAwareInterface {
 
 	use AdsQueryTrait;
-	use AdsIdTrait;
 	use ApiExceptionTrait;
 	use OptionsAwareTrait;
 	use MicroTrait;
@@ -61,13 +58,11 @@ class AdsCampaign implements OptionsAwareInterface {
 	 * @param GoogleAdsClient   $client
 	 * @param AdsCampaignBudget $ads_campaign_budget
 	 * @param AdsGroup          $ads_group
-	 * @param PositiveInteger   $id
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $ads_campaign_budget, AdsGroup $ads_group, PositiveInteger $id ) {
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $ads_campaign_budget, AdsGroup $ads_group ) {
 		$this->client              = $client;
 		$this->ads_campaign_budget = $ads_campaign_budget;
 		$this->ads_group           = $ads_group;
-		$this->id                  = $id;
 	}
 
 	/**
@@ -77,7 +72,7 @@ class AdsCampaign implements OptionsAwareInterface {
 	public function get_campaigns(): array {
 		try {
 			$return   = [];
-			$response = $this->query( $this->client, $this->get_id(), $this->get_campaign_query() );
+			$response = $this->query( $this->get_campaign_query() );
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				$return[] = $this->convert_campaign( $row );
@@ -115,7 +110,7 @@ class AdsCampaign implements OptionsAwareInterface {
 					'maximize_conversion_value'    => new MaximizeConversionValue(),
 					'shopping_setting'             => new ShoppingSetting(
 						[
-							'merchant_id'   => $this->get_merchant_id(),
+							'merchant_id'   => $this->options->get_merchant_id(),
 							'sales_country' => $params['country'],
 						]
 					),
@@ -155,7 +150,7 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$response = $this->query( $this->client, $this->get_id(), $this->get_campaign_query( $id ) );
+			$response = $this->query( $this->get_campaign_query( $id ) );
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				return $this->convert_campaign( $row );
@@ -182,7 +177,7 @@ class AdsCampaign implements OptionsAwareInterface {
 	public function edit_campaign( int $campaign_id, array $params ): int {
 		try {
 			$campaign_fields = [
-				'resource_name' => ResourceNames::forCampaign( $this->get_id(), $campaign_id ),
+				'resource_name' => ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id ),
 			];
 			if ( ! empty( $params['name'] ) ) {
 				$campaign_fields['name'] = $params['name'];
@@ -222,7 +217,7 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function delete_campaign( int $campaign_id ): int {
 		try {
-			$resource_name = ResourceNames::forCampaign( $this->get_id(), $campaign_id );
+			$resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 			$operation     = new CampaignOperation();
 			$operation->setRemove( $resource_name );
 			$deleted_campaign = $this->mutate_campaign( $operation );
@@ -302,20 +297,11 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	protected function mutate_campaign( CampaignOperation $operation ): MutateCampaignResult {
 		$response = $this->client->getCampaignServiceClient()->mutateCampaigns(
-			$this->get_id(),
+			$this->options->get_ads_id(),
 			[ $operation ]
 		);
 
 		return $response->getResults()[0];
-	}
-
-	/**
-	 * Get the Merchant Center ID.
-	 *
-	 * @return int
-	 */
-	protected function get_merchant_id(): int {
-		return $this->options->get( OptionsInterface::MERCHANT_ID );
 	}
 
 	/**

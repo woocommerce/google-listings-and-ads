@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
 use Google_Service_ShoppingContent_Price;
 use Google_Service_ShoppingContent_Product;
+use Google_Service_ShoppingContent_ProductShipping;
 use Google_Service_ShoppingContent_ProductShippingDimension;
 use Google_Service_ShoppingContent_ProductShippingWeight;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -64,12 +65,12 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		}
 
 		$this->wc_product = $array['wc_product'];
-		$this->map_woocommerce_product();
-
 		// Google doesn't expect this field, so it's best to remove it
 		unset( $array['wc_product'] );
 
 		parent::mapTypes( $array );
+
+		$this->map_woocommerce_product();
 	}
 
 	/**
@@ -80,14 +81,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	protected function map_woocommerce_product() {
 		$dimension_unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
 		$weight_unit    = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
-
-		// set target country
-		$base_country = WC()->countries->get_base_country();
-		$this->setTargetCountry( $base_country );
-
-		// tax is excluded from price in US and CA
-		$this->tax_excluded = in_array( $base_country, [ 'US', 'CA' ], true );
-		$this->tax_excluded = apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded );
 
 		$this->setChannel( self::CHANNEL_ONLINE );
 
@@ -101,6 +94,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			 ->map_wc_general_attributes()
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
 			 ->map_wc_availability()
+			 ->map_wc_product_shipping()
 			 ->map_wc_shipping_dimensions( $dimension_unit )
 			 ->map_wc_shipping_weight( $weight_unit )
 			 ->map_wc_prices();
@@ -223,6 +217,23 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
+	 * Map the shipping information for WooCommerce product.
+	 *
+	 * @return $this
+	 */
+	protected function map_wc_product_shipping(): WCProductAdapter {
+		$this->setShipping(
+			new Google_Service_ShoppingContent_ProductShipping(
+				[
+					'country' => $this->getTargetCountry(),
+				]
+			)
+		);
+
+		return $this;
+	}
+
+	/**
 	 * Map the measurements for the WooCommerce product.
 	 *
 	 * @param string $unit
@@ -299,11 +310,21 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
+	 * Sets whether tax is excluded from product price.
+	 */
+	protected function map_tax_excluded() {
+		// tax is excluded from price in US and CA
+		$this->tax_excluded = in_array( $this->getTargetCountry(), [ 'US', 'CA' ], true );
+		$this->tax_excluded = boolval( apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded ) );
+	}
+
+	/**
 	 * Map the prices (base and sale price) for the product.
 	 *
 	 * @return $this
 	 */
 	protected function map_wc_prices() {
+		$this->map_tax_excluded();
 		$this->map_wc_product_price( $this->wc_product );
 
 		if ( $this->is_variable() ) {
@@ -535,5 +556,20 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 */
 	public function get_wc_product(): WC_Product {
 		return $this->wc_product;
+	}
+
+	/**
+	 * @param string $targetCountry
+	 *
+	 * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+	 */
+	public function setTargetCountry( $targetCountry ) {
+		parent::setTargetCountry( $targetCountry );
+
+		// we need to reset the prices because tax is based on the country
+		$this->map_wc_prices();
+
+		// product shipping information is also country based
+		$this->map_wc_product_shipping();
 	}
 }
