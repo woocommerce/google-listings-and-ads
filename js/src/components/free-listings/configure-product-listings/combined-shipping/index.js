@@ -12,6 +12,7 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import ShippingRateSetup from '../shipping-rate/shipping-rate-setup';
 import ShippingTimeSetup from '../shipping-time/shipping-time-setup';
 import './index.scss';
@@ -25,6 +26,7 @@ import './index.scss';
  */
 const CombinedShipping = ( { formProps } ) => {
 	const { getInputProps, values } = formProps;
+	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
 	// Note: since we only use `shipping_rate` to determine how to syncboth shipping rates and times,
 	//       so here also only apply `shipping_rate` to initial form data and sync its manipulation.
@@ -119,7 +121,12 @@ const CombinedShipping = ( { formProps } ) => {
 										'google-listings-and-ads'
 									) }
 								</h3>
-								<ShippingRateSetup formProps={ formProps } />
+								<ShippingRateSetup
+									selectedCountryCodes={
+										selectedCountryCodes
+									}
+									formProps={ formProps }
+								/>
 							</Section.Card.Body>
 						</Section.Card>
 
@@ -134,7 +141,12 @@ const CombinedShipping = ( { formProps } ) => {
 										'google-listings-and-ads'
 									) }
 								</h3>
-								<ShippingTimeSetup formProps={ formProps } />
+								<ShippingTimeSetup
+									selectedCountryCodes={
+										selectedCountryCodes
+									}
+									formProps={ formProps }
+								/>
 							</Section.Card.Body>
 						</Section.Card>
 					</>
