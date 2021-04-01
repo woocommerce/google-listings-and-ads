@@ -27,7 +27,7 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 	 */
 	public function register(): void {
 		add_action(
-			'gla_ads_settings_sync',
+			'gla_ads_setup_completed',
 			function() {
 				$this->set_completed_timestamp();
 			}
