@@ -19,7 +19,7 @@ const wait = 500;
 const useAutoClearShippingEffect = ( location, countries ) => {
 	const { data: shippingRates } = useShippingRates();
 	const { data: shippingTimes } = useShippingTimes();
-	const { deleteShippingRates, deleteShippingTime } = useAppDispatch();
+	const { deleteShippingRates, deleteShippingTimes } = useAppDispatch();
 
 	const debouncedDelete = useDebouncedCallback( async () => {
 		if ( shippingRates.length ) {
@@ -27,9 +27,10 @@ const useAutoClearShippingEffect = ( location, countries ) => {
 			deleteShippingRates( countryCodes );
 		}
 
-		shippingTimes.forEach( ( el ) => {
-			deleteShippingTime( el.countryCode );
-		} );
+		if ( shippingTimes.length ) {
+			const countryCodes = shippingTimes.map( ( el ) => el.countryCode );
+			deleteShippingTimes( countryCodes );
+		}
 	}, wait );
 
 	const locationRef = useRef( null );
