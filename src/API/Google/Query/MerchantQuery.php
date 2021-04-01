@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
+use Exception;
 use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_SearchRequest as SearchRequest;
 use Google_Service_ShoppingContent_SearchResponse as SearchResponse;
@@ -57,8 +58,13 @@ abstract class MerchantQuery extends Query {
 	 * Perform the query and save it to the results.
 	 *
 	 * @throws GoogleException If the search call fails.
+	 * @throws Exception If the client is not set.
 	 */
 	protected function query_results() {
+		if ( ! $this->client || ! $this->id ) {
+			throw new Exception( __( 'Client must be set to query results.', 'google-listings-and-ads' ) );
+		}
+
 		$request = new SearchRequest();
 		$request->setQuery( $this->build_query() );
 
