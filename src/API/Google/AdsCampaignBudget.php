@@ -11,9 +11,11 @@ use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V6\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\V6\Services\CampaignBudgetServiceClient;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignBudgetResult;
-use Exception;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\ValidationException;
+use Exception;
 
 /**
  * Class AdsCampaignBudget
@@ -106,7 +108,7 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 
 		foreach ( $response->iterateAllElements() as $row ) {
 			$campaign = $row->getCampaign();
-			return $this->parse_id( $campaign->getCampaignBudget(), 'campaignBudgets' );
+			return $this->parse_campaign_budget_id( $campaign->getCampaignBudget() );
 		}
 
 		/* translators: %d Campaign ID */
@@ -128,5 +130,22 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 		);
 
 		return $response->getResults()[0];
+	}
+
+	/**
+	 * Convert ID from a resource name to an int.
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_campaign_budget_id( string $name ): int {
+		try {
+			$parts = CampaignBudgetServiceClient::parseName( $name );
+			return absint( $parts['campaign_budget_id'] );
+		} catch ( ValidationException $e ) {
+			throw new Exception( __( 'Invalid campaign budget ID', 'google-listings-and-ads' ) );
+		}
 	}
 }

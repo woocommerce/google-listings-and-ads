@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Exception;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\PagedListResponse;
 
@@ -44,22 +43,5 @@ trait AdsQueryTrait {
 	 */
 	protected function query( string $query ): PagedListResponse {
 		return $this->client->getGoogleAdsServiceClient()->search( $this->options->get_ads_id(), $query );
-	}
-
-	/**
-	 * Convert ID from a resource name to an int.
-	 *
-	 * @param string $name     Resource name containing ID number.
-	 * @param string $resource Resource type.
-	 *
-	 * @return int
-	 * @throws Exception When unable to parse resource ID.
-	 */
-	protected function parse_id( string $name, string $resource ): int {
-		if ( ! preg_match( '#' . preg_quote( $resource, '#' ) . '/([0-9]+)#', $name, $matches ) || empty( $matches[1] ) ) {
-			throw new Exception( __( 'Invalid resource ID', 'google-listings-and-ads' ) );
-		}
-
-		return absint( $matches[1] );
 	}
 }
