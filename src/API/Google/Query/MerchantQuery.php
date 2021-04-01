@@ -7,8 +7,6 @@ use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_SearchRequest as SearchRequest;
 use Google_Service_ShoppingContent_SearchResponse as SearchResponse;
 use Google\Exception as GoogleException;
-use Google\ApiCore\PagedListResponse;
-
 
 defined( 'ABSPATH' ) || exit;
 
