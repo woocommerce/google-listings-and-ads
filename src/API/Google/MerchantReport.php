@@ -12,7 +12,6 @@ use Exception;
 use Google\Exception as GoogleException;
 use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_ReportRow as ReportRow;
-use Google_Service_ShoppingContent_SearchRequest as SearchRequest;
 use Google_Service_ShoppingContent_Segments as Segments;
 
 /**
@@ -52,18 +51,9 @@ class MerchantReport implements OptionsAwareInterface {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
-			$request = new SearchRequest();
-			$request->setQuery( ( new MerchantReportQuery( $type, $args ) )->get_query() );
-
-			$results = $this->service->reports->search( $this->options->get_merchant_id(), $request );
-
-			if ( ! empty( $args['per_page'] ) ) {
-				$request->setPageSize( $args['per_page'] );
-			}
-
-			if ( ! empty( $args['next_page'] ) ) {
-				$request->setPageToken( $args['next_page'] );
-			}
+			$results = ( new MerchantReportQuery( $type, $args ) )
+				->set_client( $this->service, $this->options->get_merchant_id() )
+				->get_results();
 
 			foreach ( $results->getResults() as $row ) {
 				$this->add_report_row( $type, $row, $args );
