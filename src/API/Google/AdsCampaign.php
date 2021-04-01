@@ -225,6 +225,8 @@ class AdsCampaign implements OptionsAwareInterface {
 			$operation->setRemove( $resource_name );
 			$deleted_campaign = $this->mutate_campaign( $operation );
 
+			$this->ads_campaign_budget->remove_campaign_budget( $campaign_id );
+
 			return $this->parse_campaign_id( $deleted_campaign->getResourceName() );
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
