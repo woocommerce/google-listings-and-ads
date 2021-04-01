@@ -219,13 +219,13 @@ class AdsCampaign implements OptionsAwareInterface {
 		try {
 			$resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 
-			$this->ads_group->remove_for_campaign( $resource_name );
+			$this->ads_group->delete_for_campaign( $resource_name );
 
 			$operation = new CampaignOperation();
 			$operation->setRemove( $resource_name );
 			$deleted_campaign = $this->mutate_campaign( $operation );
 
-			$this->ads_campaign_budget->remove_campaign_budget( $campaign_id );
+			$this->ads_campaign_budget->delete_campaign_budget( $campaign_id );
 
 			return $this->parse_campaign_id( $deleted_campaign->getResourceName() );
 		} catch ( ApiException $e ) {

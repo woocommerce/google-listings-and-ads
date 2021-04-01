@@ -98,10 +98,10 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 	 * @param int $campaign_id
 	 *
 	 * @return array resource names of deleted budgets.
-	 * @throws ApiException If the budget isn't removed.
+	 * @throws ApiException If the budget isn't deleted.
 	 * @throws Exception If no linked budget has been found.
 	 */
-	public function remove_campaign_budget( int $campaign_id ): array {
+	public function delete_campaign_budget( int $campaign_id ): array {
 		$budget_id            = $this->get_budget_from_campaign( $campaign_id );
 		$budget_resource_name = ResourceNames::forCampaignBudget( $this->options->get_ads_id(), $budget_id );
 

@@ -78,7 +78,7 @@ class AdsGroup implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Remove the additional objects for the specified campaign:
+	 * Delete the additional objects for the specified campaign:
 	 * Ad group
 	 * Ad group ad
 	 * Listing group
@@ -87,12 +87,12 @@ class AdsGroup implements OptionsAwareInterface {
 	 *
 	 * @param string $campaign_resource_name
 	 *
-	 * @throws ApiException|ValidationException If any object isn't removed.
+	 * @throws ApiException|ValidationException If any object isn't deleted.
 	 */
-	public function remove_for_campaign( string $campaign_resource_name ) {
-		$this->remove_shopping_listing_group( $campaign_resource_name );
-		$this->remove_ad_group_ad( $campaign_resource_name );
-		$this->remove_ad_group( $campaign_resource_name );
+	public function delete_for_campaign( string $campaign_resource_name ) {
+		$this->delete_shopping_listing_group( $campaign_resource_name );
+		$this->delete_ad_group_ad( $campaign_resource_name );
+		$this->delete_ad_group( $campaign_resource_name );
 	}
 
 	/**
@@ -124,10 +124,10 @@ class AdsGroup implements OptionsAwareInterface {
 	 * @param string $campaign_resource_name
 	 *
 	 * @return array resource names of deleted ad groups
-	 * @throws ApiException If the ad group isn't removed.
+	 * @throws ApiException If the ad group isn't deleted.
 	 * @throws ValidationException If the ad group query has no results.
 	 */
-	public function remove_ad_group( string $campaign_resource_name ): array {
+	public function delete_ad_group( string $campaign_resource_name ): array {
 		$return   = [];
 		$query    = $this->build_query(
 			[ 'ad_group.resource_name' ],
@@ -189,10 +189,10 @@ class AdsGroup implements OptionsAwareInterface {
 	 * @param string $campaign_resource_name
 	 *
 	 * @return array resource names of deleted ad group ads
-	 * @throws ApiException If the ad group ad isn't removed.
+	 * @throws ApiException If the ad group ad isn't deleted.
 	 * @throws ValidationException If the ad group ad query has no results.
 	 */
-	public function remove_ad_group_ad( string $campaign_resource_name ): array {
+	public function delete_ad_group_ad( string $campaign_resource_name ): array {
 		$return   = [];
 		$query    = $this->build_query(
 			[ 'ad_group_ad.resource_name' ],
@@ -254,10 +254,10 @@ class AdsGroup implements OptionsAwareInterface {
 	 * @param string $campaign_resource_name
 	 *
 	 * @return array resource names of deleted shopping list groups
-	 * @throws ApiException If the ad group criterion isn't removed.
+	 * @throws ApiException If the ad group criterion isn't deleted.
 	 * @throws ValidationException If the ad group criterion query has no results.
 	 */
-	protected function remove_shopping_listing_group( string $campaign_resource_name ): array {
+	protected function delete_shopping_listing_group( string $campaign_resource_name ): array {
 		$return   = [];
 		$query    = $this->build_query(
 			[ 'ad_group_criterion.resource_name' ],
