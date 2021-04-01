@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class UpdateProducts extends AbstractProductSyncerJob {
+class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInterface {
 
 	/**
 	 * Get the name of the job.
@@ -28,15 +28,6 @@ class UpdateProducts extends AbstractProductSyncerJob {
 	}
 
 	/**
-	 * Init the job.
-	 *
-	 * The job name is used to generate the schedule event name.
-	 */
-	public function init(): void {
-		add_action( $this->get_process_item_hook(), [ $this, 'process_items' ], 10, 1 );
-	}
-
-	/**
 	 * Process an item.
 	 *
 	 * @param int[] $product_ids An array of WooCommerce product ids.
@@ -45,7 +36,8 @@ class UpdateProducts extends AbstractProductSyncerJob {
 	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $product_ids ) {
-		$products = $this->product_repository->find_by_ids( $product_ids );
+		$args     = [ 'include' => $product_ids ];
+		$products = $this->product_repository->find_sync_ready_products( $args );
 
 		if ( empty( $products ) ) {
 			throw JobException::item_not_found();
@@ -57,17 +49,29 @@ class UpdateProducts extends AbstractProductSyncerJob {
 	/**
 	 * Start the job.
 	 *
-	 * @param int[] $args An array of WooCommerce product ids.
+	 * @param array[] $args
 	 *
 	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function start( array $args = [] ) {
-		if ( empty( $args ) ) {
+		$args = $args[0] ?? [];
+		$ids  = array_filter( $args, 'is_integer' );
+
+		if ( empty( $ids ) ) {
 			throw JobException::item_not_provided( 'Array of WooCommerce Product IDs' );
 		}
 
-		if ( $this->can_start( $args ) ) {
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $args ] );
+		if ( $this->can_start( [ $ids ] ) ) {
+			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $ids ] );
 		}
+	}
+
+	/**
+	 * Get an action hook to attach the job's start method to.
+	 *
+	 * @return StartHook
+	 */
+	public function get_start_hook(): StartHook {
+		return new StartHook( 'gla_batch_retry_update_products', 1 );
 	}
 }

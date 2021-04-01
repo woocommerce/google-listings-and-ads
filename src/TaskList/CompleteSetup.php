@@ -6,12 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
 use Psr\Container\ContainerInterface;
@@ -21,17 +20,12 @@ use Psr\Container\ContainerInterface;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\TaskList
  */
-class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwareInterface {
+class CompleteSetup implements Deactivateable, Service, Registerable, MerchantCenterAwareInterface {
 
 	use AssetsAwareness;
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 	use PluginHelper;
 	use TaskListTrait;
-
-	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
 
 	/**
 	 * CompleteSetup constructor.
@@ -40,7 +34,6 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 	 */
 	public function __construct( ContainerInterface $container ) {
 		$this->assets_handler = $container->get( AssetsHandlerInterface::class );
-		$this->options        = $container->get( OptionsInterface::class );
 	}
 
 	/**
@@ -81,7 +74,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		) )->add_localization(
 			'glaTaskData',
 			[
-				'isComplete' => $this->setup_complete(),
+				'isComplete' => $this->merchant_center->is_setup_complete(),
 			]
 		);
 	}

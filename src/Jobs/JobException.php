@@ -58,4 +58,21 @@ class JobException extends RuntimeException implements GoogleListingsAndAdsExcep
 		);
 	}
 
+	/**
+	 * Create a new exception instance for when a job is stopped due to a high failure rate.
+	 *
+	 * @param string $job_name
+	 *
+	 * @return static
+	 */
+	public static function job_does_not_exist( string $job_name ): JobException {
+		return new static(
+			sprintf(
+				/* translators: %s: the job name */
+				__( 'The job named "%s" does not exist.', 'google-listings-and-ads' ),
+				$job_name
+			)
+		);
+	}
+
 }

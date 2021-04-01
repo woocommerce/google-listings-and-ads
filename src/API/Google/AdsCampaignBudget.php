@@ -5,24 +5,27 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V6\ResourceNames;
 use Google\Ads\GoogleAds\V6\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V6\Services\CampaignBudgetOperation;
+use Google\Ads\GoogleAds\V6\Services\CampaignBudgetServiceClient;
 use Google\Ads\GoogleAds\V6\Services\MutateCampaignBudgetResult;
-use Exception;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\ValidationException;
+use Exception;
 
 /**
  * Class AdsCampaignBudget
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsCampaignBudget {
+class AdsCampaignBudget implements OptionsAwareInterface {
 
 	use AdsQueryTrait;
-	use AdsIdTrait;
+	use OptionsAwareTrait;
 	use MicroTrait;
 
 	/**
@@ -36,11 +39,9 @@ class AdsCampaignBudget {
 	 * AdsCampaignBudget constructor.
 	 *
 	 * @param GoogleAdsClient $client
-	 * @param PositiveInteger $id
 	 */
-	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
+	public function __construct( GoogleAdsClient $client ) {
 		$this->client = $client;
-		$this->id     = $id;
 	}
 
 	/**
@@ -80,7 +81,7 @@ class AdsCampaignBudget {
 		$budget_id = $this->get_budget_from_campaign( $campaign_id );
 		$budget    = new CampaignBudget(
 			[
-				'resource_name' => ResourceNames::forCampaignBudget( $this->get_id(), $budget_id ),
+				'resource_name' => ResourceNames::forCampaignBudget( $this->options->get_ads_id(), $budget_id ),
 				'amount_micros' => $this->to_micro( $amount ),
 			]
 		);
@@ -103,11 +104,11 @@ class AdsCampaignBudget {
 	 */
 	protected function get_budget_from_campaign( int $campaign_id ): int {
 		$query    = $this->build_query( [ 'campaign.campaign_budget' ], 'campaign', "campaign.id = {$campaign_id}" );
-		$response = $this->query( $this->client, $this->get_id(), $query );
+		$response = $this->query( $query );
 
 		foreach ( $response->iterateAllElements() as $row ) {
 			$campaign = $row->getCampaign();
-			return $this->parse_id( $campaign->getCampaignBudget(), 'campaignBudgets' );
+			return $this->parse_campaign_budget_id( $campaign->getCampaignBudget() );
 		}
 
 		/* translators: %d Campaign ID */
@@ -124,10 +125,27 @@ class AdsCampaignBudget {
 	 */
 	protected function mutate_budget( CampaignBudgetOperation $operation ): MutateCampaignBudgetResult {
 		$response = $this->client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
-			$this->get_id(),
+			$this->options->get_ads_id(),
 			[ $operation ]
 		);
 
 		return $response->getResults()[0];
+	}
+
+	/**
+	 * Convert ID from a resource name to an int.
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_campaign_budget_id( string $name ): int {
+		try {
+			$parts = CampaignBudgetServiceClient::parseName( $name );
+			return absint( $parts['campaign_budget_id'] );
+		} catch ( ValidationException $e ) {
+			throw new Exception( __( 'Invalid campaign budget ID', 'google-listings-and-ads' ) );
+		}
 	}
 }

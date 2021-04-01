@@ -8,8 +8,8 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import toAccountText from '.~/utils/toAccountText';
 import AppSpinner from '.~/components/app-spinner';
-import AccountId from '.~/components/account-id';
 import TitleButtonLayout from '.~/components/title-button-layout';
 import TrackableLink from '.~/components/trackable-link';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
@@ -29,7 +29,7 @@ const BillingSavedCard = () => {
 				<Section.Card.Body>
 					<div className="gla-google-ads-billing-saved-card__account-number">
 						<TitleButtonLayout
-							title={ <AccountId id={ googleAdsAccount.id } /> }
+							title={ toAccountText( googleAdsAccount.id ) }
 						/>
 					</div>
 					<div className="gla-google-ads-billing-saved-card__description">

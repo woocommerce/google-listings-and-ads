@@ -36,13 +36,13 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	/**
 	 * Schedule an action to run once at some time in the future
 	 *
-	 * @param int    $timestamp When the job will run.
-	 * @param string $hook      The hook to trigger.
-	 * @param array  $args      Arguments to pass when the hook triggers.
+	 * @param int        $timestamp When the job will run.
+	 * @param string     $hook      The hook to trigger.
+	 * @param array|null $args      Arguments to pass when the hook triggers.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_single( int $timestamp, string $hook, array $args = [] ): int {
+	public function schedule_single( int $timestamp, string $hook, $args = [] ): int {
 		return as_schedule_single_action( $timestamp, $hook, $args, $this->get_slug() );
 	}
 
@@ -53,38 +53,38 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 * We could use an async action instead but they can't be viewed easily in the admin area
 	 * because the table is sorted by schedule date.
 	 *
-	 * @param string $hook  The hook to trigger.
-	 * @param array  $args  Arguments to pass when the hook triggers.
+	 * @param string     $hook The hook to trigger.
+	 * @param array|null $args Arguments to pass when the hook triggers.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_immediate( string $hook, array $args = [] ): int {
+	public function schedule_immediate( string $hook, $args = [] ): int {
 		return as_schedule_single_action( gmdate( 'U' ) - 1, $hook, $args, $this->get_slug() );
 	}
 
 	/**
 	 * Schedule a recurring action to run now (i.e. in the next available batch), and in the given intervals.
 	 *
-	 * @param int    $timestamp           When the job will run.
-	 * @param int    $interval_in_seconds How long to wait between runs.
-	 * @param string $hook                The hook to trigger.
-	 * @param array  $args                Arguments to pass when the hook triggers.
+	 * @param int        $timestamp           When the job will run.
+	 * @param int        $interval_in_seconds How long to wait between runs.
+	 * @param string     $hook                The hook to trigger.
+	 * @param array|null $args                Arguments to pass when the hook triggers.
 	 *
 	 * @return int The action ID.
 	 */
-	public function schedule_recurring( int $timestamp, int $interval_in_seconds, string $hook, array $args = [] ): int {
+	public function schedule_recurring( int $timestamp, int $interval_in_seconds, string $hook, $args = [] ): int {
 		return as_schedule_recurring_action( $timestamp, $interval_in_seconds, $hook, $args, $this->get_slug() );
 	}
 
 	/**
 	 * Schedule an action that recurs on a cron-like schedule.
 	 *
-	 * @param int    $timestamp The first instance of the action will be scheduled to run at a time
-	 *                          calculated after this timestamp matching the cron expression. This
-	 *                          can be used to delay the first instance of the action.
-	 * @param string $schedule  A cron-link schedule string
-	 * @param string $hook      The hook to trigger.
-	 * @param array  $args      Arguments to pass when the hook triggers.
+	 * @param int        $timestamp The first instance of the action will be scheduled to run at a time
+	 *                              calculated after this timestamp matching the cron expression. This
+	 *                              can be used to delay the first instance of the action.
+	 * @param string     $schedule  A cron-link schedule string
+	 * @param string     $hook      The hook to trigger.
+	 * @param array|null $args      Arguments to pass when the hook triggers.
 	 *
 	 * @return int The action ID.
 	 *
@@ -99,19 +99,19 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *   |    +-------------------- hour (0 - 23)
 	 *   +------------------------- min (0 - 59)
 	 */
-	public function schedule_cron( int $timestamp, string $schedule, string $hook, array $args = [] ): int {
+	public function schedule_cron( int $timestamp, string $schedule, string $hook, $args = [] ): int {
 		return as_schedule_cron_action( $timestamp, $schedule, $hook, $args, $this->get_slug() );
 	}
 
 	/**
 	 * Enqueue an action to run one time, as soon as possible
 	 *
-	 * @param string $hook  The hook to trigger.
-	 * @param array  $args  Arguments to pass when the hook triggers.
+	 * @param string     $hook The hook to trigger.
+	 * @param array|null $args Arguments to pass when the hook triggers.
 	 *
 	 * @return int The action ID.
 	 */
-	public function enqueue_async_action( string $hook, array $args = [] ): int {
+	public function enqueue_async_action( string $hook, $args = [] ): int {
 		$this->async_runner->attach_shutdown_hook();
 		return $this->schedule_immediate( $hook, $args );
 	}
@@ -124,24 +124,24 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 * true will be returned. Or there may be no async, in-progress or pending action for this hook, in which
 	 * case, boolean false will be the return value.
 	 *
-	 * @param string $hook
-	 * @param array  $args
+	 * @param string     $hook
+	 * @param array|null $args
 	 *
 	 * @return bool True if there is a pending scheduled, async or in-progress action in the queue or false if there is no matching action.
 	 */
-	public function has_scheduled_action( string $hook, array $args = [] ): bool {
+	public function has_scheduled_action( string $hook, $args = [] ): bool {
 		return ( false !== as_next_scheduled_action( $hook, $args, $this->get_slug() ) );
 	}
 
 	/**
 	 * Search for scheduled actions.
 	 *
-	 * @param array  $args          See as_get_scheduled_actions() for possible arguments.
-	 * @param string $return_format OBJECT, ARRAY_A, or ids.
+	 * @param array|null $args          See as_get_scheduled_actions() for possible arguments.
+	 * @param string     $return_format OBJECT, ARRAY_A, or ids.
 	 *
 	 * @return array
 	 */
-	public function search( array $args = [], $return_format = OBJECT ): array {
+	public function search( $args = [], $return_format = OBJECT ): array {
 		$args['group'] = $this->get_slug();
 
 		return as_get_scheduled_actions( $args, $return_format );
@@ -152,14 +152,14 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * Any recurring actions with a matching hook should also be cancelled, not just the next scheduled action.
 	 *
-	 * @param string $hook  The hook that the job will trigger.
-	 * @param array  $args  Args that would have been passed to the job.
+	 * @param string     $hook The hook that the job will trigger.
+	 * @param array|null $args Args that would have been passed to the job.
 	 *
 	 * @return string The scheduled action ID if a scheduled action was found.
 	 *
 	 * @throws ActionSchedulerException If no matching action found.
 	 */
-	public function cancel( string $hook, array $args = [] ): string {
+	public function cancel( string $hook, $args = [] ): string {
 		$action_id = as_unschedule_action( $hook, $args, $this->get_slug() );
 
 		if ( null === $action_id ) {

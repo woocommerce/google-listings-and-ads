@@ -1,2 +1,2 @@
-export const ALL_ACCOUNTS = 'ALL_ACCOUNTS';
-export const ADS_ACCOUNT = 'ADS_ACCOUNT';
+export const ALL_ACCOUNTS = 'all-accounts';
+export const ADS_ACCOUNT = 'ads-account';

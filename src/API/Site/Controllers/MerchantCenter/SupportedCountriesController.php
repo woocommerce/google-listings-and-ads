@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -20,6 +21,7 @@ defined( 'ABSPATH' ) || exit;
 class SupportedCountriesController extends BaseController {
 
 	use CountryCodeTrait;
+	use EmptySchemaPropertiesTrait;
 	use GoogleHelper;
 
 	/**
@@ -74,7 +76,7 @@ class SupportedCountriesController extends BaseController {
 	 */
 	protected function get_supported_countries(): array {
 		$all_countries = $this->wc->get_countries();
-		$mc_countries  = $this->get_mc_supported_countries();
+		$mc_countries  = $this->get_mc_supported_countries_currencies();
 
 		$supported = [];
 		foreach ( $mc_countries as $country => $currency ) {
@@ -89,15 +91,6 @@ class SupportedCountriesController extends BaseController {
 		}
 
 		return $supported;
-	}
-
-	/**
-	 * Get the item schema properties for the controller.
-	 *
-	 * @return array
-	 */
-	protected function get_schema_properties(): array {
-		return [];
 	}
 
 	/**

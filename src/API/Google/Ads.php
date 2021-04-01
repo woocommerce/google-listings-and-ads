@@ -27,7 +27,6 @@ class Ads implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 	use ApiExceptionTrait;
 	use AdsQueryTrait;
-	use AdsIdTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -40,11 +39,9 @@ class Ads implements OptionsAwareInterface {
 	 * Ads constructor.
 	 *
 	 * @param GoogleAdsClient $client
-	 * @param PositiveInteger $id
 	 */
-	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
+	public function __construct( GoogleAdsClient $client ) {
 		$this->client = $client;
-		$this->id     = $id;
 	}
 
 	/**
@@ -53,18 +50,21 @@ class Ads implements OptionsAwareInterface {
 	 * @return string
 	 */
 	public function get_billing_status(): string {
+		$ads_id = $this->options->get_ads_id();
+
+		if ( ! $ads_id ) {
+			return BillingSetupStatus::UNKNOWN;
+		}
+
 		try {
-			if ( ! $this->get_id() ) {
-				return BillingSetupStatus::UNKNOWN;
-			}
 
 			$query    = $this->build_query( [ 'billing_setup.status' ], 'billing_setup' );
-			$response = $this->query( $this->client, $this->get_id(), $query );
+			$response = $this->query( $query );
 
 			foreach ( $response->iterateAllElements() as $row ) {
 				$billing_setup = $row->getBillingSetup();
 				$status        = BillingSetupStatus::label( $billing_setup->getStatus() );
-				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $this->get_id() );
+				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $ads_id );
 			}
 		} catch ( ApiException $e ) {
 			// Do not act upon error as we might not have permission to access this account yet.
@@ -76,7 +76,7 @@ class Ads implements OptionsAwareInterface {
 			return BillingSetupStatus::UNKNOWN;
 		}
 
-		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $this->get_id() );
+		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $ads_id );
 	}
 
 	/**
@@ -99,7 +99,7 @@ class Ads implements OptionsAwareInterface {
 		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $link ) );
 
 		$this->client->getMerchantCenterLinkServiceClient()->mutateMerchantCenterLink(
-			$this->get_id(),
+			$this->options->get_ads_id(),
 			$operation
 		);
 	}
@@ -114,7 +114,7 @@ class Ads implements OptionsAwareInterface {
 	 */
 	private function get_merchant_link( int $merchant_id ): MerchantCenterLink {
 		$response = $this->client->getMerchantCenterLinkServiceClient()->listMerchantCenterLinks(
-			$this->get_id()
+			$this->options->get_ads_id()
 		);
 
 		foreach ( $response->getMerchantCenterLinks() as $link ) {

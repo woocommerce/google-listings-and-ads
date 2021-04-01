@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_Account as MC_Account;
@@ -19,7 +21,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Merchant {
+class Merchant implements OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/**
 	 * The shopping service.
@@ -29,46 +33,19 @@ class Merchant {
 	protected $service;
 
 	/**
-	 * The merchant ID.
-	 *
-	 * @var PositiveInteger
-	 */
-	protected $id;
-
-	/**
 	 * Merchant constructor.
 	 *
 	 * @param ShoppingService $service
-	 * @param PositiveInteger $id
 	 */
-	public function __construct( ShoppingService $service, PositiveInteger $id ) {
+	public function __construct( ShoppingService $service ) {
 		$this->service = $service;
-		$this->id      = $id;
-	}
-
-	/**
-	 * Get the ID.
-	 *
-	 * @return int
-	 */
-	public function get_id(): int {
-		return $this->id->get();
-	}
-
-	/**
-	 * Set the ID.
-	 *
-	 * @param int $id
-	 */
-	public function set_id( int $id ): void {
-		$this->id = new PositiveInteger( $id );
 	}
 
 	/**
 	 * @return Product[]
 	 */
 	public function get_products(): array {
-		$products = $this->service->products->listProducts( $this->get_id() );
+		$products = $this->service->products->listProducts( $this->options->get_merchant_id() );
 		$return   = [];
 
 		while ( ! empty( $products->getResources() ) ) {
@@ -82,7 +59,7 @@ class Merchant {
 			}
 
 			$products = $this->service->products->listProducts(
-				$this->get_id(),
+				$this->options->get_merchant_id(),
 				[ 'pageToken' => $products->getNextPageToken() ]
 			);
 		}
@@ -100,8 +77,9 @@ class Merchant {
 	 */
 	public function claimwebsite( bool $overwrite = false ): bool {
 		try {
+			$id     = $this->options->get_merchant_id();
 			$params = $overwrite ? [ 'overwrite' => true ] : [];
-			$this->service->accounts->claimwebsite( $this->get_id(), $this->get_id(), $params );
+			$this->service->accounts->claimwebsite( $id, $id, $params );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
 			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
@@ -122,7 +100,7 @@ class Merchant {
 	 * @throws Exception If the account can't be retrieved.
 	 */
 	public function get_account( int $id = 0 ): MC_Account {
-		$id = $id ?: $this->get_id();
+		$id = $id ?: $this->options->get_merchant_id();
 
 		try {
 			$mc_account = $this->service->accounts->get( $id, $id );
@@ -141,7 +119,7 @@ class Merchant {
 	 * @throws Exception If the account can't be retrieved.
 	 */
 	public function get_accountstatus( int $id = 0 ): MC_Account_Status {
-		$id = $id ?: $this->get_id();
+		$id = $id ?: $this->options->get_merchant_id();
 
 		try {
 			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
