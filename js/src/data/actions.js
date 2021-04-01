@@ -48,57 +48,6 @@ export function* fetchShippingRates() {
 	}
 }
 
-export function* upsertShippingRate( shippingRate ) {
-	const { countryCode, currency, rate } = shippingRate;
-
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates`,
-			method: 'POST',
-			data: {
-				country_code: countryCode,
-				currency,
-				rate,
-			},
-		} );
-
-		return {
-			type: TYPES.UPSERT_SHIPPING_RATE,
-			shippingRate,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to add / update shipping rate.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
-export function* deleteShippingRate( countryCode ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/${ countryCode }`,
-			method: 'DELETE',
-		} );
-
-		return {
-			type: TYPES.DELETE_SHIPPING_RATE,
-			countryCode,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to delete shipping rate.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
 export function* upsertShippingRates( shippingRate ) {
 	const { countryCodes, currency, rate } = shippingRate;
 
@@ -175,56 +124,6 @@ export function* fetchShippingTimes() {
 			error,
 			__(
 				'There was an error loading shipping times.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
-export function* upsertShippingTime( shippingTime ) {
-	const { countryCode, time } = shippingTime;
-
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times`,
-			method: 'POST',
-			data: {
-				country_code: countryCode,
-				time,
-			},
-		} );
-
-		return {
-			type: TYPES.UPSERT_SHIPPING_TIME,
-			shippingTime,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to add / update shipping time.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
-export function* deleteShippingTime( countryCode ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times/${ countryCode }`,
-			method: 'DELETE',
-		} );
-
-		return {
-			type: TYPES.DELETE_SHIPPING_TIME,
-			countryCode,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to delete shipping time.',
 				'google-listings-and-ads'
 			)
 		);
@@ -600,4 +499,27 @@ export function* saveTargetAudience( targetAudience ) {
 			)
 		);
 	}
+}
+
+// TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
+export function* upsertShippingRate( shippingRate ) {
+	const { countryCode, currency, rate } = shippingRate;
+	yield upsertShippingRates( {
+		countryCodes: [ countryCode ],
+		currency,
+		rate,
+	} );
+}
+
+export function* deleteShippingRate( countryCode ) {
+	yield deleteShippingRates( [ countryCode ] );
+}
+
+export function* upsertShippingTime( shippingTime ) {
+	const { countryCode, time } = shippingTime;
+	yield upsertShippingTimes( { countryCodes: [ countryCode ], time } );
+}
+
+export function* deleteShippingTime( countryCode ) {
+	yield deleteShippingTimes( [ countryCode ] );
 }
