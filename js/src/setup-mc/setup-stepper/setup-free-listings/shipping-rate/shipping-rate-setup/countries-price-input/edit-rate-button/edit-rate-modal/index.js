@@ -10,7 +10,7 @@ import { Form } from '@woocommerce/components';
  */
 import { useAppDispatch } from '.~/data';
 import AppModal from '.~/components/app-modal';
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import './index.scss';
@@ -108,7 +108,7 @@ const EditRateModal = ( props ) => {
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
-							<AppInputControl
+							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
