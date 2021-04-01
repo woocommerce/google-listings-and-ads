@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import toAccountText from '.~/utils/toAccountText';
 import AppButton from '.~/components/app-button';
 import AppTextButton from '.~/components/app-text-button';
 import Section from '.~/wcdl/section';
@@ -14,7 +15,6 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import AccountId from '.~/components/account-id';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
@@ -42,9 +42,7 @@ const SwitchUrlCard = ( props ) => {
 		<Section.Card className="gla-switch-url-card">
 			<Section.Card.Body>
 				<ContentButtonLayout>
-					<Subsection.Title>
-						<AccountId id={ id } />
-					</Subsection.Title>
+					<Subsection.Title>{ toAccountText( id ) }</Subsection.Title>
 				</ContentButtonLayout>
 				<ContentButtonLayout>
 					<div>
