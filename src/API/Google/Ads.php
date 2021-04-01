@@ -23,9 +23,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Ads implements OptionsAwareInterface {
 
-	use OptionsAwareTrait;
 	use ApiExceptionTrait;
-	use AdsQueryTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -56,7 +55,9 @@ class Ads implements OptionsAwareInterface {
 		}
 
 		try {
-			$results = $this->query( new AdsBillingStatusQuery() );
+			$results = ( new AdsBillingStatusQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->get_results();
 
 			foreach ( $results->iterateAllElements() as $row ) {
 				$billing_setup = $row->getBillingSetup();

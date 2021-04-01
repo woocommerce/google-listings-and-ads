@@ -58,6 +58,13 @@ abstract class Query implements QueryInterface {
 	protected $orderby;
 
 	/**
+	 * The result of the query.
+	 *
+	 * @var mixed
+	 */
+	protected $results = null;
+
+	/**
 	 * Query constructor.
 	 *
 	 * @param string $resource
@@ -147,12 +154,23 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
-	 * Get the built query.
+	 * Get the results of the query.
 	 *
-	 * @return string
+	 * @return mixed
 	 */
-	public function get_query(): string {
-		return $this->build_query();
+	public function get_results() {
+		if ( null === $this->results ) {
+			$this->query_results();
+		}
+
+		return $this->results;
+	}
+
+	/**
+	 * Perform the query and save it to the results.
+	 */
+	protected function query_results() {
+		$this->results = [];
 	}
 
 	/**

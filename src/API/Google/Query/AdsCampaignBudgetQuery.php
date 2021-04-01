@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class AdsCampaignBudgetQuery extends Query {
+class AdsCampaignBudgetQuery extends AdsQuery {
 
 	/**
 	 * Query constructor.

@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class AdsReportQuery extends Query {
+class AdsReportQuery extends AdsQuery {
 
 	/**
 	 * Type of report (campaigns or products).
@@ -62,6 +62,14 @@ class AdsReportQuery extends Query {
 
 		if ( ! empty( $args['orderby'] ) ) {
 			$this->set_order( $args['orderby'], $args['order'] );
+		}
+
+		if ( ! empty( $args['per_page'] ) ) {
+			$this->search_args['pageSize'] = $args['per_page'];
+		}
+
+		if ( ! empty( $args['next_page'] ) ) {
+			$this->search_args['pageToken'] = $args['next_page'];
 		}
 	}
 

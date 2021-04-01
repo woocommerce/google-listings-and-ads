@@ -30,7 +30,6 @@ use Exception;
  */
 class AdsCampaign implements OptionsAwareInterface {
 
-	use AdsQueryTrait;
 	use ApiExceptionTrait;
 	use OptionsAwareTrait;
 	use MicroTrait;
@@ -73,11 +72,10 @@ class AdsCampaign implements OptionsAwareInterface {
 	public function get_campaigns(): array {
 		try {
 			$return  = [];
-			$results = $this->query(
-				( new AdsCampaignQuery() )
-					->where( 'campaign.status', 'REMOVED', '!=' )
-					->get_query()
-			);
+			$results = ( new AdsCampaignQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.status', 'REMOVED', '!=' )
+				->get_results();
 
 			foreach ( $results->iterateAllElements() as $row ) {
 				$return[] = $this->convert_campaign( $row );
@@ -155,11 +153,10 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$results = $this->query(
-				( new AdsCampaignQuery() )
-					->where( 'campaign.id', $id )
-					->get_query()
-			);
+			$results = ( new AdsCampaignQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.id', $id )
+				->get_results();
 
 			foreach ( $results->iterateAllElements() as $row ) {
 				return $this->convert_campaign( $row );

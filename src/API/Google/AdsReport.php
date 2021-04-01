@@ -22,7 +22,6 @@ use Google\ApiCore\ApiException;
  */
 class AdsReport implements OptionsAwareInterface {
 
-	use AdsQueryTrait;
 	use MicroTrait;
 	use OptionsAwareTrait;
 	use ReportTrait;
@@ -54,17 +53,9 @@ class AdsReport implements OptionsAwareInterface {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
-			$query_args = [];
-
-			if ( ! empty( $args['per_page'] ) ) {
-				$query_args['pageSize'] = $args['per_page'];
-			}
-
-			if ( ! empty( $args['next_page'] ) ) {
-				$query_args['pageToken'] = $args['next_page'];
-			}
-
-			$results = $this->query( ( new AdsReportQuery( $type, $args ) )->get_query(), $query_args );
+			$results = ( new AdsReportQuery( $type, $args ) )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->get_results();
 			$page    = $results->getPage();
 
 			// Iterate only this page (iterateAllElements will iterate all pages).

@@ -51,9 +51,9 @@ interface QueryInterface {
 	public function set_where_relation( string $relation ): QueryInterface;
 
 	/**
-	 * Get the built query.
+	 * Get the results of the query.
 	 *
-	 * @return string
+	 * @return mixed
 	 */
-	public function get_query(): string;
+	public function get_results();
 }

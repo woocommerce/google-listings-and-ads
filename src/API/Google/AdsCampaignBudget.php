@@ -25,9 +25,8 @@ use Exception;
  */
 class AdsCampaignBudget implements OptionsAwareInterface {
 
-	use AdsQueryTrait;
-	use OptionsAwareTrait;
 	use MicroTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -121,11 +120,10 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 	 * @throws Exception If no linked budget has been found.
 	 */
 	protected function get_budget_from_campaign( int $campaign_id ): int {
-		$results = $this->query(
-			( new AdsCampaignBudgetQuery() )
-				->where( 'campaign.id', $campaign_id )
-				->get_query()
-		);
+		$results = ( new AdsCampaignBudgetQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign.id', $campaign_id )
+			->get_results();
 
 		foreach ( $results->iterateAllElements() as $row ) {
 			$campaign = $row->getCampaign();
