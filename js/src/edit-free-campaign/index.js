@@ -40,6 +40,40 @@ function isNotOurStep( location ) {
 }
 
 /**
+ * @typedef {import('.~/data/actions').ShippingRate} ShippingRate
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
+/**
+ * Due to lack of single API for updating shipping data alltogether,
+ * we need to send deletes and adds separately.
+ * Also, we need to send upserts separately for each price.
+ *
+ * @param {(individualCountrySetting: ShippingRate) => Promise} upsertAction
+ * @param {(countries: Array<CountryCode>) => Promise} deleteAction
+ * @param {Array<ShippingRate>} oldData
+ * @param {Array<ShippingRate>} newData
+ */
+function saveShippingData( upsertAction, deleteAction, oldData, newData ) {
+	const mapCountryCode = ( rate ) => rate.countryCode;
+	const currentCountries = new Set( newData.map( mapCountryCode ) );
+
+	// Send upserts.
+	const actions = newData.map( upsertAction );
+
+	const deletedCountries = oldData
+		.map( mapCountryCode )
+		.filter( ( country ) => ! currentCountries.has( country ) );
+
+	if ( deletedCountries.length ) {
+		// Send delete.
+		actions.concat( deleteAction( deletedCountries ) );
+	}
+	// TODO: implement better batched upsert that accpets an array of ShippingRates (with different prices)
+	return actions;
+}
+
+/**
  * Page Component to edit free campaigns.
  * Provides two steps:
  *  - Choose your audience
@@ -50,7 +84,12 @@ function isNotOurStep( location ) {
 export default function EditFreeCampaign() {
 	const { data: savedTargetAudience } = useTargetAudience();
 	const { settings: savedSettings } = useSettings();
-	const { saveTargetAudience, saveSettings } = useAppDispatch();
+	const {
+		saveTargetAudience,
+		saveSettings,
+		upsertShippingRate, // We need to use this one, as we serve non-aggregated ShippingRates
+		deleteShippingRates,
+	} = useAppDispatch();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience
@@ -112,9 +151,15 @@ export default function EditFreeCampaign() {
 		await Promise.allSettled( [
 			saveTargetAudience( targetAudience ),
 			saveSettings( settings ),
-			// TODO: save batched shipping times and rates
+			...saveShippingData(
+				upsertShippingRate,
+				deleteShippingRates,
+				savedShippingRates,
+				shippingRates
+			),
+			// TODO: save batched shipping times
 		] );
-		// Synce data with once our changes are saved, even partially succesfully.
+		// Sync data once our changes are saved, even partially succesfully.
 		await fetchSettingsSync();
 		// TODO notify errors.
 		// TODO: Enable the submit button.
