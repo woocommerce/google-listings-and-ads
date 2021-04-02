@@ -55,7 +55,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
-		return $issues;
+		return array_values( $issues );
 	}
 
 	/**

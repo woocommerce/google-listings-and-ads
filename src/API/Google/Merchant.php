@@ -140,11 +140,11 @@ class Merchant implements OptionsAwareInterface {
 		$id = $id ?: $this->options->get_merchant_id();
 
 		$product_statuses = [];
-		$opt_params       = [ 'maxResults' => 100 ];
+		$opt_params       = [ 'maxResults' => 200 ];
 
 		do {
-			$response          = $this->service->productstatuses->listProductstatuses( $id, $opt_params );
-			$product_statuses += $response->getResources();
+			$response         = $this->service->productstatuses->listProductstatuses( $id, $opt_params );
+			$product_statuses = array_merge( $product_statuses, $response->getResources() );
 
 			if ( empty( $response->getNextPageToken() ) ) {
 				break;
