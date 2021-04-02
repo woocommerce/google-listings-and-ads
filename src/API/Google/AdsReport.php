@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -186,7 +187,7 @@ class AdsReport implements OptionsAwareInterface {
 	 * @param Segments $segments Report segment data.
 	 *
 	 * @return string
-	 * @throws Exception When invalid interval type is given.
+	 * @throws InvalidValue When invalid interval type is given.
 	 */
 	protected function get_segment_interval( string $interval, Segments $segments ): string {
 		switch ( $interval ) {
@@ -206,7 +207,7 @@ class AdsReport implements OptionsAwareInterface {
 				$date = DateTime::createFromFormat( 'Y', (string) $segments->getYear() );
 				break;
 			default:
-				throw new Exception( __( 'Invalid interval', 'google-listings-and-ads' ) );
+				throw InvalidValue::not_in_allowed_list( $interval, [ 'day', 'week', 'month', 'quarter', 'year' ] );
 		}
 		return TimeInterval::time_interval_id( $interval, $date );
 	}
