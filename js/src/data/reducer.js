@@ -13,8 +13,8 @@ const DEFAULT_STATE = {
 		target_audience: null,
 		countries: null,
 		shipping: {
-			rates: [],
-			times: [],
+			rates: null,
+			times: null,
 		},
 		settings: null,
 		accounts: {
