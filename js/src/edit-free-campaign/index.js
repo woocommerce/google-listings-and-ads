@@ -21,6 +21,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useShippingRates from '.~/hooks/useShippingRates';
+import useShippingTimes from '.~/hooks/useShippingTimes';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -97,11 +98,16 @@ export default function EditFreeCampaign() {
 	const [ settings, updateSettings ] = useState( savedSettings );
 
 	const { data: savedShippingRates } = useShippingRates();
-
 	const [ shippingRates, updateShippingRates ] = useState(
 		savedShippingRates
 	);
 
+	const { data: savedShippingTimes } = useShippingTimes();
+	const [ shippingTimes, updateShippingTimes ] = useState(
+		savedShippingTimes
+	);
+
+	// TODO: Consider making it less repetitive.
 	useEffect( () => {
 		if ( savedTargetAudience ) {
 			updateTargetAudience( savedTargetAudience );
@@ -112,7 +118,15 @@ export default function EditFreeCampaign() {
 		if ( savedShippingRates ) {
 			updateShippingRates( savedShippingRates );
 		}
-	}, [ savedTargetAudience, savedSettings, savedShippingRates ] );
+		if ( savedShippingTimes ) {
+			updateShippingTimes( savedShippingTimes );
+		}
+	}, [
+		savedTargetAudience,
+		savedSettings,
+		savedShippingRates,
+		savedShippingTimes,
+	] );
 
 	const [ fetchSettingsSync ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/settings/sync`,
@@ -216,9 +230,11 @@ export default function EditFreeCampaign() {
 									'google-listings-and-ads'
 								) }
 								settings={ settings }
-								shippingRates={ shippingRates }
 								onSettingsChange={ updateSettings }
+								shippingRates={ shippingRates }
 								onShippingRatesChange={ updateShippingRates }
+								shippingTimes={ shippingTimes }
+								onShippingTimesChange={ updateShippingTimes }
 								onContinue={ handleSetupFreeListingsContinue }
 							/>
 						),

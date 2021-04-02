@@ -8,7 +8,6 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import useShippingTimes from '.~/hooks/useShippingTimes';
 import AppSpinner from '.~/components/app-spinner';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -28,12 +27,8 @@ import './index.scss';
  */
 const ShippingTimeSetup = ( { formProps, selectedCountryCodes } ) => {
 	const { getInputProps } = formProps;
-	const {
-		loading: loadingShippingTimes,
-		data: shippingTimes,
-	} = useShippingTimes();
 
-	if ( ! selectedCountryCodes || loadingShippingTimes ) {
+	if ( ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
 
@@ -41,7 +36,7 @@ const ShippingTimeSetup = ( { formProps, selectedCountryCodes } ) => {
 		<div className="gla-shipping-time-setup">
 			<VerticalGapLayout>
 				<ShippingCountriesForm
-					shippingTimes={ shippingTimes }
+					{ ...getInputProps( 'shipping_country_times' ) }
 					selectedCountryCodes={ selectedCountryCodes }
 				/>
 				<CheckboxControl

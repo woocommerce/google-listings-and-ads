@@ -43,7 +43,6 @@ export default function ShippingCountriesForm( {
 		} );
 	}
 
-	// TODO: move those handlers up to the ancestors and consider optimizing upserting.
 	// Given the limitations of `<Form>` component we can communicate up only onChange.
 	// Therefore we loose the infromation whether it was add, change, delete.
 	// In autosave/setup MC case, we would have to either re-calculate to deduct that information,
