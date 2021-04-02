@@ -90,6 +90,8 @@ export default function EditFreeCampaign() {
 		saveSettings,
 		upsertShippingRate, // We need to use this one, as we serve non-aggregated ShippingRates
 		deleteShippingRates,
+		upsertShippingTime, // We need to use this one, as we serve non-aggregated ShippingTimes
+		deleteShippingTimes,
 	} = useAppDispatch();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
@@ -108,23 +110,14 @@ export default function EditFreeCampaign() {
 	);
 
 	// TODO: Consider making it less repetitive.
-	useEffect( () => {
-		if ( savedTargetAudience ) {
-			updateTargetAudience( savedTargetAudience );
-		}
-		if ( savedSettings ) {
-			updateSettings( savedSettings );
-		}
-		if ( savedShippingRates ) {
-			updateShippingRates( savedShippingRates );
-		}
-		if ( savedShippingTimes ) {
-			updateShippingTimes( savedShippingTimes );
-		}
-	}, [
+	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
+	useEffect( () => updateTargetAudience( savedTargetAudience ), [
 		savedTargetAudience,
-		savedSettings,
+	] );
+	useEffect( () => updateShippingRates( savedShippingRates ), [
 		savedShippingRates,
+	] );
+	useEffect( () => updateShippingTimes( savedShippingTimes ), [
 		savedShippingTimes,
 	] );
 
@@ -171,7 +164,12 @@ export default function EditFreeCampaign() {
 				savedShippingRates,
 				shippingRates
 			),
-			// TODO: save batched shipping times
+			...saveShippingData(
+				upsertShippingTime,
+				deleteShippingTimes,
+				savedShippingTimes,
+				shippingTimes
+			),
 		] );
 		// Sync data once our changes are saved, even partially succesfully.
 		await fetchSettingsSync();
