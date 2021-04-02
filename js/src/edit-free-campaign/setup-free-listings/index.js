@@ -11,6 +11,10 @@ import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import FormContent from './form-content';
 
 /**
+ * @typedef {import('.~/components/free-listings/configure-product-listings/shipping-rate/shipping-rate-setup/countries-form').ShippingRateFromServerSide} ShippingRateFromServerSide
+ */
+
+/**
  * Setup step to configure free listings.
  *
  * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/index.js},
@@ -19,16 +23,20 @@ import FormContent from './form-content';
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
+ * @param {(newValue: Object) => void} props.onShippingRatesChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChangeCallback}
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
 const SetupFreeListings = ( {
 	stepHeader,
 	settings,
-	onChange = () => {},
+	shippingRates,
+	onSettingsChange = () => {},
+	onShippingRatesChange = () => {},
 	onContinue = () => {},
 } ) => {
-	if ( ! settings ) {
+	if ( ! settings || ! shippingRates ) {
 		return <AppSpinner />;
 	}
 
@@ -39,6 +47,7 @@ const SetupFreeListings = ( {
 
 		return errors;
 	};
+
 	return (
 		<div className="gla-setup-free-listings">
 			<Hero stepHeader={ stepHeader } />
@@ -55,8 +64,24 @@ const SetupFreeListings = ( {
 					payment_methods_visible: settings.payment_methods_visible,
 					refund_tos_visible: settings.refund_tos_visible,
 					contact_info_visible: settings.contact_info_visible,
+					// Glue shipping rates and times together, as the Form does not support nested structures.
+					shipping_country_rates: shippingRates,
 				} }
-				onChangeCallback={ onChange }
+				onChangeCallback={ ( change, newVals ) => {
+					// Un-glue form data.
+					const {
+						shipping_country_rates: newShippingRates,
+						...newSettings
+					} = newVals;
+
+					switch ( change.name ) {
+						case 'shipping_country_rates':
+							onShippingRatesChange( newShippingRates );
+							break;
+						default:
+							onSettingsChange( change, newSettings );
+					}
+				} }
 				validate={ handleValidate }
 				onSubmitCallback={ onContinue }
 			>

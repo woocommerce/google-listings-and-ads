@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { useState } from '@wordpress/element';
-
-/**
  * Internal dependencies
  */
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -16,19 +11,17 @@ import getCountriesPriceArray from './getCountriesPriceArray';
  * with an UI, that allows to aggregate countries with the same rate.
  *
  * @param {Object} props
- * @param {Array<ShippingRateFromServerSide>} props.shippingRates Array of individual shipping rates to be used as the initial values of the form.
+ * @param {Array<ShippingRateFromServerSide>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {string} props.currencyCode Shop's currency code.
  * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
+ * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChangeCallback}
  */
 export default function ShippingCountriesForm( {
-	shippingRates: savedShippingRates,
+	value: shippingRates,
 	currencyCode,
 	selectedCountryCodes,
+	onChange,
 } ) {
-	const [ shippingRates, updateShippingRates ] = useState(
-		savedShippingRates
-	);
-
 	const actualCountryCount = shippingRates.length;
 	const actualCountries = new Map(
 		shippingRates.map( ( rate ) => [ rate.countryCode, rate ] )
@@ -41,6 +34,7 @@ export default function ShippingCountriesForm( {
 	// Group countries with the same rate.
 	const countriesPriceArray = getCountriesPriceArray( shippingRates );
 
+	// Prefill to-be-added price.
 	if ( countriesPriceArray.length === 0 ) {
 		countriesPriceArray.push( {
 			countries: selectedCountryCodes,
@@ -50,8 +44,12 @@ export default function ShippingCountriesForm( {
 	}
 
 	// TODO: move those handlers up to the ancestors and consider optimizing upserting.
+	// Given the limitations of `<Form>` component we can communicate up only onChange.
+	// Therefore we loose the infromation whether it was add, change, delete.
+	// In autosave/setup MC case, we would have to either re-calculate to deduct that information,
+	// or fix that in `<Form>` component.
 	function handleDelete( deletedCountries ) {
-		updateShippingRates(
+		onChange(
 			shippingRates.filter(
 				( rate ) => ! deletedCountries.includes( rate.countryCode )
 			)
@@ -65,7 +63,7 @@ export default function ShippingCountriesForm( {
 			rate, // TODO: unify that
 		} ) );
 
-		updateShippingRates( shippingRates.concat( addedIndividualRates ) );
+		onChange( shippingRates.concat( addedIndividualRates ) );
 	}
 	function handleChange(
 		{ countries, currency, price },
@@ -83,7 +81,7 @@ export default function ShippingCountriesForm( {
 				rate: price, // TODO: unify that
 			} );
 		} );
-		updateShippingRates( Array.from( actualCountries.values() ) );
+		onChange( Array.from( actualCountries.values() ) );
 	}
 
 	return (

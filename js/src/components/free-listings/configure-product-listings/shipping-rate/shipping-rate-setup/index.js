@@ -9,7 +9,6 @@ import { CheckboxControl } from '@wordpress/components';
  */
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import useShippingRates from '.~/hooks/useShippingRates';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppSpinner from '.~/components/app-spinner';
 import ShippingCountriesForm from './countries-form';
@@ -30,13 +29,9 @@ import './index.scss';
  */
 const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
 	const { getInputProps, values } = formProps;
-	const {
-		loading: loadingShippingRates,
-		data: shippingRates,
-	} = useShippingRates();
 	const { code: currencyCode } = useStoreCurrency();
 
-	if ( ! selectedCountryCodes || loadingShippingRates ) {
+	if ( ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
 
@@ -44,7 +39,7 @@ const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
 		<div className="gla-shipping-rate-setup">
 			<VerticalGapLayout>
 				<ShippingCountriesForm
-					shippingRates={ shippingRates }
+					{ ...getInputProps( 'shipping_country_rates' ) }
 					currencyCode={ currencyCode }
 					selectedCountryCodes={ selectedCountryCodes }
 				/>
