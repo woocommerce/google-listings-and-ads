@@ -18,6 +18,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Product;
+use WC_Product_Attribute;
 use WC_Product_Variable;
 use WC_Product_Variation;
 
@@ -458,6 +459,21 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 				);
 
 				$this->setSalePriceEffectiveDate( $this->get_wc_product_sale_price_effective_date( $product ) );
+			}
+		}
+
+		return $this;
+	}
+
+
+	protected function map_enhanced_attributes(): WCProductAdapter {
+		$all_attributes = $this->wc_product->get_attributes();
+		$attributes     = new Attributes();
+
+		/** @var WC_Product_Attribute $attribute */
+		foreach ( $all_attributes as $attribute ) {
+			if ( ! $attributes->is_known_attribute( $attribute->get_name() ) ) {
+				continue;
 			}
 		}
 
