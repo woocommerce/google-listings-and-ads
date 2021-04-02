@@ -9,6 +9,7 @@ use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_Account as MC_Account;
 use Google_Service_ShoppingContent_AccountAdsLink as MC_Account_Ads_Link;
 use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
+use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use Google_Service_ShoppingContent_Product as Product;
 use Google\Exception as GoogleException;
 use Exception;
@@ -127,6 +128,32 @@ class Merchant implements OptionsAwareInterface {
 			throw new Exception( __( 'Unable to retrieve merchant center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
+	}
+
+	/**
+	 * Retrieve the user's Merchant Center product statuses.
+	 *
+	 * @param int $id Optional - the Merchant Center account whose statuses to retrieve
+	 * @return MC_Product_Status[] The user's Merchant Center account.
+	 */
+	public function get_productstatuses( int $id = 0 ): array {
+		$id = $id ?: $this->options->get_merchant_id();
+
+		$product_statuses = [];
+		$opt_params       = [ 'maxResults' => 100 ];
+
+		do {
+			$response          = $this->service->productstatuses->listProductstatuses( $id, $opt_params );
+			$product_statuses += $response->getResources();
+
+			if ( empty( $response->getNextPageToken() ) ) {
+				break;
+			}
+
+			$opt_params['pageToken'] = $response->getNextPageToken();
+		} while ( true );
+
+		return $product_statuses;
 	}
 
 	/**

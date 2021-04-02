@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use Exception;
 
 /**
@@ -21,7 +22,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	/**
 	 * The time the statistics option should live.
 	 */
-	public const ISSUES_LIFETIME = 1;// HOUR_IN_SECONDS;
+	public const ISSUES_LIFETIME = 60;// HOUR_IN_SECONDS;
 
 	public const TYPE_ACCOUNT = 'account';
 	public const TYPE_PRODUCT = 'product';
@@ -74,6 +75,20 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		$issues   = [];
 		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $i ) {
 			$issues[] = [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject();
+		}
+
+		/** @var MC_Product_Status $product */
+		foreach ( $merchant->get_productstatuses() as $product ) {
+			$issue_template = [
+				'type'      => self::TYPE_PRODUCT,
+				'productId' => $product->getProductId(),
+				'title'     => $product->getTitle(),
+			];
+			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
+				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
+					$issues[] = $issue_template + (array) $item_level_issue->toSimpleObject();
+				}
+			}
 		}
 
 		// Update the cached values
