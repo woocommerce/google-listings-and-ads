@@ -15,6 +15,7 @@ import EditProgramLink from './edit-program-link';
 import PauseProgramButton from './pause-program-button';
 import ResumeProgramButton from './resume-program-button';
 import './index.scss';
+import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 
 const headers = [
 	{
@@ -46,25 +47,30 @@ const headers = [
  */
 const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
+	const { loading, data: adsCampaigns } = useAdsCampaigns();
 
 	// TODO: data from backend API.
 	// using the above query (e.g. orderby, order and page) as parameter.
-	const data = [
-		{
-			id: 123,
-			title: 'Google Shopping Free Listings',
-			spend: 'Free',
-			numberOfProducts: 497,
-			active: true,
-		},
-		{
-			id: 456,
-			title: 'Smart Shopping Campaign 1',
-			spend: '$200.00',
-			numberOfProducts: 133,
-			active: false,
-		},
-	];
+	const data = ! adsCampaigns
+		? []
+		: [
+				{
+					id: 123,
+					title: 'Google Shopping Free Listings',
+					spend: 'Free',
+					numberOfProducts: 497,
+					active: true,
+				},
+				...adsCampaigns.map( ( el ) => {
+					return {
+						id: el.id,
+						title: el.name,
+						spend: el.amount,
+						numberOfProducts: 0,
+						active: el.status === 'enabled',
+					};
+				} ),
+		  ];
 
 	return (
 		<AppTableCard
@@ -84,6 +90,7 @@ const AllProgramsTableCard = ( props ) => {
 					</Link>
 				</div>
 			}
+			isLoading={ loading || ! adsCampaigns }
 			headers={ headers }
 			rows={ data.map( ( el ) => {
 				return [
