@@ -27,6 +27,7 @@ const DEFAULT_STATE = {
 			ads_billing_status: null,
 		},
 	},
+	ads_campaigns: null,
 };
 
 const reducer = ( state = DEFAULT_STATE, action ) => {
@@ -176,6 +177,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.SAVE_TARGET_AUDIENCE: {
 			const newState = cloneDeep( state );
 			newState.mc.target_audience = action.target_audience;
+			return newState;
+		}
+
+		case TYPES.RECEIVE_ADS_CAMPAIGNS: {
+			const newState = {
+				...state,
+				ads_campaigns: action.adsCampaigns,
+			};
 			return newState;
 		}
 
