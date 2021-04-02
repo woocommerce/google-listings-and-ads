@@ -41,6 +41,14 @@ export default function ShippingCountriesForm( {
 	// Group countries with the same rate.
 	const countriesPriceArray = getCountriesPriceArray( shippingRates );
 
+	if ( countriesPriceArray.length === 0 ) {
+		countriesPriceArray.push( {
+			countries: selectedCountryCodes,
+			price: '',
+			currency: currencyCode,
+		} );
+	}
+
 	// TODO: move those handlers up to the ancestors and consider optimizing upserting.
 	function handleDelete( deletedCountries ) {
 		updateShippingRates(
@@ -81,24 +89,10 @@ export default function ShippingCountriesForm( {
 	return (
 		<div className="countries-price">
 			<VerticalGapLayout>
-				{ shippingRates.length === 0 && (
-					<div className="countries-price-input-form">
-						<CountriesPriceInput
-							value={ {
-								countries: selectedCountryCodes,
-								price: '',
-								currency: currencyCode,
-							} }
-							onChange={ handleChange }
-						/>
-					</div>
-				) }
 				{ countriesPriceArray.map( ( el ) => {
 					return (
 						<div
-							key={ `${ el.price }-${ el.countries.join(
-								'-'
-							) }` }
+							key={ el.countries.join( '-' ) }
 							className="countries-price-input-form"
 						>
 							<CountriesPriceInput
