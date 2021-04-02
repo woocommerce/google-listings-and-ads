@@ -12,14 +12,19 @@ import CountriesTimeInput from './countries-time-input';
 import getCountriesTimeArray from './getCountriesTimeArray';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import(".~/data/actions").ShippingTime } ShippingTime
+ * @typedef { import(".~/data/actions").AggregatedShippingTime } AggregatedShippingTime
+ */
+
+/**
  * Partial form to provide shipping times for individual countries,
  * with an UI, that allows to aggregate countries with the same time.
  *
  * @param {Object} props
- * @param {Array<ShippingTimeFromServerSide>} props.shippingTimes Array of individual shipping times to be used as the initial values of the form.
+ * @param {Array<ShippingTime>} props.shippingTimes Array of individual shipping times to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
  */
-
 export default function ShippingCountriesForm( {
 	shippingTimes: savedShippingTimes,
 	selectedCountryCodes,
@@ -108,31 +113,3 @@ export default function ShippingCountriesForm( {
 		</div>
 	);
 }
-
-/**
- * Individual shipping time.
- *
- * @typedef {Object} ShippingTimeFromServerSide
- * @property {CountryCode} countryCode Destination country code.
- * @property {number} time Shipping time.
- */
-
-/**
- * Individual shipping time.
- *
- * @typedef {Object} ShippingTime
- * @property {CountryCode} countryCode Destination country code.
- * @property {number} time Shipping time.
- */
-
-/**
- * Aggregated shipping time.
- *
- * @typedef {Object} AggregatedShippingTime
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {number} time Shipping time.
- */
-
-/**
- * @typedef { import(".~/data/actions").CountryCode } CountryCode
- */

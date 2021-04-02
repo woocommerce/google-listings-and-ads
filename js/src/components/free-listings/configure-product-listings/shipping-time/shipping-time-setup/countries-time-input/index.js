@@ -85,6 +85,6 @@ const CountriesTimeInput = ( { value, onChange, onDelete } ) => {
 export default CountriesTimeInput;
 
 /**
- * @typedef {import("../countries-form.js").AggregatedShippingTime} AggregatedShippingTime
+ * @typedef { import(".~/data/actions").AggregatedShippingTime } AggregatedShippingTime
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

@@ -139,7 +139,18 @@ export function* deleteShippingRates( countryCodes ) {
 		);
 	}
 }
+/**
+ * Individual shipping time.
+ *
+ * @typedef {Object} ShippingTime
+ * @property {CountryCode} countryCode Destination country code.
+ * @property {number} time Shipping time.
+ */
 
+/**
+ *
+ * @return {Array<ShippingTime>} Array of individual shipping times.
+ */
 export function* fetchShippingTimes() {
 	try {
 		const response = yield apiFetch( {
@@ -168,6 +179,19 @@ export function* fetchShippingTimes() {
 	}
 }
 
+/**
+ * Aggregated shipping time.
+ *
+ * @typedef {Object} AggregatedShippingTime
+ * @property {Array<CountryCode>} countries Array of destination country codes.
+ * @property {number} time Shipping time.
+ */
+
+/**
+ * Updates or inserts given aggregated shipping rate.
+ *
+ * @param {AggregatedShippingTime} shippingTime
+ */
 export function* upsertShippingTimes( shippingTime ) {
 	const { countryCodes, time } = shippingTime;
 
@@ -196,6 +220,11 @@ export function* upsertShippingTimes( shippingTime ) {
 	}
 }
 
+/**
+ * Deletes shipping times associated with given country codes.
+ *
+ * @param {Array<CountryCode>} countryCodes
+ */
 export function* deleteShippingTimes( countryCodes ) {
 	try {
 		yield apiFetch( {

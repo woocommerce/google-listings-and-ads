@@ -64,6 +64,6 @@ const EditTimeButton = ( { time, onChange, onDelete } ) => {
 export default EditTimeButton;
 
 /**
- * @typedef {import("../countries-form.js").AggregatedShippingTime} AggregatedShippingTime
+ * @typedef { import(".~/data/actions").AggregatedShippingTime } AggregatedShippingTime
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */
