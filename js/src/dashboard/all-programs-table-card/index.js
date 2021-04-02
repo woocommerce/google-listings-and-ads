@@ -17,6 +17,7 @@ import ResumeProgramButton from './resume-program-button';
 import './index.scss';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
+import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 
 const headers = [
 	{
@@ -51,6 +52,7 @@ const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 	const { loading, data: adsCampaigns } = useAdsCampaigns();
 	const map = useCountryKeyNameMap();
+	const { formatAmount } = useCurrencyFactory();
 
 	// TODO: data from backend API.
 	// using the above query (e.g. orderby, order and page) as parameter.
@@ -68,7 +70,7 @@ const AllProgramsTableCard = ( props ) => {
 					return {
 						id: el.id,
 						title: el.name,
-						spend: el.amount,
+						spend: formatAmount( el.amount ),
 						country: map[ el.country ],
 						active: el.status === 'enabled',
 					};
