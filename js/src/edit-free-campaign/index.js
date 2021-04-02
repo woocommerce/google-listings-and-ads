@@ -129,7 +129,13 @@ export default function EditFreeCampaign() {
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
 	const didSettingsChanged = ! isEqual( settings, savedSettings );
-	const didAnythingChanged = didAudienceChanged || didSettingsChanged;
+	const didRatesChanged = ! isEqual( shippingRates, savedShippingRates );
+	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
+	const didAnythingChanged =
+		didAudienceChanged ||
+		didSettingsChanged ||
+		didRatesChanged ||
+		didTimesChanged;
 
 	// Confirm leaving the page, if there are any changes and the user is navigating away from our stepper.
 	useNavigateAwayPromptEffect(
