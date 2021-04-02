@@ -16,6 +16,7 @@ import PauseProgramButton from './pause-program-button';
 import ResumeProgramButton from './resume-program-button';
 import './index.scss';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
+import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 
 const headers = [
 	{
@@ -26,13 +27,14 @@ const headers = [
 		isSortable: true,
 	},
 	{
-		key: 'spend',
-		label: __( 'Spend', 'google-listings-and-ads' ),
+		key: 'country',
+		label: __( 'Country', 'google-listings-and-ads' ),
+		isLeftAligned: true,
 		isSortable: true,
 	},
 	{
-		key: 'numberOfProducts',
-		label: __( 'Number of Products', 'google-listings-and-ads' ),
+		key: 'spend',
+		label: __( 'Spend', 'google-listings-and-ads' ),
 		isSortable: true,
 	},
 	{ key: 'actions', label: '', required: true },
@@ -48,6 +50,7 @@ const headers = [
 const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 	const { loading, data: adsCampaigns } = useAdsCampaigns();
+	const map = useCountryKeyNameMap();
 
 	// TODO: data from backend API.
 	// using the above query (e.g. orderby, order and page) as parameter.
@@ -58,7 +61,7 @@ const AllProgramsTableCard = ( props ) => {
 					id: 123,
 					title: 'Google Shopping Free Listings',
 					spend: 'Free',
-					numberOfProducts: 497,
+					country: '',
 					active: true,
 				},
 				...adsCampaigns.map( ( el ) => {
@@ -66,7 +69,7 @@ const AllProgramsTableCard = ( props ) => {
 						id: el.id,
 						title: el.name,
 						spend: el.amount,
-						numberOfProducts: 0,
+						country: map[ el.country ],
 						active: el.status === 'enabled',
 					};
 				} ),
@@ -95,8 +98,8 @@ const AllProgramsTableCard = ( props ) => {
 			rows={ data.map( ( el ) => {
 				return [
 					{ display: el.title },
+					{ display: el.country },
 					{ display: el.spend },
-					{ display: el.numberOfProducts },
 					{
 						display: (
 							<div className="program-actions">
