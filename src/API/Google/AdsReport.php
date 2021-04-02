@@ -58,6 +58,8 @@ class AdsReport implements OptionsAwareInterface {
 				->get_results();
 			$page    = $results->getPage();
 
+			$this->init_report_totals( $args['fields'] ?? [] );
+
 			// Iterate only this page (iterateAllElements will iterate all pages).
 			foreach ( $page->getIterator() as $row ) {
 				$this->add_report_row( $type, $row, $args );

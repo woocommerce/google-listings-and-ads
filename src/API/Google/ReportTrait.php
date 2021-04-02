@@ -31,6 +31,17 @@ trait ReportTrait {
 	}
 
 	/**
+	 * Initialize report totals to 0 values.
+	 *
+	 * @param array $fields List of field names.
+	 */
+	protected function init_report_totals( array $fields ) {
+		foreach ( $fields as $name ) {
+			$this->report_data['totals'][ $name ] = 0;
+		}
+	}
+
+	/**
 	 * Increase report totals.
 	 *
 	 * @param array $data Totals data.

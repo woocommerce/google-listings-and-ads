@@ -55,6 +55,8 @@ class MerchantReport implements OptionsAwareInterface {
 				->set_client( $this->service, $this->options->get_merchant_id() )
 				->get_results();
 
+			$this->init_report_totals( $args['fields'] ?? [] );
+
 			foreach ( $results->getResults() as $row ) {
 				$this->add_report_row( $type, $row, $args );
 			}
