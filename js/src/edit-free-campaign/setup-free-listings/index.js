@@ -11,7 +11,7 @@ import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import FormContent from './form-content';
 
 /**
- * @typedef {import('.~/components/free-listings/configure-product-listings/shipping-rate/shipping-rate-setup/countries-form').ShippingRateFromServerSide} ShippingRateFromServerSide
+ * @typedef {import('.~/data/actions').ShippingRate} ShippingRateFromServerSide
  */
 
 /**

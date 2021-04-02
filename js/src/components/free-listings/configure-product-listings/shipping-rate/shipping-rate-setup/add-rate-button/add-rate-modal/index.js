@@ -104,5 +104,5 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 export default AddRateModal;
 /**
  * @typedef {import("../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef {import("../../countries-form.js").CountryCode} CountryCode
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

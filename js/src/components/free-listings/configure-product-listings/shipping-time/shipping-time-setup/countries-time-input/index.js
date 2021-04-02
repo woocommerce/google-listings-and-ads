@@ -86,5 +86,5 @@ export default CountriesTimeInput;
 
 /**
  * @typedef {import("../countries-form.js").AggregatedShippingTime} AggregatedShippingTime
- * @typedef {import("../countries-form.js").CountryCode} CountryCode
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

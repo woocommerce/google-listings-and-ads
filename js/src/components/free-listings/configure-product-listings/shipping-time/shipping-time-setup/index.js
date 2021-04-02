@@ -16,9 +16,7 @@ import ShippingCountriesForm from './countries-form';
 import './index.scss';
 
 /**
- * CountryCode
- *
- * @typedef {string} CountryCode
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */
 
 /**

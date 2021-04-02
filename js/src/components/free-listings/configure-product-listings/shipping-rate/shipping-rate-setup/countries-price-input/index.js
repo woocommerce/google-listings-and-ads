@@ -88,5 +88,5 @@ export default CountriesPriceInput;
 
 /**
  * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef {import("../countries-form.js").CountryCode} CountryCode
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

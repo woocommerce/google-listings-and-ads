@@ -117,15 +117,6 @@ export default function ShippingCountriesForm( {
 /**
  * Individual shipping rate.
  *
- * @typedef {Object} ShippingRateFromServerSide
- * @property {CountryCode} countryCode Destination country code.
- * @property {string} currency Currency of the price.
- * @property {number} rate Shipping price.
- */
-
-/**
- * Individual shipping rate.
- *
  * @typedef {Object} ShippingRate
  * @property {CountryCode} countryCode Destination country code.
  * @property {string} currency Currency of the price.
@@ -142,5 +133,6 @@ export default function ShippingCountriesForm( {
  */
 
 /**
- * @typedef { import("./index").CountryCode } CountryCode
+ * @typedef { import(".~/data/actions").ShippingRate } ShippingRateFromServerSide
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

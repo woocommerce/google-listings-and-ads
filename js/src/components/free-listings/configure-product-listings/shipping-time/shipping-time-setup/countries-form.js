@@ -134,5 +134,5 @@ export default function ShippingCountriesForm( {
  */
 
 /**
- * @typedef { import("./index").CountryCode } CountryCode
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */
