@@ -49,6 +49,10 @@ class MerchantReportQuery extends MerchantQuery {
 			$this->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' );
 		}
 
+		if ( ! empty( $args['ids'] ) ) {
+			$this->filter( $args['ids'] );
+		}
+
 		if ( ! empty( $args['orderby'] ) ) {
 			$this->set_order( $args['orderby'], $args['order'] );
 		}
@@ -103,5 +107,20 @@ class MerchantReportQuery extends MerchantQuery {
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Filter the query by a list of ID's.
+	 *
+	 * @param array $ids list of ID's to filter by.
+	 *
+	 * @return $this
+	 */
+	public function filter( array $ids ): QueryInterface {
+		if ( empty( $ids ) || 'products' !== $this->type ) {
+			return $this;
+		}
+
+		return $this->where( 'segments.offer_id', $ids, 'IN' );
 	}
 }

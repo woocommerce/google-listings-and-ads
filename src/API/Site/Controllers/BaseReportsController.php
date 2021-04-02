@@ -56,10 +56,10 @@ abstract class BaseReportsController extends BaseController {
 			'ids'       => [
 				'description'       => __( 'Limit result to items with specified ids.', 'google-listings-and-ads' ),
 				'type'              => 'array',
-				'sanitize_callback' => 'wp_parse_id_list',
+				'sanitize_callback' => 'wp_parse_slug_list',
 				'validate_callback' => 'rest_validate_request_arg',
 				'items'             => [
-					'type' => 'integer',
+					'type' => 'string',
 				],
 			],
 			'fields'    => [
