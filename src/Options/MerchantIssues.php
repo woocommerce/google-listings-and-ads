@@ -22,11 +22,13 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	/**
 	 * The time the statistics option should live.
 	 */
-	public const ISSUES_LIFETIME = 60;// HOUR_IN_SECONDS;
+	public const ISSUES_LIFETIME = HOUR_IN_SECONDS;
 
+	/**
+	 * The types of issues that can be filtered.
+	 */
 	public const TYPE_ACCOUNT = 'account';
 	public const TYPE_PRODUCT = 'product';
-
 
 	/**
 	 * Retrieve or initialize the mc_issues transient. Refresh if the issues have gone stale.
