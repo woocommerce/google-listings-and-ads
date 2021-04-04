@@ -18,6 +18,8 @@ import './index.scss';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import AppSpinner from '.~/components/app-spinner';
 
 const headers = [
 	{
@@ -50,32 +52,37 @@ const headers = [
  */
 const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
-	const { loading, data: adsCampaigns } = useAdsCampaigns();
+	const {
+		data: finalCountryCodesdata,
+	} = useTargetAudienceFinalCountryCodes();
+	const { data: adsCampaignsData } = useAdsCampaigns();
 	const map = useCountryKeyNameMap();
 	const { formatAmount } = useCurrencyFactory();
 
+	if ( ! finalCountryCodesdata || ! adsCampaignsData ) {
+		return <AppSpinner />;
+	}
+
 	// TODO: data from backend API.
 	// using the above query (e.g. orderby, order and page) as parameter.
-	const data = ! adsCampaigns
-		? []
-		: [
-				{
-					id: 0,
-					title: 'Google Shopping Free Listings',
-					spend: 'Free',
-					country: '',
-					active: true,
-				},
-				...adsCampaigns.map( ( el ) => {
-					return {
-						id: el.id,
-						title: el.name,
-						spend: formatAmount( el.amount ),
-						country: map[ el.country ],
-						active: el.status === 'enabled',
-					};
-				} ),
-		  ];
+	const data = [
+		{
+			id: 0,
+			title: 'Google Shopping Free Listings',
+			spend: 'Free',
+			country: finalCountryCodesdata.length,
+			active: true,
+		},
+		...adsCampaignsData.map( ( el ) => {
+			return {
+				id: el.id,
+				title: el.name,
+				spend: formatAmount( el.amount ),
+				country: map[ el.country ],
+				active: el.status === 'enabled',
+			};
+		} ),
+	];
 
 	return (
 		<AppTableCard
@@ -95,7 +102,6 @@ const AllProgramsTableCard = ( props ) => {
 					</Link>
 				</div>
 			}
-			isLoading={ loading || ! adsCampaigns }
 			headers={ headers }
 			rows={ data.map( ( el ) => {
 				return [
