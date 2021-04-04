@@ -17,8 +17,10 @@ import './index.scss';
 const EditProgramLink = ( props ) => {
 	const { programId } = props;
 
-	// TODO: Check if that's a free or paid campaign.
-	const url = getNewPath( { programId }, '/google/edit-free-campaign' );
+	const url =
+		programId === 0
+			? getNewPath( { programId }, '/google/edit-free-campaign' )
+			: getNewPath( { programId }, '/google/edit-paid-ads-campaign' );
 
 	return (
 		<TrackableLink

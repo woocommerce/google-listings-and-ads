@@ -60,7 +60,7 @@ const AllProgramsTableCard = ( props ) => {
 		? []
 		: [
 				{
-					id: 123,
+					id: 0,
 					title: 'Google Shopping Free Listings',
 					spend: 'Free',
 					country: '',
