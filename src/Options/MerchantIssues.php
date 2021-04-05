@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use Exception;
 
@@ -18,6 +19,7 @@ use Exception;
 class MerchantIssues implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * The time the statistics option should live.
@@ -129,6 +131,13 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		];
 	}
 
+	/**
+	 * Standardize the issue data for display.
+	 *
+	 * @param array $item Array of data about an issue, as returned by Shopping API and/or saved in transient.
+	 *
+	 * @return array Standardized issue data.
+	 */
 	protected function convert_issue( &$item ) {
 		if ( $item['type'] === self::TYPE_ACCOUNT ) {
 			return [
@@ -139,12 +148,17 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'action_link' => $item['documentation'],
 			];
 		} else {
+			$product_id = preg_replace(
+				'/.+:(' . $this->get_slug() . '_)?(\d+)$/',
+				'$2',
+				$item['productId']
+			);
 			return [
 				'type'      => $item['type'],
 				'product'   => $item['title'],
 				'issue'     => $item['description'],
 				'action'    => $item['detail'],
-				'edit_link' => '#',
+				'edit_link' => $product_id ? get_edit_post_link( $product_id ) : '',
 			];
 		}
 	}
