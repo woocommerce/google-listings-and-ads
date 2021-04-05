@@ -24,7 +24,9 @@ const useApiFetchEffect = ( options ) => {
 		optionsRef.current = options;
 	}
 
-	const [ apiFetch, fetchResult ] = useApiFetchCallback( optionsRef.current );
+	const [ apiFetch, fetchResult ] = useApiFetchCallback( optionsRef.current, {
+		loading: true,
+	} );
 
 	useEffect( () => {
 		if ( ! optionsRef.current ) {
