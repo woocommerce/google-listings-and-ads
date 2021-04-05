@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { createInterpolateElement } from '@wordpress/element';
 import { getQuery, getNewPath } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -12,9 +11,6 @@ import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
 import AppSpinner from '.~/components/app-spinner';
-import StepContent from '.~/components/stepper/step-content';
-import StepContentHeader from '.~/components/stepper/step-content-header';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 import EditPaidAdsCampaignForm from './edit-paid-ads-campaign-form';
 
 const dashboardURL = getNewPath( {}, '/google/dashboard' );
@@ -64,30 +60,7 @@ const EditPaidAdsCampaign = () => {
 				) }
 				backHref={ dashboardURL }
 			/>
-			<StepContent>
-				<StepContentHeader
-					title={ __(
-						'Edit your paid campaign',
-						'google-listings-and-ads'
-					) }
-					description={ createInterpolateElement(
-						__(
-							'Paid Smart Shopping campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<AppDocumentationLink
-									context="edit-ads"
-									linkId="see-what-ads-look-like"
-									href="https://support.google.com/google-ads/answer/6275294"
-								/>
-							),
-						}
-					) }
-				/>
-				<EditPaidAdsCampaignForm campaign={ campaignData } />
-			</StepContent>
+			<EditPaidAdsCampaignForm campaign={ campaignData } />
 		</FullContainer>
 	);
 };
