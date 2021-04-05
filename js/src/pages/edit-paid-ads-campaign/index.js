@@ -15,6 +15,7 @@ import AppSpinner from '.~/components/app-spinner';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import EditPaidAdsCampaignForm from './edit-paid-ads-campaign-form';
 
 const dashboardURL = getNewPath( {}, '/google/dashboard' );
 
@@ -85,6 +86,7 @@ const EditPaidAdsCampaign = () => {
 						}
 					) }
 				/>
+				<EditPaidAdsCampaignForm campaign={ campaignData } />
 			</StepContent>
 		</FullContainer>
 	);

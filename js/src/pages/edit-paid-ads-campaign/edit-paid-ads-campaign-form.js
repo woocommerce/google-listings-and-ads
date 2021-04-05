@@ -24,7 +24,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 			initialValues={ {
 				id: campaign.id,
 				amount: campaign.amount,
-				country: campaign.country,
+				country: [ campaign.country ],
 			} }
 			validate={ handleValidate }
 		>
