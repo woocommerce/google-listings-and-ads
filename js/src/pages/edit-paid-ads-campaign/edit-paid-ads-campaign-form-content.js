@@ -7,6 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AudienceSection from '.~/components/paid-ads/audience-section';
+import FaqsSection from '.~/components/paid-ads/faqs-section';
 
 const EditPaidAdsCampaignFormContent = ( props ) => {
 	const { formProps } = props;
@@ -21,6 +22,7 @@ const EditPaidAdsCampaignFormContent = ( props ) => {
 				) }
 				formProps={ formProps }
 			/>
+			<FaqsSection />
 		</>
 	);
 };
