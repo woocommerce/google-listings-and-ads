@@ -13,7 +13,7 @@ import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
 import AppSpinner from '.~/components/app-spinner';
 import EditPaidAdsCampaignForm from './edit-paid-ads-campaign-form';
 
-const dashboardURL = getNewPath( {}, '/google/dashboard' );
+const dashboardURL = getNewPath( {}, '/google/dashboard', {} );
 
 const EditPaidAdsCampaign = () => {
 	const { programId } = getQuery();

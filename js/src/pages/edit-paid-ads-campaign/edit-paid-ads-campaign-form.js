@@ -57,7 +57,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 		}
 
 		await fetchAdsCampaigns();
-		getHistory().push( getNewPath( {}, '/google/dashboard' ) );
+		getHistory().push( getNewPath( {}, '/google/dashboard', {} ) );
 
 		setLoading( false );
 	};
