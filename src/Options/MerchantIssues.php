@@ -57,7 +57,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
-		return array_values( $issues );
+		return array_map( [ $this, 'convert_issue' ], $issues );
 	}
 
 	/**
@@ -127,6 +127,25 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			self::TYPE_ACCOUNT,
 			self::TYPE_PRODUCT,
 		];
+	}
 
+	protected function convert_issue( &$item ) {
+		if ( $item['type'] === self::TYPE_ACCOUNT ) {
+			return [
+				'type'        => $item['type'],
+				'product'     => __( 'All products', 'google-listings-and-ads' ),
+				'issue'       => $item['title'],
+				'action'      => __( 'Read more about this account issue', 'google-listings-and-ads' ),
+				'action_link' => $item['documentation'],
+			];
+		} else {
+			return [
+				'type'      => $item['type'],
+				'product'   => $item['title'],
+				'issue'     => $item['description'],
+				'action'    => $item['detail'],
+				'edit_link' => '#',
+			];
+		}
 	}
 }
