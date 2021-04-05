@@ -11,7 +11,7 @@ const TYPES = {
 	RESET: 'RESET',
 };
 
-const initialState = {
+const defaultState = {
 	loading: false,
 	error: undefined,
 	data: undefined,
@@ -47,7 +47,7 @@ const reducer = ( state, action ) => {
 			};
 		}
 		case TYPES.RESET: {
-			return initialState;
+			return action.state;
 		}
 	}
 };
@@ -71,42 +71,42 @@ const shouldReturnResponseBody = ( options ) => {
  *
  * ```jsx
  * const [ fetchMCAccountSwitchUrl, { loading, response } ] = useApiFetchCallback( {
- * 	path: `/wc/gla/mc/accounts/switch-url`,
- * 	method: 'POST',
- * 	data: { id },
+ * 		path: `/wc/gla/mc/accounts/switch-url`,
+ * 		method: 'POST',
+ * 		data: { id },
  * } );
  *
  * const handleSwitch = async () => {
- *         // make the apiFetch call here.
- *         // account is the response body.
- *         // you can provide option in the function call and it will be merged with the original option.
- * 	const account = await fetchMCAccountSwitchUrl();
+ * 		// make the apiFetch call here.
+ * 		// account is the response body.
+ * 		// you can provide option in the function call and it will be merged with the original option.
+ * 		const account = await fetchMCAccountSwitchUrl();
  *
- * 	receiveMCAccount( account );
+ * 		receiveMCAccount( account );
  * };
  *
  * if (response.status === 403) {
- *     return (
- *         <span>Oops, HTTP status 403.</span>
- *     )
+ * 		return (
+ * 			<span>Oops, HTTP status 403.</span>
+ * 		)
  * }
  *
  * return (
- *     <AppButton
- *         isSecondary
- *         loading={ loading }  // show loading indicator when loading is true.
- *         onClick={ handleSwitch }
- *     >
- *         { __(
- *             'Switch to my new URL',
- *             'google-listings-and-ads'
- *         ) }
- *     </AppButton>
+ * 		<AppButton
+ * 			isSecondary
+ * 			loading={ loading }  // show loading indicator when loading is true.
+ * 			onClick={ handleSwitch }
+ * 		>
+ * 			{ __(
+ * 				'Switch to my new URL',
+ * 				'google-listings-and-ads'
+ * 			) }
+ * 		</AppButton>
  * )
  * ```
  *
  * @param {import('@wordpress/api-fetch').APIFetchOptions} [options] options to be forwarded to `apiFetch`.
- *
+ * @param {defaultState} initialState overwrite default state.
  * @return {Array} `[ apiFetchCallback, fetchResult ]`
  * 		- `apiFetchCallback` is the function to be called to trigger `apiFetch`.
  * 							You call apiFetchCallback in your event handler.
@@ -114,21 +114,25 @@ const shouldReturnResponseBody = ( options ) => {
  * 							`{ loading, error, data, response, options, reset }`.
  * 							`reset` is a function to reset things to initial state (clearing error, data, response and options).
  */
-const useApiFetchCallback = ( options ) => {
-	const [ state, dispatch ] = useReducer( reducer, initialState );
+const useApiFetchCallback = ( options, initialState = defaultState ) => {
+	const mergedState = {
+		...defaultState,
+		...initialState,
+	};
+	const [ state, dispatch ] = useReducer( reducer, mergedState );
 
 	const enhancedApiFetch = useCallback(
 		async ( overwriteOptions ) => {
-			const combinedOptions = {
+			const mergedOptions = {
 				...options,
 				...overwriteOptions,
 			};
 
-			dispatch( { type: TYPES.START, options: combinedOptions } );
+			dispatch( { type: TYPES.START, options: mergedOptions } );
 
 			try {
 				const response = await apiFetch( {
-					...combinedOptions,
+					...mergedOptions,
 					parse: false,
 				} );
 
@@ -140,10 +144,10 @@ const useApiFetchCallback = ( options ) => {
 					type: TYPES.FINISH,
 					data,
 					response,
-					options: combinedOptions,
+					options: mergedOptions,
 				} );
 
-				return shouldReturnResponseBody( combinedOptions )
+				return shouldReturnResponseBody( mergedOptions )
 					? data
 					: response;
 			} catch ( e ) {
@@ -158,10 +162,10 @@ const useApiFetchCallback = ( options ) => {
 					type: TYPES.ERROR,
 					error,
 					response,
-					options: combinedOptions,
+					options: mergedOptions,
 				} );
 
-				throw shouldReturnResponseBody( combinedOptions )
+				throw shouldReturnResponseBody( mergedOptions )
 					? error
 					: response;
 			}
@@ -169,8 +173,11 @@ const useApiFetchCallback = ( options ) => {
 		[ options ]
 	);
 
-	const reset = () => {
-		dispatch( { type: TYPES.RESET } );
+	const reset = ( resetState ) => {
+		dispatch( {
+			type: TYPES.RESET,
+			state: { ...mergedState, ...resetState },
+		} );
 	};
 
 	const fetchResult = {
