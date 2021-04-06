@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use Exception;
 
@@ -32,6 +33,11 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 */
 	public const TYPE_ACCOUNT = 'account';
 	public const TYPE_PRODUCT = 'product';
+
+	/**
+	 * @var WP $wp The WP proxy object.
+	 */
+	protected $wp;
 
 	/**
 	 * Retrieve or initialize the mc_issues transient. Refresh if the issues have gone stale.
@@ -158,12 +164,16 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'action_link' => $item['documentation'],
 			];
 		} else {
+			if ( empty( $this->wp ) ) {
+				$this->wp = $this->container->get( WP::class );
+			}
+
 			return [
 				'type'      => $item['type'],
 				'product'   => $item['title'],
 				'issue'     => $item['description'],
 				'action'    => $item['detail'],
-				'edit_link' => get_edit_post_link( $item['wc_product_id'] ),
+				'edit_link' => $this->wp->get_edit_post_link( $item['wc_product_id'], '&' ),
 			];
 		}
 	}
