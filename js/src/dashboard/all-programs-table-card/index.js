@@ -36,8 +36,8 @@ const headers = [
 		isSortable: true,
 	},
 	{
-		key: 'spend',
-		label: __( 'Spend', 'google-listings-and-ads' ),
+		key: 'dailyBudget',
+		label: __( 'Daily budget', 'google-listings-and-ads' ),
 		isSortable: true,
 	},
 	{ key: 'actions', label: '', required: true },
@@ -72,7 +72,7 @@ const AllProgramsTableCard = ( props ) => {
 				'Google Shopping Free Listings',
 				'google-listings-and-ads'
 			),
-			spend: __( 'Free', 'google-listings-and-ads' ),
+			dailyBudget: __( 'Free', 'google-listings-and-ads' ),
 			country: finalCountryCodesdata.length,
 			active: true,
 		},
@@ -80,7 +80,7 @@ const AllProgramsTableCard = ( props ) => {
 			return {
 				id: el.id,
 				title: el.name,
-				spend: formatAmount( el.amount ),
+				dailyBudget: formatAmount( el.amount ),
 				country: map[ el.country ],
 				active: el.status === 'enabled',
 			};
@@ -110,7 +110,7 @@ const AllProgramsTableCard = ( props ) => {
 				return [
 					{ display: el.title },
 					{ display: el.country },
-					{ display: el.spend },
+					{ display: el.dailyBudget },
 					{
 						display: (
 							<div className="program-actions">
