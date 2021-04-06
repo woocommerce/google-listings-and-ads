@@ -10,6 +10,7 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
@@ -25,6 +26,7 @@ const SetupAdsForm = () => {
 	const [ editedValues, setEditedValues ] = useState( initialValues );
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ handleSetupComplete, isSubmitting ] = useSetupCompleteCallback();
+	const adminUrl = useAdminUrl();
 
 	const handleValidate = () => {
 		const errors = {};
@@ -41,9 +43,9 @@ const SetupAdsForm = () => {
 				{ guide: 'campaign-creation-success' },
 				'/google/dashboard'
 			);
-			window.location.href = `/wp-admin/${ nextPath }`;
+			window.location.href = adminUrl + nextPath;
 		}
-	}, [ isSubmitted ] );
+	}, [ isSubmitted, adminUrl ] );
 
 	const didCampaignChanged = ! isEqual( initialValues, editedValues );
 	const shouldPreventLeave = didCampaignChanged && ! isSubmitted;
