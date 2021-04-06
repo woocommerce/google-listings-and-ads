@@ -6,11 +6,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\Notes;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\MerchantCenterTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WC_Data_Store;
@@ -20,9 +21,9 @@ use WC_Data_Store;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwareInterface {
+class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwareInterface, MerchantCenterAwareInterface {
 
-	use MerchantCenterTrait;
+	use MerchantCenterAwareTrait;
 	use PluginHelper;
 	use Utilities;
 
@@ -90,7 +91,7 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 			return false;
 		}
 
-		if ( ! $this->setup_complete() ) {
+		if ( ! $this->merchant_center->is_setup_complete() ) {
 			return false;
 		}
 

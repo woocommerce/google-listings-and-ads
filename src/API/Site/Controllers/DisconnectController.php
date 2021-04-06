@@ -16,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class DisconnectController extends BaseController {
 
+	use EmptySchemaPropertiesTrait;
+
 	/**
 	 * Register rest routes with WordPress.
 	 */
@@ -78,15 +80,6 @@ class DisconnectController extends BaseController {
 		$path = ltrim( $path, '/' );
 
 		return $this->server->dispatch_request( new Request( 'DELETE', "/{$this->get_namespace()}/{$path}" ) );
-	}
-
-	/**
-	 * Get the item schema properties for the controller.
-	 *
-	 * @return array
-	 */
-	protected function get_schema_properties(): array {
-		return [];
 	}
 
 	/**

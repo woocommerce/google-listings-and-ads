@@ -22,35 +22,13 @@ defined( 'ABSPATH' ) || exit;
 abstract class AbstractBatchedActionSchedulerJob extends AbstractActionSchedulerJob implements BatchedActionSchedulerJobInterface {
 
 	/**
-	 * Get a single batch of items.
-	 *
-	 * If no items are returned the job will stop.
-	 *
-	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
-	 *
-	 * @return array
-	 *
-	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
-	 */
-	abstract protected function get_batch( int $batch_number ): array;
-
-	/**
-	 * Process batch items.
-	 *
-	 * @param array $items A single batch from the get_batch() method.
-	 *
-	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
-	 */
-	abstract protected function process_items( array $items );
-
-	/**
 	 * Init the batch schedule for the job.
 	 *
 	 * The job name is used to generate the schedule event name.
 	 */
 	public function init(): void {
 		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ] );
-		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ] );
+		parent::init();
 	}
 
 	/**
@@ -70,9 +48,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @param array $args
 	 */
 	public function start( array $args = [] ) {
-		if ( $this->can_start( $args ) ) {
-			$this->schedule_create_batch_action( 1 );
-		}
+		$this->schedule_create_batch_action( 1 );
 	}
 
 	/**
@@ -97,7 +73,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 			$this->handle_complete( $batch_number );
 		} else {
 			// if items, schedule the process action
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
+			$this->schedule_process_action( $items );
 
 			if ( count( $items ) >= $this->get_batch_size() ) {
 				// if there might be more items, add another "create_batch" action to handle them
@@ -127,25 +103,25 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	}
 
 	/**
-	 * Handles processing single item action hook.
-	 *
-	 * @hooked gla/jobs/{$job_name}/process_item
-	 *
-	 * @param array $items The job items from the current batch.
-	 *
-	 * @throws Exception If an error occurs.
-	 */
-	public function handle_process_items_action( array $items ) {
-		$this->process_items( $items );
-	}
-
-	/**
 	 * Schedule a new "create batch" action to run immediately.
 	 *
 	 * @param int $batch_number The batch number for the new batch.
 	 */
 	protected function schedule_create_batch_action( int $batch_number ) {
-		$this->action_scheduler->schedule_immediate( $this->get_create_batch_hook(), [ $batch_number ] );
+		if ( $this->can_start( [ $batch_number ] ) ) {
+			$this->action_scheduler->schedule_immediate( $this->get_create_batch_hook(), [ $batch_number ] );
+		}
+	}
+
+	/**
+	 * Schedule a new "process" action to run immediately.
+	 *
+	 * @param array $items
+	 */
+	protected function schedule_process_action( array $items ) {
+		if ( ! $this->is_processing( $items ) ) {
+			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
+		}
 	}
 
 	/**
@@ -153,12 +129,25 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * The job is considered to be running if a "create_batch" action is currently pending or in-progress.
 	 *
-	 * @param array $args
+	 * @param array|null $args
 	 *
 	 * @return bool
 	 */
-	protected function is_running( array $args = [] ): bool {
+	protected function is_running( $args = [] ): bool {
 		return $this->action_scheduler->has_scheduled_action( $this->get_create_batch_hook(), $args );
+	}
+
+	/**
+	 * Check if this job is processing the given items.
+	 *
+	 * The job is considered to be processing if a "process_item" action is currently pending or in-progress.
+	 *
+	 * @param array $items
+	 *
+	 * @return bool
+	 */
+	protected function is_processing( array $items = [] ): bool {
+		return $this->action_scheduler->has_scheduled_action( $this->get_process_item_hook(), [ $items ] );
 	}
 
 	/**
@@ -170,5 +159,18 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	protected function handle_complete( int $final_batch_number ) {
 		// Optionally over-ride this method in child class.
 	}
+
+	/**
+	 * Get a single batch of items.
+	 *
+	 * If no items are returned the job will stop.
+	 *
+	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
+	 *
+	 * @return array
+	 *
+	 * @throws Exception If an error occurs. The exception will be logged by ActionScheduler.
+	 */
+	abstract protected function get_batch( int $batch_number ): array;
 
 }

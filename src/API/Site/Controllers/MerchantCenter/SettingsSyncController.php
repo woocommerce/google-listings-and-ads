@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -21,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class SettingsSyncController extends BaseController {
 
+	use EmptySchemaPropertiesTrait;
 	use WPErrorTrait;
 
 	/** @var Settings */
@@ -96,15 +98,6 @@ class SettingsSyncController extends BaseController {
 				);
 			}
 		};
-	}
-
-	/**
-	 * Get the item schema properties for the controller.
-	 *
-	 * @return array
-	 */
-	protected function get_schema_properties(): array {
-		return [];
 	}
 
 	/**

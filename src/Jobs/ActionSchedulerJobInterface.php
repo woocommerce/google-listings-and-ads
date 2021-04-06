@@ -24,11 +24,11 @@ interface ActionSchedulerJobInterface extends JobInterface {
 	/**
 	 * Can the job start.
 	 *
-	 * @param array $args
+	 * @param array|null $args
 	 *
 	 * @return bool Returns true if the job can start.
 	 */
-	public function can_start( array $args = [] ): bool;
+	public function can_start( $args = [] ): bool;
 
 	/**
 	 * Start the job.

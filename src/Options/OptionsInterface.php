@@ -66,4 +66,18 @@ interface OptionsInterface {
 	 * @return bool
 	 */
 	public function delete( string $name ): bool;
+
+	/**
+	 * Helper function to retrieve the Merchant Account ID.
+	 *
+	 * @return int
+	 */
+	public function get_merchant_id(): int;
+
+	/**
+	 * Helper function to retrieve the Ads Account ID.
+	 *
+	 * @return int
+	 */
+	public function get_ads_id(): int;
 }

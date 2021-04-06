@@ -1,6 +1,8 @@
 /**
  * Internal dependencies
  */
+import TYPES from './action-types';
+
 import {
 	fetchShippingRates,
 	fetchShippingTimes,
@@ -47,6 +49,10 @@ export function* getExistingGoogleMCAccounts() {
 export function* getGoogleAdsAccount() {
 	yield fetchGoogleAdsAccount();
 }
+
+getGoogleAdsAccount.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS;
+};
 
 export function* getGoogleAdsAccountBillingStatus() {
 	yield fetchGoogleAdsAccountBillingStatus();

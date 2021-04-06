@@ -87,6 +87,9 @@ All event names are prefixed by `wcadmin_gla_`.
 * `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
   * `context`: indicate which page the link is in.
 
+* `disconnected_accounts` - Accounts are disconnected from the Setting page
+  * `context`: (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.

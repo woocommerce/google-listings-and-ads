@@ -1,8 +1,8 @@
 /**
  * Internal dependencies
  */
+import toAccountText from '.~/utils/toAccountText';
 import TitleButtonLayout from '.~/components/title-button-layout';
-import AccountId from '.~/components/account-id';
 import Section from '.~/wcdl/section';
 
 const Connected = ( props ) => {
@@ -12,7 +12,7 @@ const Connected = ( props ) => {
 		<Section.Card>
 			<Section.Card.Body>
 				<TitleButtonLayout
-					title={ <AccountId id={ googleAdsAccount.id } /> }
+					title={ toAccountText( googleAdsAccount.id ) }
 				/>
 			</Section.Card.Body>
 		</Section.Card>

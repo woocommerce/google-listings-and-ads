@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use DateTime;
@@ -22,12 +21,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class JobInitializer implements Registerable, Conditional {
 
-	use ValidateInterface;
-
 	/**
-	 * @var JobInterface[]
+	 * @var JobRepository
 	 */
-	protected $jobs;
+	protected $job_repository;
 
 	/**
 	 * @var ActionSchedulerInterface
@@ -37,15 +34,11 @@ class JobInitializer implements Registerable, Conditional {
 	/**
 	 * JobInitializer constructor.
 	 *
-	 * @param JobInterface[]           $jobs
+	 * @param JobRepository            $job_repository
 	 * @param ActionSchedulerInterface $action_scheduler
 	 */
-	public function __construct( array $jobs, ActionSchedulerInterface $action_scheduler ) {
-		foreach ( $jobs as $job ) {
-			$this->validate_instanceof( $job, JobInterface::class );
-		}
-
-		$this->jobs             = $jobs;
+	public function __construct( JobRepository $job_repository, ActionSchedulerInterface $action_scheduler ) {
+		$this->job_repository   = $job_repository;
 		$this->action_scheduler = $action_scheduler;
 	}
 
@@ -53,20 +46,27 @@ class JobInitializer implements Registerable, Conditional {
 	 * Initialize all jobs.
 	 */
 	public function register(): void {
-		foreach ( $this->jobs as $job ) {
+		foreach ( $this->job_repository->list() as $job ) {
 			$job->init();
 
 			if ( $job instanceof StartOnHookInterface ) {
-				add_action( $job->get_start_hook(), [ $job, 'start' ], 10, 0 );
+				add_action(
+					$job->get_start_hook()->get_hook(),
+					function ( ...$args ) use ( $job ) {
+						$job->start( $args );
+					},
+					10,
+					$job->get_start_hook()->get_argument_count()
+				);
 			}
 
 			if ( $job instanceof RecurringJobInterface &&
-				 ! $this->action_scheduler->has_scheduled_action( $job->get_start_hook() ) &&
+				 ! $this->action_scheduler->has_scheduled_action( $job->get_start_hook()->get_hook() ) &&
 				 $job->can_start() ) {
 
 				$recurring_date_time = new DateTime( 'tomorrow 3am', wp_timezone() );
 				$schedule            = '0 3 * * *'; // 3 am every day
-				$this->action_scheduler->schedule_cron( $recurring_date_time->getTimestamp(), $schedule, $job->get_start_hook() );
+				$this->action_scheduler->schedule_cron( $recurring_date_time->getTimestamp(), $schedule, $job->get_start_hook()->get_hook() );
 			}
 		}
 	}

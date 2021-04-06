@@ -4,7 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\V6\Resources\ConversionAction as ConversionAction;
 use Google\Ads\GoogleAds\V6\Common\TagSnippet;
 use Google\Ads\GoogleAds\V6\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
@@ -24,10 +25,10 @@ use Google\ApiCore\ApiException;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsConversionAction {
+class AdsConversionAction implements OptionsAwareInterface {
 
-	use AdsIdTrait;
 	use ApiExceptionTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -40,11 +41,9 @@ class AdsConversionAction {
 	 * AdsConversionAction constructor.
 	 *
 	 * @param GoogleAdsClient $client
-	 * @param PositiveInteger $id
 	 */
-	public function __construct( GoogleAdsClient $client, PositiveInteger $id ) {
+	public function __construct( GoogleAdsClient $client ) {
 		$this->client = $client;
-		$this->id     = $id;
 	}
 
 	/**
@@ -84,7 +83,7 @@ class AdsConversionAction {
 
 			// Create the conversion.
 			$response = $this->client->getConversionActionServiceClient()->mutateConversionActions(
-				$this->get_id(),
+				$this->options->get_ads_id(),
 				[ $conversion_action_operation ]
 			);
 
@@ -121,7 +120,7 @@ class AdsConversionAction {
 		try {
 			// Accept IDs too
 			if ( is_numeric( $resource_name ) ) {
-				$resource_name = ConversionActionServiceClient::conversionActionName( $this->get_id(), $resource_name );
+				$resource_name = ConversionActionServiceClient::conversionActionName( $this->options->get_ads_id(), $resource_name );
 			}
 
 			$ca_client         = $this->client->getConversionActionServiceClient();

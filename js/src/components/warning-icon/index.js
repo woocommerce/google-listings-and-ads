@@ -8,8 +8,14 @@ import GridiconNoticeOutline from 'gridicons/dist/notice-outline';
  */
 import './index.scss';
 
-const WarningIcon = () => {
-	return <GridiconNoticeOutline className="app-warning-icon" size={ 18 } />;
+/**
+ * Outline warning icon
+ *
+ * @param {Object} props React props.
+ * @param {number} [props.size=18] Icon size.
+ */
+const WarningIcon = ( { size = 18 } ) => {
+	return <GridiconNoticeOutline className="app-warning-icon" size={ size } />;
 };
 
 export default WarningIcon;

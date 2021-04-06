@@ -1,9 +1,11 @@
 /**
  * External dependencies
  */
+import { recordEvent, queueRecordEvent } from '@woocommerce/tracks';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -16,6 +18,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
 import AccountSubsection from './account-subsection';
+import DisconnectModal from './disconnect-modal';
 import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
 
 export default function DisconnectAccounts() {
@@ -30,17 +33,33 @@ export default function DisconnectAccounts() {
 		googleMCAccount &&
 		googleAdsAccount
 	);
-	const hasAdsAccount = googleAdsAccount?.status === 'connected';
+	const hasAdsAccount = [ 'connected', 'incomplete' ].includes(
+		googleAdsAccount?.status
+	);
 
 	const [ openedModal, setOpenedModal ] = useState( null );
 	const openDisconnectAllAccountsModal = () => setOpenedModal( ALL_ACCOUNTS );
 	const openDisconnectAdsAccountModal = () => setOpenedModal( ADS_ACCOUNT );
 	const dismissModal = () => setOpenedModal( null );
 
-	if ( openedModal ) {
-		// TODO: disconnect modal will be implemented by another PR.
-		return <Button onClick={ dismissModal }>Back</Button>;
-	}
+	// The re-fetch of Google ads account will be triggered within the resolvers.
+	// Here only need to handle the all accounts disconnection case.
+	const handleDisconnected = () => {
+		const eventArgs = [
+			'gla_disconnected_accounts',
+			{ context: openedModal },
+		];
+
+		if ( openedModal === ALL_ACCOUNTS ) {
+			queueRecordEvent( ...eventArgs );
+
+			// Force reload WC admin page to initiate the Get Started page.
+			const path = `/wp-admin/${ getNewPath( null, '/google/start' ) }`;
+			window.location.href = path;
+		} else {
+			recordEvent( ...eventArgs );
+		}
+	};
 
 	const requiredText = __( 'Required', 'google-listings-and-ads' );
 
@@ -52,6 +71,13 @@ export default function DisconnectAccounts() {
 				'google-listings-and-ads'
 			) }
 		>
+			{ openedModal && (
+				<DisconnectModal
+					onRequestClose={ dismissModal }
+					onDisconnected={ handleDisconnected }
+					disconnectTarget={ openedModal }
+				/>
+			) }
 			<Section.Card>
 				{ isLoading ? (
 					<AppSpinner />
