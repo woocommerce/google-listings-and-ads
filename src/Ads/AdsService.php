@@ -38,4 +38,14 @@ class AdsService implements Service {
 		return boolval( $this->options->get( OptionsInterface::ADS_SETUP_COMPLETED_AT, false ) );
 	}
 
+	/**
+	 * Disconnect Ads account
+	 */
+	public function disconnect() {
+		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
+		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
+		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
+		$this->options->delete( OptionsInterface::ADS_ID );
+		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
+	}
 }
