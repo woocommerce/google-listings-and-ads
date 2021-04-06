@@ -17,7 +17,7 @@ import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddTimeModal = ( props ) => {
 	const { onRequestClose } = props;
-	const { upsertShippingTime } = useAppDispatch();
+	const { upsertShippingTimes } = useAppDispatch();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 
 	const handleValidate = () => {
@@ -29,14 +29,7 @@ const AddTimeModal = ( props ) => {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		const { countryCodes, time } = values;
-
-		countryCodes.forEach( ( el ) => {
-			upsertShippingTime( {
-				countryCode: el,
-				time,
-			} );
-		} );
+		upsertShippingTimes( values );
 
 		onRequestClose();
 	};
