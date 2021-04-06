@@ -101,7 +101,7 @@ const AllProgramsTableCard = ( props ) => {
 						) }
 						href={ getNewPath( {}, '/google/setup-ads' ) }
 					>
-						{ __( 'Add Paid Campaign', 'google-listings-and-ads' ) }
+						{ __( 'Add paid campaign', 'google-listings-and-ads' ) }
 					</Link>
 				</div>
 			}
