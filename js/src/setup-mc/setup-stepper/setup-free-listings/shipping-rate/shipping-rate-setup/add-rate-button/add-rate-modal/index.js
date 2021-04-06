@@ -18,7 +18,7 @@ import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
-	const { upsertShippingRate } = useAppDispatch();
+	const { upsertShippingRates } = useAppDispatch();
 	const { code } = useStoreCurrency();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 
@@ -33,12 +33,10 @@ const AddRateModal = ( props ) => {
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, rate } = values;
 
-		countryCodes.forEach( ( el ) => {
-			upsertShippingRate( {
-				countryCode: el,
-				currency,
-				rate,
-			} );
+		upsertShippingRates( {
+			countryCodes,
+			currency,
+			rate,
 		} );
 
 		onRequestClose();

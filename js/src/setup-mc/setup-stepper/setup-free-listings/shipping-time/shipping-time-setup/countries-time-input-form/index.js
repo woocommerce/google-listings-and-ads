@@ -14,15 +14,10 @@ import CountriesTimeInput from '../countries-time-input';
 const CountriesTimeInputForm = ( props ) => {
 	const { initialValue } = props;
 	const [ value, setValue ] = useState( initialValue );
-	const { upsertShippingTime } = useDispatch( STORE_KEY );
+	const { upsertShippingTimes } = useDispatch( STORE_KEY );
 	const debouncedUpsertShippingTime = useDebouncedCallback( ( v ) => {
-		const { countries, time } = v;
-		countries.forEach( async ( el ) => {
-			await upsertShippingTime( {
-				countryCode: el,
-				time,
-			} );
-		} );
+		const { countries: countryCodes, time } = v;
+		upsertShippingTimes( { countryCodes, time } );
 	}, 500 );
 
 	const handleChange = ( v ) => {

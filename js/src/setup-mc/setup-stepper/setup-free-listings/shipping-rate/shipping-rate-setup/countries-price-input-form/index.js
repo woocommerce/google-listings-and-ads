@@ -14,15 +14,14 @@ import CountriesPriceInput from '../countries-price-input';
 const CountriesPriceInputForm = ( props ) => {
 	const { initialValue } = props;
 	const [ value, setValue ] = useState( initialValue );
-	const { upsertShippingRate } = useDispatch( STORE_KEY );
+	const { upsertShippingRates } = useDispatch( STORE_KEY );
 	const debouncedUpsertShippingRate = useDebouncedCallback( ( v ) => {
 		const { countries, currency, price } = v;
-		countries.forEach( async ( el ) => {
-			await upsertShippingRate( {
-				countryCode: el,
-				currency,
-				rate: price,
-			} );
+
+		upsertShippingRates( {
+			countryCodes: countries,
+			currency,
+			rate: price,
 		} );
 	}, 500 );
 
