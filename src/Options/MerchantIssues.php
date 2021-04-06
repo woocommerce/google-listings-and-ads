@@ -82,12 +82,21 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			$issues[] = [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject();
 		}
 
-		/** @var MC_Product_Status $product */
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
 		foreach ( $merchant->get_productstatuses() as $product ) {
+			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
+
+			// Skip products no synced by this extension.
+			if ( ! $wc_product_id ) {
+				continue;
+			}
+
 			$issue_template = [
-				'type'      => self::TYPE_PRODUCT,
-				'productId' => $product->getProductId(),
-				'title'     => $product->getTitle(),
+				'type'          => self::TYPE_PRODUCT,
+				'productId'     => $product->getProductId(),
+				'title'         => $product->getTitle(),
+				'wc_product_id' => $wc_product_id,
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
@@ -149,15 +158,12 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'action_link' => $item['documentation'],
 			];
 		} else {
-			/** @var ProductHelper $product_helper */
-			$product_helper = $this->container->get( ProductHelper::class );
-			$product_id     = $product_helper->get_wc_product_id( $item['productId'] );
 			return [
 				'type'      => $item['type'],
 				'product'   => $item['title'],
 				'issue'     => $item['description'],
 				'action'    => $item['detail'],
-				'edit_link' => $product_id ? get_edit_post_link( $product_id ) : '',
+				'edit_link' => get_edit_post_link( $item['wc_product_id'] ),
 			];
 		}
 	}
