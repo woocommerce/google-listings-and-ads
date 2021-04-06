@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use Exception;
 
@@ -138,7 +139,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 *
 	 * @return array Standardized issue data.
 	 */
-	protected function convert_issue( &$item ) {
+	protected function convert_issue( array $item ): array {
 		if ( $item['type'] === self::TYPE_ACCOUNT ) {
 			return [
 				'type'        => $item['type'],
@@ -148,11 +149,9 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'action_link' => $item['documentation'],
 			];
 		} else {
-			$product_id = preg_replace(
-				'/.+:(' . $this->get_slug() . '_)?(\d+)$/',
-				'$2',
-				$item['productId']
-			);
+			/** @var ProductHelper $product_helper */
+			$product_helper = $this->container->get( ProductHelper::class );
+			$product_id     = $product_helper->get_wc_product_id( $item['productId'] );
 			return [
 				'type'      => $item['type'],
 				'product'   => $item['title'],
