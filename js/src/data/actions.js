@@ -48,51 +48,54 @@ export function* fetchShippingRates() {
 	}
 }
 
-export function* upsertShippingRate( shippingRate ) {
-	const { countryCode, currency, rate } = shippingRate;
+export function* upsertShippingRates( shippingRate ) {
+	const { countryCodes, currency, rate } = shippingRate;
 
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates`,
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'POST',
 			data: {
-				country_code: countryCode,
+				country_codes: countryCodes,
 				currency,
 				rate,
 			},
 		} );
 
 		return {
-			type: TYPES.UPSERT_SHIPPING_RATE,
+			type: TYPES.UPSERT_SHIPPING_RATES,
 			shippingRate,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping rate.',
+				'There was an error trying to add / update shipping rates.',
 				'google-listings-and-ads'
 			)
 		);
 	}
 }
 
-export function* deleteShippingRate( countryCode ) {
+export function* deleteShippingRates( countryCodes ) {
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/${ countryCode }`,
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'DELETE',
+			data: {
+				country_codes: countryCodes,
+			},
 		} );
 
 		return {
-			type: TYPES.DELETE_SHIPPING_RATE,
-			countryCode,
+			type: TYPES.DELETE_SHIPPING_RATES,
+			countryCodes,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping rate.',
+				'There was an error trying to delete shipping rates.',
 				'google-listings-and-ads'
 			)
 		);
@@ -127,50 +130,53 @@ export function* fetchShippingTimes() {
 	}
 }
 
-export function* upsertShippingTime( shippingTime ) {
-	const { countryCode, time } = shippingTime;
+export function* upsertShippingTimes( shippingTime ) {
+	const { countryCodes, time } = shippingTime;
 
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times`,
+			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
 			method: 'POST',
 			data: {
-				country_code: countryCode,
+				country_codes: countryCodes,
 				time,
 			},
 		} );
 
 		return {
-			type: TYPES.UPSERT_SHIPPING_TIME,
+			type: TYPES.UPSERT_SHIPPING_TIMES,
 			shippingTime,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping time.',
+				'There was an error trying to add / update shipping times.',
 				'google-listings-and-ads'
 			)
 		);
 	}
 }
 
-export function* deleteShippingTime( countryCode ) {
+export function* deleteShippingTimes( countryCodes ) {
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times/${ countryCode }`,
+			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
 			method: 'DELETE',
+			data: {
+				country_codes: countryCodes,
+			},
 		} );
 
 		return {
-			type: TYPES.DELETE_SHIPPING_TIME,
-			countryCode,
+			type: TYPES.DELETE_SHIPPING_TIMES,
+			countryCodes,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping time.',
+				'There was an error trying to delete shipping times.',
 				'google-listings-and-ads'
 			)
 		);
@@ -493,4 +499,27 @@ export function* saveTargetAudience( targetAudience ) {
 			)
 		);
 	}
+}
+
+// TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
+export function* upsertShippingRate( shippingRate ) {
+	const { countryCode, currency, rate } = shippingRate;
+	yield upsertShippingRates( {
+		countryCodes: [ countryCode ],
+		currency,
+		rate,
+	} );
+}
+
+export function* deleteShippingRate( countryCode ) {
+	yield deleteShippingRates( [ countryCode ] );
+}
+
+export function* upsertShippingTime( shippingTime ) {
+	const { countryCode, time } = shippingTime;
+	yield upsertShippingTimes( { countryCodes: [ countryCode ], time } );
+}
+
+export function* deleteShippingTime( countryCode ) {
+	yield deleteShippingTimes( [ countryCode ] );
 }

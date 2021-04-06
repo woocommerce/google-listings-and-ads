@@ -29,6 +29,18 @@ const DEFAULT_STATE = {
 	},
 };
 
+const getNextStateForShipping = ( state ) => {
+	return {
+		...state,
+		mc: {
+			...state.mc,
+			shipping: {
+				...state.mc.shipping,
+			},
+		},
+	};
+};
+
 const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
 		case TYPES.RECEIVE_SHIPPING_RATES: {
@@ -38,29 +50,37 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
-		case TYPES.UPSERT_SHIPPING_RATE: {
-			const { shippingRate } = action;
-			const newState = cloneDeep( state );
-			const idx = newState.mc.shipping.rates.findIndex(
-				( el ) => el.countryCode === shippingRate.countryCode
-			);
+		case TYPES.UPSERT_SHIPPING_RATES: {
+			const nextState = getNextStateForShipping( state );
+			const { countryCodes, currency, rate } = action.shippingRate;
+			const rates = [ ...state.mc.shipping.rates ];
 
-			if ( idx >= 0 ) {
-				newState.mc.shipping.rates[ idx ] = shippingRate;
-			} else {
-				newState.mc.shipping.rates.push( shippingRate );
-			}
+			countryCodes.forEach( ( countryCode ) => {
+				const shippingRate = { countryCode, currency, rate };
+				const idx = rates.findIndex(
+					( el ) => el.countryCode === countryCode
+				);
 
-			return newState;
+				if ( idx >= 0 ) {
+					rates[ idx ] = shippingRate;
+				} else {
+					rates.push( shippingRate );
+				}
+			} );
+
+			nextState.mc.shipping.rates = rates;
+			return nextState;
 		}
 
-		case TYPES.DELETE_SHIPPING_RATE: {
-			const { countryCode } = action;
-			const newState = cloneDeep( state );
-			newState.mc.shipping.rates = newState.mc.shipping.rates.filter(
-				( el ) => el.countryCode !== countryCode
+		case TYPES.DELETE_SHIPPING_RATES: {
+			const nextState = getNextStateForShipping( state );
+			const countryCodeSet = new Set( action.countryCodes );
+			const rates = state.mc.shipping.rates.filter(
+				( el ) => ! countryCodeSet.has( el.countryCode )
 			);
-			return newState;
+
+			nextState.mc.shipping.rates = rates;
+			return nextState;
 		}
 
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
@@ -70,29 +90,37 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
-		case TYPES.UPSERT_SHIPPING_TIME: {
-			const { shippingTime } = action;
-			const newState = cloneDeep( state );
-			const idx = newState.mc.shipping.times.findIndex(
-				( el ) => el.countryCode === shippingTime.countryCode
-			);
+		case TYPES.UPSERT_SHIPPING_TIMES: {
+			const nextState = getNextStateForShipping( state );
+			const { countryCodes, time } = action.shippingTime;
+			const times = [ ...state.mc.shipping.times ];
 
-			if ( idx >= 0 ) {
-				newState.mc.shipping.times[ idx ] = shippingTime;
-			} else {
-				newState.mc.shipping.times.push( shippingTime );
-			}
+			countryCodes.forEach( ( countryCode ) => {
+				const shippingTime = { countryCode, time };
+				const idx = times.findIndex(
+					( el ) => el.countryCode === countryCode
+				);
 
-			return newState;
+				if ( idx >= 0 ) {
+					times[ idx ] = shippingTime;
+				} else {
+					times.push( shippingTime );
+				}
+			} );
+
+			nextState.mc.shipping.times = times;
+			return nextState;
 		}
 
-		case TYPES.DELETE_SHIPPING_TIME: {
-			const { countryCode } = action;
-			const newState = cloneDeep( state );
-			newState.mc.shipping.times = newState.mc.shipping.times.filter(
-				( el ) => el.countryCode !== countryCode
+		case TYPES.DELETE_SHIPPING_TIMES: {
+			const nextState = getNextStateForShipping( state );
+			const countryCodeSet = new Set( action.countryCodes );
+			const times = state.mc.shipping.times.filter(
+				( el ) => ! countryCodeSet.has( el.countryCode )
 			);
-			return newState;
+
+			nextState.mc.shipping.times = times;
+			return nextState;
 		}
 
 		case TYPES.RECEIVE_SETTINGS:
