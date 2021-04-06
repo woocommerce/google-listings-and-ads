@@ -84,7 +84,7 @@ class WP {
 	 *
 	 * @return string The edit post link for the given post. Null if the post type does not exist or does not allow an editing UI.
 	 */
-	public function get_edit_post_link( $id, string $context = 'display' ) {
+	public function get_edit_post_link( $id, string $context = 'display' ): string {
 		return get_edit_post_link( $id, $context );
 	}
 }
