@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
@@ -28,12 +29,19 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $meta_handler;
 
 	/**
+	 * @var AttributeManager
+	 */
+	protected $attribute_manager;
+
+	/**
 	 * ProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
+	 * @param AttributeManager   $attribute_manager
 	 */
-	public function __construct( ProductMetaHandler $meta_handler ) {
-		$this->meta_handler = $meta_handler;
+	public function __construct( ProductMetaHandler $meta_handler, AttributeManager $attribute_manager ) {
+		$this->meta_handler      = $meta_handler;
+		$this->attribute_manager = $attribute_manager;
 	}
 
 	/**
@@ -170,11 +178,14 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @return WCProductAdapter
 	 */
-	public static function generate_adapted_product( WC_Product $product, string $target_country ): WCProductAdapter {
+	public function generate_adapted_product( WC_Product $product, string $target_country ): WCProductAdapter {
+		$attributes = $this->attribute_manager->get_all( $product->get_id() );
+
 		return new WCProductAdapter(
 			[
-				'wc_product'    => $product,
-				'targetCountry' => $target_country,
+				'wc_product'     => $product,
+				'targetCountry'  => $target_country,
+				'gla_attributes' => $attributes,
 			]
 		);
 	}

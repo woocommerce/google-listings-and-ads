@@ -122,6 +122,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductStatistics::class      => true,
 		TransientsInterface::class    => true,
 		MerchantCenterService::class  => true,
+		AttributeManager::class       => true,
+		InputForm::class              => true,
+		TabInitializer::class         => true,
 	];
 
 	/**
@@ -195,12 +198,21 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
+		// Product attributes
+		$this->conditionally_share_with_tags( AttributeManager::class );
+		$this->conditionally_share_with_tags( InputForm::class, AttributeManager::class );
+		$this->conditionally_share_with_tags( TabInitializer::class, Admin::class, InputForm::class );
+
+		// Integrations
+		// todo: move this (and other integration classes) to a new service provider class
+		$this->conditionally_share_with_tags( YoastWooCommerceSeo::class );
+
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductStatistics::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, AttributeManager::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
@@ -221,14 +233,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share admin meta boxes
 		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class );
 		$this->conditionally_share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class );
-
-		$this->conditionally_share_with_tags( AttributeManager::class );
-		$this->conditionally_share_with_tags( InputForm::class, AttributeManager::class );
-		$this->conditionally_share_with_tags( TabInitializer::class, Admin::class, InputForm::class );
-
-		// integrations
-		// todo: move this (and other integration classes) to a new service provider class
-		$this->conditionally_share_with_tags( YoastWooCommerceSeo::class );
 
 		$this->share_with_tags( PHPViewFactory::class );
 
