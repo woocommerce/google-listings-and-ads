@@ -158,8 +158,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 		$this->share(
 			GoogleProductService::class,
-			Google_Service_ShoppingContent::class,
-			Merchant::class
+			Google_Service_ShoppingContent::class
 		);
 	}
 

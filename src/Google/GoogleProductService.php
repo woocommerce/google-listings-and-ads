@@ -3,10 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Exception as GoogleException;
 use Google_Service_ShoppingContent as GoogleShoppingService;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
@@ -22,8 +23,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-class GoogleProductService implements Service {
+class GoogleProductService implements OptionsAwareInterface, Service {
 
+	use OptionsAwareTrait;
 	use ValidateInterface;
 
 	public const INTERNAL_ERROR_REASON = 'internalError';
@@ -45,19 +47,12 @@ class GoogleProductService implements Service {
 	protected $shopping_service;
 
 	/**
-	 * @var Merchant
-	 */
-	protected $merchant;
-
-	/**
 	 * GoogleProductService constructor.
 	 *
 	 * @param GoogleShoppingService $shopping_service
-	 * @param Merchant              $merchant
 	 */
-	public function __construct( GoogleShoppingService $shopping_service, Merchant $merchant ) {
+	public function __construct( GoogleShoppingService $shopping_service ) {
 		$this->shopping_service = $shopping_service;
-		$this->merchant         = $merchant;
 	}
 
 	/**
@@ -68,7 +63,7 @@ class GoogleProductService implements Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function get( string $product_id ): GoogleProduct {
-		$merchant_id = $this->merchant->get_id();
+		$merchant_id = $this->options->get_merchant_id();
 
 		return $this->shopping_service->products->get( $merchant_id, $product_id );
 	}
@@ -81,7 +76,7 @@ class GoogleProductService implements Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function insert( GoogleProduct $product ): GoogleProduct {
-		$merchant_id = $this->merchant->get_id();
+		$merchant_id = $this->options->get_merchant_id();
 
 		return $this->shopping_service->products->insert( $merchant_id, $product );
 	}
@@ -92,7 +87,7 @@ class GoogleProductService implements Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function delete( string $product_id ) {
-		$merchant_id = $this->merchant->get_id();
+		$merchant_id = $this->options->get_merchant_id();
 
 		$this->shopping_service->products->delete( $merchant_id, $product_id );
 	}
@@ -152,7 +147,7 @@ class GoogleProductService implements Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	protected function custom_batch( array $products, string $method ): BatchProductResponse {
-		$merchant_id     = $this->merchant->get_id();
+		$merchant_id     = $this->options->get_merchant_id();
 		$request_entries = [];
 
 		// An array of WooCommerce product IDs mapped to each batch ID. Used to parse Google's batch response.
