@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
@@ -45,6 +48,11 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	protected $wc_product;
 
 	/**
+	 * @var AttributeInterface[]
+	 */
+	protected $gla_attributes = [];
+
+	/**
 	 * @var bool Whether tax is excluded from product price
 	 */
 	protected $tax_excluded;
@@ -64,10 +72,12 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		}
 
 		$this->wc_product = $array['wc_product'];
+		$this->set_gla_attributes( $array['gla_attributes'] );
 		$this->map_woocommerce_product();
 
-		// Google doesn't expect this field, so it's best to remove it
+		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_product'] );
+		unset( $array['gla_attributes'] );
 
 		parent::mapTypes( $array );
 	}
@@ -506,15 +516,23 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$metadata->addPropertyConstraint( 'offerId', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'title', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'description', new Assert\NotBlank() );
+
 		$metadata->addPropertyConstraint( 'link', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'link', new Assert\Url() );
+
 		$metadata->addPropertyConstraint( 'imageLink', new Assert\NotBlank() );
 		$metadata->addPropertyConstraint( 'imageLink', new Assert\Url() );
 		$metadata->addPropertyConstraint( 'additionalImageLinks', new Assert\All( [ 'constraints' => [ new Assert\Url() ] ] ) );
+
 		$metadata->addGetterConstraint( 'price', new Assert\NotNull() );
 		$metadata->addGetterConstraint( 'price', new GooglePriceConstraint() );
 		$metadata->addGetterConstraint( 'salePrice', new GooglePriceConstraint() );
+
 		$metadata->addConstraint( new Assert\Callback( 'validate_item_group_id' ) );
+
+		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( '/^\d{8}(?:\d{4,6})?$/' ) );
+		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'alnum' ) ); // alphanumeric
+		$metadata->addPropertyConstraint( 'mpn', new Assert\Length( null, 0, 70 ) ); // maximum 70 characters
 	}
 
 	/**
@@ -535,5 +553,45 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 */
 	public function get_wc_product(): WC_Product {
 		return $this->wc_product;
+	}
+
+	/**
+	 * @return $this
+	 */
+	protected function map_extra_attributes(): WCProductAdapter {
+		// GTIN
+		$this->setGtin( $this->get_attribute_value( GTIN::get_id() ) );
+
+		// MPN
+		$this->setMpn( $this->get_attribute_value( MPN::get_id() ) );
+
+		return $this;
+	}
+
+	/**
+	 * @param string $attribute_id
+	 *
+	 * @return mixed Filtered value of the attribute
+	 */
+	protected function get_attribute_value( string $attribute_id ) {
+		$value = null;
+		if ( isset( $this->gla_attributes[ $attribute_id ] ) ) {
+			$value = $this->gla_attributes[ $attribute_id ]->get_value();
+		}
+
+		return apply_filters( "gla_product_attributes_value_filter_{$attribute_id}", $value, $this->get_wc_product()->get_id() );
+	}
+
+	/**
+	 * @param AttributeInterface[] $attributes
+	 *
+	 * @return $this
+	 */
+	public function set_gla_attributes( array $attributes ): WCProductAdapter {
+		foreach ( $attributes as $attribute ) {
+			$this->gla_attributes[ $attribute::get_id() ] = $attribute;
+		}
+
+		return $this->map_extra_attributes();
 	}
 }

@@ -85,7 +85,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function prefix_meta_key( string $key ): string {
-		$prefix = self::get_meta_key_prefix();
+		$prefix = $this->get_meta_key_prefix();
 
 		return "{$prefix}_{$key}";
 	}

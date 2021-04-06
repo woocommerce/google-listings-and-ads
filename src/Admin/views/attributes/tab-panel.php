@@ -1,0 +1,41 @@
+<?php
+declare( strict_types=1 );
+
+use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPView;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * @var PHPView $this
+ */
+
+/**
+ * @var \Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\InputForm $form
+ */
+$form = $this->form;
+
+/**
+ * @var int
+ */
+$product_id = $this->product_id;
+
+?>
+
+<div id="gla_attributes" class="panel woocommerce_options_panel">
+	<div class="options_group">
+		<h2><?php esc_html_e( 'Product attributes', 'google-listings-and-ads' ); ?></h2>
+		<?php foreach ( $form->get_inputs( [ 'product_id' => $product_id ] ) as $input ) : ?>
+			<?php
+			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo $this->render_partial(
+				'src/Admin/views/inputs/input',
+				[
+					'input' => $input,
+					'form'  => $form,
+				]
+			);
+			?>
+		<?php endforeach; ?>
+	</div>
+</div>
+
