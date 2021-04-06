@@ -131,7 +131,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 *
 	 * @return int
 	 */
-	private function get_issues_lifetime(): int {
+	protected function get_issues_lifetime(): int {
 		return apply_filters( 'woocommerce_gla_mc_issues_lifetime', self::ISSUES_LIFETIME );
 	}
 
