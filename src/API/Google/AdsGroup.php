@@ -19,10 +19,12 @@ use Google\Ads\GoogleAds\V6\Resources\AdGroupCriterion;
 use Google\Ads\GoogleAds\V6\Services\AdGroupAdOperation;
 use Google\Ads\GoogleAds\V6\Services\AdGroupCriterionOperation;
 use Google\Ads\GoogleAds\V6\Services\AdGroupOperation;
+use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V6\Services\MutateAdGroupAdResult;
 use Google\Ads\GoogleAds\V6\Services\MutateAdGroupCriterionResult;
 use Google\Ads\GoogleAds\V6\Services\MutateAdGroupResult;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\ValidationException;
 
 /**
  * Class AdsGroup
@@ -35,6 +37,7 @@ use Google\ApiCore\ApiException;
 class AdsGroup implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
+	use AdsQueryTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -75,6 +78,24 @@ class AdsGroup implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Delete the additional objects for the specified campaign:
+	 * Ad group
+	 * Ad group ad
+	 * Listing group
+	 *
+	 * Should only be called before removing the campaign.
+	 *
+	 * @param string $campaign_resource_name
+	 *
+	 * @throws ApiException|ValidationException If any object isn't deleted.
+	 */
+	public function delete_for_campaign( string $campaign_resource_name ) {
+		$this->delete_shopping_listing_group( $campaign_resource_name );
+		$this->delete_ad_group_ad( $campaign_resource_name );
+		$this->delete_ad_group( $campaign_resource_name );
+	}
+
+	/**
 	 * @param string $campaign_resource_name
 	 * @param string $campaign_name
 	 *
@@ -97,6 +118,33 @@ class AdsGroup implements OptionsAwareInterface {
 		$created_ad_group = $this->mutate_ad_group( $operation );
 
 		return $created_ad_group->getResourceName();
+	}
+
+	/**
+	 * @param string $campaign_resource_name
+	 *
+	 * @return array resource names of deleted ad groups
+	 * @throws ApiException If the ad group isn't deleted.
+	 * @throws ValidationException If the ad group query has no results.
+	 */
+	public function delete_ad_group( string $campaign_resource_name ): array {
+		$return   = [];
+		$query    = $this->build_query(
+			[ 'ad_group.resource_name' ],
+			'ad_group',
+			'ad_group.campaign = "' . $campaign_resource_name . '"'
+		);
+		$response = $this->query( $query );
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $response->iterateAllElements() as $row ) {
+			$resource_name = $row->getAdGroup()->getResourceName();
+			$operation     = new AdGroupOperation();
+			$operation->setRemove( $resource_name );
+			$deleted_ad_group = $this->mutate_ad_group( $operation );
+			$return[]         = $deleted_ad_group->getResourceName();
+		}
+		return $return;
 	}
 
 	/**
@@ -138,6 +186,33 @@ class AdsGroup implements OptionsAwareInterface {
 	}
 
 	/**
+	 * @param string $campaign_resource_name
+	 *
+	 * @return array resource names of deleted ad group ads
+	 * @throws ApiException If the ad group ad isn't deleted.
+	 * @throws ValidationException If the ad group ad query has no results.
+	 */
+	public function delete_ad_group_ad( string $campaign_resource_name ): array {
+		$return   = [];
+		$query    = $this->build_query(
+			[ 'ad_group_ad.resource_name' ],
+			'ad_group_ad',
+			'ad_group.campaign = "' . $campaign_resource_name . '"'
+		);
+		$response = $this->query( $query );
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $response->iterateAllElements() as $row ) {
+			$resource_name = $row->getAdGroupAd()->getResourceName();
+			$operation     = new AdGroupAdOperation();
+			$operation->setRemove( $resource_name );
+			$deleted_ad_group_ad = $this->mutate_ad_group_ad( $operation );
+			$return[]            = $deleted_ad_group_ad->getResourceName();
+		}
+		return $return;
+	}
+
+	/**
 	 * @param AdGroupAdOperation $operation
 	 *
 	 * @return MutateAdGroupAdResult
@@ -170,9 +245,37 @@ class AdsGroup implements OptionsAwareInterface {
 		// Creates an ad group criterion operation.
 		$operation = new AdGroupCriterionOperation();
 		$operation->setCreate( $ad_group_criterion );
-		$created_ad_group_ad = $this->mutate_shopping_listing_group( $operation );
+		$created_ad_group_criterion = $this->mutate_shopping_listing_group( $operation );
 
-		return $created_ad_group_ad->getResourceName();
+		return $created_ad_group_criterion->getResourceName();
+	}
+
+	/**
+	 * @param string $campaign_resource_name
+	 *
+	 * @return array resource names of deleted shopping list groups
+	 * @throws ApiException If the ad group criterion isn't deleted.
+	 * @throws ValidationException If the ad group criterion query has no results.
+	 */
+	protected function delete_shopping_listing_group( string $campaign_resource_name ): array {
+		$return   = [];
+		$query    = $this->build_query(
+			[ 'ad_group_criterion.resource_name' ],
+			'ad_group_criterion',
+			'ad_group.campaign = "' . $campaign_resource_name . '"'
+		);
+		$response = $this->query( $query );
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $response->iterateAllElements() as $row ) {
+			$resource_name = $row->getAdGroupCriterion()->getResourceName();
+			$operation     = new AdGroupCriterionOperation();
+			$operation->setRemove( $resource_name );
+			$deleted_ad_group_criterion = $this->mutate_shopping_listing_group( $operation );
+			$return[]                   = $deleted_ad_group_criterion->getResourceName();
+		}
+
+		return $return;
 	}
 
 	/**

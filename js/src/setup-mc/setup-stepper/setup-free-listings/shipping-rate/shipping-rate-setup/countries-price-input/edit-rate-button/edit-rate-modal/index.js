@@ -17,12 +17,10 @@ import './index.scss';
 
 const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
-	const { upsertShippingRate, deleteShippingRate } = useAppDispatch();
+	const { upsertShippingRates, deleteShippingRates } = useAppDispatch();
 
 	const handleDeleteClick = () => {
-		rate.countries.forEach( ( el ) => {
-			deleteShippingRate( el );
-		} );
+		deleteShippingRates( rate.countries );
 
 		onRequestClose();
 	};
@@ -38,20 +36,19 @@ const EditRateModal = ( props ) => {
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, price } = values;
 
-		countryCodes.forEach( ( el ) => {
-			upsertShippingRate( {
-				countryCode: el,
-				currency,
-				rate: price,
-			} );
+		upsertShippingRates( {
+			countryCodes,
+			currency,
+			rate: price,
 		} );
 
 		const valuesCountrySet = new Set( values.countryCodes );
-		rate.countries.forEach( ( el ) => {
-			if ( ! valuesCountrySet.has( el ) ) {
-				deleteShippingRate( el );
-			}
-		} );
+		const deletedCountryCodes = rate.countries.filter(
+			( el ) => ! valuesCountrySet.has( el )
+		);
+		if ( deletedCountryCodes.length ) {
+			deleteShippingRates( deletedCountryCodes );
+		}
 
 		onRequestClose();
 	};

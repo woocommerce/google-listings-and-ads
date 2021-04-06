@@ -218,9 +218,15 @@ class AdsCampaign implements OptionsAwareInterface {
 	public function delete_campaign( int $campaign_id ): int {
 		try {
 			$resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
-			$operation     = new CampaignOperation();
+
+			$this->ads_group->delete_for_campaign( $resource_name );
+
+			$operation = new CampaignOperation();
 			$operation->setRemove( $resource_name );
 			$deleted_campaign = $this->mutate_campaign( $operation );
+
+			$this->ads_campaign_budget->delete_campaign_budget( $campaign_id );
+
 			return $this->parse_campaign_id( $deleted_campaign->getResourceName() );
 		} catch ( ApiException $e ) {
 			do_action( 'gla_ads_client_exception', $e, __METHOD__ );

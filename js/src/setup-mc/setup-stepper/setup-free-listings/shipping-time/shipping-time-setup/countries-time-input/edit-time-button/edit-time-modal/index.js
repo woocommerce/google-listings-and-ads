@@ -17,12 +17,10 @@ import { useAppDispatch } from '.~/data';
 
 const EditTimeModal = ( props ) => {
 	const { time: groupedTime, onRequestClose } = props;
-	const { upsertShippingTime, deleteShippingTime } = useAppDispatch();
+	const { upsertShippingTimes, deleteShippingTimes } = useAppDispatch();
 
 	const handleDeleteClick = () => {
-		groupedTime.countries.forEach( ( el ) => {
-			deleteShippingTime( el );
-		} );
+		deleteShippingTimes( groupedTime.countries );
 
 		onRequestClose();
 	};
@@ -36,21 +34,15 @@ const EditTimeModal = ( props ) => {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		const { countryCodes, time } = values;
-
-		countryCodes.forEach( ( el ) => {
-			upsertShippingTime( {
-				countryCode: el,
-				time,
-			} );
-		} );
+		upsertShippingTimes( values );
 
 		const valuesCountrySet = new Set( values.countryCodes );
-		groupedTime.countries.forEach( ( el ) => {
-			if ( ! valuesCountrySet.has( el ) ) {
-				deleteShippingTime( el );
-			}
-		} );
+		const deletedCountryCodes = groupedTime.countries.filter(
+			( el ) => ! valuesCountrySet.has( el )
+		);
+		if ( deletedCountryCodes.length ) {
+			deleteShippingTimes( deletedCountryCodes );
+		}
 
 		onRequestClose();
 	};
