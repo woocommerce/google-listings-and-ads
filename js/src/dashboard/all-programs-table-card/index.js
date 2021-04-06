@@ -120,7 +120,9 @@ const AllProgramsTableCard = ( props ) => {
 								) : (
 									<ResumeProgramButton programId={ el.id } />
 								) }
-								<RemoveProgramButton programId={ el.id } />
+								{ el.id !== 0 && (
+									<RemoveProgramButton programId={ el.id } />
+								) }
 							</div>
 						),
 					},
