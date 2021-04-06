@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, getNewPath, onQueryChange } from '@woocommerce/navigation';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
@@ -53,13 +53,13 @@ const headers = [
 const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 	const {
-		data: finalCountryCodesdata,
+		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
 	const map = useCountryKeyNameMap();
 	const { formatAmount } = useCurrencyFactory();
 
-	if ( ! finalCountryCodesdata || ! adsCampaignsData ) {
+	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
 		return <AppSpinner />;
 	}
 
@@ -73,7 +73,17 @@ const AllProgramsTableCard = ( props ) => {
 				'google-listings-and-ads'
 			),
 			dailyBudget: __( 'Free', 'google-listings-and-ads' ),
-			country: finalCountryCodesdata.length,
+			country: (
+				<span>
+					{ map[ finalCountryCodesData[ 0 ] ] }
+					{ finalCountryCodesData.length >= 2 &&
+						sprintf(
+							// translators: %s: number of campaigns, with minimum value of 1.
+							__( ' + %s more', 'google-listings-and-ads' ),
+							finalCountryCodesData.length - 1
+						) }
+				</span>
+			),
 			active: true,
 		},
 		...adsCampaignsData.map( ( el ) => {
