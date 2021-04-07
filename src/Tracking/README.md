@@ -90,6 +90,10 @@ All event names are prefixed by `wcadmin_gla_`.
 * `disconnected_accounts` - Accounts are disconnected from the Setting page
   * `context`: (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
 
+* `add_paid_campaign_clicked` - "Add paid campaign" button is clicked.
+  * `context`: indicate the place where the button is located.
+  * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'` or `'/google/campaigns/create'`.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
