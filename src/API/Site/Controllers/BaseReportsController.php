@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use DateTime;
+use DateTimeZone;
 use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 
@@ -123,15 +125,20 @@ abstract class BaseReportsController extends BaseController {
 	 * @param array $query_args Array of query arguments.
 	 */
 	protected function normalize_timezones( &$query_args ) {
-		$local_tz = new \DateTimeZone( wc_timezone_string() );
+		$local_tz = new DateTimeZone( wc_timezone_string() );
+
 		foreach ( [ 'before', 'after' ] as $query_arg_key ) {
 			if ( isset( $query_args[ $query_arg_key ] ) && is_string( $query_args[ $query_arg_key ] ) ) {
+
 				// Assume that unspecified timezone is a local timezone.
-				$datetime = new \DateTime( $query_args[ $query_arg_key ], $local_tz );
+				$datetime = new DateTime( $query_args[ $query_arg_key ], $local_tz );
+
 				// In case timezone was forced by using +HH:MM, convert to local timezone.
 				$datetime->setTimezone( $local_tz );
 				$query_args[ $query_arg_key ] = $datetime;
-			} elseif ( isset( $query_args[ $query_arg_key ] ) && is_a( $query_args[ $query_arg_key ], 'DateTime' ) ) {
+
+			} elseif ( isset( $query_args[ $query_arg_key ] ) && $query_args[ $query_arg_key ] instanceof DateTime ) {
+
 				// In case timezone is in other timezone, convert to local timezone.
 				$query_args[ $query_arg_key ]->setTimezone( $local_tz );
 			}
