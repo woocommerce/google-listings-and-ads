@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import getMonthlyMaxEstimated from '.~/setup-ads/ads-stepper/create-campaign/getMonthlyMaxEstimated';
+import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
 import './index.scss';
 import FreeAdCredit from './free-ad-credit';
 import BudgetRecommendation from './budget-recommendation';
