@@ -18,6 +18,7 @@ defined( 'ABSPATH' ) || exit;
 class ShippingTimeBatchController extends ShippingTimeController {
 
 	use BatchSchemaTrait;
+	use BatchShippingTrait;
 
 	/**
 	 * Register rest routes with WordPress.

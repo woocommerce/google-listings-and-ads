@@ -18,6 +18,7 @@ defined( 'ABSPATH' ) || exit;
 class ShippingRateBatchController extends ShippingRateController {
 
 	use BatchSchemaTrait;
+	use BatchShippingTrait;
 
 	/**
 	 * Register rest routes with WordPress.
