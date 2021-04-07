@@ -24,7 +24,7 @@ class EditPaidAdsCampaign implements Service, Registerable {
 					[
 						'title'  => __( 'Edit Paid Ads Campaign', 'google-listings-and-ads' ),
 						'parent' => 'google-dashboard',
-						'path'   => '/google/edit-paid-ads-campaign',
+						'path'   => '/google/campaigns/edit',
 						'id'     => 'google-edit-paid-ads-campaign',
 					]
 				);

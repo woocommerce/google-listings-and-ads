@@ -20,7 +20,7 @@ const EditProgramLink = ( props ) => {
 	const url =
 		programId === 0
 			? getNewPath( { programId }, '/google/edit-free-campaign' )
-			: getNewPath( { programId }, '/google/edit-paid-ads-campaign' );
+			: getNewPath( { programId }, '/google/campaigns/edit' );
 
 	return (
 		<TrackableLink
