@@ -38,6 +38,10 @@ const SwitchUrlCard = ( props ) => {
 		receiveMCAccount( account );
 	};
 
+	const handleUseDifferentMCClick = () => {
+		onSelectAnotherAccount();
+	};
+
 	return (
 		<Section.Card className="gla-switch-url-card">
 			<Section.Card.Body>
@@ -75,7 +79,10 @@ const SwitchUrlCard = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<AppTextButton isSecondary onClick={ onSelectAnotherAccount }>
+				<AppTextButton
+					isSecondary
+					onClick={ handleUseDifferentMCClick }
+				>
 					{ __(
 						'Or, use a different Merchant Center account',
 						'google-listings-and-ads'
