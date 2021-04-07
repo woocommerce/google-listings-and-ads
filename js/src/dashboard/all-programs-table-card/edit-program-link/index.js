@@ -8,17 +8,14 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import TrackableLink from '.~/components/trackable-link';
-
-/**
- * Internal dependencies
- */
 import './index.scss';
+import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 
 const EditProgramLink = ( props ) => {
 	const { programId } = props;
 
 	const url =
-		programId === 0
+		programId === FREE_LISTINGS_PROGRAM_ID
 			? getNewPath( { programId }, '/google/edit-free-campaign' )
 			: getNewPath( { programId }, '/google/edit-paid-ads-campaign' );
 

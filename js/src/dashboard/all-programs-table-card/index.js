@@ -20,8 +20,7 @@ import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
-
-const FREE_LISTINGS_PROGRAM_ID = 0;
+import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 
 const headers = [
 	{
