@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, getNewPath, onQueryChange } from '@woocommerce/navigation';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
@@ -21,6 +21,8 @@ import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
 
+const FREE_LISTINGS_PROGRAM_ID = 0;
+
 const headers = [
 	{
 		key: 'title',
@@ -36,8 +38,8 @@ const headers = [
 		isSortable: true,
 	},
 	{
-		key: 'spend',
-		label: __( 'Spend', 'google-listings-and-ads' ),
+		key: 'dailyBudget',
+		label: __( 'Daily budget', 'google-listings-and-ads' ),
 		isSortable: true,
 	},
 	{ key: 'actions', label: '', required: true },
@@ -53,13 +55,13 @@ const headers = [
 const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 	const {
-		data: finalCountryCodesdata,
+		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
 	const map = useCountryKeyNameMap();
 	const { formatAmount } = useCurrencyFactory();
 
-	if ( ! finalCountryCodesdata || ! adsCampaignsData ) {
+	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
 		return <AppSpinner />;
 	}
 
@@ -67,20 +69,30 @@ const AllProgramsTableCard = ( props ) => {
 	// using the above query (e.g. orderby, order and page) as parameter.
 	const data = [
 		{
-			id: 0,
+			id: FREE_LISTINGS_PROGRAM_ID,
 			title: __(
 				'Google Shopping Free Listings',
 				'google-listings-and-ads'
 			),
-			spend: __( 'Free', 'google-listings-and-ads' ),
-			country: finalCountryCodesdata.length,
+			dailyBudget: __( 'Free', 'google-listings-and-ads' ),
+			country: (
+				<span>
+					{ map[ finalCountryCodesData[ 0 ] ] }
+					{ finalCountryCodesData.length >= 2 &&
+						sprintf(
+							// translators: %s: number of campaigns, with minimum value of 1.
+							__( ' + %s more', 'google-listings-and-ads' ),
+							finalCountryCodesData.length - 1
+						) }
+				</span>
+			),
 			active: true,
 		},
 		...adsCampaignsData.map( ( el ) => {
 			return {
 				id: el.id,
 				title: el.name,
-				spend: formatAmount( el.amount ),
+				dailyBudget: formatAmount( el.amount ),
 				country: map[ el.country ],
 				active: el.status === 'enabled',
 			};
@@ -101,7 +113,7 @@ const AllProgramsTableCard = ( props ) => {
 						) }
 						href={ getNewPath( {}, '/google/setup-ads' ) }
 					>
-						{ __( 'Add Paid Campaign', 'google-listings-and-ads' ) }
+						{ __( 'Add paid campaign', 'google-listings-and-ads' ) }
 					</Link>
 				</div>
 			}
@@ -110,7 +122,7 @@ const AllProgramsTableCard = ( props ) => {
 				return [
 					{ display: el.title },
 					{ display: el.country },
-					{ display: el.spend },
+					{ display: el.dailyBudget },
 					{
 						display: (
 							<div className="program-actions">
@@ -120,7 +132,9 @@ const AllProgramsTableCard = ( props ) => {
 								) : (
 									<ResumeProgramButton programId={ el.id } />
 								) }
-								<RemoveProgramButton programId={ el.id } />
+								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
+									<RemoveProgramButton programId={ el.id } />
+								) }
 							</div>
 						),
 					},

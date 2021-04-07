@@ -19,6 +19,25 @@ export function handleFetchError( error, message ) {
 	console.log( error );
 }
 
+/**
+ * CountryCode
+ *
+ * @typedef {string} CountryCode
+ */
+
+/**
+ * Individual shipping rate.
+ *
+ * @typedef {Object} ShippingRate
+ * @property {CountryCode} countryCode Destination country code.
+ * @property {string} currency Currency of the price.
+ * @property {number} rate Shipping price.
+ */
+
+/**
+ *
+ * @return {Array<ShippingRate>} Array of individual shipping rates.
+ */
 export function* fetchShippingRates() {
 	try {
 		const response = yield apiFetch( {
@@ -48,6 +67,20 @@ export function* fetchShippingRates() {
 	}
 }
 
+/**
+ * Aggregated shipping rate.
+ *
+ * @typedef {Object} AggregatedShippingRate
+ * @property {Array<CountryCode>} countries Array of destination country codes.
+ * @property {string} currency Currency of the price.
+ * @property {number} rate Shipping price.
+ */
+
+/**
+ * Updates or inserts given aggregated shipping rate.
+ *
+ * @param {AggregatedShippingRate} shippingRate
+ */
 export function* upsertShippingRates( shippingRate ) {
 	const { countryCodes, currency, rate } = shippingRate;
 
@@ -77,6 +110,11 @@ export function* upsertShippingRates( shippingRate ) {
 	}
 }
 
+/**
+ * Deletes shipping rates associated with given country codes.
+ *
+ * @param {Array<CountryCode>} countryCodes
+ */
 export function* deleteShippingRates( countryCodes ) {
 	try {
 		yield apiFetch( {
@@ -101,7 +139,18 @@ export function* deleteShippingRates( countryCodes ) {
 		);
 	}
 }
+/**
+ * Individual shipping time.
+ *
+ * @typedef {Object} ShippingTime
+ * @property {CountryCode} countryCode Destination country code.
+ * @property {number} time Shipping time.
+ */
 
+/**
+ *
+ * @return {Array<ShippingTime>} Array of individual shipping times.
+ */
 export function* fetchShippingTimes() {
 	try {
 		const response = yield apiFetch( {
@@ -130,6 +179,19 @@ export function* fetchShippingTimes() {
 	}
 }
 
+/**
+ * Aggregated shipping time.
+ *
+ * @typedef {Object} AggregatedShippingTime
+ * @property {Array<CountryCode>} countries Array of destination country codes.
+ * @property {number} time Shipping time.
+ */
+
+/**
+ * Updates or inserts given aggregated shipping rate.
+ *
+ * @param {AggregatedShippingTime} shippingTime
+ */
 export function* upsertShippingTimes( shippingTime ) {
 	const { countryCodes, time } = shippingTime;
 
@@ -158,6 +220,11 @@ export function* upsertShippingTimes( shippingTime ) {
 	}
 }
 
+/**
+ * Deletes shipping times associated with given country codes.
+ *
+ * @param {Array<CountryCode>} countryCodes
+ */
 export function* deleteShippingTimes( countryCodes ) {
 	try {
 		yield apiFetch( {

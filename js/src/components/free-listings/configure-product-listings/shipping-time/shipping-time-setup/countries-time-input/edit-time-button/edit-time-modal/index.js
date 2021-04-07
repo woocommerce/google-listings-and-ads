@@ -121,6 +121,6 @@ const EditTimeModal = ( { time, onDelete, onSubmit, onRequestClose } ) => {
 export default EditTimeModal;
 
 /**
- * @typedef {import("../../../countries-form.js").AggregatedShippingTime} AggregatedShippingTime
- * @typedef {import("../../../countries-form.js").CountryCode} CountryCode
+ * @typedef { import(".~/data/actions").AggregatedShippingTime } AggregatedShippingTime
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

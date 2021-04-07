@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\BillingSetupStatus;
@@ -173,9 +174,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function disconnect_ads_account_callback(): callable {
 		return function() {
-			$this->middleware->disconnect_ads_account();
-			$this->account_state->update( [] );
-			$this->options->update( OptionsInterface::ADS_CONVERSION_ACTION, [] );
+			$this->container->get( AdsService::class )->disconnect();
 
 			return [
 				'status'  => 'success',

@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { useState } from '@wordpress/element';
-
-/**
  * Internal dependencies
  */
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -12,22 +7,25 @@ import CountriesTimeInput from './countries-time-input';
 import getCountriesTimeArray from './getCountriesTimeArray';
 
 /**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ * @typedef { import(".~/data/actions").ShippingTime } ShippingTime
+ * @typedef { import(".~/data/actions").AggregatedShippingTime } AggregatedShippingTime
+ */
+
+/**
  * Partial form to provide shipping times for individual countries,
  * with an UI, that allows to aggregate countries with the same time.
  *
  * @param {Object} props
- * @param {Array<ShippingTimeFromServerSide>} props.shippingTimes Array of individual shipping times to be used as the initial values of the form.
+ * @param {Array<ShippingTime>} props.value Array of individual shipping times to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
+ * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChangeCallback}
  */
-
 export default function ShippingCountriesForm( {
-	shippingTimes: savedShippingTimes,
+	value: shippingTimes,
 	selectedCountryCodes,
+	onChange,
 } ) {
-	const [ shippingTimes, updateShippingTimes ] = useState(
-		savedShippingTimes
-	);
-
 	const actualCountryCount = shippingTimes.length;
 	const actualCountries = new Map(
 		shippingTimes.map( ( time ) => [ time.countryCode, time ] )
@@ -40,6 +38,7 @@ export default function ShippingCountriesForm( {
 	// Group countries with the same time.
 	const countriesTimeArray = getCountriesTimeArray( shippingTimes );
 
+	// Prefill to-be-added time.
 	if ( countriesTimeArray.length === 0 ) {
 		countriesTimeArray.push( {
 			countries: selectedCountryCodes,
@@ -47,9 +46,12 @@ export default function ShippingCountriesForm( {
 		} );
 	}
 
-	// TODO: move those handlers up to the ancestors and consider optimizing upserting.
+	// Given the limitations of `<Form>` component we can communicate up only onChange.
+	// Therefore we loose the infromation whether it was add, change, delete.
+	// In autosave/setup MC case, we would have to either re-calculate to deduct that information,
+	// or fix that in `<Form>` component.
 	function handleDelete( deletedCountries ) {
-		updateShippingTimes(
+		onChange(
 			shippingTimes.filter(
 				( time ) => ! deletedCountries.includes( time.countryCode )
 			)
@@ -62,7 +64,7 @@ export default function ShippingCountriesForm( {
 			time,
 		} ) );
 
-		updateShippingTimes( shippingTimes.concat( addedIndividualTimes ) );
+		onChange( shippingTimes.concat( addedIndividualTimes ) );
 	}
 	function handleChange( { countries, time }, deletedCountries = [] ) {
 		deletedCountries.forEach( ( countryCode ) =>
@@ -76,7 +78,7 @@ export default function ShippingCountriesForm( {
 				time,
 			} );
 		} );
-		updateShippingTimes( Array.from( actualCountries.values() ) );
+		onChange( Array.from( actualCountries.values() ) );
 	}
 
 	return (
@@ -108,33 +110,3 @@ export default function ShippingCountriesForm( {
 		</div>
 	);
 }
-
-/**
- * Individual shipping time.
- *
- * @typedef {Object} ShippingTimeFromServerSide
- * @property {CountryCode} countryCode Destination country code.
- * @property {number} time Shipping time.
- */
-
-/**
- * Individual shipping time.
- *
- * @typedef {Object} ShippingTime
- * @property {CountryCode} countryCode Destination country code.
- * @property {number} time Shipping time.
- */
-
-/**
- * Aggregated shipping time.
- *
- * @typedef {Object} AggregatedShippingTime
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {number} time Shipping time.
- */
-
-/**
- * CountryCode
- *
- * @typedef {string} CountryCode
- */

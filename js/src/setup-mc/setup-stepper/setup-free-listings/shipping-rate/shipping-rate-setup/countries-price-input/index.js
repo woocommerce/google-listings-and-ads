@@ -7,7 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
@@ -33,7 +33,7 @@ const CountriesPriceInput = ( props ) => {
 
 	return (
 		<div className="gla-countries-price-input">
-			<AppInputControl
+			<AppInputPriceControl
 				label={
 					<div className="label">
 						<div>

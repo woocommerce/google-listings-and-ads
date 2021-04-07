@@ -11,6 +11,7 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import toAccountText from '.~/utils/toAccountText';
+import useAdminUrl from '.~/hooks/useAdminUrl';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
@@ -22,6 +23,7 @@ import DisconnectModal from './disconnect-modal';
 import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
 
 export default function DisconnectAccounts() {
+	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
@@ -54,8 +56,8 @@ export default function DisconnectAccounts() {
 			queueRecordEvent( ...eventArgs );
 
 			// Force reload WC admin page to initiate the Get Started page.
-			const path = `/wp-admin/${ getNewPath( null, '/google/start' ) }`;
-			window.location.href = path;
+			const path = getNewPath( null, '/google/start' );
+			window.location.href = adminUrl + path;
 		} else {
 			recordEvent( ...eventArgs );
 		}
