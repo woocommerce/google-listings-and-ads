@@ -10,35 +10,19 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class MerchantReportQuery extends MerchantQuery {
+abstract class MerchantReportQuery extends MerchantQuery {
 
 	use ReportQueryTrait;
 
 	/**
-	 * Type of report (free_listings or products).
-	 *
-	 * @var string
-	 */
-	protected $type = 'free_listings';
-
-	/**
 	 * Query constructor.
 	 *
-	 * @param string $type Report type (campaigns or products).
-	 * @param array  $args Query arguments.
+	 * @param array $args Query arguments.
 	 */
-	public function __construct( string $type, array $args ) {
-		$this->type = $type;
+	public function __construct( array $args ) {
 		parent::__construct( 'MerchantPerformanceView' );
 
-		if ( 'products' === $this->type ) {
-			$this->columns(
-				[
-					'id' => 'segments.offer_id',
-				]
-			);
-		}
-
+		$this->set_initial_columns();
 		$this->handle_query_args( $args );
 		$this->where( 'segments.program', 'FREE_PRODUCT_LISTING' );
 	}
@@ -85,17 +69,16 @@ class MerchantReportQuery extends MerchantQuery {
 	}
 
 	/**
+	 * Set the initial columns for this query.
+	 */
+	abstract protected function set_initial_columns();
+
+	/**
 	 * Filter the query by a list of ID's.
 	 *
 	 * @param array $ids list of ID's to filter by.
 	 *
 	 * @return $this
 	 */
-	public function filter( array $ids ): QueryInterface {
-		if ( empty( $ids ) || 'products' !== $this->type ) {
-			return $this;
-		}
-
-		return $this->where( 'segments.offer_id', $ids, 'IN' );
-	}
+	abstract public function filter( array $ids ): QueryInterface;
 }

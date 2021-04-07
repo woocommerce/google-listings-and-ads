@@ -4,7 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeListingReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantProductReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -52,7 +53,13 @@ class MerchantReport implements OptionsAwareInterface {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
-			$results = ( new MerchantReportQuery( $type, $args ) )
+			if ( 'products' === $type ) {
+				$query = new MerchantProductReportQuery( $args );
+			} else {
+				$query = new MerchantFreeListingReportQuery( $args );
+			}
+
+			$results = $query
 				->set_client( $this->service, $this->options->get_merchant_id() )
 				->get_results();
 
