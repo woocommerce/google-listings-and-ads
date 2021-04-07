@@ -11,6 +11,11 @@ import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import FormContent from './form-content';
 
 /**
+ * @typedef {import('.~/data/actions').ShippingRate} ShippingRateFromServerSide
+ * @typedef {import('.~/data/actions').ShippingTime} ShippingTime
+ */
+
+/**
  * Setup step to configure free listings.
  *
  * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/index.js},
@@ -19,16 +24,24 @@ import FormContent from './form-content';
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
+ * @param {(newValue: Object) => void} props.onShippingRatesChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
+ * @param {(newValue: Object) => void} props.onShippingTimesChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChangeCallback}
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
 const SetupFreeListings = ( {
 	stepHeader,
 	settings,
-	onChange = () => {},
+	onSettingsChange = () => {},
+	shippingRates,
+	onShippingRatesChange = () => {},
+	shippingTimes,
+	onShippingTimesChange = () => {},
 	onContinue = () => {},
 } ) => {
-	if ( ! settings ) {
+	if ( ! settings || ! shippingRates || ! shippingTimes ) {
 		return <AppSpinner />;
 	}
 
@@ -39,6 +52,7 @@ const SetupFreeListings = ( {
 
 		return errors;
 	};
+
 	return (
 		<div className="gla-setup-free-listings">
 			<Hero stepHeader={ stepHeader } />
@@ -55,8 +69,29 @@ const SetupFreeListings = ( {
 					payment_methods_visible: settings.payment_methods_visible,
 					refund_tos_visible: settings.refund_tos_visible,
 					contact_info_visible: settings.contact_info_visible,
+					// Glue shipping rates and times together, as the Form does not support nested structures.
+					shipping_country_rates: shippingRates,
+					shipping_country_times: shippingTimes,
 				} }
-				onChangeCallback={ onChange }
+				onChangeCallback={ ( change, newVals ) => {
+					// Un-glue form data.
+					const {
+						shipping_country_rates: newShippingRates,
+						shipping_country_times: newShippingTimes,
+						...newSettings
+					} = newVals;
+
+					switch ( change.name ) {
+						case 'shipping_country_rates':
+							onShippingRatesChange( newShippingRates );
+							break;
+						case 'shipping_country_times':
+							onShippingTimesChange( newShippingTimes );
+							break;
+						default:
+							onSettingsChange( change, newSettings );
+					}
+				} }
 				validate={ handleValidate }
 				onSubmitCallback={ onContinue }
 			>

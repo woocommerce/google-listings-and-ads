@@ -9,25 +9,27 @@ import { CheckboxControl } from '@wordpress/components';
  */
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import useShippingRates from '.~/hooks/useShippingRates';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppSpinner from '.~/components/app-spinner';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import ShippingCountriesForm from './countries-form';
 import './index.scss';
 
-const ShippingRateSetup = ( props ) => {
-	const {
-		formProps: { getInputProps, values },
-	} = props;
-	const {
-		loading: loadingShippingRates,
-		data: shippingRates,
-	} = useShippingRates();
-	const { code: currencyCode } = useStoreCurrency();
-	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+/**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ */
 
-	if ( ! selectedCountryCodes || loadingShippingRates ) {
+/**
+ * Form control to edit shipping rate settings.
+ *
+ * @param {Object} props React props.
+ * @param {Object} props.formProps Form props forwarded from `Form` component, containing `offers_free_shipping` and `free_shipping_threshold` properties.
+ * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
+ */
+const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
+	const { getInputProps, values } = formProps;
+	const { code: currencyCode } = useStoreCurrency();
+
+	if ( ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
 
@@ -35,7 +37,7 @@ const ShippingRateSetup = ( props ) => {
 		<div className="gla-shipping-rate-setup">
 			<VerticalGapLayout>
 				<ShippingCountriesForm
-					shippingRates={ shippingRates }
+					{ ...getInputProps( 'shipping_country_rates' ) }
 					currencyCode={ currencyCode }
 					selectedCountryCodes={ selectedCountryCodes }
 				/>
