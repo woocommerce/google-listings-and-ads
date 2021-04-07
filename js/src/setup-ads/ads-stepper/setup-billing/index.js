@@ -1,11 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { getNewPath } from '@woocommerce/navigation';
-import { format as formatDate } from '@wordpress/date';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -19,82 +15,13 @@ import SetupCard from './setup-card';
 import BillingSavedCard from './billing-saved-card';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-
-const useSetupCompleteCallback = ( amount, country ) => {
-	const { createNotice } = useDispatchCoreNotices();
-	const [ loading, setLoading ] = useState( false );
-
-	const createCampaign = useCallback( () => {
-		const date = formatDate( 'Y-m-d', new Date() );
-		const options = {
-			path: '/wc/gla/ads/campaigns',
-			method: 'POST',
-			data: {
-				name: `Ads Campaign ${ date }`,
-				amount: Number( amount ),
-				country,
-			},
-		};
-
-		return apiFetch( options ).catch( () => {
-			return Promise.reject(
-				__(
-					'Unable to launch your ads campaign. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		} );
-	}, [ amount, country ] );
-
-	const completeAdsSetup = useCallback( () => {
-		const options = {
-			path: '/wc/gla/ads/setup/complete',
-			method: 'POST',
-		};
-		return apiFetch( options ).catch( () => {
-			return Promise.reject(
-				__(
-					'Unable to complete your ads setup. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		} );
-	}, [] );
-
-	const handleFinishSetup = useCallback( () => {
-		setLoading( true );
-		return createCampaign()
-			.then( completeAdsSetup )
-			.then( () => {
-				// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-				const nextPath = getNewPath(
-					{ guide: 'campaign-creation-success' },
-					'/google/dashboard'
-				);
-				window.location.href = `/wp-admin/${ nextPath }`;
-			} )
-			.catch( ( errorMessage ) => {
-				createNotice( 'error', errorMessage );
-			} )
-			.then( () => setLoading( false ) );
-	}, [ createCampaign, completeAdsSetup, createNotice ] );
-
-	return [ handleFinishSetup, loading ];
-};
 
 const SetupBilling = ( props ) => {
 	const {
-		formProps: {
-			values: { amount, country: countryArr },
-		},
+		formProps: { isSubmitting, handleSubmit },
 	} = props;
-	const country = countryArr && countryArr[ 0 ];
+
 	const { billingStatus } = useGoogleAdsAccountBillingStatus();
-	const [ handleSetupComplete, loading ] = useSetupCompleteCallback(
-		amount,
-		country
-	);
 
 	if ( ! billingStatus ) {
 		return <AppSpinner />;
@@ -128,7 +55,7 @@ const SetupBilling = ( props ) => {
 				) : (
 					<SetupCard
 						billingUrl={ billingStatus.billing_url }
-						onSetupComplete={ handleSetupComplete }
+						onSetupComplete={ handleSubmit }
 					/>
 				) }
 			</Section>
@@ -136,8 +63,8 @@ const SetupBilling = ( props ) => {
 				<StepContentFooter>
 					<AppButton
 						isPrimary
-						loading={ loading }
-						onClick={ handleSetupComplete }
+						loading={ isSubmitting }
+						onClick={ handleSubmit }
 					>
 						{ __(
 							'Launch paid campaign',
