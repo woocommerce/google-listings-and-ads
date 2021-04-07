@@ -11,7 +11,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import FormContent from './form-content';
+import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
 import AppButton from '.~/components/app-button';
 
 const CreateCampaign = ( props ) => {
@@ -41,7 +41,7 @@ const CreateCampaign = ( props ) => {
 					}
 				) }
 			/>
-			<FormContent formProps={ formProps } />
+			<CreateCampaignFormContent formProps={ formProps } />
 			<StepContentFooter>
 				<AppButton isPrimary onClick={ onContinue }>
 					{ __( 'Continue', 'google-listings-and-ads' ) }

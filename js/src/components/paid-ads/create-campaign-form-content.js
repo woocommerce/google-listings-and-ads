@@ -10,7 +10,7 @@ import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 
-const FormContent = ( props ) => {
+const CreateCampaignFormContent = ( props ) => {
 	const { formProps } = props;
 
 	return (
@@ -28,4 +28,4 @@ const FormContent = ( props ) => {
 	);
 };
 
-export default FormContent;
+export default CreateCampaignFormContent;
