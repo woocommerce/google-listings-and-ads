@@ -12,7 +12,7 @@ import apiFetch from '@wordpress/api-fetch';
  * @return {Promise} Result from apiFetch.
  */
 const createCampaign = ( amount, country ) => {
-	const date = formatDate( 'Y-m-d', new Date() );
+	const date = formatDate( 'Y-m-d H:i', new Date() );
 	const options = {
 		path: '/wc/gla/ads/campaigns',
 		method: 'POST',
