@@ -12,6 +12,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class AdsReportQuery extends AdsQuery {
 
+	use ReportQueryTrait;
+
 	/**
 	 * Type of report (campaigns or products).
 	 *
@@ -43,34 +45,7 @@ class AdsReportQuery extends AdsQuery {
 		}
 
 		$this->columns( $columns );
-
-		if ( ! empty( $args['fields'] ) ) {
-			$this->fields( $args['fields'] );
-		}
-
-		if ( ! empty( $args['interval'] ) ) {
-			$this->segment_interval( $args['interval'] );
-		}
-
-		if ( ! empty( $args['after'] ) && ! empty( $args['before'] ) ) {
-			$this->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' );
-		}
-
-		if ( ! empty( $args['ids'] ) ) {
-			$this->filter( $args['ids'] );
-		}
-
-		if ( ! empty( $args['orderby'] ) ) {
-			$this->set_order( $args['orderby'], $args['order'] );
-		}
-
-		if ( ! empty( $args['per_page'] ) ) {
-			$this->search_args['pageSize'] = $args['per_page'];
-		}
-
-		if ( ! empty( $args['next_page'] ) ) {
-			$this->search_args['pageToken'] = $args['next_page'];
-		}
+		$this->handle_query_args( $args );
 	}
 
 	/**
