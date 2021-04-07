@@ -4,7 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsProductReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
@@ -54,7 +55,13 @@ class AdsReport implements OptionsAwareInterface {
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
-			$results = ( new AdsReportQuery( $type, $args ) )
+			if ( 'products' === $type ) {
+				$query = new AdsProductReportQuery( $args );
+			} else {
+				$query = new AdsCampaignReportQuery( $args );
+			}
+
+			$results = $query
 				->set_client( $this->client, $this->options->get_ads_id() )
 				->get_results();
 			$page    = $results->getPage();

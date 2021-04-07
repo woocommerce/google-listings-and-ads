@@ -10,41 +10,19 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query
  */
-class AdsReportQuery extends AdsQuery {
+abstract class AdsReportQuery extends AdsQuery {
 
 	use ReportQueryTrait;
 
 	/**
-	 * Type of report (campaigns or products).
-	 *
-	 * @var string
-	 */
-	protected $type = 'campaigns';
-
-	/**
 	 * Query constructor.
 	 *
-	 * @param string $type Report type (campaigns or products).
-	 * @param array  $args Query arguments.
+	 * @param array $args Query arguments.
 	 */
-	public function __construct( string $type, array $args ) {
-		$this->type = $type;
+	public function __construct( array $args ) {
 		parent::__construct( 'shopping_performance_view' );
 
-		if ( 'products' === $this->type ) {
-			$columns = [
-				'id'   => 'segments.product_item_id',
-				'name' => 'segments.product_title',
-			];
-		} else {
-			$columns = [
-				'id'     => 'campaign.id',
-				'name'   => 'campaign.name',
-				'status' => 'campaign.status',
-			];
-		}
-
-		$this->columns( $columns );
+		$this->set_initial_columns();
 		$this->handle_query_args( $args );
 	}
 
@@ -93,23 +71,16 @@ class AdsReportQuery extends AdsQuery {
 	}
 
 	/**
+	 * Set the initial columns for this query.
+	 */
+	abstract protected function set_initial_columns();
+
+	/**
 	 * Filter the query by a list of ID's.
 	 *
 	 * @param array $ids list of ID's to filter by.
 	 *
 	 * @return $this
 	 */
-	public function filter( array $ids ): QueryInterface {
-		if ( empty( $ids ) ) {
-			return $this;
-		}
-
-		if ( 'products' === $this->type ) {
-			$column = 'segments.product_item_id';
-		} else {
-			$column = 'campaign.id';
-		}
-
-		return $this->where( $column, $ids, 'IN' );
-	}
+	abstract public function filter( array $ids ): QueryInterface;
 }
