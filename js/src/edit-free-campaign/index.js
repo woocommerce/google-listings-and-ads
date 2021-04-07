@@ -234,7 +234,9 @@ export default function EditFreeCampaign() {
 									'google-listings-and-ads'
 								) }
 								settings={ settings }
-								onSettingsChange={ updateSettings }
+								onSettingsChange={ ( change, newSettings ) => {
+									updateSettings( newSettings );
+								} }
 								shippingRates={ shippingRates }
 								onShippingRatesChange={ updateShippingRates }
 								shippingTimes={ shippingTimes }
