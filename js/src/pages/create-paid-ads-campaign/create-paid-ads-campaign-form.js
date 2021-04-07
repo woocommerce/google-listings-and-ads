@@ -5,8 +5,6 @@ import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
 import { getNewPath, getHistory } from '@woocommerce/navigation';
-import apiFetch from '@wordpress/api-fetch';
-import { format as formatDate } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -19,6 +17,7 @@ import AppButton from '.~/components/app-button';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
+import createCampaign from '.~/apis/createCampaign';
 
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
@@ -34,22 +33,12 @@ const CreatePaidAdsCampaignForm = () => {
 	};
 
 	const handleSubmit = async ( values ) => {
-		const { amount, country } = values;
-
 		setLoading( true );
 
 		try {
-			const date = formatDate( 'Y-m-d', new Date() );
-
-			await apiFetch( {
-				path: `/wc/gla/ads/campaigns`,
-				method: 'POST',
-				data: {
-					name: `Ads Campaign ${ date }`,
-					amount: Number( amount ),
-					country: country && country[ 0 ],
-				},
-			} );
+			const { amount, country: countryArr } = values;
+			const country = countryArr && countryArr[ 0 ];
+			await createCampaign( amount, country );
 		} catch ( e ) {
 			createNotice(
 				'error',
