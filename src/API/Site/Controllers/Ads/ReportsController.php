@@ -59,7 +59,7 @@ class ReportsController extends BaseReportsController {
 	protected function get_programs_report_callback(): callable {
 		return function( Request $request ) {
 			try {
-				/** @var Ads $ads */
+				/** @var AdsReport $ads */
 				$ads  = $this->container->get( AdsReport::class );
 				$data = $ads->get_report_data( 'campaigns', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
@@ -77,7 +77,7 @@ class ReportsController extends BaseReportsController {
 	protected function get_products_report_callback(): callable {
 		return function( Request $request ) {
 			try {
-				/** @var Ads $ads */
+				/** @var AdsReport $ads */
 				$ads  = $this->container->get( AdsReport::class );
 				$data = $ads->get_report_data( 'products', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
