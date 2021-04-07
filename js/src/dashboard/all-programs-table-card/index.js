@@ -21,6 +21,8 @@ import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
 
+const FREE_LISTINGS_PROGRAM_ID = 0;
+
 const headers = [
 	{
 		key: 'title',
@@ -67,7 +69,7 @@ const AllProgramsTableCard = ( props ) => {
 	// using the above query (e.g. orderby, order and page) as parameter.
 	const data = [
 		{
-			id: 0,
+			id: FREE_LISTINGS_PROGRAM_ID,
 			title: __(
 				'Google Shopping Free Listings',
 				'google-listings-and-ads'
@@ -130,7 +132,7 @@ const AllProgramsTableCard = ( props ) => {
 								) : (
 									<ResumeProgramButton programId={ el.id } />
 								) }
-								{ el.id !== 0 && (
+								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />
 								) }
 							</div>
