@@ -34,7 +34,8 @@
  * ]
  * ```
  *
- * @param {Array<Object>} shippingTimes Array of shipping times in the format of `{ countryCode, time }`.
+ * @param {Array<ShippingTime>} shippingTimes Array of individual shipping times in the format of `{ countryCode, time }`.
+ * @return {Array<AggregatedShippingTime>} Array of shipping times grouped by time.
  */
 const getCountriesTimeArray = ( shippingTimes ) => {
 	const timeGroupMap = new Map();
@@ -53,3 +54,8 @@ const getCountriesTimeArray = ( shippingTimes ) => {
 };
 
 export default getCountriesTimeArray;
+
+/**
+ * @typedef { import(".~/data/actions").ShippingTime } ShippingTime
+ * @typedef { import(".~/data/actions").AggregatedShippingTime } AggregatedShippingTime
+ */
