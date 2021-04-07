@@ -87,6 +87,7 @@ abstract class Query implements QueryInterface {
 	 * @return QueryInterface
 	 */
 	public function columns( array $columns ): QueryInterface {
+		$this->validate_columns( $columns );
 		$this->columns = $columns;
 
 		return $this;
@@ -100,6 +101,7 @@ abstract class Query implements QueryInterface {
 	 * @return QueryInterface
 	 */
 	public function add_columns( array $columns ): QueryInterface {
+		$this->validate_columns( $columns );
 		$this->columns = array_merge( $this->columns, array_filter( $columns ) );
 
 		return $this;
@@ -177,6 +179,30 @@ abstract class Query implements QueryInterface {
 	 */
 	protected function query_results() {
 		$this->results = [];
+	}
+
+	/**
+	 * Validate a set of columns.
+	 *
+	 * @param array $columns
+	 *
+	 * @throws InvalidQuery When one of columns in the set is not valid.
+	 */
+	protected function validate_columns( array $columns ) {
+		array_walk( $columns, [ $this, 'validate_column' ] );
+	}
+
+	/**
+	 * Validate that a given column is using a valid name.
+	 *
+	 * @param string $column
+	 *
+	 * @throws InvalidQuery When the given column is not valid.
+	 */
+	protected function validate_column( string $column ) {
+		if ( ! preg_match( '/^[a-zA-Z0-9\._]+$/', $column ) ) {
+			throw InvalidQuery::invalid_column( $column, get_class( $this ) );
+		}
 	}
 
 	/**

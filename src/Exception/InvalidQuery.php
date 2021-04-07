@@ -27,6 +27,17 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	}
 
 	/**
+	 * Create a new instance of the exception when a column is not valid.
+	 *
+	 * @param string $name        The column name.
+	 *
+	 * @return static
+	 */
+	public static function invalid_column( string $name ): InvalidQuery {
+		return new static( sprintf( 'The column "%s" is not valid, it should only contain the characters "a-zA-Z0-9._"', $name ) );
+	}
+
+	/**
 	 * Create a new instance of the exception when a column is not valid for ordering.
 	 *
 	 * @param string $name The column name.
