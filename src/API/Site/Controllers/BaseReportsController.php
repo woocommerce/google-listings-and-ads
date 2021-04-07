@@ -105,6 +105,15 @@ abstract class BaseReportsController extends BaseController {
 	}
 
 	/**
+	 * Add collection parameters.
+	 *
+	 * @param array $params Initial set of collection parameters.
+	 *
+	 * @return array
+	 */
+	abstract protected function add_collection_parameters( array $params ): array;
+
+	/**
 	 * Maps query arguments from the REST request.
 	 *
 	 * @param Request $request REST Request.
