@@ -68,8 +68,14 @@ abstract class Query implements QueryInterface {
 	 * Query constructor.
 	 *
 	 * @param string $resource
+	 *
+	 * @throws InvalidQuery When the resource name is not valid.
 	 */
 	public function __construct( string $resource ) {
+		if ( ! preg_match( '/^[a-zA-Z_]+$/', $resource ) ) {
+			throw InvalidQuery::resource_name();
+		}
+
 		$this->resource = $resource;
 	}
 

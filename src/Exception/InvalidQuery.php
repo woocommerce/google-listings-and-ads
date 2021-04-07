@@ -117,4 +117,13 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	public static function empty_columns(): InvalidQuery {
 		return new static( 'Columns list cannot be an empty array.' );
 	}
+
+	/**
+	 * Create a new instance of the exception when an invalid resource name is used.
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function resource_name(): InvalidQuery {
+		return new static( 'The resource name can only include alphanumeric and underscore characters.' );
+	}
 }
