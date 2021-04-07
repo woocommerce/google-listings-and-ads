@@ -36,7 +36,7 @@ const AddPaidCampaignButton = ( props ) => {
 	} = props;
 	const { adsSetupComplete } = glaData;
 	const path = ! adsSetupComplete
-		? '/google/setup-mc'
+		? '/google/setup-ads'
 		: '/google/campaigns/create';
 	const newPath = getNewPath( {}, path, {} );
 	const defaultEventProps = { context: '', href: newPath };
