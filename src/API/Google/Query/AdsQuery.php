@@ -47,7 +47,7 @@ abstract class AdsQuery extends Query {
 	 *
 	 * @return QueryInterface
 	 */
-	public function set_client( GoogleAdsClient $client, int $id ) {
+	public function set_client( GoogleAdsClient $client, int $id ): QueryInterface {
 		$this->client = $client;
 		$this->id     = $id;
 

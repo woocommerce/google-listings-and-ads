@@ -47,7 +47,7 @@ abstract class MerchantQuery extends Query {
 	 *
 	 * @return QueryInterface
 	 */
-	public function set_client( ShoppingService $client, int $id ) {
+	public function set_client( ShoppingService $client, int $id ): QueryInterface {
 		$this->client = $client;
 		$this->id     = $id;
 

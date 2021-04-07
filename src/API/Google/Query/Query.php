@@ -78,7 +78,7 @@ abstract class Query implements QueryInterface {
 	 *
 	 * @param array $columns List of column names.
 	 *
-	 * @return $this
+	 * @return QueryInterface
 	 */
 	public function columns( array $columns ): QueryInterface {
 		$this->columns = $columns;
@@ -91,7 +91,7 @@ abstract class Query implements QueryInterface {
 	 *
 	 * @param array $columns List of column names.
 	 *
-	 * @return $this
+	 * @return QueryInterface
 	 */
 	public function add_columns( array $columns ): QueryInterface {
 		$this->columns = array_merge( $this->columns, array_filter( $columns ) );
@@ -106,7 +106,7 @@ abstract class Query implements QueryInterface {
 	 * @param mixed  $value   The where value.
 	 * @param string $compare The comparison to use. Valid values are =, <, >, IN, NOT IN.
 	 *
-	 * @return $this
+	 * @return QueryInterface
 	 */
 	public function where( string $column, $value, string $compare = '=' ): QueryInterface {
 		$this->validate_compare( $compare );

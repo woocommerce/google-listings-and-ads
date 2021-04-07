@@ -36,7 +36,7 @@ abstract class BaseReportsController extends BaseController {
 	 *
 	 * @return array
 	 */
-	public function get_collection_params() {
+	public function get_collection_params(): array {
 		$params = [
 			'context'   => $this->get_context_param( [ 'default' => 'view' ] ),
 			'after'     => [
@@ -108,7 +108,7 @@ abstract class BaseReportsController extends BaseController {
 	 * @param Request $request REST Request.
 	 * @return array
 	 */
-	protected function prepare_query_arguments( Request $request ) {
+	protected function prepare_query_arguments( Request $request ): array {
 		$params   = $this->get_collection_params();
 		$defaults = array_column( $params, 'default' );
 		$args     = wp_parse_args( array_intersect_key( $request->get_query_params(), $params ), $defaults );
