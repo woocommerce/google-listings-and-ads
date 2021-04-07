@@ -99,15 +99,27 @@ export default function EditFreeCampaign() {
 	);
 	const [ settings, updateSettings ] = useState( savedSettings );
 
-	const { data: savedShippingRates } = useShippingRates();
+	const {
+		data: savedShippingRates,
+		loading: loadingShippingRates,
+	} = useShippingRates();
 	const [ shippingRates, updateShippingRates ] = useState(
 		savedShippingRates
 	);
+	const loadedShippingRates = loadingShippingRates
+		? null
+		: savedShippingRates;
 
-	const { data: savedShippingTimes } = useShippingTimes();
+	const {
+		data: savedShippingTimes,
+		loading: loadingShippingTimes,
+	} = useShippingTimes();
 	const [ shippingTimes, updateShippingTimes ] = useState(
 		savedShippingTimes
 	);
+	const loadedShippingTimes = loadingShippingTimes
+		? null
+		: savedShippingTimes;
 
 	// TODO: Consider making it less repetitive.
 	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
@@ -237,9 +249,9 @@ export default function EditFreeCampaign() {
 								onSettingsChange={ ( change, newSettings ) => {
 									updateSettings( newSettings );
 								} }
-								shippingRates={ shippingRates }
+								shippingRates={ loadedShippingRates }
 								onShippingRatesChange={ updateShippingRates }
-								shippingTimes={ shippingTimes }
+								shippingTimes={ loadedShippingTimes }
 								onShippingTimesChange={ updateShippingTimes }
 								onContinue={ handleSetupFreeListingsContinue }
 							/>
