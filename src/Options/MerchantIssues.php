@@ -121,20 +121,30 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			}
 
 			$issue_template = [
-				'type'          => self::TYPE_PRODUCT,
-				'productId'     => $product->getProductId(),
-				'title'         => $product->getTitle(),
-				'wc_product_id' => $wc_product_id,
+				'type'                 => self::TYPE_PRODUCT,
+				'productId'            => $product->getProductId(),
+				'title'                => $product->getTitle(),
+				'wc_product_id'        => $wc_product_id,
+				'applicable_countries' => [],
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
-					$issues[] = $this->convert_issue( $issue_template + (array) $item_level_issue->toSimpleObject() );
+					$code = md5( $wc_product_id . $item_level_issue->getCode() );
+
+					if ( isset( $issues[ $code ] ) ) {
+						$issues[ $code ]['applicable_countries'] = array_merge(
+							$issues[ $code ]['applicable_countries'],
+							$item_level_issue->getApplicableCountries()
+						);
+					} else {
+						$issues[ $code ] = $this->convert_issue( $issue_template + (array) $item_level_issue->toSimpleObject() );
+					}
 				}
 			}
 		}
 
 		// Avoid duplicate errors for the same product (if present for multiple geos).
-		$issues = array_unique( $issues, SORT_REGULAR );
+		$issues = array_unique( array_values( $issues ), SORT_REGULAR );
 
 		// Update the cached values
 		/** @var TransientsInterface $transients */
@@ -194,11 +204,12 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			}
 
 			return [
-				'type'      => $item['type'],
-				'product'   => $item['title'],
-				'issue'     => $item['description'],
-				'action'    => $item['detail'],
-				'edit_link' => $this->wp->get_edit_post_link( $item['wc_product_id'], 'json' ),
+				'type'                 => $item['type'],
+				'product'              => $item['title'],
+				'issue'                => $item['description'],
+				'action'               => $item['detail'],
+				'edit_link'            => $this->wp->get_edit_post_link( $item['wc_product_id'], 'json' ),
+				'applicable_countries' => $item['applicableCountries'],
 			];
 		}
 	}
