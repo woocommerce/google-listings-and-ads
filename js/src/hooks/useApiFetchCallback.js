@@ -113,6 +113,7 @@ const shouldReturnResponseBody = ( options ) => {
  * 		- `fetchResult` is an object containing things about the `apiFetchCallback` that you called:
  * 							`{ loading, error, data, response, options, reset }`.
  * 							`reset` is a function to reset things to initial state (clearing error, data, response and options).
+ * 							You can optionally pass in a reset state and it will be merged with the initial state.
  */
 const useApiFetchCallback = ( options, initialState = defaultState ) => {
 	const mergedState = {
