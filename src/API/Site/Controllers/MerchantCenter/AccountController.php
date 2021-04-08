@@ -51,7 +51,7 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * @var MerchantCenterService
 	 */
-	protected $merchant_center;
+	protected $mc_service;
 
 	/**
 	 * @var bool Whether to perform website claim with overwrite.
@@ -71,11 +71,11 @@ class AccountController extends BaseOptionsController {
 	 */
 	public function __construct( ContainerInterface $container ) {
 		parent::__construct( $container->get( RESTServer::class ) );
-		$this->middleware      = $container->get( Middleware::class );
-		$this->merchant        = $container->get( Merchant::class );
-		$this->account_state   = $container->get( MerchantAccountState::class );
-		$this->merchant_center = $container->get( MerchantCenterService::class );
-		$this->container       = $container;
+		$this->middleware    = $container->get( Middleware::class );
+		$this->merchant      = $container->get( Merchant::class );
+		$this->account_state = $container->get( MerchantAccountState::class );
+		$this->mc_service    = $container->get( MerchantCenterService::class );
+		$this->container     = $container;
 	}
 
 	/**
@@ -134,6 +134,16 @@ class AccountController extends BaseOptionsController {
 				[
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->disconnect_merchant_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
+		$this->register_route(
+			'mc/setup',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_setup_merchant_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 			]
@@ -215,6 +225,7 @@ class AccountController extends BaseOptionsController {
 			return $this->set_account_id( $request );
 		};
 	}
+
 	/**
 	 * Get the callback function for the connected merchant account.
 	 *
@@ -227,13 +238,24 @@ class AccountController extends BaseOptionsController {
 	}
 
 	/**
+	 * Get the callback function for the merchant setup status.
+	 *
+	 * @return callable
+	 */
+	protected function get_setup_merchant_callback(): callable {
+		return function() {
+			return $this->mc_service->get_setup_status();
+		};
+	}
+
+	/**
 	 * Get the callback function for disconnecting a merchant.
 	 *
 	 * @return callable
 	 */
 	protected function disconnect_merchant_callback(): callable {
 		return function() {
-			$this->merchant_center->disconnect();
+			$this->mc_service->disconnect();
 
 			return [
 				'status'  => 'success',
