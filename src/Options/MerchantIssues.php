@@ -172,7 +172,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'product'   => $item['title'],
 				'issue'     => $item['description'],
 				'action'    => $item['detail'],
-				'edit_link' => $this->wp->get_edit_post_link( $item['wc_product_id'], '&' ),
+				'edit_link' => $this->wp->get_edit_post_link( $item['wc_product_id'], 'json' ),
 			];
 		}
 	}
