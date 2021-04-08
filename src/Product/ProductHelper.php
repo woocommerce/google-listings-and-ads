@@ -147,7 +147,8 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return int the ID for the WC product linked to the provided Google product ID (0 if not found)
 	 */
 	public function get_wc_product_id( string $mc_product_id ): int {
-		if ( ! preg_match( '/:' . $this->get_slug() . '_(\d+)$/', $mc_product_id, $matches ) ) {
+		$pattern = '/:' . preg_quote( $this->get_slug(), '/' ) . '_(\d+)$/';
+		if ( ! preg_match( $pattern, $mc_product_id, $matches ) ) {
 			return 0;
 		}
 		return intval( $matches[1] );
