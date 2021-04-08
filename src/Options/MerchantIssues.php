@@ -41,33 +41,54 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	/**
 	 * Retrieve or initialize the mc_issues transient. Refresh if the issues have gone stale.
 	 * Issue details are reduced, and for products, grouped by type.
+	 * Issues can be filtered by type, searched by name or ID (if product type) and paginated.
 	 *
-	 * @param string|null $filter To filter by issue type if desired.
+	 * @param string|null $type To filter by issue type if desired.
+	 * @param string|null $query To search by product title or ID
 	 * @param int         $per_page The number of issues to return (0 for no limit)
 	 * @param int         $page The page to start on (1-indexed).
 	 *
 	 * @return array The account- and product-level issues for the Merchant Center account.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function get( string $filter = null, int $per_page = 0, int $page = 1 ): array {
+	public function get( string $type = null, string $query = null, int $per_page = 0, int $page = 1 ): array {
 		$issues = $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null );
 
 		if ( is_null( $issues ) ) {
 			$issues = $this->refresh();
 		}
 
-		if ( $filter ) {
-			if ( ! in_array( $filter, $this->get_issue_types(), true ) ) {
-				throw new Exception( 'Unknown filter type ' . $filter );
+		// Filter by issue type?
+		if ( $type ) {
+			if ( ! in_array( $type, $this->get_issue_types(), true ) ) {
+				throw new Exception( 'Unknown filter type ' . $type );
 			}
 			$issues = array_filter(
 				$issues,
-				function( $i ) use ( $filter ) {
-					return $filter === $i['type'];
+				function( $i ) use ( $type ) {
+					return $type === $i['type'];
 				}
 			);
 		}
 
+		// Search on product name?
+		if ( $query ) {
+			if ( self::TYPE_PRODUCT !== $type ) {
+				throw new Exception( 'Search only enabled for product-level issues' );
+			}
+			$issues = array_filter(
+				$issues,
+				function( $i ) use ( $query ) {
+					$match = stripos( $i['product'], $query ) !== false;
+					if ( ! $match && is_numeric( $query ) ) {
+						$match = preg_match( '/post=' . intval( $query ) . '(&|$)/', $i['edit_link'] );
+					}
+					return $match;
+				}
+			);
+		}
+
+		// Paginate the results?
 		if ( $per_page > 0 ) {
 			$issues = array_slice(
 				$issues,
@@ -82,13 +103,14 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	/**
 	 * Get a count of the number of issues for the Merchant Center account.
 	 *
-	 * @param string|null $filter To filter by issue type if desired.
+	 * @param string|null $type To filter by issue type if desired.
+	 * @param string|null $query To search by product title or ID
 	 *
 	 * @return int The total number of issues.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function count( string $filter = null ): int {
-		return count( $this->get( $filter ) );
+	public function count( string $type = null, string $query = null ): int {
+		return count( $this->get( $type, $query ) );
 	}
 
 	/**
