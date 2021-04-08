@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -45,18 +46,25 @@ class MerchantCenterService implements Service {
 	protected $transients;
 
 	/**
+	 * @var MerchantAccountState
+	 */
+	protected $account_state;
+
+	/**
 	 * MerchantCenterService constructor.
 	 *
-	 * @param OptionsInterface    $options
-	 * @param WC                  $wc
-	 * @param WP                  $wp
-	 * @param TransientsInterface $transients
+	 * @param OptionsInterface     $options
+	 * @param WC                   $wc
+	 * @param WP                   $wp
+	 * @param TransientsInterface  $transients
+	 * @param MerchantAccountState $account_state
 	 */
-	public function __construct( OptionsInterface $options, WC $wc, WP $wp, TransientsInterface $transients ) {
-		$this->options    = $options;
-		$this->wc         = $wc;
-		$this->wp         = $wp;
-		$this->transients = $transients;
+	public function __construct( OptionsInterface $options, WC $wc, WP $wp, TransientsInterface $transients, MerchantAccountState $account_state ) {
+		$this->options       = $options;
+		$this->wc            = $wc;
+		$this->wp            = $wp;
+		$this->transients    = $transients;
+		$this->account_state = $account_state;
 	}
 
 	/**
@@ -126,6 +134,54 @@ class MerchantCenterService implements Service {
 	}
 
 	/**
+	 * Get the connected merchant account.
+	 *
+	 * @return array
+	 */
+	public function get_connected_status(): array {
+		$id     = $this->options->get_merchant_id();
+		$status = [
+			'id'     => $id,
+			'status' => $id ? 'connected' : 'disconnected',
+		];
+
+		$incomplete = $this->account_state->last_incomplete_step();
+		if ( ! empty( $incomplete ) ) {
+			$status['status'] = 'incomplete';
+			$status['step']   = $incomplete;
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Return the setup status to determine what step to continue at.
+	 *
+	 * @return array
+	 */
+	public function get_setup_status(): array {
+		$complete = $this->is_setup_complete();
+		$step     = 'accounts';
+
+		if ( $complete ) {
+			return [ 'status' => 'complete' ];
+		}
+
+		if ( ! $this->account_state->last_incomplete_step() ) {
+			$step = 'target_audience';
+
+			if ( $this->saved_target_audience() ) {
+				$step = 'shipping_and_taxes';
+			}
+		}
+
+		return [
+			'status' => 'incomplete',
+			'step'   => $step,
+		];
+	}
+
+	/**
 	 * Disconnect Merchant Center account
 	 */
 	public function disconnect() {
@@ -138,5 +194,14 @@ class MerchantCenterService implements Service {
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
 		$this->transients->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
+	}
+
+	/**
+	 * Check if target audience has been saved.
+	 *
+	 * @return bool
+	 */
+	protected function saved_target_audience(): bool {
+		return ! empty( $this->options->get( OptionsInterface::TARGET_AUDIENCE ) );
 	}
 }
