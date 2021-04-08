@@ -201,7 +201,7 @@ abstract class Query implements QueryInterface {
 	 */
 	protected function validate_column( string $column ) {
 		if ( ! preg_match( '/^[a-zA-Z0-9\._]+$/', $column ) ) {
-			throw InvalidQuery::invalid_column( $column, get_class( $this ) );
+			throw InvalidQuery::invalid_column( $column );
 		}
 	}
 
