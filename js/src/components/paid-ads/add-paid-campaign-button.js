@@ -41,13 +41,13 @@ const AddPaidCampaignButton = ( props ) => {
 	const newPath = getNewPath( {}, path, {} );
 	const defaultEventProps = { context: '', href: newPath };
 
-	const handleClick = () => {
+	const handleClick = ( ...args ) => {
 		recordEvent( eventName, {
 			...defaultEventProps,
 			...eventProps,
 		} );
 		getHistory().push( newPath );
-		onClick();
+		onClick( ...args );
 	};
 
 	return (
