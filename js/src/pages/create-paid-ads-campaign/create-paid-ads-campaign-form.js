@@ -84,7 +84,7 @@ const CreatePaidAdsCampaignForm = () => {
 								{
 									link: (
 										<AppDocumentationLink
-											context="edit-ads"
+											context="create-ads"
 											linkId="see-what-ads-look-like"
 											href="https://support.google.com/google-ads/answer/6275294"
 										/>
