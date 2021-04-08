@@ -136,8 +136,10 @@ class MerchantReport implements OptionsAwareInterface {
 	 *
 	 * @param ReportRow $row  Report row.
 	 * @param array     $args Request arguments.
+	 *
+	 * @return array
 	 */
-	protected function get_report_row_metrics( ReportRow $row, array $args ) {
+	protected function get_report_row_metrics( ReportRow $row, array $args ): array {
 		$metrics = $row->getMetrics();
 
 		if ( ! $metrics || empty( $args['fields'] ) ) {

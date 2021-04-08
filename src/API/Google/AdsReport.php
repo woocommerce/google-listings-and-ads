@@ -148,8 +148,10 @@ class AdsReport implements OptionsAwareInterface {
 	 *
 	 * @param GoogleAdsRow $row  Report row.
 	 * @param array        $args Request arguments.
+	 *
+	 * @return array
 	 */
-	protected function get_report_row_metrics( GoogleAdsRow $row, array $args ) {
+	protected function get_report_row_metrics( GoogleAdsRow $row, array $args ): array {
 		$metrics = $row->getMetrics();
 
 		if ( ! $metrics || empty( $args['fields'] ) ) {
