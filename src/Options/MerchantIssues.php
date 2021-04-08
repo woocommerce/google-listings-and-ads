@@ -120,7 +120,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			$issue_template = [
+			$product_issue_template = [
 				'type'                 => self::TYPE_PRODUCT,
 				'productId'            => $product->getProductId(),
 				'title'                => $product->getTitle(),
@@ -137,7 +137,9 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 							$item_level_issue->getApplicableCountries()
 						);
 					} else {
-						$issues[ $code ] = $this->convert_issue( $issue_template + (array) $item_level_issue->toSimpleObject() );
+						$issues[ $code ] = $this->convert_issue(
+							$product_issue_template + (array) $item_level_issue->toSimpleObject()
+						);
 					}
 				}
 			}
@@ -194,6 +196,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			return [
 				'type'        => $item['type'],
 				'product'     => __( 'All products', 'google-listings-and-ads' ),
+				'code'        => $item['id'],
 				'issue'       => $item['title'],
 				'action'      => __( 'Read more about this account issue', 'google-listings-and-ads' ),
 				'action_link' => $item['documentation'],
@@ -206,8 +209,10 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			return [
 				'type'                 => $item['type'],
 				'product'              => $item['title'],
+				'code'                 => $item['code'],
 				'issue'                => $item['description'],
 				'action'               => $item['detail'],
+				'action_link'          => $item['documentation'],
 				'edit_link'            => $this->wp->get_edit_post_link( $item['wc_product_id'], 'json' ),
 				'applicable_countries' => $item['applicableCountries'],
 			];
