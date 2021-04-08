@@ -233,7 +233,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_connected_merchant_callback(): callable {
 		return function() {
-			return $this->middleware->get_connected_merchant();
+			return $this->mc_service->get_connected_status();
 		};
 	}
 
