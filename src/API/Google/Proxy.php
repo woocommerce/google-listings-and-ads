@@ -285,7 +285,7 @@ class Proxy implements OptionsAwareInterface {
 		try {
 			$country   = WC()->countries->get_base_country();
 			$countries = $this->get_mc_supported_countries();
-			if ( ! array_key_exists( $country, $countries ) ) {
+			if ( ! in_array( $country, $countries ) ) {
 				throw new Exception( __( 'Store country is not supported', 'google-listings-and-ads' ) );
 			}
 
