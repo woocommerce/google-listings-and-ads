@@ -94,6 +94,7 @@ export default function ShippingCountriesForm( {
 						>
 							<CountriesPriceInput
 								value={ el }
+								audienceCountries={ selectedCountryCodes }
 								onChange={ handleChange }
 								onDelete={ handleDelete }
 							/>

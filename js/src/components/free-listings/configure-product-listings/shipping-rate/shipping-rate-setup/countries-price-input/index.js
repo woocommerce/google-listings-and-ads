@@ -10,7 +10,6 @@ import { createInterpolateElement } from '@wordpress/element';
 import AppInputControl from '.~/components/app-input-control';
 import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 import './index.scss';
 import '../countries-form';
@@ -22,14 +21,19 @@ import '../countries-form';
  *
  * @param {Object} props
  * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
+ * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
-const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
+const CountriesPriceInput = ( {
+	value,
+	audienceCountries,
+	onChange,
+	onDelete,
+} ) => {
 	const { countries, currency, price } = value;
-	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	if ( ! selectedCountryCodes ) {
+	if ( ! audienceCountries ) {
 		return <AppSpinner />;
 	}
 
@@ -64,7 +68,10 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 								),
 								{
 									countries: (
-										<CountryNames countries={ countries } />
+										<CountryNames
+											countries={ countries }
+											total={ audienceCountries.length }
+										/>
 									),
 								}
 							) }
