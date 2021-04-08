@@ -123,54 +123,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			$account_issues[] = $this->convert_issue( [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject() );
 		}
 
-		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
-		$product_issues = [];
-		foreach ( $merchant->get_productstatuses() as $product ) {
-			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-
-			// Skip products not synced by this extension.
-			if ( ! $wc_product_id ) {
-				continue;
-			}
-
-			$product_issue_template = [
-				'type'                 => self::TYPE_PRODUCT,
-				'productId'            => $product->getProductId(),
-				'title'                => $product->getTitle(),
-				'wc_product_id'        => $wc_product_id,
-				'applicable_countries' => [],
-			];
-			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
-				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
-					$code = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
-
-					if ( isset( $product_issues[ $code ] ) ) {
-						$product_issues[ $code ]['applicable_countries'] = array_merge(
-							$product_issues[ $code ]['applicable_countries'],
-							$item_level_issue->getApplicableCountries()
-						);
-					} else {
-						$product_issues[ $code ] = $this->convert_issue(
-							$product_issue_template + (array) $item_level_issue->toSimpleObject()
-						);
-					}
-				}
-			}
-		}
-
-		// Sort, and avoid duplicate errors for the same product (if present for multiple geos).
-		ksort( $product_issues );
-		$product_issues = array_unique( array_values( $product_issues ), SORT_REGULAR );
-		$product_issues = array_map(
-			function( $issue ) {
-				sort( $issue['applicable_countries'] );
-				return $issue;
-			},
-			$product_issues
-		);
-
-		$issues = array_merge( $account_issues, $product_issues );
+		$issues = array_merge( $account_issues, $this->get_product_issues() );
 
 		// Update the cached values
 		/** @var TransientsInterface $transients */
@@ -265,5 +218,63 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				return $match;
 			}
 		);
+	}
+
+	/**
+	 * Retrieve and prepare all product-level issues for the Merchant Center account.
+	 *
+	 * @return array Unique product issues sorted by product id.
+	 */
+	private function get_product_issues(): array {
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
+		$product_issues = [];
+		foreach ( $merchant->get_productstatuses() as $product ) {
+			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
+
+			// Skip products not synced by this extension.
+			if ( ! $wc_product_id ) {
+				continue;
+			}
+
+			$product_issue_template = [
+				'type'                 => self::TYPE_PRODUCT,
+				'productId'            => $product->getProductId(),
+				'title'                => $product->getTitle(),
+				'wc_product_id'        => $wc_product_id,
+				'applicable_countries' => [],
+			];
+			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
+				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
+					$code = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
+
+					if ( isset( $product_issues[ $code ] ) ) {
+						$product_issues[ $code ]['applicable_countries'] = array_merge(
+							$product_issues[ $code ]['applicable_countries'],
+							$item_level_issue->getApplicableCountries()
+						);
+					} else {
+						$product_issues[ $code ] = $this->convert_issue(
+							$product_issue_template + (array) $item_level_issue->toSimpleObject()
+						);
+					}
+				}
+			}
+		}
+
+		// Product issue cleanup (sorting and unique), plus alphabetize applicable_countries..
+		ksort( $product_issues );
+		$product_issues = array_unique( array_values( $product_issues ), SORT_REGULAR );
+		$product_issues = array_map(
+			function( $issue ) {
+				sort( $issue['applicable_countries'] );
+				return $issue;
+			},
+			$product_issues
+		);
+
+		return $product_issues;
 	}
 }
