@@ -46,7 +46,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
 		case TYPES.RECEIVE_SHIPPING_RATES: {
 			const { shippingRates } = action;
-			const newState = cloneDeep( state );
+			const newState = getNextStateForShipping( state );
 			newState.mc.shipping.rates = shippingRates;
 			return newState;
 		}
@@ -86,7 +86,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
 			const { shippingTimes } = action;
-			const newState = cloneDeep( state );
+			const newState = getNextStateForShipping( state );
 			newState.mc.shipping.times = shippingTimes;
 			return newState;
 		}
