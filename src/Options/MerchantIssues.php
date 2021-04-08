@@ -65,7 +65,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
-		return array_values( array_map( [ $this, 'convert_issue' ], $issues ) );
+		return array_values( $issues );
 	}
 
 	/**
@@ -84,7 +84,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		$merchant = $this->container->get( Merchant::class );
 		$issues   = [];
 		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $i ) {
-			$issues[] = [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject();
+			$issues[] = $this->convert_issue( [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject() );
 		}
 
 		/** @var ProductHelper $product_helper */
@@ -105,10 +105,13 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
-					$issues[] = $issue_template + (array) $item_level_issue->toSimpleObject();
+					$issues[] = $this->convert_issue( $issue_template + (array) $item_level_issue->toSimpleObject() );
 				}
 			}
 		}
+
+		// Avoid duplicate errors for the same product (if present for multiple geos).
+		$issues = array_unique( $issues, SORT_REGULAR );
 
 		// Update the cached values
 		/** @var TransientsInterface $transients */
