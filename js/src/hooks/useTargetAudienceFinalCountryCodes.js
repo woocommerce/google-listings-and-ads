@@ -9,6 +9,10 @@ import { useSelect } from '@wordpress/data';
 import { STORE_KEY } from '.~/data';
 
 /**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
+/**
  * Gets the final country codes from the Target Audience page.
  * This will call the `getTargetAudience` and `getCountries` selectors.
  * Returns `{ loading, data }`.
@@ -32,7 +36,17 @@ const useTargetAudienceFinalCountryCodes = () => {
 		const targetAudienceLoading = isResolving( 'getTargetAudience' );
 		const countriesLoading = isResolving( 'getCountries' );
 
+		/**
+		 * Flag to indicate that the data is loading.
+		 *
+		 * @type {boolean}
+		 */
 		const loading = targetAudienceLoading || countriesLoading;
+		/**
+		 * Final list of country codes.
+		 *
+		 * @type {Array<CountryCode>}
+		 */
 		const data =
 			targetAudience?.location === 'all'
 				? supportedCountries && Object.keys( supportedCountries )
