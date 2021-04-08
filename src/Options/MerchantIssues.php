@@ -65,7 +65,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
-		return array_map( [ $this, 'convert_issue' ], $issues );
+		return array_values( array_map( [ $this, 'convert_issue' ], $issues ) );
 	}
 
 	/**
