@@ -74,7 +74,7 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_issues_read_callback(): callable {
 		return function( Request $request ) {
-			return $this->get_issues( $request );
+			return $this->get_issues( $request, (string) $request['type_filter'] );
 		};
 	}
 
@@ -85,29 +85,33 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_issues_search_callback(): callable {
 		return function( Request $request ) {
-			return $this->get_issues( $request, $this->mc_issues::TYPE_PRODUCT );
+			return $this->get_issues(
+				$request,
+				$this->mc_issues::TYPE_PRODUCT,
+				$request['query'] ?? null
+			);
 		};
 	}
 
 	/**
 	 * @param Request     $request
-	 * @param string|null $type_filter Defaults to URL type
+	 * @param string|null $type_filter Maybe filter by issue type.
+	 * @param string|null $query Maybe search product issues.
 	 *
 	 * @return Response
 	 */
-	protected function get_issues( Request $request, string $type_filter = null ) {
-		$type_filter = $type_filter ?: (string) $request['type_filter'];
-		$per_page    = intval( $request['per_page'] );
-		$page        = max( 1, intval( $request['page'] ) );
-		$query       = $request['query'] ?? null;
+	protected function get_issues( Request $request, string $type_filter = null, string $query = null ): Response {
+		$per_page = intval( $request['per_page'] );
+		$page     = max( 1, intval( $request['page'] ) );
 
 		try {
+			$total = $this->mc_issues->count( $type_filter, $query );
 			return $this->prepare_item_for_response(
 				[
 					'issues'   => $this->mc_issues->get( $type_filter, $query, $per_page, $page ),
-					'total'    => $this->mc_issues->count( $type_filter, $query ),
+					'total'    => $total,
 					'page'     => $page,
-					'per_page' => $per_page ?: $this->mc_issues->count( $type_filter, $query ),
+					'per_page' => $per_page ?: $total,
 				],
 				$request
 			);
@@ -128,6 +132,9 @@ class IssuesController extends BaseOptionsController {
 				'description' => __( 'The issues related to the Merchant Center account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
+				'items'       => [
+					'type' => 'object',
+				],
 			],
 			'total'    => [
 				'type'     => 'numeric',

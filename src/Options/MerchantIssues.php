@@ -44,8 +44,8 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * Issues can be filtered by type, searched by name or ID (if product type) and paginated.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
-	 * @param string|null $query To search by product title or ID
-	 * @param int         $per_page The number of issues to return (0 for no limit)
+	 * @param string|null $query To search by product title or ID.
+	 * @param int         $per_page The number of issues to return (0 for no limit).
 	 * @param int         $page The page to start on (1-indexed).
 	 *
 	 * @return array The account- and product-level issues for the Merchant Center account.
@@ -104,7 +104,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * Get a count of the number of issues for the Merchant Center account.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
-	 * @param string|null $query To search by product title or ID
+	 * @param string|null $query To search by product title or ID.
 	 *
 	 * @return int The total number of issues.
 	 * @throws Exception If the account state can't be retrieved from Google.
