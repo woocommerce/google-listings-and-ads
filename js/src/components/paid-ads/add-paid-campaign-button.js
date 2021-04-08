@@ -25,6 +25,11 @@ import recordEvent from '.~/utils/recordEvent';
  *
  * @param {Object} props Props
  * @param {string} [props.eventName='gla_add_paid_campaign_clicked'] eventName to be used when calling `recordEvent`.
+ * @param {Object} [props.eventProps] eventProps to be used when calling `recordEvent`.
+ * @param {string} [props.eventProps.context=''] Context to be used when calling `recordEvent`.
+ * @param {string} [props.eventProps.href] Destination path. This would default to a path with
+ * `'/google/setup-ads'` when users have not completed ads setup, or
+ * `'/google/campaigns/create'` when users have completed ads setup.
  * @return {AppButton} AppButton
  */
 const AddPaidCampaignButton = ( props ) => {
