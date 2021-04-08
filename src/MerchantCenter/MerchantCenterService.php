@@ -167,7 +167,7 @@ class MerchantCenterService implements Service {
 			return [ 'status' => 'complete' ];
 		}
 
-		if ( ! $this->account_state->last_incomplete_step() ) {
+		if ( $this->connected_account() ) {
 			$step = 'target_audience';
 
 			if ( $this->saved_target_audience() ) {
@@ -193,6 +193,16 @@ class MerchantCenterService implements Service {
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
 		$this->transients->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
+	}
+
+	/**
+	 * Check if account has been connected.
+	 *
+	 * @return bool
+	 */
+	protected function connected_account(): bool {
+		$id = $this->options->get_merchant_id();
+		return $id && ! $this->account_state->last_incomplete_step();
 	}
 
 	/**
