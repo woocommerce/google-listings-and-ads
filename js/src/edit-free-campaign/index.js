@@ -15,7 +15,7 @@ import { useAppDispatch } from '.~/data';
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
-import useTargetAudience from '.~/hooks/useTargetAudience';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
@@ -83,7 +83,11 @@ function saveShippingData( upsertAction, deleteAction, oldData, newData ) {
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
-	const { data: savedTargetAudience } = useTargetAudience();
+	const {
+		targetAudience: savedTargetAudience,
+		getFinalCountries,
+	} = useTargetAudienceFinalCountryCodes();
+
 	const { settings: savedSettings } = useSettings();
 	const {
 		saveTargetAudience,
@@ -249,6 +253,9 @@ export default function EditFreeCampaign() {
 								stepHeader={ __(
 									'STEP TWO',
 									'google-listings-and-ads'
+								) }
+								countries={ getFinalCountries(
+									targetAudience
 								) }
 								settings={ settings }
 								onSettingsChange={ ( change, newSettings ) => {
