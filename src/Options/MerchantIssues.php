@@ -162,6 +162,13 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		// Sort, and avoid duplicate errors for the same product (if present for multiple geos).
 		ksort( $product_issues );
 		$product_issues = array_unique( array_values( $product_issues ), SORT_REGULAR );
+		$product_issues = array_map(
+			function( $issue ) {
+				sort( $issue['applicable_countries'] );
+				return $issue;
+			},
+			$product_issues
+		);
 
 		$issues = array_merge( $account_issues, $product_issues );
 
