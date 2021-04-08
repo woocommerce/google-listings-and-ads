@@ -40,13 +40,16 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 	/**
 	 * Retrieve or initialize the mc_issues transient. Refresh if the issues have gone stale.
+	 * Issue details are reduced, and for products, grouped by type.
 	 *
 	 * @param string|null $filter To filter by issue type if desired.
+	 * @param int         $per_page The number of issues to return (0 for no limit)
+	 * @param int         $page The page to start on (1-indexed).
 	 *
 	 * @return array The account- and product-level issues for the Merchant Center account.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function get( string $filter = null ): array {
+	public function get( string $filter = null, int $per_page = 0, int $page = 1 ): array {
 		$issues = $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null );
 
 		if ( is_null( $issues ) ) {
@@ -65,7 +68,27 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
+		if ( $per_page > 0 ) {
+			$issues = array_slice(
+				$issues,
+				$per_page * ( max( 1, $page ) - 1 ),
+				$per_page
+			);
+		}
+
 		return array_values( $issues );
+	}
+
+	/**
+	 * Get a count of the number of issues for the Merchant Center account.
+	 *
+	 * @param string|null $filter To filter by issue type if desired.
+	 *
+	 * @return int The total number of issues.
+	 * @throws Exception If the account state can't be retrieved from Google.
+	 */
+	public function count( string $filter = null ): int {
+		return count( $this->get( $filter ) );
 	}
 
 	/**

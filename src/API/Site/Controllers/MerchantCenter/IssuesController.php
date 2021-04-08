@@ -63,10 +63,18 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_issues_read_callback(): callable {
 		return function( Request $request ) {
-			$filter = (string) $request['filter'];
+			$filter   = (string) $request['filter'];
+			$per_page = intval( $request['per_page'] );
+			$page     = max( 1, intval( $request['page'] ) );
 			try {
 				return $this->prepare_item_for_response(
-					[ 'issues' => $this->mc_issues->get( $filter ) ],
+					[
+						'issues'   => $this->mc_issues->get( $filter, $per_page, $page ),
+						'total'    => $this->mc_issues->count( $filter ),
+						'page'     => $page,
+						'per_page' => $per_page ?: $this->mc_issues->count( $filter ),
+
+					],
 					$request
 				);
 			} catch ( Exception $e ) {
@@ -82,11 +90,26 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'issues' => [
+			'issues'   => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
+			],
+			'total'    => [
+				'type'     => 'numeric',
+				'context'  => [ 'view' ],
+				'readonly' => true,
+			],
+			'page'     => [
+				'type'     => 'numeric',
+				'context'  => [ 'view' ],
+				'readonly' => true,
+			],
+			'per_page' => [
+				'type'     => 'numeric',
+				'context'  => [ 'view' ],
+				'readonly' => true,
 			],
 		];
 	}
