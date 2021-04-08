@@ -92,7 +92,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		foreach ( $merchant->get_productstatuses() as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
-			// Skip products no synced by this extension.
+			// Skip products not synced by this extension.
 			if ( ! $wc_product_id ) {
 				continue;
 			}
