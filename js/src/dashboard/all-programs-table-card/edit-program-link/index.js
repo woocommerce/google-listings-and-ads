@@ -17,7 +17,7 @@ const EditProgramLink = ( props ) => {
 	const url =
 		programId === FREE_LISTINGS_PROGRAM_ID
 			? getNewPath( { programId }, '/google/edit-free-campaign' )
-			: getNewPath( { programId }, '/google/edit-paid-ads-campaign' );
+			: getNewPath( { programId }, '/google/campaigns/edit' );
 
 	return (
 		<TrackableLink

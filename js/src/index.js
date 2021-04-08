@@ -97,7 +97,7 @@ addFilter(
 					'google-listings-and-ads'
 				),
 				container: EditPaidAdsCampaign,
-				path: '/google/edit-paid-ads-campaign',
+				path: '/google/campaigns/edit',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{

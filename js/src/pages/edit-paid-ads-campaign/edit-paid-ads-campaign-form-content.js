@@ -6,28 +6,27 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AudienceSection from '.~/components/paid-ads/audience-section';
-import BudgetSection from '.~/components/paid-ads/budget-section';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
+import BudgetSection from '.~/components/paid-ads/budget-section';
 
-const FormContent = ( props ) => {
-	const { formProps, submitButton } = props;
+const EditPaidAdsCampaignFormContent = ( props ) => {
+	const { formProps } = props;
 
 	return (
 		<>
 			<AudienceSection
-				formProps={ formProps }
+				disabled
 				countrySelectHelperText={ __(
-					'You can only select one country per campaign. ',
+					'Once a campaign has been created, you cannot change the target country.',
 					'google-listings-and-ads'
 				) }
+				formProps={ formProps }
 			/>
 			<BudgetSection formProps={ formProps } />
 			<FaqsSection />
-			<StepContentFooter>{ submitButton }</StepContentFooter>
 		</>
 	);
 };
 
-export default FormContent;
+export default EditPaidAdsCampaignFormContent;

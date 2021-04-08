@@ -41,6 +41,10 @@ const ConnectMCCard = ( props ) => {
 		receiveMCAccount( data );
 	};
 
+	const handleSelectAnotherAccount = () => {
+		reset();
+	};
+
 	if ( response && response.status === 409 ) {
 		return (
 			<SwitchUrlCard
@@ -48,7 +52,7 @@ const ConnectMCCard = ( props ) => {
 				message={ error.message }
 				claimedUrl={ error.claimed_url }
 				newUrl={ error.new_url }
-				onSelectAnotherAccount={ reset }
+				onSelectAnotherAccount={ handleSelectAnotherAccount }
 			/>
 		);
 	}
