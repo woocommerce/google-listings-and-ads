@@ -71,21 +71,12 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
-		// Search on product name?
+		// Search on product name or ID?
 		if ( $query ) {
 			if ( self::TYPE_PRODUCT !== $type ) {
 				throw new Exception( 'Search only enabled for product-level issues' );
 			}
-			$issues = array_filter(
-				$issues,
-				function( $i ) use ( $query ) {
-					$match = stripos( $i['product'], $query ) !== false;
-					if ( ! $match && is_numeric( $query ) ) {
-						$match = preg_match( '/post=' . intval( $query ) . '(&|$)/', $i['edit_link'] );
-					}
-					return $match;
-				}
-			);
+			$issues = $this->filter_by_query( $issues, $query );
 		}
 
 		// Paginate the results?
@@ -239,5 +230,29 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'applicable_countries' => $item['applicableCountries'],
 			];
 		}
+	}
+
+	/**
+	 * Filter the provided array of issues using the query:
+	 * - Product name
+	 * - Single product ID
+	 * - Comma-separated list of product IDs
+	 *
+	 * @param array  $issues
+	 * @param string $query
+	 *
+	 * @return array
+	 */
+	protected function filter_by_query( array $issues, string $query ): array {
+		return array_filter(
+			$issues,
+			function( $i ) use ( $query ) {
+				$match = stripos( $i['product'], $query ) !== false;
+				if ( ! $match && preg_match( '/^\d+(,\d+)?$/', $query ) ) {
+					$match = preg_match( '/post=' . str_replace( ',', '|', $query ) . '(&|$)/', $i['edit_link'] );
+				}
+				return $match;
+			}
+		);
 	}
 }
