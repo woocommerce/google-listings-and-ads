@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsGroupQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsGroupAdQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroupQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -37,7 +40,6 @@ use Google\ApiCore\ValidationException;
 class AdsGroup implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
-	use AdsQueryTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -128,16 +130,14 @@ class AdsGroup implements OptionsAwareInterface {
 	 * @throws ValidationException If the ad group query has no results.
 	 */
 	public function delete_ad_group( string $campaign_resource_name ): array {
-		$return   = [];
-		$query    = $this->build_query(
-			[ 'ad_group.resource_name' ],
-			'ad_group',
-			'ad_group.campaign = "' . $campaign_resource_name . '"'
-		);
-		$response = $this->query( $query );
+		$return  = [];
+		$results = ( new AdsGroupQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'ad_group.campaign', $campaign_resource_name )
+			->get_results();
 
 		/** @var GoogleAdsRow $row */
-		foreach ( $response->iterateAllElements() as $row ) {
+		foreach ( $results->iterateAllElements() as $row ) {
 			$resource_name = $row->getAdGroup()->getResourceName();
 			$operation     = new AdGroupOperation();
 			$operation->setRemove( $resource_name );
@@ -193,16 +193,14 @@ class AdsGroup implements OptionsAwareInterface {
 	 * @throws ValidationException If the ad group ad query has no results.
 	 */
 	public function delete_ad_group_ad( string $campaign_resource_name ): array {
-		$return   = [];
-		$query    = $this->build_query(
-			[ 'ad_group_ad.resource_name' ],
-			'ad_group_ad',
-			'ad_group.campaign = "' . $campaign_resource_name . '"'
-		);
-		$response = $this->query( $query );
+		$return  = [];
+		$results = ( new AdsGroupAdQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'ad_group_ad.campaign', $campaign_resource_name )
+			->get_results();
 
 		/** @var GoogleAdsRow $row */
-		foreach ( $response->iterateAllElements() as $row ) {
+		foreach ( $results->iterateAllElements() as $row ) {
 			$resource_name = $row->getAdGroupAd()->getResourceName();
 			$operation     = new AdGroupAdOperation();
 			$operation->setRemove( $resource_name );
@@ -258,16 +256,14 @@ class AdsGroup implements OptionsAwareInterface {
 	 * @throws ValidationException If the ad group criterion query has no results.
 	 */
 	protected function delete_shopping_listing_group( string $campaign_resource_name ): array {
-		$return   = [];
-		$query    = $this->build_query(
-			[ 'ad_group_criterion.resource_name' ],
-			'ad_group_criterion',
-			'ad_group.campaign = "' . $campaign_resource_name . '"'
-		);
-		$response = $this->query( $query );
+		$return  = [];
+		$results = ( new AdsListingGroupQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'ad_group_criterion.campaign', $campaign_resource_name )
+			->get_results();
 
 		/** @var GoogleAdsRow $row */
-		foreach ( $response->iterateAllElements() as $row ) {
+		foreach ( $results->iterateAllElements() as $row ) {
 			$resource_name = $row->getAdGroupCriterion()->getResourceName();
 			$operation     = new AdGroupCriterionOperation();
 			$operation->setRemove( $resource_name );

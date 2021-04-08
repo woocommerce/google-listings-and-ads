@@ -27,6 +27,28 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	}
 
 	/**
+	 * Create a new instance of the exception when a column is not valid.
+	 *
+	 * @param string $name        The column name.
+	 *
+	 * @return static
+	 */
+	public static function invalid_column( string $name ): InvalidQuery {
+		return new static( sprintf( 'The column "%s" is not valid, it should only contain the characters "a-zA-Z0-9._"', $name ) );
+	}
+
+	/**
+	 * Create a new instance of the exception when a column is not valid for ordering.
+	 *
+	 * @param string $name The column name.
+	 *
+	 * @return static
+	 */
+	public static function invalid_order_column( string $name ): InvalidQuery {
+		return new static( sprintf( 'The column "%s" is not valid for ordering results.', $name ) );
+	}
+
+	/**
 	 * @param string $compare
 	 *
 	 * @return static
@@ -96,5 +118,23 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	 */
 	public static function empty_where(): InvalidQuery {
 		return new static( 'Where clause cannot be an empty array.' );
+	}
+
+	/**
+	 * Create a new instance of the exception when an empty set of columns is provided.
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function empty_columns(): InvalidQuery {
+		return new static( 'Columns list cannot be an empty array.' );
+	}
+
+	/**
+	 * Create a new instance of the exception when an invalid resource name is used.
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function resource_name(): InvalidQuery {
+		return new static( 'The resource name can only include alphanumeric and underscore characters.' );
 	}
 }

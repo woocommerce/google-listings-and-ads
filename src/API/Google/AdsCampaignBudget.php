@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignBudgetQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -24,9 +25,8 @@ use Exception;
  */
 class AdsCampaignBudget implements OptionsAwareInterface {
 
-	use AdsQueryTrait;
-	use OptionsAwareTrait;
 	use MicroTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -120,10 +120,12 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 	 * @throws Exception If no linked budget has been found.
 	 */
 	protected function get_budget_from_campaign( int $campaign_id ): int {
-		$query    = $this->build_query( [ 'campaign.campaign_budget' ], 'campaign', "campaign.id = {$campaign_id}" );
-		$response = $this->query( $query );
+		$results = ( new AdsCampaignBudgetQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign.id', $campaign_id )
+			->get_results();
 
-		foreach ( $response->iterateAllElements() as $row ) {
+		foreach ( $results->iterateAllElements() as $row ) {
 			$campaign = $row->getCampaign();
 			return $this->parse_campaign_budget_id( $campaign->getCampaignBudget() );
 		}

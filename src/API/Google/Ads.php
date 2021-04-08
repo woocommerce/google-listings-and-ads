@@ -3,15 +3,16 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsBillingStatusQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Exception;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\V6\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V6\Resources\MerchantCenterLink;
 use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkOperation;
 use Google\ApiCore\ApiException;
-use Exception;
 use Google\ApiCore\ValidationException;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,9 +24,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class Ads implements OptionsAwareInterface {
 
-	use OptionsAwareTrait;
 	use ApiExceptionTrait;
-	use AdsQueryTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * The Google Ads Client.
@@ -56,11 +56,11 @@ class Ads implements OptionsAwareInterface {
 		}
 
 		try {
+			$results = ( new AdsBillingStatusQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->get_results();
 
-			$query    = $this->build_query( [ 'billing_setup.status' ], 'billing_setup' );
-			$response = $this->query( $query );
-
-			foreach ( $response->iterateAllElements() as $row ) {
+			foreach ( $results->iterateAllElements() as $row ) {
 				$billing_setup = $row->getBillingSetup();
 				$status        = BillingSetupStatus::label( $billing_setup->getStatus() );
 				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $ads_id );
