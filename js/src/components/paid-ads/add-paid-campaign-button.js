@@ -24,7 +24,7 @@ import recordEvent from '.~/utils/recordEvent';
  * You should specify the context where this button is used, e.g. `eventProps={ { context: 'programs-table-card' } }`.
  *
  * @param {Object} props Props
- * @param {string} props.eventName eventName to be used when calling `recordEvent`. Default: `'gla_add_paid_campaign_clicked'`.
+ * @param {string} [props.eventName='gla_add_paid_campaign_clicked'] eventName to be used when calling `recordEvent`.
  * @return {AppButton} AppButton
  */
 const AddPaidCampaignButton = ( props ) => {
