@@ -568,6 +568,31 @@ export function* saveTargetAudience( targetAudience ) {
 	}
 }
 
+export function* fetchAdsCampaigns() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+		} );
+
+		return receiveAdsCampaigns( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading ads campaigns.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function receiveAdsCampaigns( adsCampaigns ) {
+	return {
+		type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+		adsCampaigns,
+	};
+}
+
 // TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
 export function* upsertShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
