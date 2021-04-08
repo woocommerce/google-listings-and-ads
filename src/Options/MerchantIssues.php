@@ -117,14 +117,15 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		}
 
 		/** @var Merchant $merchant */
-		$merchant = $this->container->get( Merchant::class );
-		$issues   = [];
+		$merchant       = $this->container->get( Merchant::class );
+		$account_issues = [];
 		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $i ) {
-			$issues[] = $this->convert_issue( [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject() );
+			$account_issues[] = $this->convert_issue( [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject() );
 		}
 
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
+		$product_issues = [];
 		foreach ( $merchant->get_productstatuses() as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
@@ -142,15 +143,15 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
-					$code = md5( $wc_product_id . $item_level_issue->getCode() );
+					$code = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
 
-					if ( isset( $issues[ $code ] ) ) {
-						$issues[ $code ]['applicable_countries'] = array_merge(
-							$issues[ $code ]['applicable_countries'],
+					if ( isset( $product_issues[ $code ] ) ) {
+						$product_issues[ $code ]['applicable_countries'] = array_merge(
+							$product_issues[ $code ]['applicable_countries'],
 							$item_level_issue->getApplicableCountries()
 						);
 					} else {
-						$issues[ $code ] = $this->convert_issue(
+						$product_issues[ $code ] = $this->convert_issue(
 							$product_issue_template + (array) $item_level_issue->toSimpleObject()
 						);
 					}
@@ -158,8 +159,11 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			}
 		}
 
-		// Avoid duplicate errors for the same product (if present for multiple geos).
-		$issues = array_unique( array_values( $issues ), SORT_REGULAR );
+		// Sort, and avoid duplicate errors for the same product (if present for multiple geos).
+		ksort( $product_issues );
+		$product_issues = array_unique( array_values( $product_issues ), SORT_REGULAR );
+
+		$issues = array_merge( $account_issues, $product_issues );
 
 		// Update the cached values
 		/** @var TransientsInterface $transients */
