@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
-import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
+import { shouldDisplayTaxRate } from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import CombinedShipping from '.~/components/free-listings/configure-product-listings/combined-shipping';
 
 /**
@@ -28,7 +28,7 @@ import CombinedShipping from '.~/components/free-listings/configure-product-list
  */
 const FormContent = ( { formProps, countries } ) => {
 	const { errors, handleSubmit } = formProps;
-	const displayTaxRate = useDisplayTaxRate();
+	const displayTaxRate = shouldDisplayTaxRate( countries );
 
 	const isCompleteSetupDisabled = Object.keys( errors ).length >= 1;
 
