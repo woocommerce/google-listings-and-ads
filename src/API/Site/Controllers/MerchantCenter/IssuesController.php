@@ -97,7 +97,50 @@ class IssuesController extends BaseOptionsController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 				'items'       => [
-					'type' => 'object',
+					'type'       => 'object',
+					'properties' => [
+						'type'                 => [
+							'type'        => 'string',
+							'description' => __( 'Issue type.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'product'              => [
+							'type'        => 'string',
+							'description' => __( 'Affected product.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'code'                 => [
+							'type'        => 'string',
+							'description' => __( 'Internal Google code for issue.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'issue'                => [
+							'type'        => 'string',
+							'description' => __( 'Descriptive text of the issue.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'action'               => [
+							'type'        => 'string',
+							'description' => __( 'Descriptive text of action to take.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'action_link'          => [
+							'type'        => 'string',
+							'description' => __( 'Documentation URL for issue and/or action.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+							'required'    => false,
+						],
+						'edit_link'            => [
+							'type'        => 'string',
+							'description' => __( 'Link to affected product edit page.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'applicable_countries' => [
+							'type'        => 'array',
+							'description' => __( 'Country codes of the product audience.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+					],
 				],
 			],
 			'total'  => [
