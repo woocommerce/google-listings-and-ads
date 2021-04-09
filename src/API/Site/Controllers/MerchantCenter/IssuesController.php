@@ -72,10 +72,9 @@ class IssuesController extends BaseOptionsController {
 				$total = $this->mc_issues->count( $type_filter, $query );
 				return $this->prepare_item_for_response(
 					[
-						'issues'   => $this->mc_issues->get( $type_filter, $query, $per_page, $page ),
-						'total'    => $total,
-						'page'     => $page,
-						'per_page' => $per_page ?: $total,
+						'issues' => $this->mc_issues->get( $type_filter, $query, $per_page, $page ),
+						'total'  => $total,
+						'page'   => $page,
 					],
 					$request
 				);
@@ -92,7 +91,7 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'issues'   => [
+			'issues' => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -101,17 +100,12 @@ class IssuesController extends BaseOptionsController {
 					'type' => 'object',
 				],
 			],
-			'total'    => [
+			'total'  => [
 				'type'     => 'numeric',
 				'context'  => [ 'view' ],
 				'readonly' => true,
 			],
-			'page'     => [
-				'type'     => 'numeric',
-				'context'  => [ 'view' ],
-				'readonly' => true,
-			],
-			'per_page' => [
+			'page'   => [
 				'type'     => 'numeric',
 				'context'  => [ 'view' ],
 				'readonly' => true,
