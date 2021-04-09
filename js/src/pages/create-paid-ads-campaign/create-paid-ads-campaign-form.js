@@ -39,6 +39,14 @@ const CreatePaidAdsCampaignForm = () => {
 			const { amount, country: countryArr } = values;
 			const country = countryArr && countryArr[ 0 ];
 			await createCampaign( amount, country );
+
+			createNotice(
+				'success',
+				__(
+					'You’ve successfully created a paid campaign!',
+					'google-listings-and-ads'
+				)
+			);
 		} catch ( e ) {
 			createNotice(
 				'error',
