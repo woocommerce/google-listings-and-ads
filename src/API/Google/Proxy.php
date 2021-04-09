@@ -134,15 +134,6 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Disconnect the connected merchant account.
-	 */
-	public function disconnect_merchant() {
-		$this->update_merchant_id( 0 );
-
-		// TODO: Cancel any active campaigns and remove product feeds when disconnecting.
-	}
-
-	/**
 	 * Link Merchant Center account to MCA.
 	 *
 	 * @return bool
