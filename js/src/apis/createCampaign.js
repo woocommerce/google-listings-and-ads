@@ -17,7 +17,7 @@ const createCampaign = ( amount, country ) => {
 		path: '/wc/gla/ads/campaigns',
 		method: 'POST',
 		data: {
-			name: `Ads Campaign ${ date }`,
+			name: `Campaign ${ date }`,
 			amount: Number( amount ),
 			country,
 		},
