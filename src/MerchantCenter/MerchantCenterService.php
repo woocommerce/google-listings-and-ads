@@ -160,13 +160,11 @@ class MerchantCenterService implements Service {
 	 * @return array
 	 */
 	public function get_setup_status(): array {
-		$complete = $this->is_setup_complete();
-		$step     = 'accounts';
-
-		if ( $complete ) {
+		if ( $this->is_setup_complete() ) {
 			return [ 'status' => 'complete' ];
 		}
 
+		$step = 'accounts';
 		if ( $this->connected_account() ) {
 			$step = 'target_audience';
 
