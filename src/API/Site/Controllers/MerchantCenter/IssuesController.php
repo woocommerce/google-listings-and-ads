@@ -50,6 +50,7 @@ class IssuesController extends BaseOptionsController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_issues_read_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			],
@@ -154,6 +155,40 @@ class IssuesController extends BaseOptionsController {
 				'readonly' => true,
 			],
 		];
+	}
+
+
+	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params(): array {
+		return [
+			'context'  => $this->get_context_param( [ 'default' => 'view' ] ),
+			'page'     => [
+				'description'       => __( 'Page of data to retrieve.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'default'           => 1,
+				'minimum'           => 1,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'per_page' => [
+				'description'       => __( 'Maximum number of rows to be returned in result data.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'default'           => 0,
+				'minimum'           => 0,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'query'    => [
+				'description'       => __( 'Search query for product names and IDs.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
+
 	}
 
 	/**
