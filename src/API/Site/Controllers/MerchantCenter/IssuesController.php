@@ -63,7 +63,7 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_issues_read_callback(): callable {
 		return function( Request $request ) {
-			$type_filter = (string) $request['type_filter'];
+			$type_filter = $request['type_filter'];
 			$query       = $request['query'] ?? null;
 			$per_page    = intval( $request['per_page'] );
 			$page        = max( 1, intval( $request['page'] ) );
