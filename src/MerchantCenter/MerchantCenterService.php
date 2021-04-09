@@ -201,11 +201,18 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Check if target audience has been saved.
+	 * Check if target audience has been saved (with a valid selection of countries).
 	 *
 	 * @return bool
 	 */
 	protected function saved_target_audience(): bool {
-		return ! empty( $this->options->get( OptionsInterface::TARGET_AUDIENCE ) );
+		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+
+		if ( empty( $audience ) || ! isset( $audience['location'] ) ) {
+			return false;
+		}
+
+		$empty_selection = 'selected' === $audience['location'] && empty( $audience['countries'] );
+		return ! $empty_selection;
 	}
 }
