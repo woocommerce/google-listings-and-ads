@@ -116,14 +116,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-		/** @var Merchant $merchant */
-		$merchant       = $this->container->get( Merchant::class );
-		$account_issues = [];
-		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $i ) {
-			$account_issues[] = $this->convert_issue( [ 'type' => self::TYPE_ACCOUNT ] + (array) $i->toSimpleObject() );
-		}
-
-		$issues = array_merge( $account_issues, $this->get_product_issues() );
+		$issues = array_merge( $this->get_account_issues(), $this->get_product_issues() );
 
 		// Update the cached values
 		/** @var TransientsInterface $transients */
@@ -162,41 +155,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Standardize the issue data for display.
-	 *
-	 * @param array $item Array of data about an issue, as returned by Shopping API and/or saved in transient.
-	 *
-	 * @return array Standardized issue data.
-	 */
-	protected function convert_issue( array $item ): array {
-		if ( $item['type'] === self::TYPE_ACCOUNT ) {
-			return [
-				'type'        => $item['type'],
-				'product'     => __( 'All products', 'google-listings-and-ads' ),
-				'code'        => $item['id'],
-				'issue'       => $item['title'],
-				'action'      => __( 'Read more about this account issue', 'google-listings-and-ads' ),
-				'action_link' => $item['documentation'],
-			];
-		} else {
-			if ( empty( $this->wp ) ) {
-				$this->wp = $this->container->get( WP::class );
-			}
-
-			return [
-				'type'                 => $item['type'],
-				'product'              => $item['title'],
-				'code'                 => $item['code'],
-				'issue'                => $item['description'],
-				'action'               => $item['detail'],
-				'action_link'          => $item['documentation'],
-				'edit_link'            => $this->wp->get_edit_post_link( $item['wc_product_id'], 'json' ),
-				'applicable_countries' => $item['applicableCountries'],
-			];
-		}
-	}
-
-	/**
 	 * Filter the provided array of issues using the query:
 	 * - Product name
 	 * - Single product ID
@@ -221,6 +179,30 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	}
 
 	/**
+	 * Retrieve and prepare all account-level issues for the Merchant Center account.
+	 *
+	 * @return array Account-level issues.
+	 * @throws Exception If the account state can't be retrieved from Google.
+	 */
+	private function get_account_issues(): array {
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
+
+		$account_issues = [];
+		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+			$account_issues[] = [
+				'type'        => self::TYPE_ACCOUNT,
+				'product'     => __( 'All products', 'google-listings-and-ads' ),
+				'code'        => $issue->getId(),
+				'issue'       => $issue->getTitle(),
+				'action'      => __( 'Read more about this account issue', 'google-listings-and-ads' ),
+				'action_link' => $issue->getDocumentation(),
+			];
+		}
+		return $account_issues;
+	}
+
+	/**
 	 * Retrieve and prepare all product-level issues for the Merchant Center account.
 	 *
 	 * @return array Unique product issues sorted by product id.
@@ -228,8 +210,14 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	private function get_product_issues(): array {
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
+
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
+
+		if ( empty( $this->wp ) ) {
+			$this->wp = $this->container->get( WP::class );
+		}
+
 		$product_issues = [];
 		foreach ( $merchant->get_productstatuses() as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
@@ -240,26 +228,29 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			}
 
 			$product_issue_template = [
-				'type'                 => self::TYPE_PRODUCT,
-				'productId'            => $product->getProductId(),
-				'title'                => $product->getTitle(),
-				'wc_product_id'        => $wc_product_id,
-				'applicable_countries' => [],
+				'type'      => self::TYPE_PRODUCT,
+				'product'   => $product->getTitle(),
+				'edit_link' => $this->wp->get_edit_post_link( $wc_product_id, 'json' ),
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
-				if ( 'merchant_action' === $item_level_issue->getResolution() ) {
-					$code = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
+				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
+					continue;
+				}
+				$code = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
 
-					if ( isset( $product_issues[ $code ] ) ) {
-						$product_issues[ $code ]['applicable_countries'] = array_merge(
-							$product_issues[ $code ]['applicable_countries'],
-							$item_level_issue->getApplicableCountries()
-						);
-					} else {
-						$product_issues[ $code ] = $this->convert_issue(
-							$product_issue_template + (array) $item_level_issue->toSimpleObject()
-						);
-					}
+				if ( isset( $product_issues[ $code ] ) ) {
+					$product_issues[ $code ]['applicable_countries'] = array_merge(
+						$product_issues[ $code ]['applicable_countries'],
+						$item_level_issue->getApplicableCountries()
+					);
+				} else {
+					$product_issues[ $code ] = $product_issue_template + [
+						'code'                 => $item_level_issue->getCode(),
+						'issue'                => $item_level_issue->getDescription(),
+						'action'               => $item_level_issue->getDetail(),
+						'action_link'          => $item_level_issue->getDocumentation(),
+						'applicable_countries' => $item_level_issue->getApplicableCountries(),
+					];
 				}
 			}
 		}
