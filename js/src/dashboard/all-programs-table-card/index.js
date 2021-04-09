@@ -2,9 +2,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { getQuery, getNewPath, onQueryChange } from '@woocommerce/navigation';
-import { Link } from '@woocommerce/components';
-import classnames from 'classnames';
+import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -21,6 +19,7 @@ import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 
 const headers = [
 	{
@@ -104,16 +103,9 @@ const AllProgramsTableCard = ( props ) => {
 			title={
 				<div className="gla-all-programs-table-card__header">
 					{ __( 'Programs', 'google-listings-and-ads' ) }
-					<Link
-						className={ classnames(
-							'components-button',
-							'is-secondary',
-							'is-small'
-						) }
-						href={ getNewPath( {}, '/google/setup-ads' ) }
-					>
-						{ __( 'Add paid campaign', 'google-listings-and-ads' ) }
-					</Link>
+					<AddPaidCampaignButton
+						eventProps={ { context: 'programs-table-card' } }
+					/>
 				</div>
 			}
 			headers={ headers }

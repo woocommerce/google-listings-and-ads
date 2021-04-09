@@ -14,6 +14,7 @@ import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
 import EditFreeCampaign from './edit-free-campaign';
 import EditPaidAdsCampaign from './pages/edit-paid-ads-campaign';
+import CreatePaidAdsCampaign from './pages/create-paid-ads-campaign';
 import { ProgramsReport, ProductsReport } from './reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
@@ -98,6 +99,23 @@ addFilter(
 				),
 				container: EditPaidAdsCampaign,
 				path: '/google/campaigns/edit',
+				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+			},
+			{
+				breadcrumbs: [
+					[ '', wcSettings.woocommerceTranslation ],
+					[
+						'/marketing',
+						__( 'Marketing', 'google-listings-and-ads' ),
+					],
+					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				],
+				title: __(
+					'Create your free campaign',
+					'google-listings-and-ads'
+				),
+				container: CreatePaidAdsCampaign,
+				path: '/google/campaigns/create',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{

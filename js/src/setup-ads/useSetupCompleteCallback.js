@@ -3,31 +3,20 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState, useCallback } from '@wordpress/element';
-import { format as formatDate } from '@wordpress/date';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import createCampaign from '.~/apis/createCampaign';
 
 export default function useSetupCompleteCallback() {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ loading, setLoading ] = useState( false );
 
-	const createCampaign = useCallback( ( amount, country ) => {
-		const date = formatDate( 'Y-m-d', new Date() );
-		const options = {
-			path: '/wc/gla/ads/campaigns',
-			method: 'POST',
-			data: {
-				name: `Ads Campaign ${ date }`,
-				amount: Number( amount ),
-				country,
-			},
-		};
-
-		return apiFetch( options ).catch( () => {
+	const createCampaignCallback = useCallback( ( amount, country ) => {
+		return createCampaign( amount, country ).catch( () => {
 			return Promise.reject(
 				__(
 					'Unable to launch your ads campaign. Please try again later.',
@@ -55,7 +44,7 @@ export default function useSetupCompleteCallback() {
 	const handleFinishSetup = useCallback(
 		( amount, country, onCompleted ) => {
 			setLoading( true );
-			createCampaign( amount, country )
+			createCampaignCallback( amount, country )
 				.then( completeAdsSetup )
 				.then( onCompleted )
 				.catch( ( errorMessage ) => {
@@ -63,7 +52,7 @@ export default function useSetupCompleteCallback() {
 				} )
 				.then( () => setLoading( false ) );
 		},
-		[ createCampaign, completeAdsSetup, createNotice ]
+		[ createCampaignCallback, completeAdsSetup, createNotice ]
 	);
 
 	return [ handleFinishSetup, loading ];

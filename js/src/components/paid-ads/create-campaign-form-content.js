@@ -6,13 +6,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AudienceSection from '.~/components/paid-ads/audience-section';
 import BudgetSection from '.~/components/paid-ads/budget-section';
 import FaqsSection from '.~/components/paid-ads/faqs-section';
 
-const FormContent = ( props ) => {
-	const { formProps, submitButton } = props;
+const CreateCampaignFormContent = ( props ) => {
+	const { formProps } = props;
 
 	return (
 		<>
@@ -25,9 +24,8 @@ const FormContent = ( props ) => {
 			/>
 			<BudgetSection formProps={ formProps } />
 			<FaqsSection />
-			<StepContentFooter>{ submitButton }</StepContentFooter>
 		</>
 	);
 };
 
-export default FormContent;
+export default CreateCampaignFormContent;

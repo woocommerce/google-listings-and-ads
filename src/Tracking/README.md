@@ -78,10 +78,6 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which page / module the link is in
   * `link_id`: a unique ID for the link within the page / module
 
-* `dashboard_link_clicked` - Clicking on a link within the dashboard page
-  * `context`: indicate which link is clicked
-  * `href`: link's URL
-
 * `gla_free_campaign_edited` - Saving changes to the free campaign.
 
 * `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
@@ -89,6 +85,10 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `disconnected_accounts` - Accounts are disconnected from the Setting page
   * `context`: (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
+
+* `add_paid_campaign_clicked` - "Add paid campaign" button is clicked.
+  * `context`: indicate the place where the button is located.
+  * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'` or `'/google/campaigns/create'`.
 
 <!-- -- >
 ## Developer Info
