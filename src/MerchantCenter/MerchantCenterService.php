@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -18,13 +20,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
-class MerchantCenterService implements Service {
-	use GoogleHelper;
+class MerchantCenterService implements OptionsAwareInterface, Service {
 
-	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
+	use GoogleHelper;
+	use OptionsAwareTrait;
 
 	/**
 	 * WooCommerce proxy service
@@ -53,14 +52,12 @@ class MerchantCenterService implements Service {
 	/**
 	 * MerchantCenterService constructor.
 	 *
-	 * @param OptionsInterface     $options
 	 * @param WC                   $wc
 	 * @param WP                   $wp
 	 * @param TransientsInterface  $transients
 	 * @param MerchantAccountState $account_state
 	 */
-	public function __construct( OptionsInterface $options, WC $wc, WP $wp, TransientsInterface $transients, MerchantAccountState $account_state ) {
-		$this->options       = $options;
+	public function __construct( WC $wc, WP $wp, TransientsInterface $transients, MerchantAccountState $account_state ) {
 		$this->wc            = $wc;
 		$this->wp            = $wp;
 		$this->transients    = $transients;

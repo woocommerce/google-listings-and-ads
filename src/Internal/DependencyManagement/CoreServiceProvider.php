@@ -147,7 +147,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags(
 			MerchantCenterService::class,
-			OptionsInterface::class,
 			WC::class,
 			WP::class,
 			TransientsInterface::class,
