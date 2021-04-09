@@ -78,10 +78,6 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which page / module the link is in
   * `link_id`: a unique ID for the link within the page / module
 
-* `dashboard_link_clicked` - Clicking on a link within the dashboard page
-  * `context`: indicate which link is clicked
-  * `href`: link's URL
-
 * `gla_free_campaign_edited` - Saving changes to the free campaign.
 
 * `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
