@@ -77,6 +77,7 @@ const CountriesPriceInput = ( {
 							) }
 						</div>
 						<EditRateButton
+							audienceCountries={ audienceCountries }
 							onChange={ onChange }
 							onDelete={ onDelete }
 							rate={ value }

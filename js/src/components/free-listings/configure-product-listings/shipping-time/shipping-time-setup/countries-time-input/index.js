@@ -75,6 +75,7 @@ const CountriesTimeInput = ( {
 							) }
 						</div>
 						<EditTimeButton
+							audienceCountries={ audienceCountries }
 							onChange={ onChange }
 							onDelete={ onDelete }
 							time={ value }
