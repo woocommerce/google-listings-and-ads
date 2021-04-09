@@ -110,6 +110,11 @@ class IssuesController extends BaseOptionsController {
 							'description' => __( 'Affected product.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
+						'product_id'           => [
+							'type'        => 'numeric',
+							'description' => __( 'The WooCommerce product ID.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
 						'code'                 => [
 							'type'        => 'string',
 							'description' => __( 'Internal Google code for issue.', 'google-listings-and-ads' ),
@@ -129,7 +134,6 @@ class IssuesController extends BaseOptionsController {
 							'type'        => 'string',
 							'description' => __( 'Documentation URL for issue and/or action.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
-							'required'    => false,
 						],
 						'edit_link'            => [
 							'type'        => 'string',
