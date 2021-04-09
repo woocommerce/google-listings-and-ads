@@ -110,14 +110,12 @@ export default function EditFreeCampaign() {
 	const [ shippingRates, updateShippingRates ] = useState(
 		savedShippingRates
 	);
-	// This is a quick and not save workaround for
+	// This is a quick and not safe workaround for
 	// https://github.com/woocommerce/google-listings-and-ads/pull/422#discussion_r607796375
 	// - `<Form>` element ignoring changes to its `initialValues` prop
 	// - default state of shipping* data of `[]`
 	// - resolver not signaling, that data is not ready yet
-	const loadedShippingRates = loadingShippingRates
-		? null
-		: savedShippingRates;
+	const loadedShippingRates = loadingShippingRates ? null : shippingRates;
 
 	const {
 		data: savedShippingTimes,
@@ -126,9 +124,7 @@ export default function EditFreeCampaign() {
 	const [ shippingTimes, updateShippingTimes ] = useState(
 		savedShippingTimes
 	);
-	const loadedShippingTimes = loadingShippingTimes
-		? null
-		: savedShippingTimes;
+	const loadedShippingTimes = loadingShippingTimes ? null : shippingTimes;
 
 	// TODO: Consider making it less repetitive.
 	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
