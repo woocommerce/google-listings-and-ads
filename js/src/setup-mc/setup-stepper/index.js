@@ -11,9 +11,11 @@ import SavedSetupStepper from './saved-setup-stepper';
 import './index.scss';
 import useMCSetup from '.~/hooks/useMCSetup';
 import stepNameKeyMap from './stepNameKeyMap';
+import { useAppDispatch } from '.~/data';
 
 const SetupStepper = () => {
 	const mcSetup = useMCSetup();
+	const { refetchMCSetup } = useAppDispatch();
 
 	if ( ! mcSetup ) {
 		return <AppSpinner />;
@@ -26,7 +28,16 @@ const SetupStepper = () => {
 		return null;
 	}
 
-	return <SavedSetupStepper savedStep={ stepNameKeyMap[ step ] } />;
+	const handleRefetchSavedStep = () => {
+		refetchMCSetup();
+	};
+
+	return (
+		<SavedSetupStepper
+			savedStep={ stepNameKeyMap[ step ] }
+			onRefetchSavedStep={ handleRefetchSavedStep }
+		/>
+	);
 };
 
 export default SetupStepper;

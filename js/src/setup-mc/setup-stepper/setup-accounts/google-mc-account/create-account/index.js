@@ -16,7 +16,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 const CreateAccount = ( props ) => {
 	const { allowShowExisting, onShowExisting } = props;
 	const { createNotice } = useDispatchCoreNotices();
-	const { receiveMCAccount, refetchMCSetup } = useAppDispatch();
+	const { receiveMCAccount } = useAppDispatch();
 	const [
 		fetchCreateMCAccount,
 		{ loading, error, response },
@@ -30,7 +30,6 @@ const CreateAccount = ( props ) => {
 			const res = await fetchCreateMCAccount( { parse: false } );
 			const data = await res.json();
 			receiveMCAccount( data );
-			refetchMCSetup();
 		} catch ( e ) {
 			if ( e.status === 406 ) {
 				const body = await e.json();

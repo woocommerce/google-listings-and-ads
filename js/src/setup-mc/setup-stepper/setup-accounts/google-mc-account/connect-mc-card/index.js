@@ -29,7 +29,7 @@ const ConnectMCCard = ( props ) => {
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { receiveMCAccount, refetchMCSetup } = useAppDispatch();
+	const { receiveMCAccount } = useAppDispatch();
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -38,8 +38,6 @@ const ConnectMCCard = ( props ) => {
 
 		const data = await fetchMCAccounts();
 		receiveMCAccount( data );
-
-		refetchMCSetup();
 	};
 
 	const handleSelectAnotherAccount = () => {

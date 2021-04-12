@@ -16,17 +16,19 @@ import './index.scss';
 import stepNameKeyMap from './stepNameKeyMap';
 
 const SavedSetupStepper = ( props ) => {
-	const { savedStep } = props;
+	const { savedStep, onRefetchSavedStep = () => {} } = props;
 	const [ step, setStep ] = useState( savedStep );
 
 	const handleSetupAccountsContinue = () => {
 		recordSetupMCEvent( 'step1_continue' );
 		setStep( stepNameKeyMap.target_audience );
+		onRefetchSavedStep();
 	};
 
 	const handleChooseAudienceContinue = () => {
 		recordSetupMCEvent( 'step2_continue' );
 		setStep( stepNameKeyMap.shipping_and_taxes );
+		onRefetchSavedStep();
 	};
 
 	const handleStepClick = ( stepKey ) => {
