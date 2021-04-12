@@ -197,7 +197,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'type'       => self::TYPE_PRODUCT,
 				'product'    => $product->getTitle(),
 				'product_id' => $wc_product_id,
-				'edit_link'  => $this->wp->get_edit_post_link( $wc_product_id, 'json' ),
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
