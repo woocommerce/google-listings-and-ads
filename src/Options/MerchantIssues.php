@@ -44,14 +44,13 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * Issues can be filtered by type, searched by name or ID (if product type) and paginated.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
-	 * @param string|null $query To search by product title or ID.
 	 * @param int         $per_page The number of issues to return (0 for no limit).
 	 * @param int         $page The page to start on (1-indexed).
 	 *
 	 * @return array The account- and product-level issues for the Merchant Center account.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function get( string $type = null, string $query = null, int $per_page = 0, int $page = 1 ): array {
+	public function get( string $type = null, int $per_page = 0, int $page = 1 ): array {
 		$issues = $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null );
 
 		if ( is_null( $issues ) ) {
@@ -71,14 +70,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
-		// Search on product name or ID?
-		if ( $query ) {
-			if ( self::TYPE_PRODUCT !== $type ) {
-				throw new Exception( 'Search only enabled for product-level issues' );
-			}
-			$issues = $this->filter_by_query( $issues, $query );
-		}
-
 		// Paginate the results?
 		if ( $per_page > 0 ) {
 			$issues = array_slice(
@@ -95,13 +86,12 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * Get a count of the number of issues for the Merchant Center account.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
-	 * @param string|null $query To search by product title or ID.
 	 *
 	 * @return int The total number of issues.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function count( string $type = null, string $query = null ): int {
-		return count( $this->get( $type, $query ) );
+	public function count( string $type = null ): int {
+		return count( $this->get( $type ) );
 	}
 
 	/**
@@ -152,30 +142,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			self::TYPE_ACCOUNT,
 			self::TYPE_PRODUCT,
 		];
-	}
-
-	/**
-	 * Filter the provided array of issues using the query:
-	 * - Product name
-	 * - Single product ID
-	 * - Comma-separated list of product IDs
-	 *
-	 * @param array  $issues
-	 * @param string $query
-	 *
-	 * @return array
-	 */
-	protected function filter_by_query( array $issues, string $query ): array {
-		return array_filter(
-			$issues,
-			function( $i ) use ( $query ) {
-				$match = stripos( $i['product'], $query ) !== false;
-				if ( ! $match && preg_match( '/^\d+(,\d+)?$/', $query ) ) {
-					$match = preg_match( '/post=' . str_replace( ',', '|', $query ) . '(&|$)/', $i['edit_link'] );
-				}
-				return $match;
-			}
-		);
 	}
 
 	/**

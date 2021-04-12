@@ -65,15 +65,14 @@ class IssuesController extends BaseOptionsController {
 	protected function get_issues_read_callback(): callable {
 		return function( Request $request ) {
 			$type_filter = $request['type_filter'];
-			$query       = $request['query'] ?? null;
 			$per_page    = intval( $request['per_page'] );
 			$page        = max( 1, intval( $request['page'] ) );
 
 			try {
-				$total = $this->mc_issues->count( $type_filter, $query );
+				$total = $this->mc_issues->count( $type_filter );
 				return $this->prepare_item_for_response(
 					[
-						'issues' => $this->mc_issues->get( $type_filter, $query, $per_page, $page ),
+						'issues' => $this->mc_issues->get( $type_filter, $per_page, $page ),
 						'total'  => $total,
 						'page'   => $page,
 					],
@@ -184,11 +183,6 @@ class IssuesController extends BaseOptionsController {
 				'default'           => 0,
 				'minimum'           => 0,
 				'sanitize_callback' => 'absint',
-				'validate_callback' => 'rest_validate_request_arg',
-			],
-			'query'    => [
-				'description'       => __( 'Search query for product names and IDs.', 'google-listings-and-ads' ),
-				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
