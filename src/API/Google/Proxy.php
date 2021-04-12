@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -132,36 +131,6 @@ class Proxy implements OptionsAwareInterface {
 		$this->update_merchant_id( $id );
 
 		return $id;
-	}
-
-	/**
-	 * Get the connected merchant account.
-	 *
-	 * @return array
-	 */
-	public function get_connected_merchant(): array {
-		$id     = $this->options->get( OptionsInterface::MERCHANT_ID );
-		$status = [
-			'id'     => $id,
-			'status' => $id ? 'connected' : 'disconnected',
-		];
-
-		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
-			$status['status'] = 'incomplete';
-			$status['step']   = $incomplete;
-		}
-
-		return $status;
-	}
-
-	/**
-	 * Disconnect the connected merchant account.
-	 */
-	public function disconnect_merchant() {
-		$this->update_merchant_id( 0 );
-
-		// TODO: Cancel any active campaigns and remove product feeds when disconnecting.
 	}
 
 	/**
