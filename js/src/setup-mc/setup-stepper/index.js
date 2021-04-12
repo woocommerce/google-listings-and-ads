@@ -1,25 +1,32 @@
 /**
+ * External dependencies
+ */
+import { getHistory, getNewPath } from '@woocommerce/navigation';
+
+/**
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
-import useGetOption from '.~/hooks/useGetOption';
 import SavedSetupStepper from './saved-setup-stepper';
 import './index.scss';
+import useMCSetup from '.~/hooks/useMCSetup';
+import stepNameKeyMap from './stepNameKeyMap';
 
 const SetupStepper = () => {
-	const { loading, data: savedStep } = useGetOption(
-		'gla_setup_mc_saved_step'
-	);
+	const mcSetup = useMCSetup();
 
-	// when loading is done, savedStep could still be undefined for a short moment,
-	// so we check for it and show AppSpinner to prevent Step 1 flickered on screen.
-	if ( loading || savedStep === undefined ) {
+	if ( ! mcSetup ) {
 		return <AppSpinner />;
 	}
 
-	// if there is no savedStep in the database,
-	// savedStep is returned as `false` from the API call.
-	return <SavedSetupStepper savedStep={ savedStep || '1' } />;
+	const { status, step } = mcSetup;
+
+	if ( status === 'complete' ) {
+		getHistory().push( getNewPath( {}, '/google/dashboard' ) );
+		return null;
+	}
+
+	return <SavedSetupStepper savedStep={ stepNameKeyMap[ step ] } />;
 };
 
 export default SetupStepper;
