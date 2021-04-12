@@ -16,14 +16,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ReclaimUrlFailCard from './reclaim-url-fail-card';
-import betaExistingProductListingsStatement from '../betaExistingProductListingsStatement';
 
-/**
- * Temporarily unused for beta testing period. This should be used in production later.
- *
- * @param {Object} props Props.
- * * @param {string} props.websiteUrl Website URL.
- */
 const ReclaimUrlCard = ( props ) => {
 	const { websiteUrl } = props;
 	const { createNotice } = useDispatchCoreNotices();
@@ -111,51 +104,4 @@ const ReclaimUrlCard = ( props ) => {
 	);
 };
 
-/**
- * This is used temporarily for beta testing purpose. For production roll out, we should remove this and use the above ReclaimUrlCard instead.
- *
- * @param {Object} props Props.
- */
-const BetaReclaimUrlCard = ( props ) => {
-	const { websiteUrl } = props;
-
-	return (
-		<Section.Card>
-			<Section.Card.Body>
-				<ContentButtonLayout>
-					<div>
-						<Subsection.Title>
-							{ createInterpolateElement(
-								__(
-									'Your URL, <url />, is currently claimed by another Merchant Center account. ',
-									'google-listings-and-ads'
-								),
-								{
-									url: <span>{ websiteUrl }</span>,
-								}
-							) }
-						</Subsection.Title>
-						<Subsection.HelperText>
-							{ betaExistingProductListingsStatement }
-						</Subsection.HelperText>
-					</div>
-				</ContentButtonLayout>
-			</Section.Card.Body>
-			<Section.Card.Footer>
-				<AppDocumentationLink
-					context="setup-mc"
-					linkId="claim-url"
-					href="https://support.google.com/merchants/answer/176793"
-				>
-					{ __(
-						'Read more about claiming URLs',
-						'google-listings-and-ads'
-					) }
-				</AppDocumentationLink>
-			</Section.Card.Footer>
-		</Section.Card>
-	);
-};
-
-// export default ReclaimUrlCard;
-export default BetaReclaimUrlCard;
+export default ReclaimUrlCard;
