@@ -1,9 +1,19 @@
 /**
+ * External dependencies
+ */
+import { apiFetch } from '@wordpress/data-controls';
+import { addQueryArgs } from '@wordpress/url';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import TYPES from './action-types';
+import { API_NAMESPACE } from './constants';
+import { getReportQuery, getReportKey } from './utils';
 
 import {
+	handleFetchError,
 	fetchShippingRates,
 	fetchShippingTimes,
 	fetchSettings,
@@ -18,6 +28,7 @@ import {
 	fetchTargetAudience,
 	fetchAdsCampaigns,
 	fetchMCSetup,
+	receiveReport,
 } from './actions';
 
 export function* getShippingRates() {
@@ -78,4 +89,30 @@ export function* getAdsCampaigns() {
 
 export function* getMCSetup() {
 	yield fetchMCSetup();
+}
+
+const reportTypeMap = new Map( [
+	[ 'free', 'mc' ],
+	[ 'paid', 'ads' ],
+] );
+
+export function* getReport( category, type, query, dateReference ) {
+	const reportQuery = getReportQuery( query, dateReference );
+	const reportType = reportTypeMap.get( type );
+	const url = `${ API_NAMESPACE }/${ reportType }/reports/${ category }`;
+	const path = addQueryArgs( url, reportQuery );
+
+	try {
+		const data = yield apiFetch( { path } );
+		const reportKey = getReportKey( category, type, reportQuery );
+		yield receiveReport( reportKey, data );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading report.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
