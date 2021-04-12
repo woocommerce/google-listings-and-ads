@@ -79,3 +79,7 @@ export function* getAdsCampaigns() {
 export function* getMCSetup() {
 	yield fetchMCSetup();
 }
+
+getMCSetup.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.REFETCH_MC_SETUP;
+};
