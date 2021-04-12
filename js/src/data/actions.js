@@ -615,3 +615,28 @@ export function* upsertShippingTime( shippingTime ) {
 export function* deleteShippingTime( countryCode ) {
 	yield deleteShippingTimes( [ countryCode ] );
 }
+
+export function* fetchMCSetup() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/setup`,
+		} );
+
+		return receiveMCSetup( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center setup status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* receiveMCSetup( mcSetup ) {
+	return {
+		type: TYPES.RECEIVE_MC_SETUP,
+		mcSetup,
+	};
+}

@@ -17,6 +17,7 @@ import {
 	fetchCountries,
 	fetchTargetAudience,
 	fetchAdsCampaigns,
+	fetchMCSetup,
 } from './actions';
 
 export function* getShippingRates() {
@@ -73,4 +74,8 @@ export function* getTargetAudience() {
 
 export function* getAdsCampaigns() {
 	yield fetchAdsCampaigns();
+}
+
+export function* getMCSetup() {
+	yield fetchMCSetup();
 }
