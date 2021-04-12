@@ -31,6 +31,11 @@ const EditTimeModal = ( {
 	onSubmit,
 	onRequestClose,
 } ) => {
+	// We actually may have times for more countries than the audience ones.
+	const availableCountries = Array.from(
+		new Set( [ ...time.countries, ...audienceCountries ] )
+	);
+
 	const handleDeleteClick = () => {
 		onDelete( time.countries );
 	};
@@ -102,7 +107,7 @@ const EditTimeModal = ( {
 									) }
 								</div>
 								<AppCountrySelect
-									options={ audienceCountries }
+									options={ availableCountries }
 									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>

@@ -31,6 +31,11 @@ const EditRateModal = ( {
 	onSubmit,
 	onRequestClose,
 } ) => {
+	// We actually may have rates for more countries than the audience ones.
+	const availableCountries = Array.from(
+		new Set( [ ...rate.countries, ...audienceCountries ] )
+	);
+
 	const handleDeleteClick = () => {
 		onDelete( rate.countries );
 	};
@@ -103,7 +108,7 @@ const EditRateModal = ( {
 									) }
 								</div>
 								<AppCountrySelect
-									options={ audienceCountries }
+									options={ availableCountries }
 									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>
