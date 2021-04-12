@@ -17,6 +17,11 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import './index.scss';
 
+/**
+ * Temporarily unused for beta testing period. This should be used in production later.
+ *
+ * @param {Object} props Props.
+ */
 const SwitchUrlCard = ( props ) => {
 	const {
 		id,
@@ -93,4 +98,50 @@ const SwitchUrlCard = ( props ) => {
 	);
 };
 
-export default SwitchUrlCard;
+/**
+ * This is used temporarily for beta testing purpose. For production roll out, we should remove this and use the above SwitchUrlCard instead.
+ *
+ * @param {Object} props Props.
+ */
+const BetaSwitchUrlCard = ( props ) => {
+	const { id, message, onSelectAnotherAccount = () => {} } = props;
+
+	const handleUseDifferentMCClick = () => {
+		onSelectAnotherAccount();
+	};
+
+	return (
+		<Section.Card className="gla-switch-url-card">
+			<Section.Card.Body>
+				<ContentButtonLayout>
+					<Subsection.Title>{ toAccountText( id ) }</Subsection.Title>
+				</ContentButtonLayout>
+				<ContentButtonLayout>
+					<div>
+						<Subsection.Title>{ message }</Subsection.Title>
+						<Subsection.HelperText>
+							{ __(
+								`We've detected that your store may have some existing product listings in Google. Because this extension is still in beta, we don't want to disrupt any active listings, so you cannot continue to setup this extension at this point. Thanks for participating in our beta test!`,
+								'google-listings-and-ads'
+							) }
+						</Subsection.HelperText>
+					</div>
+				</ContentButtonLayout>
+			</Section.Card.Body>
+			<Section.Card.Footer>
+				<AppTextButton
+					isSecondary
+					onClick={ handleUseDifferentMCClick }
+				>
+					{ __(
+						'Or, use a different Merchant Center account',
+						'google-listings-and-ads'
+					) }
+				</AppTextButton>
+			</Section.Card.Footer>
+		</Section.Card>
+	);
+};
+
+// export default SwitchUrlCard;
+export default BetaSwitchUrlCard;
