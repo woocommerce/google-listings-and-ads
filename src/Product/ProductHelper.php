@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
@@ -21,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
 class ProductHelper implements Service, MerchantCenterAwareInterface {
 
 	use MerchantCenterAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * @var ProductMetaHandler
@@ -135,6 +137,21 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 */
 	public function get_synced_google_product_ids( WC_Product $product ) {
 		return $this->meta_handler->get_google_ids( $product->get_id() );
+	}
+
+	/**
+	 * See: WCProductAdapter::map_wc_product_id()
+	 *
+	 * @param string $mc_product_id
+	 *
+	 * @return int the ID for the WC product linked to the provided Google product ID (0 if not found)
+	 */
+	public function get_wc_product_id( string $mc_product_id ): int {
+		$pattern = '/:' . preg_quote( $this->get_slug(), '/' ) . '_(\d+)$/';
+		if ( ! preg_match( $pattern, $mc_product_id, $matches ) ) {
+			return 0;
+		}
+		return intval( $matches[1] );
 	}
 
 	/**

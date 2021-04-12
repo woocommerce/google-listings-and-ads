@@ -41,6 +41,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCamp
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantIssues;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -120,6 +121,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
 		ProductStatistics::class      => true,
+		MerchantIssues::class         => true,
 		TransientsInterface::class    => true,
 		MerchantCenterService::class  => true,
 	];
@@ -206,6 +208,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductStatistics::class );
+		$this->share_with_tags( MerchantIssues::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
