@@ -16,6 +16,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import './index.scss';
+import betaExistingProductListingsStatement from '../betaExistingProductListingsStatement';
 
 /**
  * Temporarily unused for beta testing period. This should be used in production later.
@@ -120,10 +121,7 @@ const BetaSwitchUrlCard = ( props ) => {
 					<div>
 						<Subsection.Title>{ message }</Subsection.Title>
 						<Subsection.HelperText>
-							{ __(
-								`We've detected that your store may have some existing product listings in Google. Because this extension is still in beta, we don't want to disrupt any active listings, so you cannot continue to setup this extension at this point. Thanks for participating in our beta test!`,
-								'google-listings-and-ads'
-							) }
+							{ betaExistingProductListingsStatement }
 						</Subsection.HelperText>
 					</div>
 				</ContentButtonLayout>
