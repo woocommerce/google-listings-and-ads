@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use wpdb;
@@ -60,6 +61,16 @@ abstract class Table implements TableInterface {
 	 */
 	public function delete(): void {
 		$this->wpdb->query( "DROP TABLE `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+
+
+
+	/**
+	 * Truncate the Database table.
+	 */
+	public function truncate(): void {
+		$this->wpdb->query( "TRUNCATE TABLE `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**
