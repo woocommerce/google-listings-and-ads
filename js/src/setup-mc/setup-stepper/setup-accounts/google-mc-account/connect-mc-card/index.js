@@ -14,7 +14,7 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import SwitchUrlCard from '../switch-url-card';
+import BetaSwitchUrlCard from '../beta-switch-url-card';
 import BetaReclaimUrlCard from '../beta-reclaim-url-card';
 import AppTextButton from '.~/components/app-text-button';
 
@@ -47,7 +47,10 @@ const ConnectMCCard = ( props ) => {
 
 	if ( response && response.status === 409 ) {
 		return (
-			<SwitchUrlCard
+			// TODO: Use the BetaSwitchUrlCard for beta testing purpose only.
+			// To switch back to SwitchUrlCard for production roll out.
+			// <SwitchUrlCard
+			<BetaSwitchUrlCard
 				id={ error.id }
 				message={ error.message }
 				claimedUrl={ error.claimed_url }
