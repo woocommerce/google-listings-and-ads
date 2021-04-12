@@ -8,11 +8,6 @@ import {
 	__experimentalText as Text,
 } from '@wordpress/components';
 
-/**
- * Internal dependencies
- */
-import './index.scss';
-
 const SummaryCard = ( props ) => {
 	const { title, children } = props;
 
