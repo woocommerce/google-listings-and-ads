@@ -13,23 +13,26 @@ import getCountriesPriceArray from './getCountriesPriceArray';
  * @param {Object} props
  * @param {Array<ShippingRateFromServerSide>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {string} props.currencyCode Shop's currency code.
- * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
+ * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
  * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChangeCallback}
  */
 export default function ShippingCountriesForm( {
 	value: shippingRates,
 	currencyCode,
-	selectedCountryCodes,
+	audienceCountries,
 	onChange,
 } ) {
 	const actualCountryCount = shippingRates.length;
 	const actualCountries = new Map(
 		shippingRates.map( ( rate ) => [ rate.countryCode, rate ] )
 	);
-	const remainingCountryCodes = selectedCountryCodes.filter(
+	const remainingCountryCodes = audienceCountries.filter(
 		( el ) => ! actualCountries.has( el )
 	);
 	const remainingCount = remainingCountryCodes.length;
+	// We may have shipping rates defined for more than the audience countries.
+	// Therefore, the number of countries we anticipate is what we acutally have + missing audience ones.
+	const totalCountyCount = actualCountryCount + remainingCount;
 
 	// Group countries with the same rate.
 	const countriesPriceArray = getCountriesPriceArray( shippingRates );
@@ -37,7 +40,7 @@ export default function ShippingCountriesForm( {
 	// Prefill to-be-added price.
 	if ( countriesPriceArray.length === 0 ) {
 		countriesPriceArray.push( {
-			countries: selectedCountryCodes,
+			countries: audienceCountries,
 			price: '',
 			currency: currencyCode,
 		} );
@@ -94,7 +97,8 @@ export default function ShippingCountriesForm( {
 						>
 							<CountriesPriceInput
 								value={ el }
-								audienceCountries={ selectedCountryCodes }
+								audienceCountries={ audienceCountries }
+								totalCountyCount={ totalCountyCount }
 								onChange={ handleChange }
 								onDelete={ handleDelete }
 							/>

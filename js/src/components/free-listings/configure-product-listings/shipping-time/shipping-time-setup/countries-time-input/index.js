@@ -21,12 +21,14 @@ import CountryNames from '.~/components/free-listings/configure-product-listings
  * @param {Object} props
  * @param {AggregatedShippingTime} props.value Aggregate, rat: Array object to be used as the initial value.
  * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
+ * @param {number} props.totalCountyCount Number of all anticipated countries.
  * @param {(newTime: AggregatedShippingTime, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when time changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
 const CountriesTimeInput = ( {
 	value,
 	audienceCountries,
+	totalCountyCount,
 	onChange,
 	onDelete,
 } ) => {
@@ -68,7 +70,7 @@ const CountriesTimeInput = ( {
 									countries: (
 										<CountryNames
 											countries={ countries }
-											total={ audienceCountries.length }
+											total={ totalCountyCount }
 										/>
 									),
 								}
