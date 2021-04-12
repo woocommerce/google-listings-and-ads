@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -112,6 +113,8 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		/** @var TransientsInterface $transients */
 		$transients = $this->container->get( TransientsInterface::class );
 		$transients->set( Transients::MC_ISSUES, $issues, $this->get_issues_lifetime() );
+
+		$this->cache_issues( $issues );
 
 		return $issues;
 	}
@@ -224,14 +227,39 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		// Product issue cleanup (sorting and unique), plus alphabetize applicable_countries..
 		ksort( $product_issues );
 		$product_issues = array_unique( array_values( $product_issues ), SORT_REGULAR );
-		$product_issues = array_map(
+
+		return array_map(
 			function( $issue ) {
 				sort( $issue['applicable_countries'] );
 				return $issue;
 			},
 			$product_issues
 		);
+	}
 
-		return $product_issues;
+	/**
+	 * Store issues in the database.
+	 *
+	 * @param array $issues Prepared Merchant Center issues.
+	 */
+	protected function cache_issues( array $issues ): void {
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		foreach ( $issues as $i ) {
+			$details = [
+				'product'     => $i['product'],
+				'action'      => $i['action'],
+				'action_link' => $i['action_link'],
+			];
+			$issue_query->insert(
+				[
+					'product_id'           => $i['product_id'] ?? 0,
+					'code'                 => $i['code'],
+					'issue'                => $i['issue'],
+					'details'              => json_encode( $details ),
+					'applicable_countries' => json_encode( $i['applicable_countries'] ?? [] ),
+				]
+			);
+		}
 	}
 }
