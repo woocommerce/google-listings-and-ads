@@ -33,10 +33,8 @@ const ReclaimUrlCard = ( props ) => {
 		try {
 			const res = await fetchClaimOverwrite( { parse: false } );
 			const data = await res.json();
-
 			receiveMCAccount( data );
-
-			await refetchMCSetup();
+			refetchMCSetup();
 		} catch ( e ) {
 			if ( e.status !== 406 ) {
 				createNotice(

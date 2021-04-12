@@ -39,7 +39,7 @@ const ConnectMCCard = ( props ) => {
 		const data = await fetchMCAccounts();
 		receiveMCAccount( data );
 
-		await refetchMCSetup();
+		refetchMCSetup();
 	};
 
 	const handleSelectAnotherAccount = () => {

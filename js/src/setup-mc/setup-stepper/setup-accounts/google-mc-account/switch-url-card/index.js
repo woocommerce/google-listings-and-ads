@@ -34,10 +34,8 @@ const SwitchUrlCard = ( props ) => {
 
 	const handleSwitch = async () => {
 		const account = await fetchMCAccountSwitchUrl();
-
 		receiveMCAccount( account );
-
-		await refetchMCSetup();
+		refetchMCSetup();
 	};
 
 	const handleUseDifferentMCClick = () => {
