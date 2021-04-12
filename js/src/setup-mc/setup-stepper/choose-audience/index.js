@@ -13,6 +13,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import FormContent from './form-content';
 import '.~/components/free-listings/choose-audience/index.scss';
+import { useAppDispatch } from '.~/data';
 
 /**
  * Step with a form to choose audience.
@@ -25,6 +26,7 @@ import '.~/components/free-listings/choose-audience/index.scss';
 const ChooseAudience = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { data } = useTargetAudience();
+	const { refetchMCSetup } = useAppDispatch();
 
 	if ( ! data ) {
 		return <AppSpinner />;
@@ -40,6 +42,7 @@ const ChooseAudience = ( props ) => {
 
 	const handleSubmitCallback = () => {
 		onContinue();
+		refetchMCSetup();
 	};
 
 	return (
