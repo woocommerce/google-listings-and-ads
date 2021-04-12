@@ -20,7 +20,7 @@ import ReclaimUrlFailCard from './reclaim-url-fail-card';
 const ReclaimUrlCard = ( props ) => {
 	const { websiteUrl } = props;
 	const { createNotice } = useDispatchCoreNotices();
-	const { receiveMCAccount } = useAppDispatch();
+	const { receiveMCAccount, refetchMCSetup } = useAppDispatch();
 	const [
 		fetchClaimOverwrite,
 		{ loading, response, reset },
@@ -35,6 +35,8 @@ const ReclaimUrlCard = ( props ) => {
 			const data = await res.json();
 
 			receiveMCAccount( data );
+
+			await refetchMCSetup();
 		} catch ( e ) {
 			if ( e.status !== 406 ) {
 				createNotice(
