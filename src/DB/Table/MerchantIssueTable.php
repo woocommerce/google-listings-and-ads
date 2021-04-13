@@ -53,6 +53,7 @@ SQL;
 	 */
 	public function get_columns(): array {
 		return [
+			'id'                   => true,
 			'product_id'           => true,
 			'code'                 => true,
 			'issue'                => true,

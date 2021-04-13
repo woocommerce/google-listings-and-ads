@@ -62,9 +62,6 @@ abstract class Table implements TableInterface {
 		$this->wpdb->query( "DROP TABLE `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
-
-
-
 	/**
 	 * Truncate the Database table.
 	 */
