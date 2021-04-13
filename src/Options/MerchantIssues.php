@@ -60,7 +60,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 			// Filter by issue type.
 			if ( $type ) {
-				if ( ! in_array( $type, $this->get_issue_types(), true ) ) {
+				if ( ! $this->is_valid_type( $type ) ) {
 					throw new Exception( 'Unknown filter type ' . $type );
 				}
 				$issues = array_filter(
@@ -142,6 +142,15 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			self::TYPE_ACCOUNT,
 			self::TYPE_PRODUCT,
 		];
+	}
+
+	/**
+	 * @param string $type
+	 *
+	 * @return bool
+	 */
+	public function is_valid_type( string $type ): bool {
+		return in_array( $type, $this->get_issue_types(), true );
 	}
 
 	/**
@@ -282,7 +291,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 
 		// Filter in query.
-		if ( in_array( $type, $this->get_issue_types(), true ) ) {
+		if ( $this->is_valid_type( $type ) ) {
 			$issue_query->where(
 				'product_id',
 				0,
