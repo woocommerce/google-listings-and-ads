@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack;
 
 use Automattic\Jetpack\Connection\Manager;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Response as Response;
 
@@ -16,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack
  */
-class AccountController extends BaseController {
+class AccountController extends BaseOptionsController {
 
 	/**
 	 * @var Manager
@@ -24,14 +26,21 @@ class AccountController extends BaseController {
 	protected $manager;
 
 	/**
+	 * @var Middleware
+	 */
+	protected $middleware;
+
+	/**
 	 * BaseController constructor.
 	 *
 	 * @param RESTServer $server
 	 * @param Manager    $manager
+	 * @param Middleware $middleware
 	 */
-	public function __construct( RESTServer $server, Manager $manager ) {
+	public function __construct( RESTServer $server, Manager $manager, Middleware $middleware ) {
 		parent::__construct( $server );
-		$this->manager = $manager;
+		$this->manager    = $manager;
+		$this->middleware = $middleware;
 	}
 
 	/**
@@ -113,6 +122,7 @@ class AccountController extends BaseController {
 	protected function get_disconnect_callback(): callable {
 		return function() {
 			$this->manager->remove_connection();
+			$this->options->delete( OptionsInterface::WP_TOS_ACCEPTED );
 
 			return [
 				'status'  => 'success',
@@ -128,6 +138,10 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connected_callback(): callable {
 		return function() {
+			if ( $this->is_jetpack_connected() && ! $this->options->get( OptionsInterface::WP_TOS_ACCEPTED ) ) {
+				$this->log_wp_tos_accepted();
+			}
+
 			$user_data = $this->get_jetpack_user_data();
 			return [
 				'active'      => $this->is_jetpack_connected(),
@@ -165,6 +179,15 @@ class AccountController extends BaseController {
 		$user_data = $this->manager->get_connected_user_data();
 		// adjust for $user_data returning false
 		return is_array( $user_data ) ? $user_data : [];
+	}
+
+	/**
+	 * Log accepted TOS for WordPress.
+	 */
+	protected function log_wp_tos_accepted() {
+		$user = wp_get_current_user();
+		$tos  = $this->middleware->mark_tos_accepted( 'wp-com', $user->user_email );
+		$this->options->update( OptionsInterface::WP_TOS_ACCEPTED, true );
 	}
 
 	/**
