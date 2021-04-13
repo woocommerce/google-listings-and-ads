@@ -158,7 +158,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			WC::class,
 			WP::class,
 			TransientsInterface::class,
-			MerchantAccountState::class
+			MerchantAccountState::class,
+			MerchantIssues::class
 		);
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )
