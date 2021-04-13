@@ -121,6 +121,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 */
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_ISSUES_CREATED_AT );
+		$this->container->get( MerchantIssueTable::class )->truncate();
 	}
 
 	/**
