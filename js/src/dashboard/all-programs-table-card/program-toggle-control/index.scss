@@ -1,5 +1,6 @@
 .gla-program-toggle-control {
-	// this is to make the toggle displayed right-aligned in the table column.
+	// this is to make the toggle displayed right-aligned based on table column config.
+	// the value before override is display: block.
 	display: inline-block;
 
 	// remove the margins specified in ToggleControl component.
