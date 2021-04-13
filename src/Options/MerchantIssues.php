@@ -112,7 +112,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 		// Refresh the cache and the validation transient.
 		$this->cache_issues( $issues );
-		$this->container->get( TransientsInterface::class )->set( Transients::MC_ISSUES, time(), $this->get_issues_lifetime() );
+		$this->container->get( TransientsInterface::class )->set( Transients::MC_ISSUES_CREATED_AT, time(), $this->get_issues_lifetime() );
 		return $issues;
 	}
 
@@ -120,7 +120,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * Delete the cached statistics.
 	 */
 	public function delete(): void {
-		$this->container->get( TransientsInterface::class )->delete( Transients::MC_ISSUES );
+		$this->container->get( TransientsInterface::class )->delete( Transients::MC_ISSUES_CREATED_AT );
 	}
 
 	/**
@@ -283,7 +283,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @return array|null
 	 */
 	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): ?array {
-		if ( null === $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null ) ) {
+		if ( null === $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES_CREATED_AT, null ) ) {
 			return null;
 		}
 

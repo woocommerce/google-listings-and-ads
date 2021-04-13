@@ -21,7 +21,7 @@ final class Transients implements TransientsInterface, Service {
 
 	private const VALID_OPTIONS = [
 		self::MC_PRODUCT_STATISTICS => true,
-		self::MC_ISSUES             => true,
+		self::MC_ISSUES_CREATED_AT  => true,
 	];
 
 	/**
