@@ -53,32 +53,32 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function get( string $type = null, int $per_page = 0, int $page = 1 ): array {
-		$issues = $this->fetch_cached_issues();
+		$issues = $this->fetch_cached_issues( $type, $per_page, $page );
 
 		if ( is_null( $issues ) ) {
-			$issues = $this->refresh();
-		}
+			$issues = $this->refresh_cache();
 
-		// Filter by issue type?
-		if ( $type ) {
-			if ( ! in_array( $type, $this->get_issue_types(), true ) ) {
-				throw new Exception( 'Unknown filter type ' . $type );
-			}
-			$issues = array_filter(
-				$issues,
-				function( $i ) use ( $type ) {
-					return $type === $i['type'];
+			// Filter by issue type.
+			if ( $type ) {
+				if ( ! in_array( $type, $this->get_issue_types(), true ) ) {
+					throw new Exception( 'Unknown filter type ' . $type );
 				}
-			);
-		}
+				$issues = array_filter(
+					$issues,
+					function( $i ) use ( $type ) {
+						return $type === $i['type'];
+					}
+				);
+			}
 
-		// Paginate the results?
-		if ( $per_page > 0 ) {
-			$issues = array_slice(
-				$issues,
-				$per_page * ( max( 1, $page ) - 1 ),
-				$per_page
-			);
+			// Paginate the results.
+			if ( $per_page > 0 ) {
+				$issues = array_slice(
+					$issues,
+					$per_page * ( max( 1, $page ) - 1 ),
+					$per_page
+				);
+			}
 		}
 
 		return array_values( $issues );
@@ -102,7 +102,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @returns array The recalculated account issues.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function refresh(): array {
+	protected function refresh_cache(): array {
 		// Save a request if no MC account connected.
 		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
@@ -110,9 +110,9 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 		$issues = array_merge( $this->get_account_issues(), $this->get_product_issues() );
 
-		// Refresh the cache and the validation transient
+		// Refresh the cache and the validation transient.
 		$this->cache_issues( $issues );
-		$transients = $this->container->get( TransientsInterface::class )->set( Transients::MC_ISSUES, time(), $this->get_issues_lifetime() );
+		$this->container->get( TransientsInterface::class )->set( Transients::MC_ISSUES, time(), $this->get_issues_lifetime() );
 		return $issues;
 	}
 
@@ -245,39 +245,76 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		foreach ( $issues as $i ) {
-			$details = [
-				'product'     => $i['product'],
-				'action'      => $i['action'],
-				'action_link' => $i['action_link'],
-			];
 			$issue_query->insert(
 				[
 					'product_id'           => $i['product_id'] ?? 0,
 					'code'                 => $i['code'],
 					'issue'                => $i['issue'],
-					'details'              => json_encode( $details ),
 					'applicable_countries' => isset( $i['applicable_countries'] ) ? json_encode( $i['applicable_countries'] ) : '',
+					'details'              => json_encode(
+						[
+							'product'     => $i['product'],
+							'action'      => $i['action'],
+							'action_link' => $i['action_link'],
+						]
+					),
 				]
 			);
 		}
 	}
 
-	protected function fetch_cached_issues(  ) {
-		if( null === $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null ) ) {
+	/**
+	 * Fetch the cached issues from the database, after using the associated transient to determine whether they're
+	 * still valid or not.
+	 *
+	 * @param string|null $type To filter by issue type if desired.
+	 * @param int         $per_page The number of issues to return (0 for no limit).
+	 * @param int         $page The page to start on (1-indexed).
+	 *
+	 * @return array|null
+	 */
+	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): ?array {
+		if ( null === $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null ) ) {
 			return null;
 		}
 
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
-		$issues = [];
-		foreach( $issue_query->get_results() as $issue ) {
-			$i = json_decode( $issue['details'], true ) + json_decode( $issue['applicable_countries'] ?: '[]', true);
-			unset($issue['details']);
-			unset($issue['applicable_countries']);
-			unset($issue['id']);
-			$issues[] = [ 'type' => $issue['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT ] + $issue + $i;
+
+		// Filter in query.
+		if ( in_array( $type, $this->get_issue_types(), true ) ) {
+			$issue_query->where(
+				'product_id',
+				0,
+				self::TYPE_ACCOUNT === $type ? '=' : '>'
+			);
 		}
 
+		// Pagination in query.
+		if ( $per_page > 0 ) {
+			$issue_query->set_limit( $per_page );
+			$issue_query->set_offset( $per_page * ( $page - 1 ) );
+		}
+
+		$issues = [];
+		foreach ( $issue_query->get_results() as $row ) {
+			$details = json_decode( $row['details'], true );
+			$issue   = [
+				'type'        => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
+				'product_id'  => intval( $row['product_id'] ),
+				'product'     => $details['product'],
+				'issue'       => $row['issue'],
+				'code'        => $row['code'],
+				'action'      => $details['action'],
+				'action_link' => $details['action_link'],
+			];
+			if ( $issue['product_id'] ) {
+				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
+			} else {
+				unset( $issue['product_id'] );
+			}
+			array_push( $issues, $issue );
+		}
 
 		return $issues;
 	}
