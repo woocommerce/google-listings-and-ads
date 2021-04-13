@@ -64,6 +64,17 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		$this->issue_query = $issue_query;
 	}
 
+	/**
+	 * Get a count of the number of issues for the Merchant Center account.
+	 *
+	 * @param string|null $type To filter by issue type if desired.
+	 *
+	 * @return int The total number of issues.
+	 * @throws Exception If the account state can't be retrieved from Google.
+	 */
+	public function count( string $type = null ): int {
+		return count( $this->get( $type ) );
+	}
 
 	/**
 	 * Retrieve or initialize the mc_issues transient. Refresh if the issues have gone stale.
@@ -110,15 +121,56 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Get a count of the number of issues for the Merchant Center account.
+	 * Fetch the cached issues from the database, after using the associated transient to determine whether they're
+	 * still valid or not.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
+	 * @param int         $per_page The number of issues to return (0 for no limit).
+	 * @param int         $page The page to start on (1-indexed).
 	 *
-	 * @return int The total number of issues.
-	 * @throws Exception If the account state can't be retrieved from Google.
+	 * @return array|null
 	 */
-	public function count( string $type = null ): int {
-		return count( $this->get( $type ) );
+	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): ?array {
+		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT ) ) {
+			return null;
+		}
+
+		// Filter in query.
+		if ( $this->is_valid_type( $type ) ) {
+			$this->issue_query->where(
+				'product_id',
+				0,
+				self::TYPE_ACCOUNT === $type ? '=' : '>'
+			);
+		}
+
+		// Pagination in query.
+		if ( $per_page > 0 ) {
+			$this->issue_query->set_limit( $per_page );
+			$this->issue_query->set_offset( $per_page * ( $page - 1 ) );
+		}
+
+		$issues = [];
+		foreach ( $this->issue_query->get_results() as $row ) {
+			$details = json_decode( $row['details'], true );
+			$issue   = [
+				'type'        => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
+				'product_id'  => intval( $row['product_id'] ),
+				'product'     => $details['product'],
+				'issue'       => $row['issue'],
+				'code'        => $row['code'],
+				'action'      => $details['action'],
+				'action_link' => $details['action_link'],
+			];
+			if ( $issue['product_id'] ) {
+				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
+			} else {
+				unset( $issue['product_id'] );
+			}
+			array_push( $issues, $issue );
+		}
+
+		return $issues;
 	}
 
 	/**
@@ -133,50 +185,12 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-		$issues = array_merge( $this->get_account_issues(), $this->get_product_issues() );
+		$issues = array_merge( $this->retrieve_account_issues(), $this->retrieve_product_issues() );
 
 		// Refresh the cache and the validation transient.
-		$this->cache_issues( $issues );
+		$this->update_database( $issues );
 		$this->transients->set( TransientsInterface::MC_ISSUES_CREATED_AT, time(), $this->get_issues_lifetime() );
 		return $issues;
-	}
-
-	/**
-	 * Delete the cached statistics.
-	 */
-	public function delete(): void {
-		$this->transients->delete( TransientsInterface::MC_ISSUES_CREATED_AT );
-		$this->container->get( MerchantIssueTable::class )->truncate();
-	}
-
-	/**
-	 * Allows a hook to modify the statistics lifetime.
-	 *
-	 * @return int
-	 */
-	protected function get_issues_lifetime(): int {
-		return apply_filters( 'woocommerce_gla_mc_issues_lifetime', self::ISSUES_LIFETIME );
-	}
-
-	/**
-	 * Get valid issue types.
-	 *
-	 * @return string[] The valid issue types.
-	 */
-	public function get_issue_types(): array {
-		return [
-			self::TYPE_ACCOUNT,
-			self::TYPE_PRODUCT,
-		];
-	}
-
-	/**
-	 * @param string|null $type
-	 *
-	 * @return bool
-	 */
-	public function is_valid_type( ?string $type ): bool {
-		return in_array( $type, $this->get_issue_types(), true );
 	}
 
 	/**
@@ -185,7 +199,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @return array Account-level issues.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	private function get_account_issues(): array {
+	private function retrieve_account_issues(): array {
 		$account_issues = [];
 		foreach ( $this->merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [
@@ -205,7 +219,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 *
 	 * @return array Unique product issues sorted by product id.
 	 */
-	private function get_product_issues(): array {
+	private function retrieve_product_issues(): array {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
@@ -264,7 +278,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 *
 	 * @param array $issues Prepared Merchant Center issues.
 	 */
-	protected function cache_issues( array $issues ): void {
+	protected function update_database( array $issues ): void {
 		$this->container->get( MerchantIssueTable::class )->truncate();
 
 		foreach ( $issues as $i ) {
@@ -287,55 +301,40 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Fetch the cached issues from the database, after using the associated transient to determine whether they're
-	 * still valid or not.
-	 *
-	 * @param string|null $type To filter by issue type if desired.
-	 * @param int         $per_page The number of issues to return (0 for no limit).
-	 * @param int         $page The page to start on (1-indexed).
-	 *
-	 * @return array|null
+	 * Delete the cached statistics.
 	 */
-	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): ?array {
-		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT ) ) {
-			return null;
-		}
+	public function delete(): void {
+		$this->transients->delete( TransientsInterface::MC_ISSUES_CREATED_AT );
+		$this->container->get( MerchantIssueTable::class )->truncate();
+	}
 
-		// Filter in query.
-		if ( $this->is_valid_type( $type ) ) {
-			$this->issue_query->where(
-				'product_id',
-				0,
-				self::TYPE_ACCOUNT === $type ? '=' : '>'
-			);
-		}
+	/**
+	 * Allows a hook to modify the statistics lifetime.
+	 *
+	 * @return int
+	 */
+	protected function get_issues_lifetime(): int {
+		return apply_filters( 'woocommerce_gla_mc_issues_lifetime', self::ISSUES_LIFETIME );
+	}
 
-		// Pagination in query.
-		if ( $per_page > 0 ) {
-			$this->issue_query->set_limit( $per_page );
-			$this->issue_query->set_offset( $per_page * ( $page - 1 ) );
-		}
+	/**
+	 * Get valid issue types.
+	 *
+	 * @return string[] The valid issue types.
+	 */
+	public function get_issue_types(): array {
+		return [
+			self::TYPE_ACCOUNT,
+			self::TYPE_PRODUCT,
+		];
+	}
 
-		$issues = [];
-		foreach ( $this->issue_query->get_results() as $row ) {
-			$details = json_decode( $row['details'], true );
-			$issue   = [
-				'type'        => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
-				'product_id'  => intval( $row['product_id'] ),
-				'product'     => $details['product'],
-				'issue'       => $row['issue'],
-				'code'        => $row['code'],
-				'action'      => $details['action'],
-				'action_link' => $details['action_link'],
-			];
-			if ( $issue['product_id'] ) {
-				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
-			} else {
-				unset( $issue['product_id'] );
-			}
-			array_push( $issues, $issue );
-		}
-
-		return $issues;
+	/**
+	 * @param string|null $type
+	 *
+	 * @return bool
+	 */
+	public function is_valid_type( ?string $type ): bool {
+		return in_array( $type, $this->get_issue_types(), true );
 	}
 }
