@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Exception;
 
 /**
@@ -34,11 +33,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 */
 	public const TYPE_ACCOUNT = 'account';
 	public const TYPE_PRODUCT = 'product';
-
-	/**
-	 * @var WP $wp The WP proxy object.
-	 */
-	protected $wp;
 
 	/**
 	 * Retrieve or initialize the mc_issues transient. Refresh if the issues have gone stale.
@@ -189,10 +183,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
-
-		if ( empty( $this->wp ) ) {
-			$this->wp = $this->container->get( WP::class );
-		}
 
 		$product_issues = [];
 		foreach ( $merchant->get_productstatuses() as $product ) {
