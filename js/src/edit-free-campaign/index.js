@@ -22,6 +22,7 @@ import SetupFreeListings from './setup-free-listings';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -142,6 +143,7 @@ export default function EditFreeCampaign() {
 		path: `/wc/gla/mc/settings/sync`,
 		method: 'POST',
 	} );
+	const { createNotice } = useDispatchCoreNotices();
 
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
@@ -178,29 +180,44 @@ export default function EditFreeCampaign() {
 	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
 		//       Put Submit button in pending state.
-		await Promise.allSettled( [
-			saveTargetAudience( targetAudience ),
-			saveSettings( settings ),
-			...saveShippingData(
-				upsertShippingRate,
-				deleteShippingRates,
-				savedShippingRates,
-				shippingRates
-			),
-			...saveShippingData(
-				upsertShippingTime,
-				deleteShippingTimes,
-				savedShippingTimes,
-				shippingTimes
-			),
-		] );
-		// Sync data once our changes are saved, even partially succesfully.
-		await fetchSettingsSync();
-		// TODO notify errors.
-		// TODO: Enable the submit button.
+		try {
+			await Promise.allSettled( [
+				saveTargetAudience( targetAudience ),
+				saveSettings( settings ),
+				...saveShippingData(
+					upsertShippingRate,
+					deleteShippingRates,
+					savedShippingRates,
+					shippingRates
+				),
+				...saveShippingData(
+					upsertShippingTime,
+					deleteShippingTimes,
+					savedShippingTimes,
+					shippingTimes
+				),
+			] );
+			// Sync data once our changes are saved, even partially succesfully.
+			await fetchSettingsSync();
 
-		recordEvent( 'gla_free_campaign_edited' );
-		getHistory().push( dashboardURL );
+			createNotice(
+				'error',
+				__(
+					'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
+					'google-listings-and-ads'
+				)
+			);
+			recordEvent( 'gla_free_campaign_edited' );
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Something went wrong while saving your changes. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+		// TODO: Enable the submit button.
 	};
 
 	const handleStepClick = ( key ) => {
