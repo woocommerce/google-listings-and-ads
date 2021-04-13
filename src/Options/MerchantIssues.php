@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -52,7 +53,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function get( string $type = null, int $per_page = 0, int $page = 1 ): array {
-		$issues = $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null );
+		$issues = $this->fetch_cached_issues();
 
 		if ( is_null( $issues ) ) {
 			$issues = $this->refresh();
@@ -109,13 +110,9 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 		$issues = array_merge( $this->get_account_issues(), $this->get_product_issues() );
 
-		// Update the cached values
-		/** @var TransientsInterface $transients */
-		$transients = $this->container->get( TransientsInterface::class );
-		$transients->set( Transients::MC_ISSUES, $issues, $this->get_issues_lifetime() );
-
+		// Refresh the cache and the validation transient
 		$this->cache_issues( $issues );
-
+		$transients = $this->container->get( TransientsInterface::class )->set( Transients::MC_ISSUES, time(), $this->get_issues_lifetime() );
 		return $issues;
 	}
 
@@ -243,6 +240,8 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @param array $issues Prepared Merchant Center issues.
 	 */
 	protected function cache_issues( array $issues ): void {
+		$this->container->get( MerchantIssueTable::class )->truncate();
+
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		foreach ( $issues as $i ) {
@@ -257,9 +256,29 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 					'code'                 => $i['code'],
 					'issue'                => $i['issue'],
 					'details'              => json_encode( $details ),
-					'applicable_countries' => json_encode( $i['applicable_countries'] ?? [] ),
+					'applicable_countries' => isset( $i['applicable_countries'] ) ? json_encode( $i['applicable_countries'] ) : '',
 				]
 			);
 		}
+	}
+
+	protected function fetch_cached_issues(  ) {
+		if( null === $this->container->get( TransientsInterface::class )->get( Transients::MC_ISSUES, null ) ) {
+			return null;
+		}
+
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issues = [];
+		foreach( $issue_query->get_results() as $issue ) {
+			$i = json_decode( $issue['details'], true ) + json_decode( $issue['applicable_countries'] ?: '[]', true);
+			unset($issue['details']);
+			unset($issue['applicable_countries']);
+			unset($issue['id']);
+			$issues[] = [ 'type' => $issue['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT ] + $issue + $i;
+		}
+
+
+		return $issues;
 	}
 }
