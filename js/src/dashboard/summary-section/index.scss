@@ -1,5 +1,14 @@
 .summary-card {
+	& > div:last-child {
+		// Make card contents within a row have the same height
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
 	.woocommerce-summary {
+		flex: 1;
+		align-items: center;
 		margin: 0;
 	}
 }
