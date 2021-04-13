@@ -23,6 +23,10 @@ const ProgramToggleControl = ( props ) => {
 
 		setChecked( v );
 		// TODO: fire API request to enable campaign.
+		// eslint-disable-next-line no-console
+		console.warn(
+			'The actual resume campaign action is not implemented/integrated yet.'
+		);
 	};
 
 	const handleModalRequestClose = () => {
@@ -37,6 +41,10 @@ const ProgramToggleControl = ( props ) => {
 		setShowModal( false );
 		setChecked( false );
 		// TODO: fire api request to pause campaign.
+		// eslint-disable-next-line no-console
+		console.warn(
+			'The actual pause campaign action is not implemented/integrated yet.'
+		);
 	};
 
 	return (
