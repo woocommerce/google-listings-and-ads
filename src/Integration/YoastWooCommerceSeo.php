@@ -27,10 +27,10 @@ class YoastWooCommerceSeo implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_action( 'gla_product_attribute_value_options_mpn', [ $this, 'add_value_option' ] );
-		add_action( 'gla_product_attribute_value_options_gtin', [ $this, 'add_value_option' ] );
-		add_action( 'gla_product_attribute_value_mpn', [ $this, 'get_mpn' ] );
-		add_action( 'gla_product_attribute_value_gtin', [ $this, 'get_gtin' ] );
+		add_filter( 'gla_product_attribute_value_options_mpn', [ $this, 'add_value_option' ] );
+		add_filter( 'gla_product_attribute_value_options_gtin', [ $this, 'add_value_option' ] );
+		add_filter( 'gla_product_attribute_value_mpn', [ $this, 'get_mpn' ], 10, 2 );
+		add_filter( 'gla_product_attribute_value_gtin', [ $this, 'get_gtin' ], 10, 2 );
 	}
 
 	/**
@@ -48,23 +48,23 @@ class YoastWooCommerceSeo implements Service, Registerable {
 	 * @param mixed      $value
 	 * @param WC_Product $product
 	 *
-	 * @return array
+	 * @return mixed
 	 */
-	public function get_mpn( $value, WC_Product $product ): array {
+	public function get_mpn( $value, WC_Product $product ) {
 		if ( self::VALUE_KEY === $value ) {
 			$value = $this->get_identifier_value( 'mpn', $product );
 		}
 
-		return $value;
+		return ! empty( $value ) ? $value : null;
 	}
 
 	/**
 	 * @param mixed      $value
 	 * @param WC_Product $product
 	 *
-	 * @return array
+	 * @return mixed
 	 */
-	public function get_gtin( $value, WC_Product $product ): array {
+	public function get_gtin( $value, WC_Product $product ) {
 		if ( self::VALUE_KEY === $value ) {
 			$gtin_values = [
 				$this->get_identifier_value( 'isbn', $product ),
@@ -73,15 +73,7 @@ class YoastWooCommerceSeo implements Service, Registerable {
 				$this->get_identifier_value( 'gtin13', $product ),
 				$this->get_identifier_value( 'gtin14', $product ),
 			];
-
-			$gtin_values = array_values(
-				array_filter(
-					$gtin_values,
-					function ( $value ) {
-						return null !== $value;
-					}
-				)
-			);
+			$gtin_values = array_values( array_filter( $gtin_values ) );
 
 			$value = $gtin_values[0] ?? null;
 		}

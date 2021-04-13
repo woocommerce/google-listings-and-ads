@@ -582,10 +582,16 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 */
 	protected function map_extra_attributes(): WCProductAdapter {
 		// GTIN
-		$this->setGtin( $this->get_attribute_value( GTIN::get_id() ) );
+		$gtin = $this->get_attribute_value( GTIN::get_id() );
+		if ( ! empty( $gtin ) ) {
+			$this->setGtin( $gtin );
+		}
 
 		// MPN
-		$this->setMpn( $this->get_attribute_value( MPN::get_id() ) );
+		$mpn = $this->get_attribute_value( MPN::get_id() );
+		if ( ! empty( $mpn ) ) {
+			$this->setMpn( $mpn );
+		}
 
 		return $this;
 	}
@@ -593,7 +599,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	/**
 	 * @param string $attribute_id
 	 *
-	 * @return mixed Filtered value of the attribute
+	 * @return mixed Value of the attribute
 	 */
 	protected function get_attribute_value( string $attribute_id ) {
 		$value = null;
