@@ -133,7 +133,7 @@ const AllProgramsTableCard = ( props ) => {
 				];
 			} ) }
 			totalRows={ data.length }
-			rowsPerPage={ 10 }
+			rowsPerPage={ data.length }
 			query={ query }
 			onQueryChange={ onQueryChange }
 			{ ...props }
