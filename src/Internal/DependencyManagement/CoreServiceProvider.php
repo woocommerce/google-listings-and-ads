@@ -44,7 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCamp
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantIssues;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantIssues;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;

@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
@@ -9,6 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Exception;
@@ -295,7 +297,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @return array|null
 	 */
 	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): ?array {
-		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT, null ) ) {
+		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT ) ) {
 			return null;
 		}
 
