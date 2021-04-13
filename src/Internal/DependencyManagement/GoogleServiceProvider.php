@@ -151,12 +151,12 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add(
 			Google_Service_ShoppingContent::class,
 			Client::class,
-			$this->get_connect_server_url_root( 'google-mc' )
+			$this->get_connect_server_url_root( 'google/google-mc' )
 		);
 		$this->add(
 			Google_Service_SiteVerification::class,
 			Client::class,
-			$this->get_connect_server_url_root( 'google-sv' )
+			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
 		$this->share(
 			GoogleProductService::class,
@@ -252,7 +252,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 
 		$path = '/' . trim( $path, '/' );
 
-		return new RawArgument( "{$url}/google${path}" );
+		return new RawArgument( "{$url}{$path}" );
 	}
 
 	/**
@@ -261,7 +261,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return string
 	 */
 	protected function get_connect_server_endpoint(): string {
-		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google-ads' )->getValue() );
+		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google/google-ads' )->getValue() );
 		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
 		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
 	}
