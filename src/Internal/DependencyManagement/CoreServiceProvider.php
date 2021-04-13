@@ -31,6 +31,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditFreeCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditPaidAdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\CreatePaidAdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
@@ -42,6 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCamp
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantIssues;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -90,6 +93,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
 		EditFreeCampaign::class       => true,
+		EditPaidAdsCampaign::class    => true,
+		CreatePaidAdsCampaign::class  => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
 		GlobalSiteTag::class          => true,
@@ -120,6 +125,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
 		ProductStatistics::class      => true,
+		MerchantIssues::class         => true,
 		TransientsInterface::class    => true,
 		MerchantCenterService::class  => true,
 		AttributeManager::class       => true,
@@ -152,7 +158,13 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
-		$this->share_with_tags( MerchantCenterService::class, OptionsInterface::class, WC::class, WP::class, TransientsInterface::class );
+		$this->share_with_tags(
+			MerchantCenterService::class,
+			WC::class,
+			WP::class,
+			TransientsInterface::class,
+			MerchantAccountState::class
+		);
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
@@ -180,6 +192,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
 		$this->conditionally_share_with_tags( EditFreeCampaign::class );
+		$this->conditionally_share_with_tags( EditPaidAdsCampaign::class );
+		$this->conditionally_share_with_tags( CreatePaidAdsCampaign::class );
 		$this->conditionally_share_with_tags( Programs::class );
 		$this->conditionally_share_with_tags( Products::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
@@ -210,6 +224,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductStatistics::class );
+		$this->share_with_tags( MerchantIssues::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, AttributeManager::class );

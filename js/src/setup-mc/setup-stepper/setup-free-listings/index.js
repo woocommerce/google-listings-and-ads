@@ -12,6 +12,7 @@ import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import FormContent from './form-content';
+import useAdminUrl from '.~/hooks/useAdminUrl';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
@@ -30,6 +31,7 @@ const SetupFreeListings = () => {
 		path: `/wc/gla/mc/settings/sync`,
 		method: 'POST',
 	} );
+	const adminUrl = useAdminUrl();
 
 	if ( ! settings ) {
 		return <AppSpinner />;
@@ -48,11 +50,11 @@ const SetupFreeListings = () => {
 			await fetchSettingsSync();
 
 			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-			const path = `/wp-admin/${ getNewPath(
+			const path = getNewPath(
 				{ guide: 'submission-success' },
 				'/google/product-feed'
-			) }`;
-			window.location.href = path;
+			);
+			window.location.href = adminUrl + path;
 		} catch ( error ) {
 			createNotice(
 				'error',

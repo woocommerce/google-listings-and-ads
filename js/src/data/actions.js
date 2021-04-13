@@ -19,6 +19,25 @@ export function handleFetchError( error, message ) {
 	console.log( error );
 }
 
+/**
+ * CountryCode
+ *
+ * @typedef {string} CountryCode
+ */
+
+/**
+ * Individual shipping rate.
+ *
+ * @typedef {Object} ShippingRate
+ * @property {CountryCode} countryCode Destination country code.
+ * @property {string} currency Currency of the price.
+ * @property {number} rate Shipping price.
+ */
+
+/**
+ *
+ * @return {Array<ShippingRate>} Array of individual shipping rates.
+ */
 export function* fetchShippingRates() {
 	try {
 		const response = yield apiFetch( {
@@ -48,57 +67,90 @@ export function* fetchShippingRates() {
 	}
 }
 
-export function* upsertShippingRate( shippingRate ) {
-	const { countryCode, currency, rate } = shippingRate;
+/**
+ * Aggregated shipping rate.
+ *
+ * @typedef {Object} AggregatedShippingRate
+ * @property {Array<CountryCode>} countries Array of destination country codes.
+ * @property {string} currency Currency of the price.
+ * @property {number} rate Shipping price.
+ */
+
+/**
+ * Updates or inserts given aggregated shipping rate.
+ *
+ * @param {AggregatedShippingRate} shippingRate
+ */
+export function* upsertShippingRates( shippingRate ) {
+	const { countryCodes, currency, rate } = shippingRate;
 
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates`,
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'POST',
 			data: {
-				country_code: countryCode,
+				country_codes: countryCodes,
 				currency,
 				rate,
 			},
 		} );
 
 		return {
-			type: TYPES.UPSERT_SHIPPING_RATE,
+			type: TYPES.UPSERT_SHIPPING_RATES,
 			shippingRate,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping rate.',
+				'There was an error trying to add / update shipping rates.',
 				'google-listings-and-ads'
 			)
 		);
 	}
 }
 
-export function* deleteShippingRate( countryCode ) {
+/**
+ * Deletes shipping rates associated with given country codes.
+ *
+ * @param {Array<CountryCode>} countryCodes
+ */
+export function* deleteShippingRates( countryCodes ) {
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/${ countryCode }`,
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'DELETE',
+			data: {
+				country_codes: countryCodes,
+			},
 		} );
 
 		return {
-			type: TYPES.DELETE_SHIPPING_RATE,
-			countryCode,
+			type: TYPES.DELETE_SHIPPING_RATES,
+			countryCodes,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping rate.',
+				'There was an error trying to delete shipping rates.',
 				'google-listings-and-ads'
 			)
 		);
 	}
 }
+/**
+ * Individual shipping time.
+ *
+ * @typedef {Object} ShippingTime
+ * @property {CountryCode} countryCode Destination country code.
+ * @property {number} time Shipping time.
+ */
 
+/**
+ *
+ * @return {Array<ShippingTime>} Array of individual shipping times.
+ */
 export function* fetchShippingTimes() {
 	try {
 		const response = yield apiFetch( {
@@ -127,50 +179,71 @@ export function* fetchShippingTimes() {
 	}
 }
 
-export function* upsertShippingTime( shippingTime ) {
-	const { countryCode, time } = shippingTime;
+/**
+ * Aggregated shipping time.
+ *
+ * @typedef {Object} AggregatedShippingTime
+ * @property {Array<CountryCode>} countries Array of destination country codes.
+ * @property {number} time Shipping time.
+ */
+
+/**
+ * Updates or inserts given aggregated shipping rate.
+ *
+ * @param {AggregatedShippingTime} shippingTime
+ */
+export function* upsertShippingTimes( shippingTime ) {
+	const { countryCodes, time } = shippingTime;
 
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times`,
+			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
 			method: 'POST',
 			data: {
-				country_code: countryCode,
+				country_codes: countryCodes,
 				time,
 			},
 		} );
 
 		return {
-			type: TYPES.UPSERT_SHIPPING_TIME,
+			type: TYPES.UPSERT_SHIPPING_TIMES,
 			shippingTime,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping time.',
+				'There was an error trying to add / update shipping times.',
 				'google-listings-and-ads'
 			)
 		);
 	}
 }
 
-export function* deleteShippingTime( countryCode ) {
+/**
+ * Deletes shipping times associated with given country codes.
+ *
+ * @param {Array<CountryCode>} countryCodes
+ */
+export function* deleteShippingTimes( countryCodes ) {
 	try {
 		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/times/${ countryCode }`,
+			path: `${ API_NAMESPACE }/mc/shipping/times/batch`,
 			method: 'DELETE',
+			data: {
+				country_codes: countryCodes,
+			},
 		} );
 
 		return {
-			type: TYPES.DELETE_SHIPPING_TIME,
-			countryCode,
+			type: TYPES.DELETE_SHIPPING_TIMES,
+			countryCodes,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping time.',
+				'There was an error trying to delete shipping times.',
 				'google-listings-and-ads'
 			)
 		);
@@ -493,4 +566,52 @@ export function* saveTargetAudience( targetAudience ) {
 			)
 		);
 	}
+}
+
+export function* fetchAdsCampaigns() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+		} );
+
+		return receiveAdsCampaigns( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading ads campaigns.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function receiveAdsCampaigns( adsCampaigns ) {
+	return {
+		type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+		adsCampaigns,
+	};
+}
+
+// TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
+export function* upsertShippingRate( shippingRate ) {
+	const { countryCode, currency, rate } = shippingRate;
+	yield upsertShippingRates( {
+		countryCodes: [ countryCode ],
+		currency,
+		rate,
+	} );
+}
+
+export function* deleteShippingRate( countryCode ) {
+	yield deleteShippingRates( [ countryCode ] );
+}
+
+export function* upsertShippingTime( shippingTime ) {
+	const { countryCode, time } = shippingTime;
+	yield upsertShippingTimes( { countryCodes: [ countryCode ], time } );
+}
+
+export function* deleteShippingTime( countryCode ) {
+	yield deleteShippingTimes( [ countryCode ] );
 }

@@ -19,7 +19,6 @@ interface OptionsInterface {
 	public const FILE_VERSION           = 'file_version';
 	public const INSTALL_TIMESTAMP      = 'install_timestamp';
 	public const MC_SETUP_COMPLETED_AT  = 'mc_setup_completed_at';
-	public const MC_SETUP_SAVED_STEP    = 'setup_mc_saved_step';
 	public const MERCHANT_ACCOUNT_STATE = 'merchant_account_state';
 	public const MERCHANT_CENTER        = 'merchant_center';
 	public const MERCHANT_ID            = 'merchant_id';

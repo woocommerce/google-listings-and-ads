@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { useDebouncedCallback } from 'use-debounce';
 
 /**
  * Internal dependencies
@@ -17,16 +16,9 @@ import './index.scss';
 import '../countries-form';
 
 /**
- * The delay between chaning the value an firing onChange callback.
- */
-const debounceDelay = 1000;
-
-/**
  * Input control to edit a shipping rate.
  * Consists of a simple input field to adjust the rate
  * and with a modal with a more advanced form to select countries.
- *
- * The changes made via simple input are debounced, to avoid districting users while typing.
  *
  * @param {Object} props
  * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
@@ -37,17 +29,27 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 	const { countries, currency, price } = value;
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	const debouncedOnChange = useDebouncedCallback( ( updatedPrice ) => {
-		onChange( {
-			countries,
-			currency,
-			price: updatedPrice,
-		} );
-	}, debounceDelay );
-
 	if ( ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
+
+	const handleBlur = ( e ) => {
+		const { value: nextPrice } = e.target;
+
+		if ( nextPrice === price ) {
+			return;
+		}
+
+		if ( nextPrice === '' ) {
+			onDelete( countries );
+		} else {
+			onChange( {
+				countries,
+				currency,
+				price: nextPrice,
+			} );
+		}
+	};
 
 	return (
 		<div className="gla-countries-price-input">
@@ -76,7 +78,7 @@ const CountriesPriceInput = ( { value, onChange, onDelete } ) => {
 				}
 				suffix={ currency }
 				value={ price }
-				onChange={ debouncedOnChange.callback }
+				onBlur={ handleBlur }
 			/>
 		</div>
 	);
@@ -86,5 +88,5 @@ export default CountriesPriceInput;
 
 /**
  * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef {import("../countries-form.js").CountryCode} CountryCode
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

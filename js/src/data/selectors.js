@@ -45,3 +45,7 @@ export const getCountries = ( state ) => {
 export const getTargetAudience = ( state ) => {
 	return state.mc.target_audience;
 };
+
+export const getAdsCampaigns = ( state ) => {
+	return state.ads_campaigns;
+};

@@ -48,8 +48,12 @@ const ReclaimUrlCard = ( props ) => {
 		}
 	};
 
+	const handleRetry = () => {
+		reset();
+	};
+
 	if ( response && response.status === 406 ) {
-		return <ReclaimUrlFailCard onRetry={ reset } />;
+		return <ReclaimUrlFailCard onRetry={ handleRetry } />;
 	}
 
 	return (

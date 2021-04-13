@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -135,36 +134,6 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the connected merchant account.
-	 *
-	 * @return array
-	 */
-	public function get_connected_merchant(): array {
-		$id     = $this->options->get( OptionsInterface::MERCHANT_ID );
-		$status = [
-			'id'     => $id,
-			'status' => $id ? 'connected' : 'disconnected',
-		];
-
-		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
-			$status['status'] = 'incomplete';
-			$status['step']   = $incomplete;
-		}
-
-		return $status;
-	}
-
-	/**
-	 * Disconnect the connected merchant account.
-	 */
-	public function disconnect_merchant() {
-		$this->update_merchant_id( 0 );
-
-		// TODO: Cancel any active campaigns and remove product feeds when disconnecting.
-	}
-
-	/**
 	 * Link Merchant Center account to MCA.
 	 *
 	 * @return bool
@@ -285,7 +254,7 @@ class Proxy implements OptionsAwareInterface {
 		try {
 			$country   = WC()->countries->get_base_country();
 			$countries = $this->get_mc_supported_countries();
-			if ( ! array_key_exists( $country, $countries ) ) {
+			if ( ! in_array( $country, $countries, true ) ) {
 				throw new Exception( __( 'Store country is not supported', 'google-listings-and-ads' ) );
 			}
 
@@ -407,7 +376,6 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function disconnect_ads_account() {
 		$this->update_ads_id( 0 );
-		$this->options->update( OptionsInterface::ADS_BILLING_URL, '' );
 	}
 
 	/**

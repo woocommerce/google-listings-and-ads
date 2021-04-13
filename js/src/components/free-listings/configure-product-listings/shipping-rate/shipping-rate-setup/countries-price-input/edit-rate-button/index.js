@@ -64,6 +64,6 @@ const EditRateButton = ( { rate, onChange, onDelete } ) => {
 export default EditRateButton;
 
 /**
- * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
- * @typedef {import("../countries-form.js").CountryCode} CountryCode
+ * @typedef {import("../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

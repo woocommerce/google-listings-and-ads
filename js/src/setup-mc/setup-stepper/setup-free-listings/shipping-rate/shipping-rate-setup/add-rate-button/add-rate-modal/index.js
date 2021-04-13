@@ -9,7 +9,7 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import { useAppDispatch } from '.~/data';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -18,7 +18,7 @@ import useGetRemainingCountryCodes from './useGetRemainingCountryCodes';
 
 const AddRateModal = ( props ) => {
 	const { onRequestClose } = props;
-	const { upsertShippingRate } = useAppDispatch();
+	const { upsertShippingRates } = useAppDispatch();
 	const { code } = useStoreCurrency();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 
@@ -33,12 +33,10 @@ const AddRateModal = ( props ) => {
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, rate } = values;
 
-		countryCodes.forEach( ( el ) => {
-			upsertShippingRate( {
-				countryCode: el,
-				currency,
-				rate,
-			} );
+		upsertShippingRates( {
+			countryCodes,
+			currency,
+			rate,
 		} );
 
 		onRequestClose();
@@ -88,12 +86,11 @@ const AddRateModal = ( props ) => {
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
-							<AppInputControl
+							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
-								suffix={ code }
 								{ ...getInputProps( 'rate' ) }
 							/>
 						</VerticalGapLayout>

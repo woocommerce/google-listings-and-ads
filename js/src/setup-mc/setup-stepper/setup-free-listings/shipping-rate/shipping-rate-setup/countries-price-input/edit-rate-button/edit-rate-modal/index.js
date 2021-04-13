@@ -10,19 +10,17 @@ import { Form } from '@woocommerce/components';
  */
 import { useAppDispatch } from '.~/data';
 import AppModal from '.~/components/app-modal';
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import './index.scss';
 
 const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
-	const { upsertShippingRate, deleteShippingRate } = useAppDispatch();
+	const { upsertShippingRates, deleteShippingRates } = useAppDispatch();
 
 	const handleDeleteClick = () => {
-		rate.countries.forEach( ( el ) => {
-			deleteShippingRate( el );
-		} );
+		deleteShippingRates( rate.countries );
 
 		onRequestClose();
 	};
@@ -38,20 +36,19 @@ const EditRateModal = ( props ) => {
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, price } = values;
 
-		countryCodes.forEach( ( el ) => {
-			upsertShippingRate( {
-				countryCode: el,
-				currency,
-				rate: price,
-			} );
+		upsertShippingRates( {
+			countryCodes,
+			currency,
+			rate: price,
 		} );
 
 		const valuesCountrySet = new Set( values.countryCodes );
-		rate.countries.forEach( ( el ) => {
-			if ( ! valuesCountrySet.has( el ) ) {
-				deleteShippingRate( el );
-			}
-		} );
+		const deletedCountryCodes = rate.countries.filter(
+			( el ) => ! valuesCountrySet.has( el )
+		);
+		if ( deletedCountryCodes.length ) {
+			deleteShippingRates( deletedCountryCodes );
+		}
 
 		onRequestClose();
 	};
@@ -108,7 +105,7 @@ const EditRateModal = ( props ) => {
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
-							<AppInputControl
+							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'

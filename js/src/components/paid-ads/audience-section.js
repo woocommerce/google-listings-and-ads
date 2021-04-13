@@ -12,7 +12,14 @@ import AudienceCountrySelect from '.~/components/audience-country-select';
 const AudienceSection = ( props ) => {
 	const {
 		formProps: { getInputProps },
+		disabled = false,
+		countrySelectHelperText,
 	} = props;
+
+	const inputProps = getInputProps( 'country' );
+	if ( disabled ) {
+		inputProps.onChange = undefined;
+	}
 
 	return (
 		<Section
@@ -33,13 +40,10 @@ const AudienceSection = ( props ) => {
 							'Select one country',
 							'google-listings-and-ads'
 						) }
-						helperText={ __(
-							'You can only select one country per campaign. ',
-							'google-listings-and-ads'
-						) }
+						helperText={ countrySelectHelperText }
 						isSearchable={ false }
 						inlineTags={ false }
-						{ ...getInputProps( 'country' ) }
+						{ ...inputProps }
 					/>
 				</Section.Card.Body>
 			</Section.Card>

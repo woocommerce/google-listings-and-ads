@@ -32,7 +32,6 @@ final class Options implements OptionsInterface, Service {
 		self::FILE_VERSION           => true,
 		self::INSTALL_TIMESTAMP      => true,
 		self::MC_SETUP_COMPLETED_AT  => true,
-		self::MC_SETUP_SAVED_STEP    => true,
 		self::MERCHANT_ACCOUNT_STATE => true,
 		self::MERCHANT_CENTER        => true,
 		self::MERCHANT_ID            => true,

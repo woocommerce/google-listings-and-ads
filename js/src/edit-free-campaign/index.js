@@ -20,6 +20,8 @@ import useSettings from '.~/components/free-listings/configure-product-listings/
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
+import useShippingRates from '.~/hooks/useShippingRates';
+import useShippingTimes from '.~/hooks/useShippingTimes';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -39,6 +41,40 @@ function isNotOurStep( location ) {
 }
 
 /**
+ * @typedef {import('.~/data/actions').ShippingRate} ShippingRate
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
+/**
+ * Due to lack of single API for updating shipping data alltogether,
+ * we need to send deletes and adds separately.
+ * Also, we need to send upserts separately for each price.
+ *
+ * @param {(individualCountrySetting: ShippingRate) => Promise} upsertAction
+ * @param {(countries: Array<CountryCode>) => Promise} deleteAction
+ * @param {Array<ShippingRate>} oldData
+ * @param {Array<ShippingRate>} newData
+ */
+function saveShippingData( upsertAction, deleteAction, oldData, newData ) {
+	const mapCountryCode = ( rate ) => rate.countryCode;
+	const currentCountries = new Set( newData.map( mapCountryCode ) );
+
+	// Send upserts.
+	const actions = newData.map( upsertAction );
+
+	const deletedCountries = oldData
+		.map( mapCountryCode )
+		.filter( ( country ) => ! currentCountries.has( country ) );
+
+	if ( deletedCountries.length ) {
+		// Send delete.
+		actions.concat( deleteAction( deletedCountries ) );
+	}
+	// TODO: implement better batched upsert that accpets an array of ShippingRates (with different prices)
+	return actions;
+}
+
+/**
  * Page Component to edit free campaigns.
  * Provides two steps:
  *  - Choose your audience
@@ -49,21 +85,58 @@ function isNotOurStep( location ) {
 export default function EditFreeCampaign() {
 	const { data: savedTargetAudience } = useTargetAudience();
 	const { settings: savedSettings } = useSettings();
-	const { saveTargetAudience, saveSettings } = useAppDispatch();
+	const {
+		saveTargetAudience,
+		saveSettings,
+		upsertShippingRate, // We need to use this one, as we serve non-aggregated ShippingRates
+		deleteShippingRates,
+		upsertShippingTime, // We need to use this one, as we serve non-aggregated ShippingTimes
+		deleteShippingTimes,
+	} = useAppDispatch();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience
 	);
 	const [ settings, updateSettings ] = useState( savedSettings );
 
-	useEffect( () => {
-		if ( savedTargetAudience ) {
-			updateTargetAudience( savedTargetAudience );
-		}
-		if ( savedSettings ) {
-			updateSettings( savedSettings );
-		}
-	}, [ savedTargetAudience, savedSettings ] );
+	const {
+		data: savedShippingRates,
+		loading: loadingShippingRates,
+	} = useShippingRates();
+	const [ shippingRates, updateShippingRates ] = useState(
+		savedShippingRates
+	);
+	// This is a quick and not save workaround for
+	// https://github.com/woocommerce/google-listings-and-ads/pull/422#discussion_r607796375
+	// - `<Form>` element ignoring changes to its `initialValues` prop
+	// - default state of shipping* data of `[]`
+	// - resolver not signaling, that data is not ready yet
+	const loadedShippingRates = loadingShippingRates
+		? null
+		: savedShippingRates;
+
+	const {
+		data: savedShippingTimes,
+		loading: loadingShippingTimes,
+	} = useShippingTimes();
+	const [ shippingTimes, updateShippingTimes ] = useState(
+		savedShippingTimes
+	);
+	const loadedShippingTimes = loadingShippingTimes
+		? null
+		: savedShippingTimes;
+
+	// TODO: Consider making it less repetitive.
+	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
+	useEffect( () => updateTargetAudience( savedTargetAudience ), [
+		savedTargetAudience,
+	] );
+	useEffect( () => updateShippingRates( savedShippingRates ), [
+		savedShippingRates,
+	] );
+	useEffect( () => updateShippingTimes( savedShippingTimes ), [
+		savedShippingTimes,
+	] );
 
 	const [ fetchSettingsSync ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/settings/sync`,
@@ -73,7 +146,13 @@ export default function EditFreeCampaign() {
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
 	const didSettingsChanged = ! isEqual( settings, savedSettings );
-	const didAnythingChanged = didAudienceChanged || didSettingsChanged;
+	const didRatesChanged = ! isEqual( shippingRates, savedShippingRates );
+	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
+	const didAnythingChanged =
+		didAudienceChanged ||
+		didSettingsChanged ||
+		didRatesChanged ||
+		didTimesChanged;
 
 	// Confirm leaving the page, if there are any changes and the user is navigating away from our stepper.
 	useNavigateAwayPromptEffect(
@@ -102,9 +181,20 @@ export default function EditFreeCampaign() {
 		await Promise.allSettled( [
 			saveTargetAudience( targetAudience ),
 			saveSettings( settings ),
-			// TODO: save batched shipping times and rates
+			...saveShippingData(
+				upsertShippingRate,
+				deleteShippingRates,
+				savedShippingRates,
+				shippingRates
+			),
+			...saveShippingData(
+				upsertShippingTime,
+				deleteShippingTimes,
+				savedShippingTimes,
+				shippingTimes
+			),
 		] );
-		// Synce data with once our changes are saved, even partially succesfully.
+		// Sync data once our changes are saved, even partially succesfully.
 		await fetchSettingsSync();
 		// TODO notify errors.
 		// TODO: Enable the submit button.
@@ -161,9 +251,13 @@ export default function EditFreeCampaign() {
 									'google-listings-and-ads'
 								) }
 								settings={ settings }
-								onChange={ ( change, newSettings ) => {
+								onSettingsChange={ ( change, newSettings ) => {
 									updateSettings( newSettings );
 								} }
+								shippingRates={ loadedShippingRates }
+								onShippingRatesChange={ updateShippingRates }
+								shippingTimes={ loadedShippingTimes }
+								onShippingTimesChange={ updateShippingTimes }
 								onContinue={ handleSetupFreeListingsContinue }
 							/>
 						),

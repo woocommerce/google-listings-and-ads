@@ -8,7 +8,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddRateButton from './add-rate-button';
 import { STORE_KEY } from '.~/data';
@@ -85,12 +85,11 @@ const ShippingRateSetup = ( props ) => {
 				/>
 				{ values.offers_free_shipping && (
 					<div className="price-over-input">
-						<AppInputControl
+						<AppInputPriceControl
 							label={ __(
 								'I offer free shipping for products priced over',
 								'google-listings-and-ads'
 							) }
-							suffix={ currencyCode }
 							{ ...getInputProps( 'free_shipping_threshold' ) }
 						/>
 					</div>

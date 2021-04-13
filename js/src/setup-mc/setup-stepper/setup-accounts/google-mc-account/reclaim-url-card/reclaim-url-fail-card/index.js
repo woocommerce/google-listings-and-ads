@@ -16,6 +16,10 @@ import './index.scss';
 const ReclaimUrlFailCard = ( props ) => {
 	const { onRetry = () => {} } = props;
 
+	const handleRetryClick = () => {
+		onRetry();
+	};
+
 	return (
 		<Section.Card className="gla-reclaim-url-fail-card">
 			<Section.Card.Body>
@@ -34,7 +38,7 @@ const ReclaimUrlFailCard = ( props ) => {
 							) }
 						</Subsection.HelperText>
 					</div>
-					<AppButton isSecondary onClick={ onRetry }>
+					<AppButton isSecondary onClick={ handleRetryClick }>
 						{ __( 'Try again', 'google-listings-and-ads' ) }
 					</AppButton>
 				</ContentButtonLayout>

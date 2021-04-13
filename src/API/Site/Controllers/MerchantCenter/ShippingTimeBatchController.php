@@ -18,6 +18,7 @@ defined( 'ABSPATH' ) || exit;
 class ShippingTimeBatchController extends ShippingTimeController {
 
 	use BatchSchemaTrait;
+	use BatchShippingTrait;
 
 	/**
 	 * Register rest routes with WordPress.
@@ -31,6 +32,12 @@ class ShippingTimeBatchController extends ShippingTimeController {
 					'callback'            => $this->get_batch_create_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => $this->get_item_schema(),
+				],
+				[
+					'methods'             => TransportMethods::DELETABLE,
+					'callback'            => $this->get_batch_delete_shipping_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_item_delete_schema(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]

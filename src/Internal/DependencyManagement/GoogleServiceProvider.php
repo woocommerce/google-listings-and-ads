@@ -9,8 +9,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -18,9 +20,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
@@ -62,8 +61,9 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Ads::class                            => true,
 		AdsCampaign::class                    => true,
 		AdsCampaignBudget::class              => true,
-		AdsGroup::class                       => true,
 		AdsConversionAction::class            => true,
+		AdsGroup::class                       => true,
+		AdsReport::class                      => true,
 		'connect_server_root'                 => true,
 		Connection::class                     => true,
 		GoogleProductService::class           => true,
@@ -90,6 +90,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsGroup::class, GoogleAdsClient::class );
+		$this->share( AdsReport::class, GoogleAdsClient::class );
 		$this->share(
 			AdsCampaign::class,
 			GoogleAdsClient::class,
@@ -98,6 +99,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share( Merchant::class, Google_Service_ShoppingContent::class );
+		$this->share( MerchantReport::class, Google_Service_ShoppingContent::class );
 
 		$this->add(
 			SiteVerification::class,
@@ -158,8 +160,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 		$this->share(
 			GoogleProductService::class,
-			Google_Service_ShoppingContent::class,
-			Merchant::class
+			Google_Service_ShoppingContent::class
 		);
 	}
 
@@ -263,21 +264,5 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google-ads' )->getValue() );
 		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
 		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
-	}
-
-	/**
-	 * Get the merchant ID to use for requests.
-	 *
-	 * @return PositiveInteger
-	 */
-	protected function get_merchant_id(): PositiveInteger {
-		/** @var Options $options */
-		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
-
-		// TODO: Remove overriding with default once ConnectionTest is removed.
-		$default     = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
-		$merchant_id = $default ?: $options->get( OptionsInterface::MERCHANT_ID );
-
-		return new PositiveInteger( $merchant_id );
 	}
 }

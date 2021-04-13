@@ -47,4 +47,16 @@ trait BatchSchemaTrait {
 
 		return $schema;
 	}
+
+	/**
+	 * Get the schema for a batch DELETE request.
+	 *
+	 * @return array
+	 */
+	public function get_item_delete_schema(): array {
+		$schema = $this->get_item_schema();
+		unset( $schema['rate'], $schema['currency'] );
+
+		return $schema;
+	}
 }

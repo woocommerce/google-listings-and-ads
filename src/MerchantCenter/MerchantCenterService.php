@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -17,13 +20,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
-class MerchantCenterService implements Service {
-	use GoogleHelper;
+class MerchantCenterService implements OptionsAwareInterface, Service {
 
-	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
+	use GoogleHelper;
+	use OptionsAwareTrait;
 
 	/**
 	 * WooCommerce proxy service
@@ -45,18 +45,23 @@ class MerchantCenterService implements Service {
 	protected $transients;
 
 	/**
+	 * @var MerchantAccountState
+	 */
+	protected $account_state;
+
+	/**
 	 * MerchantCenterService constructor.
 	 *
-	 * @param OptionsInterface    $options
-	 * @param WC                  $wc
-	 * @param WP                  $wp
-	 * @param TransientsInterface $transients
+	 * @param WC                   $wc
+	 * @param WP                   $wp
+	 * @param TransientsInterface  $transients
+	 * @param MerchantAccountState $account_state
 	 */
-	public function __construct( OptionsInterface $options, WC $wc, WP $wp, TransientsInterface $transients ) {
-		$this->options    = $options;
-		$this->wc         = $wc;
-		$this->wp         = $wp;
-		$this->transients = $transients;
+	public function __construct( WC $wc, WP $wp, TransientsInterface $transients, MerchantAccountState $account_state ) {
+		$this->wc            = $wc;
+		$this->wp            = $wp;
+		$this->transients    = $transients;
+		$this->account_state = $account_state;
 	}
 
 	/**
@@ -126,11 +131,56 @@ class MerchantCenterService implements Service {
 	}
 
 	/**
+	 * Get the connected merchant account.
+	 *
+	 * @return array
+	 */
+	public function get_connected_status(): array {
+		$id     = $this->options->get_merchant_id();
+		$status = [
+			'id'     => $id,
+			'status' => $id ? 'connected' : 'disconnected',
+		];
+
+		$incomplete = $this->account_state->last_incomplete_step();
+		if ( ! empty( $incomplete ) ) {
+			$status['status'] = 'incomplete';
+			$status['step']   = $incomplete;
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Return the setup status to determine what step to continue at.
+	 *
+	 * @return array
+	 */
+	public function get_setup_status(): array {
+		if ( $this->is_setup_complete() ) {
+			return [ 'status' => 'complete' ];
+		}
+
+		$step = 'accounts';
+		if ( $this->connected_account() ) {
+			$step = 'target_audience';
+
+			if ( $this->saved_target_audience() ) {
+				$step = 'shipping_and_taxes';
+			}
+		}
+
+		return [
+			'status' => 'incomplete',
+			'step'   => $step,
+		];
+	}
+
+	/**
 	 * Disconnect Merchant Center account
 	 */
 	public function disconnect() {
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
-		$this->options->delete( OptionsInterface::MC_SETUP_SAVED_STEP );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
@@ -138,5 +188,31 @@ class MerchantCenterService implements Service {
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
 		$this->transients->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
+	}
+
+	/**
+	 * Check if account has been connected.
+	 *
+	 * @return bool
+	 */
+	protected function connected_account(): bool {
+		$id = $this->options->get_merchant_id();
+		return $id && ! $this->account_state->last_incomplete_step();
+	}
+
+	/**
+	 * Check if target audience has been saved (with a valid selection of countries).
+	 *
+	 * @return bool
+	 */
+	protected function saved_target_audience(): bool {
+		$audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+
+		if ( empty( $audience ) || ! isset( $audience['location'] ) ) {
+			return false;
+		}
+
+		$empty_selection = 'selected' === $audience['location'] && empty( $audience['countries'] );
+		return ! $empty_selection;
 	}
 }

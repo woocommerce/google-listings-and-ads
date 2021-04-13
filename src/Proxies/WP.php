@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WP as WPCore;
+use WP_Post;
 use function dbDelta;
 use function get_locale;
 use function plugins_url;
@@ -73,5 +74,17 @@ class WP {
 	public function db_delta( $sql ): array {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		return dbDelta( $sql );
+	}
+
+	/**
+	 * Retrieves the edit post link for post.
+	 *
+	 * @param int|WP_POST $id Post ID or post object.
+	 * @param string      $context How to output the '&' character.
+	 *
+	 * @return string The edit post link for the given post. Null if the post type does not exist or does not allow an editing UI.
+	 */
+	public function get_edit_post_link( $id, string $context = 'display' ): string {
+		return get_edit_post_link( $id, $context );
 	}
 }

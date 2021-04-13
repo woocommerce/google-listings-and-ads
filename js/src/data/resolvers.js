@@ -16,6 +16,7 @@ import {
 	fetchExistingGoogleAdsAccounts,
 	fetchCountries,
 	fetchTargetAudience,
+	fetchAdsCampaigns,
 } from './actions';
 
 export function* getShippingRates() {
@@ -68,4 +69,8 @@ export function* getCountries() {
 
 export function* getTargetAudience() {
 	yield fetchTargetAudience();
+}
+
+export function* getAdsCampaigns() {
+	yield fetchAdsCampaigns();
 }
