@@ -10,8 +10,6 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 import AppTableCard from '.~/components/app-table-card';
 import RemoveProgramButton from './remove-program-button';
 import EditProgramLink from './edit-program-link';
-import PauseProgramButton from './pause-program-button';
-import ResumeProgramButton from './resume-program-button';
 import './index.scss';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
@@ -20,6 +18,7 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import AppSpinner from '.~/components/app-spinner';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
+import ProgramToggleControl from './program-toggle-control';
 
 const headers = [
 	{
@@ -39,6 +38,10 @@ const headers = [
 		key: 'dailyBudget',
 		label: __( 'Daily budget', 'google-listings-and-ads' ),
 		isSortable: true,
+	},
+	{
+		key: 'enabled',
+		label: __( 'Enabled', 'google-listings-and-ads' ),
 	},
 	{ key: 'actions', label: '', required: true },
 ];
@@ -115,14 +118,12 @@ const AllProgramsTableCard = ( props ) => {
 					{ display: el.country },
 					{ display: el.dailyBudget },
 					{
+						display: <ProgramToggleControl program={ el } />,
+					},
+					{
 						display: (
 							<div className="program-actions">
 								<EditProgramLink programId={ el.id } />
-								{ el.active ? (
-									<PauseProgramButton programId={ el.id } />
-								) : (
-									<ResumeProgramButton programId={ el.id } />
-								) }
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />
 								) }
