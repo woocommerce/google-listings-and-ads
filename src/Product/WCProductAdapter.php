@@ -601,7 +601,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$value = $this->gla_attributes[ $attribute_id ]->get_value();
 		}
 
-		return apply_filters( "gla_product_attributes_value_filter_{$attribute_id}", $value, $this->get_wc_product()->get_id() );
+		return apply_filters( "gla_product_attribute_value_{$attribute_id}", $value, $this->get_wc_product()->get_id() );
 	}
 
 	/**
