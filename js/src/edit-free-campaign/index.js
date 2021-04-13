@@ -15,7 +15,7 @@ import { useAppDispatch } from '.~/data';
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
-import useTargetAudience from '.~/hooks/useTargetAudience';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
@@ -83,7 +83,11 @@ function saveShippingData( upsertAction, deleteAction, oldData, newData ) {
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
-	const { data: savedTargetAudience } = useTargetAudience();
+	const {
+		targetAudience: savedTargetAudience,
+		getFinalCountries,
+	} = useTargetAudienceFinalCountryCodes();
+
 	const { settings: savedSettings } = useSettings();
 	const {
 		saveTargetAudience,
@@ -106,14 +110,12 @@ export default function EditFreeCampaign() {
 	const [ shippingRates, updateShippingRates ] = useState(
 		savedShippingRates
 	);
-	// This is a quick and not save workaround for
+	// This is a quick and not safe workaround for
 	// https://github.com/woocommerce/google-listings-and-ads/pull/422#discussion_r607796375
 	// - `<Form>` element ignoring changes to its `initialValues` prop
 	// - default state of shipping* data of `[]`
 	// - resolver not signaling, that data is not ready yet
-	const loadedShippingRates = loadingShippingRates
-		? null
-		: savedShippingRates;
+	const loadedShippingRates = loadingShippingRates ? null : shippingRates;
 
 	const {
 		data: savedShippingTimes,
@@ -122,9 +124,7 @@ export default function EditFreeCampaign() {
 	const [ shippingTimes, updateShippingTimes ] = useState(
 		savedShippingTimes
 	);
-	const loadedShippingTimes = loadingShippingTimes
-		? null
-		: savedShippingTimes;
+	const loadedShippingTimes = loadingShippingTimes ? null : shippingTimes;
 
 	// TODO: Consider making it less repetitive.
 	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
@@ -249,6 +249,9 @@ export default function EditFreeCampaign() {
 								stepHeader={ __(
 									'STEP TWO',
 									'google-listings-and-ads'
+								) }
+								countries={ getFinalCountries(
+									targetAudience
 								) }
 								settings={ settings }
 								onSettingsChange={ ( change, newSettings ) => {

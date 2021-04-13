@@ -7,32 +7,34 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import More from './more';
+
+/**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
 
 /**
  * Accepts an array of country codes and renders a comma-separated string of country names.
  *
- * If the array of country codes is the same as target audience countries, it will render a string `'all countries'`.
+ * If the array's length is same as `total`, it will render a string `'all countries'`.
  *
  * If the country codes is more than `firstN`, it will render the `firstN` country names, and then follow with `'+ <remainingCount> more'`.
  *
  * Usage:
  *
  * ```
- * <CountryNames countries={ ['AU', 'US' ] } />
+ * <CountryNames countries={ ['AU', 'US' ] } total={ 10 }/>
  * ```
  *
  * @param {Object} props
- * @param {Array<string>} props.countries Array of country codes.
- * @param {number} props.firstN Number of country names to be shown before displaying "+ <remainingCount> more".
+ * @param {Array<CountryCode>} props.countries Array of all available country codes.
+ * @param {number} props.total Number of all countries.
+ * @param {number} [props.firstN=5] Number of country names to be shown before displaying "+ <remainingCount> more".
  */
-const CountryNames = ( props ) => {
-	const { countries, firstN = 5 } = props;
-	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
+const CountryNames = ( { countries, firstN = 5, total } ) => {
 	const keyNameMap = useCountryKeyNameMap();
 
-	if ( selectedCountryCodes.length === countries.length ) {
+	if ( countries.length === total ) {
 		return (
 			<strong>
 				{ __( `all countries`, 'google-listings-and-ads' ) }

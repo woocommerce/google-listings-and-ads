@@ -12,10 +12,13 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import ShippingRateSetup from '../shipping-rate/shipping-rate-setup';
 import ShippingTimeSetup from '../shipping-time/shipping-time-setup';
 import './index.scss';
+
+/**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
 
 /**
  * Form section to set shipping rate and price per country.
@@ -23,10 +26,10 @@ import './index.scss';
  *
  * @param {Object} props
  * @param {Object} props.formProps
+ * @param {Array<CountryCode>} props.countries List of supported countries.
  */
-const CombinedShipping = ( { formProps } ) => {
+const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
 	const { getInputProps, values } = formProps;
-	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
 	// Note: since we only use `shipping_rate` to determine how to syncboth shipping rates and times,
 	//       so here also only apply `shipping_rate` to initial form data and sync its manipulation.

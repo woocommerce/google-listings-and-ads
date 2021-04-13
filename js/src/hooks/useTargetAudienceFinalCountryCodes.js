@@ -9,9 +9,13 @@ import { useSelect } from '@wordpress/data';
 import { STORE_KEY } from '.~/data';
 
 /**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
+/**
  * Gets the final country codes from the Target Audience page.
  * This will call the `getTargetAudience` and `getCountries` selectors.
- * Returns `{ loading, data }`.
+ * Returns `{ loading, data, targetAudience, getFinalCountries }`.
  *
  * `loading` is true when both `getTargetAudience` and `getCountries` are still resolving.
  *
@@ -19,6 +23,11 @@ import { STORE_KEY } from '.~/data';
  * - `undefined` when loading is in progress;
  * - an array of all supported country codes when users chose `all` in target audience page;
  * - an array of selected country codes when users chose `selected` in target audience page.
+ *
+ * `targetAudience` is currentyl stored target audience, see `getTargetAudience` selector.
+ *
+ * `getFinalCountries` is a function to resolve given `targetAudience` to final list of countries.
+ *
  */
 const useTargetAudienceFinalCountryCodes = () => {
 	return useSelect( ( select ) => {
@@ -26,21 +35,47 @@ const useTargetAudienceFinalCountryCodes = () => {
 			STORE_KEY
 		);
 
-		const targetAudience = getTargetAudience();
+		const storedTargetAudience = getTargetAudience();
 		const supportedCountries = getCountries();
 
 		const targetAudienceLoading = isResolving( 'getTargetAudience' );
 		const countriesLoading = isResolving( 'getCountries' );
 
+		/**
+		 * Flag to indicate that the data is loading.
+		 *
+		 * @type {boolean}
+		 */
 		const loading = targetAudienceLoading || countriesLoading;
-		const data =
-			targetAudience?.location === 'all'
-				? supportedCountries && Object.keys( supportedCountries )
+		const allCountries =
+			supportedCountries && Object.keys( supportedCountries );
+
+		/**
+		 * Resolves countries from given targetAudience.
+		 * If `targetAudience.location` is set to `'all'` returns the country codes of all currentyl supported countries.
+		 *
+		 * @param {Object} targetAudience Target audience object to resolve.
+		 * @param {string} targetAudience.location
+		 * @param {string} targetAudience.countries
+		 *
+		 * @return {Array<CountryCode>} `targetAudience.countries` or all supported country codes.
+		 */
+		function getFinalCountries( targetAudience ) {
+			return targetAudience?.location === 'all'
+				? allCountries
 				: targetAudience?.countries;
+		}
+
+		/**
+		 * Final list of country codes.
+		 */
+		const data = getFinalCountries( storedTargetAudience );
 
 		return {
 			loading,
 			data,
+			targetAudience: storedTargetAudience,
+			getFinalCountries,
 		};
 	} );
 };

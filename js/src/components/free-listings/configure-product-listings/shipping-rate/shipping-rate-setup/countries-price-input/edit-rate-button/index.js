@@ -16,11 +16,12 @@ import './index.scss';
  * form to edit rate for selected country(-ies).
  *
  * @param {Object} props
+ * @param {Array<CountryCode>} props.audienceCountries List of available audience countries.
  * @param {AggregatedShippingRate} props.rate
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>) => void} props.onChange Called once the rate is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
-const EditRateButton = ( { rate, onChange, onDelete } ) => {
+const EditRateButton = ( { audienceCountries, rate, onChange, onDelete } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleClick = () => {
@@ -51,6 +52,7 @@ const EditRateButton = ( { rate, onChange, onDelete } ) => {
 			</Button>
 			{ isOpen && (
 				<EditRateModal
+					audienceCountries={ audienceCountries }
 					rate={ rate }
 					onSubmit={ handleChange }
 					onDelete={ handleDelete }

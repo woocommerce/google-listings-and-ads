@@ -13,6 +13,7 @@ import FormContent from './form-content';
 /**
  * @typedef {import('.~/data/actions').ShippingRate} ShippingRateFromServerSide
  * @typedef {import('.~/data/actions').ShippingTime} ShippingTime
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
 /**
@@ -23,6 +24,7 @@ import FormContent from './form-content';
  *
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.
+ * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to FormContent.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
  * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
  * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
@@ -33,6 +35,7 @@ import FormContent from './form-content';
  */
 const SetupFreeListings = ( {
 	stepHeader,
+	countries,
 	settings,
 	onSettingsChange = () => {},
 	shippingRates,
@@ -96,7 +99,12 @@ const SetupFreeListings = ( {
 				onSubmitCallback={ onContinue }
 			>
 				{ ( formProps ) => {
-					return <FormContent formProps={ formProps } />;
+					return (
+						<FormContent
+							formProps={ formProps }
+							countries={ countries }
+						/>
+					);
 				} }
 			</Form>
 		</div>

@@ -11,7 +11,7 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AudienceCountrySelect from '.~/components/audience-country-select';
+import AppCountrySelect from '.~/components/app-country-select';
 
 /**
  * Form to add a new time for selected country(-ies).
@@ -75,7 +75,8 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AudienceCountrySelect
+								<AppCountrySelect
+									options={ countries }
 									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>
