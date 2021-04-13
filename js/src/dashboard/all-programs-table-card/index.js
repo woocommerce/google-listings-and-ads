@@ -18,7 +18,7 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import AppSpinner from '.~/components/app-spinner';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
-import ProgramToggleControl from './program-toggle-control';
+import ProgramToggle from './program-toggle';
 
 const headers = [
 	{
@@ -118,7 +118,7 @@ const AllProgramsTableCard = ( props ) => {
 					{ display: el.country },
 					{ display: el.dailyBudget },
 					{
-						display: <ProgramToggleControl program={ el } />,
+						display: <ProgramToggle program={ el } />,
 					},
 					{
 						display: (

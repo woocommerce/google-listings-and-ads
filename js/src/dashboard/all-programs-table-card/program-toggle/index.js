@@ -10,7 +10,7 @@ import { useState } from '@wordpress/element';
 import PauseProgramModal from './pause-program-modal';
 import './index.scss';
 
-const ProgramToggleControl = ( props ) => {
+const ProgramToggle = ( props ) => {
 	const { program } = props;
 	const [ checked, setChecked ] = useState( program.active );
 	const [ showModal, setShowModal ] = useState( false );
@@ -48,12 +48,8 @@ const ProgramToggleControl = ( props ) => {
 	};
 
 	return (
-		<>
-			<ToggleControl
-				className="gla-program-toggle-control"
-				checked={ checked }
-				onChange={ handleChange }
-			/>
+		<div className="gla-program-toggle">
+			<ToggleControl checked={ checked } onChange={ handleChange } />
 			{ showModal && (
 				<PauseProgramModal
 					programId={ program.id }
@@ -62,8 +58,8 @@ const ProgramToggleControl = ( props ) => {
 					onRequestClose={ handleModalRequestClose }
 				/>
 			) }
-		</>
+		</div>
 	);
 };
 
-export default ProgramToggleControl;
+export default ProgramToggle;
