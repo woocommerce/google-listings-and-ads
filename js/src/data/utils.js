@@ -14,6 +14,8 @@ import { getCurrentDates } from '@woocommerce/date';
  * @return {Object} The report query for fetching API data.
  */
 export function getReportQuery( query, dateReference ) {
+	// TODO: add more query parameters when implementing the report page.
+	// ref: https://github.com/woocommerce/google-listings-and-ads/pull/251
 	const datesQuery = getCurrentDates( query );
 	const after = format( 'Y-m-d', datesQuery[ dateReference ].after );
 	const before = format( 'Y-m-d', datesQuery[ dateReference ].before );
