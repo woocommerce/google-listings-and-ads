@@ -26,8 +26,14 @@ import AppButton from '.~/components/app-button';
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to CombinedShipping.
  * @param {Object} props.formProps Form props forwarded from `Form` component, containing free listings settings.
  * @param {boolean} [props.saving=false] Is the form currently beign saved?
+ * @param {string} [props.submitLabel="Complete setup"] Submit button label.
  */
-const FormContent = ( { countries, formProps, saving = false } ) => {
+const FormContent = ( {
+	countries,
+	formProps,
+	saving = false,
+	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
+} ) => {
 	const { errors, handleSubmit } = formProps;
 	const displayTaxRate = shouldDisplayTaxRate( countries );
 
@@ -44,7 +50,7 @@ const FormContent = ( { countries, formProps, saving = false } ) => {
 					loading={ saving }
 					onClick={ handleSubmit }
 				>
-					{ __( 'Complete setup', 'google-listings-and-ads' ) }
+					{ submitLabel }
 				</AppButton>
 			</StepContentFooter>
 		</StepContent>

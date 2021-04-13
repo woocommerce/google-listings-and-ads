@@ -33,6 +33,7 @@ import FormContent from './form-content';
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
  * @param {(newValue: Object) => void} props.onShippingTimesChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChangeCallback}
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
+ * @param {string} [props.submitLabel] Submit button label, to be forwarded to `FormContent`.
  */
 const SetupFreeListings = ( {
 	stepHeader,
@@ -44,6 +45,7 @@ const SetupFreeListings = ( {
 	shippingTimes,
 	onShippingTimesChange = () => {},
 	onContinue = () => {},
+	submitLabel,
 } ) => {
 	const [ saving, setSaving ] = useState( false );
 
@@ -112,6 +114,7 @@ const SetupFreeListings = ( {
 						<FormContent
 							formProps={ formProps }
 							countries={ countries }
+							submitLabel={ submitLabel }
 							saving={ saving }
 						/>
 					);
