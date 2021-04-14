@@ -144,8 +144,8 @@ class AccountController extends BaseOptionsController {
 
 			$user_data = $this->get_jetpack_user_data();
 			return [
-				'active'      => $this->is_jetpack_connected(),
-				'owner'       => $this->is_jetpack_connection_owner(),
+				'active'      => $this->display_boolean( $this->is_jetpack_connected() ),
+				'owner'       => $this->display_boolean( $this->is_jetpack_connection_owner() ),
 				'displayName' => $user_data['display_name'] ?? '',
 				'email'       => $user_data['email'] ?? '',
 			];
@@ -155,19 +155,30 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * Determine whether Jetpack is connected.
 	 *
-	 * @return string
+	 * @return bool
 	 */
-	protected function is_jetpack_connected(): string {
-		return $this->manager->is_active() ? 'yes' : 'no';
+	protected function is_jetpack_connected(): bool {
+		return $this->manager->is_active();
 	}
 
 	/**
 	 * Determine whether user is the current Jetpack connection owner.
 	 *
+	 * @return bool
+	 */
+	protected function is_jetpack_connection_owner(): bool {
+		return $this->manager->is_connection_owner();
+	}
+
+	/**
+	 * Format boolean for display.
+	 *
+	 * @param bool $value
+	 *
 	 * @return string
 	 */
-	protected function is_jetpack_connection_owner(): string {
-		return $this->manager->is_connection_owner() ? 'yes' : 'no';
+	protected function display_boolean( bool $value ): string {
+		return $value ? 'yes' : 'no';
 	}
 
 	/**
