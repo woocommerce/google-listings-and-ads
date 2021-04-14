@@ -26,18 +26,15 @@ const headers = [
 		label: __( 'Program', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
-		isSortable: true,
 	},
 	{
 		key: 'country',
 		label: __( 'Country', 'google-listings-and-ads' ),
 		isLeftAligned: true,
-		isSortable: true,
 	},
 	{
 		key: 'dailyBudget',
 		label: __( 'Daily budget', 'google-listings-and-ads' ),
-		isSortable: true,
 	},
 	{
 		key: 'enabled',
