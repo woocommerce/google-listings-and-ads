@@ -25,7 +25,7 @@ const SetupStepper = () => {
 
 	if ( hasFinishedResolution && ! mcSetup ) {
 		// this means error occurred, we just need to return null here,
-		// wp-data actions will display an error notice at the bottom of the page.
+		// wp-data actions will display an error snackbar at the bottom of the page.
 		return null;
 	}
 
