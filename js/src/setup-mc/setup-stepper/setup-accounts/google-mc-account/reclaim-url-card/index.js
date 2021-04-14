@@ -17,6 +17,11 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ReclaimUrlFailCard from './reclaim-url-fail-card';
 
+/**
+ * Temporarily unused for beta testing period. This should be used in production later.
+ *
+ * @param {Object} props Props.
+ */
 const ReclaimUrlCard = ( props ) => {
 	const { websiteUrl } = props;
 	const { createNotice } = useDispatchCoreNotices();
