@@ -91,14 +91,16 @@ const ConnectMCCard = ( props ) => {
 					</AppButton>
 				</ContentButtonLayout>
 			</Section.Card.Body>
-			<Section.Card.Footer>
-				<AppTextButton isSecondary onClick={ onCreateNew }>
-					{ __(
-						'Or, create a new Merchant Center account',
-						'google-listings-and-ads'
-					) }
-				</AppTextButton>
-			</Section.Card.Footer>
+			{ ! loading && (
+				<Section.Card.Footer>
+					<AppTextButton isSecondary onClick={ onCreateNew }>
+						{ __(
+							'Or, create a new Merchant Center account',
+							'google-listings-and-ads'
+						) }
+					</AppTextButton>
+				</Section.Card.Footer>
+			) }
 		</Section.Card>
 	);
 };
