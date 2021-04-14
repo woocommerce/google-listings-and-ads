@@ -8,31 +8,32 @@ import { useState } from '@wordpress/element';
  */
 import PauseProgramModal from './pause-program-modal';
 import './index.scss';
-import updateCampaign from '.~/apis/updateCampaign';
+import { useAppDispatch } from '.~/data';
 
 const ProgramToggle = ( props ) => {
 	const { program } = props;
 	const [ checked, setChecked ] = useState( program.active );
 	const [ showModal, setShowModal ] = useState( false );
+	const { updateAdsCampaign } = useAppDispatch();
 
-	const handleChange = async ( v ) => {
+	const handleChange = ( v ) => {
 		if ( v === false ) {
 			setShowModal( true );
 			return;
 		}
 
 		setChecked( v );
-		await updateCampaign( program.id, { status: 'enabled' } );
+		updateAdsCampaign( program.id, { status: 'enabled' } );
 	};
 
 	const handleModalRequestClose = () => {
 		setShowModal( false );
 	};
 
-	const handlePauseCampaign = async () => {
+	const handlePauseCampaign = () => {
 		setShowModal( false );
 		setChecked( false );
-		await updateCampaign( program.id, { status: 'paused' } );
+		updateAdsCampaign( program.id, { status: 'paused' } );
 	};
 
 	return (
