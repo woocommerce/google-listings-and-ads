@@ -96,9 +96,9 @@ abstract class AbstractInput implements InputInterface {
 	/**
 	 * @param string $id
 	 *
-	 * @return AbstractInput
+	 * @return InputInterface
 	 */
-	public function set_id( string $id ): AbstractInput {
+	public function set_id( string $id ): InputInterface {
 		$this->id = $id;
 
 		return $this;
@@ -107,9 +107,9 @@ abstract class AbstractInput implements InputInterface {
 	/**
 	 * @param string $name
 	 *
-	 * @return AbstractInput
+	 * @return InputInterface
 	 */
-	public function set_name( string $name ): AbstractInput {
+	public function set_name( string $name ): InputInterface {
 		$this->name = $name;
 
 		return $this;
@@ -118,9 +118,9 @@ abstract class AbstractInput implements InputInterface {
 	/**
 	 * @param string $label
 	 *
-	 * @return AbstractInput
+	 * @return InputInterface
 	 */
-	public function set_label( string $label ): AbstractInput {
+	public function set_label( string $label ): InputInterface {
 		$this->label = $label;
 
 		return $this;
@@ -129,9 +129,9 @@ abstract class AbstractInput implements InputInterface {
 	/**
 	 * @param string $description
 	 *
-	 * @return AbstractInput
+	 * @return InputInterface
 	 */
-	public function set_description( string $description ): AbstractInput {
+	public function set_description( string $description ): InputInterface {
 		$this->description = $description;
 
 		return $this;
@@ -140,9 +140,9 @@ abstract class AbstractInput implements InputInterface {
 	/**
 	 * @param mixed $value
 	 *
-	 * @return AbstractInput
+	 * @return InputInterface
 	 */
-	public function set_value( $value ): AbstractInput {
+	public function set_value( $value ): InputInterface {
 		$this->value = $value;
 
 		return $this;

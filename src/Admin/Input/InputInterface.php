@@ -19,8 +19,10 @@ interface InputInterface {
 
 	/**
 	 * @param string $id
+	 *
+	 * @return InputInterface
 	 */
-	public function set_id( string $id );
+	public function set_id( string $id ): InputInterface;
 
 	/**
 	 * @return string
@@ -29,8 +31,10 @@ interface InputInterface {
 
 	/**
 	 * @param string $name
+	 *
+	 * @return InputInterface
 	 */
-	public function set_name( string $name );
+	public function set_name( string $name ): InputInterface;
 
 	/**
 	 * @return string
@@ -44,8 +48,10 @@ interface InputInterface {
 
 	/**
 	 * @param string $label
+	 *
+	 * @return InputInterface
 	 */
-	public function set_label( string $label );
+	public function set_label( string $label ): InputInterface;
 
 	/**
 	 * @return string
@@ -54,8 +60,10 @@ interface InputInterface {
 
 	/**
 	 * @param string $description
+	 *
+	 * @return InputInterface
 	 */
-	public function set_description( string $description );
+	public function set_description( string $description ): InputInterface;
 
 	/**
 	 * @return mixed
@@ -64,6 +72,8 @@ interface InputInterface {
 
 	/**
 	 * @param mixed $value
+	 *
+	 * @return InputInterface
 	 */
-	public function set_value( $value );
+	public function set_value( $value ): InputInterface;
 }
