@@ -640,9 +640,3 @@ export function* receiveMCSetup( mcSetup ) {
 		mcSetup,
 	};
 }
-
-export function* refetchMCSetup() {
-	return {
-		type: TYPES.REFETCH_MC_SETUP,
-	};
-}
