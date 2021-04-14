@@ -19,14 +19,10 @@ import './index.scss';
  *
  */
 const PauseProgramModal = ( props ) => {
-	const {
-		onKeepActive = () => {},
-		onPauseCampaign = () => {},
-		onRequestClose,
-	} = props;
+	const { onPauseCampaign = () => {}, onRequestClose } = props;
 
 	const handleKeepActiveClick = () => {
-		onKeepActive();
+		onRequestClose();
 	};
 
 	const handlePauseCampaignClick = () => {

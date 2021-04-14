@@ -33,10 +33,6 @@ const ProgramToggle = ( props ) => {
 		setShowModal( false );
 	};
 
-	const handleKeepActive = () => {
-		setShowModal( false );
-	};
-
 	const handlePauseCampaign = () => {
 		setShowModal( false );
 		setChecked( false );
@@ -53,7 +49,6 @@ const ProgramToggle = ( props ) => {
 			{ showModal && (
 				<PauseProgramModal
 					programId={ program.id }
-					onKeepActive={ handleKeepActive }
 					onPauseCampaign={ handlePauseCampaign }
 					onRequestClose={ handleModalRequestClose }
 				/>
