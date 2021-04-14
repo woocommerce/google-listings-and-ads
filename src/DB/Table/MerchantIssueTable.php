@@ -28,10 +28,12 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     `product_id` bigint(20) NOT NULL,
     `issue` varchar(200) NOT NULL,
     `code` varchar(100) NOT NULL,
-    `details` text NOT NULL,
+    `product` varchar(100) NOT NULL,
+    `action` varchar(100) NOT NULL,
+    `action_url` varchar(100) NOT NULL,
     `applicable_countries` text NOT NULL,
+     `created_at` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY `id` (`id`),
-    KEY `product_id` (`product_id`),
     UNIQUE `product_issue` (`product_id`, `issue`)
 ) {$this->get_collation()};
 SQL;
