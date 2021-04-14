@@ -15,7 +15,7 @@ import { useAppDispatch } from '.~/data';
 
 const SetupStepper = () => {
 	const mcSetup = useMCSetup();
-	const { refetchMCSetup } = useAppDispatch();
+	const { invalidateResolution } = useAppDispatch();
 
 	if ( ! mcSetup ) {
 		return <AppSpinner />;
@@ -29,7 +29,7 @@ const SetupStepper = () => {
 	}
 
 	const handleRefetchSavedStep = () => {
-		refetchMCSetup();
+		invalidateResolution( 'getMCSetup', [] );
 	};
 
 	return (
