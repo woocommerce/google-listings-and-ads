@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -12,6 +11,7 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import { shouldDisplayTaxRate } from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import CombinedShipping from '.~/components/free-listings/configure-product-listings/combined-shipping';
+import AppButton from '.~/components/app-button';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -23,10 +23,17 @@ import CombinedShipping from '.~/components/free-listings/configure-product-list
  * without auto-save functionality.
  *
  * @param {Object} props React props.
- * @param {Array} props.formProps
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to CombinedShipping.
+ * @param {Object} props.formProps Form props forwarded from `Form` component, containing free listings settings.
+ * @param {boolean} [props.saving=false] Is the form currently beign saved?
+ * @param {string} [props.submitLabel="Complete setup"] Submit button label.
  */
-const FormContent = ( { formProps, countries } ) => {
+const FormContent = ( {
+	countries,
+	formProps,
+	saving = false,
+	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
+} ) => {
 	const { errors, handleSubmit } = formProps;
 	const displayTaxRate = shouldDisplayTaxRate( countries );
 
@@ -37,13 +44,14 @@ const FormContent = ( { formProps, countries } ) => {
 			<CombinedShipping formProps={ formProps } countries={ countries } />
 			{ displayTaxRate && <TaxRate formProps={ formProps } /> }
 			<StepContentFooter>
-				<Button
+				<AppButton
 					isPrimary
 					disabled={ isCompleteSetupDisabled }
+					loading={ saving }
 					onClick={ handleSubmit }
 				>
-					{ __( 'Complete setup', 'google-listings-and-ads' ) }
-				</Button>
+					{ submitLabel }
+				</AppButton>
 			</StepContentFooter>
 		</StepContent>
 	);

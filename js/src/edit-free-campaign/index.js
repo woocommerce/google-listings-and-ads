@@ -262,6 +262,10 @@ export default function EditFreeCampaign() {
 								shippingTimes={ loadedShippingTimes }
 								onShippingTimesChange={ updateShippingTimes }
 								onContinue={ handleSetupFreeListingsContinue }
+								submitLabel={ __(
+									'Save changes',
+									'google-listings-and-ads'
+								) }
 							/>
 						),
 						onClick: handleStepClick,
