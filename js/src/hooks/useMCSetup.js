@@ -23,17 +23,11 @@ const useMCSetup = () => {
 	}, [ invalidateResolution ] );
 
 	return useSelect( ( select ) => {
-		const {
-			isResolving,
-			hasStartedResolution,
-			hasFinishedResolution,
-		} = select( STORE_KEY );
+		const { hasFinishedResolution } = select( STORE_KEY );
 
 		const data = select( STORE_KEY )[ selectorName ]();
 
 		return {
-			isResolving: isResolving( selectorName ),
-			hasStartedResolution: hasStartedResolution( selectorName ),
 			hasFinishedResolution: hasFinishedResolution( selectorName ),
 			data,
 			invalidateResolution: invalidateResolutionCallback,
