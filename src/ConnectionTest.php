@@ -603,7 +603,7 @@ class ConnectionTest implements Service, Registerable {
 			$manager->enable_plugin(); // Mark the plugin connection as enabled, in case it was disabled earlier.
 
 			// Register the site to wp.com.
-			if ( ! $manager->is_registered() ) {
+			if ( ! $manager->is_connected() ) {
 				$result = $manager->register();
 
 				if ( is_wp_error( $result ) ) {

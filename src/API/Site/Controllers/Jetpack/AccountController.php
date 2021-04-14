@@ -87,7 +87,7 @@ class AccountController extends BaseOptionsController {
 			$this->manager->enable_plugin();
 
 			// Register the site to wp.com.
-			if ( ! $this->manager->is_registered() ) {
+			if ( ! $this->manager->is_connected() ) {
 				$result = $this->manager->register();
 
 				if ( is_wp_error( $result ) ) {
