@@ -4,7 +4,6 @@
 import { useSelect } from '@wordpress/data';
 import { getQuery } from '@woocommerce/navigation';
 import { getCurrentDates } from '@woocommerce/date';
-import mapValues from 'lodash/mapValues';
 
 /**
  * Internal dependencies
@@ -14,12 +13,16 @@ import isNaN from '.~/utils/isNaN';
 import round from '.~/utils/round';
 
 const mapToData = ( primary, secondary ) => {
-	return mapValues( primary, ( value, key ) => {
+	return Object.keys( primary ).reduce( ( acc, key ) => {
+		const value = primary[ key ];
 		const base = secondary[ key ];
 		const percent = ( ( value - base ) / base ) * 100;
 		const delta = isNaN( percent ) ? null : round( percent );
-		return { value, delta };
-	} );
+		return {
+			...acc,
+			[ key ]: { value, delta },
+		};
+	}, {} );
 };
 
 export default function usePerformance( type ) {
