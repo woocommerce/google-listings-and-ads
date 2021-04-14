@@ -429,15 +429,14 @@ class AccountController extends BaseOptionsController {
 	 * 2. Enables the meta tag in the head of the store.
 	 * 3. Instructs the Site Verification API to verify the meta tag.
 	 *
-	 * @return bool True if the site has been (or already was) verified for the connected Google account.
 	 * @throws Exception If any step of the site verification process fails.
 	 */
-	private function verify_site(): bool {
+	private function verify_site(): void {
 		$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 		// Inform of previous verification.
 		if ( $this->account_state->is_site_verified() ) {
-			return true;
+			return;
 		}
 
 		// Retrieve the meta tag with verification token.
@@ -467,7 +466,7 @@ class AccountController extends BaseOptionsController {
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
 				do_action( 'gla_site_verify_success', [] );
 
-				return true;
+				return;
 			}
 		} catch ( Exception $e ) {
 			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
@@ -536,11 +535,10 @@ class AccountController extends BaseOptionsController {
 	 * @param int    $merchant_id      The Merchant Center account to update
 	 * @param string $site_website_url The new website URL
 	 *
-	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
 	 * @throws Exception If the Merchant Center account can't be retrieved.
 	 * @throws ExceptionWithResponseData If the account website URL doesn't match the given URL.
 	 */
-	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
+	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): void {
 		/** @var MC_Account $mc_account */
 		$mc_account = $this->merchant->get_account( $merchant_id );
 
@@ -578,8 +576,6 @@ class AccountController extends BaseOptionsController {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
 		}
-
-		return true;
 	}
 
 	/**
