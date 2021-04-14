@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use WC_Product;
+use WC_Product_Variation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -89,7 +90,9 @@ class YoastWooCommerceSeo implements Service, Registerable {
 	 */
 	protected function get_identifier_value( string $key, WC_Product $product ) {
 		if ( ! isset( $this->yoast_global_identifiers ) ) {
-			$this->yoast_global_identifiers = get_post_meta( $product->get_id(), 'wpseo_global_identifier_values', true );
+			$product_id = $product instanceof WC_Product_Variation ? $product->get_parent_id() : $product->get_id();
+
+			$this->yoast_global_identifiers = get_post_meta( $product_id, 'wpseo_global_identifier_values', true );
 		}
 
 		return ! empty( $this->yoast_global_identifiers[ $key ] ) ? $this->yoast_global_identifiers[ $key ] : null;
