@@ -13,20 +13,20 @@ defined( 'ABSPATH' ) || exit;
 $input = $this->input;
 
 /**
- * @var \Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\InputForm $form
+ * @var string $form_name
  */
-$form = $this->form;
+$form_name = $this->form_name;
 ?>
 
 <p class="form-field">
-	<label for="gla_<?php echo sanitize_key( $input->get_id() ); ?>"><?php echo esc_html( sanitize_text_field( $input->get_label() ) ); ?></label>
+	<label for="gla_<?php printf( '%s_%s', sanitize_key( $form_name ), sanitize_key( $input->get_id() ) ); ?>"><?php echo esc_html( sanitize_text_field( $input->get_label() ) ); ?></label>
 	<?php
 	// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo $this->render_partial(
 		path_join( 'src/Admin/views/inputs/', $input->get_type() ),
 		[
-			'input' => $input,
-			'form'  => $form,
+			'input'     => $input,
+			'form_name' => $form_name,
 		]
 	);
 	?>

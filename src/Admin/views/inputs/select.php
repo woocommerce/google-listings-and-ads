@@ -13,14 +13,14 @@ defined( 'ABSPATH' ) || exit;
 $input = $this->input;
 
 /**
- * @var \Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\InputForm $form
+ * @var string $form_name
  */
-$form = $this->form;
+$form_name = $this->form_name;
 ?>
 
-<select id="gla_<?php echo sanitize_key( $input->get_id() ); ?>"
+<select id="gla_<?php printf( '%s_%s', sanitize_key( $form_name ), sanitize_key( $input->get_id() ) ); ?>"
 		class="input-text"
-		name="<?php echo esc_attr( $form->get_name() ); ?>[<?php echo esc_attr( $input->get_name() ); ?>]">
+		name="<?php echo esc_attr( $form_name ); ?>[<?php echo esc_attr( $input->get_name() ); ?>]">
 	<?php foreach ( $input->get_options() as $option_id => $option ) : ?>
 		<option value="<?php echo esc_attr( sanitize_key( $option_id ) ); ?>"
 			<?php echo $input->get_value() === $option_id ? 'selected="selected"' : ''; ?> >

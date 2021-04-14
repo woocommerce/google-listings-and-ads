@@ -30,8 +30,8 @@ $product_id = $this->product_id;
 			echo $this->render_partial(
 				'src/Admin/views/inputs/input',
 				[
-					'input' => $input,
-					'form'  => $form,
+					'input'     => $input,
+					'form_name' => $form->get_name(),
 				]
 			);
 			?>
