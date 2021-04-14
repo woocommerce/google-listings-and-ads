@@ -9,11 +9,10 @@ import { getCurrentDates } from '@woocommerce/date';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
-import isNaN from '.~/utils/isNaN';
 import round from '.~/utils/round';
 
 const isValidNumber = ( number ) => {
-	return Number.isFinite( number ) && ! isNaN( number );
+	return Number.isFinite( number ) && ! Number.isNaN( number );
 };
 
 const mapToData = ( primary, secondary ) => {
