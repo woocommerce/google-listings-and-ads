@@ -118,7 +118,12 @@ const AllProgramsTableCard = ( props ) => {
 					{ display: el.country },
 					{ display: el.dailyBudget },
 					{
-						display: <ProgramToggle program={ el } />,
+						display:
+							el.id === FREE_LISTINGS_PROGRAM_ID ? (
+								__( 'Enabled', 'google-listings-and-ads' )
+							) : (
+								<ProgramToggle program={ el } />
+							),
 					},
 					{
 						display: (
