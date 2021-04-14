@@ -14,12 +14,19 @@ import stepNameKeyMap from './stepNameKeyMap';
 
 const SetupStepper = () => {
 	const {
+		hasFinishedResolution,
 		data: mcSetup,
 		invalidateResolution: mcSetupInvalidateResolution,
 	} = useMCSetup();
 
-	if ( ! mcSetup ) {
+	if ( ! hasFinishedResolution && ! mcSetup ) {
 		return <AppSpinner />;
+	}
+
+	if ( hasFinishedResolution && ! mcSetup ) {
+		// this means error occurred, we just need to return null here,
+		// wp-data actions will display an error notice at the bottom of the page.
+		return null;
 	}
 
 	const { status, step } = mcSetup;
