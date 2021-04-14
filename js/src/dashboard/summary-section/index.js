@@ -3,13 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { SummaryNumber } from '@woocommerce/components';
+import CurrencyFactory from '@woocommerce/currency';
 import { numberFormat } from '@woocommerce/number';
 
 /**
  * Internal dependencies
  */
 import { glaData } from '.~/constants';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import usePerformance from './usePerformance';
 import AppSpinner from '.~/components/app-spinner';
 import SummaryCard from './summary-card';
@@ -21,10 +21,13 @@ const paidPerformanceTitle = __(
 	'woocommerce-admin'
 );
 
-// Note: Since the delta prop of SummaryNumber component wouldn't apply the currency options in WC Settings,
-//       in order to keep the consistency of the same block, the currency options are not applied here either.
+// Note: Since the `delta` prop of SummaryNumber component wouldn't apply the WC Settings' currency options,
+//       it uses '.' as the decimal separator when transforming to percentage format.
+//       In order to keep the format consistency of number and currency in the same block,
+//       the WC Settings' currency options are not applied in this SummarySection component.
 // ref: https://github.com/woocommerce/woocommerce-admin/blob/v1.6.0/packages/components/src/summary/number.js#L133-L136
 const formatNumber = ( number ) => numberFormat( { precision: 2 }, number );
+const { formatAmount } = CurrencyFactory();
 
 const FreePerformanceCard = () => {
 	const { data, loading } = usePerformance( 'free' );
@@ -57,7 +60,6 @@ const FreePerformanceCard = () => {
 
 const PaidPerformanceCard = () => {
 	const { data, loading } = usePerformance( 'paid' );
-	const { formatAmount } = useCurrencyFactory();
 
 	return (
 		<SummaryCard title={ paidPerformanceTitle }>
