@@ -85,9 +85,9 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 		$updated_products = [];
 		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $product_entries ) {
+		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_product_entries ) {
 			try {
-				$response = $this->google_service->insert_batch( $product_entries );
+				$response = $this->google_service->insert_batch( $batch_product_entries );
 
 				$updated_products = array_merge( $updated_products, $response->get_products() );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
@@ -153,9 +153,9 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 		$deleted_products = [];
 		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $product_entries ) {
+		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_product_entries ) {
 			try {
-				$response = $this->google_service->delete_batch( $product_entries );
+				$response = $this->google_service->delete_batch( $batch_product_entries );
 
 				$deleted_products = array_merge( $deleted_products, $response->get_products() );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
