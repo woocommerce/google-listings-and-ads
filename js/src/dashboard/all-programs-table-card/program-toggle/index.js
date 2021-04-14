@@ -3,13 +3,12 @@
  */
 import { ToggleControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
-
 /**
  * Internal dependencies
  */
 import PauseProgramModal from './pause-program-modal';
 import './index.scss';
+import updateCampaign from '.~/apis/updateCampaign';
 
 const ProgramToggle = ( props ) => {
 	const { program } = props;
@@ -23,13 +22,7 @@ const ProgramToggle = ( props ) => {
 		}
 
 		setChecked( v );
-		await apiFetch( {
-			path: `/wc/gla/ads/campaigns/${ program.id }`,
-			method: 'POST',
-			data: {
-				status: 'enabled',
-			},
-		} );
+		await updateCampaign( program.id, { status: 'enabled' } );
 	};
 
 	const handleModalRequestClose = () => {
@@ -39,13 +32,7 @@ const ProgramToggle = ( props ) => {
 	const handlePauseCampaign = async () => {
 		setShowModal( false );
 		setChecked( false );
-		await apiFetch( {
-			path: `/wc/gla/ads/campaigns/${ program.id }`,
-			method: 'POST',
-			data: {
-				status: 'paused',
-			},
-		} );
+		await updateCampaign( program.id, { status: 'paused' } );
 	};
 
 	return (
