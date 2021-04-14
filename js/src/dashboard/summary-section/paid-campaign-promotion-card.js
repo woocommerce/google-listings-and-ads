@@ -9,8 +9,8 @@ import { Spinner } from '@woocommerce/components';
  * Internal dependencies
  */
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import './index.scss';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
+import './paid-campaign-promotion-card.scss';
 
 const PromotionContent = ( { adsAccount } ) => {
 	const showFreeCredit =
