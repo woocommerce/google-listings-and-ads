@@ -26,6 +26,7 @@ interface OptionsInterface {
 	public const SHIPPING_TIMES         = 'shipping_times';
 	public const SITE_VERIFICATION      = 'site_verification';
 	public const TARGET_AUDIENCE        = 'target_audience';
+	public const WP_TOS_ACCEPTED        = 'wp_tos_accepted';
 
 	/**
 	 * Get an option.
