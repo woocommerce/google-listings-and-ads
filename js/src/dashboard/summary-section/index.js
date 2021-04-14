@@ -44,6 +44,7 @@ const FreePerformanceCard = () => {
 						key="1"
 						label={ __( 'Clicks', 'google-listings-and-ads' ) }
 						value={ formatNumber( data.clicks.value ) }
+						prevValue={ formatNumber( data.clicks.prevValue ) }
 						delta={ data.clicks.delta }
 					/>,
 					<SummaryNumber
@@ -71,12 +72,14 @@ const PaidPerformanceCard = () => {
 						key="1"
 						label={ __( 'Total Sales', 'google-listings-and-ads' ) }
 						value={ formatAmount( data.sales.value ) }
+						prevValue={ formatAmount( data.sales.prevValue ) }
 						delta={ data.sales.delta }
 					/>,
 					<SummaryNumber
 						key="2"
 						label={ __( 'Total Spend', 'google-listings-and-ads' ) }
 						value={ formatAmount( data.spend.value ) }
+						prevValue={ formatAmount( data.spend.prevValue ) }
 						delta={ data.spend.delta }
 					/>,
 				]

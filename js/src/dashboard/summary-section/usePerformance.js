@@ -20,7 +20,7 @@ const mapToData = ( primary, secondary ) => {
 		const delta = isNaN( percent ) ? null : round( percent );
 		return {
 			...acc,
-			[ key ]: { value, delta },
+			[ key ]: { value, delta, prevValue: base },
 		};
 	}, {} );
 };
