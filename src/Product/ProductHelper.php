@@ -31,19 +31,12 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $meta_handler;
 
 	/**
-	 * @var AttributeManager
-	 */
-	protected $attribute_manager;
-
-	/**
 	 * ProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
-	 * @param AttributeManager   $attribute_manager
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, AttributeManager $attribute_manager ) {
-		$this->meta_handler      = $meta_handler;
-		$this->attribute_manager = $attribute_manager;
+	public function __construct( ProductMetaHandler $meta_handler ) {
+		$this->meta_handler = $meta_handler;
 	}
 
 	/**
@@ -143,7 +136,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @return string[] An array of Google product IDs stored for each WooCommerce product
 	 */
-	public function get_synced_google_product_ids( WC_Product $product ) {
+	public function get_synced_google_product_ids( WC_Product $product ): array {
 		return $this->meta_handler->get_google_ids( $product->get_id() );
 	}
 
@@ -189,21 +182,4 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		return $visibility;
 	}
 
-	/**
-	 * @param WC_Product $product
-	 * @param string     $target_country
-	 *
-	 * @return WCProductAdapter
-	 */
-	public function generate_adapted_product( WC_Product $product, string $target_country ): WCProductAdapter {
-		$attributes = $this->attribute_manager->get_all( $product->get_id() );
-
-		return new WCProductAdapter(
-			[
-				'wc_product'     => $product,
-				'targetCountry'  => $target_country,
-				'gla_attributes' => $attributes,
-			]
-		);
-	}
 }

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\InputForm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\TabInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsFormInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
@@ -54,6 +55,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -129,6 +131,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		TransientsInterface::class    => true,
 		MerchantCenterService::class  => true,
 		AttributeManager::class       => true,
+		ProductFactory::class         => true,
 		InputForm::class              => true,
 		TabInitializer::class         => true,
 	];
@@ -227,12 +230,14 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantIssues::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, AttributeManager::class );
+		$this->share_with_tags( ProductFactory::class, AttributeManager::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
 			ProductHelper::class,
-			ValidatorInterface::class
+			ValidatorInterface::class,
+			ProductFactory::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
