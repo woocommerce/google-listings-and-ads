@@ -92,7 +92,11 @@ const ConnectMCCard = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<AppTextButton isSecondary onClick={ onCreateNew }>
+				<AppTextButton
+					disabled={ loading }
+					isSecondary
+					onClick={ onCreateNew }
+				>
 					{ __(
 						'Or, create a new Merchant Center account',
 						'google-listings-and-ads'
