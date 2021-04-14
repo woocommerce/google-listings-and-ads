@@ -26,7 +26,7 @@ const paidPerformanceTitle = __(
 //       In order to keep the format consistency of number and currency in the same block,
 //       the WC Settings' currency options are not applied in this SummarySection component.
 // ref: https://github.com/woocommerce/woocommerce-admin/blob/v1.6.0/packages/components/src/summary/number.js#L133-L136
-const formatNumber = ( number ) => numberFormat( { precision: 2 }, number );
+const formatNumber = ( number ) => numberFormat( { precision: 0 }, number );
 const { formatAmount } = CurrencyFactory();
 
 const FreePerformanceCard = () => {
