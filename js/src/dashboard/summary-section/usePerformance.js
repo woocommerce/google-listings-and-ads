@@ -5,13 +5,13 @@ import { useSelect } from '@wordpress/data';
 import { getQuery } from '@woocommerce/navigation';
 import { getCurrentDates } from '@woocommerce/date';
 import mapValues from 'lodash/mapValues';
-import isNaN from 'lodash/isNaN';
 import round from 'lodash/round';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
+import isNaN from '.~/utils/isNaN';
 
 const mapToData = ( primary, secondary ) => {
 	return mapValues( primary, ( value, key ) => {
