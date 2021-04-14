@@ -330,10 +330,10 @@ class AccountController extends BaseOptionsController {
 	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
 	 * @todo Include request+approve account linking process.
 	 *
-	 * @return array|Response The newly created (or pre-existing) Merchant ID or the retry delay.
+	 * @return array The newly created (or pre-existing) Merchant ID or the retry delay.
 	 * @throws Exception If an error occurs during any step.
 	 */
-	protected function setup_merchant_account() {
+	protected function setup_merchant_account(): array {
 		$state       = $this->account_state->get();
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
@@ -342,10 +342,10 @@ class AccountController extends BaseOptionsController {
 				continue;
 			}
 
-			if ( 'link' === $name || 'claim' === $name ) {
+			if ( 'link' === $name ) {
 				$time_to_wait = $this->account_state->get_seconds_to_wait_after_created();
 				if ( $time_to_wait ) {
-					return $this->get_time_to_wait_response( $time_to_wait );
+					sleep( $time_to_wait );
 				}
 			}
 
@@ -413,10 +413,6 @@ class AccountController extends BaseOptionsController {
 							$data
 						);
 					}
-				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
-					$state['set_id']['data']['created_timestamp'] = time();
-					$this->account_state->update( $state );
-					return $this->get_time_to_wait_response( MerchantAccountState::MC_DELAY_AFTER_CREATE );
 				}
 
 				$this->account_state->update( $state );
@@ -584,26 +580,6 @@ class AccountController extends BaseOptionsController {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Generate a 503 Response with Retry-After header and message.
-	 *
-	 * @param int $time_to_wait The time to indicate
-	 *
-	 * @return Response
-	 */
-	private function get_time_to_wait_response( int $time_to_wait ): Response {
-		return new Response(
-			[
-				'retry_after' => $time_to_wait,
-				'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
-			],
-			503,
-			[
-				'Retry-After' => $time_to_wait,
-			]
-		);
 	}
 
 	/**
