@@ -216,6 +216,27 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
+		case TYPES.UPDATE_ADS_CAMPAIGN: {
+			const { id, data } = action;
+			const idx = state.ads_campaigns.findIndex( ( el ) => el.id === id );
+			const adsCampaign = state.ads_campaigns[ idx ];
+
+			const updatedCampaign = {
+				...adsCampaign,
+				...data,
+			};
+
+			const newAdsCampaigns = [ ...state.ads_campaigns ];
+			newAdsCampaigns[ idx ] = updatedCampaign;
+
+			const newState = {
+				...state,
+				ads_campaigns: newAdsCampaigns,
+			};
+
+			return newState;
+		}
+
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
 		case TYPES.DISCONNECT_ACCOUNTS_ALL:
 		default:

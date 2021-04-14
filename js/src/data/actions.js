@@ -593,6 +593,30 @@ export function receiveAdsCampaigns( adsCampaigns ) {
 	};
 }
 
+export function* updateAdsCampaign( id, data ) {
+	try {
+		yield apiFetch( {
+			path: `/wc/gla/ads/campaigns/${ id }`,
+			method: 'POST',
+			data,
+		} );
+
+		return {
+			type: TYPES.UPDATE_ADS_CAMPAIGN,
+			id,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to update your paid ads campaign. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 // TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
 export function* upsertShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
