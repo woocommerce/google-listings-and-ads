@@ -3,6 +3,7 @@
  */
 import { ToggleControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -15,32 +16,36 @@ const ProgramToggle = ( props ) => {
 	const [ checked, setChecked ] = useState( program.active );
 	const [ showModal, setShowModal ] = useState( false );
 
-	const handleChange = ( v ) => {
+	const handleChange = async ( v ) => {
 		if ( v === false ) {
 			setShowModal( true );
 			return;
 		}
 
 		setChecked( v );
-		// TODO: fire API request to enable campaign.
-		// eslint-disable-next-line no-console
-		console.warn(
-			'The actual resume campaign action is not implemented/integrated yet.'
-		);
+		await apiFetch( {
+			path: `/wc/gla/ads/campaigns/${ program.id }`,
+			method: 'POST',
+			data: {
+				status: 'enabled',
+			},
+		} );
 	};
 
 	const handleModalRequestClose = () => {
 		setShowModal( false );
 	};
 
-	const handlePauseCampaign = () => {
+	const handlePauseCampaign = async () => {
 		setShowModal( false );
 		setChecked( false );
-		// TODO: fire api request to pause campaign.
-		// eslint-disable-next-line no-console
-		console.warn(
-			'The actual pause campaign action is not implemented/integrated yet.'
-		);
+		await apiFetch( {
+			path: `/wc/gla/ads/campaigns/${ program.id }`,
+			method: 'POST',
+			data: {
+				status: 'paused',
+			},
+		} );
 	};
 
 	return (
