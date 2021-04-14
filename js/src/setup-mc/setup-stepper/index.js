@@ -24,7 +24,7 @@ const SetupStepper = () => {
 	const { status, step } = mcSetup;
 
 	if ( status === 'complete' ) {
-		getHistory().push( getNewPath( {}, '/google/dashboard' ) );
+		getHistory().replace( getNewPath( {}, '/google/dashboard' ) );
 		return null;
 	}
 
