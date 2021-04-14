@@ -327,13 +327,13 @@ class AccountController extends BaseOptionsController {
 	 * Should always resume up at the last pending or unfinished step. If the Merchant Center account
 	 * has already been created, the ID is simply returned.
 	 *
-	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
+	 * @return array|Response The newly created (or pre-existing) Merchant ID or the retry delay.
+	 * @throws Exception If an error occurs during any step.
+	 *@todo Check Google Account & Manager Accounts connected correctly before starting.
 	 * @todo Include request+approve account linking process.
 	 *
-	 * @return array The newly created (or pre-existing) Merchant ID or the retry delay.
-	 * @throws Exception If an error occurs during any step.
 	 */
-	protected function setup_merchant_account(): array {
+	protected function setup_merchant_account() {
 		$state       = $this->account_state->get();
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
