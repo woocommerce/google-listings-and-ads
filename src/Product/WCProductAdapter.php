@@ -95,9 +95,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		$this->setChannel( self::CHANNEL_ONLINE );
 
-		// todo: this is temporary, modify or remove this when the GTIN, MPN etc. functionalities are implemented.
-		$this->setIdentifierExists( false );
-
 		$content_language = empty( get_locale() ) ? 'en' : strtolower( substr( get_locale(), 0, 2 ) ); // ISO 639-1.
 		$this->setContentLanguage( $content_language );
 
@@ -109,6 +106,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			 ->map_wc_shipping_dimensions( $dimension_unit )
 			 ->map_wc_shipping_weight( $weight_unit )
 			 ->map_wc_prices();
+
+		$this->setIdentifierExists( ! empty( $this->getGtin() ) || ! empty( $this->getMpn() ) );
 	}
 
 	/**
