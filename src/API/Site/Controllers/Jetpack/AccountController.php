@@ -197,7 +197,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function log_wp_tos_accepted() {
 		$user = wp_get_current_user();
-		$tos  = $this->middleware->mark_tos_accepted( 'wp-com', $user->user_email );
+		$this->middleware->mark_tos_accepted( 'wp-com', $user->user_email );
 		$this->options->update( OptionsInterface::WP_TOS_ACCEPTED, true );
 	}
 
