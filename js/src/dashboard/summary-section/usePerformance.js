@@ -12,12 +12,16 @@ import { STORE_KEY } from '.~/data/constants';
 import isNaN from '.~/utils/isNaN';
 import round from '.~/utils/round';
 
+const isValidNumber = ( number ) => {
+	return Number.isFinite( number ) && ! isNaN( number );
+};
+
 const mapToData = ( primary, secondary ) => {
 	return Object.keys( primary ).reduce( ( acc, key ) => {
 		const value = primary[ key ];
 		const base = secondary[ key ];
 		const percent = ( ( value - base ) / base ) * 100;
-		const delta = isNaN( percent ) ? null : round( percent );
+		const delta = isValidNumber( percent ) ? round( percent ) : null;
 		return {
 			...acc,
 			[ key ]: { value, delta, prevValue: base },
