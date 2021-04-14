@@ -56,8 +56,8 @@ class InputForm extends AbstractForm implements Service, Conditional {
 		$inputs = [];
 
 		if ( ! empty( $product_id ) ) {
-			$gtin = $this->attribute_manager->get( $product_id, GTIN::get_id() );
-			$mpn  = $this->attribute_manager->get( $product_id, MPN::get_id() );
+			$gtin = $this->attribute_manager->get( $product_id, GTIN::get_id() ) ?? new GTIN( null );
+			$mpn  = $this->attribute_manager->get( $product_id, MPN::get_id() ) ?? new MPN( null );
 		} else {
 			$gtin = new GTIN( null );
 			$mpn  = new MPN( null );

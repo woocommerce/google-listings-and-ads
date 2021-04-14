@@ -49,14 +49,18 @@ class AttributeManager implements Service {
 	 * @param int    $product_id
 	 * @param string $attribute_id
 	 *
-	 * @return AttributeInterface
+	 * @return AttributeInterface|null
 	 */
-	public function get( int $product_id, string $attribute_id ): AttributeInterface {
+	public function get( int $product_id, string $attribute_id ) {
 		$this->validate_product_id( $product_id );
 		$this->validate_attribute_id( $attribute_id );
 
 		$attribute_class = $this->attributes[ $attribute_id ];
 		$value           = get_post_meta( $product_id, $this->prefix_meta_key( $attribute_id ), true );
+
+		if ( empty( $value ) ) {
+			return null;
+		}
 
 		return new $attribute_class( $value );
 	}
@@ -67,12 +71,15 @@ class AttributeManager implements Service {
 	 * @return AttributeInterface[]
 	 */
 	public function get_all( int $product_id ): array {
-		return array_map(
-			function ( $attribute_id ) use ( $product_id ) {
-				return $this->get( $product_id, $attribute_id );
-			},
-			array_keys( $this->attributes )
-		);
+		$all_attributes = [];
+		foreach ( $this->attributes as $attribute_id => $attribute_class ) {
+			$attribute = $this->get( $product_id, $attribute_id );
+			if ( null !== $attribute ) {
+				$all_attributes[ $attribute_id ] = $attribute;
+			}
+		}
+
+		return $all_attributes;
 	}
 
 	/**
