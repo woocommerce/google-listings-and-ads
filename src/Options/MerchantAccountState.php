@@ -13,7 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 class MerchantAccountState extends AccountState {
 
 	/** @var int The number of seconds of delay to enforce between site verification and site claim. */
-	public const MC_DELAY_AFTER_CREATE = 90;
+	public const MC_DELAY_AFTER_CREATE = 10;
 
 	/**
 	 * Return the option name.
