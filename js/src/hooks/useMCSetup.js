@@ -10,6 +10,8 @@ import { useCallback } from '@wordpress/element';
 import { STORE_KEY } from '.~/data/constants';
 import { useAppDispatch } from '.~/data';
 
+const selectorName = 'getMCSetup';
+
 /**
  * Get Merchant Center setup info.
  */
@@ -17,23 +19,22 @@ const useMCSetup = () => {
 	const { invalidateResolution } = useAppDispatch();
 
 	const invalidateResolutionCallback = useCallback( () => {
-		invalidateResolution( 'getMCSetup', [] );
+		invalidateResolution( selectorName, [] );
 	}, [ invalidateResolution ] );
 
 	return useSelect( ( select ) => {
 		const {
-			getMCSetup,
 			isResolving,
 			hasStartedResolution,
 			hasFinishedResolution,
 		} = select( STORE_KEY );
 
-		const data = getMCSetup();
+		const data = select( STORE_KEY )[ selectorName ]();
 
 		return {
-			isResolving: isResolving( 'getMCSetup' ),
-			hasStartedResolution: hasStartedResolution( 'getMCSetup' ),
-			hasFinishedResolution: hasFinishedResolution( 'getMCSetup' ),
+			isResolving: isResolving( selectorName ),
+			hasStartedResolution: hasStartedResolution( selectorName ),
+			hasFinishedResolution: hasFinishedResolution( selectorName ),
 			data,
 			invalidateResolution: invalidateResolutionCallback,
 		};
