@@ -25,6 +25,13 @@ const mapToData = ( primary, secondary ) => {
 	}, {} );
 };
 
+/**
+ * Get performance results by program type.
+ * Date-related parameters will be parsed from the URL by this hook.
+ *
+ * @param  {string} type Type of programs, 'free' or 'paid'.
+ * @return {PerformanceSchema} The fetched performance results.
+ */
 export default function usePerformance( type ) {
 	const query = getQuery();
 	const currentDate = getCurrentDates( query );
@@ -58,3 +65,30 @@ export default function usePerformance( type ) {
 		};
 	}, deps );
 }
+
+/**
+ * Performance schema of the `usePerformance` hook
+ *
+ * @typedef {Object} PerformanceSchema
+ * @property {boolean} loading Whether the data is loading.
+ * @property {PerformanceData} data Fetched performance data.
+ */
+
+/**
+ * Performance data of each metric.
+ *
+ * @typedef {Object} PerformanceData
+ * @property {PerformanceMetrics} sales Sales performance.
+ * @property {PerformanceMetrics} clicks Clicks performance.
+ * @property {PerformanceMetrics} spend Spend performance.
+ * @property {PerformanceMetrics} impressions Impressions performance.
+ */
+
+/**
+ * Performance metrics.
+ *
+ * @typedef {Object} PerformanceMetrics
+ * @property {number} value Value of the current period.
+ * @property {number} prevValue Value of the previous period.
+ * @property {number} delta The delta of the current value compared to the previous value.
+ */
