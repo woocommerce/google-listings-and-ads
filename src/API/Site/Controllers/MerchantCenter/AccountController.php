@@ -413,6 +413,10 @@ class AccountController extends BaseOptionsController {
 							$data
 						);
 					}
+				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
+					$state['set_id']['data']['created_timestamp'] = time();
+					$this->account_state->update( $state );
+					return $this->get_time_to_wait_response( MerchantAccountState::MC_DELAY_AFTER_CREATE );
 				}
 
 				$this->account_state->update( $state );
@@ -576,6 +580,26 @@ class AccountController extends BaseOptionsController {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
 		}
+	}
+
+	/**
+	 * Generate a 503 Response with Retry-After header and message.
+	 *
+	 * @param int $time_to_wait The time to indicate
+	 *
+	 * @return Response
+	 */
+	private function get_time_to_wait_response( int $time_to_wait ): Response {
+		return new Response(
+			[
+				'retry_after' => $time_to_wait,
+				'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
+			],
+			503,
+			[
+				'Retry-After' => $time_to_wait,
+			]
+		);
 	}
 
 	/**
