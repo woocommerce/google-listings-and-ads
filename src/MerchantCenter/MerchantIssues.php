@@ -152,15 +152,14 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 		$issues = [];
 		foreach ( $this->issue_query->get_results() as $row ) {
-			$details = json_decode( $row['details'], true );
-			$issue   = [
+			$issue = [
 				'type'        => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
 				'product_id'  => intval( $row['product_id'] ),
-				'product'     => $details['product'],
+				'product'     => $row['product'],
 				'issue'       => $row['issue'],
 				'code'        => $row['code'],
-				'action'      => $details['action'],
-				'action_link' => $details['action_link'],
+				'action'      => $row['action'],
+				'action_url' => $row['action_url'],
 			];
 			if ( $issue['product_id'] ) {
 				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
@@ -208,7 +207,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'code'        => $issue->getId(),
 				'issue'       => $issue->getTitle(),
 				'action'      => __( 'Read more about this account issue', 'google-listings-and-ads' ),
-				'action_link' => $issue->getDocumentation(),
+				'action_url' => $issue->getDocumentation(),
 			];
 		}
 		return $account_issues;
@@ -253,7 +252,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 						'code'                 => $item_level_issue->getCode(),
 						'issue'                => $item_level_issue->getDescription(),
 						'action'               => $item_level_issue->getDetail(),
-						'action_link'          => $item_level_issue->getDocumentation(),
+						'action_url'          => $item_level_issue->getDocumentation(),
 						'applicable_countries' => $item_level_issue->getApplicableCountries(),
 					];
 				}
@@ -287,14 +286,10 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 					'product_id'           => $i['product_id'] ?? 0,
 					'code'                 => $i['code'],
 					'issue'                => $i['issue'],
+					'product'              => $i['product'],
+					'action'               => $i['action'],
+					'action_url'          => $i['action_url'],
 					'applicable_countries' => isset( $i['applicable_countries'] ) ? json_encode( $i['applicable_countries'] ) : '',
-					'details'              => json_encode(
-						[
-							'product'     => $i['product'],
-							'action'      => $i['action'],
-							'action_link' => $i['action_link'],
-						]
-					),
 				]
 			);
 		}
