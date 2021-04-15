@@ -110,7 +110,7 @@ const FormContent = ( props ) => {
 								</AppRadioContentControl>
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }
-									collapsible="true"
+									collapsible={ true }
 									label={ __(
 										'Selected countries only',
 										'google-listings-and-ads'
