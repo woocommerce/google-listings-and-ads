@@ -329,8 +329,6 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @return array|Response The newly created (or pre-existing) Merchant ID or the retry delay.
 	 * @throws Exception If an error occurs during any step.
-	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
-	 * @todo Include request+approve account linking process.
 	 */
 	protected function setup_merchant_account() {
 		$state       = $this->account_state->get();
