@@ -157,6 +157,23 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Get the number of results returned by the query.
+	 *
+	 * @return int
+	 */
+	public function get_count(): int {
+		if ( null === $this->results ) {
+			$count = $this->wpdb->get_results(
+				$this->build_query( true ), // phpcs:ignore WordPress.DB.PreparedSQL
+				ARRAY_N
+			);
+			return intval( $count[0][0] ?? 0 );
+		}
+
+		return count( $this->results );
+	}
+
+	/**
 	 * Gets the first result of the query.
 	 *
 	 * @return array
@@ -255,13 +272,18 @@ abstract class Query implements QueryInterface {
 	/**
 	 * Build the query and return the query string.
 	 *
+	 * @param bool $get_count False to build a normal query, true to build a COUNT(*) query.
+	 *
 	 * @return string
 	 */
-	protected function build_query(): string {
-		$pieces = [ "SELECT * FROM {$this->table->get_name()}" ];
+	protected function build_query( bool $get_count = false ): string {
+		$pieces = [ 'SELECT ' . ( $get_count ? 'COUNT(*)' : '*' ) . " FROM {$this->table->get_name()}" ];
+
 		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
 
-		$pieces[] = "GROUP BY {$this->table->get_name()}.{$this->table->get_primary_column()}";
+		if ( ! $get_count ) {
+			$pieces[] = "GROUP BY {$this->table->get_name()}.{$this->table->get_primary_column()}";
+		}
 
 		if ( $this->orderby ) {
 			$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
