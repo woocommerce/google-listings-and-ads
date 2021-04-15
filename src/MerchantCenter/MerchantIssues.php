@@ -111,8 +111,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			$this->refresh_cache();
 		}
 
-		$issues = $this->fetch_cached_issues( $type, $per_page, $page );
-		return array_values( $issues );
+		return $this->fetch_cached_issues( $type, $per_page, $page );
 	}
 
 	/**
@@ -126,7 +125,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @return array|null
 	 */
 	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): array {
-		// Filter in query.
+		// Filter by type.
 		if ( $this->is_valid_type( $type ) ) {
 			$this->issue_query->where(
 				'product_id',
@@ -135,7 +134,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			);
 		}
 
-		// Pagination in query.
+		// Result pagination.
 		if ( $per_page > 0 ) {
 			$this->issue_query->set_limit( $per_page );
 			$this->issue_query->set_offset( $per_page * ( $page - 1 ) );
@@ -160,7 +159,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			array_push( $issues, $issue );
 		}
 
-		return $issues;
+		return array_values( $issues );
 	}
 
 	/**
@@ -176,10 +175,16 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 		$this->refresh_account_issues();
 		$this->refresh_product_issues();
+
 		$delete_before = clone $this->current_time;
 		$delete_before->modify( '-' . $this->get_issues_lifetime() . ' seconds' );
 		$this->issue_query->delete_stale( $delete_before );
-		$this->transients->set( TransientsInterface::MC_ISSUES_CREATED_AT, $this->current_time->getTimestamp(), $this->get_issues_lifetime() );
+
+		$this->transients->set(
+			TransientsInterface::MC_ISSUES_CREATED_AT,
+			$this->current_time->getTimestamp(),
+			$this->get_issues_lifetime()
+		);
 	}
 
 	/**
@@ -213,6 +218,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		$product_helper = $this->container->get( ProductHelper::class );
 
 		$product_issues = [];
+		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
 		foreach ( $this->merchant->get_productstatuses() as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
@@ -243,26 +249,24 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 						'action'               => $item_level_issue->getDetail(),
 						'action_url'           => $item_level_issue->getDocumentation(),
 						'applicable_countries' => $item_level_issue->getApplicableCountries(),
+						'created_at'           => $created_at,
 					];
 				}
 			}
 		}
 
-		// Product issue cleanup (sorting and unique), plus alphabetize applicable_countries..
+		// Product issue cleanup: sorting (by product ID) and sort applicable countries.
 		ksort( $product_issues );
-		$product_issues = array_unique( array_values( $product_issues ), SORT_REGULAR );
-
-		$this->issue_query->update_or_insert(
-			array_map(
-				function( $issue ) {
-					sort( $issue['applicable_countries'] );
-					$issue['applicable_countries'] = json_encode( $issue['applicable_countries'] );
-					$issue['created_at']           = $this->current_time->format( 'Y-m-d H:i:s' );
-					return $issue;
-				},
-				$product_issues
-			)
+		$product_issues = array_map(
+			function( $issue ) {
+				sort( $issue['applicable_countries'] );
+				$issue['applicable_countries'] = json_encode( $issue['applicable_countries'] );
+				return $issue;
+			},
+			$product_issues
 		);
+
+		$this->issue_query->update_or_insert( array_values( $product_issues ) );
 	}
 
 	/**

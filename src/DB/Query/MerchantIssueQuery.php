@@ -50,7 +50,7 @@ class MerchantIssueQuery extends Query {
 		}
 
 		$update_values = [];
-		$columns       = array_keys( $issues[0] );
+		$columns       = array_keys( reset( $issues ) );
 		foreach ( $columns as $c ) {
 			$update_values[] = "`$c`=VALUES(`$c`)";
 		}
