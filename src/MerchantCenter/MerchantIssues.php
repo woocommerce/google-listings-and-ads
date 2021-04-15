@@ -80,7 +80,18 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function count( string $type = null ): int {
-		return count( $this->get( $type ) );
+		/** @var MerchantIssueQuery $count_query */
+		$count_query = $this->container->get( MerchantIssueQuery::class );
+
+		if ( $this->is_valid_type( $type ) ) {
+			$count_query->where(
+				'product_id',
+				0,
+				self::TYPE_ACCOUNT === $type ? '=' : '>'
+			);
+		}
+
+		return $count_query->get_count();
 	}
 
 	/**
@@ -96,34 +107,11 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function get( string $type = null, int $per_page = 0, int $page = 1 ): array {
-		$issues = $this->fetch_cached_issues( $type, $per_page, $page );
-
-		if ( is_null( $issues ) ) {
-			$issues = $this->refresh_cache();
-
-			// Filter by issue type.
-			if ( $type ) {
-				if ( ! $this->is_valid_type( $type ) ) {
-					throw new Exception( 'Unknown filter type ' . $type );
-				}
-				$issues = array_filter(
-					$issues,
-					function( $i ) use ( $type ) {
-						return $type === $i['type'];
-					}
-				);
-			}
-
-			// Paginate the results.
-			if ( $per_page > 0 ) {
-				$issues = array_slice(
-					$issues,
-					$per_page * ( max( 1, $page ) - 1 ),
-					$per_page
-				);
-			}
+		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT ) ) {
+			$this->refresh_cache();
 		}
 
+		$issues = $this->fetch_cached_issues( $type, $per_page, $page );
 		return array_values( $issues );
 	}
 
@@ -137,11 +125,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 *
 	 * @return array|null
 	 */
-	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): ?array {
-		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT ) ) {
-			return null;
-		}
-
+	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): array {
 		// Filter in query.
 		if ( $this->is_valid_type( $type ) ) {
 			$this->issue_query->where(
@@ -182,50 +166,49 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	/**
 	 * Recalculate the account issues and update the DB transient.
 	 *
-	 * @returns array The recalculated account issues.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	protected function refresh_cache(): array {
+	protected function refresh_cache(): void {
 		// Save a request if no MC account connected.
 		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-		$issues = array_merge( $this->retrieve_account_issues(), $this->retrieve_product_issues() );
-
-		// Refresh the cache and the validation transient.
-		$this->update_database( $issues );
-		$this->transients->set( TransientsInterface::MC_ISSUES_CREATED_AT, time(), $this->get_issues_lifetime() );
-		return $issues;
+		$this->refresh_account_issues();
+		$this->refresh_product_issues();
+		$delete_before = clone $this->current_time;
+		$delete_before->modify( '-' . $this->get_issues_lifetime() . ' seconds' );
+		$this->issue_query->delete_stale( $delete_before );
+		$this->transients->set( TransientsInterface::MC_ISSUES_CREATED_AT, $this->current_time->getTimestamp(), $this->get_issues_lifetime() );
 	}
 
 	/**
-	 * Retrieve and prepare all account-level issues for the Merchant Center account.
+	 * Retrieve all account-level issues and store them in the database.
 	 *
-	 * @return array Account-level issues.
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	private function retrieve_account_issues(): array {
+	private function refresh_account_issues(): void {
 		$account_issues = [];
 		foreach ( $this->merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [
-				'type'       => self::TYPE_ACCOUNT,
+				'product_id' => 0,
 				'product'    => __( 'All products', 'google-listings-and-ads' ),
 				'code'       => $issue->getId(),
 				'issue'      => $issue->getTitle(),
 				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
 				'action_url' => $issue->getDocumentation(),
+				'created_at' => $this->current_time->format( 'Y-m-d H:i:s' ),
+
 			];
 		}
-		return $account_issues;
+
+		$this->issue_query->update_or_insert( $account_issues );
 	}
 
 	/**
-	 * Retrieve and prepare all product-level issues for the Merchant Center account.
-	 *
-	 * @return array Unique product issues sorted by product id.
+	 * Retrieve all product-level issues and store them in the database.
 	 */
-	private function retrieve_product_issues(): array {
+	private function refresh_product_issues(): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
@@ -239,7 +222,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			}
 
 			$product_issue_template = [
-				'type'       => self::TYPE_PRODUCT,
 				'product'    => $product->getTitle(),
 				'product_id' => $wc_product_id,
 			];
@@ -270,36 +252,17 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		ksort( $product_issues );
 		$product_issues = array_unique( array_values( $product_issues ), SORT_REGULAR );
 
-		return array_map(
-			function( $issue ) {
-				sort( $issue['applicable_countries'] );
-				return $issue;
-			},
-			$product_issues
+		$this->issue_query->update_or_insert(
+			array_map(
+				function( $issue ) {
+					sort( $issue['applicable_countries'] );
+					$issue['applicable_countries'] = json_encode( $issue['applicable_countries'] );
+					$issue['created_at']           = $this->current_time->format( 'Y-m-d H:i:s' );
+					return $issue;
+				},
+				$product_issues
+			)
 		);
-	}
-
-	/**
-	 * Store issues in the database.
-	 *
-	 * @param array $issues Prepared Merchant Center issues.
-	 */
-	protected function update_database( array $issues ): void {
-		$this->container->get( MerchantIssueTable::class )->truncate();
-
-		foreach ( $issues as $i ) {
-			$this->issue_query->insert(
-				[
-					'product_id'           => $i['product_id'] ?? 0,
-					'code'                 => $i['code'],
-					'issue'                => $i['issue'],
-					'product'              => $i['product'],
-					'action'               => $i['action'],
-					'action_url'           => $i['action_url'],
-					'applicable_countries' => isset( $i['applicable_countries'] ) ? json_encode( $i['applicable_countries'] ) : '',
-				]
-			);
-		}
 	}
 
 	/**
