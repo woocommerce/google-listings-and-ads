@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use DateTime;
 use Exception;
 
 /**
@@ -52,6 +53,11 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	protected $issue_query;
 
 	/**
+	 * @var DateTime $current_time For cache age operations.
+	 */
+	protected $current_time;
+
+	/**
 	 * MerchantIssues constructor.
 	 *
 	 * @param TransientsInterface $transients
@@ -59,9 +65,10 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @param MerchantIssueQuery  $issue_query
 	 */
 	public function __construct( TransientsInterface $transients, Merchant $merchant, MerchantIssueQuery $issue_query ) {
-		$this->transients  = $transients;
-		$this->merchant    = $merchant;
-		$this->issue_query = $issue_query;
+		$this->transients   = $transients;
+		$this->merchant     = $merchant;
+		$this->issue_query  = $issue_query;
+		$this->current_time = new DateTime();
 	}
 
 	/**
