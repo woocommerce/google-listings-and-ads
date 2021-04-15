@@ -617,6 +617,14 @@ export function* updateAdsCampaign( id, data ) {
 	}
 }
 
+export function receiveReport( reportKey, data ) {
+	return {
+		type: TYPES.RECEIVE_REPORT,
+		reportKey,
+		data,
+	};
+}
+
 // TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
 export function* upsertShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;

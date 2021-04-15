@@ -29,6 +29,7 @@ const DEFAULT_STATE = {
 	},
 	ads_campaigns: null,
 	mc_setup: null,
+	report: {},
 };
 
 const getNextStateForShipping = ( state ) => {
@@ -243,6 +244,17 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				mc_setup: action.mcSetup,
 			};
 			return newState;
+		}
+
+		case TYPES.RECEIVE_REPORT: {
+			const { reportKey, data } = action;
+			return {
+				...state,
+				report: {
+					...state.report,
+					[ reportKey ]: data,
+				},
+			};
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

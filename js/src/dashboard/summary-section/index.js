@@ -3,11 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { SummaryNumber } from '@woocommerce/components';
+import CurrencyFactory from '@woocommerce/currency';
+import { numberFormat } from '@woocommerce/number';
 
 /**
  * Internal dependencies
  */
 import { glaData } from '.~/constants';
+import usePerformance from './usePerformance';
 import AppSpinner from '.~/components/app-spinner';
 import SummaryCard from './summary-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
@@ -18,17 +21,16 @@ const paidPerformanceTitle = __(
 	'woocommerce-admin'
 );
 
+// Note: Since the `delta` prop of SummaryNumber component wouldn't apply the WC Settings' currency options,
+//       it uses '.' as the decimal separator when transforming to percentage format.
+//       In order to keep the format consistency of number and currency in the same block,
+//       the WC Settings' currency options are not applied in this SummarySection component.
+// ref: https://github.com/woocommerce/woocommerce-admin/blob/v1.6.0/packages/components/src/summary/number.js#L133-L136
+const formatNumber = ( number ) => numberFormat( { precision: 0 }, number );
+const { formatAmount } = CurrencyFactory();
+
 const FreePerformanceCard = () => {
-	// TODO: loading and data should come from backend API.
-	const loading = false;
-	const data = {
-		freeListing: {
-			clicks: {
-				value: '$1203.58',
-				delta: 50,
-			},
-		},
-	};
+	const { data, loading } = usePerformance( 'free' );
 
 	return (
 		<SummaryCard
@@ -41,8 +43,9 @@ const FreePerformanceCard = () => {
 					<SummaryNumber
 						key="1"
 						label={ __( 'Clicks', 'google-listings-and-ads' ) }
-						value={ data.freeListing.clicks.value }
-						delta={ data.freeListing.clicks.delta }
+						value={ formatNumber( data.clicks.value ) }
+						prevValue={ formatNumber( data.clicks.prevValue ) }
+						delta={ data.clicks.delta }
 					/>,
 					<SummaryNumber
 						key="2"
@@ -57,20 +60,7 @@ const FreePerformanceCard = () => {
 };
 
 const PaidPerformanceCard = () => {
-	// TODO: loading and data should come from backend API.
-	const loading = false;
-	const data = {
-		paidCampaigns: {
-			sales: {
-				value: '$8502.15',
-				delta: 3.35,
-			},
-			spend: {
-				value: '$600.00',
-				delta: -1.97,
-			},
-		},
-	};
+	const { data, loading } = usePerformance( 'paid' );
 
 	return (
 		<SummaryCard title={ paidPerformanceTitle }>
@@ -81,14 +71,16 @@ const PaidPerformanceCard = () => {
 					<SummaryNumber
 						key="1"
 						label={ __( 'Total Sales', 'google-listings-and-ads' ) }
-						value={ data.paidCampaigns.sales.value }
-						delta={ data.paidCampaigns.sales.delta }
+						value={ formatAmount( data.sales.value ) }
+						prevValue={ formatAmount( data.sales.prevValue ) }
+						delta={ data.sales.delta }
 					/>,
 					<SummaryNumber
 						key="2"
 						label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-						value={ data.paidCampaigns.spend.value }
-						delta={ data.paidCampaigns.spend.delta }
+						value={ formatAmount( data.spend.value ) }
+						prevValue={ formatAmount( data.spend.prevValue ) }
+						delta={ data.spend.delta }
 					/>,
 				]
 			) }
