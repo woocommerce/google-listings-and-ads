@@ -74,7 +74,7 @@ abstract class Table implements TableInterface {
 	 *
 	 * @return string
 	 */
-	protected function get_sql_safe_name(): string {
+	public function get_sql_safe_name(): string {
 		return $this->wpdb->_escape( $this->get_name() );
 	}
 
