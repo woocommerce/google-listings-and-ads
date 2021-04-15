@@ -9,6 +9,7 @@ import TaxRate from '.~/components/free-listings/configure-product-listings/tax-
 import PreLaunchChecklist from './pre-launch-checklist';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
  * Form to configure free listings.
@@ -20,7 +21,8 @@ import useDisplayTaxRate from '.~/components/free-listings/configure-product-lis
 const FormContent = ( props ) => {
 	const { formProps, submitButton } = props;
 	const { values } = formProps;
-	const displayTaxRate = useDisplayTaxRate();
+	const { data: audienceCountries } = useTargetAudienceFinalCountryCodes();
+	const displayTaxRate = useDisplayTaxRate( audienceCountries );
 
 	useAutoSaveSettingsEffect( values );
 

@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
-import { shouldDisplayTaxRate } from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
+import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import CombinedShipping from '.~/components/free-listings/configure-product-listings/combined-shipping';
 import AppButton from '.~/components/app-button';
 
@@ -35,7 +35,8 @@ const FormContent = ( {
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
 	const { errors, handleSubmit } = formProps;
-	const displayTaxRate = shouldDisplayTaxRate( countries );
+
+	const displayTaxRate = useDisplayTaxRate( countries );
 
 	const isCompleteSetupDisabled = Object.keys( errors ).length >= 1;
 
