@@ -29,7 +29,6 @@ const CreateAccount = ( props ) => {
 		try {
 			const res = await fetchCreateMCAccount( { parse: false } );
 			const data = await res.json();
-
 			receiveMCAccount( data );
 		} catch ( e ) {
 			if ( e.status === 406 ) {

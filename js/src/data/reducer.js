@@ -28,6 +28,7 @@ const DEFAULT_STATE = {
 		},
 	},
 	ads_campaigns: null,
+	mc_setup: null,
 };
 
 const getNextStateForShipping = ( state ) => {
@@ -212,6 +213,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const newState = {
 				...state,
 				ads_campaigns: action.adsCampaigns,
+			};
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_SETUP: {
+			const newState = {
+				...state,
+				mc_setup: action.mcSetup,
 			};
 			return newState;
 		}

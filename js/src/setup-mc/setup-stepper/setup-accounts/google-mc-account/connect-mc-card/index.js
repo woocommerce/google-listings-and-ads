@@ -37,7 +37,6 @@ const ConnectMCCard = ( props ) => {
 		}
 
 		const data = await fetchMCAccounts();
-
 		receiveMCAccount( data );
 	};
 
