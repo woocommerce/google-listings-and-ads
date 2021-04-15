@@ -128,14 +128,9 @@ class IssuesController extends BaseOptionsController {
 							'description' => __( 'Descriptive text of action to take.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'action_link'          => [
+						'action_url'           => [
 							'type'        => 'string',
 							'description' => __( 'Documentation URL for issue and/or action.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'edit_link'            => [
-							'type'        => 'string',
-							'description' => __( 'Link to affected product edit page.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
 						'applicable_countries' => [
