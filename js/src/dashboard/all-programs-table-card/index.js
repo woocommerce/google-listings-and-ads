@@ -9,7 +9,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  */
 import AppTableCard from '.~/components/app-table-card';
 import RemoveProgramButton from './remove-program-button';
-import EditProgramLink from './edit-program-link';
+import EditProgramButton from './edit-program-button';
 import './index.scss';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
@@ -125,7 +125,7 @@ const AllProgramsTableCard = ( props ) => {
 					{
 						display: (
 							<div className="program-actions">
-								<EditProgramLink programId={ el.id } />
+								<EditProgramButton programId={ el.id } />
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />
 								) }
