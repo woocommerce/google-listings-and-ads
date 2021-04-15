@@ -58,20 +58,24 @@ class MerchantIssueQuery extends Query {
 			$this->validate_column( $c );
 			$update_values[] = "`$c`=VALUES(`$c`)";
 		}
+
 		$single_placeholder = '(' . implode( ',', array_fill( 0, count( $columns ), "'%s'" ) ) . ')';
+		$chunk_size         = 200;
+		$num_issues         = count( $issues );
+		for ( $i = 0; $i < $num_issues; $i += $chunk_size ) {
+			$all_values       = [];
+			$all_placeholders = [];
+			foreach ( array_slice( $issues, $i, $chunk_size ) as $issue ) {
+				$all_placeholders[] = $single_placeholder;
+				array_push( $all_values, ...array_values( $issue ) );
+			}
 
-		$all_values       = [];
-		$all_placeholders = [];
-		foreach ( $issues as $i ) {
-			$all_placeholders[] = $single_placeholder;
-			array_push( $all_values, ...array_values( $i ) );
+			$query  = 'INSERT INTO ' . $this->table->get_sql_safe_name() . ' (`' . implode( '`, `', $columns ) . '`) VALUES ';
+			$query .= implode( ', ', $all_placeholders );
+			$query .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $update_values );
+
+			$this->wpdb->query( $this->wpdb->prepare( $query, $all_values ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 		}
-
-		$query  = 'INSERT INTO ' . $this->table->get_sql_safe_name() . ' (`' . implode( '`, `', $columns ) . '`) VALUES ';
-		$query .= implode( ', ', $all_placeholders );
-		$query .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $update_values );
-
-		$this->wpdb->query( $this->wpdb->prepare( $query, $all_values ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**
