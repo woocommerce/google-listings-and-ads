@@ -153,12 +153,12 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		$issues = [];
 		foreach ( $this->issue_query->get_results() as $row ) {
 			$issue = [
-				'type'        => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
-				'product_id'  => intval( $row['product_id'] ),
-				'product'     => $row['product'],
-				'issue'       => $row['issue'],
-				'code'        => $row['code'],
-				'action'      => $row['action'],
+				'type'       => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
+				'product_id' => intval( $row['product_id'] ),
+				'product'    => $row['product'],
+				'issue'      => $row['issue'],
+				'code'       => $row['code'],
+				'action'     => $row['action'],
 				'action_url' => $row['action_url'],
 			];
 			if ( $issue['product_id'] ) {
@@ -202,11 +202,11 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		$account_issues = [];
 		foreach ( $this->merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [
-				'type'        => self::TYPE_ACCOUNT,
-				'product'     => __( 'All products', 'google-listings-and-ads' ),
-				'code'        => $issue->getId(),
-				'issue'       => $issue->getTitle(),
-				'action'      => __( 'Read more about this account issue', 'google-listings-and-ads' ),
+				'type'       => self::TYPE_ACCOUNT,
+				'product'    => __( 'All products', 'google-listings-and-ads' ),
+				'code'       => $issue->getId(),
+				'issue'      => $issue->getTitle(),
+				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
 				'action_url' => $issue->getDocumentation(),
 			];
 		}
@@ -252,7 +252,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 						'code'                 => $item_level_issue->getCode(),
 						'issue'                => $item_level_issue->getDescription(),
 						'action'               => $item_level_issue->getDetail(),
-						'action_url'          => $item_level_issue->getDocumentation(),
+						'action_url'           => $item_level_issue->getDocumentation(),
 						'applicable_countries' => $item_level_issue->getApplicableCountries(),
 					];
 				}
@@ -288,7 +288,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 					'issue'                => $i['issue'],
 					'product'              => $i['product'],
 					'action'               => $i['action'],
-					'action_url'          => $i['action_url'],
+					'action_url'           => $i['action_url'],
 					'applicable_countries' => isset( $i['applicable_countries'] ) ? json_encode( $i['applicable_countries'] ) : '',
 				]
 			);

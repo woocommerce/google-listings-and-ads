@@ -32,7 +32,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     `action` varchar(100) NOT NULL,
     `action_url` varchar(100) NOT NULL,
     `applicable_countries` text NOT NULL,
-    `created_at` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `created_at` datetime on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY `id` (`id`),
     UNIQUE `product_issue` (`product_id`, `issue`)
 ) {$this->get_collation()};
