@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -16,7 +17,6 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import BetaSwitchUrlCard from '../beta-switch-url-card';
 import BetaReclaimUrlCard from '../beta-reclaim-url-card';
-import AppTextButton from '.~/components/app-text-button';
 
 const ConnectMCCard = ( props ) => {
 	const { onCreateNew = () => {} } = props;
@@ -92,16 +92,12 @@ const ConnectMCCard = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<AppTextButton
-					disabled={ loading }
-					isSecondary
-					onClick={ onCreateNew }
-				>
+				<Button disabled={ loading } isLink onClick={ onCreateNew }>
 					{ __(
 						'Or, create a new Merchant Center account',
 						'google-listings-and-ads'
 					) }
-				</AppTextButton>
+				</Button>
 			</Section.Card.Footer>
 		</Section.Card>
 	);
