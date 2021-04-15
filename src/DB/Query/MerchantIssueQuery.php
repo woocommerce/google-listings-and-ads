@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\DB\Query;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidQuery;
 use DateTime;
 use wpdb;
 
@@ -43,6 +44,8 @@ class MerchantIssueQuery extends Query {
 	 * Batch update or insert a set of merchant issues.
 	 *
 	 * @param array $issues The issues to be updated or inserted.
+	 *
+	 * @throws InvalidQuery If an invalid column name is provided.
 	 */
 	public function update_or_insert( array $issues ) {
 		if ( empty( $issues ) ) {
@@ -52,6 +55,7 @@ class MerchantIssueQuery extends Query {
 		$update_values = [];
 		$columns       = array_keys( reset( $issues ) );
 		foreach ( $columns as $c ) {
+			$this->validate_column( $c );
 			$update_values[] = "`$c`=VALUES(`$c`)";
 		}
 		$single_placeholder = '(' . implode( ',', array_fill( 0, count( $columns ), "'%s'" ) ) . ')';
