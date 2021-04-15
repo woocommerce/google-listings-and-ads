@@ -12,7 +12,7 @@ import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AudienceCountrySelect from '.~/components/audience-country-select';
+import AppCountrySelect from '.~/components/app-country-select';
 
 /**
  * Form to add a new rate for selected country(-ies).
@@ -80,7 +80,8 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AudienceCountrySelect
+								<AppCountrySelect
+									options={ countries }
 									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>

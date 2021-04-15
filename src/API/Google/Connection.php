@@ -124,6 +124,6 @@ class Connection {
 	 * @return string
 	 */
 	protected function get_connection_url(): string {
-		return "{$this->container->get( 'connect_server_root' )}connection/google-mc";
+		return "{$this->container->get( 'connect_server_root' )}google/connection/google-mc";
 	}
 }

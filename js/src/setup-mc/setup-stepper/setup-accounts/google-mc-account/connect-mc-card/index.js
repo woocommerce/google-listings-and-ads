@@ -14,8 +14,8 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import SwitchUrlCard from '../switch-url-card';
-import ReclaimUrlCard from '../reclaim-url-card';
+import BetaSwitchUrlCard from '../beta-switch-url-card';
+import BetaReclaimUrlCard from '../beta-reclaim-url-card';
 import AppTextButton from '.~/components/app-text-button';
 
 const ConnectMCCard = ( props ) => {
@@ -37,7 +37,6 @@ const ConnectMCCard = ( props ) => {
 		}
 
 		const data = await fetchMCAccounts();
-
 		receiveMCAccount( data );
 	};
 
@@ -47,7 +46,10 @@ const ConnectMCCard = ( props ) => {
 
 	if ( response && response.status === 409 ) {
 		return (
-			<SwitchUrlCard
+			// TODO: Use the BetaSwitchUrlCard for beta testing purpose only.
+			// To switch back to SwitchUrlCard for production roll out.
+			// <SwitchUrlCard
+			<BetaSwitchUrlCard
 				id={ error.id }
 				message={ error.message }
 				claimedUrl={ error.claimed_url }
@@ -58,7 +60,10 @@ const ConnectMCCard = ( props ) => {
 	}
 
 	if ( response && response.status === 403 ) {
-		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
+		// TODO: Use the BetaReclaimUrlCard for beta testing purpose only.
+		// To switch back to ReclaimUrlCard for production roll out.
+		// return <ReclaimUrlCard websiteUrl={ error.website_url } />;
+		return <BetaReclaimUrlCard websiteUrl={ error.website_url } />;
 	}
 
 	return (

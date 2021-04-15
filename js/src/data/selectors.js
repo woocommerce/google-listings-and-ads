@@ -49,3 +49,7 @@ export const getTargetAudience = ( state ) => {
 export const getAdsCampaigns = ( state ) => {
 	return state.ads_campaigns;
 };
+
+export const getMCSetup = ( state ) => {
+	return state.mc_setup;
+};

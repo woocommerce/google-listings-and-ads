@@ -10,7 +10,7 @@ import { useAppDispatch } from '.~/data';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import CreateAccountCard from './create-account-card';
 import CreatingCard from './creating-card';
-import ReclaimUrlCard from '../reclaim-url-card';
+import BetaReclaimUrlCard from '../beta-reclaim-url-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const CreateAccount = ( props ) => {
@@ -29,7 +29,6 @@ const CreateAccount = ( props ) => {
 		try {
 			const res = await fetchCreateMCAccount( { parse: false } );
 			const data = await res.json();
-
 			receiveMCAccount( data );
 		} catch ( e ) {
 			if ( e.status === 406 ) {
@@ -57,7 +56,10 @@ const CreateAccount = ( props ) => {
 	}
 
 	if ( response && response.status === 403 ) {
-		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
+		// TODO: Use the BetaReclaimUrlCard for beta testing purpose only.
+		// To switch back to ReclaimUrlCard for production roll out.
+		// return <ReclaimUrlCard websiteUrl={ error.website_url } />;
+		return <BetaReclaimUrlCard websiteUrl={ error.website_url } />;
 	}
 
 	return (

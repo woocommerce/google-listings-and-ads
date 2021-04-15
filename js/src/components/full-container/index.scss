@@ -2,8 +2,7 @@
 	.woocommerce-layout {
 		padding-top: 0;
 
-		// Hide Header, TransientNotices, and StoreAlerts.
-		.woocommerce-transient-notices,
+		// Hide Header and StoreAlerts.
 		.woocommerce-layout__header,
 		.woocommerce-store-alerts,
 		.woocommerce-layout__notice-list {

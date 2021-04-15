@@ -3,6 +3,7 @@
  */
 import { Stepper } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -11,36 +12,38 @@ import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from './choose-audience';
-import usePageStep from './usePageStep';
 import './index.scss';
+import stepNameKeyMap from './stepNameKeyMap';
 
 const SavedSetupStepper = ( props ) => {
-	const { savedStep } = props;
-	const { pageStep, updatePageStep } = usePageStep( savedStep );
+	const { savedStep, onRefetchSavedStep = () => {} } = props;
+	const [ step, setStep ] = useState( savedStep );
 
 	const handleSetupAccountsContinue = () => {
 		recordSetupMCEvent( 'step1_continue' );
-		updatePageStep( '2' );
+		setStep( stepNameKeyMap.target_audience );
+		onRefetchSavedStep();
 	};
 
 	const handleChooseAudienceContinue = () => {
 		recordSetupMCEvent( 'step2_continue' );
-		updatePageStep( '3' );
+		setStep( stepNameKeyMap.shipping_and_taxes );
+		onRefetchSavedStep();
 	};
 
-	const handleStepClick = ( key ) => {
-		if ( parseInt( key, 10 ) <= parseInt( savedStep, 10 ) ) {
-			updatePageStep( key );
+	const handleStepClick = ( stepKey ) => {
+		if ( stepKey <= savedStep ) {
+			setStep( stepKey );
 		}
 	};
 
 	return (
 		<Stepper
 			className="gla-setup-stepper"
-			currentStep={ pageStep }
+			currentStep={ step }
 			steps={ [
 				{
-					key: '1',
+					key: stepNameKeyMap.accounts,
 					label: __(
 						'Set up your accounts',
 						'google-listings-and-ads'
@@ -53,7 +56,7 @@ const SavedSetupStepper = ( props ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: '2',
+					key: stepNameKeyMap.target_audience,
 					label: __(
 						'Choose your audience',
 						'google-listings-and-ads'
@@ -66,7 +69,7 @@ const SavedSetupStepper = ( props ) => {
 					onClick: handleStepClick,
 				},
 				{
-					key: '3',
+					key: stepNameKeyMap.shipping_and_taxes,
 					label: __(
 						'Configure your product listings',
 						'google-listings-and-ads'

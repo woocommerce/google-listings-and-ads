@@ -10,7 +10,7 @@ import './index.scss';
 
 /**
  * Make the wrapped component display in full container.
- * It workarounds WooCommerce-admin's navigation Container component, to display the child components on full pane, without Header, TransientNotices, and StoreAlerts.
+ * It workarounds WooCommerce-admin's navigation Container component, to display the child components on full pane, without Header and StoreAlerts.
  * Actually it does not wrap children elements, but forcefully change WooCommerce-admin layout, to make `.woocommerce-layout__main` occupy the full pane.
  *
  * ## Usage

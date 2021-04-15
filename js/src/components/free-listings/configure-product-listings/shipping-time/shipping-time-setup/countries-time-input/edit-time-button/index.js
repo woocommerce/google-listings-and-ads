@@ -16,11 +16,12 @@ import './index.scss';
  * form to edit time for selected country(-ies).
  *
  * @param {Object} props
+ * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
  * @param {AggregatedShippingTime} props.time
  * @param {(newTime: AggregatedShippingTime, deletedCountries: Array<CountryCode>) => void} props.onChange Called once the time is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
-const EditTimeButton = ( { time, onChange, onDelete } ) => {
+const EditTimeButton = ( { audienceCountries, time, onChange, onDelete } ) => {
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleClick = () => {
@@ -51,6 +52,7 @@ const EditTimeButton = ( { time, onChange, onDelete } ) => {
 			</Button>
 			{ isOpen && (
 				<EditTimeModal
+					audienceCountries={ audienceCountries }
 					time={ time }
 					onSubmit={ handleChange }
 					onDelete={ handleDelete }
