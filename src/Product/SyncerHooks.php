@@ -141,22 +141,21 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	 */
 	protected function handle_update_product( int $product_id ) {
 		$product = wc_get_product( $product_id );
+
+		// Bail if it's not a WooCommerce product.
 		if ( ! $product instanceof WC_Product || $this->already_scheduled( $product_id ) ) {
-			// bail if it's not a WooCommerce product.
 			return;
 		}
 
-		// schedule an update job if product sync is enabled.
+		// Schedule an update job if product sync is enabled.
 		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->product_helper->get_visibility( $product ) ) {
-			// queue the variations for update if it's a variable product.
-			$products = $product instanceof WC_Product_Variable ? $product->get_available_variations( 'objects' ) : [ $product ];
+			$product_ids = $this->get_product_ids_for_sync( $product );
 
-			$product_ids = array_map(
-				function ( WC_Product $product ) {
-					return $product->get_id();
-				},
-				$products
-			);
+			// Bail if we have no product IDs.
+			if ( empty( $product_ids ) ) {
+				return;
+			}
+
 			$this->update_products_job->start( [ $product_ids ] );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
@@ -207,5 +206,25 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	 */
 	protected function set_already_scheduled( int $product_id ): void {
 		$this->already_scheduled[ $product_id ] = true;
+	}
+
+	/**
+	 * Given a product, get an array of IDs that need to be synced.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return int[]
+	 */
+	protected function get_product_ids_for_sync( WC_Product $product ): array {
+		if ( ! $product instanceof WC_Product_Variable ) {
+			return [ $product->get_id() ];
+		}
+
+		return array_map(
+			function ( WC_Product $product ) {
+				return $product->get_id();
+			},
+			$product->get_available_variations( 'objects' )
+		);
 	}
 }
