@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState , cloneElement} from '@wordpress/element';
+import { useState, cloneElement } from '@wordpress/element';
 
 /**
  * A convenience component to glue button and modal together.
@@ -13,7 +13,7 @@ import { useState , cloneElement} from '@wordpress/element';
  * ## Usage
  *
  * ```js
- * <AppModalButton
+ * <AppButtonModalTrigger
 		button={
 			<AppTextButton>
 				Click to open MySuperModal
@@ -27,7 +27,7 @@ import { useState , cloneElement} from '@wordpress/element';
  * @param {Object} props.button Button component.
  * @param {Object} props.modal Modal component.
  */
-const AppModalButton = ( props ) => {
+const AppButtonModalTrigger = ( props ) => {
 	const { button, modal } = props;
 	const { onClick = () => {} } = button.props;
 	const { onRequestClose = () => {} } = modal.props;
@@ -45,10 +45,13 @@ const AppModalButton = ( props ) => {
 
 	return (
 		<>
-			{ cloneElement(button, { onClick: handleButtonClick }) }
-			{ isOpen && cloneElement(modal, { onRequestClose: handleModalRequestClose }) }
+			{ cloneElement( button, { onClick: handleButtonClick } ) }
+			{ isOpen &&
+				cloneElement( modal, {
+					onRequestClose: handleModalRequestClose,
+				} ) }
 		</>
 	);
 };
 
-export default AppModalButton;
+export default AppButtonModalTrigger;

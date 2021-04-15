@@ -8,13 +8,13 @@ import { __ } from '@wordpress/i18n';
  */
 import AppTextButton from '.~/components/app-text-button';
 import EditProgramPromptModal from './edit-program-prompt-modal';
-import AppModalButton from '.~/components/app-modal-button';
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 
 const EditProgramButton = ( props ) => {
 	const { programId } = props;
 
 	return (
-		<AppModalButton
+		<AppButtonModalTrigger
 			button={
 				<AppTextButton isSecondary>
 					{ __( 'Edit', 'google-listings-and-ads' ) }
