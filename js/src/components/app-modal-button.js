@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState , cloneElement} from '@wordpress/element';
 
 /**
  * A convenience component to glue button and modal together.
@@ -43,20 +43,10 @@ const AppModalButton = ( props ) => {
 		onRequestClose( ...args );
 	};
 
-	button.props = {
-		...button.props,
-		onClick: handleButtonClick,
-	};
-
-	modal.props = {
-		...modal.props,
-		onRequestClose: handleModalRequestClose,
-	};
-
 	return (
 		<>
-			{ button }
-			{ isOpen && modal }
+			{ cloneElement(button, { onClick: handleButtonClick }) }
+			{ isOpen && cloneElement(modal, { onRequestClose: handleModalRequestClose }) }
 		</>
 	);
 };
