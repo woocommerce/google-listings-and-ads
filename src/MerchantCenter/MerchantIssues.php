@@ -72,30 +72,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Get a count of the number of issues for the Merchant Center account.
-	 *
-	 * @param string|null $type To filter by issue type if desired.
-	 *
-	 * @return int The total number of issues.
-	 * @throws Exception If the account state can't be retrieved from Google.
-	 */
-	public function count( string $type = null ): int {
-		/** @var MerchantIssueQuery $count_query */
-		$count_query = $this->container->get( MerchantIssueQuery::class );
-
-		if ( $this->is_valid_type( $type ) ) {
-			$count_query->where(
-				'product_id',
-				0,
-				self::TYPE_ACCOUNT === $type ? '=' : '>'
-			);
-		}
-
-		return $count_query->get_count();
-	}
-
-	/**
-	 * Retrieve or initialize the mc_issues transient. Refresh if the issues have gone stale.
+	 * Retrieve the Merchant Center issues. Refresh if the cache issues have gone stale.
 	 * Issue details are reduced, and for products, grouped by type.
 	 * Issues can be filtered by type, searched by name or ID (if product type) and paginated.
 	 *
@@ -103,15 +80,14 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 * @param int         $per_page The number of issues to return (0 for no limit).
 	 * @param int         $page The page to start on (1-indexed).
 	 *
-	 * @return array The account- and product-level issues for the Merchant Center account.
+	 * @return array With two indices, results (may be paged) and count (considers type).
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	public function get( string $type = null, int $per_page = 0, int $page = 1 ): array {
 		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT ) ) {
 			$this->refresh_cache();
 		}
-
-		return $this->fetch_cached_issues( $type, $per_page, $page );
+		return $this->fetch_issue_data( $type, $per_page, $page );
 	}
 
 	/**
@@ -124,7 +100,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 *
 	 * @return array|null
 	 */
-	protected function fetch_cached_issues( string $type = null, int $per_page = 0, int $page = 1 ): array {
+	protected function fetch_issue_data( string $type = null, int $per_page = 0, int $page = 1 ): array {
 		// Ensure account issues are shown first.
 		$this->issue_query->set_order( 'product_id' );
 
@@ -159,10 +135,13 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 			} else {
 				unset( $issue['product_id'] );
 			}
-			array_push( $issues, $issue );
+			$issues[] = $issue;
 		}
 
-		return array_values( $issues );
+		return [
+			'results' => array_values( $issues ),
+			'count'   => $this->issue_query->get_count(),
+		];
 	}
 
 	/**

@@ -35,6 +35,13 @@ abstract class Query implements QueryInterface {
 	 */
 	protected $results = null;
 
+	/**
+	 * The number of rows returned by the query.
+	 *
+	 * @var int
+	 */
+	protected $num_rows = null;
+
 	/** @var TableInterface */
 	protected $table;
 
@@ -162,11 +169,11 @@ abstract class Query implements QueryInterface {
 	 * @return int
 	 */
 	public function get_count(): int {
-		if ( null === $this->results ) {
-			return intval( $this->wpdb->get_var( $this->build_query( true ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		if ( null === $this->num_rows ) {
+			$this->count_results(); // phpcs:ignore WordPress.DB.PreparedSQL
 		}
 
-		return count( $this->results );
+		return $this->num_rows;
 	}
 
 	/**
@@ -193,6 +200,13 @@ abstract class Query implements QueryInterface {
 			$this->build_query(), // phpcs:ignore WordPress.DB.PreparedSQL
 			ARRAY_A
 		);
+	}
+
+	/**
+	 * Count the results and save the result.
+	 */
+	protected function count_results() {
+		$this->num_rows = (int) $this->wpdb->get_var( $this->build_query( true ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**

@@ -69,10 +69,11 @@ class IssuesController extends BaseOptionsController {
 			$page        = max( 1, intval( $request['page'] ) );
 
 			try {
+				$issues = $this->mc_issues->get( $type_filter, $per_page, $page );
 				return $this->prepare_item_for_response(
 					[
-						'issues' => $this->mc_issues->get( $type_filter, $per_page, $page ),
-						'total'  => $this->mc_issues->count( $type_filter ),
+						'issues' => $issues['results'],
+						'total'  => $issues['count'],
 						'page'   => $page,
 					],
 					$request
