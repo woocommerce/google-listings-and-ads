@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table;
+use DateTime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -46,6 +47,16 @@ SQL;
 	 */
 	protected function get_raw_name(): string {
 		return 'merchant_issues';
+	}
+
+	/**
+	 * Delete stale issue records.
+	 *
+	 * @param DateTime $created_before Delete all records created before this.
+	 */
+	public function delete_stale( DateTime $created_before ) {
+		$query = "DELETE FROM `{$this->get_sql_safe_name()}` WHERE `created_at` < '%s'";
+		$this->wpdb->query( $this->wpdb->prepare( $query, $created_before->format( 'Y-m-d H:i:s' ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**

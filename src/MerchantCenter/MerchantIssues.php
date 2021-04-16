@@ -181,7 +181,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 
 		$delete_before = clone $this->current_time;
 		$delete_before->modify( '-' . $this->get_issues_lifetime() . ' seconds' );
-		$this->issue_query->delete_stale( $delete_before );
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $delete_before );
 
 		$this->transients->set(
 			TransientsInterface::MC_ISSUES_CREATED_AT,

@@ -440,11 +440,17 @@ abstract class Query implements QueryInterface {
 			$all_values       = [];
 			$all_placeholders = [];
 			foreach ( array_slice( $records, $i, $chunk_size ) as $issue ) {
+				if ( array_keys( $issue ) !== $columns ) {
+					throw new InvalidQuery( 'Not all records contain the same columns' );
+				}
 				$all_placeholders[] = $single_placeholder;
 				array_push( $all_values, ...array_values( $issue ) );
 			}
 
-			$query  = 'INSERT INTO ' . $this->table->get_sql_safe_name() . ' (`' . implode( '`, `', $columns ) . '`) VALUES ';
+			$table_name   = $this->wpdb->_escape( $this->table->get_name() );
+			$column_names = '(`' . implode( '`, `', $columns ) . '`)';
+
+			$query  = "INSERT INTO `{$table_name}` $column_names VALUES ";
 			$query .= implode( ', ', $all_placeholders );
 			$query .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $update_values );
 
