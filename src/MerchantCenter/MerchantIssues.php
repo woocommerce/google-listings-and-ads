@@ -72,9 +72,10 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Retrieve the Merchant Center issues. Refresh if the cache issues have gone stale.
+	 * Retrieve the Merchant Center issues and total count. Refresh if the cache issues have gone stale.
 	 * Issue details are reduced, and for products, grouped by type.
 	 * Issues can be filtered by type, searched by name or ID (if product type) and paginated.
+	 * Count takes into account the type filter, but not the pagination.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
 	 * @param int         $per_page The number of issues to return (0 for no limit).

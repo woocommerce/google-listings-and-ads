@@ -40,7 +40,7 @@ abstract class Query implements QueryInterface {
 	 *
 	 * @var int
 	 */
-	protected $num_rows = null;
+	protected $count = null;
 
 	/** @var TableInterface */
 	protected $table;
@@ -169,11 +169,11 @@ abstract class Query implements QueryInterface {
 	 * @return int
 	 */
 	public function get_count(): int {
-		if ( null === $this->num_rows ) {
+		if ( null === $this->count ) {
 			$this->count_results(); // phpcs:ignore WordPress.DB.PreparedSQL
 		}
 
-		return $this->num_rows;
+		return $this->count;
 	}
 
 	/**
@@ -206,7 +206,7 @@ abstract class Query implements QueryInterface {
 	 * Count the results and save the result.
 	 */
 	protected function count_results() {
-		$this->num_rows = (int) $this->wpdb->get_var( $this->build_query( true ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$this->count = (int) $this->wpdb->get_var( $this->build_query( true ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**
