@@ -1,14 +1,13 @@
 /**
  * External dependencies
  */
-import { ToggleControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
 import PauseProgramModal from './pause-program-modal';
-import './index.scss';
 import { useAppDispatch } from '.~/data';
+import AppStandaloneToggleControl from '.~/components/app-standalone-toggle-control';
 
 const ProgramToggle = ( props ) => {
 	const { program } = props;
@@ -37,8 +36,11 @@ const ProgramToggle = ( props ) => {
 	};
 
 	return (
-		<div className="gla-program-toggle">
-			<ToggleControl checked={ checked } onChange={ handleChange } />
+		<>
+			<AppStandaloneToggleControl
+				checked={ checked }
+				onChange={ handleChange }
+			/>
 			{ showModal && (
 				<PauseProgramModal
 					programId={ program.id }
@@ -46,7 +48,7 @@ const ProgramToggle = ( props ) => {
 					onRequestClose={ handleModalRequestClose }
 				/>
 			) }
-		</div>
+		</>
 	);
 };
 

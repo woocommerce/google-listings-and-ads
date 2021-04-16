@@ -1,0 +1,22 @@
+.app-standalone-toggle-control {
+	// this is to make the toggle displayed based on table column config.
+	// if the table column config says right-aligned, it will right-aligned.
+	display: inline-block;
+
+	// remove the margins specified in ToggleControl component.
+	.components-toggle-control {
+		.components-base-control__field {
+			margin-bottom: 0;
+
+			.components-form-toggle {
+				margin-right: 0;
+
+				// make the disabled toggle not swallow mouse events,
+				// so that tooltip (which depends on mouse events) works.
+				input[disabled] {
+					pointer-events: none;
+				}
+			}
+		}
+	}
+}
