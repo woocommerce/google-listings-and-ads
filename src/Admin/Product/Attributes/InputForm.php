@@ -56,6 +56,10 @@ class InputForm extends AbstractForm {
 			if ( ! $input instanceof Select && ! $input instanceof SelectWithTextInput ) {
 				return $this->init_input( new SelectWithTextInput(), $attribute );
 			}
+
+			// add a 'default' value option
+			$value_options = [ '' => 'Default' ] + $value_options;
+
 			$input->set_options( $value_options );
 		}
 

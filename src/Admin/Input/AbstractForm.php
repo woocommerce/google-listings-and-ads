@@ -60,7 +60,7 @@ abstract class AbstractForm implements FormInterface {
 				$data_key = sprintf( '%s_%s', $input->get_name(), SelectWithTextInput::CUSTOM_VALUE_KEY );
 			}
 
-			if ( ! empty( $data[ $data_key ] ) ) {
+			if ( isset( $data[ $data_key ] ) ) {
 				$input->set_value( $data[ $data_key ] );
 				$_data[ $data_key ] = $data[ $data_key ];
 			}

@@ -48,7 +48,7 @@ class SelectWithTextInput extends AbstractInput {
 	 * @return bool
 	 */
 	public function is_custom_value(): bool {
-		return empty( $this->get_value() ) || ! isset( $this->get_options()[ $this->get_value() ] );
+		return ! empty( $this->get_value() ) && ! isset( $this->get_options()[ $this->get_value() ] );
 	}
 
 	/**

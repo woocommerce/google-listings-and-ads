@@ -151,12 +151,12 @@ class TabInitializer implements Service, Registerable, Conditional {
 		$form_data = $form->get_data();
 
 		// gtin
-		if ( ! empty( $form_data[ GTIN::get_id() ] ) ) {
+		if ( isset( $form_data[ GTIN::get_id() ] ) ) {
 			$this->attribute_manager->update( $product_id, new GTIN( $form_data[ GTIN::get_id() ] ) );
 		}
 
 		// mpn
-		if ( ! empty( $form_data[ MPN::get_id() ] ) ) {
+		if ( isset( $form_data[ MPN::get_id() ] ) ) {
 			$this->attribute_manager->update( $product_id, new MPN( $form_data[ MPN::get_id() ] ) );
 		}
 	}
