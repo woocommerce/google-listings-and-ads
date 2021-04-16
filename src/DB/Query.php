@@ -163,11 +163,7 @@ abstract class Query implements QueryInterface {
 	 */
 	public function get_count(): int {
 		if ( null === $this->results ) {
-			$count = $this->wpdb->get_results(
-				$this->build_query( true ), // phpcs:ignore WordPress.DB.PreparedSQL
-				ARRAY_N
-			);
-			return intval( $count[0][0] ?? 0 );
+			return intval( $this->wpdb->get_var( $this->build_query( true ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 		}
 
 		return count( $this->results );
