@@ -13,31 +13,48 @@ defined( 'ABSPATH' ) || exit;
 abstract class AbstractForm implements FormInterface {
 
 	/**
-	 * Return the form's submitted data.
+	 * @var array
+	 */
+	protected $data = [];
+
+	/**
+	 * @var InputInterface[]
+	 */
+	protected $inputs;
+
+	/**
+	 * AbstractForm constructor.
+	 *
+	 * @param InputInterface[] $inputs
+	 */
+	public function __construct( array $inputs ) {
+		$this->inputs = $inputs;
+	}
+
+	/**
+	 * Return the form's data.
 	 *
 	 * @return array
 	 */
 	public function get_data(): array {
-		// phpcs:disable WordPress.Security.NonceVerification
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$data = ! empty( $_POST[ $this->get_name() ] ) ? (array) wc_clean( wp_unslash( $_POST[ $this->get_name() ] ) ) : [];
-
-		return wp_unslash( $data );
+		return $this->data;
 	}
 
 	/**
-	 * @param array $args
+	 * Set the form's data.
 	 *
-	 * @return InputInterface[]
+	 * @param array $data
+	 *
+	 * @return void
 	 */
-	protected function get_filled_inputs( array $args ): array {
-		$data = $this->get_data();
+	public function set_data( array $data = [] ): void {
 		if ( empty( $data ) ) {
-			return [];
+			$this->data = [];
+			return;
 		}
 
-		$inputs = [];
-		foreach ( $this->get_inputs( $args ) as $input ) {
+		$_data = [];
+		foreach ( $this->inputs as $input ) {
 			$data_key = $input->get_name();
 			if ( $input instanceof SelectWithTextInput && ! empty( $data[ $data_key ] ) && SelectWithTextInput::CUSTOM_VALUE_KEY === $data[ $data_key ] ) {
 				$data_key = sprintf( '%s_%s', $input->get_name(), SelectWithTextInput::CUSTOM_VALUE_KEY );
@@ -45,11 +62,28 @@ abstract class AbstractForm implements FormInterface {
 
 			if ( ! empty( $data[ $data_key ] ) ) {
 				$input->set_value( $data[ $data_key ] );
-				$inputs[ $input->get_name() ] = $input;
+				$_data[ $data_key ] = $data[ $data_key ];
 			}
 		}
 
-		return $inputs;
+		$this->data = $_data;
+	}
+
+	/**
+	 * @return InputInterface[]
+	 */
+	public function get_inputs(): array {
+		return $this->inputs;
+	}
+
+	/**
+	 * Submit the form.
+	 *
+	 * @param array $submitted_data
+	 */
+	public function submit( array $submitted_data = [] ): void {
+		// todo: add form validation
+		$this->set_data( $submitted_data );
 	}
 
 }

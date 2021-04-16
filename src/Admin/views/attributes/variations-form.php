@@ -17,13 +17,20 @@ $form = $this->form;
 /**
  * @var int
  */
-$product_id = $this->product_id;
+$variation_id = $this->variation_id;
+
+/**
+ * @var int
+ */
+$loop_index = $this->loop_index;
+
+$form_name = "{$form->get_name()}[{$loop_index}]";
 
 ?>
 
-<div id="gla_attributes" class="panel woocommerce_options_panel">
+<div class="gla-metabox closed">
 	<div class="options_group">
-		<h2><?php esc_html_e( 'Product attributes', 'google-listings-and-ads' ); ?></h2>
+		<h2><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></h2>
 		<?php foreach ( $form->get_inputs() as $input ) : ?>
 			<?php
 			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -31,7 +38,7 @@ $product_id = $this->product_id;
 				'src/Admin/views/inputs/input',
 				[
 					'input'     => $input,
-					'form_name' => $form->get_name(),
+					'form_name' => $form_name,
 				]
 			);
 			?>

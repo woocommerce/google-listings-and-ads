@@ -15,18 +15,25 @@ interface FormInterface {
 	/**
 	 * Return a list of inputs provided by the form.
 	 *
-	 * @param array $args
-	 *
 	 * @return InputInterface[]
 	 */
-	public function get_inputs( array $args ): array;
+	public function get_inputs(): array;
 
 	/**
-	 * Return the form's submitted data.
+	 * Return the form's data.
 	 *
 	 * @return array
 	 */
 	public function get_data(): array;
+
+	/**
+	 * Set the form's data.
+	 *
+	 * @param array $data
+	 *
+	 * @return void
+	 */
+	public function set_data( array $data = [] ): void;
 
 	/**
 	 * Return the form name.
@@ -40,10 +47,10 @@ interface FormInterface {
 	/**
 	 * Submit the form.
 	 *
-	 * @param array $args
+	 * @param array $submitted_data
 	 *
 	 * @return void
 	 */
-	public function submit( array $args ): void;
+	public function submit( array $submitted_data = [] ): void;
 
 }

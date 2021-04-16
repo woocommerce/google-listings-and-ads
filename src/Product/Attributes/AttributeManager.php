@@ -66,6 +66,20 @@ class AttributeManager implements Service {
 	}
 
 	/**
+	 * Return attribute value.
+	 *
+	 * @param int    $product_id
+	 * @param string $attribute_id
+	 *
+	 * @return mixed|null
+	 */
+	public function get_value( int $product_id, string $attribute_id ) {
+		$attribute = $this->get( $product_id, $attribute_id );
+
+		return $attribute instanceof AttributeInterface ? $attribute->get_value() : null;
+	}
+
+	/**
 	 * @param int $product_id
 	 *
 	 * @return AttributeInterface[]

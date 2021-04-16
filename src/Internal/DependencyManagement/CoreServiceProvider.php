@@ -217,8 +217,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );
-		$this->conditionally_share_with_tags( InputForm::class, AttributeManager::class );
-		$this->conditionally_share_with_tags( TabInitializer::class, Admin::class, InputForm::class );
+		$this->conditionally_share_with_tags( TabInitializer::class, Admin::class, AttributeManager::class );
+		$this->conditionally_share_with_tags( VariationsFormInitializer::class, Admin::class, AttributeManager::class );
 
 		// Integrations
 		// todo: move this (and other integration classes) to a new service provider class

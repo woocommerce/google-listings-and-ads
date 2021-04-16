@@ -8,12 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidArgument;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\WithValueOptionsInterface;
@@ -25,77 +20,18 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
  */
-class InputForm extends AbstractForm implements Service, Conditional {
-
-	use AdminConditional;
-
-	/**
-	 * @var AttributeManager
-	 */
-	protected $attribute_manager;
+class InputForm extends AbstractForm {
 
 	/**
 	 * InputForm constructor.
-	 *
-	 * @param AttributeManager $attribute_manager
 	 */
-	public function __construct( AttributeManager $attribute_manager ) {
-		$this->attribute_manager = $attribute_manager;
-	}
+	public function __construct() {
+		$inputs = [
+			$this->init_input( new Text(), new GTIN( null ) ),
+			$this->init_input( new Text(), new MPN( null ) ),
+		];
 
-	/**
-	 * Return a list of inputs provided by the form.
-	 *
-	 * @param array $args
-	 *
-	 * @return InputInterface[]
-	 */
-	public function get_inputs( array $args ): array {
-		$product_id = ! empty( $args['product_id'] ) ? (int) $args['product_id'] : null;
-
-		$inputs = [];
-
-		if ( ! empty( $product_id ) ) {
-			$gtin = $this->attribute_manager->get( $product_id, GTIN::get_id() ) ?? new GTIN( null );
-			$mpn  = $this->attribute_manager->get( $product_id, MPN::get_id() ) ?? new MPN( null );
-		} else {
-			$gtin = new GTIN( null );
-			$mpn  = new MPN( null );
-		}
-
-		$inputs[] = $this->init_input( new Text(), $gtin );
-		$inputs[] = $this->init_input( new Text(), $mpn );
-
-		return $inputs;
-	}
-
-	/**
-	 * Submit the form.
-	 *
-	 * @param array $args
-	 *
-	 * @throws InvalidArgument If product ID is not provided.
-	 */
-	public function submit( array $args ): void {
-		if ( empty( $args['product_id'] ) ) {
-			throw new InvalidArgument( '`product_id` not provided.' );
-		}
-
-		$product_id = $args['product_id'];
-
-		$filled_inputs = $this->get_filled_inputs( [ 'product_id' => $product_id ] );
-
-		// gtin
-		if ( ! empty( $filled_inputs[ GTIN::get_id() ] ) ) {
-			$gtin = new GTIN( $filled_inputs[ GTIN::get_id() ]->get_value() );
-			$this->attribute_manager->update( $product_id, $gtin );
-		}
-
-		// mpn
-		if ( ! empty( $filled_inputs[ MPN::get_id() ] ) ) {
-			$mpn = new MPN( $filled_inputs[ MPN::get_id() ]->get_value() );
-			$this->attribute_manager->update( $product_id, $mpn );
-		}
+		parent::__construct( $inputs );
 	}
 
 	/**
@@ -108,8 +44,7 @@ class InputForm extends AbstractForm implements Service, Conditional {
 		$input->set_id( $attribute::get_id() )
 			  ->set_name( $attribute::get_id() )
 			  ->set_label( $attribute::get_name() )
-			  ->set_description( $attribute::get_name() )
-			  ->set_value( $attribute->get_value() );
+			  ->set_description( $attribute::get_name() );
 
 		$value_options = [];
 		if ( $attribute instanceof WithValueOptionsInterface ) {
