@@ -103,7 +103,7 @@ export function* upsertShippingRates( shippingRate ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping rates.',
+				'There was an error trying to add / update shipping rates. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -133,7 +133,7 @@ export function* deleteShippingRates( countryCodes ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping rates.',
+				'There was an error trying to delete shipping rates. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -213,7 +213,7 @@ export function* upsertShippingTimes( shippingTime ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping times.',
+				'There was an error trying to add / update shipping times. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -243,7 +243,7 @@ export function* deleteShippingTimes( countryCodes ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping times.',
+				'There was an error trying to delete shipping times. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -287,7 +287,7 @@ export function* saveSettings( settings ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to save settings.',
+				'There was an error trying to save settings. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
