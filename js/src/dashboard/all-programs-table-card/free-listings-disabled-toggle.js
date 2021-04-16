@@ -18,7 +18,7 @@ const FreeListingsDisabledToggle = () => {
 				'google-listings-and-ads'
 			) }
 		>
-			<AppStandaloneToggleControl checked disabled={ true } />
+			<AppStandaloneToggleControl checked disabled />
 		</AppTooltip>
 	);
 };
