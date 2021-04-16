@@ -206,7 +206,6 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
 				'action_url' => $issue->getDocumentation(),
 				'created_at' => $this->current_time->format( 'Y-m-d H:i:s' ),
-
 			];
 		}
 

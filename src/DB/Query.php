@@ -273,24 +273,25 @@ abstract class Query implements QueryInterface {
 	 * @return string
 	 */
 	protected function build_query( bool $get_count = false ): string {
-		$pieces = [ 'SELECT ' . ( $get_count ? 'COUNT(*)' : '*' ) . " FROM {$this->table->get_name()}" ];
+		$columns = $get_count ? 'COUNT(*)' : '*';
+		$pieces  = [ "SELECT {$columns} FROM {$this->table->get_name()}" ];
 
 		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
 
 		if ( ! $get_count ) {
 			$pieces[] = "GROUP BY {$this->table->get_name()}.{$this->table->get_primary_column()}";
-		}
 
-		if ( $this->orderby ) {
-			$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
-		}
+			if ( $this->orderby ) {
+				$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
+			}
 
-		if ( $this->limit ) {
-			$pieces[] = "LIMIT {$this->limit}";
-		}
+			if ( $this->limit ) {
+				$pieces[] = "LIMIT {$this->limit}";
+			}
 
-		if ( $this->offset ) {
-			$pieces[] = "OFFSET {$this->offset}";
+			if ( $this->offset ) {
+				$pieces[] = "OFFSET {$this->offset}";
+			}
 		}
 
 		return join( "\n", $pieces );
