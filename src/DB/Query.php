@@ -415,6 +415,44 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Batch update or insert a set of records.
+	 *
+	 * @param array $records Array of records to be updated or inserted.
+	 *
+	 * @throws InvalidQuery If an invalid column name is provided.
+	 */
+	public function update_or_insert( array $records ) {
+		if ( empty( $records ) ) {
+			return;
+		}
+
+		$update_values = [];
+		$columns       = array_keys( reset( $records ) );
+		foreach ( $columns as $c ) {
+			$this->validate_column( $c );
+			$update_values[] = "`$c`=VALUES(`$c`)";
+		}
+
+		$single_placeholder = '(' . implode( ',', array_fill( 0, count( $columns ), "'%s'" ) ) . ')';
+		$chunk_size         = 200;
+		$num_issues         = count( $records );
+		for ( $i = 0; $i < $num_issues; $i += $chunk_size ) {
+			$all_values       = [];
+			$all_placeholders = [];
+			foreach ( array_slice( $records, $i, $chunk_size ) as $issue ) {
+				$all_placeholders[] = $single_placeholder;
+				array_push( $all_values, ...array_values( $issue ) );
+			}
+
+			$query  = 'INSERT INTO ' . $this->table->get_sql_safe_name() . ' (`' . implode( '`, `', $columns ) . '`) VALUES ';
+			$query .= implode( ', ', $all_placeholders );
+			$query .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $update_values );
+
+			$this->wpdb->query( $this->wpdb->prepare( $query, $all_values ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		}
+	}
+
+	/**
 	 * Sanitize a value for a given column before inserting it into the DB.
 	 *
 	 * @param string $column The column name.
