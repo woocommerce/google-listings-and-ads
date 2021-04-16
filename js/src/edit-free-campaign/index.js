@@ -105,8 +105,8 @@ export default function EditFreeCampaign() {
 	const [ settings, updateSettings ] = useState( savedSettings );
 
 	const {
-		data: savedShippingRates,
-		loading: loadingShippingRates,
+		list: savedShippingRates,
+		loaded: shippingRatesLoaded,
 	} = useShippingRates();
 	const [ shippingRates, updateShippingRates ] = useState(
 		savedShippingRates
@@ -116,7 +116,7 @@ export default function EditFreeCampaign() {
 	// - `<Form>` element ignoring changes to its `initialValues` prop
 	// - default state of shipping* data of `[]`
 	// - resolver not signaling, that data is not ready yet
-	const loadedShippingRates = loadingShippingRates ? null : shippingRates;
+	const loadedShippingRates = shippingRatesLoaded ? shippingRates : null;
 
 	const {
 		data: savedShippingTimes,

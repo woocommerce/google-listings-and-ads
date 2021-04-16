@@ -5,6 +5,32 @@
 import { format } from '@wordpress/date';
 import { getCurrentDates } from '@woocommerce/date';
 
+function isObject( value ) {
+	return Object.prototype.toString.call( value ) === '[object Object]';
+}
+
+function stringifyAny( any ) {
+	if ( Array.isArray( any ) ) {
+		const out = any.map( stringifyAny ).join( ',' );
+		return `[${ out }]`;
+	}
+
+	if ( isObject( any ) ) {
+		const out = Object.keys( any )
+			.sort()
+			.map( ( key ) => `${ key }:${ stringifyAny( any[ key ] ) }` )
+			.join( ',' );
+		return `{${ out }}`;
+	}
+
+	return JSON.stringify( any );
+}
+
+export function getErrorKey( selectorName, args = [] ) {
+	const key = stringifyAny( args );
+	return `${ selectorName }::${ key }`;
+}
+
 /**
  * Get report query for fetching API data.
  *

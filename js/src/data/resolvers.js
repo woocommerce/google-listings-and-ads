@@ -14,7 +14,8 @@ import { getReportQuery, getReportKey } from './utils';
 
 import {
 	handleFetchError,
-	fetchShippingRates,
+	clearError,
+	receiveError,
 	fetchShippingTimes,
 	fetchSettings,
 	fetchJetpackAccount,
@@ -32,7 +33,36 @@ import {
 } from './actions';
 
 export function* getShippingRates() {
-	yield fetchShippingRates();
+	yield clearError( 'getShippingRates' );
+
+	// Move the implementation to here due to:
+	//   1. Make it easier to maintain consistency in the selector names
+	//      that `clearError` and `receiveError` need to pass in
+	//   2. Enclosure the API request here instead of exposing a fetchShippingRates action,
+	//      and it also makes sure we use `invalidateResolution` or `shouldInvalidate`
+	//      when need to re-fetch data
+	//   3. The only job in this original function is `yield fetchShippingRates();`.
+	//      I think we can dispense with the need to declare another function
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates`,
+		} );
+
+		const shippingRates = Object.values( response ).map( ( el ) => {
+			return {
+				countryCode: el.country_code,
+				currency: el.currency,
+				rate: el.rate.toString(),
+			};
+		} );
+
+		return {
+			type: TYPES.RECEIVE_SHIPPING_RATES,
+			shippingRates,
+		};
+	} catch ( error ) {
+		return receiveError( error, 'getShippingRates' );
+	}
 }
 
 export function* getShippingTimes() {

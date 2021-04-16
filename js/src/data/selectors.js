@@ -8,7 +8,12 @@ import { getDateParamsFromQuery } from '@woocommerce/date';
  * Internal dependencies
  */
 import { STORE_KEY } from './constants';
-import { getReportQuery, getReportKey } from './utils';
+import { getErrorKey, getReportQuery, getReportKey } from './utils';
+
+export const getError = ( state, selectorName, args ) => {
+	const errorKey = getErrorKey( selectorName, args );
+	return state.error[ errorKey ] || null;
+};
 
 export const getShippingRates = ( state ) => {
 	return state.mc.shipping.rates;

@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { getErrorKey } from './utils';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -17,6 +18,23 @@ export function handleFetchError( error, message ) {
 
 	// eslint-disable-next-line no-console
 	console.log( error );
+}
+
+export function receiveError( error, selectorName, args ) {
+	const errorKey = getErrorKey( selectorName, args );
+	return {
+		type: TYPES.RECEIVE_ERROR,
+		errorKey,
+		error,
+	};
+}
+
+export function clearError( selectorName, args ) {
+	const errorKey = getErrorKey( selectorName, args );
+	return {
+		type: TYPES.CLEAR_ERROR,
+		errorKey,
+	};
 }
 
 /**

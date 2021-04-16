@@ -13,7 +13,7 @@ const DEFAULT_STATE = {
 		target_audience: null,
 		countries: null,
 		shipping: {
-			rates: [],
+			rates: null,
 			times: [],
 		},
 		settings: null,
@@ -30,6 +30,7 @@ const DEFAULT_STATE = {
 	ads_campaigns: null,
 	mc_setup: null,
 	report: {},
+	error: {},
 };
 
 const getNextStateForShipping = ( state ) => {
@@ -255,6 +256,31 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 					[ reportKey ]: data,
 				},
 			};
+		}
+
+		case TYPES.RECEIVE_ERROR: {
+			return {
+				...state,
+				error: {
+					...state.error,
+					[ action.errorKey ]: action.error,
+				},
+			};
+		}
+
+		case TYPES.CLEAR_ERROR: {
+			if ( ! state.error[ action.errorKey ] ) {
+				return state;
+			}
+
+			const newState = {
+				...state,
+				error: {
+					...state.error,
+				},
+			};
+			delete newState.error[ action.errorKey ];
+			return newState;
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
