@@ -74,6 +74,6 @@ class InputForm extends AbstractForm {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return 'gla_attributes';
+		return 'attributes';
 	}
 }
