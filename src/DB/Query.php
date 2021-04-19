@@ -288,12 +288,12 @@ abstract class Query implements QueryInterface {
 	 */
 	protected function build_query( bool $get_count = false ): string {
 		$columns = $get_count ? 'COUNT(*)' : '*';
-		$pieces  = [ "SELECT {$columns} FROM {$this->table->get_name()}" ];
+		$pieces  = [ "SELECT {$columns} FROM `{$this->table->get_name()}`" ];
 
 		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
 
 		if ( ! $get_count ) {
-			$pieces[] = "GROUP BY {$this->table->get_name()}.{$this->table->get_primary_column()}";
+			$pieces[] = "GROUP BY `{$this->table->get_name()}`.`{$this->table->get_primary_column()}`";
 
 			if ( $this->orderby ) {
 				$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
