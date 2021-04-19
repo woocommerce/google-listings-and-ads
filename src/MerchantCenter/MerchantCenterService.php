@@ -50,18 +50,25 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 	protected $account_state;
 
 	/**
+	 * @var MerchantIssues
+	 */
+	protected $issues;
+
+	/**
 	 * MerchantCenterService constructor.
 	 *
 	 * @param WC                   $wc
 	 * @param WP                   $wp
 	 * @param TransientsInterface  $transients
 	 * @param MerchantAccountState $account_state
+	 * @param MerchantIssues       $issues
 	 */
-	public function __construct( WC $wc, WP $wp, TransientsInterface $transients, MerchantAccountState $account_state ) {
+	public function __construct( WC $wc, WP $wp, TransientsInterface $transients, MerchantAccountState $account_state, MerchantIssues $issues ) {
 		$this->wc            = $wc;
 		$this->wp            = $wp;
 		$this->transients    = $transients;
 		$this->account_state = $account_state;
+		$this->issues        = $issues;
 	}
 
 	/**
@@ -188,6 +195,8 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
 		$this->transients->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
+
+		$this->issues->delete();
 	}
 
 	/**

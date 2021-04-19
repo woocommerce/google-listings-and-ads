@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantIssues;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantIssues;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -69,11 +69,11 @@ class IssuesController extends BaseOptionsController {
 			$page        = max( 1, intval( $request['page'] ) );
 
 			try {
-				$total = $this->mc_issues->count( $type_filter );
+				$issues = $this->mc_issues->get( $type_filter, $per_page, $page );
 				return $this->prepare_item_for_response(
 					[
-						'issues' => $this->mc_issues->get( $type_filter, $per_page, $page ),
-						'total'  => $total,
+						'issues' => $issues['results'],
+						'total'  => $issues['count'],
 						'page'   => $page,
 					],
 					$request
@@ -129,14 +129,9 @@ class IssuesController extends BaseOptionsController {
 							'description' => __( 'Descriptive text of action to take.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
-						'action_link'          => [
+						'action_url'           => [
 							'type'        => 'string',
 							'description' => __( 'Documentation URL for issue and/or action.', 'google-listings-and-ads' ),
-							'context'     => [ 'view' ],
-						],
-						'edit_link'            => [
-							'type'        => 'string',
-							'description' => __( 'Link to affected product edit page.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
 						'applicable_countries' => [

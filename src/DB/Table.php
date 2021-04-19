@@ -63,6 +63,13 @@ abstract class Table implements TableInterface {
 	}
 
 	/**
+	 * Truncate the Database table.
+	 */
+	public function truncate(): void {
+		$this->wpdb->query( "TRUNCATE TABLE `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+	/**
 	 * Get the SQL escaped version of the table name.
 	 *
 	 * @return string
