@@ -435,7 +435,7 @@ abstract class Query implements QueryInterface {
 	 *
 	 * @throws InvalidQuery If an invalid column name is provided.
 	 */
-	public function update_or_insert( array $records ) {
+	public function update_or_insert( array $records ): void {
 		if ( empty( $records ) ) {
 			return;
 		}
