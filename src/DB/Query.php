@@ -461,10 +461,9 @@ abstract class Query implements QueryInterface {
 				array_push( $all_values, ...array_values( $issue ) );
 			}
 
-			$table_name   = $this->wpdb->_escape( $this->table->get_name() );
 			$column_names = '(`' . implode( '`, `', $columns ) . '`)';
 
-			$query  = "INSERT INTO `{$table_name}` $column_names VALUES ";
+			$query  = "INSERT INTO `{$this->table->get_name()}` $column_names VALUES ";
 			$query .= implode( ', ', $all_placeholders );
 			$query .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $update_values );
 
