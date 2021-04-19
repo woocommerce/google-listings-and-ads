@@ -30,6 +30,11 @@ interface TableInterface {
 	public function delete(): void;
 
 	/**
+	 * Truncate the Database table.
+	 */
+	public function truncate(): void;
+
+	/**
 	 * Get the name of the Database table.
 	 *
 	 * @return string
