@@ -11,11 +11,26 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 const useDisplayTaxRate = () => {
 	const { data } = useTargetAudienceFinalCountryCodes();
 
-	if ( ! data ) {
-		return false;
-	}
-
-	return data.includes( 'US' );
+	return shouldDisplayTaxRate( data );
 };
 
 export default useDisplayTaxRate;
+
+/**
+ * @typedef {import('.~/data/actions').CountryCode} CountryCode
+ */
+
+/**
+ * Checks whether the Tax Rate section should be displayed, for given audience.
+ * The Tax Rate section should be displayed when there is `'US'` country code in the target audience countries list.
+ *
+ * @param {Array<CountryCode>} countries
+ * @return {boolean} `true` if the Tax Rate section should be displayed, `false` otherwise.
+ */
+export function shouldDisplayTaxRate( countries ) {
+	if ( ! countries ) {
+		return false;
+	}
+
+	return countries.includes( 'US' );
+}

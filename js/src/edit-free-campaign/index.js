@@ -15,13 +15,14 @@ import { useAppDispatch } from '.~/data';
 import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
-import useTargetAudience from '.~/hooks/useTargetAudience';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -83,7 +84,11 @@ function saveShippingData( upsertAction, deleteAction, oldData, newData ) {
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
-	const { data: savedTargetAudience } = useTargetAudience();
+	const {
+		targetAudience: savedTargetAudience,
+		getFinalCountries,
+	} = useTargetAudienceFinalCountryCodes();
+
 	const { settings: savedSettings } = useSettings();
 	const {
 		saveTargetAudience,
@@ -106,14 +111,12 @@ export default function EditFreeCampaign() {
 	const [ shippingRates, updateShippingRates ] = useState(
 		savedShippingRates
 	);
-	// This is a quick and not save workaround for
+	// This is a quick and not safe workaround for
 	// https://github.com/woocommerce/google-listings-and-ads/pull/422#discussion_r607796375
 	// - `<Form>` element ignoring changes to its `initialValues` prop
 	// - default state of shipping* data of `[]`
 	// - resolver not signaling, that data is not ready yet
-	const loadedShippingRates = loadingShippingRates
-		? null
-		: savedShippingRates;
+	const loadedShippingRates = loadingShippingRates ? null : shippingRates;
 
 	const {
 		data: savedShippingTimes,
@@ -122,9 +125,7 @@ export default function EditFreeCampaign() {
 	const [ shippingTimes, updateShippingTimes ] = useState(
 		savedShippingTimes
 	);
-	const loadedShippingTimes = loadingShippingTimes
-		? null
-		: savedShippingTimes;
+	const loadedShippingTimes = loadingShippingTimes ? null : shippingTimes;
 
 	// TODO: Consider making it less repetitive.
 	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
@@ -142,6 +143,7 @@ export default function EditFreeCampaign() {
 		path: `/wc/gla/mc/settings/sync`,
 		method: 'POST',
 	} );
+	const { createNotice } = useDispatchCoreNotices();
 
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
@@ -178,29 +180,44 @@ export default function EditFreeCampaign() {
 	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
 		//       Put Submit button in pending state.
-		await Promise.allSettled( [
-			saveTargetAudience( targetAudience ),
-			saveSettings( settings ),
-			...saveShippingData(
-				upsertShippingRate,
-				deleteShippingRates,
-				savedShippingRates,
-				shippingRates
-			),
-			...saveShippingData(
-				upsertShippingTime,
-				deleteShippingTimes,
-				savedShippingTimes,
-				shippingTimes
-			),
-		] );
-		// Sync data once our changes are saved, even partially succesfully.
-		await fetchSettingsSync();
-		// TODO notify errors.
-		// TODO: Enable the submit button.
+		try {
+			await Promise.allSettled( [
+				saveTargetAudience( targetAudience ),
+				saveSettings( settings ),
+				...saveShippingData(
+					upsertShippingRate,
+					deleteShippingRates,
+					savedShippingRates,
+					shippingRates
+				),
+				...saveShippingData(
+					upsertShippingTime,
+					deleteShippingTimes,
+					savedShippingTimes,
+					shippingTimes
+				),
+			] );
+			// Sync data once our changes are saved, even partially succesfully.
+			await fetchSettingsSync();
 
-		recordEvent( 'gla_free_campaign_edited' );
-		getHistory().push( dashboardURL );
+			createNotice(
+				'error',
+				__(
+					'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
+					'google-listings-and-ads'
+				)
+			);
+			recordEvent( 'gla_free_campaign_edited' );
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Something went wrong while saving your changes. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
+		// TODO: Enable the submit button.
 	};
 
 	const handleStepClick = ( key ) => {
@@ -250,6 +267,9 @@ export default function EditFreeCampaign() {
 									'STEP TWO',
 									'google-listings-and-ads'
 								) }
+								countries={ getFinalCountries(
+									targetAudience
+								) }
 								settings={ settings }
 								onSettingsChange={ ( change, newSettings ) => {
 									updateSettings( newSettings );
@@ -259,6 +279,10 @@ export default function EditFreeCampaign() {
 								shippingTimes={ loadedShippingTimes }
 								onShippingTimesChange={ updateShippingTimes }
 								onContinue={ handleSetupFreeListingsContinue }
+								submitLabel={ __(
+									'Save changes',
+									'google-listings-and-ads'
+								) }
 							/>
 						),
 						onClick: handleStepClick,

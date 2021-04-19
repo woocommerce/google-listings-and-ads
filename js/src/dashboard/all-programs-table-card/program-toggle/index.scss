@@ -1,0 +1,15 @@
+.gla-program-toggle {
+	// this is to make the toggle displayed right-aligned based on table column config.
+	display: inline-block;
+
+	// remove the margins specified in ToggleControl component.
+	.components-toggle-control {
+		.components-base-control__field {
+			margin-bottom: 0;
+
+			.components-form-toggle {
+				margin-right: 0;
+			}
+		}
+	}
+}

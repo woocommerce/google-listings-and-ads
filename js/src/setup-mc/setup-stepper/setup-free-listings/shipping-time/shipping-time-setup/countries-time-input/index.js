@@ -43,7 +43,12 @@ const CountriesTimeInput = ( props ) => {
 								),
 								{
 									countries: (
-										<CountryNames countries={ countries } />
+										<CountryNames
+											countries={ countries }
+											total={
+												selectedCountryCodes.length
+											}
+										/>
 									),
 								}
 							) }

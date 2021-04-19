@@ -34,6 +34,9 @@ export default function ShippingCountriesForm( {
 		( el ) => ! actualCountries.has( el )
 	);
 	const remainingCount = remainingCountryCodes.length;
+	// We may have shipping times defined for more than the audience countries.
+	// Therefore, the number of countries we anticipate is what we acutally have + missing audience ones.
+	const totalCountyCount = actualCountryCount + remainingCount;
 
 	// Group countries with the same time.
 	const countriesTimeArray = getCountriesTimeArray( shippingTimes );
@@ -92,6 +95,8 @@ export default function ShippingCountriesForm( {
 						>
 							<CountriesTimeInput
 								value={ el }
+								audienceCountries={ selectedCountryCodes }
+								totalCountyCount={ totalCountyCount }
 								onChange={ handleChange }
 								onDelete={ handleDelete }
 							/>

@@ -63,12 +63,15 @@ const TabNav = ( props ) => {
 		const marketingMenu = document.querySelector(
 			'#toplevel_page_woocommerce-marketing'
 		);
-		const dashboardMenu = marketingMenu.querySelector(
-			"a[href='admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard']"
-		).parentElement;
+		const dashboardLink = marketingMenu.querySelector(
+			"a[href^='admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard']"
+		);
+
 		marketingMenu.classList.add( 'current', 'wp-has-current-submenu' );
-		dashboardMenu.classList.add( 'current' );
-	} );
+		if ( dashboardLink ) {
+			dashboardLink.parentElement.classList.add( 'current' );
+		}
+	}, [] );
 
 	return (
 		<div className="gla-tab-nav">

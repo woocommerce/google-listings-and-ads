@@ -28,6 +28,8 @@ const DEFAULT_STATE = {
 		},
 	},
 	ads_campaigns: null,
+	mc_setup: null,
+	report: {},
 };
 
 const getNextStateForShipping = ( state ) => {
@@ -214,6 +216,45 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				ads_campaigns: action.adsCampaigns,
 			};
 			return newState;
+		}
+
+		case TYPES.UPDATE_ADS_CAMPAIGN: {
+			const { id, data } = action;
+			const idx = state.ads_campaigns.findIndex( ( el ) => el.id === id );
+			const adsCampaign = state.ads_campaigns[ idx ];
+
+			const updatedCampaign = {
+				...adsCampaign,
+				...data,
+			};
+
+			const newAdsCampaigns = [ ...state.ads_campaigns ];
+			newAdsCampaigns[ idx ] = updatedCampaign;
+
+			const newState = {
+				...state,
+				ads_campaigns: newAdsCampaigns,
+			};
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_SETUP: {
+			const newState = {
+				...state,
+				mc_setup: action.mcSetup,
+			};
+			return newState;
+		}
+
+		case TYPES.RECEIVE_REPORT: {
+			const { reportKey, data } = action;
+			return {
+				...state,
+				report: {
+					...state.report,
+					[ reportKey ]: data,
+				},
+			};
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

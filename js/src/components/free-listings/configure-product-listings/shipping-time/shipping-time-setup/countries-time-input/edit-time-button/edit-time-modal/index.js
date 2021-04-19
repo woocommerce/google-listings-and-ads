@@ -11,19 +11,31 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AudienceCountrySelect from '.~/components/audience-country-select';
+import AppCountrySelect from '.~/components/app-country-select';
 import './index.scss';
 
 /**
  *Form to edit time for selected country(-ies).
  *
  * @param {Object} props
+ * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
  * @param {AggregatedShippingTime} props.time
  * @param {(newTime: AggregatedShippingTime, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the time is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
-const EditTimeModal = ( { time, onDelete, onSubmit, onRequestClose } ) => {
+const EditTimeModal = ( {
+	audienceCountries,
+	time,
+	onDelete,
+	onSubmit,
+	onRequestClose,
+} ) => {
+	// We actually may have times for more countries than the audience ones.
+	const availableCountries = Array.from(
+		new Set( [ ...time.countries, ...audienceCountries ] )
+	);
+
 	const handleDeleteClick = () => {
 		onDelete( time.countries );
 	};
@@ -94,7 +106,8 @@ const EditTimeModal = ( { time, onDelete, onSubmit, onRequestClose } ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AudienceCountrySelect
+								<AppCountrySelect
+									options={ availableCountries }
 									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>

@@ -11,19 +11,31 @@ import { Form } from '@woocommerce/components';
 import AppModal from '.~/components/app-modal';
 import AppInputControl from '.~/components/app-input-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AudienceCountrySelect from '.~/components/audience-country-select';
+import AppCountrySelect from '.~/components/app-country-select';
 import './index.scss';
 
 /**
- *Form to edit rate for selected country(-ies).
+ * Form to edit rate for selected country(-ies).
  *
  * @param {Object} props
+ * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
  * @param {AggregatedShippingRate} props.rate
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
-const EditRateModal = ( { rate, onDelete, onSubmit, onRequestClose } ) => {
+const EditRateModal = ( {
+	audienceCountries,
+	rate,
+	onDelete,
+	onSubmit,
+	onRequestClose,
+} ) => {
+	// We actually may have rates for more countries than the audience ones.
+	const availableCountries = Array.from(
+		new Set( [ ...rate.countries, ...audienceCountries ] )
+	);
+
 	const handleDeleteClick = () => {
 		onDelete( rate.countries );
 	};
@@ -95,7 +107,8 @@ const EditRateModal = ( { rate, onDelete, onSubmit, onRequestClose } ) => {
 										'google-listings-and-ads'
 									) }
 								</div>
-								<AudienceCountrySelect
+								<AppCountrySelect
+									options={ availableCountries }
 									multiple
 									{ ...getInputProps( 'countries' ) }
 								/>

@@ -39,7 +39,7 @@ const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
 				<ShippingCountriesForm
 					{ ...getInputProps( 'shipping_country_rates' ) }
 					currencyCode={ currencyCode }
-					selectedCountryCodes={ selectedCountryCodes }
+					audienceCountries={ selectedCountryCodes }
 				/>
 				<CheckboxControl
 					label={ __(

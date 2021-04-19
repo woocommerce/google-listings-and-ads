@@ -39,6 +39,7 @@ final class Options implements OptionsInterface, Service {
 		self::SHIPPING_TIMES         => true,
 		self::SITE_VERIFICATION      => true,
 		self::TARGET_AUDIENCE        => true,
+		self::WP_TOS_ACCEPTED        => true,
 	];
 
 	private const OPTION_TYPES = [

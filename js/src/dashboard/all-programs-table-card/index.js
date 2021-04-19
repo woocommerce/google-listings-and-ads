@@ -9,9 +9,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  */
 import AppTableCard from '.~/components/app-table-card';
 import RemoveProgramButton from './remove-program-button';
-import EditProgramLink from './edit-program-link';
-import PauseProgramButton from './pause-program-button';
-import ResumeProgramButton from './resume-program-button';
+import EditProgramButton from './edit-program-button';
 import './index.scss';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
@@ -20,6 +18,7 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import AppSpinner from '.~/components/app-spinner';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
+import ProgramToggle from './program-toggle';
 
 const headers = [
 	{
@@ -27,18 +26,19 @@ const headers = [
 		label: __( 'Program', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
-		isSortable: true,
 	},
 	{
 		key: 'country',
 		label: __( 'Country', 'google-listings-and-ads' ),
 		isLeftAligned: true,
-		isSortable: true,
 	},
 	{
 		key: 'dailyBudget',
 		label: __( 'Daily budget', 'google-listings-and-ads' ),
-		isSortable: true,
+	},
+	{
+		key: 'enabled',
+		label: __( 'Enabled', 'google-listings-and-ads' ),
 	},
 	{ key: 'actions', label: '', required: true },
 ];
@@ -115,14 +115,17 @@ const AllProgramsTableCard = ( props ) => {
 					{ display: el.country },
 					{ display: el.dailyBudget },
 					{
+						display:
+							el.id === FREE_LISTINGS_PROGRAM_ID ? (
+								__( 'Enabled', 'google-listings-and-ads' )
+							) : (
+								<ProgramToggle program={ el } />
+							),
+					},
+					{
 						display: (
 							<div className="program-actions">
-								<EditProgramLink programId={ el.id } />
-								{ el.active ? (
-									<PauseProgramButton programId={ el.id } />
-								) : (
-									<ResumeProgramButton programId={ el.id } />
-								) }
+								<EditProgramButton programId={ el.id } />
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
 									<RemoveProgramButton programId={ el.id } />
 								) }
@@ -132,7 +135,7 @@ const AllProgramsTableCard = ( props ) => {
 				];
 			} ) }
 			totalRows={ data.length }
-			rowsPerPage={ 10 }
+			rowsPerPage={ data.length }
 			query={ query }
 			onQueryChange={ onQueryChange }
 			{ ...props }

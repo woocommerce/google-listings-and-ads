@@ -19,23 +19,14 @@ import './index.scss';
  *
  */
 const PauseProgramModal = ( props ) => {
-	const { programId, onRequestClose } = props;
+	const { onPauseCampaign = () => {}, onRequestClose } = props;
 
 	const handleKeepActiveClick = () => {
 		onRequestClose();
 	};
 
-	// TODO: call backend API to pause campaign based on the programId.
-	// might need to have a "busy / loading" indicator.
-	// dismiss modal when pause process is done.
 	const handlePauseCampaignClick = () => {
-		// eslint-disable-next-line no-console
-		console.warn(
-			'The actual pause action is not implemented/integrated yet.',
-			programId
-		);
-
-		onRequestClose();
+		onPauseCampaign();
 	};
 
 	return (

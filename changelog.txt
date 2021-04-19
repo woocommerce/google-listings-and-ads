@@ -1,5 +1,8 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 0.5.0 - 2021-04-15 =
+- Google Ads onboarding and dashboard test release.
+
 = 0.4.0 - 2021-04-01 =
 - Merchant Center and Google Ads onboarding test release.
 

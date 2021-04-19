@@ -455,7 +455,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function get_manager_url( string $name = '' ): string {
-		$url = $this->container->get( 'connect_server_root' ) . 'manager';
+		$url = $this->container->get( 'connect_server_root' ) . 'google/manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
 	}
 

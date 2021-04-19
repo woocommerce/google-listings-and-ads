@@ -103,7 +103,7 @@ export function* upsertShippingRates( shippingRate ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping rates.',
+				'There was an error trying to add / update shipping rates. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -133,7 +133,7 @@ export function* deleteShippingRates( countryCodes ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping rates.',
+				'There was an error trying to delete shipping rates. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -213,7 +213,7 @@ export function* upsertShippingTimes( shippingTime ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping times.',
+				'There was an error trying to add / update shipping times. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -243,7 +243,7 @@ export function* deleteShippingTimes( countryCodes ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping times.',
+				'There was an error trying to delete shipping times. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -287,7 +287,7 @@ export function* saveSettings( settings ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to save settings.',
+				'There was an error trying to save settings. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
@@ -593,6 +593,38 @@ export function receiveAdsCampaigns( adsCampaigns ) {
 	};
 }
 
+export function* updateAdsCampaign( id, data ) {
+	try {
+		yield apiFetch( {
+			path: `/wc/gla/ads/campaigns/${ id }`,
+			method: 'POST',
+			data,
+		} );
+
+		return {
+			type: TYPES.UPDATE_ADS_CAMPAIGN,
+			id,
+			data,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to update your paid ads campaign. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function receiveReport( reportKey, data ) {
+	return {
+		type: TYPES.RECEIVE_REPORT,
+		reportKey,
+		data,
+	};
+}
+
 // TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
 export function* upsertShippingRate( shippingRate ) {
 	const { countryCode, currency, rate } = shippingRate;
@@ -614,4 +646,29 @@ export function* upsertShippingTime( shippingTime ) {
 
 export function* deleteShippingTime( countryCode ) {
 	yield deleteShippingTimes( [ countryCode ] );
+}
+
+export function* fetchMCSetup() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/setup`,
+		} );
+
+		return receiveMCSetup( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center setup status.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* receiveMCSetup( mcSetup ) {
+	return {
+		type: TYPES.RECEIVE_MC_SETUP,
+		mcSetup,
+	};
 }

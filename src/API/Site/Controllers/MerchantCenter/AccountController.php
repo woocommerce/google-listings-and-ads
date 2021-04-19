@@ -327,9 +327,6 @@ class AccountController extends BaseOptionsController {
 	 * Should always resume up at the last pending or unfinished step. If the Merchant Center account
 	 * has already been created, the ID is simply returned.
 	 *
-	 * @todo Check Google Account & Manager Accounts connected correctly before starting.
-	 * @todo Include request+approve account linking process.
-	 *
 	 * @return array|Response The newly created (or pre-existing) Merchant ID or the retry delay.
 	 * @throws Exception If an error occurs during any step.
 	 */
@@ -342,10 +339,10 @@ class AccountController extends BaseOptionsController {
 				continue;
 			}
 
-			if ( 'link' === $name || 'claim' === $name ) {
+			if ( 'link' === $name ) {
 				$time_to_wait = $this->account_state->get_seconds_to_wait_after_created();
 				if ( $time_to_wait ) {
-					return $this->get_time_to_wait_response( $time_to_wait );
+					sleep( $time_to_wait );
 				}
 			}
 
@@ -416,7 +413,7 @@ class AccountController extends BaseOptionsController {
 				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
 					$state['set_id']['data']['created_timestamp'] = time();
 					$this->account_state->update( $state );
-					return $this->get_time_to_wait_response( MerchantAccountState::MC_DELAY_AFTER_CREATE );
+					return $this->get_time_to_wait_response();
 				}
 
 				$this->account_state->update( $state );
@@ -433,15 +430,14 @@ class AccountController extends BaseOptionsController {
 	 * 2. Enables the meta tag in the head of the store.
 	 * 3. Instructs the Site Verification API to verify the meta tag.
 	 *
-	 * @return bool True if the site has been (or already was) verified for the connected Google account.
 	 * @throws Exception If any step of the site verification process fails.
 	 */
-	private function verify_site(): bool {
+	private function verify_site(): void {
 		$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
 
 		// Inform of previous verification.
 		if ( $this->account_state->is_site_verified() ) {
-			return true;
+			return;
 		}
 
 		// Retrieve the meta tag with verification token.
@@ -471,7 +467,7 @@ class AccountController extends BaseOptionsController {
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
 				do_action( 'gla_site_verify_success', [] );
 
-				return true;
+				return;
 			}
 		} catch ( Exception $e ) {
 			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
@@ -540,11 +536,10 @@ class AccountController extends BaseOptionsController {
 	 * @param int    $merchant_id      The Merchant Center account to update
 	 * @param string $site_website_url The new website URL
 	 *
-	 * @return bool True if the Merchant Center website URL matches the provided URL (updated or already set).
 	 * @throws Exception If the Merchant Center account can't be retrieved.
 	 * @throws ExceptionWithResponseData If the account website URL doesn't match the given URL.
 	 */
-	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): bool {
+	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): void {
 		/** @var MC_Account $mc_account */
 		$mc_account = $this->merchant->get_account( $merchant_id );
 
@@ -582,26 +577,22 @@ class AccountController extends BaseOptionsController {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
 		}
-
-		return true;
 	}
 
 	/**
 	 * Generate a 503 Response with Retry-After header and message.
 	 *
-	 * @param int $time_to_wait The time to indicate
-	 *
 	 * @return Response
 	 */
-	private function get_time_to_wait_response( int $time_to_wait ): Response {
+	private function get_time_to_wait_response(): Response {
 		return new Response(
 			[
-				'retry_after' => $time_to_wait,
+				'retry_after' => MerchantAccountState::MC_DELAY_AFTER_CREATE,
 				'message'     => __( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
 			],
 			503,
 			[
-				'Retry-After' => $time_to_wait,
+				'Retry-After' => MerchantAccountState::MC_DELAY_AFTER_CREATE,
 			]
 		);
 	}
