@@ -19,7 +19,7 @@ $form_name = $this->form_name;
 ?>
 
 <p class="form-field">
-	<label for="gla_<?php printf( '%s_%s', sanitize_key( $form_name ), sanitize_key( $input->get_id() ) ); ?>"><?php echo esc_html( sanitize_text_field( $input->get_label() ) ); ?></label>
+	<label for="gla_<?php printf( '%s_%s', esc_attr( $form_name ), esc_attr( $input->get_id() ) ); ?>"><?php echo esc_html( sanitize_text_field( $input->get_label() ) ); ?></label>
 	<?php
 	// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo $this->render_partial(

@@ -18,7 +18,7 @@ $input = $this->input;
 $form_name = $this->form_name;
 ?>
 
-<input id="gla_<?php printf( '%s_%s', sanitize_key( $form_name ), sanitize_key( $input->get_id() ) ); ?>"
+<input id="gla_<?php printf( '%s_%s', esc_attr( $form_name ), esc_attr( $input->get_id() ) ); ?>"
 	   class="input-number" type="number"
 	   name="<?php echo esc_attr( $form_name ); ?>[<?php echo esc_attr( $input->get_name() ); ?>]"
 	   value="<?php echo esc_attr( sanitize_text_field( $input->get_value() ) ); ?>"/>

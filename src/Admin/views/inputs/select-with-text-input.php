@@ -23,17 +23,17 @@ $custom_value_input = $input->get_text_input();
 $form_name = $this->form_name;
 ?>
 
-<select id="gla_<?php printf( '%s_%s', sanitize_key( $form_name ), sanitize_key( $input->get_id() ) ); ?>"
+<select id="gla_<?php printf( '%s_%s', esc_attr( $form_name ), esc_attr( $input->get_id() ) ); ?>"
 		class="input-text"
 		name="<?php echo esc_attr( $form_name ); ?>[<?php echo esc_attr( $input->get_name() ); ?>]">
 	<?php foreach ( $input->get_options() as $option_id => $option ) : ?>
 		<option value="<?php echo esc_attr( sanitize_key( $option_id ) ); ?>"
-			<?php echo $input->get_value() === $option_id ? 'selected="selected"' : ''; ?> >
+			<?php selected( $input->get_value(), $option_id ); ?> >
 			<?php echo esc_html( $option ); ?>
 		</option>
 	<?php endforeach; ?>
 	<option value="<?php echo esc_attr( $input::CUSTOM_VALUE_KEY ); ?>" <?php echo $input->is_custom_value() ? 'selected="selected"' : ''; ?>>
-		Enter your value
+		<?php esc_html_e( 'Enter your value', 'google-listings-and-ads' ); ?>
 	</option>
 </select>
 <?php
