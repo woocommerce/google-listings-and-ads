@@ -63,14 +63,16 @@ abstract class AbstractForm implements FormInterface {
 
 		$_data = [];
 		foreach ( $this->inputs as $input ) {
-			$data_key = $input->get_name();
-			if ( $input instanceof SelectWithTextInput && ! empty( $data[ $data_key ] ) && SelectWithTextInput::CUSTOM_VALUE_KEY === $data[ $data_key ] ) {
-				$data_key = sprintf( '%s_%s', $input->get_name(), SelectWithTextInput::CUSTOM_VALUE_KEY );
+			$data_key    = $input->get_name();
+			$input_value = $data[ $data_key ] ?? null;
+			if ( $input instanceof SelectWithTextInput && ! empty( $input_value ) && SelectWithTextInput::CUSTOM_VALUE_KEY === $input_value ) {
+				$custom_data_key = sprintf( '%s_%s', $input->get_name(), SelectWithTextInput::CUSTOM_VALUE_KEY );
+				$input_value     = $data[ $custom_data_key ] ?? null;
 			}
 
-			if ( isset( $data[ $data_key ] ) ) {
-				$input->set_value( $data[ $data_key ] );
-				$_data[ $data_key ] = $data[ $data_key ];
+			if ( null !== $input_value ) {
+				$input->set_value( $input_value );
+				$_data[ $data_key ] = $input_value;
 			}
 		}
 
