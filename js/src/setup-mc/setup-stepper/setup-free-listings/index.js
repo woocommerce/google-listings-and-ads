@@ -30,17 +30,29 @@ import checkErrors from './checkErrors';
 const SetupFreeListings = () => {
 	const [ completing, setCompleting ] = useState( false );
 	const { settings } = useSettings();
-	const { createNotice } = useDispatchCoreNotices();
-	const adminUrl = useAdminUrl();
 	const { data: shippingRatesData } = useShippingRates();
 	const { data: shippingTimesData } = useShippingTimes();
+	const { createNotice } = useDispatchCoreNotices();
+	const adminUrl = useAdminUrl();
 
-	if ( ! settings ) {
+	if ( ! settings || ! shippingRatesData || ! shippingTimesData ) {
 		return <AppSpinner />;
 	}
 
-	const handleValidate = ( values ) => {
-		return checkErrors( values, shippingRatesData, shippingTimesData );
+	/**
+	 * Validation handler.
+	 *
+	 * We just return empty object here,
+	 * because we call `checkErrors` in the rendering below,
+	 * to accommodate for shippingRatesData and shippingTimesData from wp-data store.
+	 * Apparently when shippingRates and shippingTimes are changed,
+	 * the handleValidate function here does not get called.
+	 *
+	 * When we have shipping rates and shipping times as part of form values,
+	 * then we can move `checkErrors` from inside rendering into this handleValidate function.
+	 */
+	const handleValidate = () => {
+		return {};
 	};
 
 	const handleSubmitCallback = async () => {
@@ -94,7 +106,13 @@ const SetupFreeListings = () => {
 				onSubmitCallback={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
-					const { errors, handleSubmit } = formProps;
+					const { values, handleSubmit } = formProps;
+
+					const errors = checkErrors(
+						values,
+						shippingRatesData,
+						shippingTimesData
+					);
 
 					const isCompleteSetupDisabled =
 						Object.keys( errors ).length >= 1;
