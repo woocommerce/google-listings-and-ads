@@ -3,13 +3,13 @@
  */
 import { __ } from '@wordpress/i18n';
 import { SummaryNumber } from '@woocommerce/components';
-import { Tooltip } from '@wordpress/components';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
 
 /**
  * Internal dependencies
  */
 import './metric-number.scss';
+import AppTooltip from '.~/components/app-tooltip';
 
 /**
  * SummeryNumber annotated about missing data.
@@ -42,16 +42,14 @@ const MetricNumber = ( {
 		markedLabel = (
 			<div className="gla-reports__metric-label">
 				{ label }
-				<Tooltip text={ infoText }>
-					<span>
-						<GridiconInfoOutline
-							className="gla-reports__metric-infoicon"
-							role="img"
-							aria-label={ infoText }
-							size={ 16 }
-						/>
-					</span>
-				</Tooltip>
+				<AppTooltip text={ infoText }>
+					<GridiconInfoOutline
+						className="gla-reports__metric-infoicon"
+						role="img"
+						aria-label={ infoText }
+						size={ 16 }
+					/>
+				</AppTooltip>
 			</div>
 		);
 	}
