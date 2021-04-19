@@ -39,7 +39,7 @@ $form_name = $this->form_name;
 <?php
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 echo $this->render_partial(
-	path_join( 'src/Admin/views/inputs/', $custom_value_input->get_type() ),
+	path_join( 'inputs/', $custom_value_input->get_type() ),
 	[
 		'input'     => $custom_value_input,
 		'form_name' => $form_name,

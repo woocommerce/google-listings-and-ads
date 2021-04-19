@@ -175,16 +175,7 @@ class Admin implements Service, Registerable, Conditional {
 	 * @throws ViewException If the view doesn't exist or can't be loaded.
 	 */
 	public function get_view( string $view, array $context_variables = [] ): string {
-		return $this->view_factory->create( self::get_view_path( $view ) )
+		return $this->view_factory->create( $view )
 							->render( $context_variables );
-	}
-
-	/**
-	 * @param string $view Name of the view
-	 *
-	 * @return string View path relative to plugin's root
-	 */
-	protected static function get_view_path( string $view ): string {
-		return path_join( 'src/Admin/views', $view );
 	}
 }

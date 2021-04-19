@@ -153,7 +153,7 @@ class PHPView implements View {
 	 */
 	protected function validate( string $path ): string {
 		$path = $this->check_extension( $path, static::VIEW_EXTENSION );
-		$path = path_join( dirname( __DIR__, 2 ), $path );
+		$path = path_join( $this->get_views_base_path(), $path );
 
 		if ( ! is_readable( $path ) ) {
 			throw ViewException::invalid_path( $path );
@@ -208,5 +208,12 @@ class PHPView implements View {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function get_views_base_path(): string {
+		return path_join( dirname( __DIR__, 2 ), 'views' );
 	}
 }

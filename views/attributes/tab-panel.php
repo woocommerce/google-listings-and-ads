@@ -28,7 +28,7 @@ $product_id = $this->product_id;
 			<?php
 			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo $this->render_partial(
-				'src/Admin/views/inputs/input',
+				'inputs/input',
 				[
 					'input'     => $input,
 					'form_name' => $form->get_name(),
