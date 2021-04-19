@@ -174,7 +174,7 @@ const CompareProductsTableCard = ( props ) => {
 		<AppTableCard
 			title={
 				<>
-					{ __( 'Programs', 'google-listings-and-ads' ) }
+					{ __( 'Products', 'google-listings-and-ads' ) }
 					<Button
 						isSecondary
 						isSmall
