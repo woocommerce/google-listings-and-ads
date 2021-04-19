@@ -32,7 +32,6 @@ abstract class AbstractForm implements FormInterface {
 	 * @param InputInterface[] $inputs
 	 */
 	public function __construct( array $inputs ) {
-		// validate all inputs
 		foreach ( $inputs as $input ) {
 			$this->validate_instanceof( $input, InputInterface::class );
 		}
