@@ -32,7 +32,7 @@ $form_name = $this->form_name;
 			<?php echo esc_html( $option ); ?>
 		</option>
 	<?php endforeach; ?>
-	<option value="<?php echo esc_attr( $input::CUSTOM_VALUE_KEY ); ?>" <?php echo $input->is_custom_value() ? 'selected="selected"' : ''; ?>>
+	<option value="<?php echo esc_attr( $input::CUSTOM_VALUE_KEY ); ?>" <?php selected( $input->is_custom_value() ); ?>>
 		<?php esc_html_e( 'Enter your value', 'google-listings-and-ads' ); ?>
 	</option>
 </select>
