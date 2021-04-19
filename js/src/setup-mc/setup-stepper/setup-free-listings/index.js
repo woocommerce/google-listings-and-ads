@@ -17,7 +17,9 @@ import FormContent from './form-content';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
-import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
+import useShippingRates from '.~/hooks/useShippingRates';
+import useShippingTimes from '.~/hooks/useShippingTimes';
+import checkErrors from './checkErrors';
 
 /**
  * Setup step to configure free listings.
@@ -30,17 +32,15 @@ const SetupFreeListings = () => {
 	const { settings } = useSettings();
 	const { createNotice } = useDispatchCoreNotices();
 	const adminUrl = useAdminUrl();
+	const { data: shippingRatesData } = useShippingRates();
+	const { data: shippingTimesData } = useShippingTimes();
 
 	if ( ! settings ) {
 		return <AppSpinner />;
 	}
 
-	const handleValidate = () => {
-		const errors = {};
-
-		// TODO: validation logic.
-
-		return errors;
+	const handleValidate = ( values ) => {
+		return checkErrors( values, shippingRatesData, shippingTimesData );
 	};
 
 	const handleSubmitCallback = async () => {
@@ -94,11 +94,10 @@ const SetupFreeListings = () => {
 				onSubmitCallback={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
-					const { values, errors, handleSubmit } = formProps;
+					const { errors, handleSubmit } = formProps;
 
 					const isCompleteSetupDisabled =
-						Object.keys( errors ).length >= 1 ||
-						! isPreLaunchChecklistComplete( values );
+						Object.keys( errors ).length >= 1;
 
 					return (
 						<FormContent
