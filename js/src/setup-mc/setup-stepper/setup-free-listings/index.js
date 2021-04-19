@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 import { Form } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 
@@ -13,7 +15,6 @@ import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import FormContent from './form-content';
 import useAdminUrl from '.~/hooks/useAdminUrl';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
@@ -25,12 +26,9 @@ import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
  * @see /js/src/edit-free-campaign/setup-free-listings/index.js
  */
 const SetupFreeListings = () => {
+	const [ completing, setCompleting ] = useState( false );
 	const { settings } = useSettings();
 	const { createNotice } = useDispatchCoreNotices();
-	const [ fetchSettingsSync, { loading } ] = useApiFetchCallback( {
-		path: `/wc/gla/mc/settings/sync`,
-		method: 'POST',
-	} );
 	const adminUrl = useAdminUrl();
 
 	if ( ! settings ) {
@@ -47,7 +45,12 @@ const SetupFreeListings = () => {
 
 	const handleSubmitCallback = async () => {
 		try {
-			await fetchSettingsSync();
+			setCompleting( true );
+
+			await apiFetch( {
+				path: '/wc/gla/mc/settings/sync',
+				method: 'POST',
+			} );
 
 			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 			const path = getNewPath(
@@ -56,6 +59,8 @@ const SetupFreeListings = () => {
 			);
 			window.location.href = adminUrl + path;
 		} catch ( error ) {
+			setCompleting( false );
+
 			createNotice(
 				'error',
 				__(
@@ -101,7 +106,7 @@ const SetupFreeListings = () => {
 							submitButton={
 								<AppButton
 									isPrimary
-									loading={ loading }
+									loading={ completing }
 									disabled={ isCompleteSetupDisabled }
 									onClick={ handleSubmit }
 								>

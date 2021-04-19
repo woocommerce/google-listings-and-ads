@@ -53,7 +53,7 @@
 		"@woocommerce/number": "^2.1.0",
 		"@woocommerce/tracks": "^1.0.0",
 		"@wordpress/base-styles": "^3.2.0",
-		"@wordpress/components": "^11.1.1",
+		"@wordpress/components": "^12.0.8",
 		"@wordpress/data": "^4.26.1",
 		"@wordpress/data-controls": "^1.20.1",
 		"@wordpress/date": "^3.12.0",
