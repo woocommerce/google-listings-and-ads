@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -11,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  */
 abstract class AbstractForm implements FormInterface {
+
+	use ValidateInterface;
 
 	/**
 	 * @var array
@@ -28,6 +32,11 @@ abstract class AbstractForm implements FormInterface {
 	 * @param InputInterface[] $inputs
 	 */
 	public function __construct( array $inputs ) {
+		// validate all inputs
+		foreach ( $inputs as $input ) {
+			$this->validate_instanceof( $input, InputInterface::class );
+		}
+
 		$this->inputs = $inputs;
 	}
 
