@@ -38,7 +38,7 @@ class InputForm extends AbstractForm {
 	 * @param InputInterface     $input
 	 * @param AttributeInterface $attribute
 	 *
-	 * @return InputInterface|Select|SelectWithTextInput
+	 * @return InputInterface
 	 */
 	protected function init_input( InputInterface $input, AttributeInterface $attribute ) {
 		$input->set_id( $attribute::get_id() )
