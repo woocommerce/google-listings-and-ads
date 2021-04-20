@@ -15,8 +15,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * Initializes all jobs when certain conditions are met (e.g. the request is async or initiated by CRON, CLI, etc.).
  *
- * The list of jobs (classes implementing JobInterface) are pulled from the container.
- *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
 class JobInitializer implements Registerable, Conditional {
