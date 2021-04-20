@@ -18,9 +18,10 @@
     "ext-json": "*"
   },
   "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
     "phpunit/phpunit": "^6.5 || ^7",
-    "wp-coding-standards/wpcs": "^2.3",
-    "dealerdirect/phpcodesniffer-composer-installer": "^v0.7"
+    "wp-cli/i18n-command": "^2.2",
+    "wp-coding-standards/wpcs": "^2.3"
   },
   "license": "GPL-3.0",
   "autoload": {
