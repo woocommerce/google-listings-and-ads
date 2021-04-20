@@ -3,7 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const checkErrors = ( values, shippingRates, shippingTimes ) => {
+const checkErrors = (
+	values,
+	shippingRates,
+	shippingTimes,
+	finalCountryCodes
+) => {
 	const errors = {};
 
 	/**
@@ -16,7 +21,10 @@ const checkErrors = ( values, shippingRates, shippingTimes ) => {
 		);
 	}
 
-	if ( values.shipping_rate === 'flat' && shippingRates.length === 0 ) {
+	if (
+		values.shipping_rate === 'flat' &&
+		shippingRates.length < finalCountryCodes.length
+	) {
 		errors.shipping_rate = __(
 			'Please specify shipping rates for all the countries.',
 			'google-listings-and-ads'
@@ -44,7 +52,10 @@ const checkErrors = ( values, shippingRates, shippingTimes ) => {
 		);
 	}
 
-	if ( values.shipping_time === 'flat' && shippingTimes.length === 0 ) {
+	if (
+		values.shipping_time === 'flat' &&
+		shippingTimes.length < finalCountryCodes.length
+	) {
 		errors.shipping_time = __(
 			'Please specify shipping times for all the countries.',
 			'google-listings-and-ads'

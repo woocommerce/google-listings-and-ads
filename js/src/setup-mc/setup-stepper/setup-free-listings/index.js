@@ -20,6 +20,7 @@ import AppButton from '.~/components/app-button';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import checkErrors from './checkErrors';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
  * Setup step to configure free listings.
@@ -32,10 +33,18 @@ const SetupFreeListings = () => {
 	const { settings } = useSettings();
 	const { data: shippingRatesData } = useShippingRates();
 	const { data: shippingTimesData } = useShippingTimes();
+	const {
+		data: finalCountryCodesData,
+	} = useTargetAudienceFinalCountryCodes();
 	const { createNotice } = useDispatchCoreNotices();
 	const adminUrl = useAdminUrl();
 
-	if ( ! settings || ! shippingRatesData || ! shippingTimesData ) {
+	if (
+		! settings ||
+		! shippingRatesData ||
+		! shippingTimesData ||
+		! finalCountryCodesData
+	) {
 		return <AppSpinner />;
 	}
 
@@ -111,7 +120,8 @@ const SetupFreeListings = () => {
 					const errors = checkErrors(
 						values,
 						shippingRatesData,
-						shippingTimesData
+						shippingTimesData,
+						finalCountryCodesData
 					);
 
 					const isCompleteSetupDisabled =
