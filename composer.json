@@ -57,7 +57,8 @@
   "archive": {
     "exclude": [
       "!/js/build",
-      "!/vendor/*"
+      "!/vendor/*",
+      "!/languages"
     ]
   },
   "extra": {
