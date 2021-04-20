@@ -38,32 +38,26 @@ const ShippingTimeSetup = ( props ) => {
 
 	const countriesTimeArray = getCountriesTimeArray( shippingTimes );
 
+	// Prefill to-be-added price.
+	if ( countriesTimeArray.length === 0 ) {
+		countriesTimeArray.push( {
+			countries: selectedCountryCodes,
+			time: '',
+		} );
+	}
+
 	return (
 		<div className="gla-shipping-time-setup">
 			<VerticalGapLayout>
 				<div className="countries-time">
 					<VerticalGapLayout>
-						{ shippingTimes.length === 0 && (
-							<div className="countries-time-input-form">
-								<CountriesTimeInputForm
-									initialValue={ {
-										countries: selectedCountryCodes,
-										time: '',
-									} }
-								/>
-							</div>
-						) }
 						{ countriesTimeArray.map( ( el ) => {
 							return (
 								<div
-									key={ `${ el.time }-${ el.countries.join(
-										'-'
-									) }` }
+									key={ el.countries.join( '-' ) }
 									className="countries-time-input-form"
 								>
-									<CountriesTimeInputForm
-										initialValue={ el }
-									/>
+									<CountriesTimeInputForm savedValue={ el } />
 								</div>
 							);
 						} ) }

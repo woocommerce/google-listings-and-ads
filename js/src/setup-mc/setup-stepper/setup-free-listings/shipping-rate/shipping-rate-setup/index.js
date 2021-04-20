@@ -39,32 +39,28 @@ const ShippingRateSetup = ( props ) => {
 
 	const countriesPriceArray = getCountriesPriceArray( shippingRates );
 
+	// Prefill to-be-added price.
+	if ( countriesPriceArray.length === 0 ) {
+		countriesPriceArray.push( {
+			countries: selectedCountryCodes,
+			price: '',
+			currency: currencyCode,
+		} );
+	}
+
 	return (
 		<div className="gla-shipping-rate-setup">
 			<VerticalGapLayout>
 				<div className="countries-price">
 					<VerticalGapLayout>
-						{ shippingRates.length === 0 && (
-							<div className="countries-price-input-form">
-								<CountriesPriceInputForm
-									initialValue={ {
-										countries: selectedCountryCodes,
-										price: '',
-										currency: currencyCode,
-									} }
-								/>
-							</div>
-						) }
 						{ countriesPriceArray.map( ( el ) => {
 							return (
 								<div
-									key={ `${ el.price }-${ el.countries.join(
-										'-'
-									) }` }
+									key={ el.countries.join( '-' ) }
 									className="countries-price-input-form"
 								>
 									<CountriesPriceInputForm
-										initialValue={ el }
+										savedValue={ el }
 									/>
 								</div>
 							);
