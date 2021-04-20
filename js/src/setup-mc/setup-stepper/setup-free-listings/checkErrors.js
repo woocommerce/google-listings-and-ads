@@ -63,6 +63,16 @@ const checkErrors = (
 	}
 
 	/**
+	 * Check tax rate (required for U.S. only).
+	 */
+	if ( finalCountryCodes.includes( 'US' ) && ! values.tax_rate ) {
+		errors.tax_rate = __(
+			'Please specify tax rate option.',
+			'google-listings-and-ads'
+		);
+	}
+
+	/**
 	 * Pre-launch checklist.
 	 */
 	if ( ! values.website_live ) {
