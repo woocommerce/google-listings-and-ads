@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -18,58 +20,22 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class MerchantCenterService
  *
+ * ContainerAware used to access:
+ * - MerchantAccountState
+ * - MerchantIssues
+ * - ShippingRateTable
+ * - ShippingTimeTable
+ * - TransientsInterface
+ * - WC
+ * - WP
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
-class MerchantCenterService implements OptionsAwareInterface, Service {
+class MerchantCenterService implements OptionsAwareInterface, ContainerAwareInterface, Service {
 
 	use GoogleHelper;
 	use OptionsAwareTrait;
-
-	/**
-	 * WooCommerce proxy service
-	 *
-	 * @var WC
-	 */
-	protected $wc;
-
-	/**
-	 * WordPress proxy service
-	 *
-	 * @var WP
-	 */
-	protected $wp;
-
-	/**
-	 * @var TransientsInterface
-	 */
-	protected $transients;
-
-	/**
-	 * @var MerchantAccountState
-	 */
-	protected $account_state;
-
-	/**
-	 * @var MerchantIssues
-	 */
-	protected $issues;
-
-	/**
-	 * MerchantCenterService constructor.
-	 *
-	 * @param WC                   $wc
-	 * @param WP                   $wp
-	 * @param TransientsInterface  $transients
-	 * @param MerchantAccountState $account_state
-	 * @param MerchantIssues       $issues
-	 */
-	public function __construct( WC $wc, WP $wp, TransientsInterface $transients, MerchantAccountState $account_state, MerchantIssues $issues ) {
-		$this->wc            = $wc;
-		$this->wp            = $wp;
-		$this->transients    = $transients;
-		$this->account_state = $account_state;
-		$this->issues        = $issues;
-	}
+	use ContainerAwareTrait;
 
 	/**
 	 * Get whether Merchant Center setup is completed.
@@ -89,7 +55,7 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 	public function is_country_supported( string $country = '' ): bool {
 		// Default to WooCommerce store country
 		if ( empty( $country ) ) {
-			$country = $this->wc->get_base_country();
+			$country = $this->container->get( WC::class )->get_base_country();
 		}
 
 		return array_key_exists(
@@ -107,7 +73,7 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 	public function is_language_supported( string $language = '' ): bool {
 		// Default to base site language
 		if ( empty( $language ) ) {
-			$language = substr( $this->wp->get_locale(), 0, 2 );
+			$language = substr( $this->container->get( WP::class )->get_locale(), 0, 2 );
 		}
 
 		return array_key_exists(
@@ -120,7 +86,7 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 	 * @return string[] List of target countries specified in options. Defaults to WooCommerce store base country.
 	 */
 	public function get_target_countries(): array {
-		$target_countries = [ $this->wc->get_base_country() ];
+		$target_countries = [ $this->container->get( WC::class )->get_base_country() ];
 
 		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
 		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
@@ -149,7 +115,7 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 			'status' => $id ? 'connected' : 'disconnected',
 		];
 
-		$incomplete = $this->account_state->last_incomplete_step();
+		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
 		if ( ! empty( $incomplete ) ) {
 			$status['status'] = 'incomplete';
 			$status['step']   = $incomplete;
@@ -194,9 +160,8 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
-		$this->transients->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
-
-		$this->issues->delete();
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
+		$this->container->get( MerchantIssues::class )->delete();
 	}
 
 	/**
@@ -206,7 +171,7 @@ class MerchantCenterService implements OptionsAwareInterface, Service {
 	 */
 	protected function connected_account(): bool {
 		$id = $this->options->get_merchant_id();
-		return $id && ! $this->account_state->last_incomplete_step();
+		return $id && ! $this->container->get( MerchantAccountState::class )->last_incomplete_step();
 	}
 
 	/**

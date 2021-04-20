@@ -153,14 +153,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
-		$this->share_with_tags(
-			MerchantCenterService::class,
-			WC::class,
-			WP::class,
-			TransientsInterface::class,
-			MerchantAccountState::class,
-			MerchantIssues::class
-		);
+		$this->share_with_tags( MerchantCenterService::class );
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
