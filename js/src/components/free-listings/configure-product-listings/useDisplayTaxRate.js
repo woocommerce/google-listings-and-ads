@@ -26,7 +26,7 @@ const useDisplayTaxRate = ( audienceCountries = null ) => {
 		return true;
 	}
 	// If we cannot tell yet, return `null`.
-	if ( storeCountry === null || audienceCountries === null ) {
+	if ( ! storeCountry || audienceCountries === null ) {
 		return null;
 	}
 	// Store's and audience countries are available and were checked, none contains `US`.
