@@ -12,6 +12,7 @@ import TaxRate from '.~/components/free-listings/configure-product-listings/tax-
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import CombinedShipping from '.~/components/free-listings/configure-product-listings/combined-shipping';
 import AppButton from '.~/components/app-button';
+import ConditionalSection from '.~/components/conditional-section';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -36,14 +37,17 @@ const FormContent = ( {
 } ) => {
 	const { errors, handleSubmit } = formProps;
 
-	const displayTaxRate = useDisplayTaxRate( countries );
+	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
 
-	const isCompleteSetupDisabled = Object.keys( errors ).length >= 1;
+	const isCompleteSetupDisabled =
+		shouldDisplayTaxRate === null || Object.keys( errors ).length >= 1;
 
 	return (
 		<StepContent>
 			<CombinedShipping formProps={ formProps } countries={ countries } />
-			{ displayTaxRate && <TaxRate formProps={ formProps } /> }
+			<ConditionalSection show={ shouldDisplayTaxRate }>
+				<TaxRate formProps={ formProps } />
+			</ConditionalSection>
 			<StepContentFooter>
 				<AppButton
 					isPrimary

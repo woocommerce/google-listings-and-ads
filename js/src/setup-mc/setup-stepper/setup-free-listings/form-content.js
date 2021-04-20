@@ -10,6 +10,7 @@ import PreLaunchChecklist from './pre-launch-checklist';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import ConditionalSection from '.~/components/conditional-section';
 
 /**
  * Form to configure free listings.
@@ -22,15 +23,17 @@ const FormContent = ( props ) => {
 	const { formProps, submitButton } = props;
 	const { values } = formProps;
 	const { data: audienceCountries } = useTargetAudienceFinalCountryCodes();
-	const displayTaxRate = useDisplayTaxRate( audienceCountries );
-
+	const shouldDisplayTaxRate = useDisplayTaxRate( audienceCountries );
+	// console.log('FormContent', shouldDisplayTaxRate);
 	useAutoSaveSettingsEffect( values );
 
 	return (
 		<StepContent>
 			<ShippingRate formProps={ formProps } />
 			<ShippingTime formProps={ formProps } />
-			{ displayTaxRate && <TaxRate formProps={ formProps } /> }
+			<ConditionalSection show={ shouldDisplayTaxRate }>
+				<TaxRate formProps={ formProps } />
+			</ConditionalSection>
 			<PreLaunchChecklist formProps={ formProps } />
 			<StepContentFooter>{ submitButton }</StepContentFooter>
 		</StepContent>
