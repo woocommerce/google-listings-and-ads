@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
@@ -162,6 +164,9 @@ class MerchantCenterService implements OptionsAwareInterface, ContainerAwareInte
 
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
 		$this->container->get( MerchantIssues::class )->delete();
+
+		$this->container->get( ShippingRateTable::class )->truncate();
+		$this->container->get( ShippingTimeTable::class )->truncate();
 	}
 
 	/**
