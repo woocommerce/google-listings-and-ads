@@ -15,6 +15,7 @@ import SetupCard from './setup-card';
 import BillingSavedCard from './billing-saved-card';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppButton from '.~/components/app-button';
+import fallbackBillingUrl from './fallbackBillingUrl';
 
 const SetupBilling = ( props ) => {
 	const {
@@ -54,7 +55,9 @@ const SetupBilling = ( props ) => {
 					<BillingSavedCard />
 				) : (
 					<SetupCard
-						billingUrl={ billingStatus.billing_url }
+						billingUrl={
+							billingStatus.billing_url || fallbackBillingUrl
+						}
 						onSetupComplete={ handleSubmit }
 					/>
 				) }
