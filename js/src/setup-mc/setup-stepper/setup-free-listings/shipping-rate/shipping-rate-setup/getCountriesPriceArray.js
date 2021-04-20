@@ -47,13 +47,14 @@ const getCountriesPriceArray = ( shippingRates ) => {
 
 	shippingRates.forEach( ( shippingRate ) => {
 		const { countryCode, rate } = shippingRate;
-		const group = rateGroupMap.get( rate ) || {
+		const price = Number( rate );
+		const group = rateGroupMap.get( price ) || {
 			countries: [],
-			price: rate,
+			price,
 			currency,
 		};
 		group.countries.push( countryCode );
-		rateGroupMap.set( rate, group );
+		rateGroupMap.set( price, group );
 	} );
 
 	return Array.from( rateGroupMap.values() );
