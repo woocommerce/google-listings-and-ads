@@ -35,7 +35,7 @@ const performanceMetrics = [
  * Renders a report page about products sold with GLA.
  */
 const ProductsReport = () => {
-	const reportId = 'reports-programs';
+	const reportId = 'reports-products';
 
 	const metricsData = getMetricsData();
 
