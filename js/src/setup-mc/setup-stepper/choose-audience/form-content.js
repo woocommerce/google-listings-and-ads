@@ -29,13 +29,11 @@ import '.~/components/free-listings/choose-audience/index.scss';
  */
 const FormContent = ( props ) => {
 	const { formProps } = props;
-	const { values, errors, getInputProps, handleSubmit } = formProps;
+	const { values, isValidForm, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
 
 	useAutoSaveTargetAudienceEffect( values );
 	useAutoClearShippingEffect( values.location, values.countries );
-
-	const isContinueDisabled = errors.location || errors.countries;
 
 	return (
 		<>
@@ -140,7 +138,7 @@ const FormContent = ( props ) => {
 			<StepContentFooter>
 				<Button
 					isPrimary
-					disabled={ isContinueDisabled }
+					disabled={ ! isValidForm }
 					onClick={ handleSubmit }
 				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
