@@ -19,6 +19,11 @@ use Exception;
 /**
  * Class MerchantIssues
  *
+ * ContainerAware used to access:
+ * - MerchantIssueTable
+ * - OptionsInterface
+ * - ProductHelper
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
 class MerchantIssues implements Service, ContainerAwareInterface {
