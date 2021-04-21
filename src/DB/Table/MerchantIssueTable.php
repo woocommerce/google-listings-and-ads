@@ -25,7 +25,7 @@ class MerchantIssueTable extends Table {
 	protected function get_install_query(): string {
 		return <<< SQL
 CREATE TABLE `{$this->get_sql_safe_name()}` (
-    `id` bigint(20) NOT NULL  AUTO_INCREMENT,
+    `id` bigint(20) NOT NULL AUTO_INCREMENT,
     `product_id` bigint(20) NOT NULL,
     `issue` varchar(200) NOT NULL,
     `code` varchar(100) NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     `applicable_countries` text NOT NULL,
     `created_at` datetime NOT NULL,
     PRIMARY KEY `id` (`id`),
-    UNIQUE `product_issue` (`product_id`, `issue`)
+    UNIQUE KEY `product_issue` (`product_id`, `issue`)
 ) {$this->get_collation()};
 SQL;
 	}

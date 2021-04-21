@@ -57,8 +57,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -153,14 +151,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
-		$this->share_with_tags(
-			MerchantCenterService::class,
-			WC::class,
-			WP::class,
-			TransientsInterface::class,
-			MerchantAccountState::class,
-			MerchantIssues::class
-		);
+		$this->share_with_tags( MerchantCenterService::class );
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
