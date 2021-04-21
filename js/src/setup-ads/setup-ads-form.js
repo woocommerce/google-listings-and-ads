@@ -14,6 +14,7 @@ import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
+import validateForm from '.~/utils/paid-ads/validateForm';
 
 // when amount is null or undefined in an onChange callback,
 // it will cause runtime error with the Form component.
@@ -29,23 +30,7 @@ const SetupAdsForm = () => {
 	const adminUrl = useAdminUrl();
 
 	const handleValidate = ( values ) => {
-		const errors = {};
-
-		if ( values.country.length === 0 ) {
-			errors.country = __(
-				'Please select a country for your ads campaign.',
-				'google-listings-and-ads'
-			);
-		}
-
-		if ( values.amount <= 0 ) {
-			errors.amount = __(
-				'Please make sure daily average cost is greater than 0.',
-				'google-listings-and-ads'
-			);
-		}
-
-		return errors;
+		return validateForm( values );
 	};
 
 	useEffect( () => {
