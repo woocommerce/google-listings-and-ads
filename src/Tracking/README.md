@@ -90,6 +90,11 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate the place where the button is located.
   * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'` or `'/google/campaigns/create'`.
 
+* `ads_set_up_billing_click` - "Set up billing" button for Google Ads account is clicked.
+  * `context`: indicate the place where the button is located, e.g. `setup-ads`.
+  * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
+  * `href`: indicate the destination where the users is directed to.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
