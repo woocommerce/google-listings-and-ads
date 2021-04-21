@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use WC_Product;
 use WC_Product_Variation;
 
@@ -15,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  */
-class YoastWooCommerceSeo implements Service, Registerable {
+class YoastWooCommerceSeo implements IntegrationInterface {
 
 	protected const VALUE_KEY = 'yoast_seo';
 
@@ -25,13 +23,48 @@ class YoastWooCommerceSeo implements Service, Registerable {
 	protected $yoast_global_identifiers;
 
 	/**
-	 * Register a service.
+	 * Returns whether the integration is active or not.
+	 *
+	 * @return bool
 	 */
-	public function register(): void {
-		add_filter( 'gla_product_attribute_value_options_mpn', [ $this, 'add_value_option' ] );
-		add_filter( 'gla_product_attribute_value_options_gtin', [ $this, 'add_value_option' ] );
-		add_filter( 'gla_product_attribute_value_mpn', [ $this, 'get_mpn' ], 10, 2 );
-		add_filter( 'gla_product_attribute_value_gtin', [ $this, 'get_gtin' ], 10, 2 );
+	public function is_active(): bool {
+		return defined( 'WPSEO_WOO_VERSION' );
+	}
+
+	/**
+	 * Initializes the integration (e.g. by registering the required hooks, filters, etc.).
+	 *
+	 * @return void
+	 */
+	public function init(): void {
+		add_filter(
+			'gla_product_attribute_value_options_mpn',
+			function ( array $value_options ) {
+				return $this->add_value_option( $value_options );
+			}
+		);
+		add_filter(
+			'gla_product_attribute_value_options_gtin',
+			function ( array $value_options ) {
+				return $this->add_value_option( $value_options );
+			}
+		);
+		add_filter(
+			'gla_product_attribute_value_mpn',
+			function ( $value, WC_Product $product ) {
+				return $this->get_mpn( $value, $product );
+			},
+			10,
+			2
+		);
+		add_filter(
+			'gla_product_attribute_value_gtin',
+			function ( $value, WC_Product $product ) {
+				return $this->get_gtin( $value, $product );
+			},
+			10,
+			2
+		);
 	}
 
 	/**
@@ -39,7 +72,7 @@ class YoastWooCommerceSeo implements Service, Registerable {
 	 *
 	 * @return array
 	 */
-	public function add_value_option( array $value_options ): array {
+	protected function add_value_option( array $value_options ): array {
 		$value_options[ self::VALUE_KEY ] = 'From Yoast WooCommerce SEO';
 
 		return $value_options;
@@ -51,7 +84,7 @@ class YoastWooCommerceSeo implements Service, Registerable {
 	 *
 	 * @return mixed
 	 */
-	public function get_mpn( $value, WC_Product $product ) {
+	protected function get_mpn( $value, WC_Product $product ) {
 		if ( self::VALUE_KEY === $value ) {
 			$value = $this->get_identifier_value( 'mpn', $product );
 		}
@@ -65,7 +98,7 @@ class YoastWooCommerceSeo implements Service, Registerable {
 	 *
 	 * @return mixed
 	 */
-	public function get_gtin( $value, WC_Product $product ) {
+	protected function get_gtin( $value, WC_Product $product ) {
 		if ( self::VALUE_KEY === $value ) {
 			$gtin_values = [
 				$this->get_identifier_value( 'isbn', $product ),

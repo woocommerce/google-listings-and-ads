@@ -22,7 +22,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
-use Automattic\WooCommerce\GoogleListingsAndAds\Integration\YoastWooCommerceSeo;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
@@ -219,10 +218,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( AttributeManager::class );
 		$this->conditionally_share_with_tags( TabInitializer::class, Admin::class, AttributeManager::class );
 		$this->conditionally_share_with_tags( VariationsFormInitializer::class, Admin::class, AttributeManager::class );
-
-		// Integrations
-		// todo: move this (and other integration classes) to a new service provider class
-		$this->conditionally_share_with_tags( YoastWooCommerceSeo::class );
 
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );

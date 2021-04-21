@@ -8,6 +8,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\CoreServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\DBServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\GoogleServiceProvider;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\IntegrationServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\JobServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\ProxyServiceProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\RESTServiceProvider;
@@ -48,6 +49,7 @@ final class Container implements ContainerInterface {
 		ThirdPartyServiceProvider::class,
 		GoogleServiceProvider::class,
 		JobServiceProvider::class,
+		IntegrationServiceProvider::class,
 		DBServiceProvider::class,
 	];
 
