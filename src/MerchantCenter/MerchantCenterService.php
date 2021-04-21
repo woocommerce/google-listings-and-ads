@@ -33,7 +33,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
-class MerchantCenterService implements OptionsAwareInterface, ContainerAwareInterface, Service {
+class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInterface, Service {
 
 	use GoogleHelper;
 	use OptionsAwareTrait;
