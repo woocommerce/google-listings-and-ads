@@ -3,6 +3,7 @@
  */
 import { Button } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -30,7 +31,7 @@ import './index.scss';
  */
 const AppButton = ( props ) => {
 	const {
-		className = '',
+		className,
 		disabled,
 		loading,
 		eventName,
@@ -50,7 +51,7 @@ const AppButton = ( props ) => {
 
 	return (
 		<Button
-			className={ `app-button ${ className }` }
+			className={ classnames( 'app-button', className ) }
 			disabled={ disabled || loading }
 			onClick={ handleClick }
 			{ ...rest }
