@@ -16,6 +16,7 @@ import AppButton from '.~/components/app-button';
 
 const CreateCampaign = ( props ) => {
 	const { formProps, onContinue = () => {} } = props;
+	const { isValidForm } = formProps;
 
 	return (
 		<StepContent>
@@ -43,7 +44,11 @@ const CreateCampaign = ( props ) => {
 			/>
 			<CreateCampaignFormContent formProps={ formProps } />
 			<StepContentFooter>
-				<AppButton isPrimary onClick={ onContinue }>
+				<AppButton
+					isPrimary
+					disabled={ ! isValidForm }
+					onClick={ onContinue }
+				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
 				</AppButton>
 			</StepContentFooter>
