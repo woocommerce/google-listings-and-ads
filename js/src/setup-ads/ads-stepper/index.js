@@ -21,8 +21,11 @@ const AdsStepper = ( props ) => {
 	const [ step, setStep ] = useState( '1' );
 
 	// TOOD: figure out when to allow and not to allow step click.
+	// Right now we just allow them to go backward, not forward.
 	const handleStepClick = ( value ) => {
-		setStep( value );
+		if ( value < step ) {
+			setStep( value );
+		}
 	};
 
 	const handleSetupAccountsContinue = () => {
