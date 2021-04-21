@@ -24,10 +24,6 @@ const SetupCard = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	const handleSetupBillingClick = () => {
-		window.open( billingUrl, '_blank' );
-	};
-
 	return (
 		<div className="gla-google-ads-billing-setup-card">
 			<Section.Card>
@@ -38,7 +34,7 @@ const SetupCard = ( props ) => {
 						/>
 					</div>
 					<div className="gla-google-ads-billing-setup-card__description">
-						<div>
+						<div className="gla-google-ads-billing-setup-card__description__text">
 							{ __(
 								'You do not have billing information set up in your Google Ads account. Once you have completed your billing setup, your campaign will launch automatically.',
 								'google-listings-and-ads'
@@ -46,7 +42,14 @@ const SetupCard = ( props ) => {
 						</div>
 						<AppButton
 							isSecondary
-							onClick={ handleSetupBillingClick }
+							href={ billingUrl }
+							target="_blank"
+							eventName="gla_ads_set_up_billing_click"
+							eventProps={ {
+								context: 'setup-ads',
+								link_id: 'set-up-billing',
+								href: billingUrl,
+							} }
 						>
 							{ __(
 								'Set up billing',
