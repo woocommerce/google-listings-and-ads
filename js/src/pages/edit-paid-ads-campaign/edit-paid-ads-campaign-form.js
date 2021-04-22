@@ -18,6 +18,7 @@ import EditPaidAdsCampaignFormContent from './edit-paid-ads-campaign-form-conten
 import AppButton from '.~/components/app-button';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
+import validateForm from '.~/utils/paid-ads/validateForm';
 
 const EditPaidAdsCampaignForm = ( props ) => {
 	const { campaign } = props;
@@ -25,12 +26,8 @@ const EditPaidAdsCampaignForm = ( props ) => {
 	const { fetchAdsCampaigns } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 
-	const handleValidate = () => {
-		const errors = {};
-
-		// TODO: validation logic.
-
-		return errors;
+	const handleValidate = ( values ) => {
+		return validateForm( values );
 	};
 
 	const handleSubmit = async ( values ) => {
@@ -73,7 +70,10 @@ const EditPaidAdsCampaignForm = ( props ) => {
 			onSubmitCallback={ handleSubmit }
 		>
 			{ ( formProps ) => {
-				const { handleSubmit: handleSaveChangesClick } = formProps;
+				const {
+					isValidForm,
+					handleSubmit: handleSaveChangesClick,
+				} = formProps;
 
 				return (
 					<StepContent>
@@ -104,6 +104,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 						<StepContentFooter>
 							<AppButton
 								isPrimary
+								disabled={ ! isValidForm }
 								loading={ loading }
 								onClick={ handleSaveChangesClick }
 							>

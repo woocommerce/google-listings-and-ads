@@ -14,6 +14,7 @@ import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
+import validateForm from '.~/utils/paid-ads/validateForm';
 
 // when amount is null or undefined in an onChange callback,
 // it will cause runtime error with the Form component.
@@ -28,12 +29,8 @@ const SetupAdsForm = () => {
 	const [ handleSetupComplete, isSubmitting ] = useSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
 
-	const handleValidate = () => {
-		const errors = {};
-
-		// TODO: validation logic.
-
-		return errors;
+	const handleValidate = ( values ) => {
+		return validateForm( values );
 	};
 
 	useEffect( () => {
