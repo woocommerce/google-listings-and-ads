@@ -24,7 +24,7 @@ const FormContent = ( props ) => {
 	const { values } = formProps;
 	const { data: audienceCountries } = useTargetAudienceFinalCountryCodes();
 	const shouldDisplayTaxRate = useDisplayTaxRate( audienceCountries );
-	// console.log('FormContent', shouldDisplayTaxRate);
+
 	useAutoSaveSettingsEffect( values );
 
 	return (
