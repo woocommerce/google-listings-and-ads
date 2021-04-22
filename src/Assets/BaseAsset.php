@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Closure;
 
 /**
@@ -11,6 +13,15 @@ use Closure;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
 abstract class BaseAsset implements Asset {
+
+	use PluginHelper;
+
+	/**
+	 * The file extension for the source.
+	 *
+	 * @var string
+	 */
+	protected $file_extension;
 
 	/**
 	 * Priority for registering an asset.
@@ -48,6 +59,57 @@ abstract class BaseAsset implements Asset {
 	protected $uri;
 
 	/**
+	 * Array of dependencies for the asset.
+	 *
+	 * @var array
+	 */
+	protected $dependencies = [];
+
+	/**
+	 * The version string for the asset.
+	 *
+	 * @var string
+	 */
+	protected $version;
+
+	/**
+	 * @var Closure
+	 */
+	protected $enqueue_condition;
+
+	/**
+	 * BaseAsset constructor.
+	 *
+	 * @param string       $file_extension    The asset file extension.
+	 * @param string       $handle            The asset handle.
+	 * @param string       $uri               The URI for the asset.
+	 * @param array        $dependencies      (Optional) Any dependencies the asset has.
+	 * @param string       $version           (Optional) A version string for the asset. Will default to the plugin
+	 *                                        version if not set.
+	 * @param Closure|null $enqueue_condition (Optional) Only enqueue the asset if this condition closure returns true.
+	 *                                        Returns true by default.
+	 */
+	public function __construct(
+		string $file_extension,
+		string $handle,
+		string $uri,
+		array $dependencies = [],
+		string $version = '',
+		Closure $enqueue_condition = null
+	) {
+		$this->file_extension = $file_extension;
+		$this->handle         = $handle;
+		$this->uri            = $this->get_uri_from_path( $uri );
+		$this->dependencies   = $dependencies;
+		$this->version        = $version ?: $this->get_version();
+
+		$return_true_closure     = function () {
+			return true;
+		};
+		$this->enqueue_condition = $enqueue_condition ?: $return_true_closure;
+	}
+
+	/**
 	 * Get the handle of the asset. The handle serves as the ID within WordPress.
 	 *
 	 * @return string
@@ -66,9 +128,24 @@ abstract class BaseAsset implements Asset {
 	}
 
 	/**
+	 * Get the condition closure to run when registering/enqueuing the asset.
+	 *
+	 * The asset will only be registered/enqueued if the closure returns true.
+	 *
+	 * @return Closure
+	 */
+	public function get_enqueue_condition(): Closure {
+		return $this->enqueue_condition;
+	}
+
+	/**
 	 * Enqueue the asset within WordPress.
 	 */
 	public function enqueue(): void {
+		if ( ! $this->get_enqueue_condition()->call( $this ) ) {
+			return;
+		}
+
 		$this->defer_action(
 			$this->get_enqueue_action(),
 			$this->get_enqueue_closure(),
@@ -119,7 +196,7 @@ abstract class BaseAsset implements Asset {
 	}
 
 	/**
-	 * Get the enqueue action to use.
+	 * Get the dequeue action to use.
 	 *
 	 * @return string
 	 */
@@ -144,7 +221,80 @@ abstract class BaseAsset implements Asset {
 	}
 
 	/**
-	 * Get the enqueue closure to use.
+	 * Convert a file path to a URI for a source.
+	 *
+	 * @param string $path The source file path.
+	 *
+	 * @return string
+	 */
+	protected function get_uri_from_path( string $path ): string {
+		$path = $this->normalize_source_path( $path );
+		$path = str_replace( $this->get_root_dir(), '', $path );
+
+		return $this->get_plugin_url( $path );
+	}
+
+	/**
+	 * Normalize a source path with a given file extension.
+	 *
+	 * @param string $path The path to normalize.
+	 *
+	 * @return string
+	 */
+	protected function normalize_source_path( string $path ): string {
+		$path = ltrim( $path, '/' );
+		$path = $this->maybe_add_extension( $path );
+		$path = "{$this->get_root_dir()}/{$path}";
+
+		return $this->maybe_add_minimized_extension( $path );
+	}
+
+	/**
+	 * Possibly add an extension to a path.
+	 *
+	 * @param string $path Path where an extension may be needed.
+	 *
+	 * @return string
+	 */
+	protected function maybe_add_extension( string $path ): string {
+		$detected_extension = pathinfo( $path, PATHINFO_EXTENSION );
+		if ( $this->file_extension !== $detected_extension ) {
+			$path .= ".{$this->file_extension}";
+		}
+
+		return $path;
+	}
+
+	/**
+	 * Possibly add a minimized extension to a path.
+	 *
+	 * @param string $path Path where a minimized extension may be needed.
+	 *
+	 * @return string
+	 * @throws InvalidAsset When no asset can be found.
+	 */
+	protected function maybe_add_minimized_extension( string $path ): string {
+		$minimized_path = str_replace( ".{$this->file_extension}", ".min.{$this->file_extension}", $path );
+
+		// Validate that at least one version of the file exists.
+		$path_readable      = is_readable( $path );
+		$minimized_readable = is_readable( $minimized_path );
+		if ( ! $path_readable && ! $minimized_readable ) {
+			throw InvalidAsset::invalid_path( $path );
+		}
+
+		// If we only have one available, return the available one no matter what.
+		if ( ! $minimized_readable ) {
+			return $path;
+		} elseif ( ! $path_readable ) {
+			return $minimized_path;
+		}
+
+		return defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? $path : $minimized_path;
+	}
+
+	/**
+	 * Get the register closure to use.
 	 *
 	 * @return Closure
 	 */

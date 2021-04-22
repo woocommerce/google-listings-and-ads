@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray as DependencyArray;
+use Closure;
 use Throwable;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,12 +17,14 @@ defined( 'ABSPATH' ) || exit;
 class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 
 	/**
-	 * ScriptHelper constructor.
+	 * AdminScriptWithBuiltDependenciesAsset constructor.
 	 *
-	 * @param string          $handle The script handle.
-	 * @param string          $uri    The URI for the script.
+	 * @param string          $handle         The script handle.
+	 * @param string          $uri            The URI for the script.
 	 * @param string          $build_dependency_path
 	 * @param DependencyArray $fallback_dependency_data
+	 * @param Closure|null    $load_condition (Optional) Only enqueue the asset if this condition closure returns true.
+	 *                                        Returns true by default.
 	 * @param bool            $in_footer
 	 */
 	public function __construct(
@@ -29,6 +32,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 		string $uri,
 		string $build_dependency_path,
 		DependencyArray $fallback_dependency_data,
+		Closure $load_condition = null,
 		bool $in_footer = true
 	) {
 		$dependency_data = $this->get_dependency_data( $build_dependency_path, $fallback_dependency_data );
@@ -37,6 +41,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 			$uri,
 			$dependency_data->get_dependencies(),
 			$dependency_data->get_version(),
+			$load_condition,
 			$in_footer
 		);
 	}
@@ -49,10 +54,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 	 *
 	 * @return DependencyArray
 	 */
-	protected function get_dependency_data(
-		string $build_dependency_path,
-		DependencyArray $fallback
-	): DependencyArray {
+	protected function get_dependency_data( string $build_dependency_path, DependencyArray $fallback ): DependencyArray {
 		try {
 			if ( ! is_readable( $build_dependency_path ) ) {
 				return $fallback;

@@ -87,6 +87,10 @@ class Admin implements Service, Registerable, Conditional {
 	 * Set up the array of assets.
 	 */
 	protected function setup_assets(): void {
+		$wc_admin_condition = function() {
+			return wc_admin_is_registered_page();
+		};
+
 		$this->assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads',
 			'js/build/index',
@@ -96,7 +100,8 @@ class Admin implements Service, Registerable, Conditional {
 					'dependencies' => [],
 					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
 				]
-			)
+			),
+			$wc_admin_condition
 		) )->add_inline_script(
 			'glaData',
 			[
@@ -111,7 +116,8 @@ class Admin implements Service, Registerable, Conditional {
 			'google-listings-and-ads-css',
 			'/js/build/index',
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" )
+			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
+			$wc_admin_condition
 		) );
 	}
 
