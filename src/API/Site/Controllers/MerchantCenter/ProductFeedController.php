@@ -72,7 +72,54 @@ class ProductFeedController extends BaseController {
 	 * @return array
 	 */
 	protected function get_schema_properties(): array {
-		return [];
+		return [
+			'products' => [
+				'type'        => 'array',
+				'description' => __( 'The store\'s products.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+				'items'       => [
+					'type'       => 'object',
+					'properties' => [
+						'id'      => [
+							'type'        => 'numeric',
+							'description' => __( 'Product ID.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'title'   => [
+							'type'        => 'string',
+							'description' => __( 'Product title.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'visible' => [
+							'type'        => 'boolean',
+							'description' => __( 'Whether the product is set to be visible in the Merchant Center', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'status'  => [
+							'type'        => 'string',
+							'description' => __( 'The current sync status of the product.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+						'errors'  => [
+							'type'        => 'array',
+							'description' => __( 'Errors preventing the product from being synced to the Merchant Center.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
+					],
+				],
+			],
+			'total'    => [
+				'type'     => 'numeric',
+				'context'  => [ 'view' ],
+				'readonly' => true,
+			],
+			'page'     => [
+				'type'     => 'numeric',
+				'context'  => [ 'view' ],
+				'readonly' => true,
+			],
+		];
 	}
 
 	/**
