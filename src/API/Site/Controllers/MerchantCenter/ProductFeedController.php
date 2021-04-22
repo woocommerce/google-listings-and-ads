@@ -3,11 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 
@@ -18,29 +16,22 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ProductFeedController extends BaseOptionsController {
+class ProductFeedController extends BaseController {
 
 	/**
-	 * @var ProductRepository
+	 * @var ProductFeedQueryHelper
 	 */
-	protected $repo;
-
-	/**
-	 * @var ProductMetaHandler
-	 */
-	protected $meta_handler;
+	protected $query_helper;
 
 	/**
 	 * ProductFeedController constructor.
 	 *
-	 * @param RESTServer         $server
-	 * @param ProductRepository  $repo
-	 * @param ProductMetaHandler $meta_handler
+	 * @param RESTServer             $server
+	 * @param ProductFeedQueryHelper $query_helper
 	 */
-	public function __construct( RESTServer $server, ProductRepository $repo, ProductMetaHandler $meta_handler ) {
+	public function __construct( RESTServer $server, ProductFeedQueryHelper $query_helper ) {
 		parent::__construct( $server );
-		$this->repo         = $repo;
-		$this->meta_handler = $meta_handler;
+		$this->query_helper = $query_helper;
 	}
 
 	/**
@@ -67,46 +58,7 @@ class ProductFeedController extends BaseOptionsController {
 	 */
 	protected function get_product_feed_read_callback(): callable {
 		return function( Request $request ) {
-			$products = [];
-
-			$orderby = [
-				'ID' => 'ASC',
-			];
-
-			$args = [
-				'type'    => [ 'simple', 'variable' ],
-				'orderby' => $orderby,
-			];
-
-			$limit  = -1;
-			$offset = 0;
-
-			if ( ! empty( $request['per_page'] ) ) {
-				$limit  = intval( $request['per_page'] );
-				$page   = max( 1, intval( $request['page'] ) );
-				$offset = $limit * ( $page - 1 );
-			}
-
-			foreach ( $this->repo->find( $args, $limit, $offset ) as $product ) {
-
-				$id         = $product->get_id();
-				$is_visible = $this->meta_handler->get_visibility( $id ) !== ChannelVisibility::DONT_SYNC_AND_SHOW;
-				$status     = 'not-synced';
-				if ( $is_visible && $this->meta_handler->get_synced_at( $id ) ) {
-					$status = 'synced';
-				} elseif ( $is_visible && empty( $this->meta_handler->get_errors( $id ) ) ) {
-					$status = 'pending';
-				}
-
-				$products[ $id ] = [
-					'id'      => $id,
-					'title'   => $product->get_name(),
-					'visible' => $is_visible,
-					'status'  => $status,
-					'errors'  => $this->meta_handler->get_errors( $id ),
-				];
-			}
-			return [ 'products' => array_values( $products ) ];
+			return [ 'products' => $this->query_helper->get( $request ) ];
 		};
 	}
 
@@ -159,14 +111,18 @@ class ProductFeedController extends BaseOptionsController {
 				'type'              => 'string',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'order_by' => [
-				'description'       => __( 'Column by which to sort the data.', 'google-listings-and-ads' ),
+			'orderby'  => [
+				'description'       => __( 'Sort collection by attribute.', 'google-listings-and-ads' ),
 				'type'              => 'string',
+				'default'           => 'title',
+				'enum'              => [ 'title', 'id', 'visible', 'stats' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'order'    => [
-				'description'       => __( 'Direction to sort the data.', 'google-listings-and-ads' ),
+				'description'       => __( 'Order sort attribute ascending or descending.', 'google-listings-and-ads' ),
 				'type'              => 'string',
+				'default'           => 'ASC',
+				'enum'              => [ 'ASC', 'DESC' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];

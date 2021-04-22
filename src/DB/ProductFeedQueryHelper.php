@@ -68,7 +68,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		$this->request          = $request;
 		$products               = [];
 		$args                   = $this->prepare_query_args();
-jplog($args);
+
 		list( $limit, $offset ) = $this->prepare_query_pagination();
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
