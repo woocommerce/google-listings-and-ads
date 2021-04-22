@@ -81,7 +81,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 				'title'   => $product->get_name(),
 				'visible' => $this->product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
 				'status'  => $this->product_helper->get_sync_status( $product ),
-				'errors'  => $this->meta_handler->get_errors( $id ),
+				'errors'  => $this->meta_handler->get_errors( $id ) ?: [],
 			];
 		}
 
@@ -89,6 +89,22 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		remove_filter( 'posts_orderby', [ $this, 'orderby_filter' ] );
 
 		return array_values( $products );
+	}
+
+	/**
+	 * Count the number of products (including title filter if present)
+	 *
+	 * @param WP_REST_Request $request
+	 *
+	 * @return int
+	 */
+	public function count( WP_REST_Request $request ): int {
+		$this->request = $request;
+		$args          = $this->prepare_query_args();
+		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
+		$ids = $this->container->get( ProductRepository::class )->find_ids( $args );
+		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
+		return count( $ids );
 	}
 
 	/**

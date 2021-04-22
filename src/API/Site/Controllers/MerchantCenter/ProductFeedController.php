@@ -58,7 +58,11 @@ class ProductFeedController extends BaseController {
 	 */
 	protected function get_product_feed_read_callback(): callable {
 		return function( Request $request ) {
-			return [ 'products' => $this->query_helper->get( $request ) ];
+			return [
+				'products' => $this->query_helper->get( $request ),
+				'total'    => $this->query_helper->count( $request ),
+				'page'     => $request['per_page'] > 0 && $request['page'] > 0 ? $request['page'] : 1,
+			];
 		};
 	}
 
