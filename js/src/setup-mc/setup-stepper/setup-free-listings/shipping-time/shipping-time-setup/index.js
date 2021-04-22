@@ -38,7 +38,7 @@ const ShippingTimeSetup = ( props ) => {
 
 	const countriesTimeArray = getCountriesTimeArray( shippingTimes );
 
-	// Prefill to-be-added price.
+	// Prefill to-be-added time.
 	if ( countriesTimeArray.length === 0 ) {
 		countriesTimeArray.push( {
 			countries: selectedCountryCodes,
