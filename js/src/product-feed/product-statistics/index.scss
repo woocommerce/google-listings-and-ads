@@ -7,5 +7,10 @@
 
 	&__summaries {
 		margin-bottom: 24px;
+
+		// don't display the delta in Summary component.
+		.woocommerce-summary__item-delta {
+			display: none;
+		}
 	}
 }
