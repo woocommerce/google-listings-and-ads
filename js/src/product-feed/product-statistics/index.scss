@@ -1,0 +1,11 @@
+.gla-product-statistics {
+	&__last-updated {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__summaries {
+		margin-bottom: 24px;
+	}
+}
