@@ -18,19 +18,19 @@ import './index.scss';
 
 const ProductStatistics = () => {
 	const { hasFinishedResolution, data } = useMCProductStatistics();
-	const loading = ! hasFinishedResolution;
-	const error = hasFinishedResolution && ! data;
 
 	return (
 		<div className="gla-product-statistics">
 			<div className="gla-product-statistics__last-updated">
-				{ loading && __( 'Updating…', 'google-listings-and-ads' ) }
-				{ error &&
+				{ ! hasFinishedResolution &&
+					__( 'Updating…', 'google-listings-and-ads' ) }
+				{ hasFinishedResolution &&
+					! data &&
 					__(
 						'An error occurred while loading product statistics. Please try again later.',
 						'google-listings-and-ads'
 					) }
-				{ data && (
+				{ hasFinishedResolution && data && (
 					<>
 						{ __( 'Last updated: ', 'google-listings-and-ads' ) }
 						{ formatDate(
@@ -42,8 +42,10 @@ const ProductStatistics = () => {
 				) }
 			</div>
 			<div className="gla-product-statistics__summaries">
-				{ loading && <SummaryListPlaceholder numberOfItems={ 5 } /> }
-				{ data && (
+				{ ! hasFinishedResolution && (
+					<SummaryListPlaceholder numberOfItems={ 5 } />
+				) }
+				{ hasFinishedResolution && data && (
 					<SummaryList>
 						{ () => [
 							<SummaryNumber
