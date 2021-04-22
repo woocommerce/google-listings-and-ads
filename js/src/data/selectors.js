@@ -66,6 +66,10 @@ export const getMCSetup = ( state ) => {
 	return state.mc_setup;
 };
 
+export const getMCProductStatistics = ( state ) => {
+	return state.mc_product_statistics;
+};
+
 /**
  * Select report data according to parameters.
  *

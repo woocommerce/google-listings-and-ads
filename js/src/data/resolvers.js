@@ -29,6 +29,7 @@ import {
 	fetchAdsCampaigns,
 	fetchMCSetup,
 	receiveReport,
+	receiveMCProductStatistics,
 } from './actions';
 
 export function* getShippingRates() {
@@ -89,6 +90,24 @@ export function* getAdsCampaigns() {
 
 export function* getMCSetup() {
 	yield fetchMCSetup();
+}
+
+export function* getMCProductStatistics() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/product-statistics`,
+		} );
+
+		yield receiveMCProductStatistics( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center product statistics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 const reportTypeMap = new Map( [
