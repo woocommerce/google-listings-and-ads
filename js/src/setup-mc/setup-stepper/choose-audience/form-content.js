@@ -29,7 +29,7 @@ import '.~/components/free-listings/choose-audience/index.scss';
  */
 const FormContent = ( props ) => {
 	const { formProps } = props;
-	const { values, getInputProps, handleSubmit } = formProps;
+	const { values, isValidForm, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
 
 	useAutoSaveTargetAudienceEffect( values );
@@ -136,7 +136,11 @@ const FormContent = ( props ) => {
 				</Section.Card>
 			</Section>
 			<StepContentFooter>
-				<Button isPrimary onClick={ handleSubmit }>
+				<Button
+					isPrimary
+					disabled={ ! isValidForm }
+					onClick={ handleSubmit }
+				>
 					{ __( 'Continue', 'google-listings-and-ads' ) }
 				</Button>
 			</StepContentFooter>

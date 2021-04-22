@@ -18,7 +18,8 @@ const SelectControl = ( props ) => {
 				<div className="wcdl-select-control__label">{ label }</div>
 			) }
 			<div className="wcdl-select-control__input">
-				<WCSelectControl { ...rest } />
+				{ /* Don't display the help text because it doesn't look good on the UI. */ }
+				<WCSelectControl { ...rest } help="" />
 			</div>
 			{ helperText && (
 				<div className="wcdl-select-control__helper-text">
