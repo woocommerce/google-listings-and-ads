@@ -115,4 +115,46 @@ class ProductFeedController extends BaseOptionsController {
 	protected function get_schema_title(): string {
 		return 'product_feed';
 	}
+
+	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params(): array {
+		return [
+			'context'  => $this->get_context_param( [ 'default' => 'view' ] ),
+			'page'     => [
+				'description'       => __( 'Page of data to retrieve.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'default'           => 1,
+				'minimum'           => 1,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'per_page' => [
+				'description'       => __( 'Maximum number of rows to be returned in result data.', 'google-listings-and-ads' ),
+				'type'              => 'integer',
+				'default'           => 0,
+				'minimum'           => 0,
+				'sanitize_callback' => 'absint',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'query'    => [
+				'description'       => __( 'Text to search for in product names.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'order_by' => [
+				'description'       => __( 'Column by which to sort the data.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'order'    => [
+				'description'       => __( 'Direction to sort the data.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
+	}
 }
