@@ -65,9 +65,9 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @return array
 	 */
 	public function get( WP_REST_Request $request ) {
-		$this->request          = $request;
-		$products               = [];
-		$args                   = $this->prepare_query_args();
+		$this->request = $request;
+		$products      = [];
+		$args          = $this->prepare_query_args();
 
 		list( $limit, $offset ) = $this->prepare_query_pagination();
 
@@ -164,8 +164,6 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		}
 		return [ $limit, $offset ];
 	}
-
-
 
 	/**
 	 * Used for the posts_where hook, filters the WHERE clause of the query by
