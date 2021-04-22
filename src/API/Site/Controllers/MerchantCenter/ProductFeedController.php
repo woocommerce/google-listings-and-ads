@@ -69,29 +69,43 @@ class ProductFeedController extends BaseOptionsController {
 		return function( Request $request ) {
 			$products = [];
 
-			$args = [
-				'type' => [ 'simple', 'variable' ],
+			$orderby = [
+				'ID' => 'ASC',
 			];
 
-			foreach ( $this->repo->find( $args ) as $product ) {
+			$args = [
+				'type'    => [ 'simple', 'variable' ],
+				'orderby' => $orderby,
+			];
 
-				$id     = $product->get_id();
-				$status = 'not-synced';
-				if ( $this->meta_handler->get_synced_at( $id ) ) {
+			$limit  = -1;
+			$offset = 0;
+
+			if ( ! empty( $request['per_page'] ) ) {
+				$limit  = intval( $request['per_page'] );
+				$page   = max( 1, intval( $request['page'] ) );
+				$offset = $limit * ( $page - 1 );
+			}
+
+			foreach ( $this->repo->find( $args, $limit, $offset ) as $product ) {
+
+				$id         = $product->get_id();
+				$is_visible = $this->meta_handler->get_visibility( $id ) !== ChannelVisibility::DONT_SYNC_AND_SHOW;
+				$status     = 'not-synced';
+				if ( $is_visible && $this->meta_handler->get_synced_at( $id ) ) {
 					$status = 'synced';
-				} elseif ( empty( $this->meta_handler->get_errors( $id ) ) ) {
+				} elseif ( $is_visible && empty( $this->meta_handler->get_errors( $id ) ) ) {
 					$status = 'pending';
 				}
 
 				$products[ $id ] = [
 					'id'      => $id,
 					'title'   => $product->get_name(),
-					'visible' => $this->meta_handler->get_visibility( $id ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
+					'visible' => $is_visible,
 					'status'  => $status,
 					'errors'  => $this->meta_handler->get_errors( $id ),
 				];
 			}
-			krsort( $products );
 			return [ 'products' => array_values( $products ) ];
 		};
 	}
