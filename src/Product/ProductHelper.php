@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
@@ -46,6 +47,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		$wc_product_id = $product->get_id();
 
 		$this->meta_handler->update_synced_at( $wc_product_id, time() );
+		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::SYNCED );
 
 		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
@@ -76,6 +78,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		$wc_product_id = $product->get_id();
 
 		$this->meta_handler->delete_synced_at( $wc_product_id );
+		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::NOT_SYNCED );
 		$this->meta_handler->delete_google_ids( $wc_product_id );
 		$this->meta_handler->delete_errors( $wc_product_id );
 		$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
@@ -105,6 +108,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		$wc_product_id = $product->get_id();
 
 		$this->meta_handler->update_errors( $wc_product_id, $errors );
+		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::HAS_ERRORS );
 
 		if ( ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] ) ) {
 			// update failed sync attempts count in case of internal errors
@@ -127,6 +131,24 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 			$parent_errors[ $wc_product_id ] = $errors;
 
 			$this->mark_as_invalid( $parent_product, $parent_errors );
+		}
+	}
+
+	/**
+	 * Marks a WooCommerce product as pending syncronization.
+	 *
+	 * Note: If a product variation is pending then the parent product is also marked as pending.
+	 *
+	 * @param WC_Product $product
+	 */
+	public function mark_as_pending( WC_Product $product ) {
+		$this->meta_handler->update_sync_status( $product->get_id(), SyncStatus::PENDING );
+
+		// mark the parent product as pending if it's a variation
+		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
+			$wc_parent_id   = $product->get_parent_id();
+			$parent_product = wc_get_product( $wc_parent_id );
+			$this->mark_as_pending( $parent_product );
 		}
 	}
 
@@ -179,6 +201,17 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		}
 
 		return $visibility;
+	}
+
+	/**
+	 * Return a string indicating sync status based on several factors.
+	 *
+	 * @param WC_Product $wc_product
+	 *
+	 * @return string
+	 */
+	public function get_sync_status( WC_Product $wc_product ): string {
+		return $this->meta_handler->get_sync_status( $wc_product->get_id() );
 	}
 
 	/**
