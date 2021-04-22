@@ -15,7 +15,7 @@ import './index.scss';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 
 const CountriesTimeInput = ( props ) => {
-	const { value, onChange } = props;
+	const { value, onChange, onBlur } = props;
 	const { countries, time } = value;
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
@@ -59,6 +59,7 @@ const CountriesTimeInput = ( props ) => {
 				suffix={ __( 'days', 'google-listings-and-ads' ) }
 				value={ time }
 				onChange={ handleChange }
+				onBlur={ onBlur }
 			/>
 		</div>
 	);

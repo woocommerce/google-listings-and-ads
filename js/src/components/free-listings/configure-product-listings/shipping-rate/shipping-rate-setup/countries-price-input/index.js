@@ -12,7 +12,6 @@ import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 import './index.scss';
-import '../countries-form';
 
 /**
  * Input control to edit a shipping rate.
