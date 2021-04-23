@@ -44,7 +44,7 @@ class InputForm extends AbstractForm {
 		$input->set_id( $attribute::get_id() )
 			  ->set_name( $attribute::get_id() )
 			  ->set_label( $attribute::get_name() )
-			  ->set_description( $attribute::get_name() );
+			  ->set_description( $attribute::get_description() );
 
 		$value_options = [];
 		if ( $attribute instanceof WithValueOptionsInterface ) {
