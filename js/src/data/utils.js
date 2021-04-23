@@ -31,6 +31,36 @@ export function getPerformanceQuery( type, query, dateReference ) {
 }
 
 /**
+ * Get report query for fetching report data from API.
+ *
+ * @param  {string} category Category of report, 'programs' or 'products'.
+ * @param  {string} type Type of report, 'free' or 'paid'.
+ * @param  {Object} query Query parameters in the URL.
+ * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
+ *
+ * @return {Object} The report query for fetching report data from API.
+ */
+export function getReportQuery( category, type, query, dateReference ) {
+	const baseQuery = getPerformanceQuery( type, query, dateReference );
+	const { orderby = baseQuery.fields[ 0 ], order = 'desc' } = query;
+
+	const reportQuery = {
+		...baseQuery,
+		interval: 'day',
+		orderby,
+		order,
+	};
+
+	if ( category === 'programs' ) {
+		// TODO: append `ids` for filtering by programs
+	} else if ( category === 'products' && query.products ) {
+		reportQuery.ids = query.products.replace( /\d+/g, 'gla_$&' );
+	}
+
+	return reportQuery;
+}
+
+/**
  * Get a key for accessing report data from store state.
  *
  * @param  {string} category Category of report, 'programs' or 'products'.
