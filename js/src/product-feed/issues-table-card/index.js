@@ -10,7 +10,12 @@ import {
 	CardFooter,
 	__experimentalText as Text,
 } from '@wordpress/components';
-import { Pagination, Table } from '@woocommerce/components';
+import {
+	EmptyTable,
+	Pagination,
+	Table,
+	TablePlaceholder,
+} from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -55,21 +60,9 @@ const PER_PAGE = 5;
 
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );
-	const { data } = useMCIssues( page, PER_PAGE );
-
-	const rows = data.issues.map( ( el ) => {
-		return [
-			{
-				display:
-					el.type === 'account' ? <ErrorIcon /> : <WarningIcon />,
-			},
-			{ display: el.product },
-			{ display: el.issue },
-			{ display: el.action },
-			{
-				display: <EditProductLink productId={ el.product_id } />,
-			},
-		];
+	const { hasFinishedResolution, data } = useMCIssues( {
+		page,
+		per_page: PER_PAGE,
 	} );
 
 	const handlePageChange = ( newPage ) => {
@@ -80,6 +73,7 @@ const IssuesTableCard = () => {
 		<div className="gla-issues-table-card">
 			<Card>
 				<CardHeader>
+					{ /* We use this Text component to make it similar to TableCard component. */ }
 					<Text variant="title.small" as="h2">
 						<>
 							{ __(
@@ -107,13 +101,50 @@ const IssuesTableCard = () => {
 					</Text>
 				</CardHeader>
 				<CardBody size={ null }>
-					<Table headers={ headers } rows={ rows } />
+					{ ! hasFinishedResolution && (
+						<TablePlaceholder headers={ headers } />
+					) }
+					{ hasFinishedResolution && ! data && (
+						<EmptyTable headers={ headers } numberOfRows={ 1 }>
+							{ __(
+								'An error occurred while retrieving issues. Please try again later.',
+								'google-listings-and-ads'
+							) }
+						</EmptyTable>
+					) }
+					{ hasFinishedResolution && data && (
+						<Table
+							headers={ headers }
+							rows={ data.issues.map( ( el ) => {
+								return [
+									{
+										display:
+											el.type === 'account' ? (
+												<ErrorIcon />
+											) : (
+												<WarningIcon />
+											),
+									},
+									{ display: el.product },
+									{ display: el.issue },
+									{ display: el.action },
+									{
+										display: (
+											<EditProductLink
+												productId={ el.product_id }
+											/>
+										),
+									},
+								];
+							} ) }
+						/>
+					) }
 				</CardBody>
 				<CardFooter justify="center">
 					<Pagination
 						page={ page }
 						perPage={ PER_PAGE }
-						total={ data.total }
+						total={ data?.total }
 						showPagePicker={ false }
 						showPerPagePicker={ false }
 						onPageChange={ handlePageChange }
