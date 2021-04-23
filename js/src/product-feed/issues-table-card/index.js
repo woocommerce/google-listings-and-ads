@@ -2,16 +2,24 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
+import {
+	Card,
+	CardHeader,
+	CardBody,
+	CardFooter,
+	__experimentalText as Text,
+} from '@wordpress/components';
+import { Pagination, Table } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import EditProductLink from '.~/components/edit-product-link';
 import HelpPopover from '.~/components/help-popover';
-import AppTableCard from '.~/components/app-table-card';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import './index.scss';
 
 const headers = [
 	{
@@ -53,40 +61,125 @@ const rows = [
 			display: <EditProductLink productId={ 123 } />,
 		},
 	],
+	[
+		{ display: <WarningIcon /> },
+		{ display: 'Pink marble tee' },
+		{ display: 'Missing tax value' },
+		{ display: 'Add a tax setting for your product' },
+		{
+			display: <EditProductLink productId={ 123 } />,
+		},
+	],
+	[
+		{ display: <WarningIcon /> },
+		{ display: 'Pink marble tee' },
+		{ display: 'Missing tax value' },
+		{ display: 'Add a tax setting for your product' },
+		{
+			display: <EditProductLink productId={ 123 } />,
+		},
+	],
+	[
+		{ display: <WarningIcon /> },
+		{ display: 'Pink marble tee' },
+		{ display: 'Missing tax value' },
+		{ display: 'Add a tax setting for your product' },
+		{
+			display: <EditProductLink productId={ 123 } />,
+		},
+	],
+	[
+		{ display: <WarningIcon /> },
+		{ display: 'Pink marble tee' },
+		{ display: 'Missing tax value' },
+		{ display: 'Add a tax setting for your product' },
+		{
+			display: <EditProductLink productId={ 123 } />,
+		},
+	],
+	[
+		{ display: <WarningIcon /> },
+		{ display: 'Pink marble tee' },
+		{ display: 'Missing tax value' },
+		{ display: 'Add a tax setting for your product' },
+		{
+			display: <EditProductLink productId={ 123 } />,
+		},
+	],
+	[
+		{ display: <WarningIcon /> },
+		{ display: 'Pink marble tee' },
+		{ display: 'Missing tax value' },
+		{ display: 'Add a tax setting for your product' },
+		{
+			display: <EditProductLink productId={ 123 } />,
+		},
+	],
+	[
+		{ display: <WarningIcon /> },
+		{ display: 'Pink marble tee' },
+		{ display: 'Missing tax value' },
+		{ display: 'Add a tax setting for your product' },
+		{
+			display: <EditProductLink productId={ 123 } />,
+		},
+	],
 ];
 
+// TODO: use this to call API.
+// const PER_PAGE = 5;
+
 const IssuesTableCard = () => {
+	const [ page, setPage ] = useState( 1 );
+
+	const handlePageChange = ( newPage ) => {
+		setPage( newPage );
+	};
+
 	return (
 		<div className="gla-issues-table-card">
-			<AppTableCard
-				showMenu={ false }
-				title={
-					<>
-						{ __( 'Issues to Resolve', 'google-listings-and-ads' ) }
-						<HelpPopover id="issues-to-resolve">
-							{ createInterpolateElement(
-								__(
-									'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
-									'google-listings-and-ads'
-								),
-								{
-									link: (
-										<AppDocumentationLink
-											context="product-feed"
-											linkId="issues-to-resolve"
-											href="https://support.google.com/merchants/answer/6363310"
-										/>
-									),
-								}
+			<Card>
+				<CardHeader>
+					<Text variant="title.small" as="h2">
+						<>
+							{ __(
+								'Issues to Resolve',
+								'google-listings-and-ads'
 							) }
-						</HelpPopover>
-					</>
-				}
-				headers={ headers }
-				rows={ rows }
-				totalRows={ rows.length }
-				rowsPerPage={ 10 }
-			/>
+							<HelpPopover id="issues-to-resolve">
+								{ createInterpolateElement(
+									__(
+										'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
+										'google-listings-and-ads'
+									),
+									{
+										link: (
+											<AppDocumentationLink
+												context="product-feed"
+												linkId="issues-to-resolve"
+												href="https://support.google.com/merchants/answer/6363310"
+											/>
+										),
+									}
+								) }
+							</HelpPopover>
+						</>
+					</Text>
+				</CardHeader>
+				<CardBody size={ null }>
+					<Table rows={ rows } headers={ headers } />
+				</CardBody>
+				<CardFooter justify="center">
+					<Pagination
+						page={ page }
+						perPage={ rows.length }
+						total={ 20 } // TODO: this should be coming from the API response.
+						showPagePicker={ false }
+						showPerPagePicker={ false }
+						onPageChange={ handlePageChange }
+					/>
+				</CardFooter>
+			</Card>
 		</div>
 	);
 };
