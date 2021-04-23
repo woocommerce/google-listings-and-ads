@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray as DependencyArray;
-use Closure;
 use Throwable;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,12 +18,12 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 	/**
 	 * AdminScriptWithBuiltDependenciesAsset constructor.
 	 *
-	 * @param string          $handle         The script handle.
-	 * @param string          $uri            The URI for the script.
+	 * @param string          $handle                      The script handle.
+	 * @param string          $uri                         The URI for the script.
 	 * @param string          $build_dependency_path
 	 * @param DependencyArray $fallback_dependency_data
-	 * @param Closure|null    $load_condition (Optional) Only enqueue the asset if this condition closure returns true.
-	 *                                        Returns true by default.
+	 * @param callable|null   $enqueue_condition_callback  (Optional) The asset is always enqueued if this callback
+	 *                                                     returns true or isn't set.
 	 * @param bool            $in_footer
 	 */
 	public function __construct(
@@ -32,7 +31,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 		string $uri,
 		string $build_dependency_path,
 		DependencyArray $fallback_dependency_data,
-		Closure $load_condition = null,
+		callable $enqueue_condition_callback = null,
 		bool $in_footer = true
 	) {
 		$dependency_data = $this->get_dependency_data( $build_dependency_path, $fallback_dependency_data );
@@ -41,7 +40,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 			$uri,
 			$dependency_data->get_dependencies(),
 			$dependency_data->get_version(),
-			$load_condition,
+			$enqueue_condition_callback,
 			$in_footer
 		);
 	}

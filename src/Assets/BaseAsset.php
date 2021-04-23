@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Closure;
 
 /**
  * Class BaseAsset
@@ -73,21 +72,21 @@ abstract class BaseAsset implements Asset {
 	protected $version;
 
 	/**
-	 * @var Closure
+	 * @var callable
 	 */
-	protected $enqueue_condition;
+	protected $enqueue_condition_callback;
 
 	/**
 	 * BaseAsset constructor.
 	 *
-	 * @param string       $file_extension    The asset file extension.
-	 * @param string       $handle            The asset handle.
-	 * @param string       $uri               The URI for the asset.
-	 * @param array        $dependencies      (Optional) Any dependencies the asset has.
-	 * @param string       $version           (Optional) A version string for the asset. Will default to the plugin
-	 *                                        version if not set.
-	 * @param Closure|null $enqueue_condition (Optional) Only enqueue the asset if this condition closure returns true.
-	 *                                        Returns true by default.
+	 * @param string        $file_extension                The asset file extension.
+	 * @param string        $handle                        The asset handle.
+	 * @param string        $uri                           The URI for the asset.
+	 * @param array         $dependencies                  (Optional) Any dependencies the asset has.
+	 * @param string        $version                       (Optional) A version string for the asset. Will default to
+	 *                                                     the plugin version if not set.
+	 * @param callable|null $enqueue_condition_callback    (Optional) The asset is always enqueued if this callback
+	 *                                                     returns true or isn't set.
 	 */
 	public function __construct(
 		string $file_extension,
@@ -95,18 +94,14 @@ abstract class BaseAsset implements Asset {
 		string $uri,
 		array $dependencies = [],
 		string $version = '',
-		Closure $enqueue_condition = null
+		callable $enqueue_condition_callback = null
 	) {
-		$this->file_extension = $file_extension;
-		$this->handle         = $handle;
-		$this->uri            = $this->get_uri_from_path( $uri );
-		$this->dependencies   = $dependencies;
-		$this->version        = $version ?: $this->get_version();
-
-		$return_true_closure     = function () {
-			return true;
-		};
-		$this->enqueue_condition = $enqueue_condition ?: $return_true_closure;
+		$this->file_extension             = $file_extension;
+		$this->handle                     = $handle;
+		$this->uri                        = $this->get_uri_from_path( $uri );
+		$this->dependencies               = $dependencies;
+		$this->version                    = $version ?: $this->get_version();
+		$this->enqueue_condition_callback = $enqueue_condition_callback;
 	}
 
 	/**
@@ -128,27 +123,27 @@ abstract class BaseAsset implements Asset {
 	}
 
 	/**
-	 * Get the condition closure to run when registering/enqueuing the asset.
+	 * Get the condition callback to run when enqueuing the asset.
 	 *
-	 * The asset will only be registered/enqueued if the closure returns true.
+	 * The asset will only be enqueued if the callback returns true.
 	 *
-	 * @return Closure
+	 * @return bool
 	 */
-	public function get_enqueue_condition(): Closure {
-		return $this->enqueue_condition;
+	public function can_enqueue(): bool {
+		return (bool) call_user_func( $this->enqueue_condition_callback, $this );
 	}
 
 	/**
 	 * Enqueue the asset within WordPress.
 	 */
 	public function enqueue(): void {
-		if ( ! $this->get_enqueue_condition()->call( $this ) ) {
+		if ( ! $this->can_enqueue() ) {
 			return;
 		}
 
 		$this->defer_action(
 			$this->get_enqueue_action(),
-			$this->get_enqueue_closure(),
+			$this->get_enqueue_callback(),
 			$this->enqueue_priority
 		);
 	}
@@ -159,7 +154,7 @@ abstract class BaseAsset implements Asset {
 	public function dequeue(): void {
 		$this->defer_action(
 			$this->get_dequeue_action(),
-			$this->get_dequeue_closure(),
+			$this->get_dequeue_callback(),
 			$this->dequeue_priority
 		);
 	}
@@ -170,7 +165,7 @@ abstract class BaseAsset implements Asset {
 	public function register(): void {
 		$this->defer_action(
 			$this->get_register_action(),
-			$this->get_register_closure(),
+			$this->get_register_callback(),
 			$this->registration_priority
 		);
 	}
@@ -205,19 +200,20 @@ abstract class BaseAsset implements Asset {
 	}
 
 	/**
-	 * Add a closure to an action, or run it immediately if the action has already fired.
+	 * Add a callable to an action, or run it immediately if the action has already fired.
 	 *
-	 * @param string  $action
-	 * @param Closure $closure
-	 * @param int     $priority
+	 * @param string   $action
+	 * @param callable $callback
+	 * @param int      $priority
 	 */
-	protected function defer_action( string $action, Closure $closure, int $priority = 10 ): void {
+	protected function defer_action( string $action, callable $callback, int $priority = 10 ): void {
 		if ( did_action( $action ) ) {
-			$closure();
+			$callback();
+
 			return;
 		}
 
-		add_action( $action, $closure, $priority );
+		add_action( $action, $callback, $priority );
 	}
 
 	/**
@@ -294,23 +290,23 @@ abstract class BaseAsset implements Asset {
 	}
 
 	/**
-	 * Get the register closure to use.
+	 * Get the register callback to use.
 	 *
-	 * @return Closure
+	 * @return callable
 	 */
-	abstract protected function get_register_closure(): Closure;
+	abstract protected function get_register_callback(): callable;
 
 	/**
-	 * Get the enqueue closure to use.
+	 * Get the enqueue callback to use.
 	 *
-	 * @return Closure
+	 * @return callable
 	 */
-	abstract protected function get_enqueue_closure(): Closure;
+	abstract protected function get_enqueue_callback(): callable;
 
 	/**
-	 * Get the dequeue closure to use.
+	 * Get the dequeue callback to use.
 	 *
-	 * @return Closure
+	 * @return callable
 	 */
-	abstract protected function get_dequeue_closure(): Closure;
+	abstract protected function get_dequeue_callback(): callable;
 }

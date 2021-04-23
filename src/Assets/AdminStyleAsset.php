@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
-use Closure;
-
 /**
  * Class AdminStyleAsset
  *
@@ -15,15 +13,13 @@ class AdminStyleAsset extends StyleAsset {
 	use AdminAssetHelper;
 
 	/**
-	 * Get the condition closure to run when registering/enqueuing the asset.
+	 * Get the condition callback to run when enqueuing the asset.
 	 *
-	 * The asset will only be registered/enqueued if the closure returns true.
+	 * The asset will only be enqueued if the callback returns true.
 	 *
-	 * @return Closure
+	 * @return bool
 	 */
-	public function get_enqueue_condition(): Closure {
-		return function () {
-			return is_admin() && $this->enqueue_condition->call( $this );
-		};
+	public function can_enqueue(): bool {
+		return is_admin() && parent::can_enqueue();
 	}
 }

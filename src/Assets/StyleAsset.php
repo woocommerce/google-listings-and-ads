@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
-use Closure;
 
 /**
  * Class StyleAsset
@@ -23,35 +22,35 @@ class StyleAsset extends BaseAsset {
 	/**
 	 * StyleAsset constructor.
 	 *
-	 * @param string       $handle         The asset handle.
-	 * @param string       $uri            The URI for the asset.
-	 * @param array        $dependencies   (Optional) Any dependencies the asset has.
-	 * @param string       $version        (Optional) A version string for the asset. Will default to the plugin version
-	 *                                     if not set.
-	 * @param Closure|null $load_condition (Optional) Only enqueue the asset if this condition closure returns true.
-	 *                                     Returns true by default.
-	 * @param string       $media          Optional. The media for which this stylesheet has been defined.
-	 *                                     Default 'all'. Accepts media types like 'all', 'print' and 'screen', or media
-	 *                                     queries like '(orientation: portrait)' and '(max-width: 640px)'.
+	 * @param string        $handle                        The asset handle.
+	 * @param string        $uri                           The URI for the asset.
+	 * @param array         $dependencies                  (Optional) Any dependencies the asset has.
+	 * @param string        $version                       (Optional) A version string for the asset. Will default to the plugin version
+	 *                                                     if not set.
+	 * @param callable|null $enqueue_condition_callback    (Optional) The asset is always enqueued if this callback
+	 *                                                     returns true or isn't set.
+	 * @param string        $media                         Optional. The media for which this stylesheet has been defined.
+	 *                                                     Default 'all'. Accepts media types like 'all', 'print' and 'screen', or media
+	 *                                                     queries like '(orientation: portrait)' and '(max-width: 640px)'.
 	 */
 	public function __construct(
 		string $handle,
 		string $uri,
 		array $dependencies = [],
 		string $version = '',
-		Closure $load_condition = null,
+		callable $enqueue_condition_callback = null,
 		string $media = 'all'
 	) {
 		$this->media = $media;
-		parent::__construct( 'css', $handle, $uri, $dependencies, $version, $load_condition );
+		parent::__construct( 'css', $handle, $uri, $dependencies, $version, $enqueue_condition_callback );
 	}
 
 	/**
-	 * Get the register closure to use.
+	 * Get the register callback to use.
 	 *
-	 * @return Closure
+	 * @return callable
 	 */
-	protected function get_register_closure(): Closure {
+	protected function get_register_callback(): callable {
 		return function() {
 			if ( wp_style_is( $this->handle, 'registered' ) ) {
 				return;
@@ -68,11 +67,11 @@ class StyleAsset extends BaseAsset {
 	}
 
 	/**
-	 * Get the enqueue closure to use.
+	 * Get the enqueue callback to use.
 	 *
-	 * @return Closure
+	 * @return callable
 	 */
-	protected function get_enqueue_closure(): Closure {
+	protected function get_enqueue_callback(): callable {
 		return function() {
 			if ( ! wp_style_is( $this->handle, 'registered' ) ) {
 				throw InvalidAsset::asset_not_registered( $this->handle );
@@ -83,11 +82,11 @@ class StyleAsset extends BaseAsset {
 	}
 
 	/**
-	 * Get the dequeue closure to use.
+	 * Get the dequeue callback to use.
 	 *
-	 * @return Closure
+	 * @return callable
 	 */
-	protected function get_dequeue_closure(): Closure {
+	protected function get_dequeue_callback(): callable {
 		return function() {
 			wp_dequeue_style( $this->handle );
 		};
