@@ -17,8 +17,10 @@ import { Pagination, Table } from '@woocommerce/components';
  */
 import EditProductLink from '.~/components/edit-product-link';
 import HelpPopover from '.~/components/help-popover';
+import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import useMCIssues from '.~/hooks/useMCIssues';
 import './index.scss';
 
 const headers = [
@@ -49,88 +51,26 @@ const headers = [
 	{ key: 'action', label: '', required: true },
 ];
 
-// TODO: this rows should be data coming from backend API.
-// Also, i18n for the display labels too.
-const rows = [
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-];
-
-// TODO: use this to call API.
-// const PER_PAGE = 5;
+const PER_PAGE = 5;
 
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );
+	const { data } = useMCIssues( page, PER_PAGE );
+
+	const rows = data.issues.map( ( el ) => {
+		return [
+			{
+				display:
+					el.type === 'account' ? <ErrorIcon /> : <WarningIcon />,
+			},
+			{ display: el.product },
+			{ display: el.issue },
+			{ display: el.action },
+			{
+				display: <EditProductLink productId={ el.product_id } />,
+			},
+		];
+	} );
 
 	const handlePageChange = ( newPage ) => {
 		setPage( newPage );
@@ -167,13 +107,13 @@ const IssuesTableCard = () => {
 					</Text>
 				</CardHeader>
 				<CardBody size={ null }>
-					<Table rows={ rows } headers={ headers } />
+					<Table headers={ headers } rows={ rows } />
 				</CardBody>
 				<CardFooter justify="center">
 					<Pagination
 						page={ page }
-						perPage={ rows.length }
-						total={ 20 } // TODO: this should be coming from the API response.
+						perPage={ PER_PAGE }
+						total={ data.total }
 						showPagePicker={ false }
 						showPerPagePicker={ false }
 						onPageChange={ handlePageChange }
