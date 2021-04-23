@@ -2,14 +2,13 @@
  * External dependencies
  */
 import { createRegistrySelector } from '@wordpress/data';
-import { getDateParamsFromQuery } from '@woocommerce/date';
 import createSelector from 'rememo';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from './constants';
-import { getReportQuery, getReportKey } from './utils';
+import { getReportKey, getPerformanceQuery } from './utils';
 
 export const getShippingRates = ( state ) => {
 	return state.mc.shipping.rates;
@@ -96,18 +95,19 @@ export const getMCIssues = createSelector(
 );
 
 /**
- * Select report data according to parameters.
+ * Select report data according to parameters and report API query.
  *
  * @param  {Object} state The current store state will be injected by `wp.data`.
  * @param  {string} category Category of report, 'programs' or 'products'.
  * @param  {string} type Type of report, 'free' or 'paid'.
- * @param  {Object} query Query parameters in the URL.
- * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
+ * @param  {Object} reportQuery Query options of report API.
+ * @param  {string} reportQuery.after Start date in 'YYYY-MM-DD' format.
+ * @param  {string} reportQuery.before End date in 'YYYY-MM-DD' format.
+ * @param  {Array<string>} reportQuery.fields An array of performance metrics field to retrieve.
  *
  * @return {Object|null} The report data of specified parameters. It would return `null` before the data is fetched.
  */
-export const getReport = ( state, category, type, query, dateReference ) => {
-	const reportQuery = getReportQuery( query, dateReference );
+export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 	const reportKey = getReportKey( category, type, reportQuery );
 	return state.report[ reportKey ] || null;
 };
@@ -124,11 +124,10 @@ export const getReport = ( state, category, type, query, dateReference ) => {
  */
 export const getDashboardPerformance = createRegistrySelector(
 	( select ) => ( state, type, query, dateReference ) => {
-		const report = select( STORE_KEY ).getReport(
+		const report = select( STORE_KEY ).getReportByApiQuery(
 			'programs',
 			type,
-			getDateParamsFromQuery( query ),
-			dateReference
+			getPerformanceQuery( type, query, dateReference )
 		);
 
 		if ( report ) {

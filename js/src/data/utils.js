@@ -5,24 +5,28 @@
 import { format } from '@wordpress/date';
 import { getCurrentDates } from '@woocommerce/date';
 
+const freeFields = [ 'clicks', 'impressions' ];
+const paidFields = [ 'sales', 'solds', 'conversions', 'spend', ...freeFields ];
+
 /**
- * Get report query for fetching API data.
+ * Get report query for fetching performance data from API.
  *
+ * @param  {string} type Type of report, 'free' or 'paid'.
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {Object} The report query for fetching API data.
+ * @return {Object} The report query for fetching performance data from API.
  */
-export function getReportQuery( query, dateReference ) {
-	// TODO: add more query parameters when implementing the report page.
-	// ref: https://github.com/woocommerce/google-listings-and-ads/pull/251
+export function getPerformanceQuery( type, query, dateReference ) {
 	const datesQuery = getCurrentDates( query );
 	const after = format( 'Y-m-d', datesQuery[ dateReference ].after );
 	const before = format( 'Y-m-d', datesQuery[ dateReference ].before );
+	const fields = type === 'free' ? freeFields : paidFields;
+
 	return {
 		after,
 		before,
-		fields: [ 'sales', 'spend', 'clicks', 'impressions' ],
+		fields,
 	};
 }
 
