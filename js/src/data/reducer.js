@@ -257,12 +257,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_MC_ISSUES: {
-			const { key, data } = action;
+			const { query, issues } = action;
+			const key = JSON.stringify( query );
 			const newState = {
 				...state,
 				mc_issues: {
 					...state.mc_issues,
-					[ key ]: data,
+					[ key ]: issues,
 				},
 			};
 			return newState;

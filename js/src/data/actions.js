@@ -683,7 +683,7 @@ export function* receiveMCProductStatistics( mcProductStatistics ) {
 export function* receiveMCIssues( query, issues ) {
 	return {
 		type: TYPES.RECEIVE_MC_ISSUES,
-		key: JSON.stringify( query ),
-		data: issues,
+		query,
+		issues,
 	};
 }
