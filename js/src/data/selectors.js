@@ -70,6 +70,11 @@ export const getMCProductStatistics = ( state ) => {
 	return state.mc_product_statistics;
 };
 
+export const getMCIssues = ( state, query ) => {
+	const key = JSON.stringify( query );
+	return state.mc_issues[ key ];
+};
+
 /**
  * Select report data according to parameters.
  *

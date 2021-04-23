@@ -30,6 +30,7 @@ import {
 	fetchMCSetup,
 	receiveReport,
 	receiveMCProductStatistics,
+	receiveMCIssues,
 } from './actions';
 
 export function* getShippingRates() {
@@ -99,6 +100,24 @@ export function* getMCProductStatistics() {
 		} );
 
 		yield receiveMCProductStatistics( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center product statistics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getMCIssues( query ) {
+	try {
+		const response = yield apiFetch( {
+			path: addQueryArgs( `${ API_NAMESPACE }/mc/issues`, query ),
+		} );
+
+		yield receiveMCIssues( query, response );
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
