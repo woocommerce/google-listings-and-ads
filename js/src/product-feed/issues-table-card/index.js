@@ -129,7 +129,7 @@ const IssuesTableCard = () => {
 									{ display: el.issue },
 									{ display: el.action },
 									{
-										display: (
+										display: el.type === 'product' && (
 											<EditProductLink
 												productId={ el.product_id }
 											/>
