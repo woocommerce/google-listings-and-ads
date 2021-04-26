@@ -680,10 +680,10 @@ export function* receiveMCProductStatistics( mcProductStatistics ) {
 	};
 }
 
-export function* receiveMCIssues( query, issues ) {
+export function* receiveMCIssues( query, data ) {
 	return {
 		type: TYPES.RECEIVE_MC_ISSUES,
 		query,
-		issues,
+		data,
 	};
 }

@@ -71,8 +71,17 @@ export const getMCProductStatistics = ( state ) => {
 };
 
 export const getMCIssues = ( state, query ) => {
-	const key = JSON.stringify( query );
-	return state.mc_issues[ key ];
+	if ( ! state.mc_issues ) {
+		return state.mc_issues;
+	}
+
+	const start = ( query.page - 1 ) * query.per_page;
+	const end = start + query.per_page;
+
+	return {
+		issues: state.mc_issues.issues.slice( start, end ),
+		total: state.mc_issues.total,
+	};
 };
 
 /**
