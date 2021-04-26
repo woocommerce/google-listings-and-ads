@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Value
  */
-class SyncStatus implements CastableValueInterface, ValueInterface {
+class SyncStatus implements ValueInterface {
 
 	public const SYNCED     = 'synced';
 	public const NOT_SYNCED = 'not-synced';
@@ -53,19 +53,6 @@ class SyncStatus implements CastableValueInterface, ValueInterface {
 	 */
 	public function get(): string {
 		return $this->status;
-	}
-
-	/**
-	 * Cast a value and return a new instance of the class.
-	 *
-	 * @param string $value Mixed value to cast to class type.
-	 *
-	 * @return SyncStatus
-	 *
-	 * @throws InvalidValue When an invalid visibility type is provided.
-	 */
-	public static function cast( $value ): SyncStatus {
-		return new self( $value );
 	}
 
 	/**
