@@ -71,6 +71,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use wpdb;
 
 /**
  * Class CoreServiceProvider
@@ -244,7 +245,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
-		$this->conditionally_share_with_tags( ProductFeedQueryHelper::class, \wpdb::class, ProductHelper::class, ProductMetaHandler::class );
+		$this->share_with_tags( ProductFeedQueryHelper::class, wpdb::class, ProductHelper::class, ProductMetaHandler::class );
 
 		// The DB Controller has some extra setup required.
 		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );
