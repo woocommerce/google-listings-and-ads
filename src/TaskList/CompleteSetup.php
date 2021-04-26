@@ -48,6 +48,10 @@ class CompleteSetup implements Deactivateable, Service, Registerable, MerchantCe
 		add_action(
 			'admin_enqueue_scripts',
 			function () {
+				if ( ! $this->should_register_tasks() ) {
+					return;
+				}
+
 				$this->assets_handler->enqueue_many( $this->get_assets() );
 
 				// argument matches the task "key" property
