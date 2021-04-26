@@ -16,12 +16,14 @@ defined( 'ABSPATH' ) || exit;
 class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 
 	/**
-	 * ScriptHelper constructor.
+	 * AdminScriptWithBuiltDependenciesAsset constructor.
 	 *
-	 * @param string          $handle The script handle.
-	 * @param string          $uri    The URI for the script.
+	 * @param string          $handle                      The script handle.
+	 * @param string          $uri                         The URI for the script.
 	 * @param string          $build_dependency_path
 	 * @param DependencyArray $fallback_dependency_data
+	 * @param callable|null   $enqueue_condition_callback  (Optional) The asset is always enqueued if this callback
+	 *                                                     returns true or isn't set.
 	 * @param bool            $in_footer
 	 */
 	public function __construct(
@@ -29,6 +31,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 		string $uri,
 		string $build_dependency_path,
 		DependencyArray $fallback_dependency_data,
+		callable $enqueue_condition_callback = null,
 		bool $in_footer = true
 	) {
 		$dependency_data = $this->get_dependency_data( $build_dependency_path, $fallback_dependency_data );
@@ -37,6 +40,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 			$uri,
 			$dependency_data->get_dependencies(),
 			$dependency_data->get_version(),
+			$enqueue_condition_callback,
 			$in_footer
 		);
 	}
@@ -49,10 +53,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 	 *
 	 * @return DependencyArray
 	 */
-	protected function get_dependency_data(
-		string $build_dependency_path,
-		DependencyArray $fallback
-	): DependencyArray {
+	protected function get_dependency_data( string $build_dependency_path, DependencyArray $fallback ): DependencyArray {
 		try {
 			if ( ! is_readable( $build_dependency_path ) ) {
 				return $fallback;

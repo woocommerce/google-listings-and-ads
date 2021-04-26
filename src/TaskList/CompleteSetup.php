@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
-use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
@@ -13,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray;
-use Psr\Container\ContainerInterface;
 
 /**
  * Class CompleteSetup
@@ -22,34 +21,38 @@ use Psr\Container\ContainerInterface;
  */
 class CompleteSetup implements Deactivateable, Service, Registerable, MerchantCenterAwareInterface {
 
-	use AssetsAwareness;
 	use MerchantCenterAwareTrait;
 	use PluginHelper;
 	use TaskListTrait;
 
 	/**
+	 * @var AssetsHandlerInterface
+	 */
+	protected $assets_handler;
+
+	/**
 	 * CompleteSetup constructor.
 	 *
-	 * @param ContainerInterface $container The container object.
+	 * @param AssetsHandlerInterface $assets_handler
 	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->assets_handler = $container->get( AssetsHandlerInterface::class );
+	public function __construct( AssetsHandlerInterface $assets_handler ) {
+		$this->assets_handler = $assets_handler;
 	}
 
 	/**
 	 * Register a service.
 	 */
 	public function register(): void {
-		$this->register_assets();
+		$this->assets_handler->add_many( $this->get_assets() );
 
 		add_action(
 			'admin_enqueue_scripts',
-			function() {
+			function () {
 				if ( ! $this->should_register_tasks() ) {
 					return;
 				}
 
-				$this->enqueue_assets();
+				$this->assets_handler->enqueue_many( $this->get_assets() );
 
 				// argument matches the task "key" property
 				do_action( 'add_woocommerce_extended_task_list_item', 'gla_complete_setup' );
@@ -58,10 +61,12 @@ class CompleteSetup implements Deactivateable, Service, Registerable, MerchantCe
 	}
 
 	/**
-	 * Set up assets in the array of Assets.
+	 * Return an array of assets.
+	 *
+	 * @return Asset[]
 	 */
-	protected function setup_assets(): void {
-		$this->assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+	protected function get_assets(): array {
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'gla-task-complete-setup',
 			'js/build/task-complete-setup',
 			"{$this->get_root_dir()}/js/build/task-complete-setup.asset.php",
@@ -70,13 +75,18 @@ class CompleteSetup implements Deactivateable, Service, Registerable, MerchantCe
 					'dependencies' => [],
 					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/task-complete-setup.js" ),
 				]
-			)
+			),
+			function () {
+				return $this->should_register_tasks();
+			}
 		) )->add_localization(
 			'glaTaskData',
 			[
 				'isComplete' => $this->merchant_center->is_setup_complete(),
 			]
 		);
+
+		return $assets;
 	}
 
 	/**

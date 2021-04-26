@@ -3,24 +3,14 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Assets;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
+defined( 'ABSPATH' ) || exit;
 
 /**
- * Class BaseAdminAsset
+ * Trait AdminAssetHelper
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Assets
  */
-abstract class AdminBaseAsset extends BaseAsset implements Conditional {
-
-	/**
-	 * Check whether this object is currently needed.
-	 *
-	 * @return bool Whether the object is needed.
-	 */
-	public static function is_needed(): bool {
-		return is_admin();
-	}
-
+trait AdminAssetHelper {
 	/**
 	 * Get the enqueue action to use.
 	 *
@@ -31,7 +21,7 @@ abstract class AdminBaseAsset extends BaseAsset implements Conditional {
 	}
 
 	/**
-	 * Get the enqueue action to use.
+	 * Get the dequeue action to use.
 	 *
 	 * @return string
 	 */
