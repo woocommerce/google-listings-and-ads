@@ -43,16 +43,14 @@
     "sort-packages": true
   },
   "scripts": {
-    "post-install-cmd": [
+    "install-scripts": [
       "Google\\Task\\Composer::cleanup",
       "php ./bin/prefix-vendor-namespace.php",
-      "bash ./bin/googleads-remove-older-versions.sh"
+      "bash ./bin/googleads-remove-older-versions.sh",
+      "bash ./bin/cleanup-vendor-files.sh"
     ],
-    "post-update-cmd": [
-      "Google\\Task\\Composer::cleanup",
-      "php ./bin/prefix-vendor-namespace.php",
-      "bash ./bin/googleads-remove-older-versions.sh"
-    ]
+    "post-install-cmd": [ "@install-scripts" ],
+    "post-update-cmd": [ "@install-scripts" ]
   },
   "archive": {
     "exclude": [
