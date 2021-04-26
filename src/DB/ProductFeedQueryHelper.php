@@ -68,13 +68,11 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	public function get( WP_REST_Request $request ): array {
-		$this->request = $request;
-		$products      = [];
-		$args          = $this->prepare_query_args();
-
+		$this->request          = $request;
+		$products               = [];
+		$args                   = $this->prepare_query_args();
 		list( $limit, $offset ) = $this->prepare_query_pagination();
 
-		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 		add_filter( 'posts_orderby', [ $this, 'orderby_filter' ], 10, 2 );
 
 		foreach ( $this->container->get( ProductRepository::class )->find( $args, $limit, $offset ) as $product ) {
@@ -88,7 +86,6 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 			];
 		}
 
-		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
 		remove_filter( 'posts_orderby', [ $this, 'orderby_filter' ] );
 
 		return array_values( $products );
@@ -106,9 +103,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	public function count( WP_REST_Request $request ): int {
 		$this->request = $request;
 		$args          = $this->prepare_query_args();
-		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
-		$ids = $this->container->get( ProductRepository::class )->find_ids( $args );
-		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
+		$ids           = $this->container->get( ProductRepository::class )->find_ids( $args );
 		return count( $ids );
 	}
 
@@ -124,6 +119,10 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 			'type'    => [ 'simple', 'variable' ],
 			'orderby' => [ 'title' => 'ASC' ],
 		];
+
+		if ( ! empty( $this->request['ids'] ) ) {
+			$args['include'] = explode( ',', $this->request['ids'] );
+		}
 
 		if ( empty( $this->request['orderby'] ) ) {
 			return $args;
@@ -190,23 +189,6 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 			$offset = $limit * ( $page - 1 );
 		}
 		return [ $limit, $offset ];
-	}
-
-	/**
-	 * Used for the posts_where hook, filters the WHERE clause of the query by
-	 * searching for the 'query' parameter in the product titles (when the parameter is present).
-	 *
-	 * @param string   $where The WHERE clause of the query.
-	 * @param WP_Query $wp_query The WP_Query instance (passed by reference).
-	 *
-	 * @return string The updated WHERE clause.
-	 */
-	public function title_filter( string $where, WP_Query $wp_query ): string {
-		if ( ! empty( $this->request['query'] ) ) {
-			$title_search = '%' . $this->wpdb->esc_like( $this->request['query'] ) . '%';
-			$where       .= $this->wpdb->prepare( " AND `{$this->wpdb->posts}`.`post_title` LIKE %s", $title_search ); // phpcs:ignore WordPress.DB.PreparedSQL
-		}
-		return $where;
 	}
 
 	/**
