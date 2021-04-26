@@ -11,6 +11,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  */
 import EditProductLink from '.~/components/edit-product-link';
 import AppTableCard from '.~/components/app-table-card';
+import './index.scss';
 
 /**
  * All programs table, with compare feature.

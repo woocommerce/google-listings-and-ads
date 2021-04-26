@@ -6,15 +6,18 @@ import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
 import ProductStatistics from './product-statistics';
+import './index.scss';
 
 const ProductFeed = () => {
 	return (
 		<>
 			<TabNav initialName="product-feed" />
 			<SubmissionSuccessGuide />
-			<ProductStatistics />
-			<IssuesTableCard />
-			<ProductFeedTableCard trackEventReportId="product-feed" />
+			<div className="gla-product-feed">
+				<ProductStatistics />
+				<IssuesTableCard />
+				<ProductFeedTableCard trackEventReportId="product-feed" />
+			</div>
 		</>
 	);
 };

@@ -26,7 +26,6 @@ import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import useMCIssues from '.~/hooks/useMCIssues';
-import './index.scss';
 
 const headers = [
 	{
