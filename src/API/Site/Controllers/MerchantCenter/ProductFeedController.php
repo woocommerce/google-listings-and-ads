@@ -6,7 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 
 defined( 'ABSPATH' ) || exit;
@@ -58,11 +60,15 @@ class ProductFeedController extends BaseController {
 	 */
 	protected function get_product_feed_read_callback(): callable {
 		return function( Request $request ) {
-			return [
-				'products' => $this->query_helper->get( $request ),
-				'total'    => $this->query_helper->count( $request ),
-				'page'     => $request['per_page'] > 0 && $request['page'] > 0 ? $request['page'] : 1,
-			];
+			try {
+				return [
+					'products' => $this->query_helper->get( $request ),
+					'total'    => $this->query_helper->count( $request ),
+					'page'     => $request['per_page'] > 0 && $request['page'] > 0 ? $request['page'] : 1,
+				];
+			} catch ( InvalidValue $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 		};
 	}
 
@@ -166,7 +172,7 @@ class ProductFeedController extends BaseController {
 				'description'       => __( 'Sort collection by attribute.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => 'title',
-				'enum'              => [ 'title', 'id', 'visible', 'stats' ],
+				'enum'              => [ 'title', 'id', 'visible', 'status' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'order'    => [

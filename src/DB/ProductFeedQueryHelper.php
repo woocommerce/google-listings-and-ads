@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -63,8 +64,10 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @param WP_REST_Request $request
 	 *
 	 * @return array
+	 *
+	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
-	public function get( WP_REST_Request $request ) {
+	public function get( WP_REST_Request $request ): array {
 		$this->request = $request;
 		$products      = [];
 		$args          = $this->prepare_query_args();
@@ -97,6 +100,8 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @param WP_REST_Request $request
 	 *
 	 * @return int
+	 *
+	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	public function count( WP_REST_Request $request ): int {
 		$this->request = $request;
@@ -111,21 +116,28 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * Prepare the args to be used to retrieve the products, namely orderby, meta_query and type.
 	 *
 	 * @return array
+	 *
+	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	protected function prepare_query_args(): array {
-		$orderby    = [ 'title' => 'ASC' ];
-		$meta_query = [];
+		$args = [
+			'type'    => [ 'simple', 'variable' ],
+			'orderby' => [ 'title' => 'ASC' ],
+		];
 
-		if ( ! empty( $this->request['orderby'] ) ) {
-			$request_orderby = $this->request['orderby'];
-			$order           = $this->get_order();
+		if ( empty( $this->request['orderby'] ) ) {
+			return $args;
+		}
 
-			if ( $request_orderby === 'title' || $request_orderby === 'name' ) {
-				$orderby['title'] = $order;
-			} elseif ( $request_orderby === 'id' || $request_orderby === 'ID' ) {
-				$orderby = [ 'ID' => $order ] + $orderby;
-			} elseif ( $request_orderby === 'visible' ) {
-				$meta_query = [
+		switch ( $this->request['orderby'] ) {
+			case 'title':
+				$args['orderby']['title'] = $this->get_order();
+				break;
+			case 'id':
+				$args['orderby'] = [ 'ID' => $this->get_order() ] + $args['orderby'];
+				break;
+			case 'visible':
+				$args['meta_query'] = [
 					'relation'            => 'OR',
 					'visibility_clause'   => [
 						'key'   => ProductMetaHandler::KEY_VISIBILITY,
@@ -141,8 +153,9 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 					],
 				];
 				// Orderby treated in orderby_filter
-			} elseif ( $request_orderby === 'status' ) {
-				$meta_query = [
+				break;
+			case 'status':
+				$args['meta_query'] = [
 					'relation'        => 'OR',
 					'synced_clause'   => [
 						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
@@ -154,14 +167,12 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 					],
 				];
 				// Orderby treated in orderby_filter
-			}
+				break;
+			default:
+				throw InvalidValue::not_in_allowed_list( 'orderby', [ 'title', 'id', 'visible', 'status' ] );
 		}
 
-		return [
-			'type'       => [ 'simple', 'variable' ],
-			'orderby'    => $orderby,
-			'meta_query' => $meta_query,
-		];
+		return $args;
 	}
 
 	/**
