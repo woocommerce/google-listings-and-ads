@@ -260,15 +260,15 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { query, data } = action;
 			const newState = {
 				...state,
+				mc_issues: {
+					...state.mc_issues,
+					issues:
+						( state.mc_issues?.issues && [
+							...state.mc_issues.issues,
+						] ) ||
+						[],
+				},
 			};
-
-			if ( state.mc_issues === null ) {
-				newState.mc_issues = {
-					issues: [],
-				};
-			} else {
-				newState.mc_issues.issues = [ ...state.mc_issues.issues ];
-			}
 
 			newState.mc_issues.issues.splice(
 				( query.page - 1 ) * query.per_page,
