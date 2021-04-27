@@ -145,7 +145,7 @@ trait PluginHelper {
 			return apply_filters( 'woocommerce_gla_wcs_url', WOOCOMMERCE_GLA_CONNECT_SERVER_URL );
 		}
 
-		// TODO: Change to api.woocommerce.com when we are no longer in test fase.
+		// TODO: Change to api.woocommerce.com when we are no longer in test phase.
 		return apply_filters( 'woocommerce_gla_wcs_url', 'https://api-vipgo.woocommerce.com' );
 	}
 }
