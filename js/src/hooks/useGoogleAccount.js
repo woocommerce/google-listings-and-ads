@@ -10,13 +10,14 @@ import { STORE_KEY } from '.~/data/constants';
 import useJetpackAccount from './useJetpackAccount';
 
 const useGoogleAccount = () => {
-	const { jetpack, isResolving } = useJetpackAccount();
+	const { jetpack, isResolving, hasFinishedResolution } = useJetpackAccount();
 
 	return useSelect( ( select ) => {
 		if ( ! jetpack || jetpack.active === 'no' ) {
 			return {
 				google: undefined,
 				isResolving,
+				hasFinishedResolution,
 			};
 		}
 
@@ -24,8 +25,15 @@ const useGoogleAccount = () => {
 		const isResolvingGoogle = select( STORE_KEY ).isResolving(
 			'getGoogleAccount'
 		);
+		const hasFinishedResolutionGoogle = select(
+			STORE_KEY
+		).hasFinishedResolution( 'getGoogleAccount' );
 
-		return { google: acc, isResolving: isResolvingGoogle };
+		return {
+			google: acc,
+			isResolving: isResolvingGoogle,
+			hasFinishedResolution: hasFinishedResolutionGoogle,
+		};
 	} );
 };
 
