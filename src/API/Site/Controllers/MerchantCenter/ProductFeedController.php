@@ -163,6 +163,11 @@ class ProductFeedController extends BaseController {
 				'sanitize_callback' => 'absint',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
+			'search'   => [
+				'description'       => __( 'Text to search for in product names.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
 			'ids'      => [
 				'description'       => __( 'Limit result to items with specified ids (comma-separated).', 'google-listings-and-ads' ),
 				'type'              => 'array',

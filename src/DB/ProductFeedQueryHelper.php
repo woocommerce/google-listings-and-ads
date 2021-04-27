@@ -73,6 +73,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		$args                   = $this->prepare_query_args();
 		list( $limit, $offset ) = $this->prepare_query_pagination();
 
+		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 		add_filter( 'posts_orderby', [ $this, 'orderby_filter' ], 10, 2 );
 
 		foreach ( $this->container->get( ProductRepository::class )->find( $args, $limit, $offset ) as $product ) {
@@ -86,6 +87,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 			];
 		}
 
+		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
 		remove_filter( 'posts_orderby', [ $this, 'orderby_filter' ] );
 
 		return array_values( $products );
@@ -122,6 +124,10 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 
 		if ( ! empty( $this->request['ids'] ) ) {
 			$args['include'] = explode( ',', $this->request['ids'] );
+		}
+
+		if ( ! empty( $this->request['search'] ) ) {
+			$args['search'] = $this->request['search'];
 		}
 
 		if ( empty( $this->request['orderby'] ) ) {
@@ -189,6 +195,24 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 			$offset = $limit * ( $page - 1 );
 		}
 		return [ $limit, $offset ];
+	}
+
+	/**
+	 * Used for the posts_where hook, filters the WHERE clause of the query by
+	 * searching for the 'search' parameter in the product titles (when the parameter is present).
+	 *
+	 * @param string   $where The WHERE clause of the query.
+	 * @param WP_Query $wp_query The WP_Query instance (passed by reference).
+	 *
+	 * @return string The updated WHERE clause.
+	 */
+	public function title_filter( string $where, WP_Query $wp_query ): string {
+		$search = $wp_query->get( 'search' );
+		if ( $search ) {
+			$title_search = '%' . $this->wpdb->esc_like( $search ) . '%';
+			$where       .= $this->wpdb->prepare( " AND `{$this->wpdb->posts}`.`post_title` LIKE %s", $title_search ); // phpcs:ignore WordPress.DB.PreparedSQL
+		}
+		return $where;
 	}
 
 	/**
