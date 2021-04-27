@@ -119,6 +119,11 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 };
 
 /**
+ * @typedef {Object} ReportData
+ * @property {boolean} loaded Whether the data have been loaded.
+ * @property {Object|null} data The report data of specified parameters. It would return `null` before the data is fetched.
+ */
+/**
  * Select report data according to parameters and URL query.
  *
  * @param  {Object} state The current store state will be injected by `wp.data`.
@@ -127,18 +132,32 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {Object|null} The report data of specified parameters. It would return `null` before the data is fetched.
+ * @return {ReportData} Report data.
  */
 export const getReport = createRegistrySelector(
 	( select ) => ( state, category, type, query, dateReference ) => {
-		return select( STORE_KEY ).getReportByApiQuery(
+		const selector = select( STORE_KEY );
+		const args = [
 			category,
 			type,
-			getReportQuery( category, type, query, dateReference )
-		);
+			getReportQuery( category, type, query, dateReference ),
+		];
+
+		return {
+			data: selector.getReportByApiQuery( ...args ),
+			loaded: selector.hasFinishedResolution(
+				'getReportByApiQuery',
+				args
+			),
+		};
 	}
 );
 
+/**
+ * @typedef {Object} PerformaceData
+ * @property {boolean} loaded Whether the data have been loaded.
+ * @property {Object|null} data The programs performace data of specified parameters. It would return `null` before the data is fetched.
+ */
 /**
  * Select programs performace data according to parameters.
  *
@@ -147,19 +166,24 @@ export const getReport = createRegistrySelector(
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {Object|null} The programs performace data of specified parameters. It would return `null` before the data is fetched.
+ * @return {PerformaceData} Performace data.
  */
 export const getDashboardPerformance = createRegistrySelector(
 	( select ) => ( state, type, query, dateReference ) => {
-		const report = select( STORE_KEY ).getReportByApiQuery(
+		const selector = select( STORE_KEY );
+		const args = [
 			'programs',
 			type,
-			getPerformanceQuery( type, query, dateReference )
-		);
+			getPerformanceQuery( type, query, dateReference ),
+		];
+		const report = selector.getReportByApiQuery( ...args );
 
-		if ( report ) {
-			return report.totals;
-		}
-		return report;
+		return {
+			data: report ? report.totals : null,
+			loaded: selector.hasFinishedResolution(
+				'getReportByApiQuery',
+				args
+			),
+		};
 	}
 );

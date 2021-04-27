@@ -28,25 +28,19 @@ export default function usePerformance( type ) {
 	];
 
 	return useSelect( ( select ) => {
-		const { getDashboardPerformance, isResolving } = select( STORE_KEY );
-		const primaryArgs = [ type, query, 'primary' ];
-		const secondaryArgs = [ type, query, 'secondary' ];
-		const primary = getDashboardPerformance( ...primaryArgs );
-		const secondary = getDashboardPerformance( ...secondaryArgs );
+		const { getDashboardPerformance } = select( STORE_KEY );
+		const primary = getDashboardPerformance( type, query, 'primary' );
+		const secondary = getDashboardPerformance( type, query, 'secondary' );
 
 		let data = {};
-		let loading =
-			isResolving( 'getDashboardPerformance', primaryArgs ) ||
-			isResolving( 'getDashboardPerformance', secondaryArgs );
+		const loaded = primary.loaded && secondary.loaded;
 
-		if ( primary && secondary ) {
-			data = mapReportFieldsToPerformance( primary, secondary );
-		} else {
-			loading = true;
+		if ( loaded ) {
+			data = mapReportFieldsToPerformance( primary.data, secondary.data );
 		}
 
 		return {
-			loading,
+			loaded,
 			data,
 		};
 	}, deps );
@@ -56,7 +50,7 @@ export default function usePerformance( type ) {
  * Performance schema of the `usePerformance` hook
  *
  * @typedef {Object} PerformanceSchema
- * @property {boolean} loading Whether the data is loading.
+ * @property {boolean} loaded Whether the data have been loaded.
  * @property {PerformanceData} data Fetched performance data.
  */
 
