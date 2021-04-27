@@ -6,7 +6,7 @@ import { format } from '@wordpress/date';
 import { getCurrentDates } from '@woocommerce/date';
 
 const freeFields = [ 'clicks', 'impressions' ];
-const paidFields = [ 'sales', 'solds', 'conversions', 'spend', ...freeFields ];
+const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
 
 /**
  * Get report query for fetching performance data from API.

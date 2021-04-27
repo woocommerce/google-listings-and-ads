@@ -85,7 +85,6 @@ export default function usePerformance( type ) {
  * @property {PerformanceMetrics} clicks Clicks performance.
  * @property {PerformanceMetrics} impressions Impressions performance.
  * @property {PerformanceMetrics} [sales] Sales performance. Available for paid type.
- * @property {PerformanceMetrics} [solds] Solds performance. Available for paid type.
  * @property {PerformanceMetrics} [conversions] Conversions performance. Available for paid type.
  * @property {PerformanceMetrics} [spend] Spend performance. Available for paid type.
  */
