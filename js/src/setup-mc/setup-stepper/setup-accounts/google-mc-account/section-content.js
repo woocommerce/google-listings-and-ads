@@ -19,9 +19,7 @@ const SectionContent = ( props ) => {
 		return <SpinnerCard />;
 	}
 
-	const { id } = googleMCAccount;
-
-	if ( id === 0 ) {
+	if ( googleMCAccount.id === 0 || googleMCAccount.status !== 'connected' ) {
 		return <NonConnected />;
 	}
 
