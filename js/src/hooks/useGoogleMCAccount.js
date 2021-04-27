@@ -10,13 +10,14 @@ import { STORE_KEY } from '.~/data/constants';
 import useGoogleAccount from './useGoogleAccount';
 
 const useGoogleMCAccount = () => {
-	const { google, isResolving } = useGoogleAccount();
+	const { google, isResolving, hasFinishedResolution } = useGoogleAccount();
 
 	return useSelect( ( select ) => {
 		if ( ! google || google.active === 'no' ) {
 			return {
 				googleMCAccount: undefined,
 				isResolving,
+				hasFinishedResolution,
 			};
 		}
 
@@ -24,10 +25,14 @@ const useGoogleMCAccount = () => {
 		const isResolvingGoogleMCAccount = select( STORE_KEY ).isResolving(
 			'getGoogleMCAccount'
 		);
+		const hasFinishedResolutionGoogleMCAccount = select(
+			STORE_KEY
+		).hasFinishedResolution( 'getGoogleMCAccount' );
 
 		return {
 			googleMCAccount: acc,
 			isResolving: isResolvingGoogleMCAccount,
+			hasFinishedResolution: hasFinishedResolutionGoogleMCAccount,
 		};
 	} );
 };
