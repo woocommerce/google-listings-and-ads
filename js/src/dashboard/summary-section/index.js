@@ -34,7 +34,10 @@ const FreePerformanceCard = () => {
 
 	return (
 		<SummaryCard
-			title={ __( 'Performance (Free Listing)', 'google-listings-and-ads' ) }
+			title={ __(
+				'Performance (Free Listing)',
+				'google-listings-and-ads'
+			) }
 		>
 			{ loading ? (
 				<AppSpinner />

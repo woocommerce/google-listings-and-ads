@@ -36,7 +36,10 @@ export const programsFilterConfig = {
 								'Type to search for a program',
 								'google-listings-and-ads'
 							),
-							button: __( 'Single Program', 'google-listings-and-ads' ),
+							button: __(
+								'Single Program',
+								'google-listings-and-ads'
+							),
 						},
 						autocompleter: {
 							name: 'fruit',

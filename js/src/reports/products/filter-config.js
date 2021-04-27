@@ -21,7 +21,10 @@ const productsFilterConfig = {
 	param: 'filter',
 	showFilters: () => true,
 	filters: [
-		{ label: __( 'All Products', 'google-listings-and-ads' ), value: 'all' },
+		{
+			label: __( 'All Products', 'google-listings-and-ads' ),
+			value: 'all',
+		},
 		{
 			label: __( 'Single Product', 'google-listings-and-ads' ),
 			value: 'select_product',
@@ -43,7 +46,10 @@ const productsFilterConfig = {
 								'Type to search for a product',
 								'google-listings-and-ads'
 							),
-							button: __( 'Single Product', 'google-listings-and-ads' ),
+							button: __(
+								'Single Product',
+								'google-listings-and-ads'
+							),
 						},
 					},
 				},
@@ -133,7 +139,10 @@ const variationsConfig = {
 						'Search for variations to compare',
 						'google-listings-and-ads'
 					),
-					title: __( 'Compare Variations', 'google-listings-and-ads' ),
+					title: __(
+						'Compare Variations',
+						'google-listings-and-ads'
+					),
 					update: __( 'Compare', 'google-listings-and-ads' ),
 				},
 			},
