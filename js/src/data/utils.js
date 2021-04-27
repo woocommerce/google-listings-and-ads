@@ -1,9 +1,13 @@
 /**
  * External dependencies
  */
-
 import { format } from '@wordpress/date';
 import { getCurrentDates } from '@woocommerce/date';
+
+/**
+ * Internal dependencies
+ */
+import round from '.~/utils/round';
 
 const freeFields = [ 'clicks', 'impressions' ];
 const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
@@ -73,3 +77,59 @@ export function getReportKey( category, type, reportQuery ) {
 	const id = JSON.stringify( reportQuery, Object.keys( reportQuery ).sort() );
 	return `${ category }:${ type }:${ id }`;
 }
+
+/**
+ * Calculate performance data by each metric.
+ *
+ * @param {ReportFieldsSchema} primary The primary report fields fetched from report API.
+ * @param {ReportFieldsSchema} secondary The secondary report fields fetched from report API.
+ * @return {PerformanceData} The calculated performance data of each metric.
+ */
+export function mapReportFieldsToPerformance( primary, secondary ) {
+	return Object.keys( primary ).reduce( ( acc, key ) => {
+		const value = primary[ key ];
+		const base = secondary[ key ];
+		let delta = 0;
+
+		if ( value !== base ) {
+			const percent = ( ( value - base ) / base ) * 100;
+			delta = Number.isFinite( percent ) ? round( percent ) : null;
+		}
+
+		return {
+			...acc,
+			[ key ]: { value, delta, prevValue: base },
+		};
+	}, {} );
+}
+
+/**
+ * Report fields fetched from report API.
+ *
+ * @typedef {Object} ReportFieldsSchema
+ * @property {number} clicks Clicks value.
+ * @property {number} impressions Impressions value.
+ * @property {number} [sales] Sales value. Available for paid type.
+ * @property {number} [conversions] Conversions value. Available for paid type.
+ * @property {number} [spend] Spend value. Available for paid type.
+ */
+
+/**
+ * Performance data of each metric.
+ *
+ * @typedef {Object} PerformanceData
+ * @property {PerformanceMetrics} clicks Clicks performance.
+ * @property {PerformanceMetrics} impressions Impressions performance.
+ * @property {PerformanceMetrics} [sales] Sales performance. Available for paid type.
+ * @property {PerformanceMetrics} [conversions] Conversions performance. Available for paid type.
+ * @property {PerformanceMetrics} [spend] Spend performance. Available for paid type.
+ */
+
+/**
+ * Performance metrics.
+ *
+ * @typedef {Object} PerformanceMetrics
+ * @property {number} value Value of the current period.
+ * @property {number} prevValue Value of the previous period.
+ * @property {number} delta The delta of the current value compared to the previous value.
+ */

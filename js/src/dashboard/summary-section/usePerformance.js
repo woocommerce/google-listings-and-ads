@@ -9,25 +9,7 @@ import { getCurrentDates } from '@woocommerce/date';
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
-import round from '.~/utils/round';
-
-const mapToData = ( primary, secondary ) => {
-	return Object.keys( primary ).reduce( ( acc, key ) => {
-		const value = primary[ key ];
-		const base = secondary[ key ];
-		let delta = 0;
-
-		if ( value !== base ) {
-			const percent = ( ( value - base ) / base ) * 100;
-			delta = Number.isFinite( percent ) ? round( percent ) : null;
-		}
-
-		return {
-			...acc,
-			[ key ]: { value, delta, prevValue: base },
-		};
-	}, {} );
-};
+import { mapReportFieldsToPerformance } from '.~/data/utils';
 
 /**
  * Get performance results by program type.
@@ -58,7 +40,7 @@ export default function usePerformance( type ) {
 			isResolving( 'getDashboardPerformance', secondaryArgs );
 
 		if ( primary && secondary ) {
-			data = mapToData( primary, secondary );
+			data = mapReportFieldsToPerformance( primary, secondary );
 		} else {
 			loading = true;
 		}
@@ -79,21 +61,5 @@ export default function usePerformance( type ) {
  */
 
 /**
- * Performance data of each metric.
- *
- * @typedef {Object} PerformanceData
- * @property {PerformanceMetrics} clicks Clicks performance.
- * @property {PerformanceMetrics} impressions Impressions performance.
- * @property {PerformanceMetrics} [sales] Sales performance. Available for paid type.
- * @property {PerformanceMetrics} [conversions] Conversions performance. Available for paid type.
- * @property {PerformanceMetrics} [spend] Spend performance. Available for paid type.
- */
-
-/**
- * Performance metrics.
- *
- * @typedef {Object} PerformanceMetrics
- * @property {number} value Value of the current period.
- * @property {number} prevValue Value of the previous period.
- * @property {number} delta The delta of the current value compared to the previous value.
+ * @typedef { import(".~/data/utils").PerformanceData } PerformanceData
  */
