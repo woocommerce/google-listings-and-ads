@@ -16,14 +16,14 @@ const PRODUCTS_REPORT_ADVANCED_FILTERS_FILTER =
 	'gla_products_report_advanced_filters';
 
 const productsFilterConfig = {
-	label: __( 'Show', 'woocommerce-admin' ),
+	label: __( 'Show', 'google-listings-and-ads' ),
 	staticParams: [ 'chartType', 'paged', 'per_page' ],
 	param: 'filter',
 	showFilters: () => true,
 	filters: [
-		{ label: __( 'All Products', 'woocommerce-admin' ), value: 'all' },
+		{ label: __( 'All Products', 'google-listings-and-ads' ), value: 'all' },
 		{
-			label: __( 'Single Product', 'woocommerce-admin' ),
+			label: __( 'Single Product', 'google-listings-and-ads' ),
 			value: 'select_product',
 			chartMode: 'item-comparison',
 			subFilters: [
@@ -41,16 +41,16 @@ const productsFilterConfig = {
 						labels: {
 							placeholder: __(
 								'Type to search for a product',
-								'woocommerce-admin'
+								'google-listings-and-ads'
 							),
-							button: __( 'Single Product', 'woocommerce-admin' ),
+							button: __( 'Single Product', 'google-listings-and-ads' ),
 						},
 					},
 				},
 			],
 		},
 		{
-			label: __( 'Comparison', 'woocommerce-admin' ),
+			label: __( 'Comparison', 'google-listings-and-ads' ),
 			value: 'compare-products',
 			chartMode: 'item-comparison',
 			settings: {
@@ -60,14 +60,14 @@ const productsFilterConfig = {
 				labels: {
 					helpText: __(
 						'Check at least two products below to compare',
-						'woocommerce-admin'
+						'google-listings-and-ads'
 					),
 					placeholder: __(
 						'Search for products to compare',
-						'woocommerce-admin'
+						'google-listings-and-ads'
 					),
-					title: __( 'Compare Products', 'woocommerce-admin' ),
-					update: __( 'Compare', 'woocommerce-admin' ),
+					title: __( 'Compare Products', 'google-listings-and-ads' ),
+					update: __( 'Compare', 'google-listings-and-ads' ),
 				},
 			},
 		},
@@ -84,12 +84,12 @@ const variationsConfig = {
 	param: 'filter-variations',
 	filters: [
 		{
-			label: __( 'All Variations', 'woocommerce-admin' ),
+			label: __( 'All Variations', 'google-listings-and-ads' ),
 			chartMode: 'item-comparison',
 			value: 'all',
 		},
 		{
-			label: __( 'Single Variation', 'woocommerce-admin' ),
+			label: __( 'Single Variation', 'google-listings-and-ads' ),
 			value: 'select_variation',
 			subFilters: [
 				{
@@ -105,11 +105,11 @@ const variationsConfig = {
 						labels: {
 							placeholder: __(
 								'Type to search for a variation',
-								'woocommerce-admin'
+								'google-listings-and-ads'
 							),
 							button: __(
 								'Single Variation',
-								'woocommerce-admin'
+								'google-listings-and-ads'
 							),
 						},
 					},
@@ -117,7 +117,7 @@ const variationsConfig = {
 			],
 		},
 		{
-			label: __( 'Comparison', 'woocommerce-admin' ),
+			label: __( 'Comparison', 'google-listings-and-ads' ),
 			chartMode: 'item-comparison',
 			value: 'compare-variations',
 			settings: {
@@ -127,14 +127,14 @@ const variationsConfig = {
 				labels: {
 					helpText: __(
 						'Check at least two variations below to compare',
-						'woocommerce-admin'
+						'google-listings-and-ads'
 					),
 					placeholder: __(
 						'Search for variations to compare',
-						'woocommerce-admin'
+						'google-listings-and-ads'
 					),
-					title: __( 'Compare Variations', 'woocommerce-admin' ),
-					update: __( 'Compare', 'woocommerce-admin' ),
+					title: __( 'Compare Variations', 'google-listings-and-ads' ),
+					update: __( 'Compare', 'google-listings-and-ads' ),
 				},
 			},
 		},
