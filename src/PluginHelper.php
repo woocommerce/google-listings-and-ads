@@ -134,4 +134,18 @@ trait PluginHelper {
 	protected function is_debug_mode(): bool {
 		return defined( 'WP_DEBUG' ) && WP_DEBUG;
 	}
+
+	/**
+	 * Get the WooCommerce Connect Server URL
+	 *
+	 * @return string
+	 */
+	protected function get_connect_server_url(): string {
+		if ( defined( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL' ) ) {
+			return apply_filters( 'woocommerce_gla_wcs_url', WOOCOMMERCE_GLA_CONNECT_SERVER_URL );
+		}
+
+		// TODO: Change to api.woocommerce.com when we are no longer in test fase.
+		return apply_filters( 'woocommerce_gla_wcs_url', 'https://api-vipgo.woocommerce.com' );
+	}
 }
