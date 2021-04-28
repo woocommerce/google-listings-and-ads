@@ -8,17 +8,9 @@ defined( 'ABSPATH' ) || exit;
  */
 
 /**
- * @var \Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text $input
+ * @var array $input
  */
 $input = $this->input;
 
-/**
- * @var string $form_name
- */
-$form_name = $this->form_name;
-?>
+woocommerce_wp_text_input( $input );
 
-<input id="gla_<?php printf( '%s_%s', esc_attr( $form_name ), esc_attr( $input->get_id() ) ); ?>"
-	   class="input-text" type="text"
-	   name="<?php echo esc_attr( $form_name ); ?>[<?php echo esc_attr( $input->get_name() ); ?>]"
-	   value="<?php echo esc_attr( sanitize_text_field( $input->get_value() ) ); ?>"/>

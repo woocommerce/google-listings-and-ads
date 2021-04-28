@@ -52,16 +52,16 @@ abstract class AbstractInput implements InputInterface {
 	}
 
 	/**
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_id(): string {
+	public function get_id(): ?string {
 		return $this->id;
 	}
 
 	/**
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_name(): string {
+	public function get_name(): ?string {
 		return $this->name;
 	}
 
@@ -73,65 +73,65 @@ abstract class AbstractInput implements InputInterface {
 	}
 
 	/**
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_label(): string {
+	public function get_label(): ?string {
 		return $this->label;
 	}
 
 	/**
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_description(): string {
+	public function get_description(): ?string {
 		return $this->description;
 	}
 
 	/**
-	 * @return mixed
+	 * @return mixed|null
 	 */
 	public function get_value() {
 		return $this->value;
 	}
 
 	/**
-	 * @param string $id
+	 * @param string|null $id
 	 *
 	 * @return InputInterface
 	 */
-	public function set_id( string $id ): InputInterface {
+	public function set_id( ?string $id ): InputInterface {
 		$this->id = $id;
 
 		return $this;
 	}
 
 	/**
-	 * @param string $name
+	 * @param string|null $name
 	 *
 	 * @return InputInterface
 	 */
-	public function set_name( string $name ): InputInterface {
+	public function set_name( ?string $name ): InputInterface {
 		$this->name = $name;
 
 		return $this;
 	}
 
 	/**
-	 * @param string $label
+	 * @param string|null $label
 	 *
 	 * @return InputInterface
 	 */
-	public function set_label( string $label ): InputInterface {
+	public function set_label( ?string $label ): InputInterface {
 		$this->label = $label;
 
 		return $this;
 	}
 
 	/**
-	 * @param string $description
+	 * @param string|null $description
 	 *
 	 * @return InputInterface
 	 */
-	public function set_description( string $description ): InputInterface {
+	public function set_description( ?string $description ): InputInterface {
 		$this->description = $description;
 
 		return $this;
@@ -148,4 +148,20 @@ abstract class AbstractInput implements InputInterface {
 		return $this;
 	}
 
+	/**
+	 * Return the data used for the input's view.
+	 *
+	 * @return array
+	 */
+	public function get_view_data(): array {
+		return [
+			'id'          => $this->get_id(),
+			'name'        => $this->get_name(),
+			'type'        => $this->get_type(),
+			'label'       => $this->get_label(),
+			'value'       => $this->get_value(),
+			'description' => $this->get_description(),
+			'desc_tip'    => true,
+		];
+	}
 }

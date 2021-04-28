@@ -53,4 +53,11 @@ interface FormInterface {
 	 */
 	public function submit( array $submitted_data = [] ): void;
 
+	/**
+	 * Return the data used for the form's view.
+	 *
+	 * @return array
+	 */
+	public function get_view_data(): array;
+
 }

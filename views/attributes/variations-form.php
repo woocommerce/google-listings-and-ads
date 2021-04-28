@@ -10,37 +10,24 @@ defined( 'ABSPATH' ) || exit;
  */
 
 /**
- * @var \Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\InputForm $form
+ * @var array $inputs_data
  */
-$form = $this->form;
-
-/**
- * @var int
- */
-$variation_id = $this->variation_id;
-
-/**
- * @var int
- */
-$loop_index = $this->loop_index;
-
-$form_name = "{$form->get_name()}[{$loop_index}]";
+$inputs_data = $this->inputs
 
 ?>
 
 <div class="gla-metabox closed">
 	<div class="options_group">
 		<h2><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></h2>
-		<?php foreach ( $form->get_inputs() as $input ) : ?>
+		<?php foreach ( $inputs_data as $input ) : ?>
 			<?php
+			$input['wrapper_class'] = 'form-row form-row-full';
+			if ( 'select-with-text-input' === $input['type'] ) {
+				$input['wrapper_class']                = 'form-row form-row-first';
+				$input['children'][0]['wrapper_class'] = 'form-row form-row-last';
+			}
 			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo $this->render_partial(
-				'inputs/input',
-				[
-					'input'     => $input,
-					'form_name' => $form_name,
-				]
-			);
+			echo $this->render_partial( 'inputs/input', [ 'input' => $input ] );
 			?>
 		<?php endforeach; ?>
 	</div>

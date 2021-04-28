@@ -96,4 +96,59 @@ abstract class AbstractForm implements FormInterface {
 		$this->set_data( $submitted_data );
 	}
 
+	/**
+	 * Return the data used for the form's view.
+	 *
+	 * @return array
+	 */
+	public function get_view_data(): array {
+		return [
+			'name'   => $this->get_form_view_name(),
+			'inputs' => $this->get_inputs_view_data(),
+		];
+	}
+
+	/**
+	 * Return the form name to be used in form's view.
+	 *
+	 * @return string
+	 */
+	protected function get_form_view_name(): string {
+		return sprintf( 'gla_%s', $this->get_name() );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_inputs_view_data(): array {
+		$inputs_view_data = [];
+		foreach ( $this->inputs as $input ) {
+			$inputs_view_data[ $input->get_id() ] = $this->prepare_input_view_data( $input->get_view_data() );
+		}
+
+		return $inputs_view_data;
+	}
+
+	/**
+	 * @param array $view_data
+	 *
+	 * @return array
+	 */
+	protected function prepare_input_view_data( array $view_data ): array {
+		if ( ! empty( $view_data['id'] ) ) {
+			$view_data['id'] = sprintf( 'gla_%s_%s', $this->get_name(), $view_data['id'] );
+		}
+		if ( ! empty( $view_data['name'] ) ) {
+			$view_data['name'] = sprintf( '%s[%s]', $this->get_form_view_name(), $view_data['name'] );
+		}
+
+		if ( ! empty( $view_data['children'] ) ) {
+			foreach ( $view_data['children'] as $key => $child ) {
+				$view_data['children'][ $key ] = $this->prepare_input_view_data( $child );
+			}
+		}
+
+		return $view_data;
+	}
+
 }

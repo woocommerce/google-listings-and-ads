@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\FormInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\ViewHelperTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
@@ -24,7 +23,6 @@ defined( 'ABSPATH' ) || exit;
 class TabInitializer implements Service, Registerable, Conditional {
 
 	use AdminConditional;
-	use ViewHelperTrait;
 
 	/**
 	 * @var Admin
@@ -100,11 +98,8 @@ class TabInitializer implements Service, Registerable, Conditional {
 	 */
 	private function render_panel() {
 		$product_id = get_the_ID();
-		$view_data  = [
-			'form'       => $this->get_form( $product_id ),
-			'product_id' => $product_id,
-		];
-		echo wp_kses( $this->admin->get_view( 'attributes/tab-panel', $view_data ), $this->get_allowed_html_form_tags() );
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->admin->get_view( 'attributes/tab-panel', $this->get_form( $product_id )->get_view_data() );
 	}
 
 	/**
@@ -115,9 +110,10 @@ class TabInitializer implements Service, Registerable, Conditional {
 	private function handle_update_product( int $product_id ) {
 		$form = $this->get_form( $product_id );
 
+		$form_view_data = $form->get_view_data();
 		// phpcs:disable WordPress.Security.NonceVerification
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$submitted_data = ! empty( $_POST[ $form->get_name() ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form->get_name() ] ) ) : [];
+		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) ) : [];
 
 		$this->submit_form( $form, $product_id, $submitted_data );
 	}

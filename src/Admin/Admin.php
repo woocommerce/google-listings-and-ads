@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
@@ -122,6 +123,18 @@ class Admin implements Service, Registerable, Conditional {
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
 			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
 			$wc_admin_condition
+		) );
+
+		$assets[] = ( new AdminScriptAsset(
+			'gla-custom-inputs',
+			'js/build/custom-inputs',
+			[],
+			'',
+			function () {
+				$screen = get_current_screen();
+
+				return ( null !== $screen && 'product' === $screen->id );
+			}
 		) );
 
 		return $assets;

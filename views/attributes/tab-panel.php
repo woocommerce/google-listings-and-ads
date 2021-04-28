@@ -10,30 +10,19 @@ defined( 'ABSPATH' ) || exit;
  */
 
 /**
- * @var \Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\InputForm $form
+ * @var array $inputs_data
  */
-$form = $this->form;
-
-/**
- * @var int
- */
-$product_id = $this->product_id;
+$inputs_data = $this->inputs
 
 ?>
 
 <div id="gla_attributes" class="panel woocommerce_options_panel">
 	<div class="options_group">
 		<h2><?php esc_html_e( 'Product attributes', 'google-listings-and-ads' ); ?></h2>
-		<?php foreach ( $form->get_inputs() as $input ) : ?>
+		<?php foreach ( $inputs_data as $input ) : ?>
 			<?php
 			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo $this->render_partial(
-				'inputs/input',
-				[
-					'input'     => $input,
-					'form_name' => $form->get_name(),
-				]
-			);
+			echo $this->render_partial( 'inputs/input', [ 'input' => $input ] );
 			?>
 		<?php endforeach; ?>
 	</div>
