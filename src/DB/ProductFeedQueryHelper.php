@@ -74,7 +74,6 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		list( $limit, $offset ) = $this->prepare_query_pagination();
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
-		add_filter( 'posts_orderby', [ $this, 'orderby_filter' ], 10, 2 );
 
 		foreach ( $this->container->get( ProductRepository::class )->find( $args, $limit, $offset ) as $product ) {
 			$id              = $product->get_id();
@@ -88,7 +87,6 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		}
 
 		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
-		remove_filter( 'posts_orderby', [ $this, 'orderby_filter' ] );
 
 		return array_values( $products );
 	}
@@ -151,19 +149,13 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 				$args['orderby']    = [ 'visibility_clause' => $this->get_order() ] + $args['orderby'];
 				break;
 			case 'status':
-				$args['meta_query']  = [
-					'relation'        => 'OR',
-					'synced_clause'   => [
+				$args['meta_query'] = [
+					'synced_clause' => [
 						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
 						'compare' => 'EXISTS',
 					],
-					'synced_clause_2' => [
-						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-						'compare' => 'NOT EXISTS',
-					],
 				];
-				$args['gla_orderby'] = 'status';
-				// Orderby treated in orderby_filter
+				$args['orderby']    = [ 'synced_clause' => $this->get_order() ] + $args['orderby'];
 				break;
 			default:
 				throw InvalidValue::not_in_allowed_list( 'orderby', [ 'title', 'id', 'visible', 'status' ] );
@@ -205,25 +197,6 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 			$where       .= $this->wpdb->prepare( " AND `{$this->wpdb->posts}`.`post_title` LIKE %s", $title_search ); // phpcs:ignore WordPress.DB.PreparedSQL
 		}
 		return $where;
-	}
-
-	/**
-	 * Used for the posts_where hook, modifies the ORDER BY clause of the query to
-	 * order the results by visibility or sync status.
-	 *
-	 * @param string   $orderby The ORDER BY clause of the query.
-	 * @param WP_Query $wp_query   The WP_Query instance (passed by reference).
-	 *
-	 * @return string The updated ORDER BY clause.
-	 */
-	public function orderby_filter( string $orderby, WP_Query $wp_query ): string {
-		if ( $wp_query->get( 'gla_orderby' ) === 'status' ) {
-				$order        = $this->get_order();
-				$placeholders = implode( ',', array_fill( 0, count( SyncStatus::ALLOWED_VALUES ), '%s' ) );
-				$new_order    = "FIELD( `{$this->wpdb->postmeta}`.`meta_value`, $placeholders ) $order, ";
-				$orderby      = $this->wpdb->prepare( $new_order, SyncStatus::ALLOWED_VALUES ) . $orderby; // phpcs:ignore WordPress.DB.PreparedSQL
-		}
-		return $orderby;
 	}
 
 	/**
