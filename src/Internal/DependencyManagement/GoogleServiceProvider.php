@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
@@ -42,6 +43,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class GoogleServiceProvider extends AbstractServiceProvider {
 
+	use PluginHelper;
 	use WPErrorTrait;
 
 	/**
@@ -244,13 +246,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @return RawArgument
 	 */
 	protected function get_connect_server_url_root( string $path = '' ): RawArgument {
-		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
-			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'https://api.woocommerce.com/' );
-		}
-		$url = WOOCOMMERCE_CONNECT_SERVER_URL;
-		$url = rtrim( $url, '/' );
-
-		$path = '/' . trim( $path, '/' );
+		$url  = trailingslashit( $this->get_connect_server_url() );
+		$path = trim( $path, '/' );
 
 		return new RawArgument( "{$url}{$path}" );
 	}

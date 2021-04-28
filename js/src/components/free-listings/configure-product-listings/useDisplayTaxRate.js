@@ -1,36 +1,36 @@
 /**
  * Internal dependencies
  */
-import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
-
-/**
- * Returns a boolean to indicate whether the Tax Rate section should be displayed.
- *
- * The Tax Rate section should be displayed when the country code `'US'` is one of the target audience countries.
- */
-const useDisplayTaxRate = () => {
-	const { data } = useTargetAudienceFinalCountryCodes();
-
-	return shouldDisplayTaxRate( data );
-};
-
-export default useDisplayTaxRate;
+import useStoreCountry from '.~/hooks/useStoreCountry';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
 /**
- * Checks whether the Tax Rate section should be displayed, for given audience.
- * The Tax Rate section should be displayed when there is `'US'` country code in the target audience countries list.
+ * Returns a boolean to indicate whether the Tax Rate section should be displayed for given audience countries.
  *
- * @param {Array<CountryCode>} countries
- * @return {boolean} `true` if the Tax Rate section should be displayed, `false` otherwise.
+ * The Tax Rate section should be displayed when the store's country code or one of the target audience country codes is `'US'`.
+ *
+ * @param {Array<CountryCode>} [audienceCountries] If no audience countries are given, check store's one.
+ * @return {boolean | null} `true` if the Tax Rate section should be displayed, `false` if shouldn't, `null` we cannot tell - we still wait for store or audience to be determined.
  */
-export function shouldDisplayTaxRate( countries ) {
-	if ( ! countries ) {
-		return false;
-	}
+const useDisplayTaxRate = ( audienceCountries = null ) => {
+	const { code: storeCountry } = useStoreCountry();
 
-	return countries.includes( 'US' );
-}
+	// If any country is US return `true`.
+	if ( storeCountry === 'US' ) {
+		return true;
+	}
+	if ( audienceCountries && audienceCountries.includes( 'US' ) ) {
+		return true;
+	}
+	// If we cannot tell yet, return `null`.
+	if ( ! storeCountry || audienceCountries === null ) {
+		return null;
+	}
+	// Store's and audience countries are available and were checked, none contains `US`.
+	return false;
+};
+
+export default useDisplayTaxRate;

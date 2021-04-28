@@ -2,8 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useSelect } from '@wordpress/data';
-import { SETTINGS_STORE_NAME } from '@woocommerce/data';
 import { Notice, Icon } from '@wordpress/components';
 import { external as externalIcon } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
@@ -13,21 +11,10 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import useTargetAudience from '.~/hooks/useTargetAudience';
+import useStoreCountry from '.~/hooks/useStoreCountry';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import { glaData } from '.~/constants';
 import './index.scss';
-
-const useStoreCountryName = () => {
-	return useSelect( ( select ) => {
-		const { getSetting } = select( SETTINGS_STORE_NAME );
-		const countryNames = getSetting( 'wc_admin', 'countries' );
-		const general = getSetting( 'general', 'general' );
-		const [ countryCode ] = general.woocommerce_default_country.split(
-			':'
-		);
-		return countryNames[ countryCode ];
-	} );
-};
 
 const ExternalIcon = () => (
 	<Icon
@@ -81,7 +68,7 @@ const UnsupportedLanguage = () => {
 };
 
 const UnsupportedCountry = () => {
-	const countryName = useStoreCountryName();
+	const { name: countryName } = useStoreCountry();
 
 	if ( ! countryName ) {
 		return null;

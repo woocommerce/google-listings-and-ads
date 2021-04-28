@@ -79,9 +79,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 * @return void
 	 */
 	protected function map_woocommerce_product() {
-		$dimension_unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
-		$weight_unit    = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
-
 		$this->setChannel( self::CHANNEL_ONLINE );
 
 		// todo: this is temporary, modify or remove this when the GTIN, MPN etc. functionalities are implemented.
@@ -95,8 +92,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
 			 ->map_wc_availability()
 			 ->map_wc_product_shipping()
-			 ->map_wc_shipping_dimensions( $dimension_unit )
-			 ->map_wc_shipping_weight( $weight_unit )
 			 ->map_wc_prices();
 	}
 
@@ -222,13 +217,31 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 * @return $this
 	 */
 	protected function map_wc_product_shipping(): WCProductAdapter {
+		$product_shipping = [
+			'country' => $this->getTargetCountry(),
+		];
+
+		// Virtual products should override any country shipping cost.
+		if ( $this->is_virtual() ) {
+			$product_shipping['price'] = [
+				'currency' => get_woocommerce_currency(),
+				'value'    => 0,
+			];
+		}
+
 		$this->setShipping(
 			new Google_Service_ShoppingContent_ProductShipping(
-				[
-					'country' => $this->getTargetCountry(),
-				]
+				$product_shipping
 			)
 		);
+
+		if ( ! $this->is_virtual() ) {
+			$dimension_unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
+			$weight_unit    = apply_filters( 'woocommerce_gla_weight_unit', get_option( 'woocommerce_weight_unit' ) );
+
+			$this->map_wc_shipping_dimensions( $dimension_unit )
+				 ->map_wc_shipping_weight( $weight_unit );
+		}
 
 		return $this;
 	}
@@ -518,6 +531,15 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 */
 	public function is_variable(): bool {
 		return $this->wc_product instanceof WC_Product_Variable;
+	}
+
+	/**
+	 * Return whether the WooCommerce product is virtual.
+	 *
+	 * @return bool
+	 */
+	public function is_virtual(): bool {
+		return $this->wc_product->is_virtual();
 	}
 
 	/**
