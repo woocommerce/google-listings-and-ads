@@ -109,7 +109,11 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	public function count( WP_REST_Request $request ): int {
 		$this->request = $request;
 		$args          = $this->prepare_query_args();
-		$ids           = $this->container->get( ProductRepository::class )->find_ids( $args );
+
+		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
+		$ids = $this->container->get( ProductRepository::class )->find_ids( $args );
+		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
+
 		return count( $ids );
 	}
 
