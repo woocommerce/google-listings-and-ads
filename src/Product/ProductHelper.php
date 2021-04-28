@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
@@ -48,6 +49,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 
 		$this->meta_handler->update_synced_at( $wc_product_id, time() );
 		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::SYNCED );
+		$this->update_empty_visibility( $product );
 
 		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
@@ -109,6 +111,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 
 		$this->meta_handler->update_errors( $wc_product_id, $errors );
 		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::HAS_ERRORS );
+		$this->update_empty_visibility( $product );
 
 		if ( ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] ) ) {
 			// update failed sync attempts count in case of internal errors
@@ -149,6 +152,20 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 			$wc_parent_id   = $product->get_parent_id();
 			$parent_product = wc_get_product( $wc_parent_id );
 			$this->mark_as_pending( $parent_product );
+		}
+	}
+
+	/**
+	 * Update empty (NOT EXIST) visibility meta values to SYNC_AND_SHOW.
+	 *
+	 * @param WC_Product $product
+	 */
+	protected function update_empty_visibility( WC_Product $product ): void {
+		$product_id = $product instanceof WC_Product_Variation ? $product->get_parent_id() : $product->get_id();
+		$visibility = $this->meta_handler->get_visibility( $product_id );
+
+		if ( empty( $visibility ) ) {
+			$this->meta_handler->update_visibility( $product_id, ChannelVisibility::SYNC_AND_SHOW );
 		}
 	}
 
