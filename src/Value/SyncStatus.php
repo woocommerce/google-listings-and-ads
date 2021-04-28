@@ -22,8 +22,8 @@ class SyncStatus implements ValueInterface {
 	public const ALLOWED_VALUES = [
 		self::SYNCED,
 		self::PENDING,
-		self::NOT_SYNCED,
 		self::HAS_ERRORS,
+		self::NOT_SYNCED,
 	];
 
 	/**

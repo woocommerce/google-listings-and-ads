@@ -127,7 +127,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		}
 
 		if ( ! empty( $this->request['search'] ) ) {
-			$args['search'] = $this->request['search'];
+			$args['gla_search'] = $this->request['search'];
 		}
 
 		if ( empty( $this->request['orderby'] ) ) {
@@ -143,24 +143,15 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 				break;
 			case 'visible':
 				$args['meta_query'] = [
-					'relation'            => 'OR',
-					'visibility_clause'   => [
-						'key'   => ProductMetaHandler::KEY_VISIBILITY,
-						'value' => 'sync-and-show',
-					],
-					'visibility_clause_2' => [
+					'visibility_clause' => [
 						'key'     => ProductMetaHandler::KEY_VISIBILITY,
-						'compare' => 'NOT EXISTS',
-					],
-					'visibility_clause_3' => [
-						'key'   => ProductMetaHandler::KEY_VISIBILITY,
-						'value' => 'dont-sync-and-show',
+						'compare' => 'EXISTS',
 					],
 				];
-				// Orderby treated in orderby_filter
+				$args['orderby']    = [ 'visibility_clause' => $this->get_order() ] + $args['orderby'];
 				break;
 			case 'status':
-				$args['meta_query'] = [
+				$args['meta_query']  = [
 					'relation'        => 'OR',
 					'synced_clause'   => [
 						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
@@ -171,6 +162,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 						'compare' => 'NOT EXISTS',
 					],
 				];
+				$args['gla_orderby'] = 'status';
 				// Orderby treated in orderby_filter
 				break;
 			default:
@@ -207,9 +199,9 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @return string The updated WHERE clause.
 	 */
 	public function title_filter( string $where, WP_Query $wp_query ): string {
-		$search = $wp_query->get( 'search' );
-		if ( $search ) {
-			$title_search = '%' . $this->wpdb->esc_like( $search ) . '%';
+		$gla_search = $wp_query->get( 'gla_search' );
+		if ( $gla_search ) {
+			$title_search = '%' . $this->wpdb->esc_like( $gla_search ) . '%';
 			$where       .= $this->wpdb->prepare( " AND `{$this->wpdb->posts}`.`post_title` LIKE %s", $title_search ); // phpcs:ignore WordPress.DB.PreparedSQL
 		}
 		return $where;
@@ -225,17 +217,11 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @return string The updated ORDER BY clause.
 	 */
 	public function orderby_filter( string $orderby, WP_Query $wp_query ): string {
-		$order = $this->get_order();
-		switch ( $this->request['orderby'] ) {
-			case 'visible':
-				$new_order = "`{$this->wpdb->postmeta}`.`meta_value` = %s $order, ";
-				$orderby   = $this->wpdb->prepare( $new_order, ChannelVisibility::DONT_SYNC_AND_SHOW ) . $orderby; // phpcs:ignore WordPress.DB.PreparedSQL
-				break;
-			case 'status':
+		if ( $wp_query->get( 'gla_orderby' ) === 'status' ) {
+				$order        = $this->get_order();
 				$placeholders = implode( ',', array_fill( 0, count( SyncStatus::ALLOWED_VALUES ), '%s' ) );
 				$new_order    = "FIELD( `{$this->wpdb->postmeta}`.`meta_value`, $placeholders ) $order, ";
 				$orderby      = $this->wpdb->prepare( $new_order, SyncStatus::ALLOWED_VALUES ) . $orderby; // phpcs:ignore WordPress.DB.PreparedSQL
-				break;
 		}
 		return $orderby;
 	}
