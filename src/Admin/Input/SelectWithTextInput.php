@@ -65,7 +65,8 @@ class SelectWithTextInput extends AbstractInput {
 		$custom_input = $this->get_text_input()->get_view_data();
 
 		// add custom classes
-		$view_data['class'] = 'select short with-text-input';
+		$view_data['class']            = 'select short with-text-input';
+		$custom_input['wrapper_class'] = 'custom-input';
 
 		$view_data['options'] = $this->get_options();
 
@@ -75,9 +76,6 @@ class SelectWithTextInput extends AbstractInput {
 		// select the custom option if it's a custom value
 		if ( $this->is_custom_value() ) {
 			$view_data['value'] = self::CUSTOM_VALUE_KEY;
-		} else {
-			$custom_input['style'] = ! empty( $custom_input['style'] ) ?
-				$custom_input['style'] . ' display: none;' : 'display: none;';
 		}
 
 		$view_data['children'][0] = $custom_input;
@@ -93,7 +91,8 @@ class SelectWithTextInput extends AbstractInput {
 		$id    = sprintf( '%s_%s', $this->get_id(), self::CUSTOM_VALUE_KEY );
 		$name  = sprintf( '%s_%s', $this->get_name(), self::CUSTOM_VALUE_KEY );
 		$input->set_id( $id )
-			  ->set_name( $name );
+			  ->set_name( $name )
+			  ->set_label( $this->get_label() );
 
 		if ( $this->is_custom_value() ) {
 			$input->set_value( $this->get_value() );

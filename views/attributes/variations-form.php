@@ -21,10 +21,13 @@ $inputs_data = $this->inputs
 		<h2><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></h2>
 		<?php foreach ( $inputs_data as $input ) : ?>
 			<?php
-			$input['wrapper_class'] = 'form-row form-row-full';
+			$input['wrapper_class'] = sprintf( '%s %s', $input['wrapper_class'] ?? '', 'form-row' );
 			if ( 'select-with-text-input' === $input['type'] ) {
-				$input['wrapper_class']                = 'form-row form-row-first';
-				$input['children'][0]['wrapper_class'] = 'form-row form-row-last';
+				$input['wrapper_class'] .= ' form-row-first';
+
+				$input['children'][0]['wrapper_class'] = sprintf( '%s %s', $input['children'][0]['wrapper_class'] ?? '', 'form-row form-row-last' );
+			} else {
+				$input['wrapper_class'] .= ' form-row-full';
 			}
 			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo $this->render_partial( 'inputs/input', [ 'input' => $input ] );
