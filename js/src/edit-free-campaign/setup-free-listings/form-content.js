@@ -9,9 +9,10 @@ import { __ } from '@wordpress/i18n';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
-import { shouldDisplayTaxRate } from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
+import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import CombinedShipping from '.~/components/free-listings/configure-product-listings/combined-shipping';
 import AppButton from '.~/components/app-button';
+import ConditionalSection from '.~/components/conditional-section';
 
 /**
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
@@ -35,14 +36,18 @@ const FormContent = ( {
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
 	const { errors, handleSubmit } = formProps;
-	const displayTaxRate = shouldDisplayTaxRate( countries );
 
-	const isCompleteSetupDisabled = Object.keys( errors ).length >= 1;
+	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
+
+	const isCompleteSetupDisabled =
+		shouldDisplayTaxRate === null || Object.keys( errors ).length >= 1;
 
 	return (
 		<StepContent>
 			<CombinedShipping formProps={ formProps } countries={ countries } />
-			{ displayTaxRate && <TaxRate formProps={ formProps } /> }
+			<ConditionalSection show={ shouldDisplayTaxRate }>
+				<TaxRate formProps={ formProps } />
+			</ConditionalSection>
 			<StepContentFooter>
 				<AppButton
 					isPrimary

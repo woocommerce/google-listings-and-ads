@@ -34,9 +34,12 @@ export const programsFilterConfig = {
 						labels: {
 							placeholder: __(
 								'Type to search for a program',
-								'woocommerce-admin'
+								'google-listings-and-ads'
 							),
-							button: __( 'Single Program', 'woocommerce-admin' ),
+							button: __(
+								'Single Program',
+								'google-listings-and-ads'
+							),
 						},
 						autocompleter: {
 							name: 'fruit',
