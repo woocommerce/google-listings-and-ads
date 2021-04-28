@@ -22,7 +22,7 @@ trait GoogleHelper {
 	 *
 	 * @return array
 	 */
-	protected function get_mc_supported_countries_currencies( bool $include_beta = false ): array {
+	protected function get_mc_supported_countries_currencies( bool $include_beta = true ): array {
 		$beta_countries = [
 			'DZ' => 'DZD', // Algeria
 			'AO' => 'AOA', // Angola
@@ -134,7 +134,7 @@ trait GoogleHelper {
 	 *
 	 * @return string[]
 	 */
-	protected function get_mc_supported_countries( bool $include_beta = false ): array {
+	protected function get_mc_supported_countries( bool $include_beta = true ): array {
 		return array_keys( $this->get_mc_supported_countries_currencies( $include_beta ) );
 	}
 
