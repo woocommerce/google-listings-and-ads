@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WP_Query;
 use WP_REST_Request;
 use wpdb;
@@ -76,13 +75,20 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
 		foreach ( $this->container->get( ProductRepository::class )->find( $args, $limit, $offset ) as $product ) {
-			$id              = $product->get_id();
+			$id     = $product->get_id();
+			$errors = $this->meta_handler->get_errors( $id ) ?: [];
+
+			// Combine errors for variations.
+			if ( ! empty( $errors ) && ! isset( $errors[0] ) ) {
+				$errors = array_unique( array_merge( ...$errors ) );
+			}
+
 			$products[ $id ] = [
 				'id'      => $id,
 				'title'   => $product->get_name(),
 				'visible' => $this->product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
 				'status'  => $this->product_helper->get_sync_status( $product ),
-				'errors'  => $this->meta_handler->get_errors( $id ) ?: [],
+				'errors'  => $errors,
 			];
 		}
 
