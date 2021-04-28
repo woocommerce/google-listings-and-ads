@@ -36,7 +36,7 @@ const headers = [
 	},
 	{
 		key: 'affectedProduct',
-		label: __( 'Affected Product', 'google-listings-and-ads' ),
+		label: __( 'Affected product', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
 	},
@@ -48,7 +48,7 @@ const headers = [
 	},
 	{
 		key: 'suggestedAction',
-		label: __( 'Suggested Action', 'google-listings-and-ads' ),
+		label: __( 'Suggested action', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
 	},
@@ -76,7 +76,7 @@ const IssuesTableCard = () => {
 					<Text variant="title.small" as="h2">
 						<>
 							{ __(
-								'Issues to Resolve',
+								'Issues to resolve',
 								'google-listings-and-ads'
 							) }
 							<HelpPopover id="issues-to-resolve">
