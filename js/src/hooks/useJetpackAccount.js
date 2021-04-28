@@ -19,7 +19,7 @@ const useJetpackAccount = () => {
 		);
 
 		return { jetpack, isResolving, hasFinishedResolution };
-	} );
+	}, [] );
 };
 
 export default useJetpackAccount;
