@@ -29,6 +29,7 @@ trait GoogleHelper {
 			'BD' => 'BDT', // Bangladesh
 			'KH' => 'KHR', // Cambodia
 			'CM' => 'XAF', // Cameroon
+			'CR' => 'CRC', // Costa Rica
 			'CI' => 'XOF', // Cote d'Ivoire
 			'DO' => 'DOP', // Dominican Republic
 			'SV' => 'USD', // El Salvador
@@ -53,6 +54,8 @@ trait GoogleHelper {
 			'TZ' => 'TZS', // Tanzania
 			'TH' => 'THB', // Thailand
 			'TN' => 'TND', // Tunisia
+			'UG' => 'UGX', // Uganda
+			'UA' => 'UAH', // Ukraine
 			'VE' => 'VEF', // Venezuela
 			'VN' => 'VND', // Vietnam
 			'ZM' => 'ZMW', // Zambia
@@ -70,7 +73,6 @@ trait GoogleHelper {
 			'CA' => 'CAD', // Canada
 			'CL' => 'CLP', // Chile
 			'CO' => 'COP', // Colombia
-			'CR' => 'CRC', // Costa Rica
 			'CZ' => 'CZK', // Czechia
 			'DK' => 'DKK', // Denmark
 			'EC' => 'USD', // Ecuador
