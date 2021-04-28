@@ -126,7 +126,17 @@ const IssuesTableCard = () => {
 									},
 									{ display: el.product },
 									{ display: el.issue },
-									{ display: el.action },
+									{
+										display: (
+											<AppDocumentationLink
+												context="issues-to-resolve"
+												linkId={ el.code }
+												href={ el.action_url }
+											>
+												{ el.action }
+											</AppDocumentationLink>
+										),
+									},
 									{
 										display: el.type === 'product' && (
 											<EditProductLink
