@@ -1,5 +1,9 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 0.5.2 - 2021-04-28 =
+* Fix - Consistent i18n domain name.
+* Fix - Include Merchant Center beta countries.
+
 = 0.5.1 - 2021-04-27 =
 * Fix - Add FAQ for "What if I already have free listings set up for my store?".
 * Fix - Build translation files.
