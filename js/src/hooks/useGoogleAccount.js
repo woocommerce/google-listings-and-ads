@@ -26,21 +26,19 @@ const useGoogleAccount = () => {
 				};
 			}
 
-			const google = select( STORE_KEY ).getGoogleAccount();
-			const isResolving = select( STORE_KEY ).isResolving(
-				'getGoogleAccount'
-			);
-			const hasFinishedResolution = select(
-				STORE_KEY
-			).hasFinishedResolution( 'getGoogleAccount' );
-
-			const result = {
-				google,
+			const {
+				getGoogleAccount,
 				isResolving,
 				hasFinishedResolution,
-			};
+			} = select( STORE_KEY );
 
-			return result;
+			return {
+				google: getGoogleAccount(),
+				isResolving: isResolving( 'getGoogleAccount' ),
+				hasFinishedResolution: hasFinishedResolution(
+					'getGoogleAccount'
+				),
+			};
 		},
 		[ jetpack, isResolvingJetpack, hasFinishedResolutionJetpack ]
 	);
