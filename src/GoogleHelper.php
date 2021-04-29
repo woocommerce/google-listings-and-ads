@@ -110,7 +110,6 @@ trait GoogleHelper {
 			'SG' => 'SGD', // Singapore
 			'SK' => 'EUR', // Slovakia
 			'ZA' => 'ZAR', // South Africa
-			'KR' => 'KRW', // South Korea
 			'ES' => 'EUR', // Spain
 			'SE' => 'SEK', // Sweden
 			'CH' => 'CHF', // Switzerland
@@ -123,7 +122,14 @@ trait GoogleHelper {
 			'UZ' => 'UZS', // Uzbekistan
 		];
 
-		return $include_beta ? array_merge( $supported_countries, $beta_countries ) : $supported_countries;
+		$supported = $include_beta ? array_merge( $supported_countries, $beta_countries ) : $supported_countries;
+
+		// Currency conversion is unavailable in South Korea: https://support.google.com/merchants/answer/7055540
+		if ( 'KRW' === get_woocommerce_currency() ) {
+			$supported['KR'] = 'KRW'; // South Korea
+		}
+
+		return $supported;
 	}
 
 	/**
