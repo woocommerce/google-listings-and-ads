@@ -12,8 +12,51 @@ Native integration with Google that allows merchants to easily display their pro
 
 == Description ==
 
+Google Listings & Ads makes it simple to showcase your products to shoppers across Google. Whether you’re brand new to digital advertising or a marketing expert, you can expand your reach and grow your business, for free and with ads.
 
-== Getting Started ==
+Sync your store with Google to list products for free, run paid ads, and track performance straight from your store dashboard.
+
+With Google Listings & Ads:
+- **Connect your store seamlessly** with Google Merchant Center.
+- **Reach online shoppers** with free listings.
+- **Boost store traffic and sales** with Smart Shopping Campaigns.
+
+= Connect your store seamlessly =
+
+Integrate with Google Merchant Center to upload relevant store and product data to Google. Your products will sync automatically to make the information available for free listings, Google Ads, and other Google services.
+
+Create a new Merchant Center account or link an existing one to connect your store and list products across Google for free and  with ads.
+
+= Reach online shoppers with free listings =
+
+Showcase eligible products to shoppers looking for what you offer and drive traffic to your store with Google’s free listings on the Shopping tab.
+
+Your products can also appear on Google Search, Google Images, and Gmail if you’re selling in the United States.
+
+*Learn more about supported countries for Google free listings [here](https://support.google.com/merchants/answer/10033607?hl=en).*
+
+= Boost store traffic and sales with Google Ads =
+
+Grow your business with Smart Shopping campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
+
+Connect your Google Ads account, choose a budget, and launch your campaign straight from your WooCommerce dashboard. You can also review campaign analytics and access automated reports to easily see how your ads are performing.
+
+*Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
+
+= Get started with up to $150 in ad credit when you create a Google Ads account =
+
+Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaigns. The promotional code will be applied when you start spending and serve your first ad impression, and whatever you spend over the next 30 days, up to $150, will be added back to your account.
+
+*\*Ad credit amounts vary by country and region.*
+
+= The eligibility criteria: =
+- The account has no other promotions applied.
+- The account is billed to a country where Google Partners promotions are offered.
+- The account served its first ad impression within the last 14 days. 
+
+*Review the static terms [here](http://www.google.com/ads/coupons/terms.html).*
+
+== Installation ==
 
 = Minimum Requirements =
 
@@ -44,13 +87,57 @@ Yes you can! Join in on our [GitHub repository](https://github.com/woocommerce/g
 
 Release and roadmap notes available on the [WooCommerce Developers Blog](https://woocommerce.wordpress.com/)
 
+== FAQ ==
+
+= What is Google Merchant Center? =
+The Google Merchant Center helps you sync your store and product data with Google and makes the information available for both free listings on the Shopping tab and Google Shopping Ads. That means everything about your stores and products is available to shoppers when they search on a Google property.
+
+= Which countries are available for Google Listings & Ads? =
+Learn more about supported countries for Google free listings [here](https://support.google.com/merchants/answer/10033607?hl=en).
+
+Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
+
+= Where will my products appear? =
+If you’re selling in the US, then eligible free listings can appear in search results across Google Search, Google Images, and the Google Shopping tab. If you're selling outside the US, free listings will appear on the Shopping tab.
+
+If you’re running a Smart Shopping campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
+
+= What are Smart Shopping campaigns? =
+Smart Shopping campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
+
+= How much do Smart Shopping campaigns cost? =
+Smart Shopping campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
+
+= Can I run both free listings and Smart Shopping campaigns at the same time? =
+Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
+
 == Changelog ==
 
-= 0.5.0 - 2021-04-15 =
-- Google Ads onboarding and dashboard test release.
+= 0.5.2 - 2021-04-28 =
+* Fix - Consistent i18n domain name.
+* Fix - Include Merchant Center beta countries.
 
-= 0.4.0 - 2021-04-01 =
-- Merchant Center and Google Ads onboarding test release.
+= 0.5.1 - 2021-04-27 =
+* Fix - Add FAQ for "What if I already have free listings set up for my store?".
+* Fix - Build translation files.
+* Fix - Dedicated Merchant Center issues table.
+* Fix - Delete MC shipping settings on disconnect.
+* Fix - Disable the "create a new MC account" link when an existing account is being connected.
+* Fix - Disabled toggle with tooltip for free listings in Programs table.
+* Fix - Fix "Complete setup" button re-enabled when finishing the MC setup.
+* Fix - Fix issues of shipping rate/time components for MC onboarding flow.
+* Fix - Generate optimized autoload for final archive.
+* Fix - Helper function for getting the WCS URL.
+* Fix - Hide `SupportedCountrySelect` if `location` is not `selected`.
+* Fix - Make `useDisplayTaxRate` check also store's country.
+* Fix - Override shipping for virtual products.
+* Fix - Paid ads campaign form validation.
+* Fix - Prevent passing empty array of IDs to product update job.
+* Fix - Rename "Google Shopping Free Listings" and fix "product" typos.
+* Fix - Script for cleaning up some vendor files.
+* Fix - Set default paid campaign name on server-side.
+* Fix - Setup MC: validate form and disable Continue button when form is not valid.
+* Fix - Show success & failure messages when free listings are updated.
+* Fix - Use fallback billing url when billingStatus.billing_url is null.
 
-= 0.3.0 - 2021-03-16 =
-- Initial release
+[See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
