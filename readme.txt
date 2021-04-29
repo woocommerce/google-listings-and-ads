@@ -113,31 +113,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 0.5.3 - 2021-04-29 =
+* Fix - Fix popover width.
+* Fix - Fix the giant icon problem in the warning messages.
+* Fix - South Korea is only supported for currency KRW.
+
 = 0.5.2 - 2021-04-28 =
 * Fix - Consistent i18n domain name.
 * Fix - Include Merchant Center beta countries.
-
-= 0.5.1 - 2021-04-27 =
-* Fix - Add FAQ for "What if I already have free listings set up for my store?".
-* Fix - Build translation files.
-* Fix - Dedicated Merchant Center issues table.
-* Fix - Delete MC shipping settings on disconnect.
-* Fix - Disable the "create a new MC account" link when an existing account is being connected.
-* Fix - Disabled toggle with tooltip for free listings in Programs table.
-* Fix - Fix "Complete setup" button re-enabled when finishing the MC setup.
-* Fix - Fix issues of shipping rate/time components for MC onboarding flow.
-* Fix - Generate optimized autoload for final archive.
-* Fix - Helper function for getting the WCS URL.
-* Fix - Hide `SupportedCountrySelect` if `location` is not `selected`.
-* Fix - Make `useDisplayTaxRate` check also store's country.
-* Fix - Override shipping for virtual products.
-* Fix - Paid ads campaign form validation.
-* Fix - Prevent passing empty array of IDs to product update job.
-* Fix - Rename "Google Shopping Free Listings" and fix "product" typos.
-* Fix - Script for cleaning up some vendor files.
-* Fix - Set default paid campaign name on server-side.
-* Fix - Setup MC: validate form and disable Continue button when form is not valid.
-* Fix - Show success & failure messages when free listings are updated.
-* Fix - Use fallback billing url when billingStatus.billing_url is null.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
