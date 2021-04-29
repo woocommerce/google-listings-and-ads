@@ -9,7 +9,7 @@ use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_Account as MC_Account;
 use Google_Service_ShoppingContent_AccountAdsLink as MC_Account_Ads_Link;
 use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
-use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
+use Google_Service_ShoppingContent_ProductstatusesListResponse as MC_Product_Status_List_Response;
 use Google_Service_ShoppingContent_Product as Product;
 use Google\Exception as GoogleException;
 use Exception;
@@ -133,27 +133,17 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Retrieve the user's Merchant Center product statuses.
 	 *
-	 * @param int $id Optional - the Merchant Center account whose statuses to retrieve
-	 * @return MC_Product_Status[] The user's Merchant Center account.
+	 * @param string|null $page_token
+	 *
+	 * @return MC_Product_Status_List_Response A page of the Merchant Center product statuses.
 	 */
-	public function get_productstatuses( int $id = 0 ): array {
-		$id = $id ?: $this->options->get_merchant_id();
-
-		$product_statuses = [];
-		$opt_params       = [ 'maxResults' => 200 ];
-
-		do {
-			$response         = $this->service->productstatuses->listProductstatuses( $id, $opt_params );
-			$product_statuses = array_merge( $product_statuses, $response->getResources() );
-
-			if ( empty( $response->getNextPageToken() ) ) {
-				break;
-			}
-
-			$opt_params['pageToken'] = $response->getNextPageToken();
-		} while ( true );
-
-		return $product_statuses;
+	public function get_productstatuses( ?string $page_token ): MC_Product_Status_List_Response {
+		$merchant_id = $this->options->get_merchant_id();
+		$opt_params  = [ 'maxResults' => 200 ];
+		if ( ! empty( $page_token ) ) {
+			$opt_params['pageToken'] = $page_token;
+		}
+		return $this->service->productstatuses->listProductstatuses( $merchant_id, $opt_params );
 	}
 
 	/**
