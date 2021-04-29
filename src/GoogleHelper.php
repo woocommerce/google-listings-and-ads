@@ -42,7 +42,7 @@ trait GoogleHelper {
 			'MA' => 'MAD', // Morocco
 			'MZ' => 'MZN', // Mozambique
 			'MM' => 'MMK', // Myanmar 'Burma'
-			'MP' => 'NPR', // Nepal
+			'NP' => 'NPR', // Nepal
 			'NI' => 'NIO', // Nicaragua
 			'NG' => 'NGN', // Nigeria
 			'PK' => 'PKR', // Pakistan
