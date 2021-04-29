@@ -40,6 +40,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -125,6 +126,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
 		ProductStatistics::class      => true,
+		MerchantProducts::class       => true,
 		MerchantIssues::class         => true,
 		TransientsInterface::class    => true,
 		MerchantCenterService::class  => true,
@@ -215,6 +217,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductStatistics::class );
+		$this->share_with_tags( MerchantProducts::class, Merchant::class, MerchantIssueQuery::class );
 		$this->share_with_tags( MerchantIssues::class, TransientsInterface::class, Merchant::class, MerchantIssueQuery::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
