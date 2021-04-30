@@ -2,7 +2,7 @@
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
-	"version": "0.5.2",
+	"version": "0.5.3",
 	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
@@ -60,10 +60,13 @@
 		"@wordpress/data-controls": "^1.20.1",
 		"@wordpress/date": "^3.12.0",
 		"@wordpress/element": "^2.18.0",
-		"@wordpress/icons": "^2.8.0",
+		"@wordpress/icons": "^2.9.1",
 		"classnames": "^2.3.1",
 		"gridicons": "^3.3.1",
 		"lodash": "^4.17.20",
 		"use-debounce": "^5.2.0"
+	},
+	"config": {
+		"wp_org_slug": "google-listings-and-ads"
 	}
 }
