@@ -10,31 +10,38 @@ import { STORE_KEY } from '.~/data/constants';
 import useJetpackAccount from './useJetpackAccount';
 
 const useGoogleAccount = () => {
-	const { jetpack, isResolving, hasFinishedResolution } = useJetpackAccount();
+	const {
+		jetpack,
+		isResolving: isResolvingJetpack,
+		hasFinishedResolution: hasFinishedResolutionJetpack,
+	} = useJetpackAccount();
 
-	return useSelect( ( select ) => {
-		if ( ! jetpack || jetpack.active === 'no' ) {
-			return {
-				google: undefined,
+	return useSelect(
+		( select ) => {
+			if ( ! jetpack || jetpack.active === 'no' ) {
+				return {
+					google: undefined,
+					isResolving: isResolvingJetpack,
+					hasFinishedResolution: hasFinishedResolutionJetpack,
+				};
+			}
+
+			const {
+				getGoogleAccount,
 				isResolving,
 				hasFinishedResolution,
+			} = select( STORE_KEY );
+
+			return {
+				google: getGoogleAccount(),
+				isResolving: isResolving( 'getGoogleAccount' ),
+				hasFinishedResolution: hasFinishedResolution(
+					'getGoogleAccount'
+				),
 			};
-		}
-
-		const acc = select( STORE_KEY ).getGoogleAccount();
-		const isResolvingGoogle = select( STORE_KEY ).isResolving(
-			'getGoogleAccount'
-		);
-		const hasFinishedResolutionGoogle = select(
-			STORE_KEY
-		).hasFinishedResolution( 'getGoogleAccount' );
-
-		return {
-			google: acc,
-			isResolving: isResolvingGoogle,
-			hasFinishedResolution: hasFinishedResolutionGoogle,
-		};
-	} );
+		},
+		[ jetpack, isResolvingJetpack, hasFinishedResolutionJetpack ]
+	);
 };
 
 export default useGoogleAccount;
