@@ -2,19 +2,21 @@
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
-	"version": "0.5.0",
+	"version": "0.5.3",
 	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
 		"url": "git@github.com:woocommerce/google-listings-and-ads.git"
 	},
 	"scripts": {
-		"prebuild": "rm -rf vendor",
-		"build": "composer install --no-dev && NODE_ENV=production wp-scripts build",
+		"prebuild": "composer install",
+		"build": "NODE_ENV=production wp-scripts build && npm run i18n",
 		"postbuild": "npm run archive",
 		"dev": "NODE_ENV=development wp-scripts build",
+		"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
 		"archive": "composer archive --file=$npm_package_name --format=zip",
 		"postarchive": "rm -rf $npm_package_name && unzip $npm_package_name.zip -d $npm_package_name && rm $npm_package_name.zip && zip -r $npm_package_name.zip $npm_package_name && rm -rf $npm_package_name",
+		"i18n": "php -d memory_limit=1024M `which wp` i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"format:js": "wp-scripts format-js",
@@ -53,14 +55,18 @@
 		"@woocommerce/number": "^2.1.0",
 		"@woocommerce/tracks": "^1.0.0",
 		"@wordpress/base-styles": "^3.2.0",
-		"@wordpress/components": "^11.1.1",
+		"@wordpress/components": "^12.0.8",
 		"@wordpress/data": "^4.26.1",
 		"@wordpress/data-controls": "^1.20.1",
 		"@wordpress/date": "^3.12.0",
 		"@wordpress/element": "^2.18.0",
-		"@wordpress/icons": "^2.8.0",
+		"@wordpress/icons": "^2.9.1",
+		"classnames": "^2.3.1",
 		"gridicons": "^3.3.1",
 		"lodash": "^4.17.20",
 		"use-debounce": "^5.2.0"
+	},
+	"config": {
+		"wp_org_slug": "google-listings-and-ads"
 	}
 }

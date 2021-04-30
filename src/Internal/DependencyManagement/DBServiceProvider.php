@@ -4,9 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -36,6 +38,8 @@ class DBServiceProvider extends AbstractServiceProvider {
 		ShippingTimeQuery::class         => true,
 		BudgetRecommendationTable::class => true,
 		BudgetRecommendationQuery::class => true,
+		MerchantIssueTable::class        => true,
+		MerchantIssueQuery::class        => true,
 	];
 
 	/**
@@ -64,6 +68,8 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->add_query_class( ShippingRateQuery::class, ShippingRateTable::class );
 		$this->share_table_class( ShippingTimeTable::class );
 		$this->add_query_class( ShippingTimeQuery::class, ShippingTimeTable::class );
+		$this->share_table_class( MerchantIssueTable::class );
+		$this->add_query_class( MerchantIssueQuery::class, MerchantIssueTable::class );
 	}
 
 	/**

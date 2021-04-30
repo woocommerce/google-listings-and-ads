@@ -18,9 +18,10 @@
     "ext-json": "*"
   },
   "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
     "phpunit/phpunit": "^6.5 || ^7",
-    "wp-coding-standards/wpcs": "^2.3",
-    "dealerdirect/phpcodesniffer-composer-installer": "^v0.7"
+    "wp-cli/i18n-command": "^2.2",
+    "wp-coding-standards/wpcs": "^2.3"
   },
   "license": "GPL-3.0",
   "autoload": {
@@ -42,21 +43,20 @@
     "sort-packages": true
   },
   "scripts": {
-    "post-install-cmd": [
+    "install-scripts": [
       "Google\\Task\\Composer::cleanup",
       "php ./bin/prefix-vendor-namespace.php",
-      "bash ./bin/googleads-remove-older-versions.sh"
+      "bash ./bin/googleads-remove-older-versions.sh",
+      "bash ./bin/cleanup-vendor-files.sh"
     ],
-    "post-update-cmd": [
-      "Google\\Task\\Composer::cleanup",
-      "php ./bin/prefix-vendor-namespace.php",
-      "bash ./bin/googleads-remove-older-versions.sh"
-    ]
+    "post-install-cmd": [ "@install-scripts" ],
+    "post-update-cmd": [ "@install-scripts" ]
   },
   "archive": {
     "exclude": [
       "!/js/build",
-      "!/vendor/*"
+      "!/vendor/*",
+      "!/languages"
     ]
   },
   "extra": {

@@ -6,7 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
@@ -43,7 +45,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCamp
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantIssues;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantIssues;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -59,8 +61,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -159,13 +159,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
-		$this->share_with_tags(
-			MerchantCenterService::class,
-			WC::class,
-			WP::class,
-			TransientsInterface::class,
-			MerchantAccountState::class
-		);
+		$this->share_with_tags( MerchantCenterService::class );
 		$this->getLeagueContainer()
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
@@ -221,7 +215,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductStatistics::class );
-		$this->share_with_tags( MerchantIssues::class );
+		$this->share_with_tags( MerchantIssues::class, TransientsInterface::class, Merchant::class, MerchantIssueQuery::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class );

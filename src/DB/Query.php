@@ -35,6 +35,13 @@ abstract class Query implements QueryInterface {
 	 */
 	protected $results = null;
 
+	/**
+	 * The number of rows returned by the query.
+	 *
+	 * @var int
+	 */
+	protected $count = null;
+
 	/** @var TableInterface */
 	protected $table;
 
@@ -157,6 +164,19 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Get the number of results returned by the query.
+	 *
+	 * @return int
+	 */
+	public function get_count(): int {
+		if ( null === $this->count ) {
+			$this->count_results();
+		}
+
+		return $this->count;
+	}
+
+	/**
 	 * Gets the first result of the query.
 	 *
 	 * @return array
@@ -180,6 +200,13 @@ abstract class Query implements QueryInterface {
 			$this->build_query(), // phpcs:ignore WordPress.DB.PreparedSQL
 			ARRAY_A
 		);
+	}
+
+	/**
+	 * Count the results and save the result.
+	 */
+	protected function count_results() {
+		$this->count = (int) $this->wpdb->get_var( $this->build_query( true ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**
@@ -255,24 +282,30 @@ abstract class Query implements QueryInterface {
 	/**
 	 * Build the query and return the query string.
 	 *
+	 * @param bool $get_count False to build a normal query, true to build a COUNT(*) query.
+	 *
 	 * @return string
 	 */
-	protected function build_query(): string {
-		$pieces = [ "SELECT * FROM {$this->table->get_name()}" ];
+	protected function build_query( bool $get_count = false ): string {
+		$columns = $get_count ? 'COUNT(*)' : '*';
+		$pieces  = [ "SELECT {$columns} FROM `{$this->table->get_name()}`" ];
+
 		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
 
-		$pieces[] = "GROUP BY {$this->table->get_name()}.{$this->table->get_primary_column()}";
+		if ( ! $get_count ) {
+			$pieces[] = "GROUP BY `{$this->table->get_name()}`.`{$this->table->get_primary_column()}`";
 
-		if ( $this->orderby ) {
-			$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
-		}
+			if ( $this->orderby ) {
+				$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
+			}
 
-		if ( $this->limit ) {
-			$pieces[] = "LIMIT {$this->limit}";
-		}
+			if ( $this->limit ) {
+				$pieces[] = "LIMIT {$this->limit}";
+			}
 
-		if ( $this->offset ) {
-			$pieces[] = "OFFSET {$this->offset}";
+			if ( $this->offset ) {
+				$pieces[] = "OFFSET {$this->offset}";
+			}
 		}
 
 		return join( "\n", $pieces );
@@ -393,6 +426,49 @@ abstract class Query implements QueryInterface {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Batch update or insert a set of records.
+	 *
+	 * @param array $records Array of records to be updated or inserted.
+	 *
+	 * @throws InvalidQuery If an invalid column name is provided.
+	 */
+	public function update_or_insert( array $records ): void {
+		if ( empty( $records ) ) {
+			return;
+		}
+
+		$update_values = [];
+		$columns       = array_keys( reset( $records ) );
+		foreach ( $columns as $c ) {
+			$this->validate_column( $c );
+			$update_values[] = "`$c`=VALUES(`$c`)";
+		}
+
+		$single_placeholder = '(' . implode( ',', array_fill( 0, count( $columns ), "'%s'" ) ) . ')';
+		$chunk_size         = 200;
+		$num_issues         = count( $records );
+		for ( $i = 0; $i < $num_issues; $i += $chunk_size ) {
+			$all_values       = [];
+			$all_placeholders = [];
+			foreach ( array_slice( $records, $i, $chunk_size ) as $issue ) {
+				if ( array_keys( $issue ) !== $columns ) {
+					throw new InvalidQuery( 'Not all records contain the same columns' );
+				}
+				$all_placeholders[] = $single_placeholder;
+				array_push( $all_values, ...array_values( $issue ) );
+			}
+
+			$column_names = '(`' . implode( '`, `', $columns ) . '`)';
+
+			$query  = "INSERT INTO `{$this->table->get_name()}` $column_names VALUES ";
+			$query .= implode( ', ', $all_placeholders );
+			$query .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $update_values );
+
+			$this->wpdb->query( $this->wpdb->prepare( $query, $all_values ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		}
 	}
 
 	/**

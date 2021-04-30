@@ -18,18 +18,15 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
 import createCampaign from '.~/apis/createCampaign';
+import validateForm from '.~/utils/paid-ads/validateForm';
 
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
 	const { fetchAdsCampaigns } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 
-	const handleValidate = () => {
-		const errors = {};
-
-		// TODO: validation logic.
-
-		return errors;
+	const handleValidate = ( values ) => {
+		return validateForm( values );
 	};
 
 	const handleSubmit = async ( values ) => {
@@ -75,7 +72,10 @@ const CreatePaidAdsCampaignForm = () => {
 			onSubmitCallback={ handleSubmit }
 		>
 			{ ( formProps ) => {
-				const { handleSubmit: handleLaunchCampaignClick } = formProps;
+				const {
+					isValidForm,
+					handleSubmit: handleLaunchCampaignClick,
+				} = formProps;
 
 				return (
 					<StepContent>
@@ -104,6 +104,7 @@ const CreatePaidAdsCampaignForm = () => {
 						<StepContentFooter>
 							<AppButton
 								isPrimary
+								disabled={ ! isValidForm }
 								loading={ loading }
 								onClick={ handleLaunchCampaignClick }
 							>

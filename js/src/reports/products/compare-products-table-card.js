@@ -111,9 +111,9 @@ const CompareProductsTableCard = ( props ) => {
 	/**
 	 * Provides a rows configuration, for AppTableCard.
 	 * Maps each data row to respective cell objects ({@link module:app-table-card.Props.rows}):
-	 * checkbox to compere, program title, and available metrics cells.
+	 * checkbox to compere, product title, and available metrics cells.
 	 *
-	 * @param {Array} data Programs data.
+	 * @param {Array} data Products data.
 	 *
 	 * @return {Array<Object>} Rows config {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
@@ -174,7 +174,7 @@ const CompareProductsTableCard = ( props ) => {
 		<AppTableCard
 			title={
 				<>
-					{ __( 'Programs', 'google-listings-and-ads' ) }
+					{ __( 'Products', 'google-listings-and-ads' ) }
 					<Button
 						isSecondary
 						isSmall

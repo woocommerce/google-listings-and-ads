@@ -114,6 +114,7 @@ class Admin implements Service, Registerable, Conditional {
 				'mcSupportedCountry'  => $this->merchant_center->is_country_supported(),
 				'mcSupportedLanguage' => $this->merchant_center->is_language_supported(),
 				'adsSetupComplete'    => $this->ads->is_setup_complete(),
+				'enableReports'       => $this->enableReports(),
 			]
 		);
 
@@ -202,5 +203,14 @@ class Admin implements Service, Registerable, Conditional {
 	public function get_view( string $view, array $context_variables = [] ): string {
 		return $this->view_factory->create( $view )
 							->render( $context_variables );
+	}
+
+	/**
+	 * Only show reports if we enable it through a snippet.
+	 *
+	 * @return bool Whether reports should be enabled .
+	 */
+	protected function enableReports(): bool {
+		return apply_filters( 'gla_enable_reports', false );
 	}
 }

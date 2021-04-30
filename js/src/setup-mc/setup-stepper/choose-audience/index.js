@@ -30,10 +30,22 @@ const ChooseAudience = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	const handleValidate = () => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
-		// TODO: validation logic.
+		if ( ! values.location ) {
+			errors.location = __(
+				'Please select a location option.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.location === 'selected' && values.countries.length === 0 ) {
+			errors.countries = __(
+				'Please select at least one country.',
+				'google-listings-and-ads'
+			);
+		}
 
 		return errors;
 	};

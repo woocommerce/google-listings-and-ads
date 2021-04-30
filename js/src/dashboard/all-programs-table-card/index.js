@@ -19,6 +19,7 @@ import AppSpinner from '.~/components/app-spinner';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
+import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
 
 const headers = [
 	{
@@ -68,10 +69,7 @@ const AllProgramsTableCard = ( props ) => {
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
-			title: __(
-				'Google Shopping Free Listings',
-				'google-listings-and-ads'
-			),
+			title: __( 'Free listings', 'google-listings-and-ads' ),
 			dailyBudget: __( 'Free', 'google-listings-and-ads' ),
 			country: (
 				<span>
@@ -117,7 +115,7 @@ const AllProgramsTableCard = ( props ) => {
 					{
 						display:
 							el.id === FREE_LISTINGS_PROGRAM_ID ? (
-								__( 'Enabled', 'google-listings-and-ads' )
+								<FreeListingsDisabledToggle />
 							) : (
 								<ProgramToggle program={ el } />
 							),

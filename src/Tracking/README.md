@@ -35,17 +35,17 @@ All event names are prefixed by `wcadmin_gla_`.
   * `href`: link's URL
 
 * `table_header_toggle` - Toggling display of table columns
-  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
+  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `column`: name of the column
   * `status`: (`on`|`off`)
 
 * `gla_table_sort` - Sorting table
-  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
+  * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `column`: name of the column
   * `direction`: (`asc`|`desc`)
 
 * `datepicker_update` - Changing datepicker
-  * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "product-feed"`)
+  * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
 
 * `filter` - Changing products & variations filter
@@ -89,6 +89,11 @@ All event names are prefixed by `wcadmin_gla_`.
 * `add_paid_campaign_clicked` - "Add paid campaign" button is clicked.
   * `context`: indicate the place where the button is located.
   * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'` or `'/google/campaigns/create'`.
+
+* `ads_set_up_billing_click` - "Set up billing" button for Google Ads account is clicked.
+  * `context`: indicate the place where the button is located, e.g. `setup-ads`.
+  * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
+  * `href`: indicate the destination where the users is directed to.
 
 <!-- -- >
 ## Developer Info

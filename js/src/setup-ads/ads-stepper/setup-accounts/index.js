@@ -25,8 +25,7 @@ const SetupAccounts = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	// TODO: call backend API to check and set the following to true/false.
-	const isContinueButtonDisabled = false;
+	const isContinueButtonDisabled = ! googleAdsAccount.id;
 
 	return (
 		<StepContent>

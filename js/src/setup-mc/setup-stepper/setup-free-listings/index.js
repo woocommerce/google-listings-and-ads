@@ -2,6 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 import { Form } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 
@@ -13,10 +15,12 @@ import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import FormContent from './form-content';
 import useAdminUrl from '.~/hooks/useAdminUrl';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
-import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
+import useShippingRates from '.~/hooks/useShippingRates';
+import useShippingTimes from '.~/hooks/useShippingTimes';
+import checkErrors from './checkErrors';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**
  * Setup step to configure free listings.
@@ -25,29 +29,49 @@ import isPreLaunchChecklistComplete from './isPreLaunchChecklistComplete';
  * @see /js/src/edit-free-campaign/setup-free-listings/index.js
  */
 const SetupFreeListings = () => {
+	const [ completing, setCompleting ] = useState( false );
 	const { settings } = useSettings();
+	const { data: shippingRatesData } = useShippingRates();
+	const { data: shippingTimesData } = useShippingTimes();
+	const {
+		data: finalCountryCodesData,
+	} = useTargetAudienceFinalCountryCodes();
 	const { createNotice } = useDispatchCoreNotices();
-	const [ fetchSettingsSync, { loading } ] = useApiFetchCallback( {
-		path: `/wc/gla/mc/settings/sync`,
-		method: 'POST',
-	} );
 	const adminUrl = useAdminUrl();
 
-	if ( ! settings ) {
+	if (
+		! settings ||
+		! shippingRatesData ||
+		! shippingTimesData ||
+		! finalCountryCodesData
+	) {
 		return <AppSpinner />;
 	}
 
+	/**
+	 * Validation handler.
+	 *
+	 * We just return empty object here,
+	 * because we call `checkErrors` in the rendering below,
+	 * to accommodate for shippingRatesData and shippingTimesData from wp-data store.
+	 * Apparently when shippingRates and shippingTimes are changed,
+	 * the handleValidate function here does not get called.
+	 *
+	 * When we have shipping rates and shipping times as part of form values,
+	 * then we can move `checkErrors` from inside rendering into this handleValidate function.
+	 */
 	const handleValidate = () => {
-		const errors = {};
-
-		// TODO: validation logic.
-
-		return errors;
+		return {};
 	};
 
 	const handleSubmitCallback = async () => {
 		try {
-			await fetchSettingsSync();
+			setCompleting( true );
+
+			await apiFetch( {
+				path: '/wc/gla/mc/settings/sync',
+				method: 'POST',
+			} );
 
 			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
 			const path = getNewPath(
@@ -56,6 +80,8 @@ const SetupFreeListings = () => {
 			);
 			window.location.href = adminUrl + path;
 		} catch ( error ) {
+			setCompleting( false );
+
 			createNotice(
 				'error',
 				__(
@@ -89,11 +115,17 @@ const SetupFreeListings = () => {
 				onSubmitCallback={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
-					const { values, errors, handleSubmit } = formProps;
+					const { values, handleSubmit } = formProps;
+
+					const errors = checkErrors(
+						values,
+						shippingRatesData,
+						shippingTimesData,
+						finalCountryCodesData
+					);
 
 					const isCompleteSetupDisabled =
-						Object.keys( errors ).length >= 1 ||
-						! isPreLaunchChecklistComplete( values );
+						Object.keys( errors ).length >= 1;
 
 					return (
 						<FormContent
@@ -101,7 +133,7 @@ const SetupFreeListings = () => {
 							submitButton={
 								<AppButton
 									isPrimary
-									loading={ loading }
+									loading={ completing }
 									disabled={ isCompleteSetupDisabled }
 									onClick={ handleSubmit }
 								>

@@ -6,7 +6,7 @@ import { getQuery } from '@woocommerce/navigation';
 const freeListings = [
 	{
 		id: 147,
-		title: 'Google Free Listings',
+		title: 'Free Listings',
 		conversions: 89,
 		clicks: 5626,
 		impressions: 23340,

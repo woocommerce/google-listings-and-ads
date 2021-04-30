@@ -31,6 +31,46 @@ const faqItems = [
 		),
 	},
 	{
+		trackId: 'what-if-i-already-have-free-listings',
+		question: __(
+			'What if I already have free listings set up for my store?',
+			'google-listings-and-ads'
+		),
+		answer: (
+			<>
+				<p>
+					{ __(
+						'If there is an existing claim on your store URL, this WooCommerce integration will reclaim your store URL. This will cause any existing product listings or ads to stop running, and the other verified account will be notified that they have lost their claim.',
+						'google-listings-and-ads'
+					) }
+				</p>
+				<p>
+					{ createInterpolateElement(
+						__(
+							'Learn more about claiming URLs <link>here</link>.',
+							'google-listings-and-ads'
+						),
+						{
+							link: (
+								<AppDocumentationLink
+									context="faqs"
+									linkId="claiming-urls"
+									href="https://support.google.com/merchants/answer/7527436"
+								/>
+							),
+						}
+					) }
+				</p>
+				<p>
+					{ __(
+						'If you have an existing Content API feed, it will not be changed, overwritten or deleted by this WooCommerce integration. Instead, products will be added to your existing Content API feed.',
+						'google-listings-and-ads'
+					) }
+				</p>
+			</>
+		),
+	},
+	{
 		trackId: 'which-countries-are-available',
 		question: __(
 			'Which countries are available for Google Listings & Ads?',

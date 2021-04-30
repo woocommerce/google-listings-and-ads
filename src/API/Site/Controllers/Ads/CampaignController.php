@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCode
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use DateTime;
 use Exception;
 use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
@@ -116,7 +117,18 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected function create_campaign_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$fields   = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
+				$fields = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
+
+				// Set the default value of campaign name.
+				if ( $fields['name'] === null ) {
+					$current_date_time = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
+					$fields['name']    = sprintf(
+					/* translators: %s: current date time. */
+						__( 'Campaign %s', 'google-listings-and-ads' ),
+						$current_date_time
+					);
+				}
+
 				$campaign = $this->ads_campaign->create_campaign( $fields );
 
 				return $this->prepare_item_for_response( $campaign, $request );
@@ -250,7 +262,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
+				'required'          => false,
 			],
 			'status'  => [
 				'type'              => 'string',

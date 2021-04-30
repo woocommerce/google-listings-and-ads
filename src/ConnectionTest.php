@@ -34,6 +34,8 @@ use WP_REST_Request as Request;
  */
 class ConnectionTest implements Service, Registerable {
 
+	use PluginHelper;
+
 	/**
 	 * @var ContainerInterface
 	 */
@@ -52,10 +54,6 @@ class ConnectionTest implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-		if ( ! defined( 'WOOCOMMERCE_CONNECT_SERVER_URL' ) ) {
-			define( 'WOOCOMMERCE_CONNECT_SERVER_URL', 'https://api-vipgo.woocommerce.com' );
-		}
-
 		add_action(
 			'admin_menu',
 			function() {
@@ -635,7 +633,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-test' === $_GET['action'] && check_admin_referer( 'wcs-test' ) ) {
-			$url            = WOOCOMMERCE_CONNECT_SERVER_URL;
+			$url            = $this->get_connect_server_url();
 			$this->response = 'GET ' . $url . "\n";
 
 			$response = wp_remote_get( $url );
@@ -648,7 +646,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-auth-test' === $_GET['action'] && check_admin_referer( 'wcs-auth-test' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'connection/test';
+			$url  = trailingslashit( $this->get_connect_server_url() ) . 'connection/test';
 			$args = [
 				'headers' => [ 'Authorization' => $this->get_auth_header() ],
 			];
@@ -671,7 +669,7 @@ class ConnectionTest implements Service, Registerable {
 			}
 
 			$id   = absint( $_GET['manager_id'] );
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-manager';
+			$url  = trailingslashit( $this->get_connect_server_url() ) . 'google/connection/google-manager';
 			$args = [
 				'headers' => [ 'Authorization' => $this->get_auth_header() ],
 				'body'    => [
@@ -812,7 +810,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-google-mc-status' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-status' ) ) {
-			$url  = trailingslashit( WOOCOMMERCE_CONNECT_SERVER_URL ) . 'google/connection/google-mc';
+			$url  = trailingslashit( $this->get_connect_server_url() ) . 'google/connection/google-mc';
 			$args = [
 				'headers' => [ 'Authorization' => $this->get_auth_header() ],
 				'method'  => 'GET',
