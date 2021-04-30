@@ -2,16 +2,30 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { applyFilters } from '@wordpress/hooks';
 import { getIdsFromQuery } from '@woocommerce/navigation';
 
+/**
+ * Internal dependencies
+ */
+import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+
 export const programsFilterConfig = ( adsCampaigns ) => {
+	if ( ! adsCampaigns ) {
+		adsCampaigns = [];
+	}
+	const programsList = [
+		{
+			id: FREE_LISTINGS_PROGRAM_ID,
+			name: __( 'Free Listings', 'google-listings-and-ads' ),
+		},
+		...adsCampaigns,
+	];
 	const autocompleter = {
 		name: 'programs',
 		// Promise.resolve will not be needed after
 		// https://github.com/woocommerce/woocommerce-admin/issues/6061
 		options: () => {
-			return Promise.resolve( adsCampaigns );
+			return Promise.resolve( programsList );
 		},
 		getOptionIdentifier: ( option ) => option.id,
 		getOptionLabel: ( option ) => option.name,
@@ -25,13 +39,9 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 	};
 
 	function getLabels( param ) {
-		// TODO: cover that case
-		if ( ! adsCampaigns ) {
-			return Promise.resolve( [] );
-		}
 		// Get program id(s) from query parameter.
 		const ids = new Set( getIdsFromQuery( param ) );
-		const result = adsCampaigns
+		const result = programsList
 			.filter( ( campaign ) => ids.has( campaign.id ) )
 			.map( ( campaign ) => ( {
 				key: campaign.id,
