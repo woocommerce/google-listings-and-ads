@@ -122,7 +122,7 @@ export function* getMCIssues( query ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error loading your merchant center product statistics.',
+				'There was an error loading issues to resolve.',
 				'google-listings-and-ads'
 			)
 		);
