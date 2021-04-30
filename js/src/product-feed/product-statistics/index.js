@@ -12,12 +12,14 @@ import {
 /**
  * Internal dependencies
  */
-import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import ProductStatusHelpPopover from './product-status-help-popover';
 import './index.scss';
 
 const ProductStatistics = () => {
-	const { hasFinishedResolution, data } = useMCProductStatistics();
+	const { hasFinishedResolution, data } = useAppSelectDispatch(
+		'getMCProductStatistics'
+	);
 
 	return (
 		<div className="gla-product-statistics">
