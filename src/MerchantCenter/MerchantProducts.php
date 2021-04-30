@@ -36,6 +36,11 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 	protected $current_time;
 
 	/**
+	 * @var array Reference array of countries by product/issue combo.
+	 */
+	protected $product_issue_countries = [];
+
+	/**
 	 * MerchantProducts constructor.
 	 *
 	 * @param Merchant           $merchant
@@ -47,6 +52,10 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 		$this->current_time = new DateTime();
 	}
 
+	/**
+	 * Update Merchant Center product stats and issues, retrieving MC product
+	 * statuses page by page.
+	 */
 	public function refresh_stats_and_issues(): void {
 		$page_token = null;
 		do {
@@ -92,32 +101,37 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 				}
 				$code = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
 
-				if ( isset( $product_issues[ $code ] ) ) {
-					$product_issues[ $code ]['applicable_countries'] = array_merge(
-						$product_issues[ $code ]['applicable_countries'],
-						$item_level_issue->getApplicableCountries()
-					);
-				} else {
-					$product_issues[ $code ] = $product_issue_template + [
-						'code'                 => $item_level_issue->getCode(),
-						'issue'                => $item_level_issue->getDescription(),
-						'action'               => $item_level_issue->getDetail(),
-						'action_url'           => $item_level_issue->getDocumentation(),
-						'applicable_countries' => $item_level_issue->getApplicableCountries(),
-						'created_at'           => $created_at,
-					];
-				}
+				$this->product_issue_countries[ $code ] = array_merge(
+					$this->product_issue_countries[ $code ] ?? [],
+					$item_level_issue->getApplicableCountries()
+				);
+
+				$product_issues[ $code ] = $product_issue_template + [
+					'code'                 => $item_level_issue->getCode(),
+					'issue'                => $item_level_issue->getDescription(),
+					'action'               => $item_level_issue->getDetail(),
+					'action_url'           => $item_level_issue->getDocumentation(),
+					'applicable_countries' => [],
+					'created_at'           => $created_at,
+				];
 			}
 		}
+
+		array_walk(
+			$this->product_issue_countries,
+			function( &$countries ) {
+				sort( $countries );
+			}
+		);
 
 		// Product issue cleanup: sorting (by product ID) and sort applicable countries.
 		ksort( $product_issues );
 		$product_issues = array_map(
-			function( $issue ) {
-				sort( $issue['applicable_countries'] );
-				$issue['applicable_countries'] = json_encode( $issue['applicable_countries'] );
+			function( $code, $issue ) {
+				$issue['applicable_countries'] = json_encode( $this->product_issue_countries[ $code ] );
 				return $issue;
 			},
+			array_keys( $product_issues ),
 			$product_issues
 		);
 
