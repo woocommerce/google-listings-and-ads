@@ -2,7 +2,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement, useState } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useMemo,
+	useState,
+} from '@wordpress/element';
 import {
 	Card,
 	CardHeader,
@@ -25,7 +29,7 @@ import HelpPopover from '.~/components/help-popover';
 import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import useMCIssues from '.~/hooks/useMCIssues';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 
 const headers = [
 	{
@@ -59,10 +63,16 @@ const PER_PAGE = 5;
 
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );
-	const { hasFinishedResolution, data } = useMCIssues( {
-		page,
-		per_page: PER_PAGE,
-	} );
+	const query = useMemo( () => {
+		return {
+			page,
+			per_page: PER_PAGE,
+		};
+	}, [ page ] );
+	const { hasFinishedResolution, data } = useAppSelectDispatch(
+		'getMCIssues',
+		query
+	);
 
 	const handlePageChange = ( newPage ) => {
 		setPage( newPage );
@@ -98,6 +108,26 @@ const IssuesTableCard = () => {
 							</HelpPopover>
 						</>
 					</Text>
+					{ /* <h2>
+						{ __( 'Issues to resolve', 'google-listings-and-ads' ) }
+						<HelpPopover id="issues-to-resolve">
+							{ createInterpolateElement(
+								__(
+									'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
+									'google-listings-and-ads'
+								),
+								{
+									link: (
+										<AppDocumentationLink
+											context="product-feed"
+											linkId="issues-to-resolve"
+											href="https://support.google.com/merchants/answer/6363310"
+										/>
+									),
+								}
+							) }
+						</HelpPopover>
+					</h2> */ }
 				</CardHeader>
 				<CardBody size={ null }>
 					{ ! hasFinishedResolution && (
