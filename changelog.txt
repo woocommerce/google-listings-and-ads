@@ -1,5 +1,11 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 0.5.4 - 2021-04-30 =
+* Fix - Add readme and assets for releasing to WordPress.org.
+* Fix - Additional testing flags.
+* Fix - Conditionally hide Reports tab and show a coming soon notice on Product Feed tab.
+* Fix - Fix condition that filters TabNav's tabs.
+
 = 0.5.3 - 2021-04-29 =
 * Fix - Fix popover width.
 * Fix - Fix the giant icon problem in the warning messages.

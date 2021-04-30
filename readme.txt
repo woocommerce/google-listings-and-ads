@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.3
 Tested up to: 5.7
 Requires PHP: 7.3
-Stable tag: 0.5.3
+Stable tag: 0.5.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -113,13 +113,15 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 0.5.4 - 2021-04-30 =
+* Fix - Add readme and assets for releasing to WordPress.org.
+* Fix - Additional testing flags.
+* Fix - Conditionally hide Reports tab and show a coming soon notice on Product Feed tab.
+* Fix - Fix condition that filters TabNav's tabs.
+
 = 0.5.3 - 2021-04-29 =
 * Fix - Fix popover width.
 * Fix - Fix the giant icon problem in the warning messages.
 * Fix - South Korea is only supported for currency KRW.
-
-= 0.5.2 - 2021-04-28 =
-* Fix - Consistent i18n domain name.
-* Fix - Include Merchant Center beta countries.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
