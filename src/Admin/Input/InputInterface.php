@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  */
-interface InputInterface {
+interface InputInterface extends FormInterface {
 
 	/**
 	 * @return string|null
@@ -23,18 +23,6 @@ interface InputInterface {
 	 * @return InputInterface
 	 */
 	public function set_id( ?string $id ): InputInterface;
-
-	/**
-	 * @return string
-	 */
-	public function get_name(): ?string;
-
-	/**
-	 * @param string|null $name
-	 *
-	 * @return InputInterface
-	 */
-	public function set_name( ?string $name ): InputInterface;
 
 	/**
 	 * @return string
@@ -78,9 +66,9 @@ interface InputInterface {
 	public function set_value( $value ): InputInterface;
 
 	/**
-	 * Return the data used for the input's view.
+	 * Return the id used for the input's view.
 	 *
-	 * @return array
+	 * @return string
 	 */
-	public function get_view_data(): array;
+	public function get_view_id(): string;
 }

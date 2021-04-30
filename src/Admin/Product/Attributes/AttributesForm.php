@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\AbstractForm;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
@@ -16,22 +16,24 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\WithValueOpti
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class InputForm
+ * Class AttributesForm
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
  */
-class InputForm extends AbstractForm {
+class AttributesForm extends Form {
 
 	/**
-	 * InputForm constructor.
+	 * AttributesForm constructor.
+	 *
+	 * @param array $data
 	 */
-	public function __construct() {
-		$inputs = [
-			$this->init_input( new Text(), new GTIN( null ) ),
-			$this->init_input( new Text(), new MPN( null ) ),
-		];
+	public function __construct( array $data = [] ) {
+		$this->set_name( 'attributes' );
 
-		parent::__construct( $inputs );
+		$this->add( $this->init_input( new Text(), new GTIN( null ) ), GTIN::get_id() )
+			 ->add( $this->init_input( new Text(), new MPN( null ) ), MPN::get_id() );
+
+		parent::__construct( $data );
 	}
 
 	/**
@@ -64,16 +66,5 @@ class InputForm extends AbstractForm {
 		}
 
 		return $input;
-	}
-
-	/**
-	 * Return the form name.
-	 *
-	 * This name is used as a prefix for the form's field names.
-	 *
-	 * @return string
-	 */
-	public function get_name(): string {
-		return 'attributes';
 	}
 }

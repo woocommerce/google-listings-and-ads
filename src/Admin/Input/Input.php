@@ -6,21 +6,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class AbstractInput
+ * Class Input
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  */
-abstract class AbstractInput implements InputInterface {
+class Input extends Form implements InputInterface {
 
 	/**
 	 * @var string
 	 */
 	protected $id;
-
-	/**
-	 * @var string
-	 */
-	protected $name;
 
 	/**
 	 * @var string
@@ -43,12 +38,13 @@ abstract class AbstractInput implements InputInterface {
 	protected $value;
 
 	/**
-	 * AbstractInput constructor.
+	 * Input constructor.
 	 *
 	 * @param string $type
 	 */
 	public function __construct( string $type ) {
 		$this->type = $type;
+		parent::__construct();
 	}
 
 	/**
@@ -56,13 +52,6 @@ abstract class AbstractInput implements InputInterface {
 	 */
 	public function get_id(): ?string {
 		return $this->id;
-	}
-
-	/**
-	 * @return string|null
-	 */
-	public function get_name(): ?string {
-		return $this->name;
 	}
 
 	/**
@@ -87,10 +76,10 @@ abstract class AbstractInput implements InputInterface {
 	}
 
 	/**
-	 * @return mixed|null
+	 * @return mixed
 	 */
 	public function get_value() {
-		return $this->value;
+		return $this->get_data();
 	}
 
 	/**
@@ -100,17 +89,6 @@ abstract class AbstractInput implements InputInterface {
 	 */
 	public function set_id( ?string $id ): InputInterface {
 		$this->id = $id;
-
-		return $this;
-	}
-
-	/**
-	 * @param string|null $name
-	 *
-	 * @return InputInterface
-	 */
-	public function set_name( ?string $name ): InputInterface {
-		$this->name = $name;
 
 		return $this;
 	}
@@ -143,7 +121,7 @@ abstract class AbstractInput implements InputInterface {
 	 * @return InputInterface
 	 */
 	public function set_value( $value ): InputInterface {
-		$this->value = $value;
+		$this->set_data( $value );
 
 		return $this;
 	}
@@ -154,14 +132,31 @@ abstract class AbstractInput implements InputInterface {
 	 * @return array
 	 */
 	public function get_view_data(): array {
-		return [
-			'id'          => $this->get_id(),
-			'name'        => $this->get_name(),
+		$view_data = [
+			'id'          => $this->get_view_id(),
 			'type'        => $this->get_type(),
 			'label'       => $this->get_label(),
 			'value'       => $this->get_value(),
 			'description' => $this->get_description(),
 			'desc_tip'    => true,
 		];
+
+		return array_merge( parent::get_view_data(), $view_data );
+	}
+
+	/**
+	 * Return the id used for the input's view.
+	 *
+	 * @return string
+	 */
+	public function get_view_id(): string {
+		$parent = $this->get_parent();
+		if ( $parent instanceof InputInterface ) {
+			return sprintf( '%s_%s', $parent->get_view_id(), $this->get_id() );
+		} elseif ( $parent instanceof FormInterface ) {
+			return sprintf( '%s_%s', $parent->get_view_name(), $this->get_id() );
+		}
+
+		return sprintf( 'gla_%s', $this->get_name() );
 	}
 }

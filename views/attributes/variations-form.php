@@ -1,6 +1,7 @@
 <?php
 declare( strict_types=1 );
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPView;
 
 defined( 'ABSPATH' ) || exit;
@@ -10,29 +11,39 @@ defined( 'ABSPATH' ) || exit;
  */
 
 /**
- * @var array $inputs_data
+ * @var array $children
  */
-$inputs_data = $this->inputs
-
+$children = $this->children;
 ?>
 
+<?php if ( $this->is_root ) : ?>
 <div class="gla-metabox closed">
 	<div class="options_group">
 		<h2><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></h2>
-		<?php foreach ( $inputs_data as $input ) : ?>
-			<?php
-			$input['wrapper_class'] = sprintf( '%s %s', $input['wrapper_class'] ?? '', 'form-row' );
-			if ( 'select-with-text-input' === $input['type'] ) {
-				$input['wrapper_class'] .= ' form-row-first';
+		<?php endif; ?>
+		<?php
+		foreach ( $children as $form ) {
+			if ( ! empty( $form['type'] ) ) {
+				$form['wrapper_class'] =
+					sprintf( '%s %s', $form['wrapper_class'] ?? '', 'form-row form-row-full' );
 
-				$input['children'][0]['wrapper_class'] = sprintf( '%s %s', $input['children'][0]['wrapper_class'] ?? '', 'form-row form-row-last' );
+				if ( 'select-with-text-input' === $form['type'] && ! empty( $form['children'][ SelectWithTextInput::SELECT_INPUT_KEY ] ) && ! empty( $form['children'][ SelectWithTextInput::CUSTOM_INPUT_KEY ] ) ) {
+					$form['children'][ SelectWithTextInput::SELECT_INPUT_KEY ]['wrapper_class'] =
+						sprintf( '%s %s', $form['children'][ SelectWithTextInput::SELECT_INPUT_KEY ]['wrapper_class'] ?? '', 'form-row form-row-first' );
+
+					$form['children'][ SelectWithTextInput::CUSTOM_INPUT_KEY ]['wrapper_class'] =
+						sprintf( '%s %s', $form['children'][ SelectWithTextInput::CUSTOM_INPUT_KEY ]['wrapper_class'] ?? '', 'form-row form-row-last' );
+				}
+
+				// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->render_partial( 'inputs/form', [ 'form' => $form ] );
 			} else {
-				$input['wrapper_class'] .= ' form-row-full';
+				// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $this->render_partial( 'attributes/variations-form', $form );
 			}
-			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo $this->render_partial( 'inputs/input', [ 'input' => $input ] );
-			?>
-		<?php endforeach; ?>
+		}
+		?>
+		<?php if ( $this->is_root ) : ?>
 	</div>
 </div>
-
+<?php endif; ?>

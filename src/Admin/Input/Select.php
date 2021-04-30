@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  */
-class Select extends AbstractInput {
+class Select extends Input {
 	/**
 	 * @var array
 	 */

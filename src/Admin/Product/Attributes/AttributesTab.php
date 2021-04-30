@@ -16,11 +16,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class TabInitializer
+ * Class AttributesTab
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
  */
-class TabInitializer implements Service, Registerable, Conditional {
+class AttributesTab implements Service, Registerable, Conditional {
 
 	use AdminConditional;
 
@@ -35,7 +35,7 @@ class TabInitializer implements Service, Registerable, Conditional {
 	protected $attribute_manager;
 
 	/**
-	 * TabInitializer constructor.
+	 * AttributesTab constructor.
 	 *
 	 * @param Admin            $admin
 	 * @param AttributeManager $attribute_manager
@@ -99,7 +99,7 @@ class TabInitializer implements Service, Registerable, Conditional {
 	private function render_panel() {
 		$product_id = get_the_ID();
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $this->admin->get_view( 'attributes/tab-panel', $this->get_form( $product_id )->get_view_data() );
+		echo $this->admin->get_view( 'attributes/tab-panel', [ 'form' => $this->get_form( $product_id )->get_view_data() ] );
 	}
 
 	/**
@@ -121,18 +121,15 @@ class TabInitializer implements Service, Registerable, Conditional {
 	/**
 	 * @param int $product_id
 	 *
-	 * @return InputForm
+	 * @return AttributesForm
 	 */
-	protected function get_form( int $product_id ): InputForm {
+	protected function get_form( int $product_id ): AttributesForm {
 		$form_data = [
 			GTIN::get_id() => $this->attribute_manager->get_value( $product_id, GTIN::get_id() ),
 			MPN::get_id()  => $this->attribute_manager->get_value( $product_id, MPN::get_id() ),
 		];
 
-		$form = new InputForm();
-		$form->set_data( $form_data );
-
-		return $form;
+		return new AttributesForm( $form_data );
 	}
 
 	/**

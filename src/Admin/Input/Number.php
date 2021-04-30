@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  */
-class Number extends AbstractInput {
+class Number extends Input {
 	/**
 	 * Number constructor.
 	 */

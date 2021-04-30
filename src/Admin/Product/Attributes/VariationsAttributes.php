@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\FormInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
@@ -17,11 +16,11 @@ use WP_Post;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class VariationsFormInitializer
+ * Class VariationsAttributes
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
  */
-class VariationsFormInitializer implements Service, Registerable, Conditional {
+class VariationsAttributes implements Service, Registerable, Conditional {
 
 	use AdminConditional;
 
@@ -36,7 +35,7 @@ class VariationsFormInitializer implements Service, Registerable, Conditional {
 	protected $attribute_manager;
 
 	/**
-	 * TabInitializer constructor.
+	 * VariationsAttributes constructor.
 	 *
 	 * @param Admin            $admin
 	 * @param AttributeManager $attribute_manager
@@ -51,16 +50,16 @@ class VariationsFormInitializer implements Service, Registerable, Conditional {
 	public function register(): void {
 		add_action(
 			'woocommerce_product_after_variable_attributes',
-			function ( int $loop, array $variation_data, WP_Post $variation ) {
-				$this->render_attributes_form( $loop, $variation_data, $variation );
+			function ( int $variation_index, array $variation_data, WP_Post $variation ) {
+				$this->render_attributes_form( $variation_index, $variation_data, $variation );
 			},
 			90,
 			3
 		);
 		add_action(
 			'woocommerce_save_product_variation',
-			function ( int $variation_id, int $idx ) {
-				$this->handle_save_variation( $variation_id, $idx );
+			function ( int $variation_id, int $variation_index ) {
+				$this->handle_save_variation( $variation_id, $variation_index );
 			},
 			10,
 			2
@@ -93,48 +92,48 @@ class VariationsFormInitializer implements Service, Registerable, Conditional {
 		$form_view_data = $form->get_view_data();
 		// phpcs:disable WordPress.Security.NonceVerification
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ][ $variation_index ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ][ $variation_index ] ) ) : [];
+		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) ) : [];
 
-		$this->submit_form( $form, $variation_id, $submitted_data );
-	}
-
-	/**
-	 * @param int $product_id
-	 * @param int $variation_index
-	 *
-	 * @return InputForm
-	 */
-	protected function get_form( int $product_id, int $variation_index ): InputForm {
-		$form_data = [
-			GTIN::get_id() => $this->attribute_manager->get_value( $product_id, GTIN::get_id() ),
-			MPN::get_id()  => $this->attribute_manager->get_value( $product_id, MPN::get_id() ),
-		];
-
-		$form = new VariationInputForm( $variation_index );
-		$form->set_data( $form_data );
-
-		return $form;
-	}
-
-	/**
-	 * @param FormInterface $form
-	 * @param int           $variation_id
-	 * @param array         $submitted_data
-	 *
-	 * @return void
-	 */
-	protected function submit_form( FormInterface $form, int $variation_id, array $submitted_data ): void {
 		$form->submit( $submitted_data );
 		$form_data = $form->get_data();
 
+		if ( ! empty( $form_data[ $variation_index ] ) ) {
+			$this->update_data( $form_data[ $variation_index ], $variation_id );
+		}
+	}
+
+	/**
+	 * @param int $variation_id
+	 * @param int $variation_index
+	 *
+	 * @return VariationAttributesForm
+	 */
+	protected function get_form( int $variation_id, int $variation_index ): VariationAttributesForm {
+		$form_data = [
+			(string) $variation_index => [
+				GTIN::get_id() => $this->attribute_manager->get_value( $variation_id, GTIN::get_id() ),
+				MPN::get_id()  => $this->attribute_manager->get_value( $variation_id, MPN::get_id() ),
+			],
+		];
+
+		return new VariationAttributesForm( $variation_index, $form_data );
+	}
+
+	/**
+	 * @param array $data
+	 * @param int   $variation_id
+	 *
+	 * @return void
+	 */
+	protected function update_data( array $data, int $variation_id ): void {
 		// gtin
-		if ( isset( $form_data[ GTIN::get_id() ] ) ) {
-			$this->attribute_manager->update( $variation_id, new GTIN( $form_data[ GTIN::get_id() ] ) );
+		if ( isset( $data[ GTIN::get_id() ] ) ) {
+			$this->attribute_manager->update( $variation_id, new GTIN( $data[ GTIN::get_id() ] ) );
 		}
 
 		// mpn
-		if ( isset( $form_data[ MPN::get_id() ] ) ) {
-			$this->attribute_manager->update( $variation_id, new MPN( $form_data[ MPN::get_id() ] ) );
+		if ( isset( $data[ MPN::get_id() ] ) ) {
+			$this->attribute_manager->update( $variation_id, new MPN( $data[ MPN::get_id() ] ) );
 		}
 	}
 

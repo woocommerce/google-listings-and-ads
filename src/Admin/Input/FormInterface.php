@@ -13,36 +13,36 @@ defined( 'ABSPATH' ) || exit;
 interface FormInterface {
 
 	/**
-	 * Return a list of inputs provided by the form.
-	 *
-	 * @return InputInterface[]
-	 */
-	public function get_inputs(): array;
-
-	/**
 	 * Return the form's data.
 	 *
-	 * @return array
+	 * @return mixed
 	 */
-	public function get_data(): array;
+	public function get_data();
 
 	/**
 	 * Set the form's data.
 	 *
-	 * @param array $data
+	 * @param mixed $data
 	 *
 	 * @return void
 	 */
-	public function set_data( array $data = [] ): void;
+	public function set_data( $data ): void;
 
 	/**
 	 * Return the form name.
 	 *
-	 * This name is used as a prefix for the form's field names.
-	 *
 	 * @return string
 	 */
 	public function get_name(): string;
+
+	/**
+	 * Set the form's name.
+	 *
+	 * @param string $name
+	 *
+	 * @return FormInterface
+	 */
+	public function set_name( string $name ): FormInterface;
 
 	/**
 	 * Submit the form.
@@ -60,4 +60,49 @@ interface FormInterface {
 	 */
 	public function get_view_data(): array;
 
+	/**
+	 * Return the name used for the form's view.
+	 *
+	 * @return string
+	 */
+	public function get_view_name(): string;
+
+	/**
+	 * @return FormInterface[]
+	 */
+	public function get_children(): array;
+
+	/**
+	 * @param FormInterface $form
+	 * @param string|null   $name
+	 *
+	 * @return FormInterface
+	 */
+	public function add( FormInterface $form, ?string $name = null ): FormInterface;
+
+	/**
+	 * @param FormInterface|null $form
+	 *
+	 * @return void
+	 */
+	public function set_parent( ?FormInterface $form ): void;
+
+	/**
+	 * @return FormInterface|null
+	 */
+	public function get_parent(): ?FormInterface;
+
+	/**
+	 * If this is the root form (i.e. has no parents)
+	 *
+	 * @return bool
+	 */
+	public function is_root(): bool;
+
+	/**
+	 * Whether the form has been already submitted.
+	 *
+	 * @return bool
+	 */
+	public function is_submitted(): bool;
 }

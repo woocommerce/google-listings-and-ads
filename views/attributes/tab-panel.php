@@ -10,21 +10,19 @@ defined( 'ABSPATH' ) || exit;
  */
 
 /**
- * @var array $inputs_data
+ * @var array $form
  */
-$inputs_data = $this->inputs
+$form = $this->form
 
 ?>
 
 <div id="gla_attributes" class="panel woocommerce_options_panel">
 	<div class="options_group">
 		<h2><?php esc_html_e( 'Product attributes', 'google-listings-and-ads' ); ?></h2>
-		<?php foreach ( $inputs_data as $input ) : ?>
-			<?php
-			// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo $this->render_partial( 'inputs/input', [ 'input' => $input ] );
-			?>
-		<?php endforeach; ?>
+		<?php
+		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->render_partial( 'inputs/form', [ 'form' => $form ] );
+		?>
 	</div>
 </div>
 

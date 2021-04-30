@@ -3,9 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\InputForm;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\TabInitializer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsFormInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
@@ -131,8 +130,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantCenterService::class  => true,
 		AttributeManager::class       => true,
 		ProductFactory::class         => true,
-		InputForm::class              => true,
-		TabInitializer::class         => true,
+		AttributesTab::class          => true,
+		VariationsAttributes::class   => true,
 	];
 
 	/**
@@ -216,8 +215,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );
-		$this->conditionally_share_with_tags( TabInitializer::class, Admin::class, AttributeManager::class );
-		$this->conditionally_share_with_tags( VariationsFormInitializer::class, Admin::class, AttributeManager::class );
+		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class );
+		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class );
 
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
