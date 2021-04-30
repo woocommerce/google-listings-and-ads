@@ -12,6 +12,7 @@ import IssuesTableCard from './issues-table-card';
 import ProductStatusHelpPopover from './product-status-help-popover';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
+import ComingSoonNotice from './coming-soon-notice';
 import './index.scss';
 
 /* TODO: The last updated date and time need to come from backend API. */
@@ -22,6 +23,7 @@ const ProductFeed = () => {
 		<div className="gla-product-feed">
 			<TabNav initialName="product-feed" />
 			<SubmissionSuccessGuide />
+			<ComingSoonNotice />
 			<div className="gla-product-feed__last-updated">
 				Last updated:{ ' ' }
 				{ formatDate( 'Y-m-d H:i:s', lastUpdatedDateTime ) }

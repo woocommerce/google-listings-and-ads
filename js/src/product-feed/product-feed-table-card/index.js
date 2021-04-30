@@ -26,20 +26,7 @@ const ProductFeedTableCard = ( props ) => {
 	// TODO: data should be coming from backend API,
 	// using the above query (e.g. orderby, order and page) as parameter.
 	// Also, i18n for the display labels too.
-	const data = [
-		{
-			id: 123,
-			title: 'Pink marble tee',
-			visibility: 'Sync and show',
-			status: 'Not synced',
-		},
-		{
-			id: 456,
-			title: 'Brown socks',
-			visibility: 'Sync and show',
-			status: 'Not synced',
-		},
-	];
+	const data = [];
 
 	// TODO: total should be coming from API response above.
 	const total = data.length;

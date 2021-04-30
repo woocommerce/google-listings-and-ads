@@ -10,9 +10,10 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import './index.scss';
 
-const tabs = [
+let tabs = [
 	{
 		name: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
@@ -38,6 +39,10 @@ const tabs = [
 		path: '%2Fgoogle%2Fsettings',
 	},
 ];
+// Hide reports tab.
+if ( ! glaData.enableReports ) {
+	tabs = tabs.filter( ( { name } ) => name === 'reports' );
+}
 
 const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
 	return (
