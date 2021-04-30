@@ -129,6 +129,10 @@ class ScriptAsset extends BaseAsset {
 			}
 
 			wp_enqueue_script( $this->handle );
+
+			if ( in_array( 'wp-i18n', $this->dependencies, true ) ) {
+				wp_set_script_translations( $this->handle, 'google-listings-and-ads' );
+			}
 		};
 	}
 
