@@ -32,7 +32,7 @@ const useAppSelectDispatch = ( selector, ...args ) => {
 				invalidateResolution: invalidateResolutionCallback,
 			};
 		},
-		[ ...args ]
+		[ invalidateResolutionCallback, selector, ...args ]
 	);
 };
 
