@@ -13,7 +13,7 @@ import classnames from 'classnames';
 import { glaData } from '.~/constants';
 import './index.scss';
 
-const tabs = [
+let tabs = [
 	{
 		name: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
@@ -39,6 +39,10 @@ const tabs = [
 		path: '%2Fgoogle%2Fsettings',
 	},
 ];
+// Hide reports tab.
+if ( ! glaData.enableReports ) {
+	tabs = tabs.filter( ( { name } ) => name === 'reports' );
+}
 
 const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
 	return (
@@ -58,7 +62,6 @@ const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
 const TabNav = ( props ) => {
 	const { initialName } = props;
 	const activeClass = 'is-active';
-	const { enableReports } = glaData;
 
 	useEffect( () => {
 		// Highlight the wp-admin dashboard menu
@@ -82,30 +85,25 @@ const TabNav = ( props ) => {
 				orientation="horizontal"
 				className="gla-tab-nav__tabs"
 			>
-				{ tabs.map( ( tab ) => {
-					if ( ! enableReports && tab.name === 'reports' ) {
-						return '';
-					}
-					return (
-						<TabLink
-							className={ classnames(
-								'components-button',
-								'gla-tab-nav__tabs-item',
-								tab.className,
-								{
-									[ activeClass ]: tab.name === initialName,
-								}
-							) }
-							tabId={ `${ tab.name }` }
-							aria-controls={ `${ tab.name }-view` }
-							selected={ tab.name === initialName }
-							key={ tab.name }
-							path={ tab.path }
-						>
-							{ tab.title }
-						</TabLink>
-					);
-				} ) }
+				{ tabs.map( ( tab ) => (
+					<TabLink
+						className={ classnames(
+							'components-button',
+							'gla-tab-nav__tabs-item',
+							tab.className,
+							{
+								[ activeClass ]: tab.name === initialName,
+							}
+						) }
+						tabId={ `${ tab.name }` }
+						aria-controls={ `${ tab.name }-view` }
+						selected={ tab.name === initialName }
+						key={ tab.name }
+						path={ tab.path }
+					>
+						{ tab.title }
+					</TabLink>
+				) ) }
 			</NavigableMenu>
 		</div>
 	);
