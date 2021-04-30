@@ -108,6 +108,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	protected function fetch_issue_data( string $type = null, int $per_page = 0, int $page = 1 ): array {
 		// Ensure account issues are shown first.
 		$this->issue_query->set_order( 'product_id' );
+		$this->issue_query->set_order( 'issue' );
 
 		// Filter by type.
 		if ( $this->is_valid_type( $type ) ) {
