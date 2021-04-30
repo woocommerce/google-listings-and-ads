@@ -13,10 +13,19 @@ import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
+import { glaData } from '.~/constants';
 import './index.scss';
 
 const Dashboard = () => {
 	const trackEventReportId = 'dashboard';
+	const { enableReports } = glaData;
+	const ReportsLink = () => {
+		return (
+			<Link href={ getNewPath( null, '/google/reports/programs' ) }>
+				<Button isPrimary>View Reports</Button>
+			</Link>
+		);
+	};
 
 	return (
 		<div className="gla-dashboard">
@@ -25,9 +34,7 @@ const Dashboard = () => {
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }
 				/>
-				<Link href={ getNewPath( null, '/google/reports/programs' ) }>
-					<Button isPrimary>View Reports</Button>
-				</Link>
+				{ enableReports && <ReportsLink /> }
 			</div>
 			<div className="gla-dashboard__performance">
 				<SummarySection />
