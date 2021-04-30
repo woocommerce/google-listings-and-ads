@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Google Listings and Ads
- * Plugin URL: https://woocommerce.com/
+ * Plugin URL: https://wordpress.org/plugins/google-listings-and-ads/
  * Description: Native integration with Google that allows merchants to easily display their products across Google’s network.
  * Version: 0.5.3
  * Author: WooCommerce
