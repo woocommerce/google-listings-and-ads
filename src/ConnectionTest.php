@@ -80,15 +80,28 @@ class ConnectionTest implements Service, Registerable {
 	 * Add menu entries
 	 */
 	protected function register_admin_menu() {
-		add_menu_page(
-			'Connection Test',
-			'Connection Test',
-			'manage_options',
-			'connection-test-admin-page',
-			function() {
-				$this->render_admin_page();
-			}
-		);
+		if ( apply_filters( 'gla_enable_connection_test', false ) ) {
+			add_menu_page(
+				'Connection Test',
+				'Connection Test',
+				'manage_options',
+				'connection-test-admin-page',
+				function() {
+					$this->render_admin_page();
+				}
+			);
+		} else {
+			add_submenu_page(
+				'',
+				'Connection Test',
+				'Connection Test',
+				'manage_options',
+				'connection-test-admin-page',
+				function() {
+					$this->render_admin_page();
+				}
+			);
+		}
 	}
 
 	/**
