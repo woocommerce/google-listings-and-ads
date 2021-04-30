@@ -10,31 +10,38 @@ import { STORE_KEY } from '.~/data/constants';
 import useGoogleAccount from './useGoogleAccount';
 
 const useGoogleMCAccount = () => {
-	const { google, isResolving, hasFinishedResolution } = useGoogleAccount();
+	const {
+		google,
+		isResolving: isResolvingGoogle,
+		hasFinishedResolution: hasFinishedResolutionGoogle,
+	} = useGoogleAccount();
 
-	return useSelect( ( select ) => {
-		if ( ! google || google.active === 'no' ) {
-			return {
-				googleMCAccount: undefined,
+	return useSelect(
+		( select ) => {
+			if ( ! google || google.active === 'no' ) {
+				return {
+					googleMCAccount: undefined,
+					isResolving: isResolvingGoogle,
+					hasFinishedResolution: hasFinishedResolutionGoogle,
+				};
+			}
+
+			const {
+				getGoogleMCAccount,
 				isResolving,
 				hasFinishedResolution,
+			} = select( STORE_KEY );
+
+			return {
+				googleMCAccount: getGoogleMCAccount(),
+				isResolving: isResolving( 'getGoogleMCAccount' ),
+				hasFinishedResolution: hasFinishedResolution(
+					'getGoogleMCAccount'
+				),
 			};
-		}
-
-		const acc = select( STORE_KEY ).getGoogleMCAccount();
-		const isResolvingGoogleMCAccount = select( STORE_KEY ).isResolving(
-			'getGoogleMCAccount'
-		);
-		const hasFinishedResolutionGoogleMCAccount = select(
-			STORE_KEY
-		).hasFinishedResolution( 'getGoogleMCAccount' );
-
-		return {
-			googleMCAccount: acc,
-			isResolving: isResolvingGoogleMCAccount,
-			hasFinishedResolution: hasFinishedResolutionGoogleMCAccount,
-		};
-	} );
+		},
+		[ google, isResolvingGoogle, hasFinishedResolutionGoogle ]
+	);
 };
 
 export default useGoogleMCAccount;
