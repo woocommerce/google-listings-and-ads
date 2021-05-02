@@ -41,6 +41,11 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 	protected $product_issue_countries = [];
 
 	/**
+	 * @var array Product statuses as reported by Merchant Center.
+	 */
+	protected $product_statuses = [];
+
+	/**
 	 * MerchantProducts constructor.
 	 *
 	 * @param Merchant           $merchant
@@ -75,9 +80,8 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
-		$product_issues   = [];
-		$product_statuses = [];
-		$created_at       = $this->current_time->format( 'Y-m-d H:i:s' );
+		$product_issues = [];
+		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
 		foreach ( $mc_statuses as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
@@ -88,7 +92,7 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 
 			$status = $this->get_product_status( $product );
 			if ( ! is_null( $status ) ) {
-				$product_statuses[ $status ] = 1 + ( $product_statuses[ $status ] ?? 0 );
+				$this->product_statuses[ $status ] = 1 + ( $this->product_statuses[ $status ] ?? 0 );
 			}
 
 			$product_issue_template = [
