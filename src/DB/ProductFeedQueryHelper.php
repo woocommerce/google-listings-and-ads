@@ -128,8 +128,11 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	protected function prepare_query_args(): array {
+		$product_types = $this->container->get( ProductRepository::class )->get_supported_product_types();
+		$product_types = array_diff( $product_types, [ 'variation' ] );
+
 		$args = [
-			'type'    => [ 'simple', 'variable' ],
+			'type'    => $product_types,
 			'orderby' => [ 'title' => 'ASC' ],
 		];
 
