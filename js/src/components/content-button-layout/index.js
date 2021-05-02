@@ -1,16 +1,27 @@
 /**
+ * External dependencies
+ */
+import { useRef } from 'react';
+/**
  * Internal dependencies
  */
-import './index.scss';
+import useShadowStyles from '.~/hooks/useShadowStyles';
+
+const styles = /* css */ `:host {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: calc(var(--main-gap) / 2);
+}`;
 
 const ContentButtonLayout = ( props ) => {
-	const { className, ...rest } = props;
+	const shadowHost = useRef( null );
+	useShadowStyles( shadowHost, styles );
 
 	return (
-		<div
-			className={ `gla-content-button-layout ${ className }` }
-			{ ...rest }
-		/>
+		<div ref={ shadowHost } { ...props }>
+			{ props.children }
+		</div>
 	);
 };
 
