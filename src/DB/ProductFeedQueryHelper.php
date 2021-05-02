@@ -78,8 +78,9 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 			$id     = $product->get_id();
 			$errors = $this->meta_handler->get_errors( $id ) ?: [];
 
-			// Combine errors for variations.
-			if ( ! empty( $errors ) && ! isset( $errors[0] ) ) {
+			// Combine errors for variable products, which have a variation-indexed array of errors.
+			$first_key = array_key_first( $errors );
+			if ( ! empty( $errors ) && is_numeric( $first_key ) && 0 !== $first_key ) {
 				$errors = array_unique( array_merge( ...$errors ) );
 			}
 
@@ -88,7 +89,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 				'title'   => $product->get_name(),
 				'visible' => $this->product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
 				'status'  => $this->product_helper->get_sync_status( $product ),
-				'errors'  => $errors,
+				'errors'  => array_values( $errors ),
 			];
 		}
 
