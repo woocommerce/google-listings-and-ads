@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
@@ -71,7 +70,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use wpdb;
 
 /**
  * Class CoreServiceProvider
@@ -128,7 +126,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantIssues::class         => true,
 		TransientsInterface::class    => true,
 		MerchantCenterService::class  => true,
-		ProductFeedQueryHelper::class => true,
 	];
 
 	/**
@@ -245,7 +242,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
-		$this->share_with_tags( ProductFeedQueryHelper::class, wpdb::class, ProductHelper::class, ProductMetaHandler::class );
 
 		// The DB Controller has some extra setup required.
 		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );
