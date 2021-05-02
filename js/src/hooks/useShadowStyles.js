@@ -18,14 +18,17 @@ export default function useShadowStyles(
 	const shadowHost = useRef( null );
 	useEffect( () => {
 		if ( shadowHost.current ) {
-			if ( ! shadowHost.current.shadowRoot ) {
-				const shadowRoot = shadowHost.current.attachShadow( {
+			let shadowRoot = shadowHost.current.shadowRoot;
+			if ( ! shadowRoot ) {
+				shadowRoot = shadowHost.current.attachShadow( {
 					mode: 'open',
 				} );
-				shadowRoot.innerHTML = `<style>${ inlineStyles }</style><slot></slot>`;
-				if ( styleSheets && styleSheets.length > 0 ) {
-					shadowRoot.adoptedStyleSheets = styleSheets;
-				}
+			}
+			shadowRoot.innerHTML = inlineStyles
+				? `<style>${ inlineStyles }</style><slot></slot>`
+				: `<slot><slot>`;
+			if ( styleSheets && styleSheets.length > 0 ) {
+				shadowRoot.adoptedStyleSheets = styleSheets;
 			}
 		}
 	}, [ shadowHost, inlineStyles, styleSheets ] );
