@@ -12,6 +12,12 @@
 		"no-duplicate-selectors": null,
 		"rule-empty-line-before": null,
 		"selector-class-pattern": null,
+		"selector-type-no-unknown": [
+      		true,
+      		{
+        		"ignore": ["custom-elements"]
+      		}
+    	],
 		"value-keyword-case": null
 	}
 }

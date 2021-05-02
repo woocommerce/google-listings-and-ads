@@ -3,15 +3,8 @@
  */
 import './index.scss';
 
-const ContentButtonLayout = ( props ) => {
-	const { className, ...rest } = props;
-
-	return (
-		<div
-			className={ `gla-content-button-layout ${ className }` }
-			{ ...rest }
-		/>
-	);
-};
+const ContentButtonLayout = ( props ) => (
+	<woo-gla-content-button-layout { ...props } />
+);
 
 export default ContentButtonLayout;
