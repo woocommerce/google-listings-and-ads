@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -25,6 +26,7 @@ defined( 'ABSPATH' ) || exit;
 class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * @var wpdb
@@ -151,22 +153,12 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 				$args['orderby'] = [ 'ID' => $this->get_order() ] + $args['orderby'];
 				break;
 			case 'visible':
-				$args['meta_query'] = [
-					'visibility_clause' => [
-						'key'     => ProductMetaHandler::KEY_VISIBILITY,
-						'compare' => 'EXISTS',
-					],
-				];
-				$args['orderby']    = [ 'visibility_clause' => $this->get_order() ] + $args['orderby'];
+				$args['meta_key'] = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
+				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
 			case 'status':
-				$args['meta_query'] = [
-					'synced_clause' => [
-						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-						'compare' => 'EXISTS',
-					],
-				];
-				$args['orderby']    = [ 'synced_clause' => $this->get_order() ] + $args['orderby'];
+				$args['meta_key'] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_STATUS );
+				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
 			default:
 				throw InvalidValue::not_in_allowed_list( 'orderby', [ 'title', 'id', 'visible', 'status' ] );
