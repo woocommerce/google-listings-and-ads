@@ -21,13 +21,20 @@ import PropTypes from 'prop-types';
 import { Text } from '@woocommerce/experimental';
 import { getIdsFromQuery, updateQueryString } from '@woocommerce/navigation';
 
-/**
- * Internal dependencies
- */
-import CompareButton from './button';
-import Search from '../search';
+// /**
+//  * Internal dependencies
+//  */
+// import CompareButton from './button';
+// import Search from '../search';
 
-export { default as CompareButton } from './button';
+// export { default as CompareButton } from './button';
+
+/**
+ * External dependencies
+ */
+import { CompareButton, Search } from '@woocommerce/components';
+
+export { CompareButton };
 
 /**
  * Displays a card + search used to filter results as a comparison between objects.

@@ -16,14 +16,29 @@ import { updateQueryString } from '@woocommerce/navigation';
 import { getDateParamsFromQuery, getCurrentDates } from '@woocommerce/date';
 import CurrencyFactory from '@woocommerce/currency';
 
+// /**
+//  * Internal dependencies
+//  */
+// import AdvancedFilters from '../advanced-filters';
+// import { CompareFilter } from '../compare-filter';
+// import DateRangeFilterPicker from '../date-range-filter-picker';
+// import FilterPicker from '../filter-picker';
+// import { H, Section } from '../section';
+
+/**
+ * External dependencies
+ */
+import {
+	AdvancedFilters,
+	DateRangeFilterPicker,
+	H,
+	Section,
+} from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import AdvancedFilters from '../advanced-filters';
 import { CompareFilter } from '../compare-filter';
-import DateRangeFilterPicker from '../date-range-filter-picker';
 import FilterPicker from '../filter-picker';
-import { H, Section } from '../section';
 
 /**
  * Add a collection of report filters to a page. This uses `DatePicker` & `FilterPicker` for the "basic" filters, and `AdvancedFilters`

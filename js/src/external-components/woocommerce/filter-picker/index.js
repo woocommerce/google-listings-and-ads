@@ -21,12 +21,21 @@ import {
 	updateQueryString,
 } from '@woocommerce/navigation';
 
+// /**
+//  * Internal dependencies
+//  */
+// import AnimationSlider from '../animation-slider';
+// import DropdownButton from '../dropdown-button';
+// import Search from '../search';
+
 /**
- * Internal dependencies
+ * External dependencies
  */
-import AnimationSlider from '../animation-slider';
-import DropdownButton from '../dropdown-button';
-import Search from '../search';
+import {
+	AnimationSlider,
+	DropdownButton,
+	Search,
+} from '@woocommerce/components';
 
 export const DEFAULT_FILTER = 'all';
 
