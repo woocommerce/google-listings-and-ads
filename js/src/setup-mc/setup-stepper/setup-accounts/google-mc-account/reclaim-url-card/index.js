@@ -25,7 +25,7 @@ import ReclaimUrlFailCard from './reclaim-url-fail-card';
 const ReclaimUrlCard = ( props ) => {
 	const { websiteUrl } = props;
 	const { createNotice } = useDispatchCoreNotices();
-	const { receiveMCAccount } = useAppDispatch();
+	const { invalidateResolution } = useAppDispatch();
 	const [
 		fetchClaimOverwrite,
 		{ loading, response, reset },
@@ -36,9 +36,8 @@ const ReclaimUrlCard = ( props ) => {
 
 	const handleReclaimClick = async () => {
 		try {
-			const res = await fetchClaimOverwrite( { parse: false } );
-			const data = await res.json();
-			receiveMCAccount( data );
+			await fetchClaimOverwrite( { parse: false } );
+			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
 			if ( e.status !== 406 ) {
 				createNotice(

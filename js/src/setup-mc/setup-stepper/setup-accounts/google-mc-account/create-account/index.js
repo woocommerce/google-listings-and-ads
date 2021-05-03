@@ -16,7 +16,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 const CreateAccount = ( props ) => {
 	const { allowShowExisting, onShowExisting } = props;
 	const { createNotice } = useDispatchCoreNotices();
-	const { receiveMCAccount } = useAppDispatch();
+	const { invalidateResolution } = useAppDispatch();
 	const [
 		fetchCreateMCAccount,
 		{ loading, error, response },
@@ -27,9 +27,8 @@ const CreateAccount = ( props ) => {
 
 	const handleCreateAccount = async () => {
 		try {
-			const res = await fetchCreateMCAccount( { parse: false } );
-			const data = await res.json();
-			receiveMCAccount( data );
+			await fetchCreateMCAccount( { parse: false } );
+			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
 			if ( e.status === 406 ) {
 				const body = await e.json();
