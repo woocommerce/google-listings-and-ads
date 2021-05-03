@@ -2,11 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	createInterpolateElement,
-	useMemo,
-	useState,
-} from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 import {
 	Card,
 	CardHeader,
@@ -63,15 +59,12 @@ const PER_PAGE = 5;
 
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );
-	const query = useMemo( () => {
-		return {
-			page,
-			per_page: PER_PAGE,
-		};
-	}, [ page ] );
 	const { hasFinishedResolution, data } = useAppSelectDispatch(
 		'getMCIssues',
-		query
+		{
+			page,
+			per_page: PER_PAGE,
+		}
 	);
 
 	const handlePageChange = ( newPage ) => {
