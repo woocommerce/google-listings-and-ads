@@ -1,0 +1,15 @@
+.gla-product-status-help-popover {
+	.components-popover__content {
+		@include break-medium() {
+			width: 300px;
+		}
+
+		@include break-large() {
+			width: 360px;
+		}
+
+		@include break-xlarge() {
+			width: 480px;
+		}
+	}
+}

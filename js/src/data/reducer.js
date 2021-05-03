@@ -29,6 +29,7 @@ const DEFAULT_STATE = {
 	},
 	ads_campaigns: null,
 	mc_setup: null,
+	mc_product_statistics: null,
 	report: {},
 };
 
@@ -242,6 +243,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const newState = {
 				...state,
 				mc_setup: action.mcSetup,
+			};
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_PRODUCT_STATISTICS: {
+			const newState = {
+				...state,
+				mc_product_statistics: action.mcProductStatistics,
 			};
 			return newState;
 		}

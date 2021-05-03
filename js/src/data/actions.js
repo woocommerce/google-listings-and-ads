@@ -672,3 +672,10 @@ export function* receiveMCSetup( mcSetup ) {
 		mcSetup,
 	};
 }
+
+export function* receiveMCProductStatistics( mcProductStatistics ) {
+	return {
+		type: TYPES.RECEIVE_MC_PRODUCT_STATISTICS,
+		mcProductStatistics,
+	};
+}
