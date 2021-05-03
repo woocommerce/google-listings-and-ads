@@ -20,8 +20,20 @@ $button-color: #949494;
 		}
 	}
 
-	.components-popover__content > div {
-		text-align: left;
-		margin: $grid-unit-20;
+	.components-popover__content {
+		width: 300px;
+
+		@include break-large() {
+			width: 360px;
+		}
+
+		@include break-xlarge() {
+			width: 480px;
+		}
+
+		> div {
+			text-align: left;
+			margin: $grid-unit-20;
+		}
 	}
 }

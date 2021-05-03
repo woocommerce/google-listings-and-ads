@@ -29,6 +29,8 @@ const DEFAULT_STATE = {
 	},
 	ads_campaigns: null,
 	mc_setup: null,
+	mc_product_statistics: null,
+	mc_issues: null,
 	report: {},
 };
 
@@ -243,6 +245,38 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...state,
 				mc_setup: action.mcSetup,
 			};
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_PRODUCT_STATISTICS: {
+			const newState = {
+				...state,
+				mc_product_statistics: action.mcProductStatistics,
+			};
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_ISSUES: {
+			const { query, data } = action;
+			const newState = {
+				...state,
+				mc_issues: {
+					...state.mc_issues,
+					issues:
+						( state.mc_issues?.issues && [
+							...state.mc_issues.issues,
+						] ) ||
+						[],
+				},
+			};
+
+			newState.mc_issues.issues.splice(
+				( query.page - 1 ) * query.per_page,
+				query.per_page,
+				...data.issues
+			);
+			newState.mc_issues.total = data.total;
+
 			return newState;
 		}
 

@@ -18,7 +18,7 @@ import './index.scss';
 
 const paidPerformanceTitle = __(
 	'Performance (Paid Campaigns)',
-	'woocommerce-admin'
+	'google-listings-and-ads'
 );
 
 // Note: Since the `delta` prop of SummaryNumber component wouldn't apply the WC Settings' currency options,
@@ -34,7 +34,10 @@ const FreePerformanceCard = () => {
 
 	return (
 		<SummaryCard
-			title={ __( 'Performance (Free Listing)', 'woocommerce-admin' ) }
+			title={ __(
+				'Performance (Free Listing)',
+				'google-listings-and-ads'
+			) }
 		>
 			{ loading ? (
 				<AppSpinner />

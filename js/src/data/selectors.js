@@ -3,6 +3,7 @@
  */
 import { createRegistrySelector } from '@wordpress/data';
 import { getDateParamsFromQuery } from '@woocommerce/date';
+import createSelector from 'rememo';
 
 /**
  * Internal dependencies
@@ -65,6 +66,34 @@ export const getAdsCampaigns = ( state ) => {
 export const getMCSetup = ( state ) => {
 	return state.mc_setup;
 };
+
+export const getMCProductStatistics = ( state ) => {
+	return state.mc_product_statistics;
+};
+
+// note: we use rememo createSelector here to cache the sliced issues array,
+// to prevent returning new array to the consumer every time,
+// which might cause rendering performance problem.
+export const getMCIssues = createSelector(
+	( state, query ) => {
+		if ( ! state.mc_issues ) {
+			return state.mc_issues;
+		}
+
+		const start = ( query.page - 1 ) * query.per_page;
+		const end = start + query.per_page;
+
+		return {
+			issues: state.mc_issues.issues.slice( start, end ),
+			total: state.mc_issues.total,
+		};
+	},
+	( state ) => [
+		state.mc_issues,
+		state.mc_issues?.issues,
+		state.mc_issues?.total,
+	]
+);
 
 /**
  * Select report data according to parameters.

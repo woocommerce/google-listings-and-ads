@@ -22,13 +22,14 @@ trait GoogleHelper {
 	 *
 	 * @return array
 	 */
-	protected function get_mc_supported_countries_currencies( bool $include_beta = false ): array {
+	protected function get_mc_supported_countries_currencies( bool $include_beta = true ): array {
 		$beta_countries = [
 			'DZ' => 'DZD', // Algeria
 			'AO' => 'AOA', // Angola
 			'BD' => 'BDT', // Bangladesh
 			'KH' => 'KHR', // Cambodia
 			'CM' => 'XAF', // Cameroon
+			'CR' => 'CRC', // Costa Rica
 			'CI' => 'XOF', // Cote d'Ivoire
 			'DO' => 'DOP', // Dominican Republic
 			'SV' => 'USD', // El Salvador
@@ -41,7 +42,7 @@ trait GoogleHelper {
 			'MA' => 'MAD', // Morocco
 			'MZ' => 'MZN', // Mozambique
 			'MM' => 'MMK', // Myanmar 'Burma'
-			'MP' => 'NPR', // Nepal
+			'NP' => 'NPR', // Nepal
 			'NI' => 'NIO', // Nicaragua
 			'NG' => 'NGN', // Nigeria
 			'PK' => 'PKR', // Pakistan
@@ -53,6 +54,8 @@ trait GoogleHelper {
 			'TZ' => 'TZS', // Tanzania
 			'TH' => 'THB', // Thailand
 			'TN' => 'TND', // Tunisia
+			'UG' => 'UGX', // Uganda
+			'UA' => 'UAH', // Ukraine
 			'VE' => 'VEF', // Venezuela
 			'VN' => 'VND', // Vietnam
 			'ZM' => 'ZMW', // Zambia
@@ -70,7 +73,6 @@ trait GoogleHelper {
 			'CA' => 'CAD', // Canada
 			'CL' => 'CLP', // Chile
 			'CO' => 'COP', // Colombia
-			'CR' => 'CRC', // Costa Rica
 			'CZ' => 'CZK', // Czechia
 			'DK' => 'DKK', // Denmark
 			'EC' => 'USD', // Ecuador
@@ -108,7 +110,6 @@ trait GoogleHelper {
 			'SG' => 'SGD', // Singapore
 			'SK' => 'EUR', // Slovakia
 			'ZA' => 'ZAR', // South Africa
-			'KR' => 'KRW', // South Korea
 			'ES' => 'EUR', // Spain
 			'SE' => 'SEK', // Sweden
 			'CH' => 'CHF', // Switzerland
@@ -121,7 +122,14 @@ trait GoogleHelper {
 			'UZ' => 'UZS', // Uzbekistan
 		];
 
-		return $include_beta ? array_merge( $supported_countries, $beta_countries ) : $supported_countries;
+		$supported = $include_beta ? array_merge( $supported_countries, $beta_countries ) : $supported_countries;
+
+		// Currency conversion is unavailable in South Korea: https://support.google.com/merchants/answer/7055540
+		if ( 'KRW' === get_woocommerce_currency() ) {
+			$supported['KR'] = 'KRW'; // South Korea
+		}
+
+		return $supported;
 	}
 
 	/**
@@ -134,7 +142,7 @@ trait GoogleHelper {
 	 *
 	 * @return string[]
 	 */
-	protected function get_mc_supported_countries( bool $include_beta = false ): array {
+	protected function get_mc_supported_countries( bool $include_beta = true ): array {
 		return array_keys( $this->get_mc_supported_countries_currencies( $include_beta ) );
 	}
 

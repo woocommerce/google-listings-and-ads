@@ -30,7 +30,7 @@ const SwitchUrlCard = ( props ) => {
 		newUrl,
 		onSelectAnotherAccount = () => {},
 	} = props;
-	const { receiveMCAccount } = useAppDispatch();
+	const { invalidateResolution } = useAppDispatch();
 	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/switch-url`,
 		method: 'POST',
@@ -38,8 +38,8 @@ const SwitchUrlCard = ( props ) => {
 	} );
 
 	const handleSwitch = async () => {
-		const account = await fetchMCAccountSwitchUrl();
-		receiveMCAccount( account );
+		await fetchMCAccountSwitchUrl();
+		invalidateResolution( 'getGoogleMCAccount', [] );
 	};
 
 	const handleUseDifferentMCClick = () => {
