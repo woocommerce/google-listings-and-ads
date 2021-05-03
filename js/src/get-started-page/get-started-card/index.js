@@ -21,10 +21,8 @@ import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import { glaData } from '.~/constants';
 import './index.scss';
 import AppButton from '.~/components/app-button';
-import useGoogleAccount from '.~/hooks/useGoogleAccount';
 
 const GetStartedCard = () => {
-	const { hasFinishedResolution, google } = useGoogleAccount();
 	const disableNextStep = ! glaData.mcSupportedLanguage;
 	const handleClick = () => {
 		recordSetupMCEvent( 'get_started' );
@@ -49,13 +47,13 @@ const GetStartedCard = () => {
 					<AppButton
 						isPrimary
 						disabled={ disableNextStep }
-						loading={ ! hasFinishedResolution }
 						href={ getNewPath( {}, '/google/setup-mc' ) }
 						onClick={ handleClick }
 					>
-						{ hasFinishedResolution && google?.active === 'yes'
-							? __( 'Continue setup', 'google-listings-and-ads' )
-							: __( 'Get started', 'google-listings-and-ads' ) }
+						{ __(
+							'Set up free listings in Google',
+							'google-listings-and-ads'
+						) }
 					</AppButton>
 					<Text className="woocommerce-marketing-google-get-started-card__terms-notice">
 						{ createInterpolateElement(
