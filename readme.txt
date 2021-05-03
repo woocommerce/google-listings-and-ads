@@ -1,5 +1,5 @@
 === Google Listings & Ads ===
-Contributors: automattic, woocommerce
+Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.3
 Tested up to: 5.7
