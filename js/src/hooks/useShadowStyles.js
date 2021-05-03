@@ -1,21 +1,21 @@
 /**
  * External dependencies
  */
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Adds encapsulated styles to a given element.
  * Adds given inline CSS or array of constructed stylesheets to element's shadow root.
  *
- * @param {HTMLElement} shadowHost Reference to HTMLElement to be styled.
  * @param {string} inlineStyles Styles to be addes inline.
  * @param {Array<CSSStyleSheet> | null} styleSheets Array of (constructed) style sheets to be adopted.
+ * @return {Object} React ref for a HTMLElement to be styled.
  */
 export default function useShadowStyles(
-	shadowHost,
 	inlineStyles = '',
 	styleSheets = null
 ) {
+	const shadowHost = useRef( null );
 	useEffect( () => {
 		if ( shadowHost.current ) {
 			if ( ! shadowHost.current.shadowRoot ) {
@@ -29,4 +29,6 @@ export default function useShadowStyles(
 			}
 		}
 	}, [ shadowHost, inlineStyles, styleSheets ] );
+
+	return shadowHost;
 }
