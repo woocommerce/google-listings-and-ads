@@ -1,3 +1,8 @@
+/**
+ * Internal dependencies
+ */
+import './index.scss';
+
 window.jQuery( function ( $ ) {
 	'use strict';
 

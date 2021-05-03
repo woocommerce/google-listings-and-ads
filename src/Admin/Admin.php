@@ -137,6 +137,17 @@ class Admin implements Service, Registerable, Conditional {
 				return ( null !== $screen && 'product' === $screen->id );
 			}
 		) );
+		$assets[] = ( new AdminStyleAsset(
+			'gla-custom-inputs-css',
+			'js/build/custom-inputs',
+			[],
+			'',
+			function () {
+				$screen = get_current_screen();
+
+				return ( null !== $screen && 'product' === $screen->id );
+			}
+		) );
 
 		return $assets;
 	}

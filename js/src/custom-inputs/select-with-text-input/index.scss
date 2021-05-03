@@ -1,0 +1,27 @@
+.wc-metaboxes-wrapper {
+	.wc-metabox.woocommerce_variation {
+		.gla-metabox.wc-metabox {
+			overflow: hidden;
+			clear: both;
+			border: 1px solid $gray-300;
+			// using !important to override the WooCommerce style for meta boxes
+			margin: $grid-unit-20 0 !important;
+
+			.wc-metabox-content {
+				overflow: hidden;
+				padding: 0 1em;
+			}
+
+			h3 {
+				.handlediv {
+					margin-top: 0;
+					visibility: visible;
+				}
+			}
+		}
+
+		.gla-metabox.wc-metabox:last-of-type {
+			border-bottom: 1px solid $gray-300;
+		}
+	}
+}
