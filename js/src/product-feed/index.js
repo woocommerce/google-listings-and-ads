@@ -7,6 +7,7 @@ import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
 import ProductStatistics from './product-statistics';
 import ComingSoonNotice from './coming-soon-notice';
+import './index.scss';
 
 const ProductFeed = () => {
 	return (
@@ -14,9 +15,11 @@ const ProductFeed = () => {
 			<TabNav initialName="product-feed" />
 			<SubmissionSuccessGuide />
 			<ComingSoonNotice />
-			<ProductStatistics />
-			<IssuesTableCard />
-			<ProductFeedTableCard trackEventReportId="product-feed" />
+			<div className="gla-product-feed">
+				<ProductStatistics />
+				<IssuesTableCard />
+				<ProductFeedTableCard trackEventReportId="product-feed" />
+			</div>
 		</>
 	);
 };

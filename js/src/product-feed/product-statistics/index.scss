@@ -3,14 +3,18 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		margin-bottom: calc(var(--main-gap) / 3 * 2);
 	}
 
 	&__summaries {
-		margin-bottom: 24px;
+		.woocommerce-summary {
+			// override the default "margin: 16px 0" here.
+			margin: 0;
 
-		// don't display the delta in Summary component.
-		.woocommerce-summary__item-delta {
-			display: none;
+			.woocommerce-summary__item-delta {
+				// don't display the delta in Summary component.
+				display: none;
+			}
 		}
 	}
 }

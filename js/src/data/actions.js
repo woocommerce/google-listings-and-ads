@@ -679,3 +679,11 @@ export function* receiveMCProductStatistics( mcProductStatistics ) {
 		mcProductStatistics,
 	};
 }
+
+export function* receiveMCIssues( query, data ) {
+	return {
+		type: TYPES.RECEIVE_MC_ISSUES,
+		query,
+		data,
+	};
+}

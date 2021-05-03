@@ -61,9 +61,11 @@
 		"@wordpress/date": "^3.12.0",
 		"@wordpress/element": "^2.18.0",
 		"@wordpress/icons": "^2.9.1",
+		"@wordpress/url": "^2.22.2",
 		"classnames": "^2.3.1",
 		"gridicons": "^3.3.1",
 		"lodash": "^4.17.20",
+		"rememo": "^3.0.0",
 		"use-debounce": "^5.2.0"
 	},
 	"config": {
