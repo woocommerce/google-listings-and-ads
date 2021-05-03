@@ -32,10 +32,9 @@ const SetupAccounts = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	const isGoogleAccountDisabled = jetpack.active === 'no';
-	const isGoogleMCAccountDisabled = ! google || google.active === 'no';
-	const isContinueButtonDisabled =
-		! googleMCAccount || googleMCAccount.status === 'disconnected';
+	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
+	const isGoogleMCAccountDisabled = google?.active !== 'yes';
+	const isContinueButtonDisabled = googleMCAccount?.status !== 'connected';
 
 	return (
 		<StepContent>

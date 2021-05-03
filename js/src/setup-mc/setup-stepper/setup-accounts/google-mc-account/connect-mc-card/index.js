@@ -29,15 +29,15 @@ const ConnectMCCard = ( props ) => {
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { receiveMCAccount } = useAppDispatch();
+	const { invalidateResolution } = useAppDispatch();
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
 			return;
 		}
 
-		const data = await fetchMCAccounts();
-		receiveMCAccount( data );
+		await fetchMCAccounts();
+		invalidateResolution( 'getGoogleMCAccount', [] );
 	};
 
 	const handleSelectAnotherAccount = () => {

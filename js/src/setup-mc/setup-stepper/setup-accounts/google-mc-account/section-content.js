@@ -9,19 +9,17 @@ import SpinnerCard from '.~/components/spinner-card';
 
 const SectionContent = ( props ) => {
 	const { disabled } = props;
-	const { googleMCAccount } = useGoogleMCAccount();
+	const { hasFinishedResolution, googleMCAccount } = useGoogleMCAccount();
 
 	if ( disabled ) {
 		return <DisabledCard />;
 	}
 
-	if ( ! googleMCAccount ) {
+	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 
-	const { id } = googleMCAccount;
-
-	if ( id === 0 ) {
+	if ( googleMCAccount.id === 0 || googleMCAccount.status !== 'connected' ) {
 		return <NonConnected />;
 	}
 
