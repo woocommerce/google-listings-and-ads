@@ -10,6 +10,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppTableCard from '.~/components/app-table-card';
+import AppTableCardActionsDiv from '.~/components/app-table-card-actions-div';
 import { mockedListingsData, availableMetrics } from './mocked-products-data'; // Mocked API calls
 
 /**
@@ -172,9 +173,9 @@ const CompareProductsTableCard = ( props ) => {
 
 	return (
 		<AppTableCard
-			title={
-				<>
-					{ __( 'Products', 'google-listings-and-ads' ) }
+			title={ __( 'Products', 'google-listings-and-ads' ) }
+			actions={
+				<AppTableCardActionsDiv>
 					<Button
 						isSecondary
 						isSmall
@@ -187,7 +188,7 @@ const CompareProductsTableCard = ( props ) => {
 					>
 						{ __( 'Compare', 'google-listings-and-ads' ) }
 					</Button>
-				</>
+				</AppTableCardActionsDiv>
 			}
 			headers={ getHeaders( data ) }
 			rows={ getRows( data ) }
