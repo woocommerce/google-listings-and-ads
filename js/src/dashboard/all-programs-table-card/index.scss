@@ -1,18 +1,4 @@
 .gla-all-programs-table-card {
-	// fix to position the "Add paid campaign" button correctly
-	// after the recent CSS change in WooCommerce TableCard component
-	// which uses grid-template-columns: auto 1fr auto.
-	.components-card__header {
-		grid-template-columns: 1fr auto auto;
-	}
-
-	.gla-all-programs-table-card__header {
-		display: flex;
-		justify-content: space-between;
-		flex: 1;
-		align-items: center;
-	}
-
 	.program-actions {
 		display: flex;
 		justify-content: flex-end;

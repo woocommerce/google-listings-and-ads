@@ -98,13 +98,11 @@ const AllProgramsTableCard = ( props ) => {
 	return (
 		<AppTableCard
 			className="gla-all-programs-table-card"
-			title={
-				<div className="gla-all-programs-table-card__header">
-					{ __( 'Programs', 'google-listings-and-ads' ) }
-					<AddPaidCampaignButton
-						eventProps={ { context: 'programs-table-card' } }
-					/>
-				</div>
+			title={ __( 'Programs', 'google-listings-and-ads' ) }
+			actions={
+				<AddPaidCampaignButton
+					eventProps={ { context: 'programs-table-card' } }
+				/>
 			}
 			headers={ headers }
 			rows={ data.map( ( el ) => {
