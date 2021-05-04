@@ -17,18 +17,15 @@ import './index.scss';
  *
  * @param {Object} props Props to be passed to the container div.
  */
-const AppTableCardActionsContainer = ( props ) => {
+const AppTableCardActionsDiv = ( props ) => {
 	const { className, ...rest } = props;
 
 	return (
 		<div
-			className={ classnames(
-				'app-table-card-actions-container',
-				className
-			) }
+			className={ classnames( 'app-table-card-actions-div', className ) }
 			{ ...rest }
 		/>
 	);
 };
 
-export default AppTableCardActionsContainer;
+export default AppTableCardActionsDiv;
