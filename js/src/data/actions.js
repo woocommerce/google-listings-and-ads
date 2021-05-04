@@ -672,3 +672,18 @@ export function* receiveMCSetup( mcSetup ) {
 		mcSetup,
 	};
 }
+
+export function* receiveMCProductStatistics( mcProductStatistics ) {
+	return {
+		type: TYPES.RECEIVE_MC_PRODUCT_STATISTICS,
+		mcProductStatistics,
+	};
+}
+
+export function* receiveMCIssues( query, data ) {
+	return {
+		type: TYPES.RECEIVE_MC_ISSUES,
+		query,
+		data,
+	};
+}

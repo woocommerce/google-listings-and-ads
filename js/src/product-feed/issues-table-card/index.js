@@ -2,16 +2,30 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
+import {
+	Card,
+	CardHeader,
+	CardBody,
+	CardFooter,
+	__experimentalText as Text,
+} from '@wordpress/components';
+import {
+	EmptyTable,
+	Pagination,
+	Table,
+	TablePlaceholder,
+} from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import EditProductLink from '.~/components/edit-product-link';
 import HelpPopover from '.~/components/help-popover';
-import AppTableCard from '.~/components/app-table-card';
+import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 
 const headers = [
 	{
@@ -22,7 +36,7 @@ const headers = [
 	},
 	{
 		key: 'affectedProduct',
-		label: __( 'Affected Product', 'google-listings-and-ads' ),
+		label: __( 'Affected product', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
 	},
@@ -34,59 +48,121 @@ const headers = [
 	},
 	{
 		key: 'suggestedAction',
-		label: __( 'Suggested Action', 'google-listings-and-ads' ),
+		label: __( 'Suggested action', 'google-listings-and-ads' ),
 		isLeftAligned: true,
 		required: true,
 	},
 	{ key: 'action', label: '', required: true },
 ];
 
-// TODO: this rows should be data coming from backend API.
-// Also, i18n for the display labels too.
-const rows = [
-	[
-		{ display: <WarningIcon /> },
-		{ display: 'Pink marble tee' },
-		{ display: 'Missing tax value' },
-		{ display: 'Add a tax setting for your product' },
-		{
-			display: <EditProductLink productId={ 123 } />,
-		},
-	],
-];
+const PER_PAGE = 5;
 
 const IssuesTableCard = () => {
+	const [ page, setPage ] = useState( 1 );
+	const { hasFinishedResolution, data } = useAppSelectDispatch(
+		'getMCIssues',
+		{
+			page,
+			per_page: PER_PAGE,
+		}
+	);
+
+	const handlePageChange = ( newPage ) => {
+		setPage( newPage );
+	};
+
 	return (
 		<div className="gla-issues-table-card">
-			<AppTableCard
-				showMenu={ false }
-				title={
-					<>
-						{ __( 'Issues to Resolve', 'google-listings-and-ads' ) }
-						<HelpPopover id="issues-to-resolve">
-							{ createInterpolateElement(
-								__(
-									'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
-									'google-listings-and-ads'
-								),
-								{
-									link: (
-										<AppDocumentationLink
-											context="product-feed"
-											linkId="issues-to-resolve"
-											href="https://support.google.com/merchants/answer/6363310"
-										/>
-									),
-								}
+			<Card>
+				<CardHeader>
+					{ /* We use this Text component to make it similar to TableCard component. */ }
+					<Text variant="title.small" as="h2">
+						<>
+							{ __(
+								'Issues to resolve',
+								'google-listings-and-ads'
 							) }
-						</HelpPopover>
-					</>
-				}
-				headers={ headers }
-				rows={ rows }
-				totalRows={ rows.length }
-				rowsPerPage={ 10 }
-			/>
+							<HelpPopover id="issues-to-resolve">
+								{ createInterpolateElement(
+									__(
+										'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
+										'google-listings-and-ads'
+									),
+									{
+										link: (
+											<AppDocumentationLink
+												context="product-feed"
+												linkId="issues-to-resolve"
+												href="https://support.google.com/merchants/answer/6363310"
+											/>
+										),
+									}
+								) }
+							</HelpPopover>
+						</>
+					</Text>
+				</CardHeader>
+				<CardBody size={ null }>
+					{ ! hasFinishedResolution && (
+						<TablePlaceholder headers={ headers } />
+					) }
+					{ hasFinishedResolution && ! data && (
+						<EmptyTable headers={ headers } numberOfRows={ 1 }>
+							{ __(
+								'An error occurred while retrieving issues. Please try again later.',
+								'google-listings-and-ads'
+							) }
+						</EmptyTable>
+					) }
+					{ hasFinishedResolution && data && (
+						<Table
+							headers={ headers }
+							rows={ data.issues.map( ( el ) => {
+								return [
+									{
+										display:
+											el.type === 'account' ? (
+												<ErrorIcon />
+											) : (
+												<WarningIcon />
+											),
+									},
+									{ display: el.product },
+									{ display: el.issue },
+									{
+										display: (
+											<AppDocumentationLink
+												context="issues-to-resolve"
+												linkId={ el.code }
+												href={ el.action_url }
+											>
+												{ el.action }
+											</AppDocumentationLink>
+										),
+									},
+									{
+										display: el.type === 'product' && (
+											<EditProductLink
+												productId={ el.product_id }
+											/>
+										),
+									},
+								];
+							} ) }
+						/>
+					) }
+				</CardBody>
+				<CardFooter justify="center">
+					<Pagination
+						page={ page }
+						perPage={ PER_PAGE }
+						total={ data?.total }
+						showPagePicker={ false }
+						showPerPagePicker={ false }
+						onPageChange={ handlePageChange }
+					/>
+				</CardFooter>
+			</Card>
 		</div>
 	);
 };

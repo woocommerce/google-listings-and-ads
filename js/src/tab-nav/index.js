@@ -41,7 +41,7 @@ let tabs = [
 ];
 // Hide reports tab.
 if ( ! glaData.enableReports ) {
-	tabs = tabs.filter( ( { name } ) => name === 'reports' );
+	tabs = tabs.filter( ( { name } ) => name !== 'reports' );
 }
 
 const TabLink = ( { tabId, path, children, selected, ...rest } ) => {

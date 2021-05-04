@@ -24,12 +24,12 @@ class DebugLogger implements Service, Registerable, Conditional {
 	private $logger = null;
 
 	/**
-	 * Only needed if we enable it through a snippet.
+	 * Check if debug logging should be enabled.
 	 *
-	 * @return bool Whether the object is needed.
+	 * @return bool Whether the service is needed.
 	 */
 	public static function is_needed(): bool {
-		return apply_filters( 'gla_enable_debug_logging', false );
+		return apply_filters( 'gla_enable_debug_logging', true );
 	}
 
 	/**

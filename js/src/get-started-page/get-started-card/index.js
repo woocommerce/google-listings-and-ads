@@ -7,7 +7,6 @@ import {
 	FlexItem,
 	FlexBlock,
 	__experimentalText as Text,
-	Button,
 } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
@@ -17,16 +16,13 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import { glaData } from '.~/constants';
 import './index.scss';
+import AppButton from '.~/components/app-button';
 
 const GetStartedCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
-	const handleClick = () => {
-		recordSetupMCEvent( 'get_started' );
-	};
 
 	return (
 		<Card className="woocommerce-marketing-google-get-started-card">
@@ -44,14 +40,21 @@ const GetStartedCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Text>
-					<Button
+					<AppButton
 						isPrimary
 						disabled={ disableNextStep }
 						href={ getNewPath( {}, '/google/setup-mc' ) }
-						onClick={ handleClick }
+						eventName="gla_setup_mc"
+						eventProps={ {
+							target: 'set_up_free_listings',
+							trigger: 'click',
+						} }
 					>
-						{ __( 'Get started', 'google-listings-and-ads' ) }
-					</Button>
+						{ __(
+							'Set up free listings in Google',
+							'google-listings-and-ads'
+						) }
+					</AppButton>
 					<Text className="woocommerce-marketing-google-get-started-card__terms-notice">
 						{ createInterpolateElement(
 							__(

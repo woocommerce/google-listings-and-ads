@@ -14,9 +14,12 @@ const useJetpackAccount = () => {
 		const isResolving = select( STORE_KEY ).isResolving(
 			'getJetpackAccount'
 		);
+		const hasFinishedResolution = select( STORE_KEY ).hasFinishedResolution(
+			'getJetpackAccount'
+		);
 
-		return { jetpack, isResolving };
-	} );
+		return { jetpack, isResolving, hasFinishedResolution };
+	}, [] );
 };
 
 export default useJetpackAccount;
