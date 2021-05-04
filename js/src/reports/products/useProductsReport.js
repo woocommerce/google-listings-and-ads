@@ -3,19 +3,31 @@
  */
 import { useSelect } from '@wordpress/data';
 import { getQuery } from '@woocommerce/navigation';
-import { getCurrentDates } from '@woocommerce/date';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
-import { mapReportFieldsToPerformance } from '.~/data/utils';
+import {
+	getReportQuery,
+	getReportKey,
+	mapReportFieldsToPerformance,
+} from '.~/data/utils';
 
+const category = 'products';
 const emptyData = {
 	products: [],
 	intervals: [],
 	totals: {},
 };
+
+function getDependencyString( type, query, dateReference ) {
+	return getReportKey(
+		category,
+		type,
+		getReportQuery( category, type, query, dateReference )
+	);
+}
 
 /**
  * Get products report data by source of program type.
@@ -26,21 +38,16 @@ const emptyData = {
  */
 export default function useProductsReport( type ) {
 	const query = getQuery();
-	const currentDate = getCurrentDates( query );
 	const deps = [
-		type,
-		currentDate.primary.range,
-		currentDate.secondary.range,
-		query.products,
-		query.orderby,
-		query.order,
+		getDependencyString( type, query, 'primary' ),
+		getDependencyString( type, query, 'secondary' ),
 	];
 
 	return useSelect( ( select ) => {
 		const { getReport } = select( STORE_KEY );
 
-		const primary = getReport( 'products', type, query, 'primary' );
-		const secondary = getReport( 'products', type, query, 'secondary' );
+		const primary = getReport( category, type, query, 'primary' );
+		const secondary = getReport( category, type, query, 'secondary' );
 		const loaded = primary.loaded && secondary.loaded;
 
 		let data = emptyData;
