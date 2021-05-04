@@ -11,6 +11,7 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  */
 import EditProductLink from '.~/components/edit-product-link';
 import AppTableCard from '.~/components/app-table-card';
+import AppTableCardActionsDiv from '.~/components/app-table-card-actions-div';
 import './index.scss';
 
 /**
@@ -55,9 +56,9 @@ const ProductFeedTableCard = ( props ) => {
 	return (
 		<div className="gla-product-feed-table-card">
 			<AppTableCard
-				title={
-					<>
-						{ __( 'Product Feed', 'google-listings-and-ads' ) }
+				title={ __( 'Product Feed', 'google-listings-and-ads' ) }
+				actions={
+					<AppTableCardActionsDiv>
 						<Button
 							isSecondary
 							isSmall
@@ -73,7 +74,7 @@ const ProductFeedTableCard = ( props ) => {
 								'google-listings-and-ads'
 							) }
 						</Button>
-					</>
+					</AppTableCardActionsDiv>
 				}
 				headers={ [
 					{
