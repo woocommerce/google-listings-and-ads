@@ -64,8 +64,6 @@ const AllProgramsTableCard = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	// TODO: data from backend API.
-	// using the above query (e.g. orderby, order and page) as parameter.
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
