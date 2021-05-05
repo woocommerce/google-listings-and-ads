@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\WithValueOptionsInterface;
@@ -31,7 +32,8 @@ class AttributesForm extends Form {
 		$this->set_name( 'attributes' );
 
 		$this->add( $this->init_input( new Text(), new GTIN( null ) ), GTIN::get_id() )
-			 ->add( $this->init_input( new Text(), new MPN( null ) ), MPN::get_id() );
+			 ->add( $this->init_input( new Text(), new MPN( null ) ), MPN::get_id() )
+			 ->add( $this->init_input( new Select(), new Gender( null ) ), Gender::get_id() );
 
 		parent::__construct( $data );
 	}
@@ -50,7 +52,7 @@ class AttributesForm extends Form {
 
 		$value_options = [];
 		if ( $attribute instanceof WithValueOptionsInterface ) {
-			$value_options = $attribute->get_value_options();
+			$value_options = $attribute::get_value_options();
 		}
 		$value_options = apply_filters( "gla_product_attribute_value_options_{$attribute::get_id()}", $value_options );
 

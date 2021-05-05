@@ -30,8 +30,9 @@ class AttributeManager implements Service {
 	 */
 	public function __construct() {
 		$this->attributes = [
-			GTIN::get_id() => GTIN::class,
-			MPN::get_id()  => MPN::class,
+			GTIN::get_id()   => GTIN::class,
+			MPN::get_id()    => MPN::class,
+			Gender::get_id() => Gender::class,
 		];
 	}
 

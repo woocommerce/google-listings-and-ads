@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 
@@ -125,8 +126,9 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 */
 	protected function get_form( int $product_id ): AttributesForm {
 		$form_data = [
-			GTIN::get_id() => $this->attribute_manager->get_value( $product_id, GTIN::get_id() ),
-			MPN::get_id()  => $this->attribute_manager->get_value( $product_id, MPN::get_id() ),
+			GTIN::get_id()   => $this->attribute_manager->get_value( $product_id, GTIN::get_id() ),
+			MPN::get_id()    => $this->attribute_manager->get_value( $product_id, MPN::get_id() ),
+			Gender::get_id() => $this->attribute_manager->get_value( $product_id, Gender::get_id() ),
 		];
 
 		return new AttributesForm( $form_data );
@@ -151,6 +153,11 @@ class AttributesTab implements Service, Registerable, Conditional {
 		// mpn
 		if ( isset( $form_data[ MPN::get_id() ] ) ) {
 			$this->attribute_manager->update( $product_id, new MPN( $form_data[ MPN::get_id() ] ) );
+		}
+
+		// gender
+		if ( isset( $form_data[ Gender::get_id() ] ) ) {
+			$this->attribute_manager->update( $product_id, new Gender( $form_data[ Gender::get_id() ] ) );
 		}
 	}
 

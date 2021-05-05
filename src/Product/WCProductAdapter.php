@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
@@ -612,6 +613,12 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$mpn = $this->get_attribute_value( MPN::get_id() );
 		if ( ! empty( $mpn ) ) {
 			$this->setMpn( $mpn );
+		}
+
+		// Gender
+		$gender = $this->get_attribute_value( Gender::get_id() );
+		if ( ! empty( $gender ) ) {
+			$this->setGender( $gender );
 		}
 
 		return $this;
