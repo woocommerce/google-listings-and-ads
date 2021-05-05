@@ -30,7 +30,7 @@ const formatNumber = ( number ) => numberFormat( { precision: 0 }, number );
 const { formatAmount } = CurrencyFactory();
 
 const FreePerformanceCard = () => {
-	const { data, loading } = usePerformance( 'free' );
+	const { data, loaded } = usePerformance( 'free' );
 
 	return (
 		<SummaryCard
@@ -39,9 +39,7 @@ const FreePerformanceCard = () => {
 				'google-listings-and-ads'
 			) }
 		>
-			{ loading ? (
-				<AppSpinner />
-			) : (
+			{ loaded ? (
 				[
 					<SummaryNumber
 						key="1"
@@ -57,19 +55,19 @@ const FreePerformanceCard = () => {
 						delta={ null }
 					/>,
 				]
+			) : (
+				<AppSpinner />
 			) }
 		</SummaryCard>
 	);
 };
 
 const PaidPerformanceCard = () => {
-	const { data, loading } = usePerformance( 'paid' );
+	const { data, loaded } = usePerformance( 'paid' );
 
 	return (
 		<SummaryCard title={ paidPerformanceTitle }>
-			{ loading ? (
-				<AppSpinner />
-			) : (
+			{ loaded ? (
 				[
 					<SummaryNumber
 						key="1"
@@ -86,6 +84,8 @@ const PaidPerformanceCard = () => {
 						delta={ data.spend.delta }
 					/>,
 				]
+			) : (
+				<AppSpinner />
 			) }
 		</SummaryCard>
 	);
