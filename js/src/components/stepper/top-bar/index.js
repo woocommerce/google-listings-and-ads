@@ -40,7 +40,6 @@ const TopBar = ( {
 			</Link>
 			<span className="title">{ title }</span>
 			<div className="actions">
-				{ /* TODO: click and navigate to where? */ }
 				<AppIconButton
 					icon={ <GridiconHelpOutline /> }
 					text={ __( 'Help', 'google-listings-and-ads' ) }
