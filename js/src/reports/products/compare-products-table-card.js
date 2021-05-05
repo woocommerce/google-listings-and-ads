@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useMemo } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
 import {
 	getQuery,
@@ -14,36 +14,8 @@ import {
  * Internal dependencies
  */
 import AppTableCard from '.~/components/app-table-card';
-import { mockedListingsData, availableMetrics } from './mocked-products-data'; // Mocked API calls
+import { mockedListingsData } from './mocked-products-data'; // Mocked API calls
 
-/**
- * All posible metric headers.
- * Sorted in the order we wish to render them.
- *
- * @type {import('.~/components/app-table-card').Props.headers}
- */
-const metricsHeaders = [
-	{
-		key: 'totalSales',
-		label: __( 'Net Sales', 'google-listings-and-ads' ),
-		isSortable: true,
-	},
-	{
-		key: 'conversions',
-		label: __( 'Conversions', 'google-listings-and-ads' ),
-		isSortable: true,
-	},
-	{
-		key: 'clicks',
-		label: __( 'Clicks', 'google-listings-and-ads' ),
-		isSortable: true,
-	},
-	{
-		key: 'impressions',
-		label: __( 'Impressions', 'google-listings-and-ads' ),
-		isSortable: true,
-	},
-];
 const compareBy = 'products';
 const compareParam = 'filter';
 
@@ -53,20 +25,30 @@ const compareParam = 'filter';
  * @see AllProgramsTableCard
  * @see AppTableCard
  *
- * @param {Object} [props] Properties to be forwarded to AppTableCard.
+ * @param {Object} props React props.
+ * @param {[[string, string]]} props.metrics Metrics array of each metric tuple [key, label].
+ * @param {Object} [props.restProps] Properties to be forwarded to AppTableCard.
  */
-const CompareProductsTableCard = ( props ) => {
+const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	const query = getQuery();
 	const [ selectedRows, setSelectedRows ] = useState( () => {
 		return new Set( getIdsFromQuery( query[ compareBy ] ) );
 	} );
 
-	// Fetch the set of available metrics, from the API.
-	const availableMetricsSet = new Set( availableMetrics() );
-	// Use labels and the order of columns defined here, but remove unavailable ones.
-	const availableMetricHeaders = metricsHeaders.filter( ( metric ) => {
-		return availableMetricsSet.has( metric.key );
-	} );
+	const availableMetricHeaders = useMemo( () => {
+		return metrics.map( ( [ key, label ], idx ) => {
+			const header = {
+				key,
+				label,
+				isSortable: true,
+			};
+			if ( idx === 0 ) {
+				header.defaultSort = true;
+				header.defaultOrder = 'desc';
+			}
+			return header;
+		} );
+	}, [ metrics ] );
 
 	/**
 	 * Provides headers configuration, for AppTableCard:
@@ -92,7 +74,6 @@ const CompareProductsTableCard = ( props ) => {
 			label: __( 'Product title', 'google-listings-and-ads' ),
 			isLeftAligned: true,
 			required: true,
-			isSortable: true,
 		},
 		...availableMetricHeaders,
 	];
@@ -206,7 +187,7 @@ const CompareProductsTableCard = ( props ) => {
 			compareParam={ compareParam }
 			onQueryChange={ onQueryChange }
 			onSort={ onQueryChange( 'sort' ) }
-			{ ...props }
+			{ ...restProps }
 		/>
 	);
 };

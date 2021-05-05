@@ -80,7 +80,10 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				interactiveLegend="false"
 				showHeaderControls="false"
 			/>
-			<CompareProductsTableCard trackEventReportId={ reportId } />
+			<CompareProductsTableCard
+				trackEventReportId={ reportId }
+				metrics={ metrics }
+			/>
 		</>
 	);
 };
