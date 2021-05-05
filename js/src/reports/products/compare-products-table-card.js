@@ -195,6 +195,7 @@ const CompareProductsTableCard = ( props ) => {
 			rowsPerPage={ 10 }
 			query={ query }
 			onQueryChange={ onQueryChange }
+			onSort={ onQueryChange( 'sort' ) }
 			{ ...props }
 		/>
 	);
