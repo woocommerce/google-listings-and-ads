@@ -5,8 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -23,9 +21,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
+class ProductFeedQueryHelper implements Service {
 
-	use ContainerAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -49,16 +46,23 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	protected $meta_handler;
 
 	/**
+	 * @var ProductRepository
+	 */
+	protected $product_repository;
+
+	/**
 	 * ProductFeedQueryHelper constructor.
 	 *
 	 * @param wpdb               $wpdb
+	 * @param ProductRepository  $product_repository
 	 * @param ProductHelper      $product_helper
 	 * @param ProductMetaHandler $meta_handler
 	 */
-	public function __construct( wpdb $wpdb, ProductHelper $product_helper, ProductMetaHandler $meta_handler ) {
-		$this->wpdb           = $wpdb;
-		$this->product_helper = $product_helper;
-		$this->meta_handler   = $meta_handler;
+	public function __construct( wpdb $wpdb, ProductRepository $product_repository, ProductHelper $product_helper, ProductMetaHandler $meta_handler ) {
+		$this->wpdb               = $wpdb;
+		$this->product_repository = $product_repository;
+		$this->product_helper     = $product_helper;
+		$this->meta_handler       = $meta_handler;
 	}
 
 	/**
@@ -76,7 +80,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
-		foreach ( $this->container->get( ProductRepository::class )->find( $args, $limit, $offset ) as $product ) {
+		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id     = $product->get_id();
 			$errors = $this->meta_handler->get_errors( $id ) ?: [];
 
@@ -114,7 +118,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 		$args          = $this->prepare_query_args();
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
-		$ids = $this->container->get( ProductRepository::class )->find_ids( $args );
+		$ids = $this->product_repository->find_ids( $args );
 		remove_filter( 'posts_where', [ $this, 'title_filter' ] );
 
 		return count( $ids );
@@ -128,7 +132,7 @@ class ProductFeedQueryHelper implements Service, ContainerAwareInterface {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	protected function prepare_query_args(): array {
-		$product_types = $this->container->get( ProductRepository::class )->get_supported_product_types();
+		$product_types = $this->product_repository->get_supported_product_types();
 		$product_types = array_diff( $product_types, [ 'variation' ] );
 
 		$args = [

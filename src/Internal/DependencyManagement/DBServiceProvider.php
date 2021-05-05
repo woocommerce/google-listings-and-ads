@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 use wpdb;
@@ -75,7 +76,13 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_table_class( MerchantIssueTable::class );
 		$this->add_query_class( MerchantIssueQuery::class, MerchantIssueTable::class );
 
-		$this->share_with_tags( ProductFeedQueryHelper::class, wpdb::class, ProductHelper::class, ProductMetaHandler::class );
+		$this->share_with_tags(
+			ProductFeedQueryHelper::class,
+			wpdb::class,
+			ProductRepository::class,
+			ProductHelper::class,
+			ProductMetaHandler::class
+		);
 	}
 
 	/**
