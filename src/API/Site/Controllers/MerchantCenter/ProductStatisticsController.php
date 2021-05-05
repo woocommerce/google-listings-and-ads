@@ -14,11 +14,11 @@ use Exception;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ProductsController
+ * Class ProductStatisticsController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ProductsController extends BaseOptionsController {
+class ProductStatisticsController extends BaseOptionsController {
 
 	/**
 	 * The ProductStatistics object.
@@ -30,7 +30,7 @@ class ProductsController extends BaseOptionsController {
 
 
 	/**
-	 * ProductsController constructor.
+	 * ProductStatisticsController constructor.
 	 *
 	 * @param RESTServer        $server
 	 * @param ProductStatistics $product_statistics
