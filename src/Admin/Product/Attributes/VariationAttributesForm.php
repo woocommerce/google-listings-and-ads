@@ -4,6 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -12,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
  */
-class VariationAttributesForm extends Form {
+class VariationAttributesForm extends AbstractAttributesForm {
 	/**
 	 * VariationAttributesForm constructor.
 	 *
@@ -22,7 +25,12 @@ class VariationAttributesForm extends Form {
 	public function __construct( int $variation_index, array $data = [] ) {
 		$this->set_name( 'variation_attributes' );
 
-		$this->add( new AttributesForm(), (string) $variation_index );
+		$form = ( new Form() )
+			->add( $this->init_input( new Text(), new GTIN( null ) ), GTIN::get_id() )
+			->add( $this->init_input( new Text(), new MPN( null ) ), MPN::get_id() );
+
+		$this->add( $form, (string) $variation_index );
+
 		parent::__construct( $data );
 	}
 }
