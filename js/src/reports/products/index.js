@@ -8,6 +8,14 @@ import { SummaryList, Chart } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import {
+	REPORT_SOURCE_PARAM,
+	REPORT_SOURCE_FREE,
+	REPORT_SOURCE_PAID,
+	REPORT_SOURCE_DEFAULT,
+} from '.~/constants';
+import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
+import AppSpinner from '.~/components/app-spinner';
 import TabNav from '../../tab-nav';
 import ProductsReportFilters from './products-report-filters';
 import MetricNumber from '../metric-number';
@@ -20,39 +28,43 @@ import getMetricsData from './mocked-metrics-data'; // Mocked data
 /**
  * Available metrics and their human-readable labels.
  *
- * TODO consider DRYing/unifying with ProgramsReport~performanceMetrics
- *
  * @type {Array<Array<string>>}
  */
-const performanceMetrics = [
-	[ 'totalSales', __( 'Total Sales', 'google-listings-and-ads' ) ],
-	[ 'conversions', __( 'Conversions', 'google-listings-and-ads' ) ],
+const freeMetrics = [
 	[ 'clicks', __( 'Clicks', 'google-listings-and-ads' ) ],
 	[ 'impressions', __( 'Impressions', 'google-listings-and-ads' ) ],
 ];
+const paidMetrics = [
+	[ 'sales', __( 'Total Sales', 'google-listings-and-ads' ) ],
+	[ 'conversions', __( 'Conversions', 'google-listings-and-ads' ) ],
+	...freeMetrics,
+];
 
 /**
- * Renders a report page about products sold with GLA.
+ * Renders query filters and results of products report.
+ *
+ * @param {Object} props React props.
+ * @param {boolean} props.hasPaidSource Indicate whether display paid data source and relevant UIs.
  */
-const ProductsReport = () => {
+const ProductsReport = ( { hasPaidSource } ) => {
 	const reportId = 'reports-products';
-
+	const query = getQuery();
 	const metricsData = getMetricsData();
+
+	const type = hasPaidSource
+		? query[ REPORT_SOURCE_PARAM ] || REPORT_SOURCE_DEFAULT
+		: REPORT_SOURCE_FREE;
 
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
-	const availableMetrics = performanceMetrics.filter(
-		( [ key ] ) => metricsData[ key ]
-	);
+	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
 
 	return (
 		<>
-			<TabNav initialName="reports" />
-			<SubNav initialName="products" />
-			<ProductsReportFilters query={ getQuery() } report={ reportId } />
+			<ProductsReportFilters query={ query } report={ reportId } />
 			<SummaryList>
 				{ () =>
-					availableMetrics.map( ( [ key, label ] ) => (
+					metrics.map( ( [ key, label ] ) => (
 						<MetricNumber
 							key={ key }
 							label={ label }
@@ -73,4 +85,25 @@ const ProductsReport = () => {
 	);
 };
 
-export default ProductsReport;
+/**
+ * Renders a report page about products sold with GLA.
+ */
+const Products = () => {
+	const { loaded, data: campaigns } = useAdsCampaigns();
+	const hasPaidSource =
+		loaded && campaigns.some( ( { status } ) => status === 'enabled' );
+
+	return (
+		<>
+			<TabNav initialName="reports" />
+			<SubNav initialName="products" />
+			{ loaded ? (
+				<ProductsReport hasPaidSource={ hasPaidSource } />
+			) : (
+				<AppSpinner />
+			) }
+		</>
+	);
+};
+
+export default Products;
