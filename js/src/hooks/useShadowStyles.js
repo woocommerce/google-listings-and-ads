@@ -35,3 +35,13 @@ export default function useShadowStyles(
 
 	return shadowHost;
 }
+/* global CSSStyleSheet */
+export function css( strings, ...values ) {
+	let str = '';
+	strings.forEach( ( string, i ) => {
+		str += string + ( values[ i ] || '' );
+	} );
+	const sheet = new CSSStyleSheet();
+	sheet.replaceSync( `:host{${ str }}` );
+	return sheet;
+}
