@@ -2,17 +2,13 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
-import {
-	getReportQuery,
-	getReportKey,
-	mapReportFieldsToPerformance,
-} from '.~/data/utils';
+import { mapReportFieldsToPerformance } from '.~/data/utils';
+import useUrlQuery from '.~/hooks/useUrlQuery';
 
 const category = 'products';
 const emptyData = {
@@ -20,14 +16,6 @@ const emptyData = {
 	intervals: [],
 	totals: {},
 };
-
-function getDependencyString( type, query, dateReference ) {
-	return getReportKey(
-		category,
-		type,
-		getReportQuery( category, type, query, dateReference )
-	);
-}
 
 /**
  * Get products report data by source of program type.
@@ -37,34 +25,33 @@ function getDependencyString( type, query, dateReference ) {
  * @return {ProductsReportSchema} The fetched products report data and its status.
  */
 export default function useProductsReport( type ) {
-	const query = getQuery();
-	const deps = [
-		getDependencyString( type, query, 'primary' ),
-		getDependencyString( type, query, 'secondary' ),
-	];
+	const query = useUrlQuery();
 
-	return useSelect( ( select ) => {
-		const { getReport } = select( STORE_KEY );
+	return useSelect(
+		( select ) => {
+			const { getReport } = select( STORE_KEY );
 
-		const primary = getReport( category, type, query, 'primary' );
-		const secondary = getReport( category, type, query, 'secondary' );
-		const loaded = primary.loaded && secondary.loaded;
+			const primary = getReport( category, type, query, 'primary' );
+			const secondary = getReport( category, type, query, 'secondary' );
+			const loaded = primary.loaded && secondary.loaded;
 
-		let data = emptyData;
+			let data = emptyData;
 
-		if ( loaded ) {
-			data = {
-				products: primary.data.products || emptyData.products,
-				intervals: primary.data.intervals || emptyData.intervals,
-				totals: mapReportFieldsToPerformance(
-					primary.data.totals,
-					secondary.data.totals
-				),
-			};
-		}
+			if ( loaded ) {
+				data = {
+					products: primary.data.products || emptyData.products,
+					intervals: primary.data.intervals || emptyData.intervals,
+					totals: mapReportFieldsToPerformance(
+						primary.data.totals,
+						secondary.data.totals
+					),
+				};
+			}
 
-		return { data, loaded };
-	}, deps );
+			return { data, loaded };
+		},
+		[ type, query ]
+	);
 }
 
 /**
