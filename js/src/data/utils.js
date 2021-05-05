@@ -9,7 +9,7 @@ import { getCurrentDates } from '@woocommerce/date';
  */
 import round from '.~/utils/round';
 
-const freeFields = [ 'clicks', 'impressions' ];
+export const freeFields = [ 'clicks', 'impressions' ];
 const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
 
 /**

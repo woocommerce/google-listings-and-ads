@@ -61,7 +61,11 @@ const ProductsReport = ( { hasPaidSource } ) => {
 
 	return (
 		<>
-			<ProductsReportFilters query={ query } report={ reportId } />
+			<ProductsReportFilters
+				hasPaidSource={ hasPaidSource }
+				query={ query }
+				report={ reportId }
+			/>
 			<SummaryList>
 				{ () =>
 					metrics.map( ( [ key, label ] ) => (

@@ -32,11 +32,12 @@ const siteLocale = wcSettings.locale.siteLocale;
  * @see https://github.com/woocommerce/woocommerce-admin/blob/main/client/analytics/components/report-filters/index.js
  *
  * @param {Object} props
+ * @param {boolean} props.hasPaidSource Indicate whether display report data source selector.
  * @param {Object} props.query Search query object, to fetch filter values from.
  * @param {string} props.report Report ID used in tracking events.
  */
 const ProductsReportFilters = ( props ) => {
-	const { query, report } = props;
+	const { hasPaidSource, query, report } = props;
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
 	const { primary: primaryDate, secondary: secondaryDate } = getCurrentDates(
@@ -107,6 +108,7 @@ const ProductsReportFilters = ( props ) => {
 	const updatedQuery = {
 		...query,
 		'is-variable': isVariable,
+		hasPaidSource,
 	};
 
 	return (
