@@ -1,4 +1,8 @@
 .app-table-card {
+	.woocommerce-table__actions {
+		justify-content: flex-start;
+	}
+
 	.woocommerce-card__header {
 		border-bottom: 1px solid $gray-400;
 		grid-template-columns: auto 48px;  // the default is auto 24px which is too small and doesn't fit the ellipsis dropdown menu.

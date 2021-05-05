@@ -4,7 +4,11 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
-import { getQuery, onQueryChange } from '@woocommerce/navigation';
+import {
+	getQuery,
+	getIdsFromQuery,
+	onQueryChange,
+} from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -40,6 +44,8 @@ const metricsHeaders = [
 		isSortable: true,
 	},
 ];
+const compareBy = 'products';
+const compareParam = 'filter';
 
 /**
  * All products table, with compare feature.
@@ -50,8 +56,10 @@ const metricsHeaders = [
  * @param {Object} [props] Properties to be forwarded to AppTableCard.
  */
 const CompareProductsTableCard = ( props ) => {
-	const [ selectedRows, setSelectedRows ] = useState( new Set() );
 	const query = getQuery();
+	const [ selectedRows, setSelectedRows ] = useState( () => {
+		return new Set( getIdsFromQuery( query[ compareBy ] ) );
+	} );
 
 	// Fetch the set of available metrics, from the API.
 	const availableMetricsSet = new Set( availableMetrics() );
@@ -139,8 +147,10 @@ const CompareProductsTableCard = ( props ) => {
 	// Also, i18n for the title and numbers formatting.
 	const data = mockedListingsData();
 
-	// TODO: what happens upon clicking the "Compare" button.
-	const compareSelected = () => {};
+	const compareSelected = () => {
+		const ids = Array.from( selectedRows ).join( ',' );
+		onQueryChange( 'compare' )( compareBy, compareParam, ids );
+	};
 
 	/**
 	 * Selects or unselects all rows (~selectedRows).
@@ -172,28 +182,28 @@ const CompareProductsTableCard = ( props ) => {
 
 	return (
 		<AppTableCard
-			title={
-				<>
-					{ __( 'Products', 'google-listings-and-ads' ) }
-					<Button
-						isSecondary
-						isSmall
-						disabled={ selectedRows.size === 0 }
-						title={ __(
-							'Select one or more products to compare',
-							'google-listings-and-ads'
-						) }
-						onClick={ compareSelected }
-					>
-						{ __( 'Compare', 'google-listings-and-ads' ) }
-					</Button>
-				</>
-			}
+			title={ __( 'Products', 'google-listings-and-ads' ) }
+			actions={ [
+				<Button
+					key="compare"
+					isSecondary
+					disabled={ selectedRows.size <= 1 }
+					title={ __(
+						'Select one or more products to compare',
+						'google-listings-and-ads'
+					) }
+					onClick={ compareSelected }
+				>
+					{ __( 'Compare', 'google-listings-and-ads' ) }
+				</Button>,
+			] }
 			headers={ getHeaders( data ) }
 			rows={ getRows( data ) }
 			totalRows={ data.length }
 			rowsPerPage={ 10 }
 			query={ query }
+			compareBy={ compareBy }
+			compareParam={ compareParam }
 			onQueryChange={ onQueryChange }
 			onSort={ onQueryChange( 'sort' ) }
 			{ ...props }
