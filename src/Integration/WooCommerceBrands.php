@@ -30,7 +30,7 @@ class WooCommerceBrands implements IntegrationInterface {
 	 *
 	 * @param WP $wp
 	 */
-	protected function __construct( WP $wp ) {
+	public function __construct( WP $wp ) {
 		$this->wp = $wp;
 	}
 
