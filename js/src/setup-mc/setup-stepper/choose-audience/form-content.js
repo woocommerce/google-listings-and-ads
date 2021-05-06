@@ -62,11 +62,10 @@ const FormContent = ( props ) => {
 									),
 									{
 										link: (
-											// TODO: check URL and track event is correct.
 											<AppDocumentationLink
 												context="setup-mc-audience"
 												linkId="site-language"
-												href="https://support.google.com/merchants/answer/160491"
+												href="https://support.google.com/merchants/answer/160637"
 											/>
 										),
 									}

@@ -33,11 +33,10 @@ const TaxRate = ( props ) => {
 						) }
 					</p>
 					<p>
-						{ /* TODO: Link to read more on shipping rate. */ }
 						<AppDocumentationLink
 							context="setup-mc-tax-rate"
 							linkId="tax-rate-read-more"
-							href="https://docs.woocommerce.com/"
+							href="https://support.google.com/merchants/answer/160162"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>

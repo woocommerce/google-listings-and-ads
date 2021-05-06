@@ -38,7 +38,7 @@ export default function () {
 			label: 'Conversions',
 			missingFreeListingsData,
 		},
-		totalSales: {
+		sales: {
 			value: '$10,802.93',
 			delta: 5.35,
 			label: 'Net Sales',
