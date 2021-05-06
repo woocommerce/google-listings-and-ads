@@ -1,4 +1,10 @@
 .gla-all-programs-table-card {
+	.components-card__header {
+		.woocommerce-table__actions {
+			justify-content: flex-end;
+		}
+	}
+
 	.program-actions {
 		display: flex;
 		justify-content: flex-end;
