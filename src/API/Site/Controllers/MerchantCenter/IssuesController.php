@@ -41,9 +41,8 @@ class IssuesController extends BaseOptionsController {
 	 * Register rest routes with WordPress.
 	 */
 	public function register_routes(): void {
-		$types = implode( '|', $this->merchant_statuses->get_issue_types() );
 		$this->register_route(
-			'mc/issues(/(?P<type_filter>(' . $types . ')))?',
+			'mc/issues(/(?P<type_filter>[a-z]+))?',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,

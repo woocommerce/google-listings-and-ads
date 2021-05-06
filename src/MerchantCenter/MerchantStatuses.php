@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -20,6 +21,15 @@ use DateTime;
 
 /**
  * Class MerchantStatuses
+ *
+ * ContainerAware used to retrieve
+ * - Merchant
+ * - MerchantIssueQuery
+ * - MerchantIssueTable
+ * - TransientInterface
+ * - OptionInterface
+ * - ProductHelper
+ * - ProductRepository
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
@@ -39,16 +49,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public const TYPE_PRODUCT = 'product';
 
 	/**
-	 * @var Merchant $merchant
-	 */
-	protected $merchant;
-
-	/**
-	 * @var MerchantIssueQuery $issue_query
-	 */
-	protected $issue_query;
-
-	/**
 	 * @var DateTime $current_time For cache age operations.
 	 */
 	protected $current_time;
@@ -65,13 +65,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	/**
 	 * MerchantStatuses constructor.
-	 *
-	 * @param Merchant           $merchant
-	 * @param MerchantIssueQuery $issue_query
 	 */
-	public function __construct( Merchant $merchant, MerchantIssueQuery $issue_query ) {
-		$this->merchant     = $merchant;
-		$this->issue_query  = $issue_query;
+	public function __construct() {
 		$this->current_time = new DateTime();
 	}
 
@@ -116,30 +111,36 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @param int         $per_page The number of issues to return (0 for no limit).
 	 * @param int         $page The page to start on (1-indexed).
 	 *
-	 * @return array|null
+	 * @return array The requested issues and the total count of issues.
+	 * @throws InvalidValue If the type filter is invalid.
 	 */
 	protected function fetch_issue_data( string $type = null, int $per_page = 0, int $page = 1 ): array {
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+
 		// Ensure account issues are shown first.
-		$this->issue_query->set_order( 'product_id' );
-		$this->issue_query->set_order( 'issue' );
+		$issue_query->set_order( 'product_id' );
+		$issue_query->set_order( 'issue' );
 
 		// Filter by type.
-		if ( $this->is_valid_issue_type( $type ) ) {
-			$this->issue_query->where(
+		if ( in_array( $type, $this->get_valid_issue_types(), true ) ) {
+			$issue_query->where(
 				'product_id',
 				0,
 				self::TYPE_ACCOUNT === $type ? '=' : '>'
 			);
+		} elseif ( null !== $type ) {
+			throw InvalidValue::not_in_allowed_list( 'type filter', $this->get_valid_issue_types() );
 		}
 
 		// Result pagination.
 		if ( $per_page > 0 ) {
-			$this->issue_query->set_limit( $per_page );
-			$this->issue_query->set_offset( $per_page * ( $page - 1 ) );
+			$issue_query->set_limit( $per_page );
+			$issue_query->set_offset( $per_page * ( $page - 1 ) );
 		}
 
 		$issues = [];
-		foreach ( $this->issue_query->get_results() as $row ) {
+		foreach ( $issue_query->get_results() as $row ) {
 			$issue = [
 				'type'       => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
 				'product_id' => intval( $row['product_id'] ),
@@ -159,7 +160,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		return [
 			'results' => array_values( $issues ),
-			'count'   => $this->issue_query->get_count(),
+			'count'   => $issue_query->get_count(),
 		];
 	}
 
@@ -187,7 +188,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->product_statistics = [];
 		$page_token               = null;
 		do {
-			$response = $this->merchant->get_productstatuses( $page_token );
+			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
 			$statuses = $response->getResources();
 			$this->refresh_product_issues( $statuses );
 			$this->tabulate_statistics( $statuses );
@@ -272,7 +273,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$product_issues
 		);
 
-		$this->issue_query->update_or_insert( array_values( $product_issues ) );
+		$this->container->get( MerchantIssueQuery::class )->update_or_insert( array_values( $product_issues ) );
 	}
 
 	/**
@@ -291,7 +292,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			$status = $this->get_product_status( $product );
+			$status = $this->get_product_shopping_status( $product );
 			if ( ! is_null( $status ) ) {
 				$this->product_statistics[ $status ] = 1 + ( $this->product_statistics[ $status ] ?? 0 );
 			}
@@ -337,7 +338,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	private function refresh_account_issues(): void {
 		$account_issues = [];
-		foreach ( $this->merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+		foreach ( $this->container->get( Merchant::class )->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [
 				'product_id' => 0,
 				'product'    => __( 'All products', 'google-listings-and-ads' ),
@@ -349,57 +350,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			];
 		}
 
-		$this->issue_query->update_or_insert( $account_issues );
+		$this->container->get( MerchantIssueQuery::class )->update_or_insert( $account_issues );
 	}
 
-	/**
-	 * Return the current product status in the Google Merchant Center.
-	 * Active, Pending, Disapproved, Expiring.
-	 *
-	 * @param MC_Product_Status $product_status
-	 *
-	 * @return string|null
-	 */
-	protected function get_product_status( MC_Product_Status $product_status ): ?string {
-		foreach ( $product_status->getDestinationStatuses() as $d ) {
-			if ( $d->getDestination() === 'Shopping' ) {
-				return $d->getStatus();
-			}
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * Allows a hook to modify the statistics lifetime.
-	 *
-	 * @return int
-	 */
-	private function get_status_lifetime(): int {
-		return apply_filters( 'woocommerce_gla_mc_status_lifetime', self::STATUS_LIFETIME );
-	}
-
-	/**
-	 * Get valid issue types.
-	 *
-	 * @return string[] The valid issue types.
-	 */
-	public function get_issue_types(): array {
-		return [
-			self::TYPE_ACCOUNT,
-			self::TYPE_PRODUCT,
-		];
-	}
-
-	/**
-	 * @param string|null $type
-	 *
-	 * @return bool
-	 */
-	public function is_valid_issue_type( ?string $type ): bool {
-		return in_array( $type, $this->get_issue_types(), true );
-	}
 
 	/**
 	 * Delete the cached statistics and issues.
@@ -407,5 +360,43 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
+	}
+
+	/**
+	 * Return the product's shopping status in the Google Merchant Center.
+	 * Active, Pending, Disapproved, Expiring.
+	 *
+	 * @param MC_Product_Status $product_status
+	 *
+	 * @return string|null
+	 */
+	protected function get_product_shopping_status( MC_Product_Status $product_status ): ?string {
+		foreach ( $product_status->getDestinationStatuses() as $d ) {
+			if ( $d->getDestination() === 'Shopping' ) {
+				return $d->getStatus();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Allows a hook to modify the statistics lifetime.
+	 *
+	 * @return int
+	 */
+	protected function get_status_lifetime(): int {
+		return apply_filters( 'woocommerce_gla_mc_status_lifetime', self::STATUS_LIFETIME );
+	}
+
+	/**
+	 * Valid issues types for issue type filter.
+	 *
+	 * @return string[]
+	 */
+	protected function get_valid_issue_types(): array {
+		return [
+			self::TYPE_ACCOUNT,
+			self::TYPE_PRODUCT,
+		];
 	}
 }
