@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use WC_Product;
 use WC_Product_Variation;
+use WP_Term;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -87,12 +88,32 @@ class WooCommerceBrands implements IntegrationInterface {
 			$product_id = $product instanceof WC_Product_Variation ? $product->get_parent_id() : $product->get_id();
 
 			$terms = $this->wp->get_the_terms( $product_id, 'product_brand' );
-			if ( ! $this->wp->is_wp_error( $terms ) && ! empty( $terms[0] ) && ! empty( $terms[0]->name ) ) {
-				// set the first selected brand as primary brand
-				$value = $terms[0]->name;
+			if ( ! $this->wp->is_wp_error( $terms ) ) {
+				return $this->get_brand_from_terms( $terms );
 			}
 		}
 
-		return ! empty( $value ) ? $value : null;
+		return null;
+	}
+
+	/**
+	 * Returns the brand from the given taxonomy terms.
+	 *
+	 * If multiple, it returns the first selected brand as primary brand
+	 *
+	 * @param WP_Term[] $terms
+	 *
+	 * @return string
+	 */
+	protected function get_brand_from_terms( array $terms ): string {
+		$brands = [];
+		foreach ( $terms as $term ) {
+			$brands[] = $term->name;
+			if ( empty( $term->parent ) ) {
+				return $term->name;
+			}
+		}
+
+		return $brands[0];
 	}
 }
