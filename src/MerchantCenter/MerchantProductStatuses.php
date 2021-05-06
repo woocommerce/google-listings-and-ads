@@ -212,6 +212,7 @@ class MerchantProductStatuses implements Service, ContainerAwareInterface {
 			}
 		}
 
+		// Alphabetize all product/issue country lists.
 		array_walk(
 			$this->product_issue_countries,
 			function( &$countries ) {

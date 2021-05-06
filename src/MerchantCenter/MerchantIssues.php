@@ -90,7 +90,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	 */
 	public function get( string $type = null, int $per_page = 0, int $page = 1 ): array {
 		if ( null === $this->transients->get( TransientsInterface::MC_ISSUES_CREATED_AT ) ) {
-			$this->refresh_cache();
+			$this->refresh_issue_data();
 		}
 		return $this->fetch_issue_data( $type, $per_page, $page );
 	}
@@ -151,11 +151,11 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Recalculate the account issues and update the DB transient.
+	 * Retrieve the account and product issues and update the DB transient.
 	 *
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	protected function refresh_cache(): void {
+	protected function refresh_issue_data(): void {
 		// Save a request if no MC account connected.
 		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
