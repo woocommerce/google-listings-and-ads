@@ -36,18 +36,15 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	} );
 
 	const availableMetricHeaders = useMemo( () => {
-		return metrics.map( ( [ key, label ], idx ) => {
-			const header = {
-				key,
-				label,
-				isSortable: true,
-			};
-			if ( idx === 0 ) {
-				header.defaultSort = true;
-				header.defaultOrder = 'desc';
-			}
-			return header;
-		} );
+		const headers = metrics.map( ( [ key, label ] ) => ( {
+			key,
+			label,
+			isSortable: true,
+		} ) );
+		headers[ 0 ].defaultSort = true;
+		headers[ 0 ].defaultOrder = 'desc';
+
+		return headers;
 	}, [ metrics ] );
 
 	/**

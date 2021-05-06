@@ -95,7 +95,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 /**
  * Renders a report page about products sold with GLA.
  */
-const Products = () => {
+const ProductsReportPage = () => {
 	const { loaded, data: campaigns } = useAdsCampaigns();
 	const hasPaidSource =
 		loaded && campaigns.some( ( { status } ) => status === 'enabled' );
