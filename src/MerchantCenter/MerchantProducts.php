@@ -65,18 +65,43 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 		$page_token = null;
 		do {
 			$response = $this->merchant->get_productstatuses( $page_token );
-			$this->refresh_product_issues( $response->getResources() );
+			$statuses = $response->getResources();
+			$this->refresh_product_issues( $statuses );
+			$this->update_stats_counter( $statuses );
 
 			$page_token = $response->getNextPageToken();
 		} while ( $page_token );
 	}
 
 	/**
+	 * Add the status from the current page of products to the overall numbers.
+	 *
+	 * @param MC_Product_Status[] $mc_statuses
+	 */
+	protected function update_stats_counter( array $mc_statuses ): void {
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
+
+		foreach ( $mc_statuses as $product ) {
+
+			// Skip products not synced by this extension.
+			if ( ! $product_helper->get_wc_product_id( $product->getProductId() ) ) {
+				continue;
+			}
+
+			$status = $this->get_product_status( $product );
+			if ( ! is_null( $status ) ) {
+				$this->product_statuses[ $status ] = 1 + ( $this->product_statuses[ $status ] ?? 0 );
+			}
+		}
+	}
+
+	/**
 	 * Retrieve all product-level issues and store them in the database.
 	 *
-	 * @param MC_Product_Status[]|null $mc_statuses
+	 * @param MC_Product_Status[] $mc_statuses
 	 */
-	public function refresh_product_issues( ?array $mc_statuses ): void {
+	protected function refresh_product_issues( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
@@ -88,11 +113,6 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 			// Skip products not synced by this extension.
 			if ( ! $wc_product_id ) {
 				continue;
-			}
-
-			$status = $this->get_product_status( $product );
-			if ( ! is_null( $status ) ) {
-				$this->product_statuses[ $status ] = 1 + ( $this->product_statuses[ $status ] ?? 0 );
 			}
 
 			$product_issue_template = [
