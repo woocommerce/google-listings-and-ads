@@ -21,6 +21,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import HelpPopover from '.~/components/help-popover';
 import ErrorIcon from '.~/components/error-icon';
@@ -94,7 +95,7 @@ const IssuesTableCard = () => {
 	};
 
 	return (
-		<div className="gla-issues-table-card">
+		<AppTableCardDiv className="gla-issues-table-card">
 			<Card
 				className={ classnames( 'woocommerce-table', {
 					'has-actions': !! actions,
@@ -171,7 +172,7 @@ const IssuesTableCard = () => {
 					/>
 				</CardFooter>
 			</Card>
-		</div>
+		</AppTableCardDiv>
 	);
 };
 

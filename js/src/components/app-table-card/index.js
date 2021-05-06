@@ -6,9 +6,9 @@ import { TableCard } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import AppTableCardDiv from '.~/components/app-table-card-div';
 import recordColumnToggleEvent from './recordColumnToggleEvent';
 import { recordTableSortEvent } from '.~/utils/recordEvent';
-import './index.scss';
 
 /**
  * Renders a TableCard component with additional styling,
@@ -56,7 +56,7 @@ const AppTableCard = ( props ) => {
 	}
 
 	return (
-		<div className="app-table-card">
+		<AppTableCardDiv>
 			<TableCard
 				{ ...rest }
 				onColumnsChange={ decorateHandlerWithTrackEvent(
@@ -68,7 +68,7 @@ const AppTableCard = ( props ) => {
 					props.onSort
 				) }
 			/>
-		</div>
+		</AppTableCardDiv>
 	);
 };
 
