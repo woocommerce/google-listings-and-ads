@@ -182,7 +182,6 @@ const CompareProgramsTableCard = ( props ) => {
 
 	return (
 		<AppTableCard
-			className="gla-all-programs-table-card"
 			title={ __( 'Programs', 'google-listings-and-ads' ) }
 			actions={
 				<Button
