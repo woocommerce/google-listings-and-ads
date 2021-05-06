@@ -24,9 +24,9 @@ class AttributesForm extends AbstractAttributesForm {
 	public function __construct( array $data = [] ) {
 		$this->set_name( 'attributes' );
 
-		$this->add( $this->init_input( new Text(), new Brand( null ) ), Brand::get_id() )
-			 ->add( $this->init_input( new Text(), new GTIN( null ) ), GTIN::get_id() )
-			 ->add( $this->init_input( new Text(), new MPN( null ) ), MPN::get_id() );
+		$this->add_attribute( Brand::class, Text::class )
+			 ->add_attribute( GTIN::class, Text::class )
+			 ->add_attribute( MPN::class, Text::class );
 
 		parent::__construct( $data );
 	}

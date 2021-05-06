@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\WithValueOptionsInterface;
 
@@ -18,6 +19,9 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
  */
 abstract class AbstractAttributesForm extends Form {
+
+	use ValidateInterface;
+
 	/**
 	 * @param InputInterface     $input
 	 * @param AttributeInterface $attribute
@@ -32,7 +36,7 @@ abstract class AbstractAttributesForm extends Form {
 
 		$value_options = [];
 		if ( $attribute instanceof WithValueOptionsInterface ) {
-			$value_options = $attribute->get_value_options();
+			$value_options = $attribute::get_value_options();
 		}
 		$value_options = apply_filters( "gla_product_attribute_value_options_{$attribute::get_id()}", $value_options );
 
@@ -48,5 +52,25 @@ abstract class AbstractAttributesForm extends Form {
 		}
 
 		return $input;
+	}
+
+
+	/**
+	 * Add an attribute to the form
+	 *
+	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 * @param string $input_type     An input class extending InputInterface
+	 *
+	 * @return AbstractAttributesForm
+	 */
+	protected function add_attribute( string $attribute_type, string $input_type ): AbstractAttributesForm {
+		$this->validate_interface( $attribute_type, AttributeInterface::class );
+		$this->validate_interface( $input_type, InputInterface::class );
+
+		$attribute_input = $this->init_input( new $input_type(), new $attribute_type() );
+		$attribute_id    = call_user_func( [ $attribute_type, 'get_id' ] );
+		$this->add( $attribute_input, $attribute_id );
+
+		return $this;
 	}
 }
