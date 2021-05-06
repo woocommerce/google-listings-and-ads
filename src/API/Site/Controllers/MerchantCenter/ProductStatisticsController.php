@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantProductStatuses;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -23,7 +23,7 @@ class ProductStatisticsController extends BaseOptionsController {
 	/**
 	 * The MerchantProducts object.
 	 *
-	 * @var MerchantProducts
+	 * @var MerchantProductStatuses
 	 */
 	protected $merchant_products;
 
@@ -33,9 +33,9 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * ProductStatisticsController constructor.
 	 *
 	 * @param RESTServer        $server
-	 * @param MerchantProducts $product_statistics
+	 * @param MerchantProductStatuses $product_statistics
 	 */
-	public function __construct( RESTServer $server, MerchantProducts $merchant_products ) {
+	public function __construct( RESTServer $server, MerchantProductStatuses $merchant_products ) {
 		parent::__construct( $server );
 		$this->merchant_products = $merchant_products;
 	}

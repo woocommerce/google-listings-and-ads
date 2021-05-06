@@ -18,11 +18,11 @@ use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use DateTime;
 
 /**
- * Class MerchantProducts
+ * Class MerchantProductStatuses
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */
-class MerchantProducts implements Service, ContainerAwareInterface {
+class MerchantProductStatuses implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
 
@@ -57,7 +57,7 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 	protected $product_statistics = [];
 
 	/**
-	 * MerchantProducts constructor.
+	 * MerchantProductStatuses constructor.
 	 *
 	 * @param Merchant           $merchant
 	 * @param MerchantIssueQuery $issue_query

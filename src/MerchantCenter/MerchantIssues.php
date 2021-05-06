@@ -162,7 +162,7 @@ class MerchantIssues implements Service, ContainerAwareInterface {
 		}
 
 		$this->refresh_account_issues();
-		$this->container->get( MerchantProducts::class )->refresh_stats_and_issues();
+		$this->container->get( MerchantProductStatuses::class )->refresh_stats_and_issues();
 
 		$delete_before = clone $this->current_time;
 		$delete_before->modify( '-' . $this->get_issues_lifetime() . ' seconds' );
