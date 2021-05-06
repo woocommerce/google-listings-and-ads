@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantIssues;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -21,28 +22,26 @@ defined( 'ABSPATH' ) || exit;
 class IssuesController extends BaseOptionsController {
 
 	/**
-	 * The MerchantIssues object.
-	 *
-	 * @var MerchantIssues
+	 * @var MerchantStatuses
 	 */
-	protected $mc_issues;
+	protected $merchant_statuses;
 
 	/**
 	 * IssuesController constructor.
 	 *
-	 * @param RESTServer     $server
-	 * @param MerchantIssues $mc_issues
+	 * @param RESTServer       $server
+	 * @param MerchantStatuses $merchant_statuses
 	 */
-	public function __construct( RESTServer $server, MerchantIssues $mc_issues ) {
+	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses ) {
 		parent::__construct( $server );
-		$this->mc_issues = $mc_issues;
+		$this->merchant_statuses = $merchant_statuses;
 	}
 
 	/**
 	 * Register rest routes with WordPress.
 	 */
 	public function register_routes(): void {
-		$types = implode( '|', $this->mc_issues->get_issue_types() );
+		$types = implode( '|', $this->merchant_statuses->get_issue_types() );
 		$this->register_route(
 			'mc/issues(/(?P<type_filter>(' . $types . ')))?',
 			[
@@ -69,7 +68,7 @@ class IssuesController extends BaseOptionsController {
 			$page        = max( 1, intval( $request['page'] ) );
 
 			try {
-				$issues = $this->mc_issues->get( $type_filter, $per_page, $page );
+				$issues = $this->merchant_statuses->get_issues( $type_filter, $per_page, $page );
 				return $this->prepare_item_for_response(
 					[
 						'issues' => $issues['results'],

@@ -172,7 +172,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
-		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
 		$this->container->get( MerchantIssues::class )->delete();
 
 		$this->container->get( ShippingRateTable::class )->truncate();

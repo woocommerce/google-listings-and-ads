@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantProductStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -23,21 +23,20 @@ class ProductStatisticsController extends BaseOptionsController {
 	/**
 	 * The MerchantProducts object.
 	 *
-	 * @var MerchantProductStatuses
+	 * @var MerchantStatuses
 	 */
-	protected $merchant_products;
-
+	protected $merchant_statuses;
 
 
 	/**
 	 * ProductStatisticsController constructor.
 	 *
-	 * @param RESTServer        $server
-	 * @param MerchantProductStatuses $product_statistics
+	 * @param RESTServer       $server
+	 * @param MerchantStatuses $merchant_statuses
 	 */
-	public function __construct( RESTServer $server, MerchantProductStatuses $merchant_products ) {
+	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses ) {
 		parent::__construct( $server );
-		$this->merchant_products = $merchant_products;
+		$this->merchant_statuses = $merchant_statuses;
 	}
 
 	/**
@@ -93,13 +92,14 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * Get the global product status statistics array.
 	 *
 	 * @param Request $request
-	 * @param bool    $refresh True to force a refresh of the product status statistics.
+	 * @param bool    $force_refresh True to force a refresh of the product status statistics.
+	 *
 	 * @return Response
 	 */
-	protected function get_product_status_stats( Request $request, bool $refresh = false ): Response {
+	protected function get_product_status_stats( Request $request, bool $force_refresh = false ): Response {
 		try {
 			return $this->prepare_item_for_response(
-				$this->merchant_products->get_statistics( $refresh ),
+				$this->merchant_statuses->get_product_statistics( $force_refresh ),
 				$request
 			);
 		} catch ( Exception $e ) {
