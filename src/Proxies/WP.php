@@ -5,7 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WP as WPCore;
+use WP_Error;
 use WP_Post;
+use WP_Term;
 use function dbDelta;
 use function get_locale;
 use function plugins_url;
@@ -86,5 +88,31 @@ class WP {
 	 */
 	public function get_edit_post_link( $id, string $context = 'display' ): string {
 		return get_edit_post_link( $id, $context );
+	}
+
+	/**
+	 * Retrieves the terms of the taxonomy that are attached to the post.
+	 *
+	 * @param int|WP_Post $post     Post ID or object.
+	 * @param string      $taxonomy Taxonomy name.
+	 *
+	 * @return WP_Term[]|false|WP_Error Array of WP_Term objects on success, false if there are no terms
+	 *                                  or the post does not exist, WP_Error on failure.
+	 */
+	public function get_the_terms( $post, string $taxonomy ) {
+		return get_the_terms( $post, $taxonomy );
+	}
+
+	/**
+	 * Checks whether the given variable is a WordPress Error.
+	 *
+	 * Returns whether `$thing` is an instance of the `WP_Error` class.
+	 *
+	 * @param mixed $thing The variable to check.
+	 *
+	 * @return bool Whether the variable is an instance of WP_Error.
+	 */
+	public function is_wp_error( $thing ): bool {
+		return is_wp_error( $thing );
 	}
 }
