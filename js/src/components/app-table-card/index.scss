@@ -1,26 +1,18 @@
 .app-table-card {
-	.woocommerce-table__actions {
-		justify-content: flex-start;
-	}
+	.components-card {
+		&__header {
 
-	.woocommerce-card__header {
-		border-bottom: 1px solid $gray-400;
-		grid-template-columns: auto 48px;  // the default is auto 24px which is too small and doesn't fit the ellipsis dropdown menu.
+			/**
+			 * The h2 already has this margin-right: 8px in TableCard component,
+			 * but in some pages it is automatically overridden by other rules.
+			 * We specify it again here to make sure it is always there for consistency.
+			 */
+			h2 {
+				margin-right: 8px;
+			}
 
-		.woocommerce-card__title-wrapper > .woocommerce-card__title {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			padding: 3px 0;
-			font-size: 0.9375rem;
-			font-weight: 600;
-		}
-	}
-
-	.woocommerce-card__body {
-		.woocommerce-table__table {
-			.components-base-control__field {
-				margin-bottom: 0;
+			.woocommerce-table__actions {
+				justify-content: flex-start;
 			}
 		}
 	}
