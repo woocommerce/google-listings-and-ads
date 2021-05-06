@@ -30,8 +30,8 @@ class AttributesForm extends Form {
 	public function __construct( array $data = [] ) {
 		$this->set_name( 'attributes' );
 
-		$this->add( $this->init_input( new Text(), new GTIN( null ) ), GTIN::get_id() )
-			 ->add( $this->init_input( new Text(), new MPN( null ) ), MPN::get_id() );
+		$this->add( $this->init_input( new Text(), new GTIN() ), GTIN::get_id() )
+			 ->add( $this->init_input( new Text(), new MPN() ), MPN::get_id() );
 
 		parent::__construct( $data );
 	}

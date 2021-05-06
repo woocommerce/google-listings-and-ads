@@ -22,7 +22,7 @@ abstract class AbstractAttribute implements AttributeInterface {
 	 *
 	 * @param mixed $value
 	 */
-	public function __construct( $value ) {
+	public function __construct( $value = null ) {
 		$this->value = $value;
 	}
 
