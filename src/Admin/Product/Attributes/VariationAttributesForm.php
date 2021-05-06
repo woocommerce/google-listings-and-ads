@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -12,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes
  */
-class VariationAttributesForm extends Form {
+class VariationAttributesForm extends AbstractAttributesForm {
 	/**
 	 * VariationAttributesForm constructor.
 	 *
