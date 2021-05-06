@@ -8,7 +8,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Exception;
 use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use DateTime;
 
@@ -20,6 +25,12 @@ use DateTime;
 class MerchantProducts implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
+
+	/**
+	 * The lifetime of the product feed status and issues data.
+	 */
+	public const STATUS_LIFETIME = HOUR_IN_SECONDS;
+
 	/**
 	 * @var Merchant $merchant
 	 */
@@ -43,7 +54,7 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 	/**
 	 * @var array Product statuses as reported by Merchant Center.
 	 */
-	protected $product_statuses = [];
+	protected $product_statistics = [];
 
 	/**
 	 * MerchantProducts constructor.
@@ -58,19 +69,79 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 	}
 
 	/**
+	 * Get the Product Statistics (updating if necessary).
+	 *
+	 * @param bool $force_refresh Force refresh of all product status data.
+	 *
+	 * @return array The product status statistics.
+	 * @throws Exception If the merchant center can't be polled for the statuses.
+	 */
+	public function get_statistics( bool $force_refresh = false ): array {
+		$this->product_statistics = $this->container->get( TransientsInterface::class )->get( Transients::MC_PRODUCT_STATISTICS, null );
+
+		if ( $force_refresh || is_null( $this->product_statistics ) ) {
+			$this->refresh_stats_and_issues();
+		}
+
+		return $this->product_statistics;
+	}
+
+
+	/**
 	 * Update Merchant Center product stats and issues, retrieving MC product
 	 * statuses page by page.
+	 *
+	 * @throws Exception If the merchant center isn't connected (can't be polled for the statuses).
 	 */
 	public function refresh_stats_and_issues(): void {
+		// Save a request if no MC account connected.
+		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
+			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
+		}
+
 		$page_token = null;
 		do {
 			$response = $this->merchant->get_productstatuses( $page_token );
 			$statuses = $response->getResources();
 			$this->refresh_product_issues( $statuses );
-			$this->update_stats_counter( $statuses );
+			$this->tabulate_statistics( $statuses );
 
 			$page_token = $response->getNextPageToken();
 		} while ( $page_token );
+
+		$this->save_product_statistics();
+	}
+
+	/**
+	 * Update the product status statistics transient.
+	 */
+	protected function save_product_statistics() {
+		$this->product_statistics = array_merge(
+			[
+				'active'      => 0,
+				'expiring'    => 0,
+				'pending'     => 0,
+				'disapproved' => 0,
+				'not_synced'  => 0,
+			],
+			$this->product_statistics
+		);
+
+		/** @var ProductRepository $product_repository */
+		$product_repository                     = $this->container->get( ProductRepository::class );
+		$this->product_statistics['not_synced'] = count( $product_repository->find_sync_pending_product_ids() );
+
+		$this->product_statistics = [
+			'timestamp'  => $this->current_time->getTimestamp(),
+			'statistics' => $this->product_statistics,
+		];
+
+		// Update the cached values
+		$this->container->get( TransientsInterface::class )->set(
+			Transients::MC_PRODUCT_STATISTICS,
+			$this->product_statistics,
+			$this->get_status_lifetime()
+		);
 	}
 
 	/**
@@ -78,7 +149,7 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 	 *
 	 * @param MC_Product_Status[] $mc_statuses
 	 */
-	protected function update_stats_counter( array $mc_statuses ): void {
+	protected function tabulate_statistics( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
@@ -91,7 +162,7 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 
 			$status = $this->get_product_status( $product );
 			if ( ! is_null( $status ) ) {
-				$this->product_statuses[ $status ] = 1 + ( $this->product_statuses[ $status ] ?? 0 );
+				$this->product_statistics[ $status ] = 1 + ( $this->product_statistics[ $status ] ?? 0 );
 			}
 		}
 	}
@@ -178,5 +249,16 @@ class MerchantProducts implements Service, ContainerAwareInterface {
 			}
 		}
 		return null;
+	}
+
+
+
+	/**
+	 * Allows a hook to modify the statistics lifetime.
+	 *
+	 * @return int
+	 */
+	private function get_status_lifetime(): int {
+		return apply_filters( 'woocommerce_gla_product_status_lifetime', self::STATUS_LIFETIME );
 	}
 }

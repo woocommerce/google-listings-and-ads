@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantProducts;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -21,11 +21,11 @@ defined( 'ABSPATH' ) || exit;
 class ProductStatisticsController extends BaseOptionsController {
 
 	/**
-	 * The ProductStatistics object.
+	 * The MerchantProducts object.
 	 *
-	 * @var ProductStatistics
+	 * @var MerchantProducts
 	 */
-	protected $product_statistics;
+	protected $merchant_products;
 
 
 
@@ -33,11 +33,11 @@ class ProductStatisticsController extends BaseOptionsController {
 	 * ProductStatisticsController constructor.
 	 *
 	 * @param RESTServer        $server
-	 * @param ProductStatistics $product_statistics
+	 * @param MerchantProducts $product_statistics
 	 */
-	public function __construct( RESTServer $server, ProductStatistics $product_statistics ) {
+	public function __construct( RESTServer $server, MerchantProducts $merchant_products ) {
 		parent::__construct( $server );
-		$this->product_statistics = $product_statistics;
+		$this->merchant_products = $merchant_products;
 	}
 
 	/**
@@ -99,7 +99,7 @@ class ProductStatisticsController extends BaseOptionsController {
 	protected function get_product_status_stats( Request $request, bool $refresh = false ): Response {
 		try {
 			return $this->prepare_item_for_response(
-				$refresh ? $this->product_statistics->recalculate() : $this->product_statistics->get(),
+				$this->merchant_products->get_statistics( $refresh ),
 				$request
 			);
 		} catch ( Exception $e ) {
