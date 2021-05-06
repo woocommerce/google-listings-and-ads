@@ -26,8 +26,8 @@ class VariationAttributesForm extends AbstractAttributesForm {
 		$this->set_name( 'variation_attributes' );
 
 		$form = ( new Form() )
-			->add( $this->init_input( new Text(), new GTIN( null ) ), GTIN::get_id() )
-			->add( $this->init_input( new Text(), new MPN( null ) ), MPN::get_id() );
+			->add( $this->init_input( new Text(), new GTIN() ), GTIN::get_id() )
+			->add( $this->init_input( new Text(), new MPN() ), MPN::get_id() );
 
 		$this->add( $form, (string) $variation_index );
 
