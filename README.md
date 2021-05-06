@@ -89,8 +89,3 @@ What is considered private?
 * Internal Automattic links. Default to summarizing the information instead. If you must it’s OK to use shorthand (e.g., 1234-wpcom) but please try to summarize.
 * References to filenames in proprietary codebases. E.g. or a reference to a private repository.
 * Images that show private user data… or any of the above.
-
-## Project Management
-
- - [Project Board](https://github.com/woocommerce/google-listings-and-ads/projects/1)
- - [Issue breakdown by integration area project board](https://github.com/woocommerce/google-listings-and-ads/projects/2)
