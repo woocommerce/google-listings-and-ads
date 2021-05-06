@@ -20,8 +20,6 @@ const SetupAdsTopBar = () => {
 
 	const handleHelpButtonClick = () => {
 		recordSetupAdsEvent( 'help' );
-
-		// TODO: navigate to where upon clicking help link?
 	};
 
 	return (

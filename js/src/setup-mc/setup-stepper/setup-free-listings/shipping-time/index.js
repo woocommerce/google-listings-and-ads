@@ -37,11 +37,10 @@ const ShippingTime = ( props ) => {
 						) }
 					</p>
 					<p>
-						{ /* TODO: Link to read more on shipping rate. */ }
 						<AppDocumentationLink
 							context="setup-mc-shipping-time"
 							linkId="shipping-time-read-more"
-							href="https://docs.woocommerce.com/"
+							href="https://support.google.com/merchants/answer/7409926"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>

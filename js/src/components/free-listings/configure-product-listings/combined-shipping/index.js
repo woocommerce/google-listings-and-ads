@@ -55,11 +55,10 @@ const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
 						) }
 					</p>
 					<p>
-						{ /* TODO: Link to read more on shipping rate. */ }
 						<AppDocumentationLink
 							context="setup-mc-shipping-rate"
 							linkId="shipping-rate-read-more"
-							href="https://docs.woocommerce.com/"
+							href="https://support.google.com/merchants/answer/7050921"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
