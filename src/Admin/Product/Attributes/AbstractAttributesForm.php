@@ -36,7 +36,7 @@ abstract class AbstractAttributesForm extends Form {
 
 		$value_options = [];
 		if ( $attribute instanceof WithValueOptionsInterface ) {
-			$value_options = $attribute->get_value_options();
+			$value_options = $attribute::get_value_options();
 		}
 		$value_options = apply_filters( "gla_product_attribute_value_options_{$attribute::get_id()}", $value_options );
 
