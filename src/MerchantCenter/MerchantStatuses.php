@@ -71,18 +71,17 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Get the Product Statistics (updating if necessary).
+	 * Get the Product Statistics (updating caches if necessary).
 	 *
 	 * @param bool $force_refresh Force refresh of all product status data.
 	 *
 	 * @return array The product status statistics.
-	 * @throws Exception If the merchant center can't be polled for the statuses.
+	 * @throws Exception If the Merchant Center can't be polled for the statuses.
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
 		return $this->product_statistics;
 	}
-
 
 	/**
 	 * Retrieve the Merchant Center issues and total count. Refresh if the cache issues have gone stale.
@@ -104,8 +103,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Fetch the cached issues from the database, after using the associated transient to determine whether they're
-	 * still valid or not.
+	 * Fetch the cached issues from the database.
 	 *
 	 * @param string|null $type To filter by issue type if desired.
 	 * @param int         $per_page The number of issues to return (0 for no limit).
@@ -164,13 +162,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		];
 	}
 
-
 	/**
-	 * Update stale DB transient for account status.
+	 * Update stale status-related data - account issues, product issues, products status stats.
 	 *
-	 * @param bool $force_refresh Force refresh of all product status data.
+	 * @param bool $force_refresh Force refresh of all status-related data.
 	 *
-	 * @throws Exception If the account state can't be retrieved from Google.
+	 * @throws Exception If no Merchant Center account is connected, or account status is unretrievable.
 	 */
 	protected function maybe_refresh_status_data( bool $force_refresh = false ): void {
 		// Only refresh if the current data has expired.
@@ -205,7 +202,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$delete_before = clone $this->current_time;
 		$delete_before->modify( '-' . $this->get_status_lifetime() . ' seconds' );
 		$this->container->get( MerchantIssueTable::class )->delete_stale( $delete_before );
-
 	}
 
 	/**
@@ -336,7 +332,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	private function refresh_account_issues(): void {
+	protected function refresh_account_issues(): void {
 		$account_issues = [];
 		foreach ( $this->container->get( Merchant::class )->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [

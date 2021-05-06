@@ -139,7 +139,7 @@ class Merchant implements OptionsAwareInterface {
 	 */
 	public function get_productstatuses( ?string $page_token ): MC_Product_Status_List_Response {
 		$merchant_id = $this->options->get_merchant_id();
-		$opt_params  = [ 'maxResults' => 200 ];
+		$opt_params  = [ 'maxResults' => 250 ];
 		if ( ! empty( $page_token ) ) {
 			$opt_params['pageToken'] = $page_token;
 		}
