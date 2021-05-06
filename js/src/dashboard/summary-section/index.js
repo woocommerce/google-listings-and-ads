@@ -9,7 +9,7 @@ import { numberFormat } from '@woocommerce/number';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
+import { glaData, REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
 import usePerformance from './usePerformance';
 import AppSpinner from '.~/components/app-spinner';
 import SummaryCard from './summary-card';
@@ -30,7 +30,7 @@ const formatNumber = ( number ) => numberFormat( { precision: 0 }, number );
 const { formatAmount } = CurrencyFactory();
 
 const FreePerformanceCard = () => {
-	const { data, loaded } = usePerformance( 'free' );
+	const { data, loaded } = usePerformance( REPORT_SOURCE_FREE );
 
 	return (
 		<SummaryCard
@@ -63,7 +63,7 @@ const FreePerformanceCard = () => {
 };
 
 const PaidPerformanceCard = () => {
-	const { data, loaded } = usePerformance( 'paid' );
+	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
 	return (
 		<SummaryCard title={ paidPerformanceTitle }>

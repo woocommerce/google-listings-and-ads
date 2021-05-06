@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
@@ -130,8 +131,8 @@ export function* getMCIssues( query ) {
 }
 
 const reportTypeMap = new Map( [
-	[ 'free', 'mc' ],
-	[ 'paid', 'ads' ],
+	[ REPORT_SOURCE_FREE, 'mc' ],
+	[ REPORT_SOURCE_PAID, 'ads' ],
 ] );
 
 export function* getReportByApiQuery( category, type, reportQuery ) {
