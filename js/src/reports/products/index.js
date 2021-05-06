@@ -113,4 +113,4 @@ const ProductsReportPage = () => {
 	);
 };
 
-export default Products;
+export default ProductsReportPage;
