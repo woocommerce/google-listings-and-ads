@@ -14,5 +14,5 @@ interface WithValueOptionsInterface {
 	/**
 	 * @return array
 	 */
-	public function get_value_options(): array;
+	public static function get_value_options(): array;
 }
