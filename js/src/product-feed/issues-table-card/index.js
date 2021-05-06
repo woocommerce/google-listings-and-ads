@@ -27,7 +27,6 @@ import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
-import AppTableCardActionsDiv from '.~/components/app-table-card-actions-div';
 import './index.scss';
 
 const headers = [
@@ -108,9 +107,7 @@ const IssuesTableCard = () => {
 					</Text>
 					{ /* This is also similar to TableCard component implementation. */ }
 					<div className="woocommerce-table__actions">
-						<AppTableCardActionsDiv>
-							{ actions }
-						</AppTableCardActionsDiv>
+						{ actions }
 					</div>
 				</CardHeader>
 				<CardBody size={ null }>

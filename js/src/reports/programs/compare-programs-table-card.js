@@ -10,7 +10,6 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AppTableCard from '.~/components/app-table-card';
-import AppTableCardActionsDiv from '.~/components/app-table-card-actions-div';
 import { mockedListingsData, availableMetrics } from './mocked-programs-data'; // Mocked API calls
 
 /**
@@ -186,20 +185,17 @@ const CompareProgramsTableCard = ( props ) => {
 			className="gla-all-programs-table-card"
 			title={ __( 'Programs', 'google-listings-and-ads' ) }
 			actions={
-				<AppTableCardActionsDiv>
-					<Button
-						isSecondary
-						isSmall
-						disabled={ selectedRows.size === 0 }
-						title={ __(
-							'Select one or more products to compare',
-							'google-listings-and-ads'
-						) }
-						onClick={ compareSelected }
-					>
-						{ __( 'Compare', 'google-listings-and-ads' ) }
-					</Button>
-				</AppTableCardActionsDiv>
+				<Button
+					isSecondary
+					disabled={ selectedRows.size === 0 }
+					title={ __(
+						'Select one or more products to compare',
+						'google-listings-and-ads'
+					) }
+					onClick={ compareSelected }
+				>
+					{ __( 'Compare', 'google-listings-and-ads' ) }
+				</Button>
 			}
 			headers={ getHeaders( data ) }
 			rows={ getRows( data ) }

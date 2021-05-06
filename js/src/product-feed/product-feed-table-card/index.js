@@ -11,7 +11,6 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
  */
 import EditProductLink from '.~/components/edit-product-link';
 import AppTableCard from '.~/components/app-table-card';
-import AppTableCardActionsDiv from '.~/components/app-table-card-actions-div';
 import './index.scss';
 
 /**
@@ -58,23 +57,20 @@ const ProductFeedTableCard = ( props ) => {
 			<AppTableCard
 				title={ __( 'Product Feed', 'google-listings-and-ads' ) }
 				actions={
-					<AppTableCardActionsDiv>
-						<Button
-							isSecondary
-							isSmall
-							disabled={ selectedRows.size === 0 }
-							title={ __(
-								'Select one or more products',
-								'google-listings-and-ads'
-							) }
-							onClick={ handleEditVisibilityClick }
-						>
-							{ __(
-								'Edit channel visibility',
-								'google-listings-and-ads'
-							) }
-						</Button>
-					</AppTableCardActionsDiv>
+					<Button
+						isSecondary
+						disabled={ selectedRows.size === 0 }
+						title={ __(
+							'Select one or more products',
+							'google-listings-and-ads'
+						) }
+						onClick={ handleEditVisibilityClick }
+					>
+						{ __(
+							'Edit channel visibility',
+							'google-listings-and-ads'
+						) }
+					</Button>
 				}
 				headers={ [
 					{
