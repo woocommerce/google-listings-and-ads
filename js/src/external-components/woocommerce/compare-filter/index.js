@@ -15,10 +15,10 @@ import {
 	CardBody,
 	CardFooter,
 	CardHeader,
+	__experimentalText as Text,
 } from '@wordpress/components';
 import { isEqual, isFunction } from 'lodash';
 import PropTypes from 'prop-types';
-import { Text } from '@woocommerce/experimental';
 import { getIdsFromQuery, updateQueryString } from '@woocommerce/navigation';
 
 // /**

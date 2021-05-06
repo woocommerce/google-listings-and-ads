@@ -51,7 +51,6 @@
 		"@woocommerce/components": "^5.1.2",
 		"@woocommerce/data": "^1.1.1",
 		"@woocommerce/date": "^2.1.0",
-		"@woocommerce/experimental": "^1.0.0",
 		"@woocommerce/navigation": "^5.2.0",
 		"@woocommerce/number": "^2.1.0",
 		"@woocommerce/tracks": "^1.0.0",
