@@ -31,6 +31,7 @@ const DEFAULT_STATE = {
 	mc_setup: null,
 	mc_product_statistics: null,
 	mc_issues: null,
+	mc_product_feed: null,
 	report: {},
 };
 
@@ -276,6 +277,30 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...data.issues
 			);
 			newState.mc_issues.total = data.total;
+
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_PRODUCT_FEED: {
+			const { query, data } = action;
+			const newState = {
+				...state,
+				mc_product_feed: {
+					...state.mc_product_feed,
+					products:
+						( state.mc_product_feed?.products && [
+							...state.mc_product_feed.products,
+						] ) ||
+						[],
+				},
+			};
+
+			newState.mc_product_feed.products.splice(
+				( query.page - 1 ) * query.per_page,
+				query.per_page,
+				...data.products
+			);
+			newState.mc_product_feed.total = data.total;
 
 			return newState;
 		}

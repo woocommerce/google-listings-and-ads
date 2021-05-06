@@ -32,6 +32,7 @@ import {
 	receiveReport,
 	receiveMCProductStatistics,
 	receiveMCIssues,
+	receiveMCProductFeed,
 } from './actions';
 
 export function* getShippingRates() {
@@ -124,6 +125,24 @@ export function* getMCIssues( query ) {
 			error,
 			__(
 				'There was an error loading issues to resolve.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getMCProductFeed( query ) {
+	try {
+		const response = yield apiFetch( {
+			path: addQueryArgs( `${ API_NAMESPACE }/mc/product-feed`, query ),
+		} );
+
+		yield receiveMCProductFeed( query, response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading product feed.',
 				'google-listings-and-ads'
 			)
 		);
