@@ -74,6 +74,14 @@ const ProductFeedTableCard = () => {
 		} );
 	};
 
+	const handleSort = ( orderby, order ) => {
+		setQuery( {
+			...query,
+			orderby,
+			order,
+		} );
+	};
+
 	const headers = [
 		{
 			key: 'select',
@@ -90,14 +98,14 @@ const ProductFeedTableCard = () => {
 			required: true,
 		},
 		{
-			key: 'productTitle',
+			key: 'title',
 			label: __( 'Product Title', 'google-listings-and-ads' ),
 			isLeftAligned: true,
 			required: true,
 			isSortable: true,
 		},
 		{
-			key: 'channelVisibility',
+			key: 'visible',
 			label: __( 'Channel Visibility', 'google-listings-and-ads' ),
 			isLeftAligned: true,
 			isSortable: true,
@@ -195,6 +203,8 @@ const ProductFeedTableCard = () => {
 									},
 								];
 							} ) }
+							query={ query }
+							onSort={ handleSort }
 						/>
 					) }
 				</CardBody>
