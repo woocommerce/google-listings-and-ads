@@ -87,6 +87,11 @@ class Proxy implements OptionsAwareInterface {
 				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
 			}
 
+			$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+			if ( ! wc_is_valid_url( $site_url ) ) {
+				throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
@@ -95,7 +100,7 @@ class Proxy implements OptionsAwareInterface {
 					'body' => json_encode(
 						[
 							'name'       => $this->new_account_name(),
-							'websiteUrl' => esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) ),
+							'websiteUrl' => $site_url,
 						]
 					),
 				]

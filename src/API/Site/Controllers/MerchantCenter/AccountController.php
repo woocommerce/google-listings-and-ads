@@ -434,6 +434,10 @@ class AccountController extends BaseOptionsController {
 	 */
 	private function verify_site(): void {
 		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+		if ( ! wc_is_valid_url( $site_url ) ) {
+			do_action( 'gla_site_verify_failure', [ 'step' => 'site-url' ] );
+			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
+		}
 
 		// Inform of previous verification.
 		if ( $this->account_state->is_site_verified() ) {
@@ -537,10 +541,14 @@ class AccountController extends BaseOptionsController {
 	 * @param int    $merchant_id      The Merchant Center account to update
 	 * @param string $site_website_url The new website URL
 	 *
-	 * @throws Exception If the Merchant Center account can't be retrieved.
+	 * @throws Exception If the Merchant Center account can't be retrieved or the URL is invalid.
 	 * @throws ExceptionWithResponseData If the account website URL doesn't match the given URL.
 	 */
 	private function maybe_add_merchant_center_website_url( int $merchant_id, string $site_website_url ): void {
+		if ( ! wc_is_valid_url( $site_website_url ) ) {
+			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
+		}
+
 		/** @var MC_Account $mc_account */
 		$mc_account = $this->merchant->get_account( $merchant_id );
 

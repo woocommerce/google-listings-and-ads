@@ -68,6 +68,10 @@ class SiteVerificationController extends BaseOptionsController {
 		return function() {
 			$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
+			if ( ! wc_is_valid_url( $site_url ) ) {
+				return $this->get_failure_status( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
+			}
+
 			// Inform of previous verification.
 			if ( $this->is_site_verified() ) {
 				return $this->get_success_status( __( 'Site already verified.', 'google-listings-and-ads' ) );
