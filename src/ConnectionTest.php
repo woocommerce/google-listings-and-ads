@@ -772,7 +772,7 @@ class ConnectionTest implements Service, Registerable {
 			add_filter(
 				'woocommerce_gla_site_url',
 				function( $url ) {
-					return $_GET['site_url'] ?? $url;
+					return isset( $_GET['site_url'] ) ? esc_url_raw( $_GET['site_url'] ) : $url;
 				}
 			);
 
@@ -810,7 +810,7 @@ class ConnectionTest implements Service, Registerable {
 			add_filter(
 				'woocommerce_gla_site_url',
 				function ( $url ) {
-					return $_GET['site_url'] ?? $url;
+					return isset( $_GET['site_url'] ) ? esc_url_raw( $_GET['site_url'] ) : $url;
 				}
 			);
 
