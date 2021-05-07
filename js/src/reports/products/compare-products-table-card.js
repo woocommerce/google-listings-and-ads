@@ -26,7 +26,7 @@ const compareParam = 'filter';
  * @see AppTableCard
  *
  * @param {Object} props React props.
- * @param {[[string, string]]} props.metrics Metrics array of each metric tuple [key, label].
+ * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {Object} [props.restProps] Properties to be forwarded to AppTableCard.
  */
 const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
@@ -36,9 +36,8 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	} );
 
 	const availableMetricHeaders = useMemo( () => {
-		const headers = metrics.map( ( [ key, label ] ) => ( {
-			key,
-			label,
+		const headers = metrics.map( ( metric ) => ( {
+			...metric,
 			isSortable: true,
 		} ) );
 		headers[ 0 ].defaultSort = true;
@@ -189,3 +188,7 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 };
 
 export default CompareProductsTableCard;
+
+/**
+ * @typedef {import("./index.js").Metric} Metric
+ */
