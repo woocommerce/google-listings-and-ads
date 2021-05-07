@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
-import { Chart } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -19,6 +18,7 @@ import AppSpinner from '.~/components/app-spinner';
 import TabNav from '../../tab-nav';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from './summary-section';
+import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 
 import chartData from './mocked-chart-data';
@@ -78,13 +78,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				report={ reportId }
 			/>
 			<SummarySection metrics={ metrics } />
-			<Chart
-				data={ chartData }
-				title="Conversions"
-				layout="time-comparison"
-				interactiveLegend="false"
-				showHeaderControls="false"
-			/>
+			<ChartSection chartData={ chartData } />
 			<CompareProductsTableCard
 				trackEventReportId={ reportId }
 				metrics={ metrics }
