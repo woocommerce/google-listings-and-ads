@@ -121,15 +121,15 @@ class AttributesTab implements Service, Registerable, Conditional {
 	/**
 	 * @param int $product_id
 	 *
-	 * @return AttributesForm
+	 * @return AttributesTabForm
 	 */
-	protected function get_form( int $product_id ): AttributesForm {
+	protected function get_form( int $product_id ): AttributesTabForm {
 		$form_data = [
 			GTIN::get_id() => $this->attribute_manager->get_value( $product_id, GTIN::get_id() ),
 			MPN::get_id()  => $this->attribute_manager->get_value( $product_id, MPN::get_id() ),
 		];
 
-		return new AttributesForm( $form_data );
+		return new AttributesTabForm( $form_data );
 	}
 
 	/**
