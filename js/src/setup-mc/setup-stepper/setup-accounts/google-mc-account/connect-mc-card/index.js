@@ -15,8 +15,8 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import BetaSwitchUrlCard from '../beta-switch-url-card';
-import BetaReclaimUrlCard from '../beta-reclaim-url-card';
+import SwitchUrlCard from '../switch-url-card';
+import ReclaimUrlCard from '../reclaim-url-card';
 
 const ConnectMCCard = ( props ) => {
 	const { onCreateNew = () => {} } = props;
@@ -46,10 +46,7 @@ const ConnectMCCard = ( props ) => {
 
 	if ( response && response.status === 409 ) {
 		return (
-			// TODO: Use the BetaSwitchUrlCard for beta testing purpose only.
-			// To switch back to SwitchUrlCard for production roll out.
-			// <SwitchUrlCard
-			<BetaSwitchUrlCard
+			<SwitchUrlCard
 				id={ error.id }
 				message={ error.message }
 				claimedUrl={ error.claimed_url }
@@ -60,10 +57,7 @@ const ConnectMCCard = ( props ) => {
 	}
 
 	if ( response && response.status === 403 ) {
-		// TODO: Use the BetaReclaimUrlCard for beta testing purpose only.
-		// To switch back to ReclaimUrlCard for production roll out.
-		// return <ReclaimUrlCard websiteUrl={ error.website_url } />;
-		return <BetaReclaimUrlCard websiteUrl={ error.website_url } />;
+		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
 	}
 
 	return (

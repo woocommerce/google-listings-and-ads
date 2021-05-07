@@ -10,7 +10,7 @@ import { useAppDispatch } from '.~/data';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import CreateAccountCard from './create-account-card';
 import CreatingCard from './creating-card';
-import BetaReclaimUrlCard from '../beta-reclaim-url-card';
+import ReclaimUrlCard from '../reclaim-url-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const CreateAccount = ( props ) => {
@@ -55,10 +55,7 @@ const CreateAccount = ( props ) => {
 	}
 
 	if ( response && response.status === 403 ) {
-		// TODO: Use the BetaReclaimUrlCard for beta testing purpose only.
-		// To switch back to ReclaimUrlCard for production roll out.
-		// return <ReclaimUrlCard websiteUrl={ error.website_url } />;
-		return <BetaReclaimUrlCard websiteUrl={ error.website_url } />;
+		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
 	}
 
 	return (
