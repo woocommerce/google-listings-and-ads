@@ -131,7 +131,7 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Retrieve the user's Merchant Center product statuses.
+	 * Retrieve a page of the user's Merchant Center product statuses.
 	 *
 	 * @param string|null $page_token
 	 *

@@ -26,10 +26,10 @@ use DateTime;
  * - Merchant
  * - MerchantIssueQuery
  * - MerchantIssueTable
- * - TransientInterface
  * - OptionInterface
  * - ProductHelper
  * - ProductRepository
+ * - TransientInterface
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
  */

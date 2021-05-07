@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantIssues;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;

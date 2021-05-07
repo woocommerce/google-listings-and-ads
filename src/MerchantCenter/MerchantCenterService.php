@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * ContainerAware used to access:
  * - MerchantAccountState
- * - MerchantIssues
+ * - MerchantStatuses
  * - ShippingRateTable
  * - ShippingTimeTable
  * - TransientsInterface
