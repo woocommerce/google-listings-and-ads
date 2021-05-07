@@ -18,7 +18,7 @@ import statusLabelMap from './statusLabelMap';
 const PER_PAGE = 10;
 
 /**
- * All programs table, with compare feature.
+ * Product Feed table.
  *
  * @see AppTableCard
  *
