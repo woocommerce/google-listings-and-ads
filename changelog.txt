@@ -1,5 +1,22 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 0.5.5 - 2021-05-07 =
+* Fix - Add a custom hook to get calculated data and its status for the Products Reporting page.
+* Fix - Add products reporting data source picker and connect all UI query interactions to page route.
+* Fix - Adjust report data interfaces and structures in the wp.data.
+* Fix - Clean up TODO comments.
+* Fix - Connect Programs filter to data source.
+* Fix - Display "Continue setup" button text in Get Started page.
+* Fix - Display "Issues to Resolve" in Product Feed.
+* Fix - Display product statistics in UI.
+* Fix - Don't enable Continue button when MC account is not connected.
+* Fix - Escape and sanitize site URL.
+* Fix - Fix table title and icon button spacing.
+* Fix - Product feed API endpoint.
+* Fix - Remove Beta Testing UI for production release.
+* Fix - Resolve `@woocommerce/experimental.Text` to suppress build warnings.
+* Fix - Specify `argsRef.current` as dependency in `useAppSelectDispatch`.
+
 = 0.5.4 - 2021-04-30 =
 * Fix - Add readme and assets for releasing to WordPress.org.
 * Fix - Additional testing flags.
