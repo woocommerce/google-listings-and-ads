@@ -27,15 +27,28 @@ import SubNav from '../sub-nav';
 /**
  * Available metrics and their human-readable labels.
  *
- * @type {Array<Array<string>>}
+ * @type {Array<Metric>}
  */
 const freeMetrics = [
-	[ 'clicks', __( 'Clicks', 'google-listings-and-ads' ) ],
-	[ 'impressions', __( 'Impressions', 'google-listings-and-ads' ) ],
+	{
+		key: 'clicks',
+		label: __( 'Clicks', 'google-listings-and-ads' ),
+	},
+	{
+		key: 'impressions',
+		label: __( 'Impressions', 'google-listings-and-ads' ),
+	},
 ];
 const paidMetrics = [
-	[ 'sales', __( 'Total Sales', 'google-listings-and-ads' ), true ],
-	[ 'conversions', __( 'Conversions', 'google-listings-and-ads' ) ],
+	{
+		key: 'sales',
+		label: __( 'Total Sales', 'google-listings-and-ads' ),
+		isCurrency: true,
+	},
+	{
+		key: 'conversions',
+		label: __( 'Conversions', 'google-listings-and-ads' ),
+	},
 	...freeMetrics,
 ];
 
@@ -102,3 +115,10 @@ const ProductsReportPage = () => {
 };
 
 export default ProductsReportPage;
+
+/**
+ * @typedef {Object} Metric Metric item structure for disaplying label and its currency type.
+ * @property {string} key Metric key.
+ * @property {string} label Metric label to display.
+ * @property {boolean} [isCurrency] Metric is a currency if true.
+ */

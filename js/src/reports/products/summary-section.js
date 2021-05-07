@@ -15,17 +15,17 @@ import getMetricsData from './mocked-metrics-data';
  * Renders a section composed with SummaryList and MetricNumber.
  *
  * @param {Object} props React props.
- * @param {[[string, string, boolean]]} props.metrics Metrics array of each metric tuple [key, label, isCurrency=false].
+ * @param {Array<Metric>} props.metrics Metrics to display.
  */
 export default function SummarySection( { metrics } ) {
 	const query = useUrlQuery();
 	const metricsData = getMetricsData();
-	const { orderby = metrics[ 0 ][ 0 ] } = query;
+	const { orderby = metrics[ 0 ].key } = query;
 
 	return (
 		<SummaryList>
 			{ () =>
-				metrics.map( ( [ key, label, isCurrency = false ] ) => {
+				metrics.map( ( { key, label, isCurrency = false } ) => {
 					const selected = orderby === key;
 					const href = getNewPath( { orderby: key } );
 					return (
@@ -43,3 +43,7 @@ export default function SummarySection( { metrics } ) {
 		</SummaryList>
 	);
 }
+
+/**
+ * @typedef {import("./index.js").Metric} Metric
+ */
