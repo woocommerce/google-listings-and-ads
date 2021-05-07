@@ -27,7 +27,6 @@ import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
-import AppSpinner from '.~/components/app-spinner';
 import statusLabelMap from './statusLabelMap';
 
 const PER_PAGE = 10;
@@ -48,18 +47,12 @@ const ProductFeedTableCard = () => {
 		query
 	);
 
-	if ( ! hasFinishedResolution ) {
-		return <AppSpinner />;
-	}
-
-	const { products } = data;
-
 	// TODO: what happens upon clicking the Edit Visibility button.
 	const handleEditVisibilityClick = () => {};
 
 	const handleSelectAllCheckboxChange = ( checked ) => {
 		if ( checked ) {
-			const ids = products.map( ( el ) => el.id );
+			const ids = data?.products.map( ( el ) => el.id );
 			setSelectedRows( new Set( [ ...ids ] ) );
 		} else {
 			setSelectedRows( new Set() );
@@ -86,7 +79,10 @@ const ProductFeedTableCard = () => {
 			key: 'select',
 			label: (
 				<CheckboxControl
-					checked={ selectedRows.size === products.length }
+					disabled={ ! data?.products }
+					checked={ data?.products.every( ( el ) =>
+						selectedRows.has( el.id )
+					) }
 					onChange={ handleSelectAllCheckboxChange }
 				/>
 			),
