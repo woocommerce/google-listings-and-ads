@@ -42,6 +42,11 @@ class AttributeManager implements Service {
 	public function update( int $product_id, AttributeInterface $attribute ) {
 		$this->validate_product_id( $product_id );
 
+		if ( null === $attribute->get_value() || '' === $attribute->get_value() ) {
+			$this->delete( $product_id, $attribute::get_id() );
+			return;
+		}
+
 		update_post_meta( $product_id, $this->prefix_meta_key( $attribute::get_id() ), $attribute->get_value() );
 	}
 
@@ -51,7 +56,7 @@ class AttributeManager implements Service {
 	 *
 	 * @return AttributeInterface|null
 	 */
-	public function get( int $product_id, string $attribute_id ) {
+	public function get( int $product_id, string $attribute_id ): ?AttributeInterface {
 		$this->validate_product_id( $product_id );
 		$this->validate_attribute_id( $attribute_id );
 
