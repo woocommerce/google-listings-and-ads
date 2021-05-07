@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useMemo } from '@wordpress/element';
 import { SummaryNumber } from '@woocommerce/components';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
 
@@ -10,6 +11,10 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
  */
 import './metric-number.scss';
 import AppTooltip from '.~/components/app-tooltip';
+import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
+import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
+
+const numberFormatSetting = { precision: 0 };
 
 /**
  * SummeryNumber annotated about missing data.
@@ -22,6 +27,8 @@ import AppTooltip from '.~/components/app-tooltip';
  * @param {string} props.label Metric label.
  * @param {string} [props.href] An internal link to the report focused on this metric.
  * @param {boolean} [props.selected] Whether show a highlight style on this metric.
+ * @param {boolean} [props.isCurrency=false] Display `data.value` and `data.prevValue` as price format if true.
+ *                                           Otherwise, display as number format.
  * @param {Object} props.data Data as get from API.
  * @param {number} props.data.value
  * @param {number} props.data.prevValue
@@ -34,8 +41,20 @@ const MetricNumber = ( {
 	label,
 	href,
 	selected,
+	isCurrency = false,
 	data: { value, prevValue, delta, missingFreeListingsData },
 } ) => {
+	const formatNumber = useCurrencyFormat( numberFormatSetting );
+	const { formatAmount } = useCurrencyFactory();
+	const valueProps = useMemo( () => {
+		const formatFn = isCurrency ? formatAmount : formatNumber;
+
+		return {
+			value: formatFn( value ),
+			prevValue: formatFn( prevValue ),
+		};
+	}, [ isCurrency, value, prevValue, formatNumber, formatAmount ] );
+
 	let markedLabel = label;
 
 	// Until ~Q4 2021, metrics for all programs, may lack data for free listings.
@@ -63,9 +82,8 @@ const MetricNumber = ( {
 			label={ markedLabel }
 			href={ href }
 			selected={ selected }
-			value={ value }
-			prevValue={ prevValue }
 			delta={ delta }
+			{ ...valueProps }
 		/>
 	);
 };

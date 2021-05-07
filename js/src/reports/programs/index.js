@@ -22,12 +22,12 @@ import metricsData from './mocked-metrics-data'; // Mocked data
  * @type {Map<string, string>}
  */
 const performanceMetrics = [
-	[ 'netSales', __( 'Net Sales', 'google-listings-and-ads' ) ],
+	[ 'netSales', __( 'Net Sales', 'google-listings-and-ads' ), true ],
 	[ 'itemsSold', __( 'Items Sold', 'google-listings-and-ads' ) ],
 	[ 'conversions', __( 'Conversions', 'google-listings-and-ads' ) ],
 	[ 'clicks', __( 'Clicks', 'google-listings-and-ads' ) ],
 	[ 'impressions', __( 'Impressions', 'google-listings-and-ads' ) ],
-	[ 'totalSpend', __( 'Total Spend', 'google-listings-and-ads' ) ],
+	[ 'totalSpend', __( 'Total Spend', 'google-listings-and-ads' ), true ],
 ];
 
 const ProgramsReport = () => {
@@ -103,13 +103,16 @@ const ProgramsReport = () => {
 			<div className="gla-reports__performance">
 				<SummaryList>
 					{ () =>
-						availableMetrics.map( ( [ key, label ] ) => (
-							<MetricNumber
-								key={ key }
-								label={ label }
-								data={ data[ key ] }
-							/>
-						) )
+						availableMetrics.map(
+							( [ key, label, isCurrency ] ) => (
+								<MetricNumber
+									key={ key }
+									label={ label }
+									isCurrency={ isCurrency }
+									data={ data[ key ] }
+								/>
+							)
+						)
 					}
 				</SummaryList>
 				<Chart
