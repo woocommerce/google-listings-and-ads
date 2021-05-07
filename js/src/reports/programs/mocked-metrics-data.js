@@ -15,36 +15,36 @@ export default function () {
 
 	const data = {
 		clicks: {
-			value: '14,135',
+			value: 14135,
 			delta: 0,
 			label: 'Clicks',
 		},
 		impressions: {
-			value: '383,512',
+			value: 383512,
 			delta: 1.28,
 			label: 'Impressions',
 		},
 		totalSpend: {
-			value: '$600.00',
+			value: 600,
 			delta: -1.97,
 			label: 'Total Spend',
 		},
 	};
 	const conditionalData = {
 		itemsSold: {
-			value: '6,928',
+			value: 6928,
 			delta: 0.35,
 			label: 'itemsSold',
 			missingFreeListingsData,
 		},
 		conversions: {
-			value: '4,102',
+			value: 4102,
 			delta: -2.21,
 			label: 'Conversions',
 			missingFreeListingsData,
 		},
 		netSales: {
-			value: '$10,802.93',
+			value: 10802.93,
 			delta: 5.35,
 			label: 'Net Sales',
 			missingFreeListingsData,

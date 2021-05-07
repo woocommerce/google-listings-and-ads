@@ -20,8 +20,11 @@ import AppTooltip from '.~/components/app-tooltip';
  *
  * @param {Object} props
  * @param {string} props.label Metric label.
+ * @param {string} [props.href] An internal link to the report focused on this metric.
+ * @param {boolean} [props.selected] Whether show a highlight style on this metric.
  * @param {Object} props.data Data as get from API.
- * @param {string} props.data.value
+ * @param {number} props.data.value
+ * @param {number} props.data.prevValue
  * @param {string} props.data.delta
  * @param {boolean} props.data.missingFreeListingsData Flag indicating whether the data miss entries from Free Listings.
  *
@@ -29,7 +32,9 @@ import AppTooltip from '.~/components/app-tooltip';
  */
 const MetricNumber = ( {
 	label,
-	data: { value, delta, missingFreeListingsData },
+	href,
+	selected,
+	data: { value, prevValue, delta, missingFreeListingsData },
 } ) => {
 	let markedLabel = label;
 
@@ -54,7 +59,14 @@ const MetricNumber = ( {
 		);
 	}
 	return (
-		<SummaryNumber label={ markedLabel } value={ value } delta={ delta } />
+		<SummaryNumber
+			label={ markedLabel }
+			href={ href }
+			selected={ selected }
+			value={ value }
+			prevValue={ prevValue }
+			delta={ delta }
+		/>
 	);
 };
 
