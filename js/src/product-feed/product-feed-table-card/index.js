@@ -202,7 +202,7 @@ const ProductFeedTableCard = () => {
 					<Pagination
 						page={ query.page }
 						perPage={ query.per_page }
-						total={ data?.total || '...' }
+						total={ data?.total }
 						showPagePicker={ true }
 						showPerPagePicker={ false }
 						onPageChange={ handlePageChange }
