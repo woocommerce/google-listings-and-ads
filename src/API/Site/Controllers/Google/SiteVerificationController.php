@@ -66,7 +66,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 */
 	protected function get_verify_endpoint_create_callback(): callable {
 		return function() {
-			$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
+			$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
 			// Inform of previous verification.
 			if ( $this->is_site_verified() ) {

@@ -395,7 +395,7 @@ class AccountController extends BaseOptionsController {
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
 					$data = [
 						'website_url' => $this->strip_url_protocol(
-							apply_filters( 'woocommerce_gla_site_url', site_url() )
+							esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) )
 						),
 					];
 
@@ -433,7 +433,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If any step of the site verification process fails.
 	 */
 	private function verify_site(): void {
-		$site_url = apply_filters( 'woocommerce_gla_site_url', site_url() );
+		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 
 		// Inform of previous verification.
 		if ( $this->account_state->is_site_verified() ) {
@@ -512,7 +512,8 @@ class AccountController extends BaseOptionsController {
 		}
 
 		// Make sure the existing account has the correct website URL (or fail).
-		$this->maybe_add_merchant_center_website_url( $account_id, apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+		$this->maybe_add_merchant_center_website_url( $account_id, $site_url );
 
 		// Maybe the existing account is sub-account!
 		$state                               = $this->account_state->get();

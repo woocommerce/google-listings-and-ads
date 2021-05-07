@@ -95,7 +95,7 @@ class Proxy implements OptionsAwareInterface {
 					'body' => json_encode(
 						[
 							'name'       => $this->new_account_name(),
-							'websiteUrl' => apply_filters( 'woocommerce_gla_site_url', site_url() ),
+							'websiteUrl' => esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) ),
 						]
 					),
 				]
