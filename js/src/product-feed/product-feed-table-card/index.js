@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
-import { getQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,6 +11,11 @@ import { getQuery, onQueryChange } from '@woocommerce/navigation';
 import EditProductLink from '.~/components/edit-product-link';
 import AppTableCard from '.~/components/app-table-card';
 import './index.scss';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import AppSpinner from '.~/components/app-spinner';
+import statusLabelMap from './statusLabelMap';
+
+const PER_PAGE = 10;
 
 /**
  * All programs table, with compare feature.
@@ -22,22 +26,29 @@ import './index.scss';
  */
 const ProductFeedTableCard = ( props ) => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
-	const query = getQuery();
+	const [ query, setQuery ] = useState( {
+		page: 1,
+		per_page: PER_PAGE,
+		orderby: 'title',
+		order: 'asc',
+	} );
+	const { hasFinishedResolution, data } = useAppSelectDispatch(
+		'getMCProductFeed',
+		query
+	);
 
-	// TODO: data should be coming from backend API,
-	// using the above query (e.g. orderby, order and page) as parameter.
-	// Also, i18n for the display labels too.
-	const data = [];
+	if ( ! hasFinishedResolution ) {
+		return <AppSpinner />;
+	}
 
-	// TODO: total should be coming from API response above.
-	const total = data.length;
+	const { products, total } = data;
 
 	// TODO: what happens upon clicking the Edit Visibility button.
 	const handleEditVisibilityClick = () => {};
 
 	const handleSelectAllCheckboxChange = ( checked ) => {
 		if ( checked ) {
-			const ids = data.map( ( el ) => el.id );
+			const ids = products.map( ( el ) => el.id );
 			setSelectedRows( new Set( [ ...ids ] ) );
 		} else {
 			setSelectedRows( new Set() );
@@ -77,7 +88,9 @@ const ProductFeedTableCard = ( props ) => {
 						key: 'select',
 						label: (
 							<CheckboxControl
-								checked={ selectedRows.size === data.length }
+								checked={
+									selectedRows.size === products.length
+								}
 								onChange={ handleSelectAllCheckboxChange }
 							/>
 						),
@@ -108,7 +121,7 @@ const ProductFeedTableCard = ( props ) => {
 					},
 					{ key: 'action', label: '', required: true },
 				] }
-				rows={ data.map( ( el ) => {
+				rows={ products.map( ( el ) => {
 					return [
 						{
 							display: (
@@ -121,9 +134,19 @@ const ProductFeedTableCard = ( props ) => {
 							),
 						},
 						{ display: el.title },
-						{ display: el.visibility },
 						{
-							display: el.status,
+							display: el.visible
+								? __(
+										'Sync and show',
+										'google-listings-and-ads'
+								  )
+								: __(
+										`Don't sync and show`,
+										'google-listings-and-ads'
+								  ),
+						},
+						{
+							display: statusLabelMap[ el.status ],
 						},
 						{
 							display: <EditProductLink productId={ el.id } />,
@@ -131,15 +154,13 @@ const ProductFeedTableCard = ( props ) => {
 					];
 				} ) }
 				totalRows={ total }
-				rowsPerPage={ parseInt( query.per_page, 10 ) || 25 }
+				rowsPerPage={ query.per_page }
 				summary={ [
 					{
 						label: __( 'products', 'google-listings-and-ads' ),
 						value: total,
 					},
 				] }
-				query={ query }
-				onQueryChange={ onQueryChange }
 				{ ...props }
 			/>
 		</div>
