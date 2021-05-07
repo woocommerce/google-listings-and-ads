@@ -14,7 +14,6 @@ import {
 	REPORT_SOURCE_PAID,
 	REPORT_SOURCE_DEFAULT,
 } from '.~/constants';
-import useProductsReport from './useProductsReport';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import TabNav from '../../tab-nav';
