@@ -161,9 +161,8 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	return (
 		<AppTableCard
 			title={ __( 'Products', 'google-listings-and-ads' ) }
-			actions={ [
+			actions={
 				<Button
-					key="compare"
 					isSecondary
 					disabled={ selectedRows.size <= 1 }
 					title={ __(
@@ -173,8 +172,8 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 					onClick={ compareSelected }
 				>
 					{ __( 'Compare', 'google-listings-and-ads' ) }
-				</Button>,
-			] }
+				</Button>
+			}
 			headers={ getHeaders( data ) }
 			rows={ getRows( data ) }
 			totalRows={ data.length }

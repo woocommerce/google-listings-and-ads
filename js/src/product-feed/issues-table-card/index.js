@@ -16,16 +16,19 @@ import {
 	Table,
 	TablePlaceholder,
 } from '@woocommerce/components';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
+import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import HelpPopover from '.~/components/help-popover';
 import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import './index.scss';
 
 const headers = [
 	{
@@ -57,6 +60,26 @@ const headers = [
 
 const PER_PAGE = 5;
 
+const actions = (
+	<HelpPopover id="issues-to-resolve">
+		{ createInterpolateElement(
+			__(
+				'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
+				'google-listings-and-ads'
+			),
+			{
+				link: (
+					<AppDocumentationLink
+						context="product-feed"
+						linkId="issues-to-resolve"
+						href="https://support.google.com/merchants/answer/6363310"
+					/>
+				),
+			}
+		) }
+	</HelpPopover>
+);
+
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );
 	const { hasFinishedResolution, data } = useAppSelectDispatch(
@@ -72,35 +95,21 @@ const IssuesTableCard = () => {
 	};
 
 	return (
-		<div className="gla-issues-table-card">
-			<Card>
+		<AppTableCardDiv className="gla-issues-table-card">
+			<Card
+				className={ classnames( 'woocommerce-table', {
+					'has-actions': !! actions,
+				} ) }
+			>
 				<CardHeader>
 					{ /* We use this Text component to make it similar to TableCard component. */ }
 					<Text variant="title.small" as="h2">
-						<>
-							{ __(
-								'Issues to resolve',
-								'google-listings-and-ads'
-							) }
-							<HelpPopover id="issues-to-resolve">
-								{ createInterpolateElement(
-									__(
-										'Products and stores must meet <link>Google Merchant Center’s requirements</link> in order to get approved. WooCommerce and Google automatically check your product feed to help you resolve any issues. ',
-										'google-listings-and-ads'
-									),
-									{
-										link: (
-											<AppDocumentationLink
-												context="product-feed"
-												linkId="issues-to-resolve"
-												href="https://support.google.com/merchants/answer/6363310"
-											/>
-										),
-									}
-								) }
-							</HelpPopover>
-						</>
+						{ __( 'Issues to resolve', 'google-listings-and-ads' ) }
 					</Text>
+					{ /* This is also similar to TableCard component implementation. */ }
+					<div className="woocommerce-table__actions">
+						{ actions }
+					</div>
 				</CardHeader>
 				<CardBody size={ null }>
 					{ ! hasFinishedResolution && (
@@ -163,7 +172,7 @@ const IssuesTableCard = () => {
 					/>
 				</CardFooter>
 			</Card>
-		</div>
+		</AppTableCardDiv>
 	);
 };
 

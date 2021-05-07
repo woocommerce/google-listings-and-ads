@@ -55,25 +55,22 @@ const ProductFeedTableCard = ( props ) => {
 	return (
 		<div className="gla-product-feed-table-card">
 			<AppTableCard
-				title={
-					<>
-						{ __( 'Product Feed', 'google-listings-and-ads' ) }
-						<Button
-							isSecondary
-							isSmall
-							disabled={ selectedRows.size === 0 }
-							title={ __(
-								'Select one or more products',
-								'google-listings-and-ads'
-							) }
-							onClick={ handleEditVisibilityClick }
-						>
-							{ __(
-								'Edit channel visibility',
-								'google-listings-and-ads'
-							) }
-						</Button>
-					</>
+				title={ __( 'Product Feed', 'google-listings-and-ads' ) }
+				actions={
+					<Button
+						isSecondary
+						disabled={ selectedRows.size === 0 }
+						title={ __(
+							'Select one or more products',
+							'google-listings-and-ads'
+						) }
+						onClick={ handleEditVisibilityClick }
+					>
+						{ __(
+							'Edit channel visibility',
+							'google-listings-and-ads'
+						) }
+					</Button>
 				}
 				headers={ [
 					{

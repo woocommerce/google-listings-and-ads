@@ -1,0 +1,18 @@
+.app-table-card-div {
+	.components-card {
+		&__header {
+			/**
+			 * The h2 already has this margin-right: 8px in TableCard component,
+			 * but in some pages it is automatically overridden by other rules.
+			 * We specify it again here to make sure it is always there for consistency.
+			 */
+			h2 {
+				margin-right: 8px;
+			}
+
+			.woocommerce-table__actions {
+				justify-content: flex-start;
+			}
+		}
+	}
+}
