@@ -188,7 +188,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
 			$statuses = $response->getResources();
 			$this->refresh_product_issues( $statuses );
-			$this->tabulate_statistics( $statuses );
+			$this->include_page_statistics( $statuses );
 
 			$page_token = $response->getNextPageToken();
 		} while ( $page_token );
@@ -277,7 +277,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @param MC_Product_Status[] $mc_statuses
 	 */
-	protected function tabulate_statistics( array $mc_statuses ): void {
+	protected function include_page_statistics( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
