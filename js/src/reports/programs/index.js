@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { SummaryList, Chart, FilterPicker } from '@woocommerce/components';
+import { SummaryList, Chart } from '@woocommerce/components';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
@@ -10,11 +10,10 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import TabNav from '../../tab-nav';
 import SubNav from '../sub-nav';
-import AppDateRangeFilterPicker from '../../dashboard/app-date-range-filter-picker';
+import ProgramsReportFilters from './programs-report-filters';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import MetricNumber from '../metric-number';
 import '../../dashboard/index.scss';
-import { programsFilterConfig } from './filter-config';
 import metricsData from './mocked-metrics-data'; // Mocked data
 
 /**
@@ -93,22 +92,14 @@ const ProgramsReport = () => {
 		( [ key ] ) => data[ key ]
 	);
 
-	const trackEventReportId = 'reports-programs';
+	const reportId = 'reports-programs';
 
 	return (
 		<div className="gla-dashboard">
 			<TabNav initialName="reports" />
 			<SubNav initialName="programs" />
 
-			<div className="gla-dashboard__filter">
-				<AppDateRangeFilterPicker
-					trackEventReportId={ trackEventReportId }
-				/>
-				<FilterPicker
-					config={ programsFilterConfig }
-					query={ getQuery() }
-				/>
-			</div>
+			<ProgramsReportFilters query={ getQuery() } report={ reportId } />
 			<div className="gla-reports__performance">
 				<SummaryList>
 					{ () =>
@@ -130,9 +121,7 @@ const ProgramsReport = () => {
 				/>
 			</div>
 			<div className="gla-dashboard__programs">
-				<CompareProgramsTableCard
-					trackEventReportId={ trackEventReportId }
-				/>
+				<CompareProgramsTableCard trackEventReportId={ reportId } />
 			</div>
 		</div>
 	);

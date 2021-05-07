@@ -42,7 +42,7 @@ assignees: ''
 - List of potential rabbit holes
 -->
 
-## Event tracking ([reference spreadsheet](https://docs.google.com/spreadsheets/d/1Vrpk3SmEMZxxjdYkY8edZLWolADXNZKgKFb1ypkJxVg/edit#gid=0))
+## Event tracking
 <!--
 - `event_name` - When the event should be recorded, what are its parameters?
 -->

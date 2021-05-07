@@ -329,7 +329,7 @@ class ProductRepository implements Service {
 	 *
 	 * @return array
 	 */
-	protected function get_supported_product_types(): array {
+	public function get_supported_product_types(): array {
 		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable', 'variation' ] );
 	}
 

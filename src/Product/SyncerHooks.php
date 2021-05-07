@@ -156,6 +156,7 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 				return;
 			}
 
+			$this->product_helper->mark_as_pending( $product );
 			$this->update_products_job->start( [ $product_ids ] );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
@@ -163,6 +164,8 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
 			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 			$this->set_already_scheduled( $product_id );
+		} else {
+			$this->product_helper->mark_as_unsynced( $product );
 		}
 	}
 
