@@ -74,6 +74,13 @@ const ProductFeedTableCard = () => {
 		}
 	};
 
+	const handlePageChange = ( newPage ) => {
+		setQuery( {
+			...query,
+			page: newPage,
+		} );
+	};
+
 	const headers = [
 		{
 			key: 'select',
@@ -121,13 +128,6 @@ const ProductFeedTableCard = () => {
 			{ __( 'Edit channel visibility', 'google-listings-and-ads' ) }
 		</Button>
 	);
-
-	const handlePageChange = ( newPage ) => {
-		setQuery( {
-			...query,
-			page: newPage,
-		} );
-	};
 
 	return (
 		<AppTableCardDiv className="gla-product-feed-table-card">
