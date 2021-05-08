@@ -190,5 +190,5 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 export default CompareProductsTableCard;
 
 /**
- * @typedef {import("./index.js").Metric} Metric
+ * @typedef {import("../index.js").Metric} Metric
  */

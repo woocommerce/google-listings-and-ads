@@ -117,8 +117,5 @@ const ProductsReportPage = () => {
 export default ProductsReportPage;
 
 /**
- * @typedef {Object} Metric Metric item structure for disaplying label and its currency type.
- * @property {string} key Metric key.
- * @property {string} label Metric label to display.
- * @property {boolean} [isCurrency] Metric is a currency if true.
+ * @typedef {import("../index.js").Metric} Metric
  */
