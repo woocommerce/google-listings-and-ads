@@ -295,12 +295,26 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				},
 			};
 
+			if (
+				newState.mc_product_feed.per_page !== query.per_page ||
+				newState.mc_product_feed.order !== query.order ||
+				newState.mc_product_feed.orderby !== query.orderby
+			) {
+				newState.mc_product_feed.products = new Array(
+					query.page * query.per_page
+				);
+			}
+
 			newState.mc_product_feed.products.splice(
 				( query.page - 1 ) * query.per_page,
 				query.per_page,
 				...data.products
 			);
 			newState.mc_product_feed.total = data.total;
+			newState.mc_product_feed.page = query.page;
+			newState.mc_product_feed.per_page = query.per_page;
+			newState.mc_product_feed.order = query.order;
+			newState.mc_product_feed.orderby = query.orderby;
 
 			return newState;
 		}
