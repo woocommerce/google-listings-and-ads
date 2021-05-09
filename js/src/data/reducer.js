@@ -303,11 +303,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				newState.mc_product_feed.pages = {};
 			}
 
-			newState.mc_product_feed.pages[ data.page ] = data.products;
-			newState.mc_product_feed.total = data.total;
 			newState.mc_product_feed.per_page = query.per_page;
 			newState.mc_product_feed.order = query.order;
 			newState.mc_product_feed.orderby = query.orderby;
+			newState.mc_product_feed.total = data.total;
+			newState.mc_product_feed.pages[ query.page ] = data.products;
 
 			return newState;
 		}
