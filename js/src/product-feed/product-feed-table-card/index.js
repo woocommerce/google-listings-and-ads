@@ -155,7 +155,10 @@ const ProductFeedTableCard = () => {
 				</CardHeader>
 				<CardBody size={ null }>
 					{ ! hasFinishedResolution && (
-						<TablePlaceholder headers={ headers } />
+						<TablePlaceholder
+							headers={ headers }
+							numberOfRows={ query.per_page }
+						/>
 					) }
 					{ hasFinishedResolution && ! data && (
 						<EmptyTable headers={ headers } numberOfRows={ 1 }>
