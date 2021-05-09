@@ -94,26 +94,12 @@ export const getMCIssues = createSelector(
 	]
 );
 
-export const getMCProductFeed = createSelector(
-	( state, query ) => {
-		if ( ! state.mc_product_feed ) {
-			return state.mc_product_feed;
-		}
-
-		const start = ( query.page - 1 ) * query.per_page;
-		const end = start + query.per_page;
-
-		return {
-			products: state.mc_product_feed.products.slice( start, end ),
-			total: state.mc_product_feed.total,
-		};
-	},
-	( state ) => [
-		state.mc_product_feed,
-		state.mc_product_feed?.products,
-		state.mc_product_feed?.total,
-	]
-);
+export const getMCProductFeed = ( state, query ) => {
+	return {
+		products: state.mc_product_feed?.pages[ query.page ],
+		total: state.mc_product_feed?.total,
+	};
+};
 
 /**
  * Select report data according to parameters and report API query.

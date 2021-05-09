@@ -287,31 +287,24 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...state,
 				mc_product_feed: {
 					...state.mc_product_feed,
-					products:
-						( state.mc_product_feed?.products && [
-							...state.mc_product_feed.products,
-						] ) ||
-						[],
+					pages: {
+						...state.mc_product_feed?.pages,
+					},
 				},
 			};
 
 			if (
 				newState.mc_product_feed.per_page !== query.per_page ||
 				newState.mc_product_feed.order !== query.order ||
-				newState.mc_product_feed.orderby !== query.orderby
+				newState.mc_product_feed.orderby !== query.orderby ||
+				newState.mc_product_feed.total !== data.total
 			) {
-				newState.mc_product_feed.products = new Array(
-					query.page * query.per_page
-				);
+				// discard old stored data when pagination or total has changed.
+				newState.mc_product_feed.pages = {};
 			}
 
-			newState.mc_product_feed.products.splice(
-				( query.page - 1 ) * query.per_page,
-				query.per_page,
-				...data.products
-			);
+			newState.mc_product_feed.pages[ data.page ] = data.products;
 			newState.mc_product_feed.total = data.total;
-			newState.mc_product_feed.page = query.page;
 			newState.mc_product_feed.per_page = query.per_page;
 			newState.mc_product_feed.order = query.order;
 			newState.mc_product_feed.orderby = query.orderby;
