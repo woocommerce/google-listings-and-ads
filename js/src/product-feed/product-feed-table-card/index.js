@@ -88,9 +88,12 @@ const ProductFeedTableCard = () => {
 			label: (
 				<CheckboxControl
 					disabled={ ! data?.products }
-					checked={ data?.products.every( ( el ) =>
-						selectedRows.has( el.id )
-					) }
+					checked={
+						data?.products.length > 0 &&
+						data?.products.every( ( el ) =>
+							selectedRows.has( el.id )
+						)
+					}
 					onChange={ handleSelectAllCheckboxChange }
 				/>
 			),
