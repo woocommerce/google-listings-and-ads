@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { SummaryList } from '@woocommerce/components';
+import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 import { getNewPath } from '@woocommerce/navigation';
 
 /**
@@ -9,18 +9,25 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import MetricNumber from '../metric-number';
-import getMetricsData from './mocked-metrics-data';
 
 /**
  * Renders a section composed with SummaryList and MetricNumber.
  *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
+ * @param {ProductsReportSchema} props.report Report data and its status.
  */
-export default function SummarySection( { metrics } ) {
+export default function SummarySection( { metrics, report } ) {
 	const query = useUrlQuery();
-	const metricsData = getMetricsData();
 	const { orderby = metrics[ 0 ].key } = query;
+	const {
+		loaded,
+		data: { totals },
+	} = report;
+
+	if ( ! loaded ) {
+		return <SummaryListPlaceholder numberOfItems={ metrics.length } />;
+	}
 
 	return (
 		<SummaryList>
@@ -35,7 +42,7 @@ export default function SummarySection( { metrics } ) {
 							href={ href }
 							selected={ selected }
 							isCurrency={ isCurrency }
-							data={ metricsData[ key ] }
+							data={ totals[ key ] }
 						/>
 					);
 				} )
@@ -46,4 +53,5 @@ export default function SummarySection( { metrics } ) {
 
 /**
  * @typedef {import("../index.js").Metric} Metric
+ * @typedef {import("../index.js").ProductsReportSchema} ProductsReportSchema
  */

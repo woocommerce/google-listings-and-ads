@@ -21,6 +21,7 @@ import SummarySection from './summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 
+import getMetricsData from './mocked-metrics-data';
 import chartData from './mocked-chart-data';
 import { mockedListingsData } from './mocked-products-data';
 import SubNav from '../sub-nav';
@@ -77,6 +78,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 		data: {
 			intervals: chartData,
 			products: mockedListingsData(),
+			totals: getMetricsData(),
 		},
 	};
 
@@ -87,7 +89,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				query={ query }
 				trackEventId={ trackEventId }
 			/>
-			<SummarySection metrics={ metrics } />
+			<SummarySection metrics={ metrics } report={ report } />
 			<ChartSection metrics={ metrics } report={ report } />
 			<CompareProductsTableCard
 				trackEventReportId={ trackEventId }

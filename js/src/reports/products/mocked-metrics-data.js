@@ -16,26 +16,26 @@ export default function () {
 	const data = {
 		clicks: {
 			value: 14135,
+			prevValue: 14135,
 			delta: 0,
-			label: 'Clicks',
 		},
 		impressions: {
 			value: 383512,
+			prevValue: 378665,
 			delta: 1.28,
-			label: 'Impressions',
 		},
 	};
 	const conditionalData = {
 		conversions: {
 			value: 4102,
+			prevValue: 4195,
 			delta: -2.21,
-			label: 'Conversions',
 			missingFreeListingsData,
 		},
 		sales: {
 			value: 10802.93,
+			prevValue: 10254.323,
 			delta: 5.35,
-			label: 'Net Sales',
 			missingFreeListingsData,
 		},
 	};
