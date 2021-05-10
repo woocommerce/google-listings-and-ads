@@ -2,11 +2,14 @@
  * External dependencies
  */
 import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 import GridiconChevronLeft from 'gridicons/dist/chevron-left';
+import GridiconHelpOutline from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies
  */
+import AppIconButton from '.~/components/app-icon-button';
 import './index.scss';
 
 /**
@@ -15,11 +18,16 @@ import './index.scss';
  *
  * @param {Object} props
  * @param {string} props.title Title to indicate where the user is at.
- * @param {import(".~/components/app-button")} props.helpButton Help button
  * @param {string} props.backHref Href for the back button.
  * @param {Function} props.onBackButtonClick
+ * @param {Function} props.onHelpButtonClick
  */
-const TopBar = ( { title, backHref, helpButton, onBackButtonClick } ) => {
+const TopBar = ( {
+	title,
+	backHref,
+	onBackButtonClick,
+	onHelpButtonClick,
+} ) => {
 	return (
 		<div className="gla-stepper-top-bar">
 			<Link
@@ -31,7 +39,13 @@ const TopBar = ( { title, backHref, helpButton, onBackButtonClick } ) => {
 				<GridiconChevronLeft />
 			</Link>
 			<span className="title">{ title }</span>
-			<div className="actions">{ helpButton }</div>
+			<div className="actions">
+				<AppIconButton
+					icon={ <GridiconHelpOutline /> }
+					text={ __( 'Help', 'google-listings-and-ads' ) }
+					onClick={ onHelpButtonClick }
+				/>
+			</div>
 		</div>
 	);
 };

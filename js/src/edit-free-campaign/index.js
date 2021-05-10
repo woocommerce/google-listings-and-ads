@@ -23,7 +23,6 @@ import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import HelpIconButton from '.~/components/help-icon-button';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -229,9 +228,6 @@ export default function EditFreeCampaign() {
 		<FullContainer>
 			<TopBar
 				title={ __( 'Edit free listings', 'google-listings-and-ads' ) }
-				helpButton={
-					<HelpIconButton eventContext="edit-free-listings" />
-				}
 				backHref={ dashboardURL }
 			/>
 			<Stepper
