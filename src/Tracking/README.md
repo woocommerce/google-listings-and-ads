@@ -95,6 +95,9 @@ All event names are prefixed by `wcadmin_gla_`.
   * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
   * `href`: indicate the destination where the users is directed to.
 
+* `help_click` - "Help" button is clicked.
+  * `context`: indicate the place where the button is located, e.g. `setup-ads`.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
