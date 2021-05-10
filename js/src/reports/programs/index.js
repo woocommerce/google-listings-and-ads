@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { SummaryList, Chart } from '@woocommerce/components';
+import { Chart } from '@woocommerce/components';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
@@ -11,28 +11,44 @@ import { getQuery } from '@woocommerce/navigation';
 import TabNav from '../../tab-nav';
 import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
+import SummarySection from '../summary-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
-import MetricNumber from '../metric-number';
 import '../../dashboard/index.scss';
 import metricsData from './mocked-metrics-data'; // Mocked data
 
 /**
  * Available metrics and their human-readable labels.
  *
- * @type {Map<string, string>}
+ * @type {Array<import('../index.js').Metric>}
  */
 const performanceMetrics = [
-	[ 'netSales', __( 'Net Sales', 'google-listings-and-ads' ), true ],
-	[ 'itemsSold', __( 'Items Sold', 'google-listings-and-ads' ) ],
-	[ 'conversions', __( 'Conversions', 'google-listings-and-ads' ) ],
-	[ 'clicks', __( 'Clicks', 'google-listings-and-ads' ) ],
-	[ 'impressions', __( 'Impressions', 'google-listings-and-ads' ) ],
-	[ 'totalSpend', __( 'Total Spend', 'google-listings-and-ads' ), true ],
+	{
+		key: 'sales',
+		label: __( 'Net Sales', 'google-listings-and-ads' ),
+		isCurrency: true,
+	},
+	{
+		key: 'conversions',
+		label: __( 'Conversions', 'google-listings-and-ads' ),
+	},
+	{
+		key: 'clicks',
+		label: __( 'Clicks', 'google-listings-and-ads' ),
+	},
+	{
+		key: 'impressions',
+		label: __( 'Impressions', 'google-listings-and-ads' ),
+	},
+	{
+		key: 'spend',
+		label: __( 'Total Spend', 'google-listings-and-ads' ),
+		isCurrency: true,
+	},
 ];
 
 const ProgramsReport = () => {
 	// TODO: this data should come from backend API.
-	const data = metricsData();
+	const totals = metricsData();
 
 	const chartData = [
 		{
@@ -89,7 +105,7 @@ const ProgramsReport = () => {
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const availableMetrics = performanceMetrics.filter(
-		( [ key ] ) => data[ key ]
+		( { key } ) => totals[ key ]
 	);
 
 	const reportId = 'reports-programs';
@@ -101,20 +117,10 @@ const ProgramsReport = () => {
 
 			<ProgramsReportFilters query={ getQuery() } report={ reportId } />
 			<div className="gla-reports__performance">
-				<SummaryList>
-					{ () =>
-						availableMetrics.map(
-							( [ key, label, isCurrency ] ) => (
-								<MetricNumber
-									key={ key }
-									label={ label }
-									isCurrency={ isCurrency }
-									data={ data[ key ] }
-								/>
-							)
-						)
-					}
-				</SummaryList>
+				<SummarySection
+					metrics={ availableMetrics }
+					report={ { loaded: true, data: { totals } } }
+				/>
 				<Chart
 					data={ chartData }
 					title="Conversions"
