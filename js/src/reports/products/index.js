@@ -22,6 +22,7 @@ import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 
 import chartData from './mocked-chart-data';
+import { mockedListingsData } from './mocked-products-data';
 import SubNav from '../sub-nav';
 
 /**
@@ -59,7 +60,7 @@ const paidMetrics = [
  * @param {boolean} props.hasPaidSource Indicate whether display paid data source and relevant UIs.
  */
 const ProductsReport = ( { hasPaidSource } ) => {
-	const reportId = 'reports-products';
+	const trackEventId = 'reports-products';
 	const query = getQuery();
 
 	const type = hasPaidSource
@@ -70,10 +71,13 @@ const ProductsReport = ( { hasPaidSource } ) => {
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
 
-	// Mocked report data for the chart.
+	// Mocked report data for the chart and products table.
 	const report = {
 		loaded: true,
-		data: { intervals: chartData },
+		data: {
+			intervals: chartData,
+			products: mockedListingsData(),
+		},
 	};
 
 	return (
@@ -81,13 +85,14 @@ const ProductsReport = ( { hasPaidSource } ) => {
 			<ProductsReportFilters
 				hasPaidSource={ hasPaidSource }
 				query={ query }
-				report={ reportId }
+				trackEventId={ trackEventId }
 			/>
 			<SummarySection metrics={ metrics } />
 			<ChartSection metrics={ metrics } report={ report } />
 			<CompareProductsTableCard
-				trackEventReportId={ reportId }
+				trackEventReportId={ trackEventId }
 				metrics={ metrics }
+				report={ report }
 			/>
 		</>
 	);

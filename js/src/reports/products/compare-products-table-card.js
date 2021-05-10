@@ -14,7 +14,6 @@ import {
  * Internal dependencies
  */
 import AppTableCard from '.~/components/app-table-card';
-import { mockedListingsData } from './mocked-products-data'; // Mocked API calls
 
 const compareBy = 'products';
 const compareParam = 'filter';
@@ -27,15 +26,20 @@ const compareParam = 'filter';
  *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
+ * @param {ProductsReportSchema} props.report Report data and its status.
  * @param {Object} [props.restProps] Properties to be forwarded to AppTableCard.
  */
-const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
+const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 	const query = getQuery();
 	const [ selectedRows, setSelectedRows ] = useState( () => {
 		return new Set( getIdsFromQuery( query[ compareBy ] ) );
 	} );
 
-	const availableMetricHeaders = useMemo( () => {
+	const {
+		data: { products },
+	} = report;
+
+	const metricHeaders = useMemo( () => {
 		const headers = metrics.map( ( metric ) => ( {
 			...metric,
 			isSortable: true,
@@ -50,7 +54,7 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	 * Provides headers configuration, for AppTableCard:
 	 * Interactive select all checkbox for compare; product title, and available metric headers.
 	 *
-	 * @param {Array} data
+	 * @param {Array<ProductsData>} data Products data.
 	 *
 	 * @return {import('.~/components/app-table-card').Props.headers} All headers.
 	 */
@@ -71,26 +75,21 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 			isLeftAligned: true,
 			required: true,
 		},
-		...availableMetricHeaders,
+		...metricHeaders,
 	];
 
-	const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
 	/**
 	 * Creates an array of metric data cells for {@link getRows},
 	 * for a given row.
-	 * Creates a cell for every ~availableMetricHeaders item, displays `"Unavailable"`, when the data is `null`.
 	 *
-	 * @param {Object} row Row of data for products table.
+	 * @param {ProductsData} row Row of data for products table.
 	 *
 	 * @return {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
 	const renderMetricDataCells = ( row ) =>
-		availableMetricHeaders.map( ( metric ) => {
+		metrics.map( ( metric ) => {
 			return {
-				display:
-					row[ metric.key ] === null
-						? unavailable
-						: row[ metric.key ],
+				display: row.subtotals[ metric.key ],
 			};
 		} );
 	/**
@@ -98,7 +97,7 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	 * Maps each data row to respective cell objects ({@link module:app-table-card.Props.rows}):
 	 * checkbox to compere, product title, and available metrics cells.
 	 *
-	 * @param {Array} data Products data.
+	 * @param {Array<ProductsData>} data Products data.
 	 *
 	 * @return {Array<Object>} Rows config {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
@@ -114,15 +113,11 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 				),
 			},
 			// title
-			{ display: row.title },
+			// TODO: the product name is not yet available from API and needs to be implemented later.
+			{ display: `Product #${ row.id }` },
 			// merics data
 			...renderMetricDataCells( row ),
 		] );
-
-	// TODO: data should be coming from backend API,
-	// using the above query (e.g. orderby, order and page) as parameter.
-	// Also, i18n for the title and numbers formatting.
-	const data = mockedListingsData();
 
 	const compareSelected = () => {
 		const ids = Array.from( selectedRows ).join( ',' );
@@ -136,7 +131,7 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	 */
 	const selectAll = ( checked ) => {
 		if ( checked ) {
-			const allIds = data.map( ( el ) => el.id );
+			const allIds = products.map( ( el ) => el.id );
 			setSelectedRows( new Set( allIds ) );
 		} else {
 			setSelectedRows( new Set() );
@@ -145,7 +140,7 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 	/**
 	 * Selects given row, updates ~selectedRows.
 	 *
-	 * @param {*} rowId Id of the row to be selected.
+	 * @param {number} rowId Id of the row to be selected.
 	 * @param {boolean} checked true if the row should be selected.
 	 */
 	const selectRow = ( rowId, checked ) => {
@@ -173,9 +168,9 @@ const CompareProductsTableCard = ( { metrics, ...restProps } ) => {
 					{ __( 'Compare', 'google-listings-and-ads' ) }
 				</Button>
 			}
-			headers={ getHeaders( data ) }
-			rows={ getRows( data ) }
-			totalRows={ data.length }
+			headers={ getHeaders( products ) }
+			rows={ getRows( products ) }
+			totalRows={ products.length }
 			rowsPerPage={ 10 }
 			query={ query }
 			compareBy={ compareBy }
@@ -191,4 +186,6 @@ export default CompareProductsTableCard;
 
 /**
  * @typedef {import("../index.js").Metric} Metric
+ * @typedef {import("../index.js").ProductsReportSchema} ProductsReportSchema
+ * @typedef {import("../index.js").ProductsData} ProductsData
  */
