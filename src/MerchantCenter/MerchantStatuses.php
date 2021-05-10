@@ -54,7 +54,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	protected $current_time;
 
 	/**
-	 * @var array Reference array of countries by product/issue combo.
+	 * @var array Reference array of countries associated to each product+issue combo.
 	 */
 	protected $product_issue_countries = [];
 
@@ -62,6 +62,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @var array Product statuses as reported by Merchant Center.
 	 */
 	protected $product_statistics;
+
+	/**
+	 * @var array Statuses for each product ID.
+	 */
+	protected $product_statuses;
 
 	/**
 	 * MerchantStatuses constructor.
@@ -80,7 +85,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
-		return $this->product_statistics;
+
+		return $this->get_counting_statistics();
 	}
 
 	/**
@@ -167,7 +173,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @param bool $force_refresh Force refresh of all status-related data.
 	 *
-	 * @throws Exception If no Merchant Center account is connected, or account status is unretrievable.
+	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
 	 */
 	protected function maybe_refresh_status_data( bool $force_refresh = false ): void {
 		// Only refresh if the current data has expired.
@@ -188,7 +194,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
 			$statuses = $response->getResources();
 			$this->refresh_product_issues( $statuses );
-			$this->include_page_statistics( $statuses );
+			$this->include_page_statuses( $statuses );
 
 			$page_token = $response->getNextPageToken();
 		} while ( $page_token );
@@ -277,20 +283,21 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @param MC_Product_Status[] $mc_statuses
 	 */
-	protected function include_page_statistics( array $mc_statuses ): void {
+	protected function include_page_statuses( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
 		foreach ( $mc_statuses as $product ) {
+			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
 			// Skip products not synced by this extension.
-			if ( ! $product_helper->get_wc_product_id( $product->getProductId() ) ) {
+			if ( ! $wc_product_id ) {
 				continue;
 			}
 
 			$status = $this->get_product_shopping_status( $product );
 			if ( ! is_null( $status ) ) {
-				$this->product_statistics[ $status ] = 1 + ( $this->product_statistics[ $status ] ?? 0 );
+				$this->product_statuses[ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses[ $wc_product_id ][ $status ] ?? 0 );
 			}
 		}
 	}
@@ -299,20 +306,43 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Update the product status statistics transient.
 	 */
 	protected function save_product_statistics() {
-		$this->product_statistics = array_merge(
+		$this->product_statistics =
 			[
-				'active'      => 0,
-				'expiring'    => 0,
-				'pending'     => 0,
-				'disapproved' => 0,
-				'not_synced'  => 0,
-			],
-			$this->product_statistics
-		);
+				'active'           => [],
+				'partially_active' => [],
+				'expiring'         => [],
+				'pending'          => [],
+				'disapproved'      => [],
+				'not_synced'       => [],
+			];
+
+		foreach ( $this->product_statuses as $product_id => $statuses ) {
+			if ( isset( $statuses['pending'] ) ) {
+				$this->product_statistics['pending'][] = $product_id;
+			} elseif ( isset( $statuses['expiring'] ) ) {
+				$this->product_statistics['expiring'][] = $product_id;
+			} elseif ( isset( $statuses['active'] ) ) {
+				if ( count( $statuses ) > 1 ) {
+					$this->product_statistics['partially_active'][] = $product_id;
+				} else {
+					$this->product_statistics['active'][] = $product_id;
+				}
+			} else {
+				$this->product_statistics[ array_key_first( $statuses ) ][] = $product_id;
+			}
+		}
 
 		/** @var ProductRepository $product_repository */
 		$product_repository                     = $this->container->get( ProductRepository::class );
-		$this->product_statistics['not_synced'] = count( $product_repository->find_sync_pending_product_ids() );
+		$this->product_statistics['not_synced'] = $product_repository->find_sync_pending_product_ids();
+
+		// Sort the product IDs.
+		array_walk(
+			$this->product_statistics,
+			function( array &$el ): void {
+				sort( $el );
+			}
+		);
 
 		$this->product_statistics = [
 			'timestamp'  => $this->current_time->getTimestamp(),
@@ -394,5 +424,21 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			self::TYPE_ACCOUNT,
 			self::TYPE_PRODUCT,
 		];
+	}
+
+	/**
+	 * Substitute the list of product IDs for the product count in the status transient.
+	 *
+	 * @return array
+	 */
+	protected function get_counting_statistics(): array {
+		$counting_stats            = array_map( 'count', $this->product_statistics['statistics'] );
+		$counting_stats['active'] += $counting_stats['partially_active'];
+		unset( $counting_stats['partially_active'] );
+
+		return array_merge(
+			$this->product_statistics,
+			[ 'statistics' => $counting_stats ]
+		);
 	}
 }
