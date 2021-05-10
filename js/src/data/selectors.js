@@ -2,14 +2,13 @@
  * External dependencies
  */
 import { createRegistrySelector } from '@wordpress/data';
-import { getDateParamsFromQuery } from '@woocommerce/date';
 import createSelector from 'rememo';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from './constants';
-import { getReportQuery, getReportKey } from './utils';
+import { getReportQuery, getReportKey, getPerformanceQuery } from './utils';
 
 export const getShippingRates = ( state ) => {
 	return state.mc.shipping.rates;
@@ -96,7 +95,36 @@ export const getMCIssues = createSelector(
 );
 
 /**
- * Select report data according to parameters.
+ * Select report data according to parameters and report API query.
+ *
+ * @param  {Object} state The current store state will be injected by `wp.data`.
+ * @param  {string} category Category of report, 'programs' or 'products'.
+ * @param  {string} type Type of report, 'free' or 'paid'.
+ * @param  {Object} reportQuery Query options of report API.
+ * @param  {string} reportQuery.after Start date in 'YYYY-MM-DD' format.
+ * @param  {string} reportQuery.before End date in 'YYYY-MM-DD' format.
+ * @param  {Array<string>} reportQuery.fields An array of performance metrics field to retrieve.
+ * @param  {string} [reportQuery.ids] Filter product or campaign by a comma separated list of IDs.
+ * @param  {string} [reportQuery.orderby] Column to order the results by, this must be one of the fields in requesting.
+ * @param  {string} [reportQuery.order] Results order, 'desc' or 'asc'.
+ * @param  {string} [reportQuery.interval] How to segment the data. Note that the 'free' type data only supports segmenting by day,
+ *                                         but the 'paid' type report allows any of the following values:
+ *                                         'day', 'week', 'month', 'quarter', 'year'
+ *
+ * @return {Object|null} The report data of specified parameters. It would return `null` before the data is fetched.
+ */
+export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
+	const reportKey = getReportKey( category, type, reportQuery );
+	return state.report[ reportKey ] || null;
+};
+
+/**
+ * @typedef {Object} ReportData
+ * @property {boolean} loaded Whether the data have been loaded.
+ * @property {Object|null} data The report data of specified parameters. It would return `null` before the data is fetched.
+ */
+/**
+ * Select report data according to parameters and URL query.
  *
  * @param  {Object} state The current store state will be injected by `wp.data`.
  * @param  {string} category Category of report, 'programs' or 'products'.
@@ -104,14 +132,32 @@ export const getMCIssues = createSelector(
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {Object|null} The report data of specified parameters. It would return `null` before the data is fetched.
+ * @return {ReportData} Report data.
  */
-export const getReport = ( state, category, type, query, dateReference ) => {
-	const reportQuery = getReportQuery( query, dateReference );
-	const reportKey = getReportKey( category, type, reportQuery );
-	return state.report[ reportKey ] || null;
-};
+export const getReport = createRegistrySelector(
+	( select ) => ( state, category, type, query, dateReference ) => {
+		const selector = select( STORE_KEY );
+		const args = [
+			category,
+			type,
+			getReportQuery( category, type, query, dateReference ),
+		];
 
+		return {
+			data: selector.getReportByApiQuery( ...args ),
+			loaded: selector.hasFinishedResolution(
+				'getReportByApiQuery',
+				args
+			),
+		};
+	}
+);
+
+/**
+ * @typedef {Object} PerformaceData
+ * @property {boolean} loaded Whether the data have been loaded.
+ * @property {Object|null} data The programs performace data of specified parameters. It would return `null` before the data is fetched.
+ */
 /**
  * Select programs performace data according to parameters.
  *
@@ -120,20 +166,24 @@ export const getReport = ( state, category, type, query, dateReference ) => {
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {Object|null} The programs performace data of specified parameters. It would return `null` before the data is fetched.
+ * @return {PerformaceData} Performace data.
  */
 export const getDashboardPerformance = createRegistrySelector(
 	( select ) => ( state, type, query, dateReference ) => {
-		const report = select( STORE_KEY ).getReport(
+		const selector = select( STORE_KEY );
+		const args = [
 			'programs',
 			type,
-			getDateParamsFromQuery( query ),
-			dateReference
-		);
+			getPerformanceQuery( type, query, dateReference ),
+		];
+		const report = selector.getReportByApiQuery( ...args );
 
-		if ( report ) {
-			return report.totals;
-		}
-		return report;
+		return {
+			data: report ? report.totals : null,
+			loaded: selector.hasFinishedResolution(
+				'getReportByApiQuery',
+				args
+			),
+		};
 	}
 );

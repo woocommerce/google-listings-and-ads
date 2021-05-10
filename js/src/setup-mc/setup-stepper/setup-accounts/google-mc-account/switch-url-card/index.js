@@ -17,11 +17,6 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import './index.scss';
 
-/**
- * Temporarily unused for beta testing period. This should be used in production later.
- *
- * @param {Object} props Props.
- */
 const SwitchUrlCard = ( props ) => {
 	const {
 		id,

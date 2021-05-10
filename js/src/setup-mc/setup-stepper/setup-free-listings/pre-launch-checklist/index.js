@@ -35,11 +35,10 @@ const PreLaunchChecklist = ( props ) => {
 							) }
 						</p>
 						<p>
-							{ /* TODO: Link to read more on Google Merchant requirements. */ }
 							<AppDocumentationLink
 								context="setup-mc-checklist"
 								linkId="checklist-requirements"
-								href="https://www.google.com/"
+								href="https://support.google.com/merchants/answer/6363310"
 							>
 								{ __(
 									'Read Google Merchant requirements',
@@ -91,7 +90,6 @@ const PreLaunchChecklist = ( props ) => {
 												) }
 											</p>
 											<p>
-												{ /* TODO: link URL. */ }
 												{ createInterpolateElement(
 													__(
 														'Payment and transaction processing, as well as collection of any sensitive and financial personal information from the user, must be conducted over a secure processing server (SSL-protected, with a valid SSL certificate - https://). <link>Read more</link>',
@@ -102,7 +100,7 @@ const PreLaunchChecklist = ( props ) => {
 															<AppDocumentationLink
 																context="setup-mc-checklist"
 																linkId="check-checkout-process"
-																href="https://www.google.com/retail/solutions/merchant-center/"
+																href="https://support.google.com/merchants/answer/2704221#wycd-unsafe-collection-or-use-of-personal-information"
 															/>
 														),
 													}

@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.3
 Tested up to: 5.7
 Requires PHP: 7.3
-Stable tag: 0.5.4
+Stable tag: 0.5.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -112,6 +112,23 @@ Smart Shopping campaigns are pay-per-click, meaning you only pay when someone cl
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
 
 == Changelog ==
+
+= 0.5.5 - 2021-05-07 =
+* Fix - Add a custom hook to get calculated data and its status for the Products Reporting page.
+* Fix - Add products reporting data source picker and connect all UI query interactions to page route.
+* Fix - Adjust report data interfaces and structures in the wp.data.
+* Fix - Clean up TODO comments.
+* Fix - Connect Programs filter to data source.
+* Fix - Display "Continue setup" button text in Get Started page.
+* Fix - Display "Issues to Resolve" in Product Feed.
+* Fix - Display product statistics in UI.
+* Fix - Don't enable Continue button when MC account is not connected.
+* Fix - Escape and sanitize site URL.
+* Fix - Fix table title and icon button spacing.
+* Fix - Product feed API endpoint.
+* Fix - Remove Beta Testing UI for production release.
+* Fix - Resolve `@woocommerce/experimental.Text` to suppress build warnings.
+* Fix - Specify `argsRef.current` as dependency in `useAppSelectDispatch`.
 
 = 0.5.4 - 2021-04-30 =
 * Fix - Add readme and assets for releasing to WordPress.org.

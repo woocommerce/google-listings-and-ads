@@ -64,8 +64,6 @@ const AllProgramsTableCard = ( props ) => {
 		return <AppSpinner />;
 	}
 
-	// TODO: data from backend API.
-	// using the above query (e.g. orderby, order and page) as parameter.
 	const data = [
 		{
 			id: FREE_LISTINGS_PROGRAM_ID,
@@ -98,13 +96,11 @@ const AllProgramsTableCard = ( props ) => {
 	return (
 		<AppTableCard
 			className="gla-all-programs-table-card"
-			title={
-				<div className="gla-all-programs-table-card__header">
-					{ __( 'Programs', 'google-listings-and-ads' ) }
-					<AddPaidCampaignButton
-						eventProps={ { context: 'programs-table-card' } }
-					/>
-				</div>
+			title={ __( 'Programs', 'google-listings-and-ads' ) }
+			actions={
+				<AddPaidCampaignButton
+					eventProps={ { context: 'programs-table-card' } }
+				/>
 			}
 			headers={ headers }
 			rows={ data.map( ( el ) => {

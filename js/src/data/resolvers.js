@@ -8,9 +8,10 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
-import { getReportQuery, getReportKey } from './utils';
+import { getReportKey } from './utils';
 
 import {
 	handleFetchError,
@@ -130,12 +131,11 @@ export function* getMCIssues( query ) {
 }
 
 const reportTypeMap = new Map( [
-	[ 'free', 'mc' ],
-	[ 'paid', 'ads' ],
+	[ REPORT_SOURCE_FREE, 'mc' ],
+	[ REPORT_SOURCE_PAID, 'ads' ],
 ] );
 
-export function* getReport( category, type, query, dateReference ) {
-	const reportQuery = getReportQuery( query, dateReference );
+export function* getReportByApiQuery( category, type, reportQuery ) {
 	const reportType = reportTypeMap.get( type );
 	const url = `${ API_NAMESPACE }/${ reportType }/reports/${ category }`;
 	const path = addQueryArgs( url, reportQuery );

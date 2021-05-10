@@ -23,14 +23,14 @@ class GTIN extends AbstractAttribute {
 	 * @return string
 	 */
 	public static function get_name(): string {
-		return __( 'Global Trade Item Numbers (GTINs)', 'google-listings-and-ads' );
+		return __( 'Global Trade Item Number (GTIN)', 'google-listings-and-ads' );
 	}
 
 	/**
 	 * @return string
 	 */
 	public static function get_description(): string {
-		return __( 'Global Trade Item Numbers (GTINs) for your items. These identifiers include UPC (in North America), EAN (in Europe), JAN (in Japan), and ISBN (for books)', 'google-listings-and-ads' );
+		return __( 'Global Trade Item Number (GTIN) for your item. These identifiers include UPC (in North America), EAN (in Europe), JAN (in Japan), and ISBN (for books)', 'google-listings-and-ads' );
 	}
 
 }

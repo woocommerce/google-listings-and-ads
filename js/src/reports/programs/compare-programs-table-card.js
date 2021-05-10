@@ -182,23 +182,19 @@ const CompareProgramsTableCard = ( props ) => {
 
 	return (
 		<AppTableCard
-			className="gla-all-programs-table-card"
-			title={
-				<>
-					{ __( 'Programs', 'google-listings-and-ads' ) }
-					<Button
-						isSecondary
-						isSmall
-						disabled={ selectedRows.size === 0 }
-						title={ __(
-							'Select one or more products to compare',
-							'google-listings-and-ads'
-						) }
-						onClick={ compareSelected }
-					>
-						{ __( 'Compare', 'google-listings-and-ads' ) }
-					</Button>
-				</>
+			title={ __( 'Programs', 'google-listings-and-ads' ) }
+			actions={
+				<Button
+					isSecondary
+					disabled={ selectedRows.size === 0 }
+					title={ __(
+						'Select one or more products to compare',
+						'google-listings-and-ads'
+					) }
+					onClick={ compareSelected }
+				>
+					{ __( 'Compare', 'google-listings-and-ads' ) }
+				</Button>
 			}
 			headers={ getHeaders( data ) }
 			rows={ getRows( data ) }

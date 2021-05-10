@@ -3,10 +3,18 @@
  */
 import { __ } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import {
+	REPORT_SOURCE_PARAM,
+	REPORT_SOURCE_PAID,
+	REPORT_SOURCE_FREE,
+	REPORT_SOURCE_DEFAULT,
+} from '.~/constants';
+import { freeFields } from '.~/data/utils';
 import { getProductLabels, getVariationLabels } from './async-requests';
 
 // XXX: Should we register those filters somewhere?
@@ -17,7 +25,14 @@ const PRODUCTS_REPORT_ADVANCED_FILTERS_FILTER =
 
 const productsFilterConfig = {
 	label: __( 'Show', 'google-listings-and-ads' ),
-	staticParams: [ 'chartType', 'paged', 'per_page' ],
+	staticParams: [
+		REPORT_SOURCE_PARAM,
+		'chartType',
+		'orderby',
+		'order',
+		'paged',
+		'per_page',
+	],
 	param: 'filter',
 	showFilters: () => true,
 	filters: [
@@ -150,9 +165,43 @@ const variationsConfig = {
 	],
 };
 
+const reportSourceConfig = {
+	label: __( 'Show data from', 'google-listings-and-ads' ),
+	param: REPORT_SOURCE_PARAM,
+	staticParams: [ 'filter', 'products', 'order', 'chartType' ],
+	defaultValue: REPORT_SOURCE_DEFAULT,
+	filters: [
+		{
+			value: REPORT_SOURCE_PAID,
+			label: __( 'Paid campaigns', 'google-listings-and-ads' ),
+			query: {
+				get orderby() {
+					return getQuery().orderby;
+				},
+			},
+		},
+		{
+			value: REPORT_SOURCE_FREE,
+			label: __( 'Free listings', 'google-listings-and-ads' ),
+			query: {
+				get orderby() {
+					// Fallback to default sorting if the `orderby` of URL query doesn't exist in the free field list.
+					const { orderby } = getQuery();
+					if ( freeFields.includes( orderby ) ) {
+						return orderby;
+					}
+					return undefined;
+				},
+			},
+		},
+	],
+	showFilters: ( { hasPaidSource } ) => hasPaidSource,
+};
+
 export const productsFilter = applyFilters( PRODUCTS_REPORT_FILTERS_FILTER, [
 	productsFilterConfig,
 	variationsConfig,
+	reportSourceConfig,
 ] );
 
 export const advancedFilters = applyFilters(

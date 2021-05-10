@@ -1,22 +1,22 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
-import { SETTINGS_STORE_NAME } from '@woocommerce/data';
+import { useMemo } from '@wordpress/element';
 import CurrencyFactory from '@woocommerce/currency';
+
+/**
+ * Internal dependencies
+ */
+import useStoreCurrency from './useStoreCurrency';
 
 /**
  * Gets the CurrencyFactory to format string based on the store's currency settings.
  */
 const useCurrencyFactory = () => {
-	const currencySetting = useSelect( ( select ) => {
-		return select( SETTINGS_STORE_NAME ).getSetting(
-			'wc_admin',
-			'currency'
-		);
-	} );
-
-	return CurrencyFactory( currencySetting );
+	const currencySetting = useStoreCurrency();
+	return useMemo( () => CurrencyFactory( currencySetting ), [
+		currencySetting,
+	] );
 };
 
 export default useCurrencyFactory;

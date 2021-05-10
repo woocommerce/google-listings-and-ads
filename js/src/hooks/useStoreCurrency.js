@@ -22,7 +22,7 @@ const useStoreCurrency = () => {
 			'wc_admin',
 			'currency'
 		);
-	} );
+	}, [] );
 };
 
 export default useStoreCurrency;

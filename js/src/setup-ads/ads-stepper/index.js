@@ -15,13 +15,10 @@ import './index.scss';
 
 const AdsStepper = ( props ) => {
 	const { formProps } = props;
-
-	// TODO: call API and check if users have already done the account setup,
-	// we can straight away bring them to step 2.
 	const [ step, setStep ] = useState( '1' );
 
-	// TOOD: figure out when to allow and not to allow step click.
-	// Right now we just allow them to go backward, not forward.
+	// Allow the users to go backward only, not forward.
+	// Users can only go forward by clicking on the Continue button.
 	const handleStepClick = ( value ) => {
 		if ( value < step ) {
 			setStep( value );
