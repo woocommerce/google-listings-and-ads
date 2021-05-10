@@ -231,4 +231,19 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		return $this->meta_handler->get_sync_status( $wc_product->get_id() );
 	}
 
+	/**
+	 * Get the ID of the parent variable product if the provided product is a variation. Returns null
+	 * if there is no valid parent ID.
+	 *
+	 * @param int $product_id
+	 *
+	 * @return int|null The valid parent product ID or null.
+	 */
+	public function maybe_get_parent_id( int $product_id ): ?int {
+		$product = wc_get_product( $product_id );
+		if ( $product instanceof WC_Product_Variation ) {
+			return $product->get_parent_id();
+		}
+		return null;
+	}
 }

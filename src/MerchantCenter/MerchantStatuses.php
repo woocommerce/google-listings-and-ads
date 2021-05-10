@@ -190,8 +190,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		return [
-			'results' => array_values( $issues ),
-			'count'   => $issue_query->get_count(),
+			'issues' => array_values( $issues ),
+			'total'  => $issue_query->get_count(),
 		];
 	}
 
@@ -257,7 +257,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			$product_issue_template = [
-				'product'    => $product->getTitle(),
+				'product'    => wc_get_product( $wc_product_id )->get_name(),
 				'product_id' => $wc_product_id,
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
