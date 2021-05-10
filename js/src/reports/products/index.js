@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
-import { Chart } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -19,6 +18,7 @@ import AppSpinner from '.~/components/app-spinner';
 import TabNav from '../../tab-nav';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from './summary-section';
+import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 
 import chartData from './mocked-chart-data';
@@ -70,6 +70,12 @@ const ProductsReport = ( { hasPaidSource } ) => {
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
 
+	// Mocked report data for the chart.
+	const report = {
+		loaded: true,
+		data: { intervals: chartData },
+	};
+
 	return (
 		<>
 			<ProductsReportFilters
@@ -78,13 +84,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				report={ reportId }
 			/>
 			<SummarySection metrics={ metrics } />
-			<Chart
-				data={ chartData }
-				title="Conversions"
-				layout="time-comparison"
-				interactiveLegend="false"
-				showHeaderControls="false"
-			/>
+			<ChartSection metrics={ metrics } report={ report } />
 			<CompareProductsTableCard
 				trackEventReportId={ reportId }
 				metrics={ metrics }
@@ -117,8 +117,5 @@ const ProductsReportPage = () => {
 export default ProductsReportPage;
 
 /**
- * @typedef {Object} Metric Metric item structure for disaplying label and its currency type.
- * @property {string} key Metric key.
- * @property {string} label Metric label to display.
- * @property {boolean} [isCurrency] Metric is a currency if true.
+ * @typedef {import("../index.js").Metric} Metric
  */

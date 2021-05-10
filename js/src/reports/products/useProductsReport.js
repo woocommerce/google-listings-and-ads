@@ -55,33 +55,5 @@ export default function useProductsReport( type ) {
 }
 
 /**
- * Schema of the `useProductsReport` hook
- *
- * @typedef {Object} ProductsReportSchema
- * @property {boolean} loaded Whether the data have been loaded.
- * @property {ProductsReportData} data Fetched products report data.
- */
-
-/**
- * @typedef {Object} ProductsReportData
- * @property {Array<ProductsData>} products Products data.
- * @property {Array<IntervalsData>} intervals Intervals data.
- * @property {PerformanceData} totals Performance data.
- */
-
-/**
- * @typedef {Object} ProductsData
- * @property {number} id Product ID.
- * @property {TotalsData} subtotals Performance data.
- */
-
-/**
- * @typedef {Object} IntervalsData
- * @property {string} interval ID of this report segment.
- * @property {TotalsData} subtotals Performance data.
- */
-
-/**
- * @typedef { import(".~/data/utils").ReportFieldsSchema } TotalsData
- * @typedef { import(".~/data/utils").PerformanceData } PerformanceData
+ * @typedef { import("../index.js").ProductsReportSchema } ProductsReportSchema
  */

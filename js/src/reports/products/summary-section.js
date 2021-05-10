@@ -45,5 +45,5 @@ export default function SummarySection( { metrics } ) {
 }
 
 /**
- * @typedef {import("./index.js").Metric} Metric
+ * @typedef {import("../index.js").Metric} Metric
  */
