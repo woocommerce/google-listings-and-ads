@@ -18,7 +18,7 @@ import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import TabNav from '../../tab-nav';
 import ProductsReportFilters from './products-report-filters';
-import SummarySection from './summary-section';
+import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 import SubNav from '../sub-nav';

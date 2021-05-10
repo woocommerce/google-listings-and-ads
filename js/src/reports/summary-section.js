@@ -8,7 +8,7 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useUrlQuery from '.~/hooks/useUrlQuery';
-import MetricNumber from '../metric-number';
+import MetricNumber from './metric-number';
 
 /**
  * Renders a section composed with SummaryList and MetricNumber.
@@ -52,6 +52,6 @@ export default function SummarySection( { metrics, report } ) {
 }
 
 /**
- * @typedef {import("../index.js").Metric} Metric
- * @typedef {import("../index.js").ProductsReportSchema} ProductsReportSchema
+ * @typedef {import("./index.js").Metric} Metric
+ * @typedef {import("./index.js").ProductsReportSchema} ProductsReportSchema
  */
