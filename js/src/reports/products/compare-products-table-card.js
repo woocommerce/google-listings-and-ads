@@ -10,10 +10,13 @@ import { getIdsFromQuery, onQueryChange } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useUrlQuery from '.~/hooks/useUrlQuery';
+import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
+import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import AppTableCard from '.~/components/app-table-card';
 
 const compareBy = 'products';
 const compareParam = 'filter';
+const numberFormatSetting = { precision: 0 };
 
 /**
  * All products table, with compare feature.
@@ -28,6 +31,9 @@ const compareParam = 'filter';
  */
 const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 	const query = useUrlQuery();
+	const formatNumber = useCurrencyFormat( numberFormatSetting );
+	const { formatAmount } = useCurrencyFactory();
+
 	const [ selectedRows, setSelectedRows ] = useState( () => {
 		return new Set( getIdsFromQuery( query[ compareBy ] ) );
 	} );
@@ -91,8 +97,9 @@ const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 	 */
 	const renderMetricDataCells = ( row ) =>
 		metrics.map( ( metric ) => {
+			const formatFn = metric.isCurrency ? formatAmount : formatNumber;
 			return {
-				display: row.subtotals[ metric.key ],
+				display: formatFn( row.subtotals[ metric.key ] ),
 			};
 		} );
 	/**
