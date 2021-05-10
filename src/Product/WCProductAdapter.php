@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
@@ -602,6 +603,12 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 * @return $this
 	 */
 	protected function map_extra_attributes(): WCProductAdapter {
+		// Brand
+		$brand = $this->get_attribute_value( Brand::get_id() );
+		if ( ! empty( $brand ) ) {
+			$this->setBrand( $brand );
+		}
+
 		// GTIN
 		$gtin = $this->get_attribute_value( GTIN::get_id() );
 		if ( ! empty( $gtin ) ) {
