@@ -49,16 +49,23 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $validator;
 
 	/**
+	 * @var ProductFactory
+	 */
+	protected $product_factory;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductHelper      $product_helper
 	 * @param ValidatorInterface $validator
+	 * @param ProductFactory     $product_factory
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper, ValidatorInterface $validator ) {
-		$this->meta_handler   = $meta_handler;
-		$this->product_helper = $product_helper;
-		$this->validator      = $validator;
+	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper, ValidatorInterface $validator, ProductFactory $product_factory ) {
+		$this->meta_handler    = $meta_handler;
+		$this->product_helper  = $product_helper;
+		$this->validator       = $validator;
+		$this->product_factory = $product_factory;
 	}
 
 	/**
@@ -135,7 +142,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 			}
 
 			foreach ( $google_ids as $google_id ) {
-				$request_entries[] = new BatchProductIDRequestEntry(
+				$request_entries[ $google_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),
 					$google_id
 				);
@@ -167,7 +174,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 			}
 
 			// check if the product validates for just one of its target countries
-			$adapted_product   = $this->product_helper->generate_adapted_product( $product, $target_countries[0] );
+			$adapted_product   = $this->product_factory->create( $product, $target_countries[0] );
 			$validation_result = $this->validate_product( $adapted_product );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation_result );

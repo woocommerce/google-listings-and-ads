@@ -57,6 +57,11 @@ const webpackConfig = {
 			'js/src/tasks/complete-setup',
 			'index.js'
 		),
+		'custom-inputs': path.resolve(
+			process.cwd(),
+			'js/src/custom-inputs/select-with-text-input',
+			'index.js'
+		),
 	},
 	output: {
 		...defaultConfig.output,

@@ -5,9 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminStyleAsset;
-use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsAwareness;
+use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
@@ -27,8 +28,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
 class Admin implements Service, Registerable, Conditional {
 
 	use AdminConditional;
-	use AssetsAwareness;
 	use PluginHelper;
+
+	/**
+	 * @var AssetsHandlerInterface
+	 */
+	protected $assets_handler;
 
 	/**
 	 * @var ViewFactory
@@ -64,14 +69,12 @@ class Admin implements Service, Registerable, Conditional {
 	 * Register a service.
 	 */
 	public function register(): void {
-		$this->register_assets();
+		$this->assets_handler->add_many( $this->get_assets() );
 
 		add_action(
 			'admin_enqueue_scripts',
 			function() {
-				if ( wc_admin_is_registered_page() ) {
-					$this->enqueue_assets();
-				}
+				$this->assets_handler->enqueue_many( $this->get_assets() );
 			}
 		);
 
@@ -84,10 +87,16 @@ class Admin implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Set up the array of assets.
+	 * Return an array of assets.
+	 *
+	 * @return Asset[]
 	 */
-	protected function setup_assets(): void {
-		$this->assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
+	protected function get_assets(): array {
+		$wc_admin_condition = function() {
+			return wc_admin_is_registered_page();
+		};
+
+		$assets[] = ( new AdminScriptWithBuiltDependenciesAsset(
 			'google-listings-and-ads',
 			'js/build/index',
 			"{$this->get_root_dir()}/js/build/index.asset.php",
@@ -96,7 +105,8 @@ class Admin implements Service, Registerable, Conditional {
 					'dependencies' => [],
 					'version'      => (string) filemtime( "{$this->get_root_dir()}/js/build/index.js" ),
 				]
-			)
+			),
+			$wc_admin_condition
 		) )->add_inline_script(
 			'glaData',
 			[
@@ -108,12 +118,38 @@ class Admin implements Service, Registerable, Conditional {
 			]
 		);
 
-		$this->assets[] = ( new AdminStyleAsset(
+		$assets[] = ( new AdminStyleAsset(
 			'google-listings-and-ads-css',
 			'/js/build/index',
 			defined( 'WC_ADMIN_PLUGIN_FILE' ) ? [ 'wc-admin-app' ] : [],
-			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" )
+			(string) filemtime( "{$this->get_root_dir()}/js/build/index.css" ),
+			$wc_admin_condition
 		) );
+
+		$assets[] = ( new AdminScriptAsset(
+			'gla-custom-inputs',
+			'js/build/custom-inputs',
+			[],
+			'',
+			function () {
+				$screen = get_current_screen();
+
+				return ( null !== $screen && 'product' === $screen->id );
+			}
+		) );
+		$assets[] = ( new AdminStyleAsset(
+			'gla-custom-inputs-css',
+			'js/build/custom-inputs',
+			[],
+			'',
+			function () {
+				$screen = get_current_screen();
+
+				return ( null !== $screen && 'product' === $screen->id );
+			}
+		) );
+
+		return $assets;
 	}
 
 	/**
@@ -176,17 +212,8 @@ class Admin implements Service, Registerable, Conditional {
 	 * @throws ViewException If the view doesn't exist or can't be loaded.
 	 */
 	public function get_view( string $view, array $context_variables = [] ): string {
-		return $this->view_factory->create( self::get_view_path( $view ) )
+		return $this->view_factory->create( $view )
 							->render( $context_variables );
-	}
-
-	/**
-	 * @param string $view Name of the view
-	 *
-	 * @return string View path relative to plugin's root
-	 */
-	protected static function get_view_path( string $view ): string {
-		return path_join( 'src/Admin/views', $view );
 	}
 
 	/**

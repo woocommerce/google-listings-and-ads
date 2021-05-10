@@ -174,7 +174,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @return string[] An array of Google product IDs stored for each WooCommerce product
 	 */
-	public function get_synced_google_product_ids( WC_Product $product ) {
+	public function get_synced_google_product_ids( WC_Product $product ): array {
 		return $this->meta_handler->get_google_ids( $product->get_id() );
 	}
 
@@ -231,18 +231,4 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		return $this->meta_handler->get_sync_status( $wc_product->get_id() );
 	}
 
-	/**
-	 * @param WC_Product $product
-	 * @param string     $target_country
-	 *
-	 * @return WCProductAdapter
-	 */
-	public static function generate_adapted_product( WC_Product $product, string $target_country ): WCProductAdapter {
-		return new WCProductAdapter(
-			[
-				'wc_product'    => $product,
-				'targetCountry' => $target_country,
-			]
-		);
-	}
 }

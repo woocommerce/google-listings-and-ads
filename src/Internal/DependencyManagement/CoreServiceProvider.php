@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
@@ -51,7 +53,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -124,6 +128,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MerchantIssues::class         => true,
 		TransientsInterface::class    => true,
 		MerchantCenterService::class  => true,
+		AttributeManager::class       => true,
+		ProductFactory::class         => true,
+		AttributesTab::class          => true,
+		VariationsAttributes::class   => true,
 	];
 
 	/**
@@ -189,7 +197,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( EventTracking::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
-		$this->conditionally_share_with_tags( CompleteSetup::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( CompleteSetup::class, AssetsHandlerInterface::class );
 		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
@@ -199,18 +207,25 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 
+		// Product attributes
+		$this->conditionally_share_with_tags( AttributeManager::class );
+		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class );
+		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class );
+
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( ProductStatistics::class );
 		$this->share_with_tags( MerchantIssues::class, TransientsInterface::class, Merchant::class, MerchantIssueQuery::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
+		$this->share_with_tags( ProductFactory::class, AttributeManager::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
 			ProductHelper::class,
-			ValidatorInterface::class
+			ValidatorInterface::class,
+			ProductFactory::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,

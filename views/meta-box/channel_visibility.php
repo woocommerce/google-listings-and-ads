@@ -2,11 +2,12 @@
 declare( strict_types=1 );
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPView;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * @var \Automattic\WooCommerce\GoogleListingsAndAds\View\PHPView $this
+ * @var PHPView $this
  */
 
 /**
