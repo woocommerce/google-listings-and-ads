@@ -14,5 +14,14 @@
 				justify-content: flex-start;
 			}
 		}
+
+		&__body {
+			.woocommerce-table__table {
+				.components-base-control__field {
+					// override the default margin-bottom 8px for checkboxes in the table.
+					margin-bottom: 0;
+				}
+			}
+		}
 	}
 }
