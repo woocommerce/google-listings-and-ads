@@ -70,6 +70,12 @@ const ProductsReport = ( { hasPaidSource } ) => {
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
 
+	// Mocked report data for the chart.
+	const report = {
+		loaded: true,
+		data: { intervals: chartData },
+	};
+
 	return (
 		<>
 			<ProductsReportFilters
@@ -78,7 +84,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				report={ reportId }
 			/>
 			<SummarySection metrics={ metrics } />
-			<ChartSection chartData={ chartData } />
+			<ChartSection metrics={ metrics } report={ report } />
 			<CompareProductsTableCard
 				trackEventReportId={ reportId }
 				metrics={ metrics }
