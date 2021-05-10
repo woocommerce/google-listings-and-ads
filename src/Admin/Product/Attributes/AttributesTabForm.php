@@ -3,8 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 
@@ -27,7 +29,8 @@ class AttributesTabForm extends AttributesForm {
 
 		$this->add_attribute( GTIN::class, Text::class )
 			 ->add_attribute( MPN::class, Text::class )
-			 ->add_attribute( Brand::class, Text::class );
+			 ->add_attribute( Brand::class, Text::class )
+			 ->add_attribute( Gender::class, Select::class );
 
 		parent::__construct( $data );
 	}

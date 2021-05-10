@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use WP_Post;
@@ -111,8 +112,9 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 	protected function get_form( int $variation_id, int $variation_index ): VariationAttributesForm {
 		$form_data = [
 			(string) $variation_index => [
-				GTIN::get_id() => $this->attribute_manager->get_value( $variation_id, GTIN::get_id() ),
-				MPN::get_id()  => $this->attribute_manager->get_value( $variation_id, MPN::get_id() ),
+				GTIN::get_id()   => $this->attribute_manager->get_value( $variation_id, GTIN::get_id() ),
+				MPN::get_id()    => $this->attribute_manager->get_value( $variation_id, MPN::get_id() ),
+				Gender::get_id() => $this->attribute_manager->get_value( $variation_id, Gender::get_id() ),
 			],
 		];
 
@@ -134,6 +136,11 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		// mpn
 		if ( isset( $data[ MPN::get_id() ] ) ) {
 			$this->attribute_manager->update( $variation_id, new MPN( $data[ MPN::get_id() ] ) );
+		}
+
+		// gender
+		if ( isset( $data[ Gender::get_id() ] ) ) {
+			$this->attribute_manager->update( $variation_id, new Gender( $data[ Gender::get_id() ] ) );
 		}
 	}
 
