@@ -9,14 +9,11 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import TopBar from '.~/components/stepper/top-bar';
 import { recordSetupMCEvent } from '.~/utils/recordEvent';
+import HelpIconButton from '.~/components/help-icon-button';
 
 const SetupMCTopBar = () => {
 	const handleBackButtonClick = () => {
 		recordSetupMCEvent( 'back' );
-	};
-
-	const handleHelpButtonClick = () => {
-		recordSetupMCEvent( 'help' );
 	};
 
 	return (
@@ -25,9 +22,9 @@ const SetupMCTopBar = () => {
 				'Get started with Google Listings & Ads',
 				'google-listings-and-ads'
 			) }
+			helpButton={ <HelpIconButton eventContext="setup-mc" /> }
 			backHref={ getNewPath( {}, '/google/start' ) }
 			onBackButtonClick={ handleBackButtonClick }
-			onHelpButtonClick={ handleHelpButtonClick }
 		/>
 	);
 };
