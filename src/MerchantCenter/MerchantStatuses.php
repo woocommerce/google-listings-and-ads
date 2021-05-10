@@ -76,7 +76,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Get the Product Statistics (updating caches if necessary).
+	 * Get the Product Statistics (updating caches if necessary). This is the
+	 * number of product IDs with each status (active and partially active are combined).
 	 *
 	 * @param bool $force_refresh Force refresh of all product status data.
 	 *
@@ -87,6 +88,32 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->maybe_refresh_status_data( $force_refresh );
 
 		return $this->get_counting_statistics();
+	}
+
+
+	/**
+	 * Get the Product Statuses (updating caches if necessary). This is the array of
+	 * product id => Merchant Center status
+	 *
+	 * @param bool $force_refresh Force refresh of all product status data.
+	 *
+	 * @return array The product status statistics.
+	 * @throws Exception If the Merchant Center can't be polled for the statuses.
+	 */
+	public function get_product_statuses( bool $force_refresh = false ): array {
+		$this->maybe_refresh_status_data( $force_refresh );
+
+		$statuses = [];
+		foreach ( $this->product_statistics['statistics'] as $status => $ids ) {
+			if ( empty( $ids ) ) {
+				continue;
+			}
+			foreach ( explode( ',', $ids ) as $id ) {
+				$statuses[ $id ] = $status;
+			}
+		}
+
+		return $statuses;
 	}
 
 	/**

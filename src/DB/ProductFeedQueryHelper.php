@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -19,10 +22,16 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ProductFeedQueryHelper
  *
+ * ContainerAware used to access:
+ * - MerchantIssues
+ * - ProductHelper
+ * - ProductMetaHandler
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductFeedQueryHelper implements Service {
+class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
+	use ContainerAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -36,16 +45,6 @@ class ProductFeedQueryHelper implements Service {
 	protected $request;
 
 	/**
-	 * @var ProductHelper
-	 */
-	protected $product_helper;
-
-	/**
-	 * @var ProductMetaHandler
-	 */
-	protected $meta_handler;
-
-	/**
 	 * @var ProductRepository
 	 */
 	protected $product_repository;
@@ -53,16 +52,12 @@ class ProductFeedQueryHelper implements Service {
 	/**
 	 * ProductFeedQueryHelper constructor.
 	 *
-	 * @param wpdb               $wpdb
-	 * @param ProductRepository  $product_repository
-	 * @param ProductHelper      $product_helper
-	 * @param ProductMetaHandler $meta_handler
+	 * @param wpdb              $wpdb
+	 * @param ProductRepository $product_repository
 	 */
-	public function __construct( wpdb $wpdb, ProductRepository $product_repository, ProductHelper $product_helper, ProductMetaHandler $meta_handler ) {
+	public function __construct( wpdb $wpdb, ProductRepository $product_repository ) {
 		$this->wpdb               = $wpdb;
 		$this->product_repository = $product_repository;
-		$this->product_helper     = $product_helper;
-		$this->meta_handler       = $meta_handler;
 	}
 
 	/**
@@ -73,16 +68,24 @@ class ProductFeedQueryHelper implements Service {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	public function get( WP_REST_Request $request ): array {
+		/** @var MerchantStatuses $merchant_statuses */
+		$merchant_statuses = $this->container->get( MerchantStatuses::class );
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
+		/** @var ProductMetaHandler $meta_handler */
+		$meta_handler = $this->container->get( ProductMetaHandler::class );
+
 		$this->request          = $request;
 		$products               = [];
 		$args                   = $this->prepare_query_args();
 		list( $limit, $offset ) = $this->prepare_query_pagination();
+		$mc_product_statuses    = $merchant_statuses->get_product_statuses();
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id     = $product->get_id();
-			$errors = $this->meta_handler->get_errors( $id ) ?: [];
+			$errors = $meta_handler->get_errors( $id ) ?: [];
 
 			// Combine errors for variable products, which have a variation-indexed array of errors.
 			$first_key = array_key_first( $errors );
@@ -93,8 +96,8 @@ class ProductFeedQueryHelper implements Service {
 			$products[ $id ] = [
 				'id'      => $id,
 				'title'   => $product->get_name(),
-				'visible' => $this->product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
-				'status'  => $this->product_helper->get_sync_status( $product ),
+				'visible' => $product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
+				'status'  => $mc_product_statuses[ $id ] ?? $product_helper->get_sync_status( $product ),
 				'errors'  => array_values( $errors ),
 			];
 		}
