@@ -1,0 +1,156 @@
+{
+	"intervals": [
+		{
+			"interval": "2021-04-01",
+			"subtotals": {
+				"sales": 975.4519,
+				"conversions": 84258,
+				"clicks": 9799,
+				"impressions": 6152
+			}
+		},
+		{
+			"interval": "2021-04-02",
+			"subtotals": {
+				"sales": 537.77512,
+				"conversions": 89094,
+				"clicks": 7603,
+				"impressions": 9620
+			}
+		},
+		{
+			"interval": "2021-04-03",
+			"subtotals": {
+				"sales": 1206.0219,
+				"conversions": 82129,
+				"clicks": 9107,
+				"impressions": 9063
+			}
+		},
+		{
+			"interval": "2021-04-04",
+			"subtotals": {
+				"sales": 1035.76,
+				"conversions": 95745,
+				"clicks": 6829,
+				"impressions": 6532
+			}
+		},
+		{
+			"interval": "2021-04-05",
+			"subtotals": {
+				"sales": 627.435,
+				"conversions": 61148,
+				"clicks": 9530,
+				"impressions": 6149
+			}
+		},
+		{
+			"interval": "2021-04-06",
+			"subtotals": {
+				"sales": 697.4789,
+				"conversions": 69968,
+				"clicks": 6736,
+				"impressions": 6619
+			}
+		},
+		{
+			"interval": "2021-04-07",
+			"subtotals": {
+				"sales": 520.5314,
+				"conversions": 86649,
+				"clicks": 8812,
+				"impressions": 7358
+			}
+		}
+	],
+
+	"products": [
+		{
+			"id": 123,
+			"name": "Freshfarm T-shirt",
+			"subtotals": {
+				"conversions": 154,
+				"clicks": 1148,
+				"impressions": 70443,
+				"sales": 106.585
+			}
+		},
+		{
+			"id": 456,
+			"name": "Hershey's Chocolate Hat",
+			"subtotals": {
+				"conversions": 3,
+				"clicks": 4600,
+				"impressions": 9631,
+				"sales": 778.354
+			}
+		},
+		{
+			"id": 789,
+			"name": "\"Mediterranean Agate A\" Fine Art Canvas Print, 54\"x54\"",
+			"subtotals": {
+				"conversions": 877,
+				"clicks": 1462,
+				"impressions": 4339,
+				"sales": 446
+			}
+		},
+		{
+			"id": 890,
+			"name": "Fresh Lemon Fruit Bar",
+			"subtotals": {
+				"conversions": 4,
+				"clicks": 540,
+				"impressions": 50364,
+				"sales": 487.49
+			}
+		},
+		{
+			"id": 11234,
+			"name": "Deny Designs Marta Barragan Camarasa, Green",
+			"subtotals": {
+				"conversions": 2,
+				"clicks": 798,
+				"impressions": 93046,
+				"sales": 419.1
+			}
+		},
+		{
+			"id": 2234,
+			"name": "Extra Tangy Strawberry Tart",
+			"subtotals": {
+				"conversions": 34,
+				"clicks": 154,
+				"impressions": 61391,
+				"sales": 2359.37
+			}
+		},
+		{
+			"id": 3345,
+			"name": "Pierre Gold Accent Chair",
+			"subtotals": {
+				"conversions": 5,
+				"clicks": 492,
+				"impressions": 39235,
+				"sales": 948.55
+			}
+		},
+		{
+			"id": 4456,
+			"name": "Cookie Hamper",
+			"subtotals": {
+				"conversions": 429,
+				"clicks": 5045,
+				"impressions": 50963,
+				"sales": 778.35
+			}
+		}
+	],
+	"totals":{
+		"clicks": 14135,
+		"impressions": 383512,
+		"conversions": 4102,
+		"sales": 10802.93
+	}
+}

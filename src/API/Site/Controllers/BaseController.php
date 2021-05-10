@@ -131,6 +131,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 		$prepared = $this->add_additional_fields_to_object( $prepared, $request );
 		$prepared = $this->filter_response_by_context( $prepared, $context );
 
+		$prepared = apply_filters( 'gla_prepared_response_' . $this->get_schema_title(), $prepared, get_class( $this ) );
 		return new Response( $prepared );
 	}
 
