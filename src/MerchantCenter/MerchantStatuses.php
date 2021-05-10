@@ -341,6 +341,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->product_statistics,
 			function( array &$el ): void {
 				sort( $el );
+				$el = implode( ',', $el );
 			}
 		);
 
@@ -432,7 +433,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @return array
 	 */
 	protected function get_counting_statistics(): array {
-		$counting_stats            = array_map( 'count', $this->product_statistics['statistics'] );
+		$counting_stats = array_map(
+			function( string $ids ): int {
+				$comma_count = substr_count( $ids, ',' );
+				return $comma_count ? $comma_count + 1 : 0;
+			},
+			$this->product_statistics['statistics']
+		);
+
 		$counting_stats['active'] += $counting_stats['partially_active'];
 		unset( $counting_stats['partially_active'] );
 
