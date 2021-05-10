@@ -4,15 +4,12 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
-import {
-	getQuery,
-	getIdsFromQuery,
-	onQueryChange,
-} from '@woocommerce/navigation';
+import { getIdsFromQuery, onQueryChange } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import useUrlQuery from '.~/hooks/useUrlQuery';
 import AppTableCard from '.~/components/app-table-card';
 
 const compareBy = 'products';
@@ -30,19 +27,24 @@ const compareParam = 'filter';
  * @param {Object} [props.restProps] Properties to be forwarded to AppTableCard.
  */
 const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
-	const query = getQuery();
+	const query = useUrlQuery();
 	const [ selectedRows, setSelectedRows ] = useState( () => {
 		return new Set( getIdsFromQuery( query[ compareBy ] ) );
 	} );
 
 	const {
+		loaded,
 		data: { products },
 	} = report;
+
+	const loading = ! loaded;
+	const rowsPerPage = products.length || 5;
 
 	const metricHeaders = useMemo( () => {
 		const headers = metrics.map( ( metric ) => ( {
 			...metric,
 			isSortable: true,
+			isNumeric: true,
 		} ) );
 		headers[ 0 ].defaultSort = true;
 		headers[ 0 ].defaultOrder = 'desc';
@@ -63,7 +65,8 @@ const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 			key: 'compare',
 			label: (
 				<CheckboxControl
-					checked={ selectedRows.size === data.length }
+					disabled={ loading }
+					checked={ loaded && selectedRows.size === data.length }
 					onChange={ selectAll }
 				/>
 			),
@@ -109,7 +112,7 @@ const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 					<CheckboxControl
 						checked={ selectedRows.has( row.id ) }
 						onChange={ selectRow.bind( null, row.id ) }
-					></CheckboxControl>
+					/>
 				),
 			},
 			// title
@@ -158,7 +161,7 @@ const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 			actions={
 				<Button
 					isSecondary
-					disabled={ selectedRows.size <= 1 }
+					disabled={ loading || selectedRows.size <= 1 }
 					title={ __(
 						'Select one or more products to compare',
 						'google-listings-and-ads'
@@ -168,10 +171,11 @@ const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 					{ __( 'Compare', 'google-listings-and-ads' ) }
 				</Button>
 			}
+			isLoading={ loading }
 			headers={ getHeaders( products ) }
 			rows={ getRows( products ) }
 			totalRows={ products.length }
-			rowsPerPage={ 10 }
+			rowsPerPage={ rowsPerPage }
 			query={ query }
 			compareBy={ compareBy }
 			compareParam={ compareParam }
