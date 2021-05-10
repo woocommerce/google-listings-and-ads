@@ -13,6 +13,7 @@ import {
 	REPORT_SOURCE_PAID,
 	REPORT_SOURCE_DEFAULT,
 } from '.~/constants';
+import useProductsReport from './useProductsReport';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import TabNav from '../../tab-nav';
@@ -20,10 +21,6 @@ import ProductsReportFilters from './products-report-filters';
 import SummarySection from './summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
-
-import getMetricsData from './mocked-metrics-data';
-import chartData from './mocked-chart-data';
-import { mockedListingsData } from './mocked-products-data';
 import SubNav from '../sub-nav';
 
 /**
@@ -71,16 +68,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
-
-	// Mocked report data for the chart and products table.
-	const report = {
-		loaded: true,
-		data: {
-			intervals: chartData,
-			products: mockedListingsData(),
-			totals: getMetricsData(),
-		},
-	};
+	const report = useProductsReport( type );
 
 	return (
 		<>
