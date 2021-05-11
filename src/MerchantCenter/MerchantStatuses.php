@@ -90,8 +90,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
 
-		$counting_stats           = $this->mc_statuses['statistics'];
-		$counting_stats['active'] = $counting_stats[ MCStatus::PARTIALLY_APPROVED ] + $counting_stats[ MCStatus::APPROVED ];
+		$counting_stats = $this->mc_statuses['statistics'];
+		$counting_stats = array_merge(
+			[ 'active' => $counting_stats[ MCStatus::PARTIALLY_APPROVED ] + $counting_stats[ MCStatus::APPROVED ] ],
+			$counting_stats
+		);
 		unset( $counting_stats[ MCStatus::PARTIALLY_APPROVED ], $counting_stats[ MCStatus::APPROVED ] );
 
 		return array_merge(
