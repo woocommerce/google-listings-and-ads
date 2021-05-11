@@ -19,7 +19,7 @@ import MetricNumber from './metric-number';
  */
 export default function SummarySection( { metrics, report } ) {
 	const query = useUrlQuery();
-	const { orderby = metrics[ 0 ].key } = query;
+	const { selectedMetric = metrics[ 0 ].key } = query;
 	const {
 		loaded,
 		data: { totals },
@@ -33,8 +33,8 @@ export default function SummarySection( { metrics, report } ) {
 		<SummaryList>
 			{ () =>
 				metrics.map( ( { key, label, isCurrency = false } ) => {
-					const selected = orderby === key;
-					const href = getNewPath( { orderby: key } );
+					const selected = selectedMetric === key;
+					const href = getNewPath( { selectedMetric: key } );
 					return (
 						<MetricNumber
 							key={ key }

@@ -30,9 +30,9 @@ export default function ChartSection( { metrics, report } ) {
 	const currency = useStoreCurrency();
 	const { formatAmount } = useCurrencyFactory();
 
-	const { orderby } = query;
-	const { key, label, isCurrency = false } = orderby
-		? metrics.find( ( metric ) => metric.key === orderby )
+	const { selectedMetric } = query;
+	const { key, label, isCurrency = false } = selectedMetric
+		? metrics.find( ( metric ) => metric.key === selectedMetric )
 		: metrics[ 0 ];
 
 	const chartType = getChartTypeForQuery( query );
