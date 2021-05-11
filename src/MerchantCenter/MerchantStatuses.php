@@ -141,14 +141,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-		// Update product stats and issues.
+		// Update product stats and issues page by page.
 		$this->mc_statuses = [];
 		$page_token        = null;
 		do {
 			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
 			$statuses = $response->getResources();
 			$this->refresh_product_issues( $statuses );
-			$this->update_statuses_count( $statuses );
+			$this->sum_status_counts( $statuses );
 
 			$page_token = $response->getNextPageToken();
 		} while ( $page_token );
@@ -191,13 +191,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$issue_query->set_order( 'product_id' );
 		$issue_query->set_order( 'issue' );
 
-		// Filter by type.
+		// Filter by type if valid.
 		if ( in_array( $type, $this->get_valid_issue_types(), true ) ) {
-			$issue_query->where(
-				'product_id',
-				0,
-				self::TYPE_ACCOUNT === $type ? '=' : '>'
-			);
+			$compare = self::TYPE_ACCOUNT === $type ? '=' : '>';
+			$issue_query->where( 'product_id', 0, $compare );
 		} elseif ( null !== $type ) {
 			throw InvalidValue::not_in_allowed_list( 'type filter', $this->get_valid_issue_types() );
 		}
@@ -283,14 +280,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
 					continue;
 				}
-				$code = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
+				$hash_key = $wc_product_id . '__' . md5( $item_level_issue->getDescription() );
 
-				$this->product_issue_countries[ $code ] = array_merge(
-					$this->product_issue_countries[ $code ] ?? [],
+				$this->product_issue_countries[ $hash_key ] = array_merge(
+					$this->product_issue_countries[ $hash_key ] ?? [],
 					$item_level_issue->getApplicableCountries()
 				);
 
-				$product_issues[ $code ] = $product_issue_template + [
+				$product_issues[ $hash_key ] = $product_issue_template + [
 					'code'                 => $item_level_issue->getCode(),
 					'issue'                => $item_level_issue->getDescription(),
 					'action'               => $item_level_issue->getDetail(),
@@ -312,9 +309,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		// Product issue cleanup: sorting (by product ID) and sort applicable countries.
 		ksort( $product_issues );
 		$product_issues = array_map(
-			function ( $code, $issue ) {
-				$issue['applicable_countries'] = json_encode( $this->product_issue_countries[ $code ] );
-
+			function ( $unique_key, $issue ) {
+				$issue['applicable_countries'] = json_encode( $this->product_issue_countries[ $unique_key ] );
 				return $issue;
 			},
 			array_keys( $product_issues ),
@@ -325,11 +321,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Add the status from the current page of products to the overall numbers.
+	 * Add the provided status counts to the overall totals.
 	 *
 	 * @param MC_Product_Status[] $mc_statuses
 	 */
-	protected function update_statuses_count( array $mc_statuses ): void {
+	protected function sum_status_counts( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
@@ -345,8 +341,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			if ( is_null( $status ) ) {
 				continue;
 			}
+			// Simple is used later for global product status statistics.
 			$this->product_statuses['simple'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['simple'][ $wc_product_id ][ $status ] ?? 0 );
 
+			// Aggregate parent statuses for mc_status postmeta.
 			$wc_parent_id = $product_helper->maybe_get_parent_id( $wc_product_id );
 			if ( is_null( $wc_parent_id ) ) {
 				continue;
@@ -393,11 +391,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Update the Merchant Center status for all products.
+	 * Update the Merchant Center status for each product.
 	 */
 	protected function update_product_mc_statuses() {
+		// Generate a product_id=>mc_status array.
 		$product_statuses = [];
-
 		foreach ( $this->product_statuses as $products ) {
 			foreach ( $products as $product_id => $statuses ) {
 				if ( isset( $statuses[ MCStatus::PENDING ] ) ) {
@@ -442,7 +440,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Allows a hook to modify the statistics lifetime.
+	 * Allows a hook to modify the lifetime of the statuses data.
 	 *
 	 * @return int
 	 */

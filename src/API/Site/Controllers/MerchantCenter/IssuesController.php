@@ -77,7 +77,7 @@ class IssuesController extends BaseOptionsController {
 				$results         = $this->merchant_statuses->get_issues( $type_filter, $per_page, $page );
 				$results['page'] = $page;
 
-				// Link variations to their parent product.
+				// Replace variation IDs with parent ID (for Edit links).
 				foreach ( $results['issues'] as &$issue ) {
 					if ( empty( $issue['product_id'] ) ) {
 						continue;
