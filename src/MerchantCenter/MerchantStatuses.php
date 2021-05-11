@@ -90,7 +90,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function get_product_statistics( bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
 
-		return $this->get_counting_statistics();
+		$counting_stats           = $this->mc_statuses['statistics'];
+		$counting_stats['active'] = $counting_stats[ MCStatus::PARTIALLY_APPROVED ] + $counting_stats[ MCStatus::APPROVED ];
+		unset( $counting_stats[ MCStatus::PARTIALLY_APPROVED ], $counting_stats[ MCStatus::APPROVED ] );
+
+		return array_merge(
+			$this->mc_statuses,
+			[ 'statistics' => $counting_stats ]
+		);
 	}
 
 	/**
@@ -109,7 +116,58 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	public function get_issues( string $type = null, int $per_page = 0, int $page = 1, bool $force_refresh = false ): array {
 		$this->maybe_refresh_status_data( $force_refresh );
-		return $this->fetch_issue_data( $type, $per_page, $page );
+		return $this->fetch_issues( $type, $per_page, $page );
+	}
+
+	/**
+	 * Update stale status-related data - account issues, product issues, products status stats.
+	 *
+	 * @param bool $force_refresh Force refresh of all status-related data.
+	 *
+	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
+	 */
+	public function maybe_refresh_status_data( bool $force_refresh = false ): void {
+		// Only refresh if the current data has expired.
+		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
+		if ( ! $force_refresh && null !== $this->mc_statuses ) {
+			return;
+		}
+
+		// Save a request if no MC account connected.
+		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
+			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
+		}
+
+		// Update product stats and issues.
+		$this->mc_statuses = [];
+		$page_token        = null;
+		do {
+			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
+			$statuses = $response->getResources();
+			$this->refresh_product_issues( $statuses );
+			$this->update_statuses_count( $statuses );
+
+			$page_token = $response->getNextPageToken();
+		} while ( $page_token );
+
+		$this->update_mc_statuses();
+		$this->update_product_mc_statuses();
+
+		// Update account issues.
+		$this->refresh_account_issues();
+
+		// Delete stale issues.
+		$delete_before = clone $this->current_time;
+		$delete_before->modify( '-' . $this->get_status_lifetime() . ' seconds' );
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $delete_before );
+	}
+
+	/**
+	 * Delete the cached statistics and issues.
+	 */
+	public function delete(): void {
+		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
+		$this->container->get( MerchantIssueTable::class )->truncate();
 	}
 
 	/**
@@ -122,7 +180,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @return array The requested issues and the total count of issues.
 	 * @throws InvalidValue If the type filter is invalid.
 	 */
-	protected function fetch_issue_data( string $type = null, int $per_page = 0, int $page = 1 ): array {
+	protected function fetch_issues( string $type = null, int $per_page = 0, int $page = 1 ): array {
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 
@@ -173,47 +231,27 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Update stale status-related data - account issues, product issues, products status stats.
+	 * Retrieve all account-level issues and store them in the database.
 	 *
-	 * @param bool $force_refresh Force refresh of all status-related data.
-	 *
-	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
+	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
-	public function maybe_refresh_status_data( bool $force_refresh = false ): void {
-		// Only refresh if the current data has expired.
-		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
-		if ( ! $force_refresh && null !== $this->mc_statuses ) {
-			return;
+	protected function refresh_account_issues(): void {
+		$account_issues = [];
+		foreach ( $this->container->get( Merchant::class )->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+			$account_issues[] = [
+				'product_id' => 0,
+				'product'    => __( 'All products', 'google-listings-and-ads' ),
+				'code'       => $issue->getId(),
+				'issue'      => $issue->getTitle(),
+				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
+				'action_url' => $issue->getDocumentation(),
+				'created_at' => $this->current_time->format( 'Y-m-d H:i:s' ),
+			];
 		}
 
-		// Save a request if no MC account connected.
-		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
-			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
-		}
-
-		// Update product stats and issues.
-		$this->mc_statuses = [];
-		$page_token        = null;
-		do {
-			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
-			$statuses = $response->getResources();
-			$this->refresh_product_issues( $statuses );
-			$this->include_page_statuses( $statuses );
-
-			$page_token = $response->getNextPageToken();
-		} while ( $page_token );
-
-		$this->save_product_statistics();
-		$this->update_product_statuses();
-
-		// Update account issues.
-		$this->refresh_account_issues();
-
-		// Delete stale issues.
-		$delete_before = clone $this->current_time;
-		$delete_before->modify( '-' . $this->get_status_lifetime() . ' seconds' );
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $delete_before );
+		$this->container->get( MerchantIssueQuery::class )->update_or_insert( $account_issues );
 	}
+
 
 	/**
 	 * Retrieve all product-level issues and store them in the database.
@@ -288,7 +326,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @param MC_Product_Status[] $mc_statuses
 	 */
-	protected function include_page_statuses( array $mc_statuses ): void {
+	protected function update_statuses_count( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
@@ -317,7 +355,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Calculate the product status statistics and update the transient.
 	 */
-	protected function save_product_statistics() {
+	protected function update_mc_statuses() {
 		$product_statistics =
 			[
 				MCStatus::APPROVED           => 0,
@@ -354,7 +392,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Update the Merchant Center status for all products.
 	 */
-	protected function update_product_statuses() {
+	protected function update_product_mc_statuses() {
 		$product_statuses = [];
 
 		foreach ( $this->product_statuses as $products ) {
@@ -381,37 +419,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		foreach ( $this->container->get( ProductRepository::class )->find_ids() as $product_id ) {
 			$product_meta->update_mc_status( $product_id, $product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED );
 		}
-	}
-
-	/**
-	 * Retrieve all account-level issues and store them in the database.
-	 *
-	 * @throws Exception If the account state can't be retrieved from Google.
-	 */
-	protected function refresh_account_issues(): void {
-		$account_issues = [];
-		foreach ( $this->container->get( Merchant::class )->get_accountstatus()->getAccountLevelIssues() as $issue ) {
-			$account_issues[] = [
-				'product_id' => 0,
-				'product'    => __( 'All products', 'google-listings-and-ads' ),
-				'code'       => $issue->getId(),
-				'issue'      => $issue->getTitle(),
-				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
-				'action_url' => $issue->getDocumentation(),
-				'created_at' => $this->current_time->format( 'Y-m-d H:i:s' ),
-			];
-		}
-
-		$this->container->get( MerchantIssueQuery::class )->update_or_insert( $account_issues );
-	}
-
-
-	/**
-	 * Delete the cached statistics and issues.
-	 */
-	public function delete(): void {
-		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
-		$this->container->get( MerchantIssueTable::class )->truncate();
 	}
 
 	/**
@@ -450,21 +457,5 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			self::TYPE_ACCOUNT,
 			self::TYPE_PRODUCT,
 		];
-	}
-
-	/**
-	 * Substitute the list of product IDs for the product count in the status transient.
-	 *
-	 * @return array
-	 */
-	protected function get_counting_statistics(): array {
-		$counting_stats           = $this->mc_statuses['statistics'];
-		$counting_stats['active'] = $counting_stats[ MCStatus::PARTIALLY_APPROVED ] + $counting_stats[ MCStatus::APPROVED ];
-		unset( $counting_stats[ MCStatus::PARTIALLY_APPROVED ], $counting_stats[ MCStatus::APPROVED ] );
-
-		return array_merge(
-			$this->mc_statuses,
-			[ 'statistics' => $counting_stats ]
-		);
 	}
 }
