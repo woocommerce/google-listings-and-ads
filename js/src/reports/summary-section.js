@@ -15,15 +15,12 @@ import MetricNumber from './metric-number';
  *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
- * @param {ProductsReportSchema} props.report Report data and its status.
+ * @param {boolean} props.loaded Whether the data have been loaded.
+ * @param {PerformanceData} props.totals Report's performance data.
  */
-export default function SummarySection( { metrics, report } ) {
+export default function SummarySection( { metrics, loaded, totals } ) {
 	const query = useUrlQuery();
 	const { selectedMetric = metrics[ 0 ].key } = query;
-	const {
-		loaded,
-		data: { totals },
-	} = report;
 
 	if ( ! loaded ) {
 		return <SummaryListPlaceholder numberOfItems={ metrics.length } />;
@@ -53,5 +50,5 @@ export default function SummarySection( { metrics, report } ) {
 
 /**
  * @typedef {import("./index.js").Metric} Metric
- * @typedef {import("./index.js").ProductsReportSchema} ProductsReportSchema
+ * @typedef {import(".~/data/utils").PerformanceData } PerformanceData
  */

@@ -23,9 +23,10 @@ const emptyMessage = __(
  *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
- * @param {ProductsReportSchema} props.report Report data and its status.
+ * @param {boolean} props.loaded Whether the data have been loaded.
+ * @param {Array<IntervalsData>} props.intervals Report's intervals data.
  */
-export default function ChartSection( { metrics, report } ) {
+export default function ChartSection( { metrics, loaded, intervals } ) {
 	const query = useUrlQuery();
 	const currency = useStoreCurrency();
 	const { formatAmount } = useCurrencyFactory();
@@ -38,11 +39,6 @@ export default function ChartSection( { metrics, report } ) {
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
 	const tooltipValueFormat = isCurrency ? formatAmount : ',';
-
-	const {
-		loaded,
-		data: { intervals },
-	} = report;
 
 	const chartData = useMemo( () => {
 		if ( ! loaded ) {
@@ -80,5 +76,5 @@ export default function ChartSection( { metrics, report } ) {
 
 /**
  * @typedef {import("./index.js").Metric} Metric
- * @typedef {import("./index.js").ProductsReportSchema} ProductsReportSchema
+ * @typedef {import("./index.js").IntervalsData} IntervalsData
  */

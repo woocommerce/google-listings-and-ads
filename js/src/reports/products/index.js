@@ -68,7 +68,10 @@ const ProductsReport = ( { hasPaidSource } ) => {
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
-	const report = useProductsReport( type );
+	const {
+		loaded,
+		data: { totals, intervals, products },
+	} = useProductsReport( type );
 
 	return (
 		<>
@@ -77,12 +80,21 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				query={ query }
 				trackEventId={ trackEventId }
 			/>
-			<SummarySection metrics={ metrics } report={ report } />
-			<ChartSection metrics={ metrics } report={ report } />
+			<SummarySection
+				metrics={ metrics }
+				loaded={ loaded }
+				totals={ totals }
+			/>
+			<ChartSection
+				metrics={ metrics }
+				loaded={ loaded }
+				intervals={ intervals }
+			/>
 			<CompareProductsTableCard
 				trackEventReportId={ trackEventId }
 				metrics={ metrics }
-				report={ report }
+				loaded={ loaded }
+				products={ products }
 			/>
 		</>
 	);
