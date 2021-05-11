@@ -10,6 +10,12 @@ import { getNewPath } from '@woocommerce/navigation';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import MetricNumber from './metric-number';
 
+const noValidData = {
+	value: null,
+	preValue: null,
+	delta: null,
+};
+
 /**
  * Renders a section composed with SummaryList and MetricNumber.
  *
@@ -39,7 +45,7 @@ export default function SummarySection( { metrics, loaded, totals } ) {
 							href={ href }
 							selected={ selected }
 							isCurrency={ isCurrency }
-							data={ totals[ key ] }
+							data={ totals[ key ] || noValidData }
 						/>
 					);
 				} )
