@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -71,6 +72,8 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		$product_helper = $this->container->get( ProductHelper::class );
 		/** @var ProductMetaHandler $meta_handler */
 		$meta_handler = $this->container->get( ProductMetaHandler::class );
+
+		$this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
 
 		$this->request          = $request;
 		$products               = [];

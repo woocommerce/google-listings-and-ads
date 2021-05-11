@@ -91,32 +91,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		return $this->get_counting_statistics();
 	}
 
-
-	/**
-	 * Get the Product Statuses (updating caches if necessary). This is the array of
-	 * product id => Merchant Center status
-	 *
-	 * @param bool $force_refresh Force refresh of all product status data.
-	 *
-	 * @return array The product statuses.
-	 * @throws Exception If the Merchant Center can't be polled for the statuses.
-	 */
-	public function get_product_statuses( bool $force_refresh = false ): array {
-		$this->maybe_refresh_status_data( $force_refresh );
-
-		$statuses = [];
-		foreach ( $this->mc_statuses['statistics'] as $status => $ids ) {
-			if ( empty( $ids ) ) {
-				continue;
-			}
-			foreach ( explode( ',', $ids ) as $id ) {
-				$statuses[ $id ] = $status;
-			}
-		}
-
-		return $statuses;
-	}
-
 	/**
 	 * Retrieve the Merchant Center issues and total count. Refresh if the cache issues have gone stale.
 	 * Issue details are reduced, and for products, grouped by type.
@@ -203,7 +177,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @throws Exception If no Merchant Center account is connected, or account status is not retrievable.
 	 */
-	protected function maybe_refresh_status_data( bool $force_refresh = false ): void {
+	public function maybe_refresh_status_data( bool $force_refresh = false ): void {
 		// Only refresh if the current data has expired.
 		$this->mc_statuses = $this->container->get( TransientsInterface::class )->get( Transients::MC_STATUSES );
 		if ( ! $force_refresh && null !== $this->mc_statuses ) {
