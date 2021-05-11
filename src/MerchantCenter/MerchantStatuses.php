@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Exception;
 use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
 use DateTime;
@@ -318,12 +319,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	protected function save_product_statistics() {
 		$product_statistics =
 			[
-				'active'           => 0,
-				'partially_active' => 0,
-				'expiring'         => 0,
-				'pending'          => 0,
-				'disapproved'      => 0,
-				'not_synced'       => 0,
+				MCStatus::APPROVED           => 0,
+				MCStatus::PARTIALLY_APPROVED => 0,
+				MCStatus::EXPIRING           => 0,
+				MCStatus::PENDING            => 0,
+				MCStatus::DISAPPROVED        => 0,
+				MCSTATUS::NOT_SYNCED         => 0,
 			];
 
 		foreach ( $this->product_statuses['simple'] as $statuses ) {
@@ -333,8 +334,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		/** @var ProductRepository $product_repository */
-		$product_repository               = $this->container->get( ProductRepository::class );
-		$product_statistics['not_synced'] = count( $product_repository->find_sync_pending_product_ids() );
+		$product_repository                         = $this->container->get( ProductRepository::class );
+		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_sync_pending_product_ids() );
 
 		$this->mc_statuses = [
 			'timestamp'  => $this->current_time->getTimestamp(),
@@ -357,15 +358,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		foreach ( $this->product_statuses as $products ) {
 			foreach ( $products as $product_id => $statuses ) {
-				if ( isset( $statuses['pending'] ) ) {
-					$product_statuses[ $product_id ] = 'pending';
-				} elseif ( isset( $statuses['expiring'] ) ) {
-					$product_statuses[ $product_id ] = 'expiring';
-				} elseif ( isset( $statuses['active'] ) ) {
+				if ( isset( $statuses[ MCStatus::PENDING ] ) ) {
+					$product_statuses[ $product_id ] = MCStatus::PENDING;
+				} elseif ( isset( $statuses[ MCStatus::EXPIRING ] ) ) {
+					$product_statuses[ $product_id ] = MCStatus::EXPIRING;
+				} elseif ( isset( $statuses[ MCStatus::APPROVED ] ) ) {
 					if ( count( $statuses ) > 1 ) {
-						$product_statuses[ $product_id ] = 'partially_active';
+						$product_statuses[ $product_id ] = MCStatus::PARTIALLY_APPROVED;
 					} else {
-						$product_statuses[ $product_id ] = 'active';
+						$product_statuses[ $product_id ] = MCStatus::APPROVED;
 					}
 				} else {
 					$product_statuses[ $product_id ] = array_key_first( $statuses );
@@ -374,13 +375,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 		ksort( $product_statuses );
 
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
 		/** @var ProductMetaHandler $product_meta */
-		$product_meta   = $this->container->get( ProductMetaHandler::class );
-		$default_status = 'not_synced';
-		foreach ( $product_repository->find_ids() as $product_id ) {
-			$product_meta->update_mc_status( $product_id, $product_statuses[ $product_id ] ?? $default_status );
+		$product_meta = $this->container->get( ProductMetaHandler::class );
+		foreach ( $this->container->get( ProductRepository::class )->find_ids() as $product_id ) {
+			$product_meta->update_mc_status( $product_id, $product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED );
 		}
 	}
 
@@ -459,9 +457,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @return array
 	 */
 	protected function get_counting_statistics(): array {
-		$counting_stats            = $this->mc_statuses['statistics'];
-		$counting_stats['active'] += $counting_stats['partially_active'];
-		unset( $counting_stats['partially_active'] );
+		$counting_stats           = $this->mc_statuses['statistics'];
+		$counting_stats['active'] = $counting_stats[ MCStatus::PARTIALLY_APPROVED ] + $counting_stats[ MCStatus::APPROVED ];
+		unset( $counting_stats[ MCStatus::PARTIALLY_APPROVED ], $counting_stats[ MCStatus::APPROVED ] );
 
 		return array_merge(
 			$this->mc_statuses,
