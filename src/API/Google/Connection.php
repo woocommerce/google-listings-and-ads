@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
@@ -15,9 +18,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Connection {
+class Connection implements OptionsAwareInterface {
 
 	use ApiExceptionTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * @var ContainerInterface
@@ -104,6 +108,9 @@ class Connection {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() ) {
+				$connected = isset( $response['status'] ) && 'connected' === $response['status'];
+				$this->options->update( OptionsInterface::GOOGLE_CONNECTED, $connected );
+
 				return $response;
 			}
 
