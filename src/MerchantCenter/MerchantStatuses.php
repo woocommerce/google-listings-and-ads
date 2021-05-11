@@ -298,11 +298,17 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			$wc_product_id = $product_helper->maybe_get_parent_id( $wc_product_id ) ?: $wc_product_id;
-			$status        = $this->get_product_shopping_status( $product );
-			if ( ! is_null( $status ) ) {
-				$this->product_statuses[ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses[ $wc_product_id ][ $status ] ?? 0 );
+			$status = $this->get_product_shopping_status( $product );
+			if ( is_null( $status ) ) {
+				continue;
 			}
+			$this->product_statuses['simple'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['simple'][ $wc_product_id ][ $status ] ?? 0 );
+
+			$wc_parent_id = $product_helper->maybe_get_parent_id( $wc_product_id );
+			if ( is_null( $wc_parent_id ) ) {
+				continue;
+			}
+			$this->product_statuses['parent'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parent'][ $wc_parent_id ][ $status ] ?? 0 );
 		}
 	}
 
@@ -320,7 +326,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'not_synced'       => 0,
 			];
 
-		foreach ( $this->product_statuses as $product_id => $statuses ) {
+		foreach ( $this->product_statuses['simple'] as $statuses ) {
 			foreach ( $statuses as $status => $num_products ) {
 				$product_statistics[ $status ] += $num_products;
 			}
@@ -343,24 +349,30 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		);
 	}
 
+	/**
+	 * Update the Merchant Center status for all products.
+	 */
 	protected function update_product_statuses() {
 		$product_statuses = [];
 
-		foreach ( $this->product_statuses as $product_id => $statuses ) {
-			if ( isset( $statuses['pending'] ) ) {
-				$product_statuses[ $product_id ] = 'pending';
-			} elseif ( isset( $statuses['expiring'] ) ) {
-				$product_statuses[ $product_id ] = 'expiring';
-			} elseif ( isset( $statuses['active'] ) ) {
-				if ( count( $statuses ) > 1 ) {
-					$product_statuses[ $product_id ] = 'partially_active';
+		foreach ( $this->product_statuses as $products ) {
+			foreach ( $products as $product_id => $statuses ) {
+				if ( isset( $statuses['pending'] ) ) {
+					$product_statuses[ $product_id ] = 'pending';
+				} elseif ( isset( $statuses['expiring'] ) ) {
+					$product_statuses[ $product_id ] = 'expiring';
+				} elseif ( isset( $statuses['active'] ) ) {
+					if ( count( $statuses ) > 1 ) {
+						$product_statuses[ $product_id ] = 'partially_active';
+					} else {
+						$product_statuses[ $product_id ] = 'active';
+					}
 				} else {
-					$product_statuses[ $product_id ] = 'active';
+					$product_statuses[ $product_id ] = array_key_first( $statuses );
 				}
-			} else {
-				$product_statuses[ $product_id ] = array_key_first( $statuses );
 			}
 		}
+		ksort( $product_statuses );
 
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
@@ -368,7 +380,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$product_meta   = $this->container->get( ProductMetaHandler::class );
 		$default_status = 'not_synced';
 		foreach ( $product_repository->find_ids() as $product_id ) {
-			$product_meta->update_mc_status( $product_id, $product_statuses[$product_id] ?? $default_status );
+			$product_meta->update_mc_status( $product_id, $product_statuses[ $product_id ] ?? $default_status );
 		}
 	}
 

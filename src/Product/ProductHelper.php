@@ -138,7 +138,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
-	 * Marks a WooCommerce product as pending syncronization.
+	 * Marks a WooCommerce product as pending synchronization.
 	 *
 	 * Note: If a product variation is pending then the parent product is also marked as pending.
 	 *
@@ -232,14 +232,18 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
-	 * Return a string indicating Merchant Center status based on several factors.
-	 *
 	 * @param WC_Product $wc_product
 	 *
 	 * @return string
 	 */
 	public function get_mc_status( WC_Product $wc_product ): string {
-		return $this->meta_handler->get_mc_status( $wc_product->get_id() );
+		$mc_status = $this->meta_handler->get_mc_status( $wc_product->get_id() );
+		if ( $wc_product instanceof WC_Product_Variation ) {
+			// todo: we might need to define visibility per variation later.
+			$mc_status = $this->meta_handler->get_mc_status( $wc_product->get_parent_id() );
+		}
+
+		return $mc_status;
 	}
 
 	/**
