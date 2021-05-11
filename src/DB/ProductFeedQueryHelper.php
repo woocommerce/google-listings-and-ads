@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -68,8 +67,6 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	public function get( WP_REST_Request $request ): array {
-		/** @var MerchantStatuses $merchant_statuses */
-		$merchant_statuses = $this->container->get( MerchantStatuses::class );
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 		/** @var ProductMetaHandler $meta_handler */
@@ -79,7 +76,6 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		$products               = [];
 		$args                   = $this->prepare_query_args();
 		list( $limit, $offset ) = $this->prepare_query_pagination();
-		$mc_product_statuses    = $merchant_statuses->get_product_statuses();
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
@@ -97,7 +93,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 				'id'      => $id,
 				'title'   => $product->get_name(),
 				'visible' => $product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
-				'status'  => $mc_product_statuses[ $id ] ?? $product_helper->get_sync_status( $product ),
+				'status'  => $product_helper->get_mc_status( $product ),
 				'errors'  => array_values( $errors ),
 			];
 		}
@@ -167,7 +163,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
 			case 'status':
-				$args['meta_key'] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_STATUS );
+				$args['meta_key'] = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
 				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
 			default:

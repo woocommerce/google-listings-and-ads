@@ -232,6 +232,17 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
+	 * Return a string indicating Merchant Center status based on several factors.
+	 *
+	 * @param WC_Product $wc_product
+	 *
+	 * @return string
+	 */
+	public function get_mc_status( WC_Product $wc_product ): string {
+		return $this->meta_handler->get_mc_status( $wc_product->get_id() );
+	}
+
+	/**
 	 * Get the ID of the parent variable product if the provided product is a variation. Returns null
 	 * if there is no valid parent ID.
 	 *

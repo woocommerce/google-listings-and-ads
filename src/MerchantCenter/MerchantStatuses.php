@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Exception;
 use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
@@ -227,6 +228,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		} while ( $page_token );
 
 		$this->save_product_statistics();
+		$this->update_product_statuses();
 
 		// Update account issues.
 		$this->refresh_account_issues();
@@ -322,7 +324,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			$status = $this->get_product_shopping_status( $product );
+			$wc_product_id = $product_helper->maybe_get_parent_id( $wc_product_id ) ?: $wc_product_id;
+			$status        = $this->get_product_shopping_status( $product );
 			if ( ! is_null( $status ) ) {
 				$this->product_statuses[ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses[ $wc_product_id ][ $status ] ?? 0 );
 			}
@@ -364,6 +367,35 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->mc_statuses,
 			$this->get_status_lifetime()
 		);
+	}
+
+	protected function update_product_statuses() {
+		$product_statuses = [];
+
+		foreach ( $this->product_statuses as $product_id => $statuses ) {
+			if ( isset( $statuses['pending'] ) ) {
+				$product_statuses[ $product_id ] = 'pending';
+			} elseif ( isset( $statuses['expiring'] ) ) {
+				$product_statuses[ $product_id ] = 'expiring';
+			} elseif ( isset( $statuses['active'] ) ) {
+				if ( count( $statuses ) > 1 ) {
+					$product_statuses[ $product_id ] = 'partially_active';
+				} else {
+					$product_statuses[ $product_id ] = 'active';
+				}
+			} else {
+				$product_statuses[ $product_id ] = array_key_first( $statuses );
+			}
+		}
+
+		/** @var ProductRepository $product_repository */
+		$product_repository = $this->container->get( ProductRepository::class );
+		/** @var ProductMetaHandler $product_meta */
+		$product_meta   = $this->container->get( ProductMetaHandler::class );
+		$default_status = 'not_synced';
+		foreach ( $product_repository->find_ids() as $product_id ) {
+			$product_meta->update_mc_status( $product_id, $product_statuses[$product_id] ?? $default_status );
+		}
 	}
 
 	/**
