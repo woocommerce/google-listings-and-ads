@@ -296,10 +296,9 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			if (
 				newState.mc_product_feed.per_page !== query.per_page ||
 				newState.mc_product_feed.order !== query.order ||
-				newState.mc_product_feed.orderby !== query.orderby ||
-				newState.mc_product_feed.total !== data.total
+				newState.mc_product_feed.orderby !== query.orderby
 			) {
-				// discard old stored data when pagination or total has changed.
+				// discard old stored data when pagination has changed.
 				newState.mc_product_feed.pages = {};
 			}
 
