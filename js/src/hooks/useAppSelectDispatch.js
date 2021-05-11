@@ -2,43 +2,39 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-import { useCallback, useRef } from '@wordpress/element';
-import isEqual from 'lodash/isEqual';
+import { useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
 import { useAppDispatch } from '.~/data';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const useAppSelectDispatch = ( selector, ...args ) => {
 	const { invalidateResolution } = useAppDispatch();
-
-	const argsRef = useRef( args );
-	if ( ! isEqual( argsRef.current, args ) ) {
-		argsRef.current = args;
-	}
+	const argsRefValue = useIsEqualRefValue( args );
 
 	const invalidateResolutionCallback = useCallback( () => {
-		invalidateResolution( selector, argsRef.current );
-	}, [ invalidateResolution, selector ] );
+		invalidateResolution( selector, argsRefValue );
+	}, [ invalidateResolution, selector, argsRefValue ] );
 
 	return useSelect(
 		( select ) => {
 			const { hasFinishedResolution } = select( STORE_KEY );
 
-			const data = select( STORE_KEY )[ selector ]( ...argsRef.current );
+			const data = select( STORE_KEY )[ selector ]( ...argsRefValue );
 
 			return {
 				hasFinishedResolution: hasFinishedResolution(
 					selector,
-					argsRef.current
+					argsRefValue
 				),
 				data,
 				invalidateResolution: invalidateResolutionCallback,
 			};
 		},
-		[ invalidateResolutionCallback, selector, argsRef.current ]
+		[ invalidateResolutionCallback, selector, argsRefValue ]
 	);
 };
 

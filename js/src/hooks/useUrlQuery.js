@@ -1,9 +1,12 @@
 /**
  * External dependencies
  */
-import isEqual from 'lodash/isEqual';
 import { getQuery } from '@woocommerce/navigation';
-import { useRef } from '@wordpress/element';
+
+/**
+ * Internal dependencies
+ */
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 /**
  * Get a memoized URL query object.
@@ -12,11 +15,7 @@ import { useRef } from '@wordpress/element';
  */
 export default function useUrlQuery() {
 	const query = getQuery();
-	const queryRef = useRef( query );
+	const queryRefValue = useIsEqualRefValue( query );
 
-	if ( ! isEqual( queryRef.current, query ) ) {
-		queryRef.current = query;
-	}
-
-	return queryRef.current;
+	return queryRefValue;
 }
