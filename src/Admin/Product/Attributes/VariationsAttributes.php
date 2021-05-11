@@ -99,7 +99,7 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		$form_data = $form->get_data();
 
 		if ( ! empty( $form_data[ $variation_index ] ) ) {
-			$this->update_data( $form_data[ $variation_index ], $variation_id );
+			$this->update_data( $variation_id, $form_data[ $variation_index ] );
 		}
 	}
 
@@ -122,12 +122,12 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * @param array $data
 	 * @param int   $variation_id
+	 * @param array $data
 	 *
 	 * @return void
 	 */
-	protected function update_data( array $data, int $variation_id ): void {
+	protected function update_data( int $variation_id, array $data ): void {
 		// gtin
 		if ( isset( $data[ GTIN::get_id() ] ) ) {
 			$this->attribute_manager->update( $variation_id, new GTIN( $data[ GTIN::get_id() ] ) );

@@ -117,7 +117,8 @@ class AttributesTab implements Service, Registerable, Conditional {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) ) : [];
 
-		$this->submit_form( $form, $product_id, $submitted_data );
+		$form->submit( $submitted_data );
+		$this->update_data( $product_id, $form->get_data() );
 	}
 
 	/**
@@ -137,34 +138,30 @@ class AttributesTab implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * @param FormInterface $form
-	 * @param int           $product_id
-	 * @param array         $submitted_data
+	 * @param int   $product_id
+	 * @param array $data
 	 *
 	 * @return void
 	 */
-	protected function submit_form( FormInterface $form, int $product_id, array $submitted_data ): void {
-		$form->submit( $submitted_data );
-		$form_data = $form->get_data();
-
+	protected function update_data( int $product_id, array $data ): void {
 		// gtin
-		if ( isset( $form_data[ GTIN::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new GTIN( $form_data[ GTIN::get_id() ] ) );
+		if ( isset( $data[ GTIN::get_id() ] ) ) {
+			$this->attribute_manager->update( $product_id, new GTIN( $data[ GTIN::get_id() ] ) );
 		}
 
 		// mpn
-		if ( isset( $form_data[ MPN::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new MPN( $form_data[ MPN::get_id() ] ) );
+		if ( isset( $data[ MPN::get_id() ] ) ) {
+			$this->attribute_manager->update( $product_id, new MPN( $data[ MPN::get_id() ] ) );
 		}
 
 		// brand
-		if ( isset( $form_data[ Brand::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new Brand( $form_data[ Brand::get_id() ] ) );
+		if ( isset( $data[ Brand::get_id() ] ) ) {
+			$this->attribute_manager->update( $product_id, new Brand( $data[ Brand::get_id() ] ) );
 		}
 
 		// gender
-		if ( isset( $form_data[ Gender::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new Gender( $form_data[ Gender::get_id() ] ) );
+		if ( isset( $data[ Gender::get_id() ] ) ) {
+			$this->attribute_manager->update( $product_id, new Gender( $data[ Gender::get_id() ] ) );
 		}
 	}
 
