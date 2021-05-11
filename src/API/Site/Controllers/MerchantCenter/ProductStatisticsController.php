@@ -89,7 +89,7 @@ class ProductStatisticsController extends BaseOptionsController {
 	}
 
 	/**
-	 * Get the global product status statistics array.
+	 * Get the overall product status statistics array.
 	 *
 	 * @param Request $request
 	 * @param bool    $force_refresh True to force a refresh of the product status statistics.

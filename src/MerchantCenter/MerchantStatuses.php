@@ -30,10 +30,11 @@ use DateTime;
  * - MerchantIssueTable
  * - OptionInterface
  * - ProductHelper
+ * - ProductMetaHandler
  * - ProductRepository
  * - TransientInterface
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Options
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
 class MerchantStatuses implements Service, ContainerAwareInterface {
 

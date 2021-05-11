@@ -23,11 +23,11 @@ defined( 'ABSPATH' ) || exit;
  * Class ProductFeedQueryHelper
  *
  * ContainerAware used to access:
- * - MerchantIssues
+ * - MerchantStatuses
  * - ProductHelper
  * - ProductMetaHandler
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
 class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
@@ -61,6 +61,8 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	}
 
 	/**
+	 * Retrieve and array of product information using the request params.
+	 *
 	 * @param WP_REST_Request $request
 	 *
 	 * @return array
@@ -68,17 +70,17 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	public function get( WP_REST_Request $request ): array {
-		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
-		/** @var ProductMetaHandler $meta_handler */
-		$meta_handler = $this->container->get( ProductMetaHandler::class );
-
-		$this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
-
 		$this->request          = $request;
 		$products               = [];
 		$args                   = $this->prepare_query_args();
 		list( $limit, $offset ) = $this->prepare_query_pagination();
+
+		$this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
+
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
+		/** @var ProductMetaHandler $meta_handler */
+		$meta_handler = $this->container->get( ProductMetaHandler::class );
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
@@ -107,7 +109,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	}
 
 	/**
-	 * Count the number of products (including title filter if present)
+	 * Count the number of products (using title filter if present).
 	 *
 	 * @param WP_REST_Request $request
 	 *
@@ -194,8 +196,8 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	}
 
 	/**
-	 * Used for the posts_where hook, filters the WHERE clause of the query by
-	 * searching for the 'search' parameter in the product titles (when the parameter is present).
+	 * Filter for the posts_where hook, adds WHERE clause to search
+	 * for the 'search' parameter in the product titles (when present).
 	 *
 	 * @param string   $where The WHERE clause of the query.
 	 * @param WP_Query $wp_query The WP_Query instance (passed by reference).

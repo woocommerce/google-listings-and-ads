@@ -196,9 +196,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @return string
+	 * @return bool
 	 */
-	public function is_product_synced( WC_Product $product ) {
+	public function is_product_synced( WC_Product $product ): bool {
 		$synced_at  = $this->meta_handler->get_synced_at( $product->get_id() );
 		$google_ids = $this->meta_handler->get_google_ids( $product->get_id() );
 
@@ -232,6 +232,8 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
+	 * Return the string indicating the product status as reported by the Merchant Center.
+	 *
 	 * @param WC_Product $wc_product
 	 *
 	 * @return string
