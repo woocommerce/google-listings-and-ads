@@ -39,6 +39,16 @@ class AdsService implements Service {
 	}
 
 	/**
+	 * Get whether Ads is connected.
+	 *
+	 * @return bool
+	 */
+	public function is_connected(): bool {
+		$google_connected = boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
+		return $google_connected && $this->is_setup_complete();
+	}
+
+	/**
 	 * Disconnect Ads account
 	 */
 	public function disconnect() {

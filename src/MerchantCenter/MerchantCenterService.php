@@ -49,6 +49,16 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
+	 * Get whether Merchant Center is connected.
+	 *
+	 * @return bool
+	 */
+	public function is_connected(): bool {
+		$google_connected = boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
+		return $google_connected && $this->is_setup_complete();
+	}
+
+	/**
 	 * Get whether the country is supported by the Merchant Center.
 	 *
 	 * @param  string $country Optional - to check a country other than the site country.
