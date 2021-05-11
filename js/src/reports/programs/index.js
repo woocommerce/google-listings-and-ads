@@ -119,7 +119,8 @@ const ProgramsReport = () => {
 			<div className="gla-reports__performance">
 				<SummarySection
 					metrics={ availableMetrics }
-					report={ { loaded: true, data: { totals } } }
+					loaded={ true }
+					totals={ totals }
 				/>
 				<Chart
 					data={ chartData }
