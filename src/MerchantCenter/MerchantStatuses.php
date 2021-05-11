@@ -330,47 +330,28 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Update the product status statistics transient.
+	 * Calculate the product status statistics and update the transient.
 	 */
 	protected function save_product_statistics() {
 		$product_statistics =
 			[
-				'active'           => [],
-				'partially_active' => [],
-				'expiring'         => [],
-				'pending'          => [],
-				'disapproved'      => [],
-				'not_synced'       => [],
+				'active'           => 0,
+				'partially_active' => 0,
+				'expiring'         => 0,
+				'pending'          => 0,
+				'disapproved'      => 0,
+				'not_synced'       => 0,
 			];
 
 		foreach ( $this->product_statuses as $product_id => $statuses ) {
-			if ( isset( $statuses['pending'] ) ) {
-				$product_statistics['pending'][] = $product_id;
-			} elseif ( isset( $statuses['expiring'] ) ) {
-				$product_statistics['expiring'][] = $product_id;
-			} elseif ( isset( $statuses['active'] ) ) {
-				if ( count( $statuses ) > 1 ) {
-					$product_statistics['partially_active'][] = $product_id;
-				} else {
-					$product_statistics['active'][] = $product_id;
-				}
-			} else {
-				$product_statistics[ array_key_first( $statuses ) ][] = $product_id;
+			foreach ( $statuses as $status => $num_products ) {
+				$product_statistics[ $status ] += $num_products;
 			}
 		}
 
 		/** @var ProductRepository $product_repository */
 		$product_repository               = $this->container->get( ProductRepository::class );
-		$product_statistics['not_synced'] = $product_repository->find_sync_pending_product_ids();
-
-		// Sort the product IDs and change them to comma-separated lists.
-		array_walk(
-			$product_statistics,
-			function( array &$el ): void {
-				sort( $el );
-				$el = implode( ',', $el );
-			}
-		);
+		$product_statistics['not_synced'] = count( $product_repository->find_sync_pending_product_ids() );
 
 		$this->mc_statuses = [
 			'timestamp'  => $this->current_time->getTimestamp(),
@@ -460,14 +441,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @return array
 	 */
 	protected function get_counting_statistics(): array {
-		$counting_stats = array_map(
-			function( string $ids ): int {
-				$comma_count = substr_count( $ids, ',' );
-				return $comma_count ? $comma_count + 1 : 0;
-			},
-			$this->mc_statuses['statistics']
-		);
-
+		$counting_stats            = $this->mc_statuses['statistics'];
 		$counting_stats['active'] += $counting_stats['partially_active'];
 		unset( $counting_stats['partially_active'] );
 
