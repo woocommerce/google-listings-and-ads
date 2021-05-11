@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\WithValueOptionsInterface;
@@ -21,6 +22,20 @@ defined( 'ABSPATH' ) || exit;
 class AttributesForm extends Form {
 
 	use ValidateInterface;
+
+	/**
+	 * AttributesForm constructor.
+	 *
+	 * @param string[] $attribute_types
+	 * @param array    $data
+	 */
+	public function __construct( array $attribute_types, array $data = [] ) {
+		foreach ( $attribute_types as $attribute_type ) {
+			$this->add_attribute( $attribute_type );
+		}
+
+		parent::__construct( $data );
+	}
 
 	/**
 	 * @param InputInterface     $input
@@ -59,12 +74,15 @@ class AttributesForm extends Form {
 	 * Add an attribute to the form
 	 *
 	 * @param string $attribute_type An attribute class extending AttributeInterface
-	 * @param string $input_type     An input class extending InputInterface
 	 *
 	 * @return AttributesForm
+	 *
+	 * @throws InvalidValue If the attribute type is invalid or an invalid input type is specified for the attribute.
 	 */
-	protected function add_attribute( string $attribute_type, string $input_type ): AttributesForm {
+	protected function add_attribute( string $attribute_type ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
+
+		$input_type = call_user_func( [ $attribute_type, 'get_input_type' ] );
 		$this->validate_interface( $input_type, InputInterface::class );
 
 		$attribute_input = $this->init_input( new $input_type(), new $attribute_type() );

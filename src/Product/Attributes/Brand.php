@@ -33,4 +33,13 @@ class Brand extends AbstractAttribute {
 		return __( 'Brand of the product', 'google-listings-and-ads' );
 	}
 
+	/**
+	 * Return an array of WooCommerce product types that this attribute can be applied to.
+	 *
+	 * @return array
+	 */
+	public static function get_applicable_product_types(): array {
+		return [ 'simple', 'variable' ];
+	}
+
 }

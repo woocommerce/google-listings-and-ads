@@ -33,4 +33,13 @@ class GTIN extends AbstractAttribute {
 		return __( 'Global Trade Item Number (GTIN) for your item. These identifiers include UPC (in North America), EAN (in Europe), JAN (in Japan), and ISBN (for books)', 'google-listings-and-ads' );
 	}
 
+	/**
+	 * Return an array of WooCommerce product types that this attribute can be applied to.
+	 *
+	 * @return array
+	 */
+	public static function get_applicable_product_types(): array {
+		return [ 'simple', 'variation' ];
+	}
+
 }

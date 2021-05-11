@@ -17,12 +17,10 @@ $form = $this->form
 ?>
 
 <div id="gla_attributes" class="panel woocommerce_options_panel">
-	<div class="options_group">
-		<h2><?php esc_html_e( 'Product attributes', 'google-listings-and-ads' ); ?></h2>
-		<?php
-		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $this->render_partial( 'inputs/form', [ 'form' => $form ] );
-		?>
-	</div>
+	<h2><?php esc_html_e( 'Product attributes', 'google-listings-and-ads' ); ?></h2>
+	<?php
+	// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo $this->render_partial( 'inputs/form', [ 'form' => $form ] );
+	?>
 </div>
 
