@@ -10,20 +10,23 @@ import { getNewPath } from '@woocommerce/navigation';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import MetricNumber from './metric-number';
 
+const noValidData = {
+	value: null,
+	preValue: null,
+	delta: null,
+};
+
 /**
  * Renders a section composed with SummaryList and MetricNumber.
  *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
- * @param {ProductsReportSchema} props.report Report data and its status.
+ * @param {boolean} props.loaded Whether the data have been loaded.
+ * @param {PerformanceData} props.totals Report's performance data.
  */
-export default function SummarySection( { metrics, report } ) {
+export default function SummarySection( { metrics, loaded, totals } ) {
 	const query = useUrlQuery();
-	const { orderby = metrics[ 0 ].key } = query;
-	const {
-		loaded,
-		data: { totals },
-	} = report;
+	const { selectedMetric = metrics[ 0 ].key } = query;
 
 	if ( ! loaded ) {
 		return <SummaryListPlaceholder numberOfItems={ metrics.length } />;
@@ -33,8 +36,8 @@ export default function SummarySection( { metrics, report } ) {
 		<SummaryList>
 			{ () =>
 				metrics.map( ( { key, label, isCurrency = false } ) => {
-					const selected = orderby === key;
-					const href = getNewPath( { orderby: key } );
+					const selected = selectedMetric === key;
+					const href = getNewPath( { selectedMetric: key } );
 					return (
 						<MetricNumber
 							key={ key }
@@ -42,7 +45,7 @@ export default function SummarySection( { metrics, report } ) {
 							href={ href }
 							selected={ selected }
 							isCurrency={ isCurrency }
-							data={ totals[ key ] }
+							data={ totals[ key ] || noValidData }
 						/>
 					);
 				} )
@@ -53,5 +56,5 @@ export default function SummarySection( { metrics, report } ) {
 
 /**
  * @typedef {import("./index.js").Metric} Metric
- * @typedef {import("./index.js").ProductsReportSchema} ProductsReportSchema
+ * @typedef {import(".~/data/utils").PerformanceData } PerformanceData
  */

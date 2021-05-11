@@ -26,10 +26,16 @@ const numberFormatSetting = { precision: 0 };
  *
  * @param {Object} props React props.
  * @param {Array<Metric>} props.metrics Metrics to display.
- * @param {ProductsReportSchema} props.report Report data and its status.
+ * @param {boolean} props.loaded Whether the data have been loaded.
+ * @param {Array<ProductsData>} props.products Report's products data.
  * @param {Object} [props.restProps] Properties to be forwarded to AppTableCard.
  */
-const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
+const CompareProductsTableCard = ( {
+	metrics,
+	loaded,
+	products,
+	...restProps
+} ) => {
 	const query = useUrlQuery();
 	const formatNumber = useCurrencyFormat( numberFormatSetting );
 	const { formatAmount } = useCurrencyFactory();
@@ -37,11 +43,6 @@ const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 	const [ selectedRows, setSelectedRows ] = useState( () => {
 		return new Set( getIdsFromQuery( query[ compareBy ] ) );
 	} );
-
-	const {
-		loaded,
-		data: { products },
-	} = report;
 
 	const loading = ! loaded;
 	const rowsPerPage = products.length || 5;
@@ -72,7 +73,11 @@ const CompareProductsTableCard = ( { metrics, report, ...restProps } ) => {
 			label: (
 				<CheckboxControl
 					disabled={ loading }
-					checked={ loaded && selectedRows.size === data.length }
+					checked={
+						loaded &&
+						data.length &&
+						selectedRows.size === data.length
+					}
 					onChange={ selectAll }
 				/>
 			),
@@ -197,6 +202,5 @@ export default CompareProductsTableCard;
 
 /**
  * @typedef {import("../index.js").Metric} Metric
- * @typedef {import("../index.js").ProductsReportSchema} ProductsReportSchema
  * @typedef {import("../index.js").ProductsData} ProductsData
  */
