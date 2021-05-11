@@ -73,7 +73,11 @@ const CompareProductsTableCard = ( {
 			label: (
 				<CheckboxControl
 					disabled={ loading }
-					checked={ loaded && selectedRows.size === data.length }
+					checked={
+						loaded &&
+						data.length &&
+						selectedRows.size === data.length
+					}
 					onChange={ selectAll }
 				/>
 			),
