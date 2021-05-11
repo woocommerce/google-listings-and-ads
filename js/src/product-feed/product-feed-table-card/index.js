@@ -215,14 +215,16 @@ const ProductFeedTableCard = () => {
 					) }
 				</CardBody>
 				<CardFooter justify="center">
-					<Pagination
-						page={ query.page }
-						perPage={ query.per_page }
-						total={ data?.total }
-						showPagePicker={ true }
-						showPerPagePicker={ false }
-						onPageChange={ handlePageChange }
-					/>
+					{ data?.total && (
+						<Pagination
+							page={ query.page }
+							perPage={ query.per_page }
+							total={ data?.total }
+							showPagePicker={ true }
+							showPerPagePicker={ false }
+							onPageChange={ handlePageChange }
+						/>
+					) }
 				</CardFooter>
 			</Card>
 		</AppTableCardDiv>
