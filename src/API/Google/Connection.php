@@ -58,6 +58,8 @@ class Connection implements OptionsAwareInterface {
 
 			$response = json_decode( $result->getBody()->getContents(), true );
 			if ( 200 === $result->getStatusCode() && ! empty( $response['oauthUrl'] ) ) {
+				$this->options->update( OptionsInterface::GOOGLE_CONNECTED, true );
+
 				return $response['oauthUrl'];
 			}
 
@@ -81,6 +83,8 @@ class Connection implements OptionsAwareInterface {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->delete( $this->get_connection_url() );
+
+			$this->options->update( OptionsInterface::GOOGLE_CONNECTED, false );
 
 			return $result->getBody()->getContents();
 		} catch ( ClientExceptionInterface $e ) {
