@@ -13,6 +13,7 @@ import AppTextButton from '.~/components/app-text-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import './index.scss';
@@ -25,6 +26,7 @@ const SwitchUrlCard = ( props ) => {
 		newUrl,
 		onSelectAnotherAccount = () => {},
 	} = props;
+	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/switch-url`,
@@ -33,8 +35,18 @@ const SwitchUrlCard = ( props ) => {
 	} );
 
 	const handleSwitch = async () => {
-		await fetchMCAccountSwitchUrl();
-		invalidateResolution( 'getGoogleMCAccount', [] );
+		try {
+			await fetchMCAccountSwitchUrl();
+			invalidateResolution( 'getGoogleMCAccount', [] );
+		} catch ( e ) {
+			const errorMessage =
+				e.message ||
+				__(
+					'Unable to switch to your new URL. Please try again later.',
+					'google-listings-and-ads'
+				);
+			createNotice( 'error', errorMessage );
+		}
 	};
 
 	const handleUseDifferentMCClick = () => {
