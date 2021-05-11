@@ -239,13 +239,10 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return string
 	 */
 	public function get_mc_status( WC_Product $wc_product ): string {
-		$mc_status = $this->meta_handler->get_mc_status( $wc_product->get_id() );
 		if ( $wc_product instanceof WC_Product_Variation ) {
-			// todo: we might need to define visibility per variation later.
-			$mc_status = $this->meta_handler->get_mc_status( $wc_product->get_parent_id() );
+			return $this->meta_handler->get_mc_status( $wc_product->get_parent_id() );
 		}
-
-		return $mc_status;
+		return $this->meta_handler->get_mc_status( $wc_product->get_id() );
 	}
 
 	/**
