@@ -48,6 +48,11 @@ const paidMetrics = [
 		key: 'conversions',
 		label: __( 'Conversions', 'google-listings-and-ads' ),
 	},
+	{
+		key: 'spend',
+		label: __( 'Spend', 'google-listings-and-ads' ),
+		isCurrency: true,
+	},
 	...freeMetrics,
 ];
 
