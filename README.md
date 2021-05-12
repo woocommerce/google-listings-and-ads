@@ -2,6 +2,21 @@
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
+- [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
+- [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
+- [User documentation](https://docs.woocommerce.com/document/google-listings-and-ads/)
+- [Ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986)
+
+## Support
+
+This repository is not suitable for support. Please don't use our issue tracker for support requests.
+
+For self help, start with our [user documentation](https://docs.woocommerce.com/document/google-listings-and-ads/).
+
+The best place to get support is the [WordPress.org Google Listings and Ads forum](https://wordpress.org/support/plugin/google-listings-and-ads/).
+
+If you have a WooCommerce.com account, you can [start a chat or open a ticket on WooCommerce.com](https://woocommerce.com/my-account/create-a-ticket/).
+
 ## Prerequisites
 
  - WordPress 5.3+
@@ -76,21 +91,8 @@ To delete the Docker container (this will **delete everything** in the WordPress
 
 * [Usage Tracking](./src/Tracking/README.md)
 
-## Please treat this repo as public
-
-* Avoid posting any private or sensitive information
-* Avoid posting anything that could be misunderstood by community contributors or that is heavily Automattic-centric
-* Default to open and keep as much conversation in Github as possible. In cases where private conversation happens on a P2 or in Slack, post a brief summary to GitHub instead of simply adding a private link.
-
-What is considered private?
-
-* Personally identifiable information (PII). Usernames, emails, user IDs, blog names, blog urls, blog IDs, credit card details. It’s best not to include our own usernames, emails, user IDs, etc. Better to use test data with a test user on a test blog.
-* Passwords, tokens, private keys, etc.
-* Internal Automattic links. Default to summarizing the information instead. If you must it’s OK to use shorthand (e.g., 1234-wpcom) but please try to summarize.
-* References to filenames in proprietary codebases. E.g. or a reference to a private repository.
-* Images that show private user data… or any of the above.
-
-## Project Management
-
- - [Project Board](https://github.com/woocommerce/google-listings-and-ads/projects/1)
- - [Issue breakdown by integration area project board](https://github.com/woocommerce/google-listings-and-ads/projects/2)
+<p align="center">
+	<br/><br/>
+	Made with 💜 by <a href="https://woocommerce.com/">WooCommerce</a>.<br/>
+	<a href="https://woocommerce.com/careers/">We're hiring</a>! Come work with us!
+</p>
