@@ -24,16 +24,17 @@ const PRODUCTS_REPORT_ADVANCED_FILTERS_FILTER =
 	'gla_products_report_advanced_filters';
 
 /**
- * Fallback to default field if the field of the given parameter in URL query
- * doesn't exist in the free field list.
+ * Gets the field name from the given URL query parameter.
+ * Returns `undefined` when the selected field doesn't exist in the free fields list.
+ * This lets the other components fall back to the default value instead.
  *
  * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L143-L145
  *
  * @param  {string} paramName The parameter name to check if needs fallback.
- * @return {string|undefined} Returns `undefined` when fallback.
- *                            Otherwise, returns the current value of the given parameter.
+ * @return {string|undefined} Returns the selected free field, or
+ *                            `undefined` if the value is not a free field.
  */
-function getFieldWithFallbackCheck( paramName ) {
+function getFreeFieldFromQuery( paramName ) {
 	const field = getQuery()[ paramName ];
 	if ( freeFields.includes( field ) ) {
 		return field;
@@ -214,10 +215,10 @@ const reportSourceConfig = {
 			label: __( 'Free listings', 'google-listings-and-ads' ),
 			query: {
 				get orderby() {
-					return getFieldWithFallbackCheck( 'orderby' );
+					return getFreeFieldFromQuery( 'orderby' );
 				},
 				get selectedMetric() {
-					return getFieldWithFallbackCheck( 'selectedMetric' );
+					return getFreeFieldFromQuery( 'selectedMetric' );
 				},
 			},
 		},
