@@ -132,4 +132,5 @@ export function mapReportFieldsToPerformance( primary, secondary ) {
  * @property {number} value Value of the current period.
  * @property {number} prevValue Value of the previous period.
  * @property {number} delta The delta of the current value compared to the previous value.
+ * @property {boolean} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
  */
