@@ -13,15 +13,14 @@ import {
 	REPORT_SOURCE_PAID,
 	REPORT_SOURCE_DEFAULT,
 } from '.~/constants';
+import useProductsReport from './useProductsReport';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import TabNav from '../../tab-nav';
 import ProductsReportFilters from './products-report-filters';
-import SummarySection from './summary-section';
+import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
-
-import chartData from './mocked-chart-data';
 import SubNav from '../sub-nav';
 
 /**
@@ -59,7 +58,7 @@ const paidMetrics = [
  * @param {boolean} props.hasPaidSource Indicate whether display paid data source and relevant UIs.
  */
 const ProductsReport = ( { hasPaidSource } ) => {
-	const reportId = 'reports-products';
+	const trackEventId = 'reports-products';
 	const query = getQuery();
 
 	const type = hasPaidSource
@@ -69,25 +68,33 @@ const ProductsReport = ( { hasPaidSource } ) => {
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
-
-	// Mocked report data for the chart.
-	const report = {
-		loaded: true,
-		data: { intervals: chartData },
-	};
+	const {
+		loaded,
+		data: { totals, intervals, products },
+	} = useProductsReport( type );
 
 	return (
 		<>
 			<ProductsReportFilters
 				hasPaidSource={ hasPaidSource }
 				query={ query }
-				report={ reportId }
+				trackEventId={ trackEventId }
 			/>
-			<SummarySection metrics={ metrics } />
-			<ChartSection metrics={ metrics } report={ report } />
-			<CompareProductsTableCard
-				trackEventReportId={ reportId }
+			<SummarySection
 				metrics={ metrics }
+				loaded={ loaded }
+				totals={ totals }
+			/>
+			<ChartSection
+				metrics={ metrics }
+				loaded={ loaded }
+				intervals={ intervals }
+			/>
+			<CompareProductsTableCard
+				trackEventReportId={ trackEventId }
+				metrics={ metrics }
+				loaded={ loaded }
+				products={ products }
 			/>
 		</>
 	);

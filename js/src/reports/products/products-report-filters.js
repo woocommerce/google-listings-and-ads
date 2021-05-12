@@ -34,10 +34,10 @@ const siteLocale = wcSettings.locale.siteLocale;
  * @param {Object} props
  * @param {boolean} props.hasPaidSource Indicate whether display report data source selector.
  * @param {Object} props.query Search query object, to fetch filter values from.
- * @param {string} props.report Report ID used in tracking events.
+ * @param {string} props.trackEventId Report ID used in tracking events.
  */
 const ProductsReportFilters = ( props ) => {
-	const { hasPaidSource, query, report } = props;
+	const { hasPaidSource, query, trackEventId } = props;
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
 	const { primary: primaryDate, secondary: secondaryDate } = getCurrentDates(
@@ -60,7 +60,7 @@ const ProductsReportFilters = ( props ) => {
 	 */
 	const onDateSelect = ( data ) =>
 		recordDatepickerUpdateEvent( {
-			report,
+			report: trackEventId,
 			...omitBy( data, isUndefined ),
 		} );
 
@@ -72,7 +72,7 @@ const ProductsReportFilters = ( props ) => {
 	 */
 	const onFilterSelect = ( data ) =>
 		recordFilterEvent( {
-			report,
+			report: trackEventId,
 			filter: data.filter || 'all',
 			// wc-admin does not send it
 			// https://github.com/woocommerce/woocommerce-admin/issues/6221
