@@ -224,7 +224,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		return [
-			'issues' => array_values( $issues ),
+			'issues' => $issues,
 			'total'  => $issue_query->get_count(),
 		];
 	}
@@ -356,15 +356,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Calculate the product status statistics and update the transient.
 	 */
 	protected function update_mc_statuses() {
-		$product_statistics =
-			[
-				MCStatus::APPROVED           => 0,
-				MCStatus::PARTIALLY_APPROVED => 0,
-				MCStatus::EXPIRING           => 0,
-				MCStatus::PENDING            => 0,
-				MCStatus::DISAPPROVED        => 0,
-				MCSTATUS::NOT_SYNCED         => 0,
-			];
+		$product_statistics = [
+			MCStatus::APPROVED           => 0,
+			MCStatus::PARTIALLY_APPROVED => 0,
+			MCStatus::EXPIRING           => 0,
+			MCStatus::PENDING            => 0,
+			MCStatus::DISAPPROVED        => 0,
+			MCSTATUS::NOT_SYNCED         => 0,
+		];
 
 		foreach ( $this->product_statuses['simple'] as $statuses ) {
 			foreach ( $statuses as $status => $num_products ) {
