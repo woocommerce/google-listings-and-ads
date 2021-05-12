@@ -5,7 +5,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Polyfills;
 
 /**
  * Class Multi Byte String
+ *
  * Based off of: https://github.com/symfony/polyfill-mbstring
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * https://github.com/symfony/polyfill-mbstring/blob/v1.22.1/LICENSE
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Polyfills
  */
