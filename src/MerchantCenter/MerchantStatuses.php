@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -18,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Exception;
-use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
+use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
 use DateTime;
 
 /**
@@ -28,7 +27,7 @@ use DateTime;
  * - Merchant
  * - MerchantIssueQuery
  * - MerchantIssueTable
- * - OptionInterface
+ * - MerchantCenterService
  * - ProductHelper
  * - ProductMetaHandler
  * - ProductRepository
@@ -137,7 +136,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		// Save a request if no MC account connected.
-		if ( ! $this->container->get( OptionsInterface::class )->get_merchant_id() ) {
+		if ( ! $this->container->get( MerchantCenterService::class )->is_setup_complete() ) {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
@@ -256,7 +255,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Retrieve all product-level issues and store them in the database.
 	 *
-	 * @param MC_Product_Status[] $mc_statuses
+	 * @param Shopping_Product_Status[] $mc_statuses
 	 */
 	protected function refresh_product_issues( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
@@ -323,7 +322,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Add the provided status counts to the overall totals.
 	 *
-	 * @param MC_Product_Status[] $mc_statuses
+	 * @param Shopping_Product_Status[] $mc_statuses
 	 */
 	protected function sum_status_counts( array $mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
@@ -426,11 +425,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Return the product's shopping status in the Google Merchant Center.
 	 * Active, Pending, Disapproved, Expiring.
 	 *
-	 * @param MC_Product_Status $product_status
+	 * @param Shopping_Product_Status $product_status
 	 *
 	 * @return string|null
 	 */
-	protected function get_product_shopping_status( MC_Product_Status $product_status ): ?string {
+	protected function get_product_shopping_status( Shopping_Product_Status $product_status ): ?string {
 		foreach ( $product_status->getDestinationStatuses() as $d ) {
 			if ( $d->getDestination() === 'Shopping' ) {
 				return $d->getStatus();
