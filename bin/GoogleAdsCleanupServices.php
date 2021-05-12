@@ -10,6 +10,13 @@ use Composer\Script\Event;
  */
 class GoogleAdsCleanupServices {
 
+	/**
+	 * Display debug output.
+	 *
+	 * @var boolean
+	 */
+	protected $debug = false;
+
 	/** List of services to keep.
 	 *
 	 * @var array
@@ -246,7 +253,7 @@ class GoogleAdsCleanupServices {
 	protected function remove_function( string $file, string $name ) {
 		$file = $this->file_path( $file );
 		if ( ! file_exists( $file ) ) {
-			$this->output_text( sprintf( 'File does not exist: %s', $file ) );
+			$this->warning( sprintf( 'File does not exist: %s', $file ) );
 			return;
 		}
 
@@ -254,7 +261,7 @@ class GoogleAdsCleanupServices {
 
 		$pattern = '/function ' . preg_quote( $name, '/' ) . '\(/';
 		if ( ! preg_match( $pattern, $contents, $matches, PREG_OFFSET_CAPTURE ) ) {
-			$this->output_text( sprintf( 'Function %s not found in %s', $name, $file ) );
+			$this->warning( sprintf( 'Function %s not found in %s', $name, $file ) );
 			return;
 		}
 
@@ -279,7 +286,7 @@ class GoogleAdsCleanupServices {
 		}
 
 		if ( false === $start || 0 > $start || $end >= $length ) {
-			$this->output_text( sprintf( 'Function %s not found in %s', $name, $file ) );
+			$this->warning( sprintf( 'Function %s not found in %s', $name, $file ) );
 			return;
 		}
 
@@ -292,7 +299,7 @@ class GoogleAdsCleanupServices {
 		$new .= substr( $contents, $end + 1 );
 
 		if ( empty( $new ) ) {
-			$this->output_text( sprintf( 'Replace failed for function %s in %s', $name, $file ) );
+			$this->warning( sprintf( 'Replace failed for function %s in %s', $name, $file ) );
 			return;
 		}
 
@@ -308,19 +315,19 @@ class GoogleAdsCleanupServices {
 	protected function remove_pattern( string $file, string $pattern ) {
 		$file = $this->file_path( $file );
 		if ( ! file_exists( $file ) ) {
-			$this->output_text( sprintf( 'File does not exist: %s', $file ) );
+			$this->warning( sprintf( 'File does not exist: %s', $file ) );
 			return;
 		}
 
 		$contents = file_get_contents( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
 		if ( ! preg_match( $pattern, $contents, $matches ) ) {
-			$this->output_text( sprintf( 'Pattern %s not found in %s', $pattern, $file ) );
+			$this->warning( sprintf( 'Pattern %s not found in %s', $pattern, $file ) );
 			return;
 		}
 
 		$new = preg_replace( $pattern, '', $contents );
 		if ( empty( $new ) ) {
-			$this->output_text( sprintf( 'Replace failed for pattern %s in %s', $pattern, $file ) );
+			$this->warning( sprintf( 'Replace failed for pattern %s in %s', $pattern, $file ) );
 			return;
 		}
 
@@ -335,7 +342,7 @@ class GoogleAdsCleanupServices {
 	protected function remove_file( string $file ) {
 		$file = $this->file_path( $file );
 		if ( ! file_exists( $file ) ) {
-			$this->output_text( sprintf( 'File does not exist: %s', $file ) );
+			$this->warning( sprintf( 'File does not exist: %s', $file ) );
 			return;
 		}
 
@@ -351,6 +358,17 @@ class GoogleAdsCleanupServices {
 	 */
 	protected function file_path( string $file ): string {
 		return $this->path . $this->src_path . $file;
+	}
+
+	/**
+	 * Output warning text (only if debug is enabled).
+	 *
+	 * @param string $text
+	 */
+	protected function warning( string $text ) {
+		if ( $this->debug ) {
+			$this->output_text( $text );
+		}
 	}
 
 	/**
