@@ -58,7 +58,7 @@ const GetStartedCard = () => {
 					<Text className="woocommerce-marketing-google-get-started-card__terms-notice">
 						{ createInterpolateElement(
 							__(
-								'By clicking ‘Get started’, you agree to our <link>Terms of Service.</link>',
+								'By clicking ‘Set up free listings in Google’, you agree to our <link>Terms of Service.</link>',
 								'google-listings-and-ads'
 							),
 							{
