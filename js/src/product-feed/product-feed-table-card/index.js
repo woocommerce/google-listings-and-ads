@@ -160,7 +160,7 @@ const ProductFeedTableCard = () => {
 							numberOfRows={ query.per_page }
 						/>
 					) }
-					{ hasFinishedResolution && ! data && (
+					{ hasFinishedResolution && ! data?.products && (
 						<EmptyTable headers={ headers } numberOfRows={ 1 }>
 							{ __(
 								'An error occurred while retrieving products. Please try again later.',
@@ -168,7 +168,7 @@ const ProductFeedTableCard = () => {
 							) }
 						</EmptyTable>
 					) }
-					{ hasFinishedResolution && data && (
+					{ hasFinishedResolution && data?.products && (
 						<Table
 							headers={ headers }
 							rows={ data.products.map( ( el ) => {
