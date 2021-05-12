@@ -155,15 +155,20 @@ class AttributeManager implements Service {
 	 * @return string[] of attribute classes mapped to attribute IDs
 	 */
 	public function get_attribute_types_for_product_type( string $product_type ): array {
+		return $this->get_attribute_types_map()[ $product_type ] ?? [];
+	}
+
+	/**
+	 * Returns an array of attribute types for all product types
+	 *
+	 * @return string[][] of attribute classes mapped to product types
+	 */
+	public function get_attribute_types_map(): array {
 		if ( ! isset( $this->attribute_types_map ) ) {
 			$this->map_attribute_types();
 		}
 
-		if ( ! empty( $this->attribute_types_map[ $product_type ] ) ) {
-			return $this->attribute_types_map[ $product_type ];
-		}
-
-		return [];
+		return $this->attribute_types_map;
 	}
 
 	/**
@@ -180,7 +185,7 @@ class AttributeManager implements Service {
 	}
 
 	/**
-	 * @throws InvalidClass When any of the given attribute classes do not implement the AttributeInterface.
+	 * @throws InvalidClass If any of the given attribute classes do not implement the AttributeInterface.
 	 */
 	protected function map_attribute_types(): void {
 		$available_attributes = apply_filters( 'gla_product_attribute_types', self::ATTRIBUTES );

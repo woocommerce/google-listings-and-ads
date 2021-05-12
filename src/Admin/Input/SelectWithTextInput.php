@@ -106,9 +106,10 @@ class SelectWithTextInput extends Input {
 		$custom_input = $view_data['children'][ self::CUSTOM_INPUT_KEY ];
 
 		// add custom classes
-		$view_data['gla_wrapper_class'] = 'select-with-text-input';
-		$view_data['class']             = 'select short with-text-input';
-		$custom_input['wrapper_class']  = 'custom-input';
+		$view_data['gla_wrapper_class']  = $view_data['gla_wrapper_class'] ?? '';
+		$view_data['gla_wrapper_class'] .= ' select-with-text-input';
+
+		$custom_input['wrapper_class'] = 'custom-input';
 
 		// add custom value option
 		$select_input['options'][ self::CUSTOM_INPUT_KEY ] = __( 'Enter a custom value', 'google-listings-and-ads' );
