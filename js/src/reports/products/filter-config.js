@@ -28,7 +28,8 @@ const PRODUCTS_REPORT_ADVANCED_FILTERS_FILTER =
  * Returns `undefined` when the selected field doesn't exist in the free fields list.
  * This lets the other components fall back to the default value instead.
  *
- * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L143-L145
+ * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L192
+ * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L140
  *
  * @param  {string} paramName The parameter name to check if needs fallback.
  * @return {string|undefined} Returns the selected free field, or
