@@ -58,12 +58,12 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 	}
 
 	/**
-	 * Get whether Merchant Center setup is completed.
+	 * Get whether Merchant Center is connected.
 	 *
 	 * @return bool
 	 */
-	public function is_mc_setup(): bool {
-		return $this->merchant_center->is_setup_complete();
+	public function is_mc_connected(): bool {
+		return $this->merchant_center->is_connected();
 	}
 
 	/**
@@ -74,6 +74,6 @@ abstract class AbstractProductSyncerBatchedJob extends AbstractBatchedActionSche
 	 * @return bool Returns true if the job can start.
 	 */
 	public function can_start( $args = [] ): bool {
-		return ! $this->is_running( $args ) && $this->is_mc_setup();
+		return ! $this->is_running( $args ) && $this->is_mc_connected();
 	}
 }

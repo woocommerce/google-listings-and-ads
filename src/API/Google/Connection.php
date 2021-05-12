@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
 use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
@@ -15,9 +18,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Connection {
+class Connection implements OptionsAwareInterface {
 
 	use ApiExceptionTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * @var ContainerInterface
@@ -54,6 +58,8 @@ class Connection {
 
 			$response = json_decode( $result->getBody()->getContents(), true );
 			if ( 200 === $result->getStatusCode() && ! empty( $response['oauthUrl'] ) ) {
+				$this->options->update( OptionsInterface::GOOGLE_CONNECTED, true );
+
 				return $response['oauthUrl'];
 			}
 
@@ -77,6 +83,8 @@ class Connection {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->delete( $this->get_connection_url() );
+
+			$this->options->update( OptionsInterface::GOOGLE_CONNECTED, false );
 
 			return $result->getBody()->getContents();
 		} catch ( ClientExceptionInterface $e ) {
@@ -104,6 +112,9 @@ class Connection {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() ) {
+				$connected = isset( $response['status'] ) && 'connected' === $response['status'];
+				$this->options->update( OptionsInterface::GOOGLE_CONNECTED, $connected );
+
 				return $response;
 			}
 
