@@ -157,6 +157,11 @@ class GoogleAdsCleanupServices {
 	protected $path = null;
 
 	/**
+	 * @var string Source path.
+	 */
+	protected $src_path = '/src/Google/Ads/GoogleAds';
+
+	/**
 	 * Constructor.
 	 *
 	 * @param Event|null  $event Composer event.
@@ -164,7 +169,7 @@ class GoogleAdsCleanupServices {
 	 */
 	public function __construct( Event $event = null, string $path = null ) {
 		$this->event = $event;
-		$this->path  = $path ?: dirname( __DIR__ ) . '/vendor/googleads';
+		$this->path  = $path ?: dirname( __DIR__ ) . '/vendor/googleads/google-ads-php';
 	}
 
 	/**
@@ -215,6 +220,10 @@ class GoogleAdsCleanupServices {
 		$this->remove_file( "/{$this->version}/Services/resources/{$snake_case}_service_descriptor_config.php" );
 		$this->remove_file( "/{$this->version}/Services/resources/{$snake_case}_service_rest_client_config.php" );
 		$this->remove_file( "/{$this->version}/Services/resources/{$snake_case}_service_client_config.json" );
+
+		// Remove metadata files.
+		$this->src_path = '/metadata/Google/Ads/GoogleAds';
+		$this->remove_file( "/{$this->version}/Services/{$service}Service.php" );
 	}
 
 	/**
@@ -341,7 +350,7 @@ class GoogleAdsCleanupServices {
 	 * @return string
 	 */
 	protected function file_path( string $file ): string {
-		return $this->path . '/google-ads-php/src/Google/Ads/GoogleAds' . $file;
+		return $this->path . $this->src_path . $file;
 	}
 
 	/**
