@@ -502,7 +502,7 @@ class AccountController extends BaseOptionsController {
 			throw new Exception(
 				sprintf(
 					/* translators: 1: is a numeric account ID */
-					__( 'Merchant Center sub-account %1$d already created.', 'google-listings-and-ads' ),
+					__( 'Merchant Center connection already in process with account %1$d.', 'google-listings-and-ads' ),
 					$merchant_id
 				)
 			);
