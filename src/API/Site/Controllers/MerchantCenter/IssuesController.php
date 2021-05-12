@@ -82,7 +82,7 @@ class IssuesController extends BaseOptionsController {
 					if ( empty( $issue['product_id'] ) ) {
 						continue;
 					}
-					$issue['product_id'] = $this->product_helper->maybe_get_parent_id( $issue['product_id'] ) ?: $issue['product_id'];
+					$issue['product_id'] = $this->product_helper->maybe_swap_for_parent_id( $issue['product_id'] );
 				}
 
 				return $this->prepare_item_for_response( $results, $request );

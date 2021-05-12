@@ -345,8 +345,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->product_statuses['simple'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['simple'][ $wc_product_id ][ $status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = $product_helper->maybe_get_parent_id( $wc_product_id );
-			if ( is_null( $wc_parent_id ) ) {
+			$wc_parent_id = $product_helper->maybe_swap_for_parent_id( $wc_product_id );
+			if ( $wc_parent_id === $wc_product_id ) {
 				continue;
 			}
 			$this->product_statuses['parent'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parent'][ $wc_parent_id ][ $status ] ?? 0 );

@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
+use Exception;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
@@ -246,18 +247,22 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
-	 * Get the ID of the parent variable product if the provided product is a variation. Returns null
-	 * if there is no valid parent ID.
+	 * If the provided product has a parent, return its ID. Otherwise, return the
+	 * given (valid product) ID.
 	 *
 	 * @param int $product_id
 	 *
-	 * @return int|null The valid parent product ID or null.
+	 * @return int The parent ID or product ID of it doesn't have a parent.
+	 * @throws Exception If the ID doesn't reference a valid product.
 	 */
-	public function maybe_get_parent_id( int $product_id ): ?int {
+	public function maybe_swap_for_parent_id( int $product_id ): ?int {
 		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			throw new Exception( __( 'Invalid product ID.', 'google-listings-and-ads' ) );
+		}
 		if ( $product instanceof WC_Product_Variation ) {
 			return $product->get_parent_id();
 		}
-		return null;
+		return $product_id;
 	}
 }
