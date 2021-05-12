@@ -136,7 +136,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		// Save a request if no MC account connected.
-		if ( ! $this->container->get( MerchantCenterService::class )->is_setup_complete() ) {
+		if ( ! $this->container->get( MerchantCenterService::class )->is_connected() ) {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
