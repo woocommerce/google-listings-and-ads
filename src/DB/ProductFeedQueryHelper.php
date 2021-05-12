@@ -61,7 +61,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	}
 
 	/**
-	 * Retrieve and array of product information using the request params.
+	 * Retrieve an array of product information using the request params.
 	 *
 	 * @param WP_REST_Request $request
 	 *
