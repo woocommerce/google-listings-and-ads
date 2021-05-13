@@ -160,7 +160,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
-		$this->share_with_tags( AdsService::class, OptionsInterface::class );
+		$this->share_with_tags( AdsService::class );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
