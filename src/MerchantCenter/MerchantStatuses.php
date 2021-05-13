@@ -68,7 +68,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * @var array Statuses for each product ID.
 	 */
-	protected $product_statuses;
+	protected $product_statuses = [];
 
 	/**
 	 * MerchantStatuses constructor.
