@@ -32,9 +32,16 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 	const { formatAmount } = useCurrencyFactory();
 
 	const { selectedMetric } = query;
-	const { key, label, isCurrency = false } = selectedMetric
-		? metrics.find( ( metric ) => metric.key === selectedMetric )
-		: metrics[ 0 ];
+	let visibleMetric;
+	if ( metrics.length ) {
+		visibleMetric = selectedMetric
+			? metrics.find( ( metric ) => metric.key === selectedMetric )
+			: metrics[ 0 ];
+	} else {
+		visibleMetric = { key: undefined, label: undefined };
+	}
+
+	const { key, label, isCurrency = false } = visibleMetric;
 
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';

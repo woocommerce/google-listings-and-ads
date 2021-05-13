@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Chart } from '@woocommerce/components';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
@@ -13,6 +12,7 @@ import TabNav from '../../tab-nav';
 import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
+import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import '../../dashboard/index.scss';
 
@@ -55,58 +55,6 @@ const ProgramsReport = () => {
 		data: { totals, intervals },
 	} = useProgramsReport();
 
-	const chartData = [
-		{
-			date: '2018-05-30T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 14205,
-			},
-		},
-		{
-			date: '2018-05-31T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 10581,
-			},
-		},
-		{
-			date: '2018-06-01T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 16307,
-			},
-		},
-		{
-			date: '2018-06-02T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 13481,
-			},
-		},
-		{
-			date: '2018-06-03T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 10581,
-			},
-		},
-		{
-			date: '2018-06-04T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 19874,
-			},
-		},
-		{
-			date: '2018-06-05T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 20593,
-			},
-		},
-	];
-
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const availableMetrics = performanceMetrics.filter(
@@ -126,12 +74,10 @@ const ProgramsReport = () => {
 					expectedLength={ performanceMetrics.length }
 					totals={ totals }
 				/>
-				<Chart
-					data={ chartData }
-					title="Conversions"
-					layout="time-comparison"
-					interactiveLegend="false"
-					showHeaderControls="false"
+				<ChartSection
+					metrics={ availableMetrics }
+					loaded={ loaded }
+					intervals={ intervals }
 				/>
 			</div>
 			<div className="gla-dashboard__programs">
