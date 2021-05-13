@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
+use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
+use Automattic\WooCommerce\Admin\Features\Navigation\Screen;
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -39,6 +42,65 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 				$this->fix_menu_paths();
 			}
 		);
+
+		// Register menu items in the new WooCommerce navigation.
+		add_action( 'admin_menu', function () {
+			if (
+				! method_exists( Menu::class, 'add_plugin_item' ) ||
+				! method_exists( Menu::class, 'add_plugin_category' ) ||
+				! Features::is_enabled( 'navigation' )
+			) {
+				return;
+			}
+
+			Menu::add_plugin_category(
+				array(
+					'id'     => 'google-listings-and-ads',
+					'title'  => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+					'parent' => 'woocommerce',
+				)
+			);
+
+			Menu::add_plugin_item(
+				array(
+					'id'         	=> 'gla-dashboard',
+					'title'  		=> __( 'Dashboard', 'google-listings-and-ads' ),
+					'capability'    => 'manage_woocommerce',
+					'url'        	=> 'wc-admin&path=/google/dashboard',
+					'parent' 		=> 'google-listings-and-ads',
+				)
+			);
+
+			Menu::add_plugin_item(
+				array(
+					'id'         	=> 'gla-reports',
+					'title'  		=> __( 'Reports', 'google-listings-and-ads' ),
+					'capability'	=> 'manage_woocommerce',
+					'url'        	=> 'wc-admin&path=/google/reports/programs',
+					'parent' 		=> 'google-listings-and-ads',
+				)
+			);
+
+			Menu::add_plugin_item(
+				array(
+					'id'         	=> 'gla-product-feed',
+					'title'  		=> __( 'Product Feed', 'google-listings-and-ads' ),
+					'capability'    => 'manage_woocommerce',
+					'url'        	=> 'wc-admin&path=/google/product-feed',
+					'parent' 		=> 'google-listings-and-ads',
+				)
+			);
+
+			Menu::add_plugin_item(
+				array(
+					'id'         	=> 'gla-settings',
+					'title' 		=> __( 'Settings', 'google-listings-and-ads' ),
+					'capability'    => 'manage_woocommerce',
+					'url'        	=> 'wc-admin&path=/google/settings',
+					'parent' 		=> 'google-listings-and-ads',
+				)
+			);
+		} );
 	}
 
 	/**

@@ -23,9 +23,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\VersionValidator;
 use Psr\Container\ContainerInterface;
-use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
-use Automattic\WooCommerce\Admin\Features\Navigation\Screen;
-use Automattic\WooCommerce\Admin\Features\Features;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -92,24 +89,3 @@ add_action(
 	},
 	1
 );
-
-// Register menu items in the new WooCommerce navigation.
-add_action( 'admin_menu', function () {
-	if (
-		! method_exists( Screen::class, 'register_post_type' ) ||
-		! method_exists( Menu::class, 'add_plugin_item' ) ||
-		! method_exists( Menu::class, 'add_plugin_category' ) ||
-		! Features::is_enabled( 'navigation' )
-	) {
-		return;
-	}
-
-	Menu::add_plugin_item(
-		array(
-			'id'         => 'google-start',
-			'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-			'capability' => 'manage_woocommerce',
-			'url'        => 'wc-admin&path=/google/dashboard',
-		)
-	);
-} );
