@@ -7,9 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Color;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Material;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Pattern;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
@@ -578,6 +581,10 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( '/^\d{8}(?:\d{4,6})?$/' ) );
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'alnum' ) ); // alphanumeric
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Length( null, 0, 70 ) ); // maximum 70 characters
+
+		$metadata->addPropertyConstraint( 'color', new Assert\Length( null, 0, 100 ) ); // maximum 100 characters
+		$metadata->addPropertyConstraint( 'material', new Assert\Length( null, 0, 200 ) ); // maximum 200 characters
+		$metadata->addPropertyConstraint( 'pattern', new Assert\Length( null, 0, 100 ) ); // maximum 200 characters
 	}
 
 	/**
@@ -626,6 +633,24 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$gender = $this->get_attribute_value( Gender::get_id() );
 		if ( ! empty( $gender ) ) {
 			$this->setGender( $gender );
+		}
+
+		// Color
+		$color = $this->get_attribute_value( Color::get_id() );
+		if ( ! empty( $color ) ) {
+			$this->setColor( $color );
+		}
+
+		// Material
+		$material = $this->get_attribute_value( Material::get_id() );
+		if ( ! empty( $material ) ) {
+			$this->setMaterial( $material );
+		}
+
+		// Pattern
+		$pattern = $this->get_attribute_value( Pattern::get_id() );
+		if ( ! empty( $pattern ) ) {
+			$this->setPattern( $pattern );
 		}
 
 		return $this;
