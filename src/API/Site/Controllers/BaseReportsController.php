@@ -129,7 +129,7 @@ abstract class BaseReportsController extends BaseController {
 	}
 
 	/**
-	 * Get paramater defaults.
+	 * Get parameter defaults.
 	 *
 	 * @param array $params List of parameters.
 	 *
