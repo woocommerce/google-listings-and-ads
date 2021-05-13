@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
@@ -160,7 +161,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
+		// Set up Ads service, and inflect classes that need it.
 		$this->share_with_tags( AdsService::class );
+		$this->getLeagueContainer()
+			->inflector( AdsAwareInterface::class )
+			->invokeMethod( 'set_ads_object', [ AdsService::class ] );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
