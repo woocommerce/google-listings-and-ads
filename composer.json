@@ -23,6 +23,9 @@
     "wp-cli/i18n-command": "^2.2",
     "wp-coding-standards/wpcs": "^2.3"
   },
+  "replace": {
+    "symfony/polyfill-mbstring": "*"
+  },
   "license": "GPL-3.0",
   "autoload": {
     "psr-4": {
