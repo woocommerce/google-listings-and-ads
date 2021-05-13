@@ -129,6 +129,9 @@ class Form implements FormInterface {
 		if ( is_array( $data ) && ! empty( $this->children ) ) {
 			$this->data = $this->map_children_data( $data );
 		} else {
+			if ( is_string( $data ) ) {
+				$data = trim( $data );
+			}
 			$this->data = $data;
 		}
 	}
