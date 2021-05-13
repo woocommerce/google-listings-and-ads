@@ -65,7 +65,7 @@ class AttributeManager implements Service {
 		$attribute_class = $this->get_attribute_types_for_product( $product )[ $attribute_id ];
 		$value           = get_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute_id ), true );
 
-		if ( empty( $value ) ) {
+		if ( null === $value || '' === $value ) {
 			return null;
 		}
 
