@@ -32,6 +32,7 @@ import {
 	receiveReport,
 	receiveMCProductStatistics,
 	receiveMCIssues,
+	receiveMCProductFeed,
 } from './actions';
 
 export function* getShippingRates() {
@@ -129,6 +130,33 @@ export function* getMCIssues( query ) {
 		);
 	}
 }
+
+export function* getMCProductFeed( query ) {
+	try {
+		const response = yield apiFetch( {
+			path: addQueryArgs( `${ API_NAMESPACE }/mc/product-feed`, query ),
+		} );
+
+		yield receiveMCProductFeed( query, response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading product feed.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+getMCProductFeed.shouldInvalidate = ( action, query ) => {
+	return (
+		action.type === TYPES.RECEIVE_MC_PRODUCT_FEED &&
+		( action.query.per_page !== query.per_page ||
+			action.query.orderby !== query.orderby ||
+			action.query.order !== query.order )
+	);
+};
 
 const reportTypeMap = new Map( [
 	[ REPORT_SOURCE_FREE, 'mc' ],

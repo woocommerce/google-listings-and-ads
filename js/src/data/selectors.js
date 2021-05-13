@@ -94,6 +94,17 @@ export const getMCIssues = createSelector(
 	]
 );
 
+export const getMCProductFeed = ( state, query ) => {
+	if ( ! state.mc_product_feed ) {
+		return state.mc_product_feed;
+	}
+
+	return {
+		products: state.mc_product_feed.pages[ query.page ],
+		total: state.mc_product_feed.total,
+	};
+};
+
 /**
  * Select report data according to parameters and report API query.
  *
