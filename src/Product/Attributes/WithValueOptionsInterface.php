@@ -12,6 +12,10 @@ defined( 'ABSPATH' ) || exit;
  */
 interface WithValueOptionsInterface {
 	/**
+	 * Return an array of values available to choose for the attribute.
+	 *
+	 * Note: array key is used as the option key.
+	 *
 	 * @return array
 	 */
 	public static function get_value_options(): array;
