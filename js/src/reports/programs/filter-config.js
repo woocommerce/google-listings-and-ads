@@ -7,7 +7,7 @@ import { getIdsFromQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '.~/constants';
 
 export const programsFilterConfig = ( adsCampaigns ) => {
 	if ( ! adsCampaigns ) {
@@ -71,7 +71,7 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 						path: [ 'select_program' ],
 						settings: {
 							type: 'custom',
-							param: 'programs',
+							param: REPORT_PROGRAM_PARAM,
 							getLabels,
 							labels: {
 								placeholder: __(
@@ -94,7 +94,7 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 				value: 'compare-programs',
 				settings: {
 					type: 'custom',
-					param: 'programs',
+					param: REPORT_PROGRAM_PARAM,
 					getLabels,
 					labels: {
 						helpText: __(
