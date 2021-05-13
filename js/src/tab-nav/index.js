@@ -68,6 +68,11 @@ const TabNav = ( props ) => {
 		const marketingMenu = document.querySelector(
 			'#toplevel_page_woocommerce-marketing'
 		);
+
+		if ( ! marketingMenu ) {
+			return;
+		}
+
 		const dashboardLink = marketingMenu.querySelector(
 			"a[href^='admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard']"
 		);
