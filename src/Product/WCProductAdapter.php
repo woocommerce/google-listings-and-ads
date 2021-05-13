@@ -75,7 +75,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		}
 
 		$this->wc_product = $array['wc_product'];
-		$this->set_gla_attributes( $array['gla_attributes'] );
+		$this->set_gla_attributes( $array['gla_attributes'] ?? [] );
 
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_product'] );
