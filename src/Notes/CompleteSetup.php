@@ -27,7 +27,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 	use PluginHelper;
 	use Utilities;
 
-	public const NOTE_NAME = 'gla-complete-setup-2021-02';
+	public const NOTE_NAME = 'gla-complete-setup';
 
 	/**
 	 * Register a service.
@@ -52,8 +52,8 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		}
 
 		$note = new Note();
-		$note->set_title( __( 'Drive traffic and sales with Google', 'google-listings-and-ads' ) );
-		$note->set_content( __( 'Reach online shoppers to drive traffic and sales for your store by showcasing products across Google, for free or with ads.', 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Complete your setup on Google', 'google-listings-and-ads' ) );
+		$note->set_content( __( 'Finish setting up Google Listings & Ads to list your products on Google for free and promote them with paid ads.', 'google-listings-and-ads' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
@@ -62,7 +62,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
 			'complete-setup',
-			__( 'Get started', 'google-listings-and-ads' ),
+			__( 'Finish setup', 'google-listings-and-ads' ),
 			$this->get_start_url()
 		);
 		$note->save();
@@ -91,10 +91,6 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		}
 
 		if ( $this->merchant_center->is_setup_complete() ) {
-			return false;
-		}
-
-		if ( ! $this->gla_active_for( 3 * DAY_IN_SECONDS ) ) {
 			return false;
 		}
 
