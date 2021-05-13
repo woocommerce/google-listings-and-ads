@@ -221,6 +221,10 @@ class GoogleAdsCleanupServices {
 		$this->remove_file( "/{$this->version}/Services/{$service}ServiceGrpcClient.php" );
 		$this->remove_file( "/{$this->version}/Services/{$service}ServiceClient.php" );
 
+		$this->remove_file( "/{$this->version}/Services/Mutate{$service}Result.php" );
+		$this->remove_file( "/{$this->version}/Services/Mutate{$service}sRequest.php" );
+		$this->remove_file( "/{$this->version}/Services/Mutate{$service}sResponse.php" );
+		$this->remove_file( "/{$this->version}/Services/{$service}Operation.php" );
 		$this->remove_file( "/{$this->version}/Services/Get{$service}Request.php" );
 		$this->remove_file( "/{$this->version}/Resources/{$service}.php" );
 
