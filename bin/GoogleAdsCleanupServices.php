@@ -207,6 +207,7 @@ class GoogleAdsCleanupServices {
 	 */
 	protected function remove_service( string $service ) {
 		$this->output_text( "Removing service {$service}" );
+		$this->src_path = '/src/Google/Ads/GoogleAds';
 
 		$file = "/Util/{$this->version}/ResourceNames.php";
 		$this->remove_use_statement( $file, "{$service}ServiceClient" );
