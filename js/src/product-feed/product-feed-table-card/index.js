@@ -3,41 +3,56 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import { CheckboxControl, Button } from '@wordpress/components';
-import { getQuery, onQueryChange } from '@woocommerce/navigation';
+import {
+	CheckboxControl,
+	Button,
+	Card,
+	CardHeader,
+	CardBody,
+	CardFooter,
+	__experimentalText as Text,
+} from '@wordpress/components';
+import {
+	EmptyTable,
+	Pagination,
+	Table,
+	TablePlaceholder,
+} from '@woocommerce/components';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
  */
+import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
-import AppTableCard from '.~/components/app-table-card';
 import './index.scss';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import statusLabelMap from './statusLabelMap';
+
+const PER_PAGE = 10;
 
 /**
- * All programs table, with compare feature.
- *
- * @see AppTableCard
- *
- * @param {Object} [props] Properties to be forwarded to AppTableCard.
+ * Product Feed table.
  */
-const ProductFeedTableCard = ( props ) => {
+const ProductFeedTableCard = () => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
-	const query = getQuery();
-
-	// TODO: data should be coming from backend API,
-	// using the above query (e.g. orderby, order and page) as parameter.
-	// Also, i18n for the display labels too.
-	const data = [];
-
-	// TODO: total should be coming from API response above.
-	const total = data.length;
+	const [ query, setQuery ] = useState( {
+		page: 1,
+		per_page: PER_PAGE,
+		orderby: 'title',
+		order: 'asc',
+	} );
+	const { hasFinishedResolution, data } = useAppSelectDispatch(
+		'getMCProductFeed',
+		query
+	);
 
 	// TODO: what happens upon clicking the Edit Visibility button.
 	const handleEditVisibilityClick = () => {};
 
 	const handleSelectAllCheckboxChange = ( checked ) => {
 		if ( checked ) {
-			const ids = data.map( ( el ) => el.id );
+			const ids = data?.products.map( ( el ) => el.id );
 			setSelectedRows( new Set( [ ...ids ] ) );
 		} else {
 			setSelectedRows( new Set() );
@@ -52,97 +67,167 @@ const ProductFeedTableCard = ( props ) => {
 		}
 	};
 
+	const handlePageChange = ( newPage ) => {
+		setQuery( {
+			...query,
+			page: newPage,
+		} );
+	};
+
+	const handleSort = ( orderby, order ) => {
+		setQuery( {
+			...query,
+			orderby,
+			order,
+		} );
+	};
+
+	const headers = [
+		{
+			key: 'select',
+			label: (
+				<CheckboxControl
+					disabled={ ! data?.products }
+					checked={
+						data?.products?.length > 0 &&
+						data?.products?.every( ( el ) =>
+							selectedRows.has( el.id )
+						)
+					}
+					onChange={ handleSelectAllCheckboxChange }
+				/>
+			),
+			isLeftAligned: true,
+			required: true,
+		},
+		{
+			key: 'title',
+			label: __( 'Product Title', 'google-listings-and-ads' ),
+			isLeftAligned: true,
+			required: true,
+			isSortable: true,
+		},
+		{
+			key: 'visible',
+			label: __( 'Channel Visibility', 'google-listings-and-ads' ),
+			isLeftAligned: true,
+			isSortable: true,
+		},
+		{
+			key: 'status',
+			label: __( 'Status', 'google-listings-and-ads' ),
+			isLeftAligned: true,
+			isSortable: true,
+		},
+		{ key: 'action', label: '', required: true },
+	];
+
+	const actions = (
+		<Button
+			isSecondary
+			disabled={ selectedRows.size === 0 }
+			title={ __(
+				'Select one or more products',
+				'google-listings-and-ads'
+			) }
+			onClick={ handleEditVisibilityClick }
+		>
+			{ __( 'Edit channel visibility', 'google-listings-and-ads' ) }
+		</Button>
+	);
+
 	return (
-		<div className="gla-product-feed-table-card">
-			<AppTableCard
-				title={ __( 'Product Feed', 'google-listings-and-ads' ) }
-				actions={
-					<Button
-						isSecondary
-						disabled={ selectedRows.size === 0 }
-						title={ __(
-							'Select one or more products',
-							'google-listings-and-ads'
-						) }
-						onClick={ handleEditVisibilityClick }
-					>
-						{ __(
-							'Edit channel visibility',
-							'google-listings-and-ads'
-						) }
-					</Button>
-				}
-				headers={ [
-					{
-						key: 'select',
-						label: (
-							<CheckboxControl
-								checked={ selectedRows.size === data.length }
-								onChange={ handleSelectAllCheckboxChange }
-							/>
-						),
-						isLeftAligned: true,
-						required: true,
-					},
-					{
-						key: 'productTitle',
-						label: __( 'Product Title', 'google-listings-and-ads' ),
-						isLeftAligned: true,
-						required: true,
-						isSortable: true,
-					},
-					{
-						key: 'channelVisibility',
-						label: __(
-							'Channel Visibility',
-							'google-listings-and-ads'
-						),
-						isLeftAligned: true,
-						isSortable: true,
-					},
-					{
-						key: 'status',
-						label: __( 'Status', 'google-listings-and-ads' ),
-						isLeftAligned: true,
-						isSortable: true,
-					},
-					{ key: 'action', label: '', required: true },
-				] }
-				rows={ data.map( ( el ) => {
-					return [
-						{
-							display: (
-								<CheckboxControl
-									checked={ selectedRows.has( el.id ) }
-									onChange={ getHandleSelectRowCheckboxChange(
-										el.id
-									) }
-								></CheckboxControl>
-							),
-						},
-						{ display: el.title },
-						{ display: el.visibility },
-						{
-							display: el.status,
-						},
-						{
-							display: <EditProductLink productId={ el.id } />,
-						},
-					];
+		<AppTableCardDiv className="gla-product-feed-table-card">
+			<Card
+				className={ classnames( 'woocommerce-table', {
+					'has-actions': !! actions,
 				} ) }
-				totalRows={ total }
-				rowsPerPage={ parseInt( query.per_page, 10 ) || 25 }
-				summary={ [
-					{
-						label: __( 'products', 'google-listings-and-ads' ),
-						value: total,
-					},
-				] }
-				query={ query }
-				onQueryChange={ onQueryChange }
-				{ ...props }
-			/>
-		</div>
+			>
+				<CardHeader>
+					{ /* We use this Text component to make it similar to TableCard component. */ }
+					<Text variant="title.small" as="h2">
+						{ __( 'Product Feed', 'google-listings-and-ads' ) }
+					</Text>
+					{ /* This is also similar to TableCard component implementation. */ }
+					<div className="woocommerce-table__actions">
+						{ actions }
+					</div>
+				</CardHeader>
+				<CardBody size={ null }>
+					{ ! hasFinishedResolution && (
+						<TablePlaceholder
+							headers={ headers }
+							numberOfRows={ query.per_page }
+						/>
+					) }
+					{ hasFinishedResolution && ! data?.products && (
+						<EmptyTable headers={ headers } numberOfRows={ 1 }>
+							{ __(
+								'An error occurred while retrieving products. Please try again later.',
+								'google-listings-and-ads'
+							) }
+						</EmptyTable>
+					) }
+					{ hasFinishedResolution && data?.products && (
+						<Table
+							headers={ headers }
+							rows={ data.products.map( ( el ) => {
+								return [
+									{
+										display: (
+											<CheckboxControl
+												checked={ selectedRows.has(
+													el.id
+												) }
+												onChange={ getHandleSelectRowCheckboxChange(
+													el.id
+												) }
+											/>
+										),
+									},
+									{ display: el.title },
+									{
+										display: el.visible
+											? __(
+													'Sync and show',
+													'google-listings-and-ads'
+											  )
+											: __(
+													`Don't sync and show`,
+													'google-listings-and-ads'
+											  ),
+									},
+									{
+										display: statusLabelMap[ el.status ],
+									},
+									{
+										display: (
+											<EditProductLink
+												productId={ el.id }
+											/>
+										),
+									},
+								];
+							} ) }
+							query={ query }
+							onSort={ handleSort }
+						/>
+					) }
+				</CardBody>
+				<CardFooter justify="center">
+					{ data?.total && (
+						<Pagination
+							page={ query.page }
+							perPage={ query.per_page }
+							total={ data?.total }
+							showPagePicker={ true }
+							showPerPagePicker={ false }
+							onPageChange={ handlePageChange }
+						/>
+					) }
+				</CardFooter>
+			</Card>
+		</AppTableCardDiv>
 	);
 };
 
