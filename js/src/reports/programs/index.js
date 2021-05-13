@@ -8,13 +8,13 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import useProgramsReport from './useProgramsReport';
 import TabNav from '../../tab-nav';
 import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import '../../dashboard/index.scss';
-import metricsData from './mocked-metrics-data'; // Mocked data
 
 /**
  * Available metrics and their human-readable labels.
@@ -47,8 +47,13 @@ const performanceMetrics = [
 ];
 
 const ProgramsReport = () => {
-	// TODO: this data should come from backend API.
-	const totals = metricsData();
+	const reportId = 'reports-programs';
+
+	// Only after calling the API we would know if the default "All listings" includes or not any paid listings.
+	const {
+		loaded,
+		data: { totals, intervals },
+	} = useProgramsReport();
 
 	const chartData = [
 		{
@@ -108,8 +113,6 @@ const ProgramsReport = () => {
 		( { key } ) => totals[ key ]
 	);
 
-	const reportId = 'reports-programs';
-
 	return (
 		<div className="gla-dashboard">
 			<TabNav initialName="reports" />
@@ -118,8 +121,9 @@ const ProgramsReport = () => {
 			<ProgramsReportFilters query={ getQuery() } report={ reportId } />
 			<div className="gla-reports__performance">
 				<SummarySection
+					loaded={ loaded }
 					metrics={ availableMetrics }
-					loaded={ true }
+					expectedLength={ performanceMetrics.length }
 					totals={ totals }
 				/>
 				<Chart

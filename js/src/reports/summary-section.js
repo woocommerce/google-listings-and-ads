@@ -20,17 +20,27 @@ const noValidData = {
  * Renders a section composed with SummaryList and MetricNumber.
  *
  * @param {Object} props React props.
- * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {boolean} props.loaded Whether the data have been loaded.
+ * @param {Array<Metric>} props.metrics Metrics to display.
+ * @param {number} [props.expectedLength=metrics.length] Expected metrics to display, for example when the metrics array is not yet resolved.
  * @param {PerformanceData} props.totals Report's performance data.
  */
-export default function SummarySection( { metrics, loaded, totals } ) {
+export default function SummarySection( {
+	loaded,
+	metrics,
+	expectedLength,
+	totals,
+} ) {
 	const query = useUrlQuery();
-	const { selectedMetric = metrics[ 0 ].key } = query;
+	if ( expectedLength === undefined ) {
+		expectedLength = metrics.length;
+	}
 
 	if ( ! loaded ) {
-		return <SummaryListPlaceholder numberOfItems={ metrics.length } />;
+		return <SummaryListPlaceholder numberOfItems={ expectedLength } />;
 	}
+
+	const { selectedMetric = metrics[ 0 ].key } = query;
 
 	return (
 		<SummaryList>
