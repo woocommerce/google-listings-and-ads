@@ -10,6 +10,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Size;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
@@ -578,6 +581,20 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( '/^\d{8}(?:\d{4,6})?$/' ) );
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'alnum' ) ); // alphanumeric
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Length( null, 0, 70 ) ); // maximum 70 characters
+
+		$metadata->addPropertyConstraint(
+			'sizes',
+			new Assert\All(
+				[
+					'constraints' => [
+						new Assert\Type( 'string' ),
+						new Assert\Length( null, 0, 100 ), // maximum 100 characters
+					],
+				]
+			)
+		);
+		$metadata->addPropertyConstraint( 'sizeSystem', new Assert\Choice( array_keys( SizeSystem::get_value_options() ) ) );
+		$metadata->addPropertyConstraint( 'sizeType', new Assert\Choice( array_keys( SizeType::get_value_options() ) ) );
 	}
 
 	/**
@@ -626,6 +643,24 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$gender = $this->get_attribute_value( Gender::get_id() );
 		if ( ! empty( $gender ) ) {
 			$this->setGender( $gender );
+		}
+
+		// Size
+		$size = $this->get_attribute_value( Size::get_id() );
+		if ( ! empty( $size ) ) {
+			$this->setSizes( [ $size ] );
+		}
+
+		// SizeSystem
+		$size_system = $this->get_attribute_value( SizeSystem::get_id() );
+		if ( ! empty( $size_system ) ) {
+			$this->setSizeSystem( $size_system );
+		}
+
+		// SizeType
+		$size_type = $this->get_attribute_value( SizeType::get_id() );
+		if ( ! empty( $size_type ) ) {
+			$this->setSizeType( $size_type );
 		}
 
 		return $this;

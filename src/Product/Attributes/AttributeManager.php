@@ -27,6 +27,9 @@ class AttributeManager implements Service {
 		MPN::class,
 		Brand::class,
 		Gender::class,
+		Size::class,
+		SizeSystem::class,
+		SizeType::class,
 	];
 
 	/**
