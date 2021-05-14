@@ -555,7 +555,7 @@ class ConnectionTest implements Service, Registerable {
 							<td>
 								<p>
 						<label>
-							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" /></label>
+							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
 						</label>
 						<label for="async-sync-product">Async?</label>
 						<input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
