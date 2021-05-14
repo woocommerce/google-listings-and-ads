@@ -11,6 +11,7 @@ import {
 	fieldsToPerformance,
 	mapReportFieldsToPerformance,
 } from '.~/data/utils';
+import { getIdsFromQuery } from '../utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '.~/constants';
 
@@ -21,21 +22,6 @@ const emptyData = {
 	intervals: [],
 	totals: {},
 };
-
-/**
- * Get an array of IDs from a comma-separated query parameter.
- * We cannot use '@woocommerce/navigation.getIdsFromQuery' as it does not support `0` as an Id
- * https://github.com/woocommerce/woocommerce-admin/issues/6980
- *
- * @param {string} [queryString=''] string value extracted from URL.
- * @return {Array} List of IDs converted to numbers.
- */
-function getIdsFromQuery( queryString = '' ) {
-	return queryString
-		.split( ',' )
-		.map( ( id ) => parseInt( id, 10 ) )
-		.filter( ( id ) => ! isNaN( id ) );
-}
 
 /**
  * @typedef { import(".~/data/utils").ReportFieldsSchema } ReportFieldsSchema
