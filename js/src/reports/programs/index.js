@@ -24,7 +24,7 @@ import '../../dashboard/index.scss';
 const performanceMetrics = [
 	{
 		key: 'sales',
-		label: __( 'Net Sales', 'google-listings-and-ads' ),
+		label: __( 'Total Sales', 'google-listings-and-ads' ),
 		isCurrency: true,
 	},
 	{
