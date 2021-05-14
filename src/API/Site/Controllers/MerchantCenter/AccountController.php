@@ -182,9 +182,8 @@ class AccountController extends BaseOptionsController {
 			$overwrite_necessary = ! empty( $state['claim']['data']['overwrite_required'] );
 			$claim_status        = $state['claim']['status'] ?? MerchantAccountState::STEP_PENDING;
 			if ( MerchantAccountState::STEP_DONE === $claim_status || ! $overwrite_necessary ) {
-				return new Response(
-					[ 'message' => __( 'Attempting invalid claim overwrite.', 'google-listings-and-ads' ) ],
-					400
+				return $this->prepare_error_response(
+					[ 'message' => __( 'Attempting invalid claim overwrite.', 'google-listings-and-ads' ) ]
 				);
 			}
 
@@ -204,9 +203,8 @@ class AccountController extends BaseOptionsController {
 			$switch_necessary = ! empty( $state['set_id']['data']['old_url'] );
 			$set_id_status    = $state['set_id']['status'] ?? MerchantAccountState::STEP_PENDING;
 			if ( empty( $request['id'] ) || MerchantAccountState::STEP_DONE === $set_id_status || ! $switch_necessary ) {
-				return new Response(
-					[ 'message' => __( 'Attempting invalid URL switch.', 'google-listings-and-ads' ) ],
-					400
+				return $this->prepare_error_response(
+					[ 'message' => __( 'Attempting invalid URL switch.', 'google-listings-and-ads' ) ]
 				);
 			}
 
@@ -323,20 +321,29 @@ class AccountController extends BaseOptionsController {
 
 			return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
 		} catch ( ExceptionWithResponseData $e ) {
-			$data = $e->get_response_data( true );
-			$mid  = $this->options->get_merchant_id();
-			if ( $mid ) {
-				$data['merchant_id'] = $mid;
-			}
-			return new Response( $data, $e->getCode() ?: 400 );
+			return $this->prepare_error_response( $e->get_response_data( true ), $e->getCode() );
 		} catch ( Exception $e ) {
-			$data = [ 'message' => $e->getMessage() ];
-			$mid  = $this->options->get_merchant_id();
-			if ( $mid ) {
-				$data['merchant_id'] = $mid;
-			}
-			return new Response( $data, $e->getCode() ?: 400 );
+			return $this->prepare_error_response( [ 'message' => $e->getMessage() ], $e->getCode() );
 		}
+	}
+
+	/**
+	 * Prepare the error response:
+	 * - Ensure it has the merchant_id value
+	 * - Default to a 400 error code
+	 *
+	 * @param array    $data
+	 * @param int|null $code
+	 *
+	 * @return Response
+	 */
+	protected function prepare_error_response( array $data, int $code = null ): Response {
+		$merchant_id = $this->options->get_merchant_id();
+		if ( $merchant_id ) {
+			$data['merchant_id'] = $merchant_id;
+		}
+		return new Response( $data, $code ?: 400 );
+
 	}
 
 	/**
