@@ -52,7 +52,13 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 
 	return {
 		label: __( 'Show', 'google-listings-and-ads' ),
-		staticParams: [ 'period', 'chartType', 'paged', 'per_page' ],
+		staticParams: [
+			'period',
+			'chartType',
+			'paged',
+			'per_page',
+			'selectedMetric',
+		],
 		param: 'filter',
 		showFilters: () => true,
 		filters: [
