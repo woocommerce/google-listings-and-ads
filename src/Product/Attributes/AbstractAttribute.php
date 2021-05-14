@@ -38,6 +38,8 @@ abstract class AbstractAttribute implements AttributeInterface {
 	}
 
 	/**
+	 * Returns the attribute value.
+	 *
 	 * @return mixed
 	 */
 	public function get_value() {
