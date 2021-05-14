@@ -150,8 +150,8 @@ function transformReportAggregated( getReport, query ) {
 			],
 			totals: mapReportFieldsToAggregatesPerformance(
 				paid.primary.data.totals,
-				free.primary.data.totals,
 				paid.secondary.data.totals,
+				free.primary.data.totals,
 				free.secondary.data.totals
 			),
 		};
@@ -184,10 +184,10 @@ export function mapReportFieldsToAggregatesPerformance(
 		( acc, key ) => ( {
 			...acc,
 			[ key ]: fieldsToPerformance(
-				// State the lack of data as `missingFreeListingsData`,
+				// State the lack of `free*[key]` data as `missingFreeListingsData`,
 				// but sum gracefully as `0`.
-				Number( paid[ key ] ) + Number( free[ key ] ),
-				Number( paidBase[ key ] ) + Number( freeBase[ key ] ),
+				Number( paid[ key ] ) + Number( free[ key ] || 0 ),
+				Number( paidBase[ key ] ) + Number( freeBase[ key ] || 0 ),
 				free[ key ] === undefined || freeBase[ key ] === undefined
 			),
 		} ),
