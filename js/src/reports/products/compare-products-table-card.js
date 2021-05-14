@@ -4,11 +4,12 @@
 import { __ } from '@wordpress/i18n';
 import { useState, useMemo } from '@wordpress/element';
 import { CheckboxControl, Button } from '@wordpress/components';
-import { getIdsFromQuery, onQueryChange } from '@woocommerce/navigation';
+import { onQueryChange } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { getIdsFromQuery } from '../utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
 import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
