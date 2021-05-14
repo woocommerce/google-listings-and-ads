@@ -354,7 +354,7 @@ class ConnectionTest implements Service, Registerable {
 										add_query_arg(
 											[
 												'action' => 'wcs-google-mc-claim-overwrite',
-												'account_id' => ($_GET['account_id'] ?? false) || $merchant_id,
+												'account_id' => ($_GET['account_id'] ?? false) ?: $merchant_id,
 											],
 											$url
 										),
@@ -373,7 +373,7 @@ class ConnectionTest implements Service, Registerable {
 												[
 													'action' => 'wcs-google-mc-switch-url',
 													'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url', site_url(), $url ),
-													'account_id' => ($_GET['account_id'] ?? false) || $merchant_id,
+													'account_id' => ($_GET['account_id'] ?? false) ?: $merchant_id,
 												]
 											),
 											'wcs-google-mc-switch-url'
