@@ -3,10 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Checkbox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Number;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
@@ -55,7 +58,18 @@ class AttributesForm extends Form {
 			if ( ! isset( $this->attribute_types[ $index ] ) ) {
 				continue;
 			}
-			$applicable_types = call_user_func( [ $this->attribute_types[ $index ], 'get_applicable_product_types' ] );
+
+			$attribute_id     = $index;
+			$attribute_type   = $this->attribute_types[ $index ];
+			$applicable_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
+
+			/**
+			 * This filter is documented in AttributeManager::map_attribute_types
+			 *
+			 * @see AttributeManager::map_attribute_types
+			 */
+			$applicable_types = apply_filters( 'gla_attribute_applicable_product_types', $applicable_types, $attribute_id, $attribute_type );
+
 			if ( ! empty( $applicable_types ) ) {
 				$input['gla_wrapper_class']  = $input['gla_wrapper_class'] ?? '';
 				$input['gla_wrapper_class'] .= ' show_if_' . join( ' show_if_', $applicable_types );
@@ -100,6 +114,36 @@ class AttributesForm extends Form {
 	}
 
 	/**
+	 * Guesses what kind of input does the attribute need based on its value type and returns the input class name.
+	 *
+	 * @param AttributeInterface $attribute
+	 *
+	 * @return string Input class name
+	 */
+	protected function guess_input_type( AttributeInterface $attribute ): string {
+		if ( $attribute instanceof WithValueOptionsInterface ) {
+			return Select::class;
+		}
+
+		switch ( $attribute::get_value_type() ) {
+			case 'integer':
+			case 'int':
+			case 'float':
+			case 'double':
+				$input_type = Number::class;
+				break;
+			case 'bool':
+			case 'boolean':
+				$input_type = Checkbox::class;
+				break;
+			default:
+				$input_type = Text::class;
+		}
+
+		return $input_type;
+	}
+
+	/**
 	 * Add an attribute to the form
 	 *
 	 * @param string $attribute_type An attribute class extending AttributeInterface
@@ -111,10 +155,9 @@ class AttributesForm extends Form {
 	protected function add_attribute( string $attribute_type ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
 
-		$input_type = call_user_func( [ $attribute_type, 'get_input_type' ] );
-		$this->validate_interface( $input_type, InputInterface::class );
-
-		$attribute_input = $this->init_input( new $input_type(), new $attribute_type() );
+		$attribute       = new $attribute_type();
+		$input_type      = $this->guess_input_type( $attribute );
+		$attribute_input = $this->init_input( new $input_type(), $attribute );
 		$attribute_id    = call_user_func( [ $attribute_type, 'get_id' ] );
 		$this->add( $attribute_input, $attribute_id );
 

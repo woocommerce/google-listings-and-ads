@@ -51,7 +51,15 @@ class AttributeManager implements Service {
 			return;
 		}
 
-		update_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute::get_id() ), $attribute->get_value() );
+		$value      = $attribute->get_value();
+		$value_type = $attribute::get_value_type();
+		if ( in_array( $value_type, [ 'bool', 'boolean' ], true ) ) {
+			$value = wc_bool_to_string( $value );
+		} else {
+			settype( $value, $value_type );
+		}
+
+		update_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute::get_id() ), $value );
 	}
 
 	/**
@@ -147,18 +155,18 @@ class AttributeManager implements Service {
 	 * @return string[] of attribute classes mapped to attribute IDs
 	 */
 	public function get_attribute_types_for_product( WC_Product $product ): array {
-		return $this->get_attribute_types_for_product_type( $product->get_type() );
+		return $this->get_attribute_types_for_product_types( [ $product->get_type() ] );
 	}
 
 	/**
-	 * Returns an array of attribute types for the given product type
+	 * Returns an array of attribute types for the given product types
 	 *
-	 * @param string $product_type
+	 * @param string[] $product_types array of WooCommerce product types
 	 *
 	 * @return string[] of attribute classes mapped to attribute IDs
 	 */
-	public function get_attribute_types_for_product_type( string $product_type ): array {
-		return $this->get_attribute_types_map()[ $product_type ] ?? [];
+	public function get_attribute_types_for_product_types( array $product_types ): array {
+		return array_merge( ...array_values( array_intersect_key( $this->get_attribute_types_map(), array_flip( $product_types ) ) ) );
 	}
 
 	/**
@@ -197,8 +205,17 @@ class AttributeManager implements Service {
 		foreach ( $available_attributes as $attribute_type ) {
 			$this->validate_interface( $attribute_type, AttributeInterface::class );
 
-			$applicable_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
 			$attribute_id     = call_user_func( [ $attribute_type, 'get_id' ] );
+			$applicable_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
+
+			/**
+			 * Filters the list of applicable product types for each attribute.
+			 *
+			 * @param string[] $applicable_types Array of WooCommerce product types
+			 * @param string   $attribute_id     Attribute ID
+			 * @param string   $attribute_type   Attribute class name (FQN)
+			 */
+			$applicable_types = apply_filters( 'gla_attribute_applicable_product_types', $applicable_types, $attribute_id, $attribute_type );
 
 			foreach ( $applicable_types as $product_type ) {
 				$this->attribute_types_map[ $product_type ]                  = $this->attribute_types_map[ $product_type ] ?? [];

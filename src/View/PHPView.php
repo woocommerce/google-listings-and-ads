@@ -195,7 +195,7 @@ class PHPView implements View {
 	 */
 	public function __get( string $property ) {
 		if ( array_key_exists( $property, $this->context ) ) {
-			return wc_clean( $this->context[ $property ] );
+			return $this->sanitize_context_variable( $this->context[ $property ] );
 		}
 
 		/*
@@ -208,6 +208,17 @@ class PHPView implements View {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param mixed $var
+	 */
+	protected function sanitize_context_variable( $var ) {
+		if ( is_array( $var ) ) {
+			return array_map( [ $this, 'sanitize_context_variable' ], $var );
+		} else {
+			return ! is_bool( $var ) && is_scalar( $var ) ? sanitize_text_field( $var ) : $var;
+		}
 	}
 
 	/**
