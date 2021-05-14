@@ -310,6 +310,19 @@ class AccountController extends BaseOptionsController {
 
 			// Reset the process if the provided ID isn't the same as the one "on file" in `options`.
 			if ( $merchant_id && $merchant_id !== $account_id ) {
+				// Can't do it if the MC connection is active and complete.
+				if ( $this->mc_service->is_connected() ) {
+					return $this->prepare_error_response(
+						[
+							'message' => sprintf(
+								/* translators: 1: is a numeric account ID */
+								__( 'Merchant Center account already connected: %d', 'google-listings-and-ads' ),
+								$merchant_id
+							),
+						]
+					);
+				}
+
 				$this->mc_service->disconnect();
 			}
 
@@ -403,7 +416,7 @@ class AccountController extends BaseOptionsController {
 					default:
 						throw new Exception(
 							sprintf(
-							/* translators: 1: is a string representing an unknown step name */
+								/* translators: 1: is a string representing an unknown step name */
 								__( 'Unknown merchant account creation step %1$s', 'google-listings-and-ads' ),
 								$name
 							)
@@ -522,6 +535,7 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
+	 * @throws Exception If the merchant IDs of the connected account can't be retrieved.
 	 * @throws ExceptionWithResponseData If there's a website URL conflict.
 	 */
 	private function use_existing_account_id( int $account_id ): void {
