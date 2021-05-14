@@ -55,7 +55,9 @@ const CreateAccount = ( props ) => {
 	}
 
 	if ( response && response.status === 403 ) {
-		return <ReclaimUrlCard websiteUrl={ error.website_url } />;
+		return (
+			<ReclaimUrlCard id={ error.id } websiteUrl={ error.website_url } />
+		);
 	}
 
 	return (
