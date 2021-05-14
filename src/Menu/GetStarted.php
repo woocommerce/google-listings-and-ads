@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
 use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
-use Automattic\WooCommerce\Admin\Features\Navigation\Screen;
 use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -40,27 +39,22 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 			'admin_menu',
 			function() {
 				$this->fix_menu_paths();
+
+				if (
+					method_exists( Menu::class, 'add_plugin_item' ) &&
+					Features::is_enabled( 'navigation' )
+				) {
+					Menu::add_plugin_item(
+						[
+							'id'         => 'google-start',
+							'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+							'capability' => 'manage_woocommerce',
+							'url'        => 'wc-admin&path=/google/start',
+						]
+					);
+				}
 			}
 		);
-
-		// Register menu items in the new WooCommerce navigation.
-		add_action( 'admin_menu', function () {
-			if (
-				! method_exists( Menu::class, 'add_plugin_item' ) ||
-				! Features::is_enabled( 'navigation' )
-			) {
-				return;
-			}
-
-			Menu::add_plugin_item(
-				array(
-					'id'         => 'google-start',
-					'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-					'capability' => 'manage_woocommerce',
-					'url'        => 'wc-admin&path=/google/start',
-				)
-			);
-		} );
 	}
 
 	/**
