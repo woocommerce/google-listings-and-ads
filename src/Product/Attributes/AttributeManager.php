@@ -152,18 +152,18 @@ class AttributeManager implements Service {
 	 * @return string[] of attribute classes mapped to attribute IDs
 	 */
 	public function get_attribute_types_for_product( WC_Product $product ): array {
-		return $this->get_attribute_types_for_product_type( $product->get_type() );
+		return $this->get_attribute_types_for_product_types( [ $product->get_type() ] );
 	}
 
 	/**
-	 * Returns an array of attribute types for the given product type
+	 * Returns an array of attribute types for the given product types
 	 *
-	 * @param string $product_type
+	 * @param string[] $product_types array of WooCommerce product types
 	 *
 	 * @return string[] of attribute classes mapped to attribute IDs
 	 */
-	public function get_attribute_types_for_product_type( string $product_type ): array {
-		return $this->get_attribute_types_map()[ $product_type ] ?? [];
+	public function get_attribute_types_for_product_types( array $product_types ): array {
+		return array_merge( ...array_values( array_intersect_key( $this->get_attribute_types_map(), array_flip( $product_types ) ) ) );
 	}
 
 	/**

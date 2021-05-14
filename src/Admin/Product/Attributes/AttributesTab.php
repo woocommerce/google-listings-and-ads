@@ -86,7 +86,7 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @return array An array with product tabs with the Yoast SEO tab added.
 	 */
 	private function add_tab( array $tabs ): array {
-		$product_types   = array_keys( $this->attribute_manager->get_attribute_types_map() );
+		$product_types   = $this->get_applicable_product_types();
 		$show_if_classes = ! empty( $product_types ) ? ' show_if_' . join( ' show_if_', $product_types ) : '';
 
 		$tabs['gla_attributes'] = [
@@ -130,13 +130,21 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @return AttributesForm
 	 */
 	protected function get_form( WC_Product $product ): AttributesForm {
-		$attribute_types = $this->attribute_manager->get_attribute_types_for_product_type( 'simple' );
-		$attribute_types = array_merge( $attribute_types, $this->attribute_manager->get_attribute_types_for_product_type( 'variable' ) );
+		$attribute_types = $this->attribute_manager->get_attribute_types_for_product_types( $this->get_applicable_product_types() );
 
 		$form = new AttributesForm( $attribute_types, $this->attribute_manager->get_all_values( $product ) );
 		$form->set_name( 'attributes' );
 
 		return $form;
+	}
+
+	/**
+	 * Return an array of WooCommerce product types that the Google Listings and Ads tab can be displayed for.
+	 *
+	 * @return array of WooCommerce product types (e.g. 'simple', 'variable', etc.)
+	 */
+	protected function get_applicable_product_types(): array {
+		return array_keys( $this->attribute_manager->get_attribute_types_map() );
 	}
 
 	/**
