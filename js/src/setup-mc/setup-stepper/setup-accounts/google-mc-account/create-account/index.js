@@ -30,17 +30,15 @@ const CreateAccount = ( props ) => {
 			await fetchCreateMCAccount( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
-			if ( e.status === 406 ) {
+			if ( ! [ 403, 503 ].includes( e.status ) ) {
 				const body = await e.json();
-				createNotice( 'error', body.message );
-			} else if ( ! [ 403, 503 ].includes( e.status ) ) {
-				createNotice(
-					'error',
+				const message =
+					body.message ||
 					__(
 						'Unable to create Merchant Center account. Please try again later.',
 						'google-listings-and-ads'
-					)
-				);
+					);
+				createNotice( 'error', message );
 			}
 		}
 	};
