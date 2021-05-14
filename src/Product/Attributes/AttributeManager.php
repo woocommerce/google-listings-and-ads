@@ -48,7 +48,15 @@ class AttributeManager implements Service {
 			return;
 		}
 
-		update_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute::get_id() ), $attribute->get_value() );
+		$value      = $attribute->get_value();
+		$value_type = $attribute::get_value_type();
+		if ( in_array( $value_type, [ 'bool', 'boolean' ], true ) ) {
+			$value = wc_bool_to_string( $value );
+		} else {
+			settype( $value, $value_type );
+		}
+
+		update_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute::get_id() ), $value );
 	}
 
 	/**
