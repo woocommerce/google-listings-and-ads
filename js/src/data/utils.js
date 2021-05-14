@@ -100,7 +100,7 @@ export function mapReportFieldsToPerformance( primary, secondary ) {
  *
  * @param {ReportFieldsSchema} value The primary report fields fetched from report API.
  * @param {ReportFieldsSchema} base The secondary report fields fetched from report API.
- * @param {ReportFieldsSchema} missingFreeListingsData The secondary report fields fetched from report API.
+ * @param {boolean} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
  * @return {PerformanceData} The calculated performance data of each metric.
  */
 export function fieldsToPerformance( value, base, missingFreeListingsData ) {
