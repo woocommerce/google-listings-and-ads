@@ -13,13 +13,21 @@ defined( 'ABSPATH' ) || exit;
 class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 
 	/**
+	 * Returns the attribute ID.
+	 *
+	 * Must be the same as a Google product's property name to be set automatically.
+	 *
 	 * @return string
+	 *
+	 * @see \Google_Service_ShoppingContent_Product for the list of properties.
 	 */
 	public static function get_id(): string {
-		return 'size_type';
+		return 'sizeType';
 	}
 
 	/**
+	 * Returns a name for the attribute. Used in attribute's input.
+	 *
 	 * @return string
 	 */
 	public static function get_name(): string {
@@ -27,6 +35,8 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 	}
 
 	/**
+	 * Returns a short description for the attribute. Used in attribute's input.
+	 *
 	 * @return string
 	 */
 	public static function get_description(): string {
