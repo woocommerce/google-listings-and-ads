@@ -307,18 +307,35 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function set_account_id( Request $request ) {
 		try {
-			$link_id = absint( $request['id'] );
-			if ( $link_id ) {
-				$this->use_existing_account_id( $link_id );
+			$account_id  = absint( $request['id'] );
+			$merchant_id = $this->options->get_merchant_id();
+
+			// Reset the process if the provided ID isn't the same as the one "on file" in `options`.
+			if ( $merchant_id && $merchant_id !== $account_id ) {
+				$this->mc_service->disconnect();
+			}
+
+			if ( $account_id ) {
+				$this->use_existing_account_id( $account_id );
 			}
 
 			$response = $this->setup_merchant_account();
 
 			return is_a( $response, Response::class ) ? $response : $this->prepare_item_for_response( $response, $request );
 		} catch ( ExceptionWithResponseData $e ) {
-			return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
+			$data = $e->get_response_data( true );
+			$mid  = $this->options->get_merchant_id();
+			if ( $mid ) {
+				$data['merchant_id'] = $mid;
+			}
+			return new Response( $data, $e->getCode() ?: 400 );
 		} catch ( Exception $e ) {
-			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			$data = [ 'message' => $e->getMessage() ];
+			$mid  = $this->options->get_merchant_id();
+			if ( $mid ) {
+				$data['merchant_id'] = $mid;
+			}
+			return new Response( $data, $e->getCode() ?: 400 );
 		}
 	}
 
@@ -392,17 +409,21 @@ class AccountController extends BaseOptionsController {
 				$step['status']  = MerchantAccountState::STEP_ERROR;
 				$step['message'] = $e->getMessage();
 
+				// URL already claimed.
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
 					$data = [
+						'merchant_id' => $merchant_id,
 						'website_url' => $this->strip_url_protocol(
 							esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) )
 						),
 					];
 
+					// Sub-account: request overwrite confirmation.
 					if ( $state['set_id']['data']['from_mca'] ?? true ) {
 						$step['data']['overwrite_required'] = true;
 						$e                                  = new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), null, $data );
 					} else {
+						// Independent account: overwrite not possible.
 						throw new ExceptionWithResponseData(
 							__( 'Unable to claim website URL with this Merchant Center Account.', 'google-listings-and-ads' ),
 							406,
@@ -411,6 +432,7 @@ class AccountController extends BaseOptionsController {
 						);
 					}
 				} elseif ( 'link' === $name && 401 === $e->getCode() ) {
+					// New sub-account not yet manipulable.
 					$state['set_id']['data']['created_timestamp'] = time();
 					$this->account_state->update( $state );
 					return $this->get_time_to_wait_response();
@@ -493,21 +515,9 @@ class AccountController extends BaseOptionsController {
 	 *
 	 * @param int $account_id The merchant ID to use.
 	 *
-	 * @throws Exception If there is already a Merchant Center ID or the website can't be configured correctly.
 	 * @throws ExceptionWithResponseData If there's a website URL conflict.
 	 */
 	private function use_existing_account_id( int $account_id ): void {
-		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
-		if ( $merchant_id && $merchant_id !== $account_id ) {
-			throw new Exception(
-				sprintf(
-					/* translators: 1: is a numeric account ID */
-					__( 'Merchant Center connection already in process with account %1$d.', 'google-listings-and-ads' ),
-					$merchant_id
-				)
-			);
-		}
-
 		$state = $this->account_state->get();
 
 		// Don't do anything if this step was already finished.
