@@ -13,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
@@ -24,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * ContainerAware used to access:
  * - MerchantAccountState
- * - MerchantIssues
+ * - MerchantStatuses
  * - ShippingRateTable
  * - ShippingTimeTable
  * - TransientsInterface
@@ -172,8 +171,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
-		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_PRODUCT_STATISTICS );
-		$this->container->get( MerchantIssues::class )->delete();
+		$this->container->get( MerchantStatuses::class )->delete();
 
 		$this->container->get( ShippingRateTable::class )->truncate();
 		$this->container->get( ShippingTimeTable::class )->truncate();

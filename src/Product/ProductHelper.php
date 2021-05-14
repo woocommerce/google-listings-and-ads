@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
+use Exception;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
@@ -138,7 +139,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
-	 * Marks a WooCommerce product as pending syncronization.
+	 * Marks a WooCommerce product as pending synchronization.
 	 *
 	 * Note: If a product variation is pending then the parent product is also marked as pending.
 	 *
@@ -196,9 +197,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @return string
+	 * @return bool
 	 */
-	public function is_product_synced( WC_Product $product ) {
+	public function is_product_synced( WC_Product $product ): bool {
 		$synced_at  = $this->meta_handler->get_synced_at( $product->get_id() );
 		$google_ids = $this->meta_handler->get_google_ids( $product->get_id() );
 
@@ -231,4 +232,37 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		return $this->meta_handler->get_sync_status( $wc_product->get_id() );
 	}
 
+	/**
+	 * Return the string indicating the product status as reported by the Merchant Center.
+	 *
+	 * @param WC_Product $wc_product
+	 *
+	 * @return string
+	 */
+	public function get_mc_status( WC_Product $wc_product ): string {
+		if ( $wc_product instanceof WC_Product_Variation ) {
+			return $this->meta_handler->get_mc_status( $wc_product->get_parent_id() );
+		}
+		return $this->meta_handler->get_mc_status( $wc_product->get_id() );
+	}
+
+	/**
+	 * If the provided product has a parent, return its ID. Otherwise, return the
+	 * given (valid product) ID.
+	 *
+	 * @param int $product_id
+	 *
+	 * @return int The parent ID or product ID of it doesn't have a parent.
+	 * @throws Exception If the ID doesn't reference a valid product.
+	 */
+	public function maybe_swap_for_parent_id( int $product_id ): ?int {
+		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			throw new Exception( __( 'Invalid product ID.', 'google-listings-and-ads' ) );
+		}
+		if ( $product instanceof WC_Product_Variation ) {
+			return $product->get_parent_id();
+		}
+		return $product_id;
+	}
 }

@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getIdsFromQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { getIdsFromQuery } from '../utils';
 import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '.~/constants';
 
 export const programsFilterConfig = ( adsCampaigns ) => {
