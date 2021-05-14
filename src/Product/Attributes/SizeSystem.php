@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -42,19 +40,6 @@ class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface 
 	 */
 	public static function get_applicable_product_types(): array {
 		return [ 'simple', 'variation' ];
-	}
-
-	/**
-	 * Return the input class used for this attribute.
-	 *
-	 * Must be an instance of InputInterface
-	 *
-	 * @return string FQN of the input class
-	 *
-	 * @see InputInterface
-	 */
-	public static function get_input_type(): string {
-		return Select::class;
 	}
 
 	/**
