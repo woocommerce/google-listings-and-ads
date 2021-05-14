@@ -144,7 +144,7 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @return array of WooCommerce product types (e.g. 'simple', 'variable', etc.)
 	 */
 	protected function get_applicable_product_types(): array {
-		return array_keys( $this->attribute_manager->get_attribute_types_map() );
+		return apply_filters( 'gla_attributes_tab_applicable_product_types', [ 'simple', 'variable' ] );
 	}
 
 	/**
