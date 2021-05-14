@@ -27,7 +27,10 @@ const CreateAccount = ( props ) => {
 
 	const handleCreateAccount = async () => {
 		try {
-			await fetchCreateMCAccount( { parse: false } );
+			await fetchCreateMCAccount( {
+				data: error?.id && { id: error.id },
+				parse: false,
+			} );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
 			if ( ! [ 403, 503 ].includes( e.status ) ) {
