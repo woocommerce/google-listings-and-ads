@@ -13,11 +13,19 @@ defined( 'ABSPATH' ) || exit;
 interface AttributeInterface {
 
 	/**
+	 * Returns the attribute ID.
+	 *
+	 * Must be the same as a Google product's property name to be set automatically.
+	 *
 	 * @return string
+	 *
+	 * @see \Google_Service_ShoppingContent_Product for the list of properties.
 	 */
 	public static function get_id(): string;
 
 	/**
+	 * Returns a name for the attribute. Used in attribute's input.
+	 *
 	 * @return string
 	 */
 	public static function get_name(): string;
@@ -32,6 +40,8 @@ interface AttributeInterface {
 	public static function get_value_type(): string;
 
 	/**
+	 * Returns a short description for the attribute. Used in attribute's input.
+	 *
 	 * @return string
 	 */
 	public static function get_description(): string;
@@ -44,6 +54,8 @@ interface AttributeInterface {
 	public static function get_applicable_product_types(): array;
 
 	/**
+	 * Returns the attribute value.
+	 *
 	 * @return mixed
 	 */
 	public function get_value();

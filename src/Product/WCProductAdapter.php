@@ -5,13 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
@@ -53,11 +46,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	protected $wc_product;
 
 	/**
-	 * @var AttributeInterface[]
-	 */
-	protected $gla_attributes = [];
-
-	/**
 	 * @var bool Whether tax is excluded from product price
 	 */
 	protected $tax_excluded;
@@ -77,7 +65,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		}
 
 		$this->wc_product = $array['wc_product'];
-		$this->set_gla_attributes( $array['gla_attributes'] ?? [] );
+		$this->map_gla_attributes( $array['gla_attributes'] ?? [] );
 
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_product'] );
@@ -606,70 +594,21 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
+	 * @param array $attributes Attribute values
+	 *
 	 * @return $this
 	 */
-	protected function map_extra_attributes(): WCProductAdapter {
-		// Brand
-		$brand = $this->get_attribute_value( Brand::get_id() );
-		if ( ! empty( $brand ) ) {
-			$this->setBrand( $brand );
+	public function map_gla_attributes( array $attributes ): WCProductAdapter {
+		$gla_attributes = [];
+		foreach ( $attributes as $attribute_id => $attribute_value ) {
+			if ( property_exists( $this, $attribute_id ) ) {
+				$gla_attributes[ $attribute_id ] = apply_filters( "gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
+			}
 		}
 
-		// GTIN
-		$gtin = $this->get_attribute_value( GTIN::get_id() );
-		if ( ! empty( $gtin ) ) {
-			$this->setGtin( $gtin );
-		}
-
-		// MPN
-		$mpn = $this->get_attribute_value( MPN::get_id() );
-		if ( ! empty( $mpn ) ) {
-			$this->setMpn( $mpn );
-		}
-
-		// Gender
-		$gender = $this->get_attribute_value( Gender::get_id() );
-		if ( ! empty( $gender ) ) {
-			$this->setGender( $gender );
-		}
-
-		// Age Group
-		$age_group = $this->get_attribute_value( AgeGroup::get_id() );
-		if ( ! empty( $age_group ) ) {
-			$this->setAgeGroup( $age_group );
-		}
-
-		// Adult content
-		$this->setAdult( $this->get_attribute_value( Adult::get_id() ) );
+		parent::mapTypes( $gla_attributes );
 
 		return $this;
-	}
-
-	/**
-	 * @param string $attribute_id
-	 *
-	 * @return mixed Value of the attribute
-	 */
-	protected function get_attribute_value( string $attribute_id ) {
-		$value = null;
-		if ( isset( $this->gla_attributes[ $attribute_id ] ) ) {
-			$value = $this->gla_attributes[ $attribute_id ]->get_value();
-		}
-
-		return apply_filters( "gla_product_attribute_value_{$attribute_id}", $value, $this->get_wc_product() );
-	}
-
-	/**
-	 * @param AttributeInterface[] $attributes
-	 *
-	 * @return $this
-	 */
-	public function set_gla_attributes( array $attributes ): WCProductAdapter {
-		foreach ( $attributes as $attribute ) {
-			$this->gla_attributes[ $attribute::get_id() ] = $attribute;
-		}
-
-		return $this->map_extra_attributes();
 	}
 
 	/**
