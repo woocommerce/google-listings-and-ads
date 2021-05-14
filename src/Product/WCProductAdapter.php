@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Adult;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
@@ -578,6 +580,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( '/^\d{8}(?:\d{4,6})?$/' ) );
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'alnum' ) ); // alphanumeric
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Length( null, 0, 70 ) ); // maximum 70 characters
+
+		$metadata->addPropertyConstraint( 'ageGroup', new Assert\Choice( array_keys( AgeGroup::get_value_options() ) ) );
+		$metadata->addPropertyConstraint( 'adult', new Assert\Type( 'boolean' ) );
 	}
 
 	/**
@@ -627,6 +632,15 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		if ( ! empty( $gender ) ) {
 			$this->setGender( $gender );
 		}
+
+		// Age Group
+		$age_group = $this->get_attribute_value( AgeGroup::get_id() );
+		if ( ! empty( $age_group ) ) {
+			$this->setAgeGroup( $age_group );
+		}
+
+		// Adult content
+		$this->setAdult( $this->get_attribute_value( Adult::get_id() ) );
 
 		return $this;
 	}
