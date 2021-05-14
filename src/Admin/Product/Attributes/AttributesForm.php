@@ -58,7 +58,18 @@ class AttributesForm extends Form {
 			if ( ! isset( $this->attribute_types[ $index ] ) ) {
 				continue;
 			}
-			$applicable_types = call_user_func( [ $this->attribute_types[ $index ], 'get_applicable_product_types' ] );
+
+			$attribute_id     = $index;
+			$attribute_type   = $this->attribute_types[ $index ];
+			$applicable_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
+
+			/**
+			 * This filter is documented in AttributeManager::map_attribute_types
+			 *
+			 * @see AttributeManager::map_attribute_types
+			 */
+			$applicable_types = apply_filters( 'gla_attribute_applicable_product_types', $applicable_types, $attribute_id, $attribute_type );
+
 			if ( ! empty( $applicable_types ) ) {
 				$input['gla_wrapper_class']  = $input['gla_wrapper_class'] ?? '';
 				$input['gla_wrapper_class'] .= ' show_if_' . join( ' show_if_', $applicable_types );
