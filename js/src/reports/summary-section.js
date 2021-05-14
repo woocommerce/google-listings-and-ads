@@ -28,14 +28,10 @@ const noValidData = {
 export default function SummarySection( {
 	loaded,
 	metrics,
-	expectedLength,
+	expectedLength = metrics.length,
 	totals,
 } ) {
 	const query = useUrlQuery();
-	if ( expectedLength === undefined ) {
-		expectedLength = metrics.length;
-	}
-
 	if ( ! loaded ) {
 		return <SummaryListPlaceholder numberOfItems={ expectedLength } />;
 	}
