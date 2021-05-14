@@ -5,12 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Size;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
@@ -54,11 +48,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	protected $wc_product;
 
 	/**
-	 * @var AttributeInterface[]
-	 */
-	protected $gla_attributes = [];
-
-	/**
 	 * @var bool Whether tax is excluded from product price
 	 */
 	protected $tax_excluded;
@@ -78,7 +67,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		}
 
 		$this->wc_product = $array['wc_product'];
-		$this->set_gla_attributes( $array['gla_attributes'] ?? [] );
+		$this->map_gla_attributes( $array['gla_attributes'] ?? [] );
 
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_product'] );
@@ -618,79 +607,26 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
+	 * @param array $attributes Attribute values
+	 *
 	 * @return $this
 	 */
-	protected function map_extra_attributes(): WCProductAdapter {
-		// Brand
-		$brand = $this->get_attribute_value( Brand::get_id() );
-		if ( ! empty( $brand ) ) {
-			$this->setBrand( $brand );
+	public function map_gla_attributes( array $attributes ): WCProductAdapter {
+		$gla_attributes = [];
+		foreach ( $attributes as $attribute_id => $attribute_value ) {
+			if ( property_exists( $this, $attribute_id ) ) {
+				$gla_attributes[ $attribute_id ] = apply_filters( "gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
+			}
 		}
 
-		// GTIN
-		$gtin = $this->get_attribute_value( GTIN::get_id() );
-		if ( ! empty( $gtin ) ) {
-			$this->setGtin( $gtin );
-		}
-
-		// MPN
-		$mpn = $this->get_attribute_value( MPN::get_id() );
-		if ( ! empty( $mpn ) ) {
-			$this->setMpn( $mpn );
-		}
-
-		// Gender
-		$gender = $this->get_attribute_value( Gender::get_id() );
-		if ( ! empty( $gender ) ) {
-			$this->setGender( $gender );
-		}
+		parent::mapTypes( $gla_attributes );
 
 		// Size
-		$size = $this->get_attribute_value( Size::get_id() );
-		if ( ! empty( $size ) ) {
-			$this->setSizes( [ $size ] );
-		}
-
-		// SizeSystem
-		$size_system = $this->get_attribute_value( SizeSystem::get_id() );
-		if ( ! empty( $size_system ) ) {
-			$this->setSizeSystem( $size_system );
-		}
-
-		// SizeType
-		$size_type = $this->get_attribute_value( SizeType::get_id() );
-		if ( ! empty( $size_type ) ) {
-			$this->setSizeType( $size_type );
+		if ( ! empty( $attributes['size'] ) ) {
+			$this->setSizes( [ $attributes['size'] ] );
 		}
 
 		return $this;
-	}
-
-	/**
-	 * @param string $attribute_id
-	 *
-	 * @return mixed Value of the attribute
-	 */
-	protected function get_attribute_value( string $attribute_id ) {
-		$value = null;
-		if ( isset( $this->gla_attributes[ $attribute_id ] ) ) {
-			$value = $this->gla_attributes[ $attribute_id ]->get_value();
-		}
-
-		return apply_filters( "gla_product_attribute_value_{$attribute_id}", $value, $this->get_wc_product() );
-	}
-
-	/**
-	 * @param AttributeInterface[] $attributes
-	 *
-	 * @return $this
-	 */
-	public function set_gla_attributes( array $attributes ): WCProductAdapter {
-		foreach ( $attributes as $attribute ) {
-			$this->gla_attributes[ $attribute::get_id() ] = $attribute;
-		}
-
-		return $this->map_extra_attributes();
 	}
 
 	/**
