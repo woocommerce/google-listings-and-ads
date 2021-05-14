@@ -27,14 +27,14 @@ const emptyData = {
  * @typedef { import(".~/data/utils").ReportFieldsSchema } ReportFieldsSchema
  * @typedef { import(".~/data/utils").PerformanceData } PerformanceData
  * @typedef { import("../index.js").ProgramsReportData } ProgramsReportData
- * @typedef { import("../index.js").ReportSchema<ProgramsReportData> } ProductsReportSchema
+ * @typedef { import("../index.js").ReportSchema<ProgramsReportData> } ProgramsReportSchema
  */
 
 /**
  * Get programs report data.
  * Query parameters will be parsed from the URL by this hook.
  *
- * @return {ProductsReportSchema} The fetched products report data and its status.
+ * @return {ProgramsReportSchema} The fetched products report data and its status.
  */
 export default function useProgramsReport() {
 	const query = useUrlQuery();
@@ -75,7 +75,7 @@ export default function useProgramsReport() {
  * @param  {string} type Data source of program type, 'free' or 'paid'.
  * @param  {Object} query Query parameters in the URL.
  *
- * @return {ProductsReportSchema} The fetched products report data and its status.
+ * @return {ProgramsReportSchema} The fetched products report data and its status.
  */
 function transfromReportForType( getReport, type, query ) {
 	const primary = getReport( category, type, query, 'primary' );
@@ -109,7 +109,7 @@ function transfromReportForType( getReport, type, query ) {
  * @param  {Function} getReport Report selector.
  * @param  {Object} query Query parameters in the URL.
  *
- * @return {ProductsReportSchema} The fetched products report data and its status.
+ * @return {ProgramsReportSchema} The fetched products report data and its status.
  */
 function transformReportAggregated( getReport, query ) {
 	// The glue code for summing up two reports could be moved to the serverside,
