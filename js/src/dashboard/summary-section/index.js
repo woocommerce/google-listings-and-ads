@@ -11,8 +11,7 @@ import { numberFormat } from '@woocommerce/number';
  */
 import { glaData, REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
 import usePerformance from './usePerformance';
-import AppSpinner from '.~/components/app-spinner';
-import SummaryCard from './summary-card';
+import PerformanceCard from './performance-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
 
 const paidPerformanceTitle = __(
@@ -32,32 +31,30 @@ const FreePerformanceCard = () => {
 	const { data, loaded } = usePerformance( REPORT_SOURCE_FREE );
 
 	return (
-		<SummaryCard
+		<PerformanceCard
 			title={ __(
 				'Performance (Free Listing)',
 				'google-listings-and-ads'
 			) }
+			loaded={ loaded }
+			data={ data }
 		>
-			{ loaded ? (
-				[
-					<SummaryNumber
-						key="1"
-						label={ __( 'Clicks', 'google-listings-and-ads' ) }
-						value={ formatNumber( data.clicks.value ) }
-						prevValue={ formatNumber( data.clicks.prevValue ) }
-						delta={ data.clicks.delta }
-					/>,
-					<SummaryNumber
-						key="2"
-						label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-						value={ __( 'Free', 'google-listings-and-ads' ) }
-						delta={ null }
-					/>,
-				]
-			) : (
-				<AppSpinner />
-			) }
-		</SummaryCard>
+			{ ( loadedData ) => [
+				<SummaryNumber
+					key="1"
+					label={ __( 'Clicks', 'google-listings-and-ads' ) }
+					value={ formatNumber( loadedData.clicks.value ) }
+					prevValue={ formatNumber( loadedData.clicks.prevValue ) }
+					delta={ loadedData.clicks.delta }
+				/>,
+				<SummaryNumber
+					key="2"
+					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
+					value={ __( 'Free', 'google-listings-and-ads' ) }
+					delta={ null }
+				/>,
+			] }
+		</PerformanceCard>
 	);
 };
 
@@ -65,28 +62,28 @@ const PaidPerformanceCard = () => {
 	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
 	return (
-		<SummaryCard title={ paidPerformanceTitle }>
-			{ loaded ? (
-				[
-					<SummaryNumber
-						key="1"
-						label={ __( 'Total Sales', 'google-listings-and-ads' ) }
-						value={ formatAmount( data.sales.value ) }
-						prevValue={ formatAmount( data.sales.prevValue ) }
-						delta={ data.sales.delta }
-					/>,
-					<SummaryNumber
-						key="2"
-						label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-						value={ formatAmount( data.spend.value ) }
-						prevValue={ formatAmount( data.spend.prevValue ) }
-						delta={ data.spend.delta }
-					/>,
-				]
-			) : (
-				<AppSpinner />
-			) }
-		</SummaryCard>
+		<PerformanceCard
+			title={ paidPerformanceTitle }
+			loaded={ loaded }
+			data={ data }
+		>
+			{ ( loadedData ) => [
+				<SummaryNumber
+					key="1"
+					label={ __( 'Total Sales', 'google-listings-and-ads' ) }
+					value={ formatAmount( loadedData.sales.value ) }
+					prevValue={ formatAmount( loadedData.sales.prevValue ) }
+					delta={ loadedData.sales.delta }
+				/>,
+				<SummaryNumber
+					key="2"
+					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
+					value={ formatAmount( loadedData.spend.value ) }
+					prevValue={ formatAmount( loadedData.spend.prevValue ) }
+					delta={ loadedData.spend.delta }
+				/>,
+			] }
+		</PerformanceCard>
 	);
 };
 

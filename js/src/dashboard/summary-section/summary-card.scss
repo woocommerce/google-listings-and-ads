@@ -6,6 +6,23 @@
 		flex-direction: column;
 	}
 
+	&__body {
+		// Make card contents within a row have the same height
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+		padding: var(--main-gap);
+		border: 1px solid #e0e0e0;
+		background-color: #f8f9f9;
+		color: #757575;
+		// Make it match the SummaryNumber placeholder's height
+		// not to make the UI jumpy once preloaders is replaced with an error.
+		min-height: 117px;
+	}
+
 	.woocommerce-summary {
 		flex: 1;
 		align-items: center;
