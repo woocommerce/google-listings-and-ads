@@ -353,7 +353,7 @@ class AccountController extends BaseOptionsController {
 	protected function prepare_error_response( array $data, int $code = null ): Response {
 		$merchant_id = $this->options->get_merchant_id();
 		if ( $merchant_id ) {
-			$data['merchant_id'] = $merchant_id;
+			$data['id'] = $merchant_id;
 		}
 		return new Response( $data, $code ?: 400 );
 
@@ -432,7 +432,7 @@ class AccountController extends BaseOptionsController {
 				// URL already claimed.
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
 					$data = [
-						'merchant_id' => $merchant_id,
+						'id'          => $merchant_id,
 						'website_url' => $this->strip_url_protocol(
 							esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) )
 						),
