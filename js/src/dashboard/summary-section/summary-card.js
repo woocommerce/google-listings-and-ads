@@ -16,7 +16,7 @@ const SummaryCard = ( props ) => {
 	const { title, children } = props;
 
 	return (
-		<Card className="summary-card">
+		<Card className="gla-summary-card">
 			<CardHeader size="medium">
 				<Text variant="title.small">{ title }</Text>
 			</CardHeader>
