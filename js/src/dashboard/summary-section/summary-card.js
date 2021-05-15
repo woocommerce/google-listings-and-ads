@@ -7,6 +7,10 @@ import {
 	CardHeader,
 	__experimentalText as Text,
 } from '@wordpress/components';
+/**
+ * Internal dependencies
+ */
+import './summary-card.scss';
 
 const SummaryCard = ( props ) => {
 	const { title, children } = props;

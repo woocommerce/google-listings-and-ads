@@ -14,7 +14,6 @@ import usePerformance from './usePerformance';
 import AppSpinner from '.~/components/app-spinner';
 import SummaryCard from './summary-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
-import './index.scss';
 
 const paidPerformanceTitle = __(
 	'Performance (Paid Campaigns)',
