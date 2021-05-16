@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import toAccountText from '.~/utils/toAccountText';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
@@ -18,7 +19,7 @@ import ContentButtonLayout from '.~/components/content-button-layout';
 import ReclaimUrlFailCard from './reclaim-url-fail-card';
 
 const ReclaimUrlCard = ( props ) => {
-	const { websiteUrl } = props;
+	const { id, websiteUrl } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
@@ -27,6 +28,7 @@ const ReclaimUrlCard = ( props ) => {
 	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/claim-overwrite`,
 		method: 'POST',
+		data: { id },
 	} );
 
 	const handleReclaimClick = async () => {
@@ -57,6 +59,9 @@ const ReclaimUrlCard = ( props ) => {
 	return (
 		<Section.Card>
 			<Section.Card.Body>
+				<ContentButtonLayout>
+					<Subsection.Title>{ toAccountText( id ) }</Subsection.Title>
+				</ContentButtonLayout>
 				<ContentButtonLayout>
 					<div>
 						<Subsection.Title>
