@@ -16,6 +16,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
+import ReclaimUrlCard from '../reclaim-url-card';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
@@ -28,7 +29,10 @@ const SwitchUrlCard = ( props ) => {
 	} = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
-	const [ fetchMCAccountSwitchUrl, { loading } ] = useApiFetchCallback( {
+	const [
+		fetchMCAccountSwitchUrl,
+		{ loading, error, response },
+	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/switch-url`,
 		method: 'POST',
 		data: { id },
@@ -36,22 +40,31 @@ const SwitchUrlCard = ( props ) => {
 
 	const handleSwitch = async () => {
 		try {
-			await fetchMCAccountSwitchUrl();
+			await fetchMCAccountSwitchUrl( { parse: false } );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( e ) {
-			const errorMessage =
-				e.message ||
-				__(
-					'Unable to switch to your new URL. Please try again later.',
-					'google-listings-and-ads'
-				);
-			createNotice( 'error', errorMessage );
+			if ( e.status !== 403 ) {
+				const body = await e.json();
+				const errorMessage =
+					body.message ||
+					__(
+						'Unable to switch to your new URL. Please try again later.',
+						'google-listings-and-ads'
+					);
+				createNotice( 'error', errorMessage );
+			}
 		}
 	};
 
 	const handleUseDifferentMCClick = () => {
 		onSelectAnotherAccount();
 	};
+
+	if ( response && response.status === 403 ) {
+		return (
+			<ReclaimUrlCard id={ error.id } websiteUrl={ error.website_url } />
+		);
+	}
 
 	return (
 		<Section.Card className="gla-switch-url-card">
