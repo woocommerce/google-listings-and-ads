@@ -65,6 +65,14 @@ abstract class AbstractAttribute implements AttributeInterface {
 	 * @return mixed
 	 */
 	protected function cast_value( $value ) {
+		if ( is_string( $value ) ) {
+			$value = trim( $value );
+
+			if ( '' === $value ) {
+				return null;
+			}
+		}
+
 		$value_type = static::get_value_type();
 		if ( in_array( $value_type, [ 'bool', 'boolean' ], true ) ) {
 			$value = wc_string_to_bool( $value );
