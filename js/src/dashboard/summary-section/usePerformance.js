@@ -32,10 +32,10 @@ export default function usePerformance( type ) {
 		const primary = getDashboardPerformance( type, query, 'primary' );
 		const secondary = getDashboardPerformance( type, query, 'secondary' );
 
-		let data = {};
+		let data = null;
 		const loaded = primary.loaded && secondary.loaded;
 
-		if ( loaded ) {
+		if ( loaded && primary.data && secondary.data ) {
 			data = mapReportFieldsToPerformance( primary.data, secondary.data );
 		}
 
