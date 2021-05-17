@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getIdsFromQuery } from '../utils';
-import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '.~/constants';
 
 export const programsFilterConfig = ( adsCampaigns ) => {
 	if ( ! adsCampaigns ) {
@@ -52,7 +52,13 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 
 	return {
 		label: __( 'Show', 'google-listings-and-ads' ),
-		staticParams: [ 'period', 'chartType', 'paged', 'per_page' ],
+		staticParams: [
+			'period',
+			'chartType',
+			'paged',
+			'per_page',
+			'selectedMetric',
+		],
 		param: 'filter',
 		showFilters: () => true,
 		filters: [
@@ -71,7 +77,7 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 						path: [ 'select_program' ],
 						settings: {
 							type: 'custom',
-							param: 'programs',
+							param: REPORT_PROGRAM_PARAM,
 							getLabels,
 							labels: {
 								placeholder: __(
@@ -94,7 +100,7 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 				value: 'compare-programs',
 				settings: {
 					type: 'custom',
-					param: 'programs',
+					param: REPORT_PROGRAM_PARAM,
 					getLabels,
 					labels: {
 						helpText: __(

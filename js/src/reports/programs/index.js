@@ -2,19 +2,19 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Chart } from '@woocommerce/components';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import useProgramsReport from './useProgramsReport';
 import TabNav from '../../tab-nav';
 import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
+import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import '../../dashboard/index.scss';
-import metricsData from './mocked-metrics-data'; // Mocked data
 
 /**
  * Available metrics and their human-readable labels.
@@ -24,7 +24,7 @@ import metricsData from './mocked-metrics-data'; // Mocked data
 const performanceMetrics = [
 	{
 		key: 'sales',
-		label: __( 'Net Sales', 'google-listings-and-ads' ),
+		label: __( 'Total Sales', 'google-listings-and-ads' ),
 		isCurrency: true,
 	},
 	{
@@ -47,68 +47,19 @@ const performanceMetrics = [
 ];
 
 const ProgramsReport = () => {
-	// TODO: this data should come from backend API.
-	const totals = metricsData();
+	const reportId = 'reports-programs';
 
-	const chartData = [
-		{
-			date: '2018-05-30T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 14205,
-			},
-		},
-		{
-			date: '2018-05-31T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 10581,
-			},
-		},
-		{
-			date: '2018-06-01T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 16307,
-			},
-		},
-		{
-			date: '2018-06-02T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 13481,
-			},
-		},
-		{
-			date: '2018-06-03T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 10581,
-			},
-		},
-		{
-			date: '2018-06-04T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 19874,
-			},
-		},
-		{
-			date: '2018-06-05T00:00:00',
-			Conversions: {
-				label: 'Conversions',
-				value: 20593,
-			},
-		},
-	];
+	// Only after calling the API we would know if the default "All listings" includes or not any paid listings.
+	const {
+		loaded,
+		data: { totals, intervals },
+	} = useProgramsReport();
 
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	const availableMetrics = performanceMetrics.filter(
 		( { key } ) => totals[ key ]
 	);
-
-	const reportId = 'reports-programs';
 
 	return (
 		<div className="gla-dashboard">
@@ -118,16 +69,15 @@ const ProgramsReport = () => {
 			<ProgramsReportFilters query={ getQuery() } report={ reportId } />
 			<div className="gla-reports__performance">
 				<SummarySection
+					loaded={ loaded }
 					metrics={ availableMetrics }
-					loaded={ true }
+					expectedLength={ performanceMetrics.length }
 					totals={ totals }
 				/>
-				<Chart
-					data={ chartData }
-					title="Conversions"
-					layout="time-comparison"
-					interactiveLegend="false"
-					showHeaderControls="false"
+				<ChartSection
+					metrics={ availableMetrics }
+					loaded={ loaded }
+					intervals={ intervals }
 				/>
 			</div>
 			<div className="gla-dashboard__programs">

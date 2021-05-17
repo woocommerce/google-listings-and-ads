@@ -21,7 +21,7 @@ import { mockedListingsData, availableMetrics } from './mocked-programs-data'; /
 const metricsHeaders = [
 	{
 		key: 'sales',
-		label: __( 'Net Sales', 'google-listings-and-ads' ),
+		label: __( 'Total Sales', 'google-listings-and-ads' ),
 		isSortable: true,
 	},
 	{
