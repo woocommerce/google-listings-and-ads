@@ -105,7 +105,7 @@ class AttributesForm extends Form {
 			}
 
 			// add a 'default' value option
-			$value_options = [ '' => 'Default' ] + $value_options;
+			$value_options = [ '' => __( 'Default', 'google-listings-and-ads' ) ] + $value_options;
 
 			$input->set_options( $value_options );
 		}
