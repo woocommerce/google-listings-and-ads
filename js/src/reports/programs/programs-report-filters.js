@@ -35,10 +35,10 @@ const siteLocale = wcSettings.locale.siteLocale;
  *
  * @param {Object} props
  * @param {Object} props.query Search query object, to fetch filter values from.
- * @param {string} props.report Report ID used in tracking events.
+ * @param {string} props.trackEventId Report ID used in tracking events.
  */
 const ProgramsReportFilters = ( props ) => {
-	const { query, report } = props;
+	const { query, trackEventId } = props;
 	const { data: adsCampaigns } = useAdsCampaigns();
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
@@ -64,7 +64,7 @@ const ProgramsReportFilters = ( props ) => {
 	 */
 	const onDateSelect = ( data ) =>
 		recordDatepickerUpdateEvent( {
-			report,
+			report: trackEventId,
 			...omitBy( data, isUndefined ),
 		} );
 
@@ -76,7 +76,7 @@ const ProgramsReportFilters = ( props ) => {
 	 */
 	const onFilterSelect = ( data ) =>
 		recordFilterEvent( {
-			report,
+			report: trackEventId,
 			filter: data.filter || 'all',
 		} );
 

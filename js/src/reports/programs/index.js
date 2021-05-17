@@ -47,7 +47,7 @@ const performanceMetrics = [
 ];
 
 const ProgramsReport = () => {
-	const reportId = 'reports-programs';
+	const trackEventId = 'reports-programs';
 
 	// Only after calling the API we would know if the default "All listings" includes or not any paid listings.
 	const {
@@ -66,7 +66,10 @@ const ProgramsReport = () => {
 			<TabNav initialName="reports" />
 			<SubNav initialName="programs" />
 
-			<ProgramsReportFilters query={ getQuery() } report={ reportId } />
+			<ProgramsReportFilters
+				query={ getQuery() }
+				trackEventId={ trackEventId }
+			/>
 			<div className="gla-reports__performance">
 				<SummarySection
 					loaded={ loaded }
@@ -81,7 +84,7 @@ const ProgramsReport = () => {
 				/>
 			</div>
 			<div className="gla-dashboard__programs">
-				<CompareProgramsTableCard trackEventReportId={ reportId } />
+				<CompareProgramsTableCard trackEventReportId={ trackEventId } />
 			</div>
 		</div>
 	);
