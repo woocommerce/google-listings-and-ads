@@ -12,4 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 $input = $this->input;
 
+$input['type']  = 'text';
+$input['class'] = sprintf( '%s %s', $input['class'] ?? '', 'gla-input-number' );
+
 woocommerce_wp_text_input( $input );
