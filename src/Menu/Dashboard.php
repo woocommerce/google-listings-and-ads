@@ -47,39 +47,40 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 				) {
 					Menu::add_plugin_category(
 						[
-							'id'     => 'google-listings-and-ads',
-							'title'  => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-							'parent' => 'woocommerce',
+							'id'         => 'google-listings-and-ads-category',
+							'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+							'parent'     => 'woocommerce',
+							'capability' => 'manage_woocommerce',
 						]
 					);
 
 					Menu::add_plugin_item(
 						[
-							'id'         => 'gla-dashboard',
+							'id'         => 'google-dashboard',
 							'title'      => __( 'Dashboard', 'google-listings-and-ads' ),
 							'capability' => 'manage_woocommerce',
 							'url'        => 'wc-admin&path=/google/dashboard',
-							'parent'     => 'google-listings-and-ads',
+							'parent'     => 'google-listings-and-ads-category',
 						]
 					);
 
 					Menu::add_plugin_item(
 						[
-							'id'         => 'gla-product-feed',
+							'id'         => 'google-product-feed',
 							'title'      => __( 'Product Feed', 'google-listings-and-ads' ),
 							'capability' => 'manage_woocommerce',
 							'url'        => 'wc-admin&path=/google/product-feed',
-							'parent'     => 'google-listings-and-ads',
+							'parent'     => 'google-listings-and-ads-category',
 						]
 					);
 
 					Menu::add_plugin_item(
 						[
-							'id'         => 'gla-settings',
+							'id'         => 'google-settings',
 							'title'      => __( 'Settings', 'google-listings-and-ads' ),
 							'capability' => 'manage_woocommerce',
 							'url'        => 'wc-admin&path=/google/settings',
-							'parent'     => 'google-listings-and-ads',
+							'parent'     => 'google-listings-and-ads-category',
 						]
 					);
 				}
