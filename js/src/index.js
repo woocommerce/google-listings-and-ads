@@ -3,6 +3,9 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
+import { WooNavigationItem, getNewPath } from '@woocommerce/navigation';
+import { registerPlugin } from '@wordpress/plugins';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -39,6 +42,9 @@ addFilter(
 				container: GetStartedPage,
 				path: '/google/start',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				// navArgs: {
+				// 	id: 'google-start',
+				// },
 			},
 			{
 				breadcrumbs: [
@@ -65,10 +71,13 @@ addFilter(
 					],
 					__( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				],
-				title: __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				title: __( 'Dashboard', 'google-listings-and-ads' ),
 				container: Dashboard,
 				path: '/google/dashboard',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				// navArgs: {
+				// 	id: 'google-dashboard',
+				// },
 			},
 			{
 				breadcrumbs: [
@@ -159,6 +168,9 @@ addFilter(
 				container: ProductFeed,
 				path: '/google/product-feed',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				// navArgs: {
+				// 	id: 'google-product-feed',
+				// },
 			},
 			{
 				breadcrumbs: [
@@ -173,7 +185,57 @@ addFilter(
 				container: Settings,
 				path: '/google/settings',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				// navArgs: {
+				// 	id: 'google-settings',
+				// },
 			},
 		];
 	}
 );
+
+const MyExtenstionNavItem = () => {
+	return (
+		<>
+			<WooNavigationItem item="google-start">
+				<Link
+					className="components-button"
+					href={ getNewPath( {}, '/google/start', {} ) }
+					type="wc-admin"
+				>
+					{ __( 'Google Listings & Ads', 'google-listings-and-ads' ) }
+				</Link>
+			</WooNavigationItem>
+			<WooNavigationItem item="google-dashboard">
+				<Link
+					className="components-button"
+					href={ getNewPath( {}, '/google/dashboard', {} ) }
+					type="wc-admin"
+				>
+					{ __( 'Dashboard', 'google-listings-and-ads' ) }
+				</Link>
+			</WooNavigationItem>
+			<WooNavigationItem item="google-product-feed">
+				<Link
+					className="components-button"
+					href={ getNewPath( {}, '/google/product-feed', {} ) }
+					type="wc-admin"
+				>
+					{ __( 'Product Feed', 'google-listings-and-ads' ) }
+				</Link>
+			</WooNavigationItem>
+			<WooNavigationItem item="google-settings">
+				<Link
+					className="components-button"
+					href={ getNewPath( {}, '/google/settings', {} ) }
+					type="wc-admin"
+				>
+					{ __( 'Settings', 'google-listings-and-ads' ) }
+				</Link>
+			</WooNavigationItem>
+		</>
+	);
+};
+
+registerPlugin( 'google-listings-and-ads', {
+	render: MyExtenstionNavItem,
+} );
