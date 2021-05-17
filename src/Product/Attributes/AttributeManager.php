@@ -216,10 +216,9 @@ class AttributeManager implements Service {
 			 * Filters the list of applicable product types for each attribute.
 			 *
 			 * @param string[] $applicable_types Array of WooCommerce product types
-			 * @param string   $attribute_id     Attribute ID
 			 * @param string   $attribute_type   Attribute class name (FQN)
 			 */
-			$applicable_types = apply_filters( 'gla_attribute_applicable_product_types', $applicable_types, $attribute_id, $attribute_type );
+			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
 			foreach ( $applicable_types as $product_type ) {
 				$this->attribute_types_map[ $product_type ]                  = $this->attribute_types_map[ $product_type ] ?? [];

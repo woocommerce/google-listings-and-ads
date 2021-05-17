@@ -68,7 +68,7 @@ class AttributesForm extends Form {
 			 *
 			 * @see AttributeManager::map_attribute_types
 			 */
-			$applicable_types = apply_filters( 'gla_attribute_applicable_product_types', $applicable_types, $attribute_id, $attribute_type );
+			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
 			if ( ! empty( $applicable_types ) ) {
 				$input['gla_wrapper_class']  = $input['gla_wrapper_class'] ?? '';
