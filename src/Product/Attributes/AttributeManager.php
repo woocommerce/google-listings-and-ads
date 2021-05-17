@@ -30,6 +30,9 @@ class AttributeManager implements Service {
 		Size::class,
 		SizeSystem::class,
 		SizeType::class,
+		Color::class,
+		Material::class,
+		Pattern::class,
 	];
 
 	/**

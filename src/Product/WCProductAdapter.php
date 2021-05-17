@@ -584,6 +584,10 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		);
 		$metadata->addPropertyConstraint( 'sizeSystem', new Assert\Choice( array_keys( SizeSystem::get_value_options() ) ) );
 		$metadata->addPropertyConstraint( 'sizeType', new Assert\Choice( array_keys( SizeType::get_value_options() ) ) );
+
+		$metadata->addPropertyConstraint( 'color', new Assert\Length( null, 0, 100 ) ); // maximum 100 characters
+		$metadata->addPropertyConstraint( 'material', new Assert\Length( null, 0, 200 ) ); // maximum 200 characters
+		$metadata->addPropertyConstraint( 'pattern', new Assert\Length( null, 0, 100 ) ); // maximum 200 characters
 	}
 
 	/**
