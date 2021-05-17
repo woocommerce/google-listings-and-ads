@@ -310,8 +310,8 @@ class AccountController extends BaseOptionsController {
 
 			// Reset the process if the provided ID isn't the same as the one "on file" in `options`.
 			if ( $merchant_id && $merchant_id !== $account_id ) {
-				// Can't do it if the MC connection is active and complete.
-				if ( $this->mc_service->is_connected() ) {
+				// Can't do it if the MC connection process has been completed previously.
+				if ( $this->mc_service->is_setup_complete() ) {
 					return $this->prepare_error_response(
 						[
 							'message' => sprintf(
