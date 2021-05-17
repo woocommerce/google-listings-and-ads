@@ -35,6 +35,7 @@ class AttributeManager implements Service {
 		Material::class,
 		Pattern::class,
 		AgeGroup::class,
+		Multipack::class,
 		Adult::class,
 	];
 
