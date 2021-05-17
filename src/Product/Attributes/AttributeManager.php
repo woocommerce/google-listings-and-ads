@@ -26,6 +26,7 @@ class AttributeManager implements Service {
 		GTIN::class,
 		MPN::class,
 		Brand::class,
+		Condition::class,
 		Gender::class,
 		Size::class,
 		SizeSystem::class,

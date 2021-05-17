@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
@@ -592,6 +593,8 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		$metadata->addPropertyConstraint( 'ageGroup', new Assert\Choice( array_keys( AgeGroup::get_value_options() ) ) );
 		$metadata->addPropertyConstraint( 'adult', new Assert\Type( 'boolean' ) );
+
+		$metadata->addPropertyConstraint( 'condition', new Assert\Choice( array_keys( Condition::get_value_options() ) ) );
 	}
 
 	/**
