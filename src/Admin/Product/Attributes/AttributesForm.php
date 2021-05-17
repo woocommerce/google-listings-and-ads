@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Checkbox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\BooleanSelect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Number;
@@ -134,7 +134,7 @@ class AttributesForm extends Form {
 				break;
 			case 'bool':
 			case 'boolean':
-				$input_type = Checkbox::class;
+				$input_type = BooleanSelect::class;
 				break;
 			default:
 				$input_type = Text::class;
