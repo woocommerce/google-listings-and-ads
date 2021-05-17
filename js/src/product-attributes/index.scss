@@ -18,6 +18,16 @@
 					visibility: visible;
 				}
 			}
+
+			.gla-input {
+				.options {
+					border: none;
+
+					input[type="checkbox"] {
+						margin-top: 5px !important;
+					}
+				}
+			}
 		}
 
 		.gla-metabox.wc-metabox:last-of-type {

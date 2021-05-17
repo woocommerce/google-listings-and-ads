@@ -126,27 +126,24 @@ class Admin implements Service, Registerable, Conditional {
 			$wc_admin_condition
 		) );
 
+		$product_condition = function () {
+			$screen = get_current_screen();
+			return ( null !== $screen && 'product' === $screen->id );
+		};
+
 		$assets[] = ( new AdminScriptAsset(
 			'gla-custom-inputs',
 			'js/build/custom-inputs',
 			[],
 			'',
-			function () {
-				$screen = get_current_screen();
-
-				return ( null !== $screen && 'product' === $screen->id );
-			}
+			$product_condition
 		) );
 		$assets[] = ( new AdminStyleAsset(
-			'gla-custom-inputs-css',
-			'js/build/custom-inputs',
+			'gla-product-attributes-css',
+			'js/build/product-attributes',
 			[],
 			'',
-			function () {
-				$screen = get_current_screen();
-
-				return ( null !== $screen && 'product' === $screen->id );
-			}
+			$product_condition
 		) );
 
 		return $assets;

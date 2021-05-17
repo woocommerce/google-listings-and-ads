@@ -4,14 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
+use WC_Product_Variation;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -52,7 +51,7 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		add_action(
 			'woocommerce_product_after_variable_attributes',
 			function ( int $variation_index, array $variation_data, WP_Post $variation ) {
-				$this->render_attributes_form( $variation_index, $variation_data, $variation );
+				$this->render_attributes_form( $variation_index, $variation );
 			},
 			90,
 			3
@@ -71,14 +70,16 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 	 * Render the attributes form for variations.
 	 *
 	 * @param int     $variation_index Position in the loop.
-	 * @param array   $variation_data  Variation data.
 	 * @param WP_Post $variation       Post data.
 	 */
-	private function render_attributes_form( int $variation_index, array $variation_data, WP_Post $variation ) {
-		$product_id = $variation->ID;
+	private function render_attributes_form( int $variation_index, WP_Post $variation ) {
+		/**
+		 * @var WC_Product_Variation $product
+		 */
+		$product = wc_get_product( $variation->ID );
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $this->admin->get_view( 'attributes/variations-form', $this->get_form( $product_id, $variation_index )->get_view_data() );
+		echo $this->admin->get_view( 'attributes/variations-form', $this->get_form( $product, $variation_index )->get_view_data() );
 	}
 
 	/**
@@ -88,7 +89,12 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 	 * @param int $variation_index
 	 */
 	private function handle_save_variation( int $variation_id, int $variation_index ) {
-		$form = $this->get_form( $variation_id, $variation_index );
+		/**
+		 * @var WC_Product_Variation $variation
+		 */
+		$variation = wc_get_product( $variation_id );
+
+		$form = $this->get_form( $variation, $variation_index );
 
 		$form_view_data = $form->get_view_data();
 		// phpcs:disable WordPress.Security.NonceVerification
@@ -99,48 +105,38 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		$form_data = $form->get_data();
 
 		if ( ! empty( $form_data[ $variation_index ] ) ) {
-			$this->update_data( $form_data[ $variation_index ], $variation_id );
+			$this->update_data( $variation, $form_data[ $variation_index ] );
 		}
 	}
 
 	/**
-	 * @param int $variation_id
-	 * @param int $variation_index
+	 * @param WC_Product_Variation $variation
+	 * @param int                  $variation_index
 	 *
-	 * @return VariationAttributesForm
+	 * @return Form
 	 */
-	protected function get_form( int $variation_id, int $variation_index ): VariationAttributesForm {
-		$form_data = [
-			(string) $variation_index => [
-				GTIN::get_id()   => $this->attribute_manager->get_value( $variation_id, GTIN::get_id() ),
-				MPN::get_id()    => $this->attribute_manager->get_value( $variation_id, MPN::get_id() ),
-				Gender::get_id() => $this->attribute_manager->get_value( $variation_id, Gender::get_id() ),
-			],
-		];
+	protected function get_form( WC_Product_Variation $variation, int $variation_index ): Form {
+		$attribute_types = $this->attribute_manager->get_attribute_types_for_product( $variation );
 
-		return new VariationAttributesForm( $variation_index, $form_data );
+		$form = new Form();
+		$form->set_name( 'variation_attributes' )
+			 ->add( new AttributesForm( $attribute_types ), (string) $variation_index )
+			 ->set_data( [ (string) $variation_index => $this->attribute_manager->get_all_values( $variation ) ] );
+
+		return $form;
 	}
 
 	/**
-	 * @param array $data
-	 * @param int   $variation_id
+	 * @param WC_Product_Variation $variation
+	 * @param array                $data
 	 *
 	 * @return void
 	 */
-	protected function update_data( array $data, int $variation_id ): void {
-		// gtin
-		if ( isset( $data[ GTIN::get_id() ] ) ) {
-			$this->attribute_manager->update( $variation_id, new GTIN( $data[ GTIN::get_id() ] ) );
-		}
-
-		// mpn
-		if ( isset( $data[ MPN::get_id() ] ) ) {
-			$this->attribute_manager->update( $variation_id, new MPN( $data[ MPN::get_id() ] ) );
-		}
-
-		// gender
-		if ( isset( $data[ Gender::get_id() ] ) ) {
-			$this->attribute_manager->update( $variation_id, new Gender( $data[ Gender::get_id() ] ) );
+	protected function update_data( WC_Product_Variation $variation, array $data ): void {
+		foreach ( $this->attribute_manager->get_attribute_types_for_product( $variation ) as $attribute_id => $attribute_type ) {
+			if ( isset( $data[ $attribute_id ] ) ) {
+				$this->attribute_manager->update( $variation, new $attribute_type( $data[ $attribute_id ] ) );
+			}
 		}
 	}
 
