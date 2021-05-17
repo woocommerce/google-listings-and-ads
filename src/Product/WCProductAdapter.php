@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
@@ -588,6 +589,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$metadata->addPropertyConstraint( 'color', new Assert\Length( null, 0, 100 ) ); // maximum 100 characters
 		$metadata->addPropertyConstraint( 'material', new Assert\Length( null, 0, 200 ) ); // maximum 200 characters
 		$metadata->addPropertyConstraint( 'pattern', new Assert\Length( null, 0, 100 ) ); // maximum 200 characters
+
+		$metadata->addPropertyConstraint( 'ageGroup', new Assert\Choice( array_keys( AgeGroup::get_value_options() ) ) );
+		$metadata->addPropertyConstraint( 'adult', new Assert\Type( 'boolean' ) );
 	}
 
 	/**

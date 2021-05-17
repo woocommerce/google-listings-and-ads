@@ -33,6 +33,8 @@ class AttributeManager implements Service {
 		Color::class,
 		Material::class,
 		Pattern::class,
+		AgeGroup::class,
+		Adult::class,
 	];
 
 	/**
