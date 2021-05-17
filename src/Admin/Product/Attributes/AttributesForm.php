@@ -153,7 +153,7 @@ class AttributesForm extends Form {
 	 *
 	 * @throws InvalidValue If the attribute type is invalid or an invalid input type is specified for the attribute.
 	 */
-	protected function add_attribute( string $attribute_type, ?string $input_type = null ): AttributesForm {
+	public function add_attribute( string $attribute_type, ?string $input_type = null ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
 		$attribute = new $attribute_type();
 
@@ -172,5 +172,60 @@ class AttributesForm extends Form {
 		$this->attribute_types[ $attribute_id ] = $attribute_type;
 
 		return $this;
+	}
+
+	/**
+	 * Add an attribute to the form
+	 *
+	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 *
+	 * @return AttributesForm
+	 *
+	 * @throws InvalidValue If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 */
+	public function remove_attribute( string $attribute_type ): AttributesForm {
+		$this->validate_interface( $attribute_type, AttributeInterface::class );
+
+		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
+		if ( $this->contains_attribute( $attribute_type ) ) {
+			unset( $this->attribute_types[ $attribute_id ] );
+		}
+		$this->remove( $attribute_id );
+
+		return $this;
+	}
+
+	/**
+	 * Sets the input type for the given attribute.
+	 *
+	 * @param string $attribute_type
+	 * @param string $input_type
+	 *
+	 * @return $this
+	 */
+	public function set_attribute_input( string $attribute_type, string $input_type ): AttributesForm {
+		$this->validate_interface( $attribute_type, AttributeInterface::class );
+		$this->validate_interface( $input_type, InputInterface::class );
+
+		if ( $this->contains_attribute( $attribute_type ) ) {
+			$this->remove_attribute( $attribute_type );
+			$this->add_attribute( $attribute_type, $input_type );
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Whether the form contains the given attribute type.
+	 *
+	 * @param string $attribute_type
+	 *
+	 * @return bool
+	 */
+	public function contains_attribute( string $attribute_type ): bool {
+		$this->validate_interface( $attribute_type, AttributeInterface::class );
+		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
+
+		return isset( $this->attribute_types[ $attribute_id ] );
 	}
 }
