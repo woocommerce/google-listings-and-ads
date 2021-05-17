@@ -617,6 +617,29 @@ export function* updateAdsCampaign( id, data ) {
 	}
 }
 
+export function* deleteAdsCampaign( id ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/${ id }`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DELETE_ADS_CAMPAIGN,
+			id,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to delete your paid ads campaign. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
 export function receiveReport( reportKey, data ) {
 	return {
 		type: TYPES.RECEIVE_REPORT,

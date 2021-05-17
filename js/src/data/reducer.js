@@ -241,6 +241,17 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return newState;
 		}
 
+		case TYPES.DELETE_ADS_CAMPAIGN: {
+			const { id } = action;
+
+			return {
+				...state,
+				ads_campaigns: state.ads_campaigns.filter(
+					( el ) => el.id !== id
+				),
+			};
+		}
+
 		case TYPES.RECEIVE_MC_SETUP: {
 			const newState = {
 				...state,
