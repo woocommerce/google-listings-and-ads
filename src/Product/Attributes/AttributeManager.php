@@ -160,7 +160,17 @@ class AttributeManager implements Service {
 	 * @return string[] of attribute classes mapped to attribute IDs
 	 */
 	public function get_attribute_types_for_product_types( array $product_types ): array {
-		return array_merge( ...array_values( array_intersect_key( $this->get_attribute_types_map(), array_flip( $product_types ) ) ) );
+		// flip the product types array to have them as array keys
+		$product_types_keys = array_flip( $product_types );
+
+		// intersect the product types with our stored attributes map to get arrays of attributes matching the given product types
+		$match_attributes = array_intersect_key( $this->get_attribute_types_map(), $product_types_keys );
+
+		// re-index the attributes map array to avoid string ($product_type) array keys
+		$match_attributes = array_values( $match_attributes );
+
+		// merge all of the attribute arrays from the map (there might be duplicates) and return the results
+		return array_merge( ...$match_attributes );
 	}
 
 	/**
