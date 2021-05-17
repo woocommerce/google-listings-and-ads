@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -8,6 +9,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
+import AppButton from '.~/components/app-button';
+import { useAppDispatch } from '.~/data';
 import './index.scss';
 
 /**
@@ -20,46 +23,49 @@ import './index.scss';
  */
 const RemoveProgramModal = ( props ) => {
 	const { programId, onRequestClose } = props;
+	const [ isDeleting, setDeleting ] = useState( false );
+	const dispatcher = useAppDispatch();
 
-	const handleKeepCampaignClick = () => {
+	const handleRequestClose = () => {
+		if ( isDeleting ) {
+			return;
+		}
 		onRequestClose();
 	};
 
-	// TODO: call backend API to remove campaign based on the programId.
-	// might need to have a "busy / loading" indicator.
-	// dismiss modal when remove process is done.
 	const handleRemoveCampaignClick = () => {
-		// eslint-disable-next-line no-console
-		console.warn(
-			'The actual remove action is not implemented/integrated yet.',
-			programId
-		);
-
-		onRequestClose();
+		setDeleting( true );
+		dispatcher
+			.deleteAdsCampaign( programId )
+			.then( () => onRequestClose() )
+			.catch( () => setDeleting( false ) );
 	};
 
 	return (
 		<AppModal
 			className="gla-remove-program-modal"
 			title={ __( 'Permanently Remove?', 'google-listings-and-ads' ) }
+			isDismissible={ ! isDeleting }
 			buttons={ [
 				<Button
 					key="keep"
 					isSecondary
-					onClick={ handleKeepCampaignClick }
+					disabled={ isDeleting }
+					onClick={ handleRequestClose }
 				>
 					{ __( 'Keep Campaign', 'google-listings-and-ads' ) }
 				</Button>,
-				<Button
+				<AppButton
 					key="remove"
 					isPrimary
 					isDestructive
+					loading={ isDeleting }
 					onClick={ handleRemoveCampaignClick }
 				>
 					{ __( 'Remove Campaign', 'google-listings-and-ads' ) }
-				</Button>,
+				</AppButton>,
 			] }
-			onRequestClose={ onRequestClose }
+			onRequestClose={ handleRequestClose }
 		>
 			<p>
 				{ __(
