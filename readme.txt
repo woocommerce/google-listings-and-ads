@@ -136,9 +136,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Conditionally hide Reports tab and show a coming soon notice on Product Feed tab.
 * Fix - Fix condition that filters TabNav's tabs.
 
-= 0.5.3 - 2021-04-29 =
-* Fix - Fix popover width.
-* Fix - Fix the giant icon problem in the warning messages.
-* Fix - South Korea is only supported for currency KRW.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
