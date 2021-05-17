@@ -13,6 +13,7 @@ import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
@@ -21,6 +22,7 @@ import ReclaimUrlCard from '../reclaim-url-card';
 const ConnectMCCard = ( props ) => {
 	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
+	const { createNotice } = useDispatchCoreNotices();
 	const [
 		fetchMCAccounts,
 		{ loading, error, response, reset },
@@ -36,8 +38,21 @@ const ConnectMCCard = ( props ) => {
 			return;
 		}
 
-		await fetchMCAccounts();
-		invalidateResolution( 'getGoogleMCAccount', [] );
+		try {
+			await fetchMCAccounts( { parse: false } );
+			invalidateResolution( 'getGoogleMCAccount', [] );
+		} catch ( e ) {
+			if ( ! [ 409, 403 ].includes( e.status ) ) {
+				const body = await e.json();
+				const message =
+					body.message ||
+					__(
+						'Unable to connect Merchant Center account. Please try again later.',
+						'google-listings-and-ads'
+					);
+				createNotice( 'error', message );
+			}
+		}
 	};
 
 	const handleSelectAnotherAccount = () => {

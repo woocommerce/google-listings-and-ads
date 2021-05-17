@@ -27,6 +27,9 @@ class AttributeManager implements Service {
 		MPN::class,
 		Brand::class,
 		Gender::class,
+		Size::class,
+		SizeSystem::class,
+		SizeType::class,
 		Color::class,
 		Material::class,
 		Pattern::class,
@@ -51,12 +54,9 @@ class AttributeManager implements Service {
 			return;
 		}
 
-		$value      = $attribute->get_value();
-		$value_type = $attribute::get_value_type();
-		if ( in_array( $value_type, [ 'bool', 'boolean' ], true ) ) {
+		$value = $attribute->get_value();
+		if ( in_array( $attribute::get_value_type(), [ 'bool', 'boolean' ], true ) ) {
 			$value = wc_bool_to_string( $value );
-		} else {
-			settype( $value, $value_type );
 		}
 
 		update_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute::get_id() ), $value );
@@ -166,7 +166,17 @@ class AttributeManager implements Service {
 	 * @return string[] of attribute classes mapped to attribute IDs
 	 */
 	public function get_attribute_types_for_product_types( array $product_types ): array {
-		return array_merge( ...array_values( array_intersect_key( $this->get_attribute_types_map(), array_flip( $product_types ) ) ) );
+		// flip the product types array to have them as array keys
+		$product_types_keys = array_flip( $product_types );
+
+		// intersect the product types with our stored attributes map to get arrays of attributes matching the given product types
+		$match_attributes = array_intersect_key( $this->get_attribute_types_map(), $product_types_keys );
+
+		// re-index the attributes map array to avoid string ($product_type) array keys
+		$match_attributes = array_values( $match_attributes );
+
+		// merge all of the attribute arrays from the map (there might be duplicates) and return the results
+		return array_merge( ...$match_attributes );
 	}
 
 	/**
@@ -212,10 +222,9 @@ class AttributeManager implements Service {
 			 * Filters the list of applicable product types for each attribute.
 			 *
 			 * @param string[] $applicable_types Array of WooCommerce product types
-			 * @param string   $attribute_id     Attribute ID
 			 * @param string   $attribute_type   Attribute class name (FQN)
 			 */
-			$applicable_types = apply_filters( 'gla_attribute_applicable_product_types', $applicable_types, $attribute_id, $attribute_type );
+			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
 			foreach ( $applicable_types as $product_type ) {
 				$this->attribute_types_map[ $product_type ]                  = $this->attribute_types_map[ $product_type ] ?? [];

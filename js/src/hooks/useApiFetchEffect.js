@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { useEffect, useRef } from '@wordpress/element';
-import isEqual from 'lodash/isEqual';
+import { useEffect } from '@wordpress/element';
 import { APIFetchOptions } from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 /**
  * Calls apiFetch as a side effect. This uses useApiFetchCallback in a useEffect hook.
@@ -19,22 +19,19 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  * @return {Object} FetchResult from useApiFetchCallback.
  */
 const useApiFetchEffect = ( options ) => {
-	const optionsRef = useRef( options );
-	if ( ! isEqual( optionsRef.current, options ) ) {
-		optionsRef.current = options;
-	}
+	const optionsRefValue = useIsEqualRefValue( options );
 
-	const [ apiFetch, fetchResult ] = useApiFetchCallback( optionsRef.current, {
+	const [ apiFetch, fetchResult ] = useApiFetchCallback( optionsRefValue, {
 		loading: true,
 	} );
 
 	useEffect( () => {
-		if ( ! optionsRef.current ) {
+		if ( ! optionsRefValue ) {
 			return;
 		}
 
 		apiFetch();
-	}, [ apiFetch ] );
+	}, [ apiFetch, optionsRefValue ] );
 
 	return fetchResult;
 };

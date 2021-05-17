@@ -113,6 +113,23 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	}
 
 	/**
+	 * Get a route name which is safe to use as a filter (removes namespace prefix).
+	 *
+	 * @param Request $request Request object.
+	 *
+	 * @return string
+	 */
+	protected function get_route_name( Request $request ): string {
+		$route = trim( $request->get_route(), '/' );
+
+		if ( 0 === strpos( $route, $this->get_namespace() ) ) {
+			$route = substr( $route, strlen( $this->get_namespace() ) );
+		}
+
+		return sanitize_title( $route );
+	}
+
+	/**
 	 * Prepares the item for the REST response.
 	 *
 	 * @param mixed   $item    WordPress representation of the item.
@@ -130,6 +147,11 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 
 		$prepared = $this->add_additional_fields_to_object( $prepared, $request );
 		$prepared = $this->filter_response_by_context( $prepared, $context );
+		$prepared = apply_filters(
+			'gla_prepared_response_' . $this->get_route_name( $request ),
+			$prepared,
+			$request
+		);
 
 		return new Response( $prepared );
 	}

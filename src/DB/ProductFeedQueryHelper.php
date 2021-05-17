@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -19,10 +22,16 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ProductFeedQueryHelper
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
+ * ContainerAware used to access:
+ * - MerchantStatuses
+ * - ProductHelper
+ * - ProductMetaHandler
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
-class ProductFeedQueryHelper implements Service {
+class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
+	use ContainerAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -36,16 +45,6 @@ class ProductFeedQueryHelper implements Service {
 	protected $request;
 
 	/**
-	 * @var ProductHelper
-	 */
-	protected $product_helper;
-
-	/**
-	 * @var ProductMetaHandler
-	 */
-	protected $meta_handler;
-
-	/**
 	 * @var ProductRepository
 	 */
 	protected $product_repository;
@@ -53,19 +52,17 @@ class ProductFeedQueryHelper implements Service {
 	/**
 	 * ProductFeedQueryHelper constructor.
 	 *
-	 * @param wpdb               $wpdb
-	 * @param ProductRepository  $product_repository
-	 * @param ProductHelper      $product_helper
-	 * @param ProductMetaHandler $meta_handler
+	 * @param wpdb              $wpdb
+	 * @param ProductRepository $product_repository
 	 */
-	public function __construct( wpdb $wpdb, ProductRepository $product_repository, ProductHelper $product_helper, ProductMetaHandler $meta_handler ) {
+	public function __construct( wpdb $wpdb, ProductRepository $product_repository ) {
 		$this->wpdb               = $wpdb;
 		$this->product_repository = $product_repository;
-		$this->product_helper     = $product_helper;
-		$this->meta_handler       = $meta_handler;
 	}
 
 	/**
+	 * Retrieve an array of product information using the request params.
+	 *
 	 * @param WP_REST_Request $request
 	 *
 	 * @return array
@@ -78,11 +75,18 @@ class ProductFeedQueryHelper implements Service {
 		$args                   = $this->prepare_query_args();
 		list( $limit, $offset ) = $this->prepare_query_pagination();
 
+		$this->container->get( MerchantStatuses::class )->maybe_refresh_status_data();
+
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
+		/** @var ProductMetaHandler $meta_handler */
+		$meta_handler = $this->container->get( ProductMetaHandler::class );
+
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id     = $product->get_id();
-			$errors = $this->meta_handler->get_errors( $id ) ?: [];
+			$errors = $meta_handler->get_errors( $id ) ?: [];
 
 			// Combine errors for variable products, which have a variation-indexed array of errors.
 			$first_key = array_key_first( $errors );
@@ -93,8 +97,8 @@ class ProductFeedQueryHelper implements Service {
 			$products[ $id ] = [
 				'id'      => $id,
 				'title'   => $product->get_name(),
-				'visible' => $this->product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
-				'status'  => $this->product_helper->get_sync_status( $product ),
+				'visible' => $product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
+				'status'  => $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product ),
 				'errors'  => array_values( $errors ),
 			];
 		}
@@ -105,7 +109,7 @@ class ProductFeedQueryHelper implements Service {
 	}
 
 	/**
-	 * Count the number of products (including title filter if present)
+	 * Count the number of products (using title filter if present).
 	 *
 	 * @param WP_REST_Request $request
 	 *
@@ -164,7 +168,7 @@ class ProductFeedQueryHelper implements Service {
 				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
 			case 'status':
-				$args['meta_key'] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_STATUS );
+				$args['meta_key'] = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
 				$args['orderby']  = [ 'meta_value' => $this->get_order() ] + $args['orderby'];
 				break;
 			default:
@@ -192,8 +196,8 @@ class ProductFeedQueryHelper implements Service {
 	}
 
 	/**
-	 * Used for the posts_where hook, filters the WHERE clause of the query by
-	 * searching for the 'search' parameter in the product titles (when the parameter is present).
+	 * Filter for the posts_where hook, adds WHERE clause to search
+	 * for the 'search' parameter in the product titles (when present).
 	 *
 	 * @param string   $where The WHERE clause of the query.
 	 * @param WP_Query $wp_query The WP_Query instance (passed by reference).

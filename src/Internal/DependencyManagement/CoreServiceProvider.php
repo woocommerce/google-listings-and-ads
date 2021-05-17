@@ -6,9 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
@@ -40,17 +38,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantIssues;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\ProductStatistics;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
@@ -101,6 +98,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Loaded::class                 => true,
 		SiteVerificationEvents::class => true,
 		OptionsInterface::class       => true,
+		TransientsInterface::class    => true,
 		ProductFeed::class            => true,
 		RESTControllers::class        => true,
 		Service::class                => true,
@@ -121,13 +119,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		MetaBoxInitializer::class     => true,
 		ViewFactory::class            => true,
 		DebugLogger::class            => true,
+		MerchantStatuses::class       => true,
+		MerchantCenterService::class  => true,
 		MerchantAccountState::class   => true,
 		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
-		ProductStatistics::class      => true,
-		MerchantIssues::class         => true,
-		TransientsInterface::class    => true,
-		MerchantCenterService::class  => true,
 		AttributeManager::class       => true,
 		ProductFactory::class         => true,
 		AttributesTab::class          => true,
@@ -214,8 +210,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
-		$this->share_with_tags( ProductStatistics::class );
-		$this->share_with_tags( MerchantIssues::class, TransientsInterface::class, Merchant::class, MerchantIssueQuery::class );
+		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class );

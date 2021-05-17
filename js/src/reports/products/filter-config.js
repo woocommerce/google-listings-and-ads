@@ -23,6 +23,26 @@ const PRODUCTS_REPORT_FILTERS_FILTER = 'gla_products_report_filters';
 const PRODUCTS_REPORT_ADVANCED_FILTERS_FILTER =
 	'gla_products_report_advanced_filters';
 
+/**
+ * Gets the field name from the given URL query parameter.
+ * Returns `undefined` when the selected field doesn't exist in the free fields list.
+ * This lets the other components fall back to the default value instead.
+ *
+ * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L192
+ * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L140
+ *
+ * @param  {string} paramName The parameter name to check if needs fallback.
+ * @return {string|undefined} Returns the selected free field, or
+ *                            `undefined` if the value is not a free field.
+ */
+function getFreeFieldFromQuery( paramName ) {
+	const field = getQuery()[ paramName ];
+	if ( freeFields.includes( field ) ) {
+		return field;
+	}
+	return undefined;
+}
+
 const productsFilterConfig = {
 	label: __( 'Show', 'google-listings-and-ads' ),
 	staticParams: [
@@ -32,6 +52,7 @@ const productsFilterConfig = {
 		'order',
 		'paged',
 		'per_page',
+		'selectedMetric',
 	],
 	param: 'filter',
 	showFilters: () => true,
@@ -101,7 +122,14 @@ const variationsConfig = {
 		query.filter === 'single-product' &&
 		!! query.products &&
 		query[ 'is-variable' ],
-	staticParams: [ 'filter', 'products', 'chartType', 'paged', 'per_page' ],
+	staticParams: [
+		'filter',
+		'products',
+		'chartType',
+		'paged',
+		'per_page',
+		'selectedMetric',
+	],
 	param: 'filter-variations',
 	filters: [
 		{
@@ -178,6 +206,9 @@ const reportSourceConfig = {
 				get orderby() {
 					return getQuery().orderby;
 				},
+				get selectedMetric() {
+					return getQuery().selectedMetric;
+				},
 			},
 		},
 		{
@@ -185,12 +216,10 @@ const reportSourceConfig = {
 			label: __( 'Free listings', 'google-listings-and-ads' ),
 			query: {
 				get orderby() {
-					// Fallback to default sorting if the `orderby` of URL query doesn't exist in the free field list.
-					const { orderby } = getQuery();
-					if ( freeFields.includes( orderby ) ) {
-						return orderby;
-					}
-					return undefined;
+					return getFreeFieldFromQuery( 'orderby' );
+				},
+				get selectedMetric() {
+					return getFreeFieldFromQuery( 'selectedMetric' );
 				},
 			},
 		},

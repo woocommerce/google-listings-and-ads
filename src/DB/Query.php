@@ -22,11 +22,8 @@ abstract class Query implements QueryInterface {
 	/** @var int */
 	protected $offset = 0;
 
-	/** @var string */
-	protected $order = 'ASC';
-
-	/** @var string */
-	protected $orderby;
+	/** @var array */
+	protected $orderby = [];
 
 	/**
 	 * The result of the query.
@@ -118,9 +115,7 @@ abstract class Query implements QueryInterface {
 	 */
 	public function set_order( string $column, string $order = 'ASC' ): QueryInterface {
 		$this->validate_column( $column );
-		$this->orderby = $column;
-		$this->order   = $this->normalize_order( $order );
-
+		$this->orderby[] = "`{$column}` {$this->normalize_order( $order )}";
 		return $this;
 	}
 
@@ -296,7 +291,7 @@ abstract class Query implements QueryInterface {
 			$pieces[] = "GROUP BY `{$this->table->get_name()}`.`{$this->table->get_primary_column()}`";
 
 			if ( $this->orderby ) {
-				$pieces[] = "ORDER BY {$this->orderby} {$this->order}";
+				$pieces[] = 'ORDER BY ' . implode( ', ', $this->orderby );
 			}
 
 			if ( $this->limit ) {

@@ -10,8 +10,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface TransientsInterface {
 
-	public const MC_PRODUCT_STATISTICS = 'mc_product_statistics';
-	public const MC_ISSUES_CREATED_AT  = 'mc_issues_created_at';
+	public const MC_STATUSES = 'mc_statuses';
 
 	/**
 	 * Get a transient.

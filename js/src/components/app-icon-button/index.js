@@ -1,21 +1,17 @@
 /**
- * External dependencies
- */
-import { Button } from '@wordpress/components';
-
-/**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import './index.scss';
 
 const AppIconButton = ( props ) => {
 	const { icon, text, className = '', ...rest } = props;
 
 	return (
-		<Button className={ `app-icon-button ${ className }` } { ...rest }>
+		<AppButton className={ `app-icon-button ${ className }` } { ...rest }>
 			<div>{ icon }</div>
 			{ text }
-		</Button>
+		</AppButton>
 	);
 };
 

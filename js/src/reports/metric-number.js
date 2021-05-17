@@ -29,11 +29,7 @@ const numberFormatSetting = { precision: 0 };
  * @param {boolean} [props.selected] Whether show a highlight style on this metric.
  * @param {boolean} [props.isCurrency=false] Display `data.value` and `data.prevValue` as price format if true.
  *                                           Otherwise, display as number format.
- * @param {Object} props.data Data as get from API.
- * @param {number} props.data.value
- * @param {number} props.data.prevValue
- * @param {string} props.data.delta
- * @param {boolean} props.data.missingFreeListingsData Flag indicating whether the data miss entries from Free Listings.
+ * @param {import('.~/data/utils').PerformanceMetrics} props.data Data as get from API.
  *
  * @return {SummaryNumber} Filled SummaryNumber.
  */
