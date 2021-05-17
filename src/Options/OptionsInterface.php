@@ -17,6 +17,7 @@ interface OptionsInterface {
 	public const ADS_SETUP_COMPLETED_AT = 'ads_setup_completed_at';
 	public const DB_VERSION             = 'db_version';
 	public const FILE_VERSION           = 'file_version';
+	public const GOOGLE_CONNECTED       = 'google_connected';
 	public const INSTALL_TIMESTAMP      = 'install_timestamp';
 	public const MC_SETUP_COMPLETED_AT  = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE = 'merchant_account_state';

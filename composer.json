@@ -13,6 +13,7 @@
     "googleads/google-ads-php": "^8.0",
     "league/container": "^3.3",
     "league/iso3166": "^3.0",
+    "phpseclib/bcmath_compat": "^2.0",
     "psr/container": "^1.0",
     "symfony/validator": "^5.2",
     "ext-json": "*"
@@ -22,6 +23,9 @@
     "phpunit/phpunit": "^6.5 || ^7",
     "wp-cli/i18n-command": "^2.2",
     "wp-coding-standards/wpcs": "^2.3"
+  },
+  "replace": {
+    "symfony/polyfill-mbstring": "*"
   },
   "license": "GPL-3.0",
   "autoload": {

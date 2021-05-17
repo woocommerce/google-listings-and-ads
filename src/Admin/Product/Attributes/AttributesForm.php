@@ -68,7 +68,7 @@ class AttributesForm extends Form {
 			 *
 			 * @see AttributeManager::map_attribute_types
 			 */
-			$applicable_types = apply_filters( 'gla_attribute_applicable_product_types', $applicable_types, $attribute_id, $attribute_type );
+			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
 			if ( ! empty( $applicable_types ) ) {
 				$input['gla_wrapper_class']  = $input['gla_wrapper_class'] ?? '';
@@ -146,19 +146,27 @@ class AttributesForm extends Form {
 	/**
 	 * Add an attribute to the form
 	 *
-	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 * @param string      $attribute_type An attribute class extending AttributeInterface
+	 * @param string|null $input_type     An input class extending InputInterface to use for attribute input.
 	 *
 	 * @return AttributesForm
 	 *
 	 * @throws InvalidValue If the attribute type is invalid or an invalid input type is specified for the attribute.
 	 */
-	protected function add_attribute( string $attribute_type ): AttributesForm {
+	protected function add_attribute( string $attribute_type, ?string $input_type = null ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
+		$attribute = new $attribute_type();
 
-		$attribute       = new $attribute_type();
-		$input_type      = $this->guess_input_type( $attribute );
+		// check if input type is provided or guess it for the attribute
+		if ( ! empty( $input_type ) ) {
+			$this->validate_interface( $input_type, InputInterface::class );
+		} else {
+			$input_type = $this->guess_input_type( $attribute );
+		}
+
 		$attribute_input = $this->init_input( new $input_type(), $attribute );
-		$attribute_id    = call_user_func( [ $attribute_type, 'get_id' ] );
+
+		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
 		$this->add( $attribute_input, $attribute_id );
 
 		$this->attribute_types[ $attribute_id ] = $attribute_type;

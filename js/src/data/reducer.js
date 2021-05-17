@@ -31,6 +31,7 @@ const DEFAULT_STATE = {
 	mc_setup: null,
 	mc_product_statistics: null,
 	mc_issues: null,
+	mc_product_feed: null,
 	report: {},
 };
 
@@ -276,6 +277,36 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...data.issues
 			);
 			newState.mc_issues.total = data.total;
+
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_PRODUCT_FEED: {
+			const { query, data } = action;
+			const newState = {
+				...state,
+				mc_product_feed: {
+					...state.mc_product_feed,
+					pages: {
+						...state.mc_product_feed?.pages,
+					},
+				},
+			};
+
+			if (
+				newState.mc_product_feed.per_page !== query.per_page ||
+				newState.mc_product_feed.order !== query.order ||
+				newState.mc_product_feed.orderby !== query.orderby
+			) {
+				// discard old stored data when pagination has changed.
+				newState.mc_product_feed.pages = {};
+			}
+
+			newState.mc_product_feed.per_page = query.per_page;
+			newState.mc_product_feed.order = query.order;
+			newState.mc_product_feed.orderby = query.orderby;
+			newState.mc_product_feed.total = data.total;
+			newState.mc_product_feed.pages[ query.page ] = data.products;
 
 			return newState;
 		}

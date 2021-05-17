@@ -37,7 +37,7 @@ export default function useProductsReport( type ) {
 
 			let data = emptyData;
 
-			if ( loaded ) {
+			if ( loaded && primary.data && secondary.data ) {
 				data = {
 					products: primary.data.products || emptyData.products,
 					intervals: primary.data.intervals || emptyData.intervals,

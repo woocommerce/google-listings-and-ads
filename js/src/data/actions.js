@@ -687,3 +687,11 @@ export function* receiveMCIssues( query, data ) {
 		data,
 	};
 }
+
+export function* receiveMCProductFeed( query, data ) {
+	return {
+		type: TYPES.RECEIVE_MC_PRODUCT_FEED,
+		query,
+		data,
+	};
+}

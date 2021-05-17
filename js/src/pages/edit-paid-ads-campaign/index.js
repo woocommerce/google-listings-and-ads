@@ -12,8 +12,10 @@ import TopBar from '.~/components/stepper/top-bar';
 import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
 import AppSpinner from '.~/components/app-spinner';
 import EditPaidAdsCampaignForm from './edit-paid-ads-campaign-form';
+import HelpIconButton from '.~/components/help-icon-button';
 
 const dashboardURL = getNewPath( {}, '/google/dashboard', {} );
+const helpButton = <HelpIconButton eventContext="edit-ads" />;
 
 const EditPaidAdsCampaign = () => {
 	const { programId } = getQuery();
@@ -26,6 +28,7 @@ const EditPaidAdsCampaign = () => {
 			<FullContainer>
 				<TopBar
 					title={ __( 'Loading…', 'google-listings-and-ads' ) }
+					helpButton={ helpButton }
 					backHref={ dashboardURL }
 				/>
 				<AppSpinner />
@@ -38,6 +41,7 @@ const EditPaidAdsCampaign = () => {
 			<FullContainer>
 				<TopBar
 					title={ __( 'Edit Campaign', 'google-listings-and-ads' ) }
+					helpButton={ helpButton }
 					backHref={ dashboardURL }
 				/>
 				<div>
@@ -58,6 +62,7 @@ const EditPaidAdsCampaign = () => {
 					__( 'Edit %s', 'google-listings-and-ads' ),
 					campaignData.name
 				) }
+				helpButton={ helpButton }
 				backHref={ dashboardURL }
 			/>
 			<EditPaidAdsCampaignForm campaign={ campaignData } />

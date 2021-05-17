@@ -15,10 +15,10 @@ defined( 'ABSPATH' ) || exit;
 interface ProductSyncerJobInterface extends MerchantCenterAwareInterface {
 
 	/**
-	 * Get whether Merchant Center setup is completed.
+	 * Get whether Merchant Center setup is connected.
 	 *
 	 * @return bool
 	 */
-	public function is_mc_setup(): bool;
+	public function is_mc_connected(): bool;
 
 }

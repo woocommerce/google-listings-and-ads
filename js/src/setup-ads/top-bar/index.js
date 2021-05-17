@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { recordSetupAdsEvent } from '.~/utils/recordEvent';
 import TopBar from '.~/components/stepper/top-bar';
+import HelpIconButton from '.~/components/help-icon-button';
 
 const SetupAdsTopBar = () => {
 	// We record the intent to go back or to help - clicking buttons.
@@ -18,16 +19,12 @@ const SetupAdsTopBar = () => {
 		recordSetupAdsEvent( 'back' );
 	};
 
-	const handleHelpButtonClick = () => {
-		recordSetupAdsEvent( 'help' );
-	};
-
 	return (
 		<TopBar
 			title={ __( 'Set up paid campaign', 'google-listings-and-ads' ) }
+			helpButton={ <HelpIconButton eventContext="setup-ads" /> }
 			backHref={ getNewPath( {}, '/google/dashboard' ) }
 			onBackButtonClick={ handleBackButtonClick }
-			onHelpButtonClick={ handleHelpButtonClick }
 		/>
 	);
 };

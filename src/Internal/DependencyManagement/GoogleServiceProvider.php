@@ -20,6 +20,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
@@ -29,10 +31,12 @@ use Google_Service_ShoppingContent;
 use Google_Service_SiteVerification;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\HandlerStack;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -117,6 +121,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function register_guzzle() {
 		$callback = function() {
 			$handler_stack = HandlerStack::create();
+			$handler_stack->remove( 'http_errors' );
+			$handler_stack->push( $this->error_handler(), 'http_errors' );
 			$handler_stack->push( $this->add_auth_header() );
 
 			// Override endpoint URL if we are using http locally.
@@ -166,6 +172,31 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 	}
 
+	/**
+	 * Custom error handler which sets the Google disconnected status.
+	 *
+	 * @return callable
+	 */
+	protected function error_handler(): callable {
+		return function( callable $handler ) {
+			return function( RequestInterface $request, array $options ) use ( $handler ) {
+				return $handler( $request, $options )->then(
+					function ( ResponseInterface $response ) use ( $request ) {
+						$code = $response->getStatusCode();
+						if ( $code < 400 ) {
+							return $response;
+						}
+
+						if ( 401 === $code ) {
+							$this->set_google_disconnected();
+						}
+
+						throw RequestException::create( $request, $response );
+					}
+				);
+			};
+		};
+	}
 
 	/**
 	 * @return callable
@@ -261,5 +292,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$parts = wp_parse_url( $this->get_connect_server_url_root( 'google/google-ads' )->getValue() );
 		$port  = empty( $parts['port'] ) ? 443 : $parts['port'];
 		return sprintf( '%s:%d%s', $parts['host'], $port, $parts['path'] );
+	}
+
+	/**
+	 * Set the Google account connection as disconnected.
+	 */
+	protected function set_google_disconnected() {
+		/** @var Options $options */
+		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
+		$options->update( OptionsInterface::GOOGLE_CONNECTED, false );
 	}
 }
