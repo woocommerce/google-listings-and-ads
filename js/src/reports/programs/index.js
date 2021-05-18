@@ -21,7 +21,7 @@ import '../../dashboard/index.scss';
  *
  * @type {Array<import('../index.js').Metric>}
  */
-const performanceMetrics = [
+const commonMetrics = [
 	{
 		key: 'sales',
 		label: __( 'Total Sales', 'google-listings-and-ads' ),
@@ -39,9 +39,20 @@ const performanceMetrics = [
 		key: 'impressions',
 		label: __( 'Impressions', 'google-listings-and-ads' ),
 	},
+];
+const performanceMetrics = [
+	...commonMetrics,
 	{
 		key: 'spend',
 		label: __( 'Total Spend', 'google-listings-and-ads' ),
+		isCurrency: true,
+	},
+];
+const tableMetrics = [
+	...commonMetrics,
+	{
+		key: 'spend',
+		label: __( 'Spend', 'google-listings-and-ads' ),
 		isCurrency: true,
 	},
 ];
@@ -52,14 +63,22 @@ const ProgramsReport = () => {
 	// Only after calling the API we would know if the default "All listings" includes or not any paid listings.
 	const {
 		loaded,
-		data: { totals, intervals },
+		data: { totals, intervals, freeListings, campaigns },
 	} = useProgramsReport();
 
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
-	const availableMetrics = performanceMetrics.filter(
-		( { key } ) => totals[ key ]
-	);
+	const availableMetrics =
+		totals &&
+		performanceMetrics.filter( ( { key } ) =>
+			totals.hasOwnProperty( key )
+		);
+
+	// Anticipate all to come, show all column headers if the data is still being loaded.
+	const expectedTableMetrics =
+		loaded && totals
+			? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
+			: tableMetrics;
 
 	return (
 		<div className="gla-dashboard">
@@ -84,7 +103,13 @@ const ProgramsReport = () => {
 				/>
 			</div>
 			<div className="gla-dashboard__programs">
-				<CompareProgramsTableCard trackEventReportId={ trackEventId } />
+				<CompareProgramsTableCard
+					trackEventReportId={ trackEventId }
+					isLoading={ ! loaded }
+					metrics={ expectedTableMetrics }
+					freeListings={ freeListings }
+					campaigns={ campaigns }
+				/>
 			</div>
 		</div>
 	);
