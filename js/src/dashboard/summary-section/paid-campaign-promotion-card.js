@@ -2,12 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CardHeader } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import SummaryCard from './summary-card';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import './paid-campaign-promotion-card.scss';
@@ -18,7 +18,7 @@ const PromotionContent = ( { adsAccount } ) => {
 
 	return (
 		<>
-			<p className="gla-paid-campaign-promotion-card__text">
+			<p className="gla-paid-campaign-promotion-content__text">
 				{ showFreeCredit
 					? __(
 							'Create your first campaign and get up to $150* free',
@@ -40,16 +40,15 @@ function PaidCampaignPromotionCard( { title } ) {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
 	return (
-		<Card className="gla-paid-campaign-promotion-card">
-			<CardHeader size="medium">{ title }</CardHeader>
-			<div className="gla-paid-campaign-promotion-card__body">
+		<SummaryCard title={ title }>
+			<div className="gla-paid-campaign-promotion-content">
 				{ googleAdsAccount ? (
 					<PromotionContent adsAccount={ googleAdsAccount } />
 				) : (
 					<Spinner />
 				) }
 			</div>
-		</Card>
+		</SummaryCard>
 	);
 }
 

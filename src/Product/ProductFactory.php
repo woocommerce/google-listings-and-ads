@@ -37,11 +37,12 @@ class ProductFactory {
 	 * @return WCProductAdapter
 	 */
 	public function create( WC_Product $product, string $target_country ): WCProductAdapter {
-		$attributes = $this->attribute_manager->get_all( $product->get_id() );
+		$attributes = $this->attribute_manager->get_all_values( $product );
 
 		// merge with parent's attributes if it's a variation product
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$parent_attributes = $this->attribute_manager->get_all( $product->get_parent_id() );
+			$parent            = wc_get_product( $product->get_parent_id() );
+			$parent_attributes = $this->attribute_manager->get_all_values( $parent );
 			$attributes        = array_merge( $parent_attributes, $attributes );
 		}
 

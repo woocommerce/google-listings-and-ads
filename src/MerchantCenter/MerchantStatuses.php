@@ -66,9 +66,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	protected $mc_statuses;
 
 	/**
-	 * @var array Statuses for each product ID.
+	 * @var array Statuses for each product id and parent id.
 	 */
-	protected $product_statuses;
+	protected $product_statuses = [
+		'products' => [],
+		'parents'  => [],
+	];
 
 	/**
 	 * MerchantStatuses constructor.
@@ -341,15 +344,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			if ( is_null( $status ) ) {
 				continue;
 			}
-			// Simple is used later for global product status statistics.
-			$this->product_statuses['simple'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['simple'][ $wc_product_id ][ $status ] ?? 0 );
+			// Products is used later for global product status statistics.
+			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
 			$wc_parent_id = $product_helper->maybe_swap_for_parent_id( $wc_product_id );
 			if ( $wc_parent_id === $wc_product_id ) {
 				continue;
 			}
-			$this->product_statuses['parent'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parent'][ $wc_parent_id ][ $status ] ?? 0 );
+			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
 		}
 	}
 
@@ -366,7 +369,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			MCSTATUS::NOT_SYNCED         => 0,
 		];
 
-		foreach ( $this->product_statuses['simple'] as $statuses ) {
+		foreach ( $this->product_statuses['products'] as $statuses ) {
 			foreach ( $statuses as $status => $num_products ) {
 				$product_statistics[ $status ] += $num_products;
 			}
@@ -394,30 +397,30 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	protected function update_product_mc_statuses() {
 		// Generate a product_id=>mc_status array.
-		$product_statuses = [];
-		foreach ( $this->product_statuses as $products ) {
-			foreach ( $products as $product_id => $statuses ) {
+		$all_product_statuses = [];
+		foreach ( $this->product_statuses as $types ) {
+			foreach ( $types as $product_id => $statuses ) {
 				if ( isset( $statuses[ MCStatus::PENDING ] ) ) {
-					$product_statuses[ $product_id ] = MCStatus::PENDING;
+					$all_product_statuses[ $product_id ] = MCStatus::PENDING;
 				} elseif ( isset( $statuses[ MCStatus::EXPIRING ] ) ) {
-					$product_statuses[ $product_id ] = MCStatus::EXPIRING;
+					$all_product_statuses[ $product_id ] = MCStatus::EXPIRING;
 				} elseif ( isset( $statuses[ MCStatus::APPROVED ] ) ) {
 					if ( count( $statuses ) > 1 ) {
-						$product_statuses[ $product_id ] = MCStatus::PARTIALLY_APPROVED;
+						$all_product_statuses[ $product_id ] = MCStatus::PARTIALLY_APPROVED;
 					} else {
-						$product_statuses[ $product_id ] = MCStatus::APPROVED;
+						$all_product_statuses[ $product_id ] = MCStatus::APPROVED;
 					}
 				} else {
-					$product_statuses[ $product_id ] = array_key_first( $statuses );
+					$all_product_statuses[ $product_id ] = array_key_first( $statuses );
 				}
 			}
 		}
-		ksort( $product_statuses );
+		ksort( $all_product_statuses );
 
 		/** @var ProductMetaHandler $product_meta */
 		$product_meta = $this->container->get( ProductMetaHandler::class );
 		foreach ( $this->container->get( ProductRepository::class )->find_ids() as $product_id ) {
-			$product_meta->update_mc_status( $product_id, $product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED );
+			$product_meta->update_mc_status( $product_id, $all_product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED );
 		}
 	}
 

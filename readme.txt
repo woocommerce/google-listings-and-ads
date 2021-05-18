@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.3
 Tested up to: 5.7
 Requires PHP: 7.3
-Stable tag: 0.5.5
+Stable tag: 0.5.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -113,6 +113,39 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 0.5.6 - 2021-05-17 =
+* Fix - Add Color, Material, and Pattern attributes.
+* Fix - Add Size, Size System, and Size Type product attributes.
+* Fix - Add WooCommerce Brands integration.
+* Fix - Add age group and adult product attributes.
+* Fix - Add bcmath compatibility library.
+* Fix - Add extra product attributes.
+* Fix - Add gender attribute.
+* Fix - Add hook and mocked data for testing API requests.
+* Fix - Add more props and formatting to the shared summary component for report pages.
+* Fix - Add spend column to product reports.
+* Fix - Adjust chart to fit with API schema and visual design, and extract as a shared component for report pages.
+* Fix - Change 'Get started' to 'Set up free listings in Google' in small copy text.
+* Fix - Code refactor with useIsEqualRefValue.
+* Fix - Conflict resolution in Merchant Center account connection process.
+* Fix - Connect products report page to the data source of report API.
+* Fix - Display ReclaimURLCard upon getting 403 from SwitchURLCard.
+* Fix - Display or hide attributes based on product type.
+* Fix - Fix dashboard performance when the response comes w/o data.
+* Fix - Get report parameter defaults using a helper function.
+* Fix - Opens documentation in new tab upon clicking Help button.
+* Fix - Product Feed UI with API.
+* Fix - Remove margin-bottom for checkboxes in Table.
+* Fix - Replacement polyfills for mbstring.
+* Fix - Run async jobs only when Google is connected.
+* Fix - Setup MC: display error message when Google MC Account API call failed.
+* Fix - Show selected "Free Listings" filter / Handle URL param id `0` as valid in `getIdsFromQuery`.
+* Fix - Some README and contributor documentation updates.
+* Fix - Standardize product statuses and caches.
+* Fix - Update Product Feed status labels.
+* Fix - Use shared `SummarySection` in Programs Report page.
+* Tweak - WC 5.3 compatibility.
+
 = 0.5.5 - 2021-05-07 =
 * Fix - Add a custom hook to get calculated data and its status for the Products Reporting page.
 * Fix - Add products reporting data source picker and connect all UI query interactions to page route.
@@ -135,10 +168,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Additional testing flags.
 * Fix - Conditionally hide Reports tab and show a coming soon notice on Product Feed tab.
 * Fix - Fix condition that filters TabNav's tabs.
-
-= 0.5.3 - 2021-04-29 =
-* Fix - Fix popover width.
-* Fix - Fix the giant icon problem in the warning messages.
-* Fix - South Korea is only supported for currency KRW.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

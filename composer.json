@@ -13,6 +13,7 @@
     "googleads/google-ads-php": "^8.0",
     "league/container": "^3.3",
     "league/iso3166": "^3.0",
+    "phpseclib/bcmath_compat": "^2.0",
     "psr/container": "^1.0",
     "symfony/validator": "^5.2",
     "ext-json": "*"

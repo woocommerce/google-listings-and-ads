@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -66,7 +66,7 @@ class ProductFeedController extends BaseController {
 					'total'    => $this->query_helper->count( $request ),
 					'page'     => $request['per_page'] > 0 && $request['page'] > 0 ? $request['page'] : 1,
 				];
-			} catch ( InvalidValue $e ) {
+			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};

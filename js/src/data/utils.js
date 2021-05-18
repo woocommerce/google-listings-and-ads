@@ -10,7 +10,7 @@ import { getCurrentDates } from '@woocommerce/date';
 import round from '.~/utils/round';
 
 export const freeFields = [ 'clicks', 'impressions' ];
-const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
+export const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
 
 /**
  * Get report query for fetching performance data from API.
@@ -46,7 +46,12 @@ export function getPerformanceQuery( type, query, dateReference ) {
  */
 export function getReportQuery( category, type, query, dateReference ) {
 	const baseQuery = getPerformanceQuery( type, query, dateReference );
-	const { orderby = baseQuery.fields[ 0 ], order = 'desc' } = query;
+	const { order = 'desc' } = query;
+	let { orderby } = query;
+	// Ignore orderby's not supported by fields.
+	if ( ! orderby || ! baseQuery.fields.includes( orderby ) ) {
+		orderby = baseQuery.fields[ 0 ];
+	}
 
 	const reportQuery = {
 		...baseQuery,
@@ -86,21 +91,32 @@ export function getReportKey( category, type, reportQuery ) {
  * @return {PerformanceData} The calculated performance data of each metric.
  */
 export function mapReportFieldsToPerformance( primary, secondary ) {
-	return Object.keys( primary ).reduce( ( acc, key ) => {
-		const value = primary[ key ];
-		const base = secondary[ key ];
-		let delta = 0;
-
-		if ( value !== base ) {
-			const percent = ( ( value - base ) / base ) * 100;
-			delta = Number.isFinite( percent ) ? round( percent ) : null;
-		}
-
-		return {
+	return Object.keys( primary ).reduce(
+		( acc, key ) => ( {
 			...acc,
-			[ key ]: { value, delta, prevValue: base },
-		};
-	}, {} );
+			[ key ]: fieldsToPerformance( primary[ key ], secondary[ key ] ),
+		} ),
+		{}
+	);
+}
+
+/**
+ * Calculate performance data by each metric.
+ *
+ * @param {ReportFieldsSchema} value The primary report fields fetched from report API.
+ * @param {ReportFieldsSchema} base The secondary report fields fetched from report API.
+ * @param {boolean} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
+ * @return {PerformanceData} The calculated performance data of each metric.
+ */
+export function fieldsToPerformance( value, base, missingFreeListingsData ) {
+	let delta = 0;
+
+	if ( value !== base ) {
+		const percent = ( ( value - base ) / base ) * 100;
+		delta = Number.isFinite( percent ) ? round( percent ) : null;
+	}
+
+	return { value, delta, prevValue: base, missingFreeListingsData };
 }
 
 /**

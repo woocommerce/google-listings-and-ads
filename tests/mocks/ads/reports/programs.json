@@ -1,0 +1,89 @@
+{
+	"campaigns": [
+		{
+			"id": 123,
+			"name": "One",
+			"status": "enabled",
+			"subtotals": {
+				"sales": 11,
+				"spend": 63.14,
+				"clicks": 139,
+				"impressions": 16037
+			}
+		},
+		{
+			"id": 234,
+			"name": "Two",
+			"status": "enabled",
+			"subtotals": {
+				"sales": 0,
+				"spend": 9.87,
+				"clicks": 15,
+				"impressions": 14205
+			}
+		}
+	],
+	"intervals": [
+		{
+			"interval": "2020-08",
+			"subtotals": {
+				"sales": 0,
+				"spend": 38,
+				"clicks": 90,
+				"impressions": 14205
+			}
+		},
+		{
+			"interval": "2020-09",
+			"subtotals": {
+				"sales": 0,
+				"spend": 38,
+				"clicks": 90,
+				"impressions": 10581
+			}
+		},
+		{
+			"interval": "2020-10",
+			"subtotals": {
+				"sales": 11,
+				"spend": 35.01,
+				"clicks": 64,
+				"impressions": 16307
+			}
+		},
+		{
+			"interval": "2020-11",
+			"subtotals": {
+				"sales": 5,
+				"spend": 23,
+				"clicks": 3,
+				"impressions": 13481
+			}
+		},
+		{
+			"interval": "2020-12",
+			"subtotals": {
+				"sales": 0,
+				"spend": 38,
+				"clicks": 90,
+				"impressions": 19874
+			}
+		},
+		{
+			"interval": "2021-01",
+			"subtotals": {
+				"sales": 11,
+				"spend": 35.01,
+				"clicks": 64,
+				"impressions": 20593
+			}
+		}
+	],
+	"totals": {
+		"sales": 10802.93,
+		"spend": 600,
+		"clicks": 14135,
+		"impressions": 383512,
+		"conversions": 4102
+	}
+}

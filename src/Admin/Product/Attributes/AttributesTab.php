@@ -4,16 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\FormInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Brand;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Gender;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\GTIN;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\MPN;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -53,15 +49,19 @@ class AttributesTab implements Service, Registerable, Conditional {
 	public function register(): void {
 		add_action(
 			'woocommerce_new_product',
-			function ( int $product_id ) {
-				$this->handle_update_product( $product_id );
-			}
+			function ( int $product_id, WC_Product $product ) {
+				$this->handle_update_product( $product );
+			},
+			10,
+			2
 		);
 		add_action(
 			'woocommerce_update_product',
-			function ( int $product_id ) {
-				$this->handle_update_product( $product_id );
-			}
+			function ( int $product_id, WC_Product $product ) {
+				$this->handle_update_product( $product );
+			},
+			10,
+			2
 		);
 
 		add_action(
@@ -86,9 +86,12 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @return array An array with product tabs with the Yoast SEO tab added.
 	 */
 	private function add_tab( array $tabs ): array {
+		$product_types   = $this->get_applicable_product_types();
+		$show_if_classes = ! empty( $product_types ) ? ' show_if_' . join( ' show_if_', $product_types ) : '';
+
 		$tabs['gla_attributes'] = [
 			'label'  => 'Google Listings and Ads',
-			'class'  => 'gla',
+			'class'  => 'gla' . $show_if_classes,
 			'target' => 'gla_attributes',
 		];
 
@@ -99,72 +102,62 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * Render the product attributes tab.
 	 */
 	private function render_panel() {
-		$product_id = get_the_ID();
+		$product = wc_get_product( get_the_ID() );
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $this->admin->get_view( 'attributes/tab-panel', [ 'form' => $this->get_form( $product_id )->get_view_data() ] );
+		echo $this->admin->get_view( 'attributes/tab-panel', [ 'form' => $this->get_form( $product )->get_view_data() ] );
 	}
 
 	/**
 	 * Handle form submission and update the product attributes.
 	 *
-	 * @param int $product_id
+	 * @param WC_Product $product
 	 */
-	private function handle_update_product( int $product_id ) {
-		$form = $this->get_form( $product_id );
+	private function handle_update_product( WC_Product $product ) {
+		$form = $this->get_form( $product );
 
 		$form_view_data = $form->get_view_data();
 		// phpcs:disable WordPress.Security.NonceVerification
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) ) : [];
 
-		$this->submit_form( $form, $product_id, $submitted_data );
+		$form->submit( $submitted_data );
+		$this->update_data( $product, $form->get_data() );
 	}
 
 	/**
-	 * @param int $product_id
+	 * @param WC_Product $product
 	 *
-	 * @return AttributesTabForm
+	 * @return AttributesForm
 	 */
-	protected function get_form( int $product_id ): AttributesTabForm {
-		$form_data = [
-			Brand::get_id()  => $this->attribute_manager->get_value( $product_id, Brand::get_id() ),
-			GTIN::get_id()   => $this->attribute_manager->get_value( $product_id, GTIN::get_id() ),
-			MPN::get_id()    => $this->attribute_manager->get_value( $product_id, MPN::get_id() ),
-			Gender::get_id() => $this->attribute_manager->get_value( $product_id, Gender::get_id() ),
-		];
+	protected function get_form( WC_Product $product ): AttributesForm {
+		$attribute_types = $this->attribute_manager->get_attribute_types_for_product_types( $this->get_applicable_product_types() );
 
-		return new AttributesTabForm( $form_data );
+		$form = new AttributesForm( $attribute_types, $this->attribute_manager->get_all_values( $product ) );
+		$form->set_name( 'attributes' );
+
+		return $form;
 	}
 
 	/**
-	 * @param FormInterface $form
-	 * @param int           $product_id
-	 * @param array         $submitted_data
+	 * Return an array of WooCommerce product types that the Google Listings and Ads tab can be displayed for.
+	 *
+	 * @return array of WooCommerce product types (e.g. 'simple', 'variable', etc.)
+	 */
+	protected function get_applicable_product_types(): array {
+		return apply_filters( 'gla_attributes_tab_applicable_product_types', [ 'simple', 'variable' ] );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 * @param array      $data
 	 *
 	 * @return void
 	 */
-	protected function submit_form( FormInterface $form, int $product_id, array $submitted_data ): void {
-		$form->submit( $submitted_data );
-		$form_data = $form->get_data();
-
-		// gtin
-		if ( isset( $form_data[ GTIN::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new GTIN( $form_data[ GTIN::get_id() ] ) );
-		}
-
-		// mpn
-		if ( isset( $form_data[ MPN::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new MPN( $form_data[ MPN::get_id() ] ) );
-		}
-
-		// brand
-		if ( isset( $form_data[ Brand::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new Brand( $form_data[ Brand::get_id() ] ) );
-		}
-
-		// gender
-		if ( isset( $form_data[ Gender::get_id() ] ) ) {
-			$this->attribute_manager->update( $product_id, new Gender( $form_data[ Gender::get_id() ] ) );
+	protected function update_data( WC_Product $product, array $data ): void {
+		foreach ( $this->attribute_manager->get_attribute_types_for_product( $product ) as $attribute_id => $attribute_type ) {
+			if ( isset( $data[ $attribute_id ] ) ) {
+				$this->attribute_manager->update( $product, new $attribute_type( $data[ $attribute_id ] ) );
+			}
 		}
 	}
 

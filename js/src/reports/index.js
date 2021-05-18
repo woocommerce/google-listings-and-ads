@@ -12,9 +12,14 @@ export { default as ProductsReport } from './products';
  */
 
 /**
- * @typedef {Object} ProductsReportSchema
+ * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
- * @property {ProductsReportData} data Fetched products report data.
+ * @property {ReportData} data Fetched report data.
+ * @template {ProductsReportData | ProgramsReportData} ReportData
+ */
+
+/**
+ * @typedef {ReportSchema<ProductsReportData>} ProductsReportSchema
  */
 
 /**
@@ -27,6 +32,20 @@ export { default as ProductsReport } from './products';
 /**
  * @typedef {Object} ProductsData
  * @property {number} id Product ID.
+ * @property {TotalsData} subtotals Performance data.
+ */
+
+/**
+ * @typedef {Object} ProgramsReportData
+ * @property {Array<ProgramsData>} freeListings Free listings data
+ * @property {Array<ProgramsData>} campaigns Paid campaigns data.
+ * @property {Array<IntervalsData>} intervals Intervals data.
+ * @property {PerformanceData} totals Performance data.
+ */
+
+/**
+ * @typedef {Object} ProgramsData
+ * @property {number} id ProgramId
  * @property {TotalsData} subtotals Performance data.
  */
 

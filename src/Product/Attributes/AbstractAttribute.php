@@ -23,10 +23,23 @@ abstract class AbstractAttribute implements AttributeInterface {
 	 * @param mixed $value
 	 */
 	public function __construct( $value = null ) {
-		$this->value = $value;
+		$this->set_value( $value );
 	}
 
 	/**
+	 * Return the attribute type. Must be a valid PHP type.
+	 *
+	 * @return string
+	 *
+	 * @link https://www.php.net/manual/en/function.settype.php
+	 */
+	public static function get_value_type(): string {
+		return 'string';
+	}
+
+	/**
+	 * Returns the attribute value.
+	 *
 	 * @return mixed
 	 */
 	public function get_value() {
@@ -39,9 +52,36 @@ abstract class AbstractAttribute implements AttributeInterface {
 	 * @return $this
 	 */
 	public function set_value( $value ): AbstractAttribute {
-		$this->value = $value;
+		$this->value = $this->cast_value( $value );
 
 		return $this;
+	}
+
+	/**
+	 * Casts the value to the attribute value type and returns the result.
+	 *
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	protected function cast_value( $value ) {
+		$value_type = static::get_value_type();
+		if ( in_array( $value_type, [ 'bool', 'boolean' ], true ) ) {
+			$value = wc_string_to_bool( $value );
+		} else {
+			settype( $value, $value_type );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Return an array of WooCommerce product types that this attribute can be applied to.
+	 *
+	 * @return array
+	 */
+	public static function get_applicable_product_types(): array {
+		return [ 'simple', 'variable', 'variation' ];
 	}
 
 	/**

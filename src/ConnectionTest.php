@@ -304,10 +304,12 @@ class ConnectionTest implements Service, Registerable {
 
 								<?php
 									$mc_account_state = $this->container->get( MerchantAccountState::class )->get( false );
+									$merchant_id = $this->container->get( OptionsInterface::class )->get_merchant_id();
 									if ( ! empty( $mc_account_state ) ) :
 								?>
 									<p class="description" style="font-style: italic">
-										( Merchant Center account status -- ID: <?php echo $this->container->get( OptionsInterface::class )->get( OptionsInterface::MERCHANT_ID ); ?> ||
+										( Merchant Center account status -- ID: <?php
+										echo $merchant_id; ?> ||
 										<?php foreach ( $mc_account_state as $name => $step ) : ?>
 											<?php echo $name . ':' . $step['status']; ?>
 										<?php endforeach; ?>
@@ -344,15 +346,25 @@ class ConnectionTest implements Service, Registerable {
 							</td>
 						</tr>
 						<tr>
-							<th><a name="overwrite"></a>Claim Overwrite:</th>
+							<th><a id="overwrite"></a>Claim Overwrite:</th>
 							<td>
 								<p>
-									<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-mc-claim-overwrite' ], $url ), 'wcs-google-mc-claim-overwrite' ) ); ?>">Claim Overwrite</a>
+									<a class="button" href="<?php
+									echo esc_url( wp_nonce_url(
+										add_query_arg(
+											[
+												'action' => 'wcs-google-mc-claim-overwrite',
+												'account_id' => ($_GET['account_id'] ?? false) ?: $merchant_id,
+											],
+											$url
+										),
+										'wcs-google-mc-claim-overwrite' )
+									); ?>" <?php echo ( ($_GET['account_id'] ?? false) || $merchant_id ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Claim Overwrite</a>
 								</p>
 							</td>
 						</tr>
 						<tr>
-							<th><a name="overwrite"></a>Switch URL:</th>
+							<th><a id="switch"></a>Switch URL:</th>
 							<td>
 								<p>
 									<a class="button" href="<?php
@@ -361,11 +373,11 @@ class ConnectionTest implements Service, Registerable {
 												[
 													'action' => 'wcs-google-mc-switch-url',
 													'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url', site_url(), $url ),
-													'account_id' => $_GET['account_id'] ?? ''
+													'account_id' => ($_GET['account_id'] ?? false) ?: $merchant_id,
 												]
 											),
 											'wcs-google-mc-switch-url'
-										) ); ?>" <?php echo ( $_GET['account_id'] ?? false ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Switch URL</a>
+										) ); ?>" <?php echo ( ($_GET['account_id'] ?? false) || $merchant_id ) ? '' : 'disabled="disabled" title="Missing account ID"' ?>>Switch URL</a>
 								</p>
 							</td>
 						</tr>
@@ -543,7 +555,7 @@ class ConnectionTest implements Service, Registerable {
 							<td>
 								<p>
 						<label>
-							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" /></label>
+							Product ID <input name="product_id" type="text" value="<?php echo ! empty( $_GET['product_id'] ) ? intval( $_GET['product_id'] ) : ''; ?>" />
 						</label>
 						<label for="async-sync-product">Async?</label>
 						<input id="async-sync-product" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
@@ -785,6 +797,9 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-mc-claim-overwrite' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-claim-overwrite' ) ) {
 			$request = new Request( 'POST', '/wc/gla/mc/accounts/claim-overwrite' );
+			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
+				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
+			}
 			$this->send_rest_request( $request );
 		}
 

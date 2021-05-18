@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { applyFilters } from '@wordpress/hooks';
-import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -14,7 +13,6 @@ import {
 	REPORT_SOURCE_FREE,
 	REPORT_SOURCE_DEFAULT,
 } from '.~/constants';
-import { freeFields } from '.~/data/utils';
 import { getProductLabels, getVariationLabels } from './async-requests';
 
 // XXX: Should we register those filters somewhere?
@@ -22,26 +20,6 @@ import { getProductLabels, getVariationLabels } from './async-requests';
 const PRODUCTS_REPORT_FILTERS_FILTER = 'gla_products_report_filters';
 const PRODUCTS_REPORT_ADVANCED_FILTERS_FILTER =
 	'gla_products_report_advanced_filters';
-
-/**
- * Gets the field name from the given URL query parameter.
- * Returns `undefined` when the selected field doesn't exist in the free fields list.
- * This lets the other components fall back to the default value instead.
- *
- * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L192
- * @see https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/filter-picker/index.js#L140
- *
- * @param  {string} paramName The parameter name to check if needs fallback.
- * @return {string|undefined} Returns the selected free field, or
- *                            `undefined` if the value is not a free field.
- */
-function getFreeFieldFromQuery( paramName ) {
-	const field = getQuery()[ paramName ];
-	if ( freeFields.includes( field ) ) {
-		return field;
-	}
-	return undefined;
-}
 
 const productsFilterConfig = {
 	label: __( 'Show', 'google-listings-and-ads' ),
@@ -126,6 +104,8 @@ const variationsConfig = {
 		'filter',
 		'products',
 		'chartType',
+		'orderby',
+		'order',
 		'paged',
 		'per_page',
 		'selectedMetric',
@@ -196,32 +176,23 @@ const variationsConfig = {
 const reportSourceConfig = {
 	label: __( 'Show data from', 'google-listings-and-ads' ),
 	param: REPORT_SOURCE_PARAM,
-	staticParams: [ 'filter', 'products', 'order', 'chartType' ],
+	staticParams: [
+		'filter',
+		'products',
+		'orderby',
+		'order',
+		'chartType',
+		'selectedMetric',
+	],
 	defaultValue: REPORT_SOURCE_DEFAULT,
 	filters: [
 		{
 			value: REPORT_SOURCE_PAID,
 			label: __( 'Paid campaigns', 'google-listings-and-ads' ),
-			query: {
-				get orderby() {
-					return getQuery().orderby;
-				},
-				get selectedMetric() {
-					return getQuery().selectedMetric;
-				},
-			},
 		},
 		{
 			value: REPORT_SOURCE_FREE,
 			label: __( 'Free listings', 'google-listings-and-ads' ),
-			query: {
-				get orderby() {
-					return getFreeFieldFromQuery( 'orderby' );
-				},
-				get selectedMetric() {
-					return getFreeFieldFromQuery( 'selectedMetric' );
-				},
-			},
 		},
 	],
 	showFilters: ( { hasPaidSource } ) => hasPaidSource,
