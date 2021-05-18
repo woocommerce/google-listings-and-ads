@@ -9,32 +9,41 @@ import { onQueryChange } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { getIdsFromQuery } from '../utils';
+import { getIdsFromQuery } from './utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
 import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import AppTableCard from '.~/components/app-table-card';
 
-const compareBy = 'products';
-const compareParam = 'filter';
 const numberFormatSetting = { precision: 0 };
 
 /**
- * All products table, with compare feature.
+ * All data table, with compare feature.
  *
  * @see AllProgramsTableCard
  * @see AppTableCard
- *
  * @param {Object} props React props.
+ * @param {string} props.compareBy Query parameter that stores ids to compare.
+ * @param {string} props.compareParam Query parameter to indicate comparing mode.
  * @param {Array<Metric>} props.metrics Metrics to display.
- * @param {boolean} props.loaded Whether the data have been loaded.
- * @param {Array<ProductsData>} props.products Report's products data.
+ * @param {boolean} props.isLoading Whether the data is still being loaded.
+ * @param {string} props.compareButonTitle Title for "Compare" button.
+ * @param {Array<ReportData>} props.data Report's data to be shown.
+ * @param {string} props.nameHeader Column header for the name property.
+ * @param {(row: ReportData) => JSX.Element} props.nameCell Function to rendername cell.
  * @param {Object} [props.restProps] Properties to be forwarded to AppTableCard.
+ *
+ * @template {ReportData} ReportData
  */
-const CompareProductsTableCard = ( {
+const CompareTableCard = ( {
+	compareBy,
+	compareParam,
 	metrics,
-	loaded,
-	products,
+	isLoading,
+	compareButonTitle,
+	data,
+	nameHeader,
+	nameCell,
 	...restProps
 } ) => {
 	const query = useUrlQuery();
@@ -45,10 +54,12 @@ const CompareProductsTableCard = ( {
 		return new Set( getIdsFromQuery( query[ compareBy ] ) );
 	} );
 
-	const loading = ! loaded;
-	const rowsPerPage = products.length || 5;
+	const rowsPerPage = data.length || 5;
 
 	const metricHeaders = useMemo( () => {
+		if ( ! metrics.length ) {
+			return [];
+		}
 		const headers = metrics.map( ( metric ) => ( {
 			...metric,
 			isSortable: true,
@@ -62,22 +73,22 @@ const CompareProductsTableCard = ( {
 
 	/**
 	 * Provides headers configuration, for AppTableCard:
-	 * Interactive select all checkbox for compare; product title, and available metric headers.
+	 * Interactive select all checkbox for compare; product/program title, and available metric headers.
 	 *
-	 * @param {Array<ProductsData>} data Products data.
+	 * @param {Array<ReportData>} reportData Report data.
 	 *
 	 * @return {import('.~/components/app-table-card').Props.headers} All headers.
 	 */
-	const getHeaders = ( data ) => [
+	const getHeaders = ( reportData ) => [
 		{
 			key: 'compare',
 			label: (
 				<CheckboxControl
-					disabled={ loading }
+					disabled={ isLoading }
 					checked={
-						loaded &&
-						data.length &&
-						selectedRows.size === data.length
+						! isLoading &&
+						reportData.length &&
+						selectedRows.size === reportData.length
 					}
 					onChange={ selectAll }
 				/>
@@ -86,39 +97,45 @@ const CompareProductsTableCard = ( {
 		},
 		{
 			key: 'title',
-			label: __( 'Product title', 'google-listings-and-ads' ),
+			label: nameHeader,
 			isLeftAligned: true,
 			required: true,
 		},
 		...metricHeaders,
 	];
 
+	const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
 	/**
-	 * Creates an array of metric data cells for {@link getRows},
+	 * Creates an array of metric cells for {@link getRows},
 	 * for a given row.
+	 * Creates a cell for every ~metric item, displays `"Unavailable"`, when the data is `null`.
 	 *
-	 * @param {ProductsData} row Row of data for products table.
+	 * @param {ProductsData} row Row of data for data table.
 	 *
 	 * @return {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
 	const renderMetricDataCells = ( row ) =>
 		metrics.map( ( metric ) => {
 			const formatFn = metric.isCurrency ? formatAmount : formatNumber;
+			const value = row.subtotals[ metric.key ];
 			return {
-				display: formatFn( row.subtotals[ metric.key ] ),
+				display:
+					value === null || value === undefined
+						? unavailable
+						: formatFn( value ),
 			};
 		} );
 	/**
 	 * Provides a rows configuration, for AppTableCard.
 	 * Maps each data row to respective cell objects ({@link module:app-table-card.Props.rows}):
-	 * checkbox to compere, product title, and available metrics cells.
+	 * checkbox to compere, product/program title, and available metrics cells.
 	 *
-	 * @param {Array<ProductsData>} data Products data.
+	 * @param {Array<ReportData>} reportData Report data.
 	 *
 	 * @return {Array<Object>} Rows config {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
-	const getRows = ( data ) =>
-		data.map( ( row ) => [
+	const getRows = ( reportData ) =>
+		reportData.map( ( row ) => [
 			// compare
 			{
 				display: (
@@ -128,9 +145,8 @@ const CompareProductsTableCard = ( {
 					/>
 				),
 			},
-			// title
-			// TODO: the product name is not yet available from API and needs to be implemented later.
-			{ display: `Product #${ row.id }` },
+			// name/title
+			{ display: nameCell( row ) },
 			// merics data
 			...renderMetricDataCells( row ),
 		] );
@@ -147,7 +163,7 @@ const CompareProductsTableCard = ( {
 	 */
 	const selectAll = ( checked ) => {
 		if ( checked ) {
-			const allIds = products.map( ( el ) => el.id );
+			const allIds = data.map( ( el ) => el.id );
 			setSelectedRows( new Set( allIds ) );
 		} else {
 			setSelectedRows( new Set() );
@@ -170,24 +186,20 @@ const CompareProductsTableCard = ( {
 
 	return (
 		<AppTableCard
-			title={ __( 'Products', 'google-listings-and-ads' ) }
 			actions={
 				<Button
 					isSecondary
-					disabled={ loading || selectedRows.size <= 1 }
-					title={ __(
-						'Select one or more products to compare',
-						'google-listings-and-ads'
-					) }
+					disabled={ isLoading || selectedRows.size <= 1 }
+					title={ compareButonTitle }
 					onClick={ compareSelected }
 				>
 					{ __( 'Compare', 'google-listings-and-ads' ) }
 				</Button>
 			}
-			isLoading={ loading }
-			headers={ getHeaders( products ) }
-			rows={ getRows( products ) }
-			totalRows={ products.length }
+			isLoading={ isLoading }
+			headers={ getHeaders( data ) }
+			rows={ getRows( data ) }
+			totalRows={ data.length }
 			rowsPerPage={ rowsPerPage }
 			query={ query }
 			compareBy={ compareBy }
@@ -199,9 +211,11 @@ const CompareProductsTableCard = ( {
 	);
 };
 
-export default CompareProductsTableCard;
+export default CompareTableCard;
 
 /**
- * @typedef {import("../index.js").Metric} Metric
- * @typedef {import("../index.js").ProductsData} ProductsData
+ * @typedef {import("./index.js").Metric} Metric
+ * @typedef {import("./index.js").ProductsData} ProductsData
+ * @typedef {import("./index.js").ProgramsData} ProgramsData
+ * @typedef {ProductsData | ProgramsData} ReportData
  */
