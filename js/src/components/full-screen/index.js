@@ -14,12 +14,14 @@ const FullScreen = ( props ) => {
 	useEffect( () => {
 		document.body.classList.add(
 			'woocommerce-admin-full-screen',
+			'is-wp-toolbar-disabled',
 			'app-full-screen'
 		);
 
 		return () => {
 			document.body.classList.remove(
 				'woocommerce-admin-full-screen',
+				'is-wp-toolbar-disabled',
 				'app-full-screen'
 			);
 		};
