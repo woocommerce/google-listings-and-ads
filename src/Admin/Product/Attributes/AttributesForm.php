@@ -70,12 +70,24 @@ class AttributesForm extends Form {
 			 */
 			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
-			if ( ! empty( $applicable_types ) ) {
-				$input['gla_wrapper_class']  = $input['gla_wrapper_class'] ?? '';
-				$input['gla_wrapper_class'] .= ' show_if_' . join( ' show_if_', $applicable_types );
+			/**
+			 * Filters the list of product types to hide the attribute for.
+			 */
+			$hidden_types = apply_filters( "gla_attribute_hidden_product_types_{$attribute_id}", [] );
 
-				$view_data['children'][ $index ] = $input;
+			$visible_types = array_diff( $applicable_types, $hidden_types );
+
+			$input['gla_wrapper_class'] = $input['gla_wrapper_class'] ?? '';
+
+			if ( ! empty( $visible_types ) ) {
+				$input['gla_wrapper_class'] .= ' show_if_' . join( ' show_if_', $visible_types );
 			}
+
+			if ( ! empty( $hidden_types ) ) {
+				$input['gla_wrapper_class'] .= ' hide_if_' . join( ' hide_if_', $hidden_types );
+			}
+
+			$view_data['children'][ $index ] = $input;
 		}
 
 		return $view_data;
