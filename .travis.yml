@@ -36,9 +36,17 @@ env:
 matrix:
   fast_finish: true
   include:
+    - name: "JS unit tests"
+      language: node_js # Takes version from `.nvmrc`, runs `npm ci` automatically.
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=jest WP_MULTISITE=0
+      script: npm run test-unit
     - name: "Coding standard check"
       php: 7.4
       env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=cs WP_MULTISITE=0
+      script: npm ci && npm run lint
+
+before_install:
+  - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer self-update --1; fi
 
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
@@ -49,13 +57,8 @@ before_script:
       echo "xdebug.ini does not exist"
     fi
   - nvm install 10
-  - composer install
+  - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer install; fi
 #  - bash tests/install/install-wp-tests.sh
 
 script:
-#  - tests/run_tests.sh
 #  - WP_MULTISITE=1 tests/run_tests.sh
-  - if [[ "${WP_TRAVISCI}" == "cs" ]]; then npm install && npm run lint; fi
-
-before_install:
-  - composer self-update --1
