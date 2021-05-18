@@ -22,7 +22,7 @@ class AttributeManager implements Service {
 	use PluginHelper;
 	use ValidateInterface;
 
-	protected const ATTRIBUTES = [
+	public const ATTRIBUTES = [
 		GTIN::class,
 		MPN::class,
 		Brand::class,
