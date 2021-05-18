@@ -48,7 +48,6 @@ addFilter(
 			...pages,
 			{
 				breadcrumbs: [ ...initialBreadcrumbs ],
-				title: __( 'Google Listings & Ads', 'google-listings-and-ads' ),
 				container: GetStartedPage,
 				path: '/google/start',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -77,7 +76,6 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Dashboard', 'google-listings-and-ads' ),
 				],
-				title: __( 'Dashboard', 'google-listings-and-ads' ),
 				container: Dashboard,
 				path: '/google/dashboard',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -90,7 +88,6 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Edit Free Listings', 'google-listings-and-ads' ),
 				],
-				title: __( 'Edit Free Listings', 'google-listings-and-ads' ),
 				container: EditFreeCampaign,
 				path: '/google/edit-free-campaign',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -100,10 +97,6 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Edit Paid Ads Campaign', 'google-listings-and-ads' ),
 				],
-				title: __(
-					'Edit Paid Ads Campaign',
-					'google-listings-and-ads'
-				),
 				container: EditPaidAdsCampaign,
 				path: '/google/campaigns/edit',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -116,10 +109,6 @@ addFilter(
 						'google-listings-and-ads'
 					),
 				],
-				title: __(
-					'Create your free campaign',
-					'google-listings-and-ads'
-				),
 				container: CreatePaidAdsCampaign,
 				path: '/google/campaigns/create',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -129,7 +118,6 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Programs Report', 'google-listings-and-ads' ),
 				],
-				title: __( 'Programs Report', 'google-listings-and-ads' ),
 				container: ProgramsReport,
 				path: '/google/reports/programs',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -139,7 +127,6 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Products Report', 'google-listings-and-ads' ),
 				],
-				title: __( 'Products Report', 'google-listings-and-ads' ),
 				container: ProductsReport,
 				path: '/google/reports/products',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -149,7 +136,6 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Product Feed', 'google-listings-and-ads' ),
 				],
-				title: __( 'Product Feed', 'google-listings-and-ads' ),
 				container: ProductFeed,
 				path: '/google/product-feed',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
@@ -162,7 +148,6 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Settings', 'google-listings-and-ads' ),
 				],
-				title: __( 'Settings', 'google-listings-and-ads' ),
 				container: Settings,
 				path: '/google/settings',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
