@@ -3,31 +3,31 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
+use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\Notes;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use WC_Data_Store;
 
 /**
- * Class CompleteSetup
+ * Class SetupCampaignTwoWeeks
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwareInterface, MerchantCenterAwareInterface {
+class SetupCampaignTwoWeeks implements Deactivateable, Service, Registerable, OptionsAwareInterface, AdsAwareInterface {
 
-	use MerchantCenterAwareTrait;
-	use OptionsAwareTrait;
+	use AdsAwareTrait;
 	use PluginHelper;
 	use Utilities;
 
-	public const NOTE_NAME = 'gla-complete-setup';
+	public const NOTE_NAME = 'gla-setup-campaign-two-weeks';
 
 	/**
 	 * Register a service.
@@ -50,8 +50,8 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		}
 
 		$note = new Note();
-		$note->set_title( __( 'Complete your setup on Google', 'google-listings-and-ads' ) );
-		$note->set_content( __( 'Finish setting up Google Listings & Ads to list your products on Google for free and promote them with paid ads.', 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Launch your first ad in a few steps', 'google-listings-and-ads' ) );
+		$note->set_content( __( 'You’re just a few steps away from reaching new shoppers across Google. Create your first paid ad campaign today.', 'google-listings-and-ads' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
@@ -59,9 +59,9 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 		$note->set_name( self::NOTE_NAME );
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
-			'complete-setup',
-			__( 'Finish setup', 'google-listings-and-ads' ),
-			$this->get_start_url()
+			'setup-campaign',
+			__( 'Get started', 'google-listings-and-ads' ),
+			$this->get_setup_ads_url()
 		);
 		$note->save();
 	}
@@ -69,30 +69,30 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 	/**
 	 * Checks if a note can and should be added.
 	 *
-	 * Check if a stores done 5 sales
-	 * Check if setup IS NOT complete
-	 * Check if it is > 3 days ago from DATE OF START OF SETUP (installation date)
+	 * Check if ads setup IS NOT complete
+	 * Check if it is > 14 days ago from DATE OF SETUP COMPLETION
 	 * Send notification
 	 *
 	 * @return bool
 	 */
 	public function can_add_note(): bool {
-		if ( ! class_exists( '\WC_Data_Store' ) ) {
+		if ( ! class_exists( WC_Data_Store::class ) ) {
 			return false;
 		}
 
-		$data_store = \WC_Data_Store::load( 'admin-note' );
+		/** @var DataStore $data_store */
+		$data_store = WC_Data_Store::load( 'admin-note' );
 		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
 
 		if ( ! empty( $note_ids ) ) {
 			return false;
 		}
 
-		if ( $this->merchant_center->is_setup_complete() ) {
+		if ( $this->ads_service->is_setup_complete() ) {
 			return false;
 		}
 
-		if ( ! $this->has_orders( 5 ) ) {
+		if ( ! $this->gla_setup_for( 14 * DAY_IN_SECONDS ) ) {
 			return false;
 		}
 
@@ -105,7 +105,7 @@ class CompleteSetup implements Deactivateable, Service, Registerable, OptionsAwa
 	 * @return void
 	 */
 	public function deactivate(): void {
-		if ( ! class_exists( 'Automattic\WooCommerce\Admin\Notes\Notes' ) ) {
+		if ( ! class_exists( Notes::class ) ) {
 			return;
 		}
 

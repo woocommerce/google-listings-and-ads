@@ -6,12 +6,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 use Automattic\WooCommerce\Admin\Notes\DataStore;
 use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\Notes;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WC_Data_Store;
@@ -21,13 +21,13 @@ use WC_Data_Store;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwareInterface, MerchantCenterAwareInterface {
+class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwareInterface, AdsAwareInterface {
 
-	use MerchantCenterAwareTrait;
+	use AdsAwareTrait;
 	use PluginHelper;
 	use Utilities;
 
-	public const NOTE_NAME = 'gla-setup-campaign-2021-02';
+	public const NOTE_NAME = 'gla-setup-campaign';
 
 	/**
 	 * Register a service.
@@ -43,8 +43,6 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 
 	/**
 	 * Possibly add the note
-	 *
-	 * @return Note
 	 */
 	public function possibly_add_note(): void {
 		if ( ! $this->can_add_note() ) {
@@ -52,7 +50,7 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 		}
 
 		$note = new Note();
-		$note->set_title( __( 'Boost store sales with Google Ads', 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Create your first campaign to boost sales', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Leverage the power of paid ads to list products on Google Search, Shopping, YouTube, Gmail and the Display Network and drive sales.', 'google-listings-and-ads' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
@@ -63,7 +61,7 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 		$note->add_action(
 			'setup-campaign',
 			__( 'Get started', 'google-listings-and-ads' ),
-			$this->get_start_url() // TODO: update to ads/campgaign flow
+			$this->get_setup_ads_url()
 		);
 		$note->save();
 	}
@@ -71,12 +69,11 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 	/**
 	 * Checks if a note can and should be added.
 	 *
-	 * Check if a stores done 5 sales
-	 * Check if setup IS complete
+	 * Check if ads setup IS NOT complete
 	 * Check if it is > 3 days ago from DATE OF SETUP COMPLETION
 	 * Send notification
 	 *
-	 * @return Note
+	 * @return bool
 	 */
 	public function can_add_note(): bool {
 		if ( ! class_exists( WC_Data_Store::class ) ) {
@@ -91,15 +88,11 @@ class SetupCampaign implements Deactivateable, Service, Registerable, OptionsAwa
 			return false;
 		}
 
-		if ( ! $this->merchant_center->is_setup_complete() ) {
+		if ( $this->ads_service->is_setup_complete() ) {
 			return false;
 		}
 
 		if ( ! $this->gla_setup_for( 3 * DAY_IN_SECONDS ) ) {
-			return false;
-		}
-
-		if ( ! $this->has_orders( 5 ) ) {
 			return false;
 		}
 

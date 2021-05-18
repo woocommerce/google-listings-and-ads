@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\AttributesTab;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
@@ -41,6 +42,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -106,6 +108,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SetupAds::class               => true,
 		SetupMerchantCenter::class    => true,
 		SetupCampaignNote::class      => true,
+		SetupCampaign2Note::class     => true,
 		TrackerSnapshot::class        => true,
 		Tracks::class                 => true,
 		TracksInterface::class        => true,
@@ -160,7 +163,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			->inflector( MerchantCenterAwareInterface::class )
 			->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
-		$this->share_with_tags( AdsService::class, OptionsInterface::class );
+		// Set up Ads service, and inflect classes that need it.
+		$this->share_with_tags( AdsService::class );
+		$this->getLeagueContainer()
+			->inflector( AdsAwareInterface::class )
+			->invokeMethod( 'set_ads_object', [ AdsService::class ] );
 
 		// Set up the installer.
 		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
@@ -202,6 +209,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Inbox Notes
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
+		$this->conditionally_share_with_tags( SetupCampaign2Note::class );
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );

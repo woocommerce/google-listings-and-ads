@@ -109,6 +109,15 @@ trait PluginHelper {
 	}
 
 	/**
+	 * Get the URL to connect an Ads account
+	 *
+	 * @return string
+	 */
+	protected function get_setup_ads_url(): string {
+		return admin_url( 'admin.php?page=wc-admin&path=/google/setup-ads' );
+	}
+
+	/**
 	 * Get the plugin settings URL
 	 *
 	 * @return string
