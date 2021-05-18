@@ -55,8 +55,8 @@ export function getReportQuery( category, type, query, dateReference ) {
 		order,
 	};
 
-	if ( category === 'programs' ) {
-		// TODO: append `ids` for filtering by programs
+	if ( category === 'programs' && query.programs ) {
+		reportQuery.ids = query.programs;
 	} else if ( category === 'products' && query.products ) {
 		reportQuery.ids = query.products.replace( /\d+/g, 'gla_$&' );
 	}
