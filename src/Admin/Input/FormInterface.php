@@ -73,12 +73,31 @@ interface FormInterface {
 	public function get_children(): array;
 
 	/**
+	 * Add a child form.
+	 *
 	 * @param FormInterface $form
-	 * @param string|null   $name
 	 *
 	 * @return FormInterface
 	 */
-	public function add( FormInterface $form, ?string $name = null ): FormInterface;
+	public function add( FormInterface $form ): FormInterface;
+
+	/**
+	 * Remove a child with the given name from the form's children.
+	 *
+	 * @param string $name
+	 *
+	 * @return FormInterface
+	 */
+	public function remove( string $name ): FormInterface;
+
+	/**
+	 * Whether the form contains a child with the given name.
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	public function has( string $name ): bool;
 
 	/**
 	 * @param FormInterface|null $form

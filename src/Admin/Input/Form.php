@@ -76,38 +76,44 @@ class Form implements FormInterface {
 	}
 
 	/**
+	 * Add a child form.
+	 *
 	 * @param FormInterface $form
-	 * @param string|null   $name
 	 *
 	 * @return FormInterface
 	 */
-	public function add( FormInterface $form, ?string $name = null ): FormInterface {
-		if ( null !== $name ) {
-			$form->set_name( $name );
-		}
-
-		if ( ! empty( $form->get_name() ) ) {
-			$this->children[ $form->get_name() ] = $form;
-		} else {
-			$this->children[] = $form;
-		}
-
+	public function add( FormInterface $form ): FormInterface {
+		$this->children[ $form->get_name() ] = $form;
 		$form->set_parent( $this );
 
 		return $this;
 	}
 
 	/**
+	 * Remove a child with the given name from the form's children.
+	 *
 	 * @param string $name
 	 *
 	 * @return FormInterface
 	 */
 	public function remove( string $name ): FormInterface {
 		if ( isset( $this->children[ $name ] ) ) {
+			$this->children[ $name ]->set_parent( null );
 			unset( $this->children[ $name ] );
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Whether the form contains a child with the given name.
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	public function has( string $name ): bool {
+		return isset( $this->children[ $name ] );
 	}
 
 	/**

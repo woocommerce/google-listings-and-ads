@@ -167,7 +167,7 @@ class AttributesForm extends Form {
 		$attribute_input = $this->init_input( new $input_type(), $attribute );
 
 		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
-		$this->add( $attribute_input, $attribute_id );
+		$this->add( $attribute_input );
 
 		$this->attribute_types[ $attribute_id ] = $attribute_type;
 
@@ -187,9 +187,7 @@ class AttributesForm extends Form {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
 
 		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
-		if ( $this->contains_attribute( $attribute_type ) ) {
-			unset( $this->attribute_types[ $attribute_id ] );
-		}
+		unset( $this->attribute_types[ $attribute_id ] );
 		$this->remove( $attribute_id );
 
 		return $this;
@@ -207,25 +205,11 @@ class AttributesForm extends Form {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
 		$this->validate_interface( $input_type, InputInterface::class );
 
-		if ( $this->contains_attribute( $attribute_type ) ) {
-			$this->remove_attribute( $attribute_type );
-			$this->add_attribute( $attribute_type, $input_type );
+		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
+		if ( $this->has( $attribute_id ) ) {
+			$this->children[ $attribute_id ] = $this->init_input( new $input_type(), new $attribute_type() );
 		}
 
 		return $this;
-	}
-
-	/**
-	 * Whether the form contains the given attribute type.
-	 *
-	 * @param string $attribute_type
-	 *
-	 * @return bool
-	 */
-	public function contains_attribute( string $attribute_type ): bool {
-		$this->validate_interface( $attribute_type, AttributeInterface::class );
-		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
-
-		return isset( $this->attribute_types[ $attribute_id ] );
 	}
 }

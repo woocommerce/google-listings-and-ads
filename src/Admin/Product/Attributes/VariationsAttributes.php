@@ -118,10 +118,11 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 	protected function get_form( WC_Product_Variation $variation, int $variation_index ): Form {
 		$attribute_types = $this->attribute_manager->get_attribute_types_for_product( $variation );
 		$attribute_form  = new AttributesForm( $attribute_types );
+		$attribute_form->set_name( (string) $variation_index );
 
 		$form = new Form();
 		$form->set_name( 'variation_attributes' )
-			 ->add( $attribute_form, (string) $variation_index )
+			 ->add( $attribute_form )
 			 ->set_data( [ (string) $variation_index => $this->attribute_manager->get_all_values( $variation ) ] );
 
 		return $form;
