@@ -595,6 +595,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$metadata->addPropertyConstraint( 'adult', new Assert\Type( 'boolean' ) );
 
 		$metadata->addPropertyConstraint( 'condition', new Assert\Choice( array_keys( Condition::get_value_options() ) ) );
+		$metadata->addPropertyConstraint( 'isBundle', new Assert\Type( 'boolean' ) );
 	}
 
 	/**
