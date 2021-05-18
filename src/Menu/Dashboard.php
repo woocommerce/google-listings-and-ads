@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
-use Automattic\WooCommerce\Admin\Features\Navigation\Menu;
 use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -38,49 +37,34 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		add_action(
 			'admin_menu',
 			function() {
-				$this->fix_menu_paths();
-
-				if (
-					method_exists( Menu::class, 'add_plugin_item' ) &&
-					method_exists( Menu::class, 'add_plugin_category' ) &&
-					Features::is_enabled( 'navigation' )
-				) {
-					Menu::add_plugin_category(
+				if ( ! Features::is_enabled( 'navigation' ) ) {
+					$this->fix_menu_paths();
+				} else {
+					wc_admin_register_page(
 						[
-							'id'         => 'google-listings-and-ads-category',
-							'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-							'parent'     => 'woocommerce',
-							'capability' => 'manage_woocommerce',
+							'id'       => 'google-listings-and-ads-category',
+							'title'    => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+							'parent'   => 'woocommerce',
+							'path'     => '/google/dashboard',
+							'nav_args' => [
+								'title'        => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+								'is_category'  => true,
+								'menuId'       => 'plugins',
+								'is_top_level' => true,
+							],
 						]
 					);
 
-					Menu::add_plugin_item(
+					wc_admin_register_page(
 						[
-							'id'         => 'google-dashboard',
-							'title'      => __( 'Dashboard', 'google-listings-and-ads' ),
-							'capability' => 'manage_woocommerce',
-							'url'        => 'wc-admin&path=/google/dashboard',
-							'parent'     => 'google-listings-and-ads-category',
-						]
-					);
-
-					Menu::add_plugin_item(
-						[
-							'id'         => 'google-product-feed',
-							'title'      => __( 'Product Feed', 'google-listings-and-ads' ),
-							'capability' => 'manage_woocommerce',
-							'url'        => 'wc-admin&path=/google/product-feed',
-							'parent'     => 'google-listings-and-ads-category',
-						]
-					);
-
-					Menu::add_plugin_item(
-						[
-							'id'         => 'google-settings',
-							'title'      => __( 'Settings', 'google-listings-and-ads' ),
-							'capability' => 'manage_woocommerce',
-							'url'        => 'wc-admin&path=/google/settings',
-							'parent'     => 'google-listings-and-ads-category',
+							'id'       => 'google-dashboard',
+							'title'    => __( 'Dashboard', 'google-listings-and-ads' ),
+							'parent'   => 'google-listings-and-ads-category',
+							'path'     => '/google/dashboard',
+							'nav_args' => [
+								'order'  => 10,
+								'parent' => 'google-listings-and-ads-category',
+							],
 						]
 					);
 				}
@@ -89,19 +73,21 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 	}
 
 	/**
-	 * Add Google Menu item under Marketing
+	 * Add Google Menu item under Marketing, when WC Navigation is not enabled.
 	 *
 	 * @param array $items
 	 *
 	 * @return array
 	 */
 	protected function add_items( array $items ): array {
-		$items[] = [
-			'id'         => 'google-dashboard',
-			'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-			'path'       => '/google/dashboard',
-			'capability' => 'manage_woocommerce',
-		];
+		if ( ! Features::is_enabled( 'navigation' ) ) {
+			$items[] = [
+				'id'         => 'google-dashboard',
+				'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				'path'       => '/google/dashboard',
+				'capability' => 'manage_woocommerce',
+			];
+		}
 
 		return $items;
 	}
