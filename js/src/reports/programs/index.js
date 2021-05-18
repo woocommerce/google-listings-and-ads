@@ -8,6 +8,7 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import TabNav from '../../tab-nav';
 import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
@@ -47,6 +48,8 @@ const performanceMetrics = [
 ];
 
 const ProgramsReport = () => {
+	const navigationEnabled = isWCNavigationEnabled();
+
 	// TODO: this data should come from backend API.
 	const totals = metricsData();
 
@@ -112,7 +115,7 @@ const ProgramsReport = () => {
 
 	return (
 		<div className="gla-dashboard">
-			<TabNav initialName="reports" />
+			{ ! navigationEnabled && <TabNav initialName="reports" /> }
 			<SubNav initialName="programs" />
 
 			<ProgramsReportFilters query={ getQuery() } report={ reportId } />

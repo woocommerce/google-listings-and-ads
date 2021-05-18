@@ -22,6 +22,7 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 import SubNav from '../sub-nav';
+import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 
 /**
  * Available metrics and their human-readable labels.
@@ -112,10 +113,11 @@ const ProductsReportPage = () => {
 	const { loaded, data: campaigns } = useAdsCampaigns();
 	const hasPaidSource =
 		loaded && campaigns.some( ( { status } ) => status === 'enabled' );
+	const navigationEnabled = isWCNavigationEnabled();
 
 	return (
 		<>
-			<TabNav initialName="reports" />
+			{ ! navigationEnabled && <TabNav initialName="reports" /> }
 			<SubNav initialName="products" />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />

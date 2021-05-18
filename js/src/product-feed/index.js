@@ -8,11 +8,14 @@ import SubmissionSuccessGuide from './submission-success-guide';
 import ProductStatistics from './product-statistics';
 import ComingSoonNotice from './coming-soon-notice';
 import './index.scss';
+import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 
 const ProductFeed = () => {
+	const navigationEnabled = isWCNavigationEnabled();
+
 	return (
 		<>
-			<TabNav initialName="product-feed" />
+			{ ! navigationEnabled && <TabNav initialName="product-feed" /> }
 			<SubmissionSuccessGuide />
 			<ComingSoonNotice />
 			<div className="gla-product-feed">

@@ -14,11 +14,14 @@ import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
 import { glaData } from '.~/constants';
+import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import './index.scss';
 
 const Dashboard = () => {
 	const trackEventReportId = 'dashboard';
 	const { enableReports } = glaData;
+	const navigationEnabled = isWCNavigationEnabled();
+
 	const ReportsLink = () => {
 		return (
 			<Link href={ getNewPath( null, '/google/reports/programs' ) }>
@@ -29,7 +32,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="gla-dashboard">
-			<TabNav initialName="dashboard" />
+			{ ! navigationEnabled && <TabNav initialName="dashboard" /> }
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }
