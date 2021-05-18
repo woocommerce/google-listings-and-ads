@@ -488,9 +488,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @param WC_Product $product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	protected function get_wc_product_sale_price_effective_date( WC_Product $product ): string {
+	protected function get_wc_product_sale_price_effective_date( WC_Product $product ): ?string {
 		$start_date = $product->get_date_on_sale_from();
 		$end_date   = $product->get_date_on_sale_to();
 
@@ -516,6 +516,10 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		) {
 			$end_date = clone $start_date;
 			$end_date->add( new DateInterval( 'P1D' ) );
+		}
+
+		if ( empty( $start_date ) && empty( $end_date ) ) {
+			return null;
 		}
 
 		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
