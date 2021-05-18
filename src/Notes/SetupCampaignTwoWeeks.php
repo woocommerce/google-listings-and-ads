@@ -43,8 +43,6 @@ class SetupCampaignTwoWeeks implements Deactivateable, Service, Registerable, Op
 
 	/**
 	 * Possibly add the note
-	 *
-	 * @return Note
 	 */
 	public function possibly_add_note(): void {
 		if ( ! $this->can_add_note() ) {
@@ -75,7 +73,7 @@ class SetupCampaignTwoWeeks implements Deactivateable, Service, Registerable, Op
 	 * Check if it is > 14 days ago from DATE OF SETUP COMPLETION
 	 * Send notification
 	 *
-	 * @return Note
+	 * @return bool
 	 */
 	public function can_add_note(): bool {
 		if ( ! class_exists( WC_Data_Store::class ) ) {
