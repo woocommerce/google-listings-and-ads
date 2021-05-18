@@ -422,6 +422,15 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 				wc_get_price_excluding_tax( $product, [ 'price' => $regular_price ] ) :
 				wc_get_price_including_tax( $product, [ 'price' => $regular_price ] );
 
+			/**
+			 * Filters the calculated product price.
+			 *
+			 * @param float      $price   Calculated price of the product
+			 * @param WC_Product $product WooCommerce product
+			 * @param bool       $tax_excluded Whether tax is excluded from product price
+			 */
+			$price = apply_filters( 'gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
+
 			$this->setPrice(
 				new Google_Service_ShoppingContent_Price(
 					[
@@ -462,6 +471,15 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$sale_price = $this->tax_excluded ?
 				wc_get_price_excluding_tax( $product, [ 'price' => $sale_price ] ) :
 				wc_get_price_including_tax( $product, [ 'price' => $sale_price ] );
+
+			/**
+			 * Filters the calculated product sale price.
+			 *
+			 * @param float      $sale_price   Calculated sale price of the product
+			 * @param WC_Product $product      WooCommerce product
+			 * @param bool       $tax_excluded Whether tax is excluded from product price
+			 */
+			$sale_price = apply_filters( 'gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
 
 			// If the sale price dates no longer apply, make sure we don't include a sale price.
 			$now                 = new WC_DateTime();
