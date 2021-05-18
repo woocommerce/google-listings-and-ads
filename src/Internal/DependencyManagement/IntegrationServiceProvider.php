@@ -8,7 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\IntegrationInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\IntegrationInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WooCommerceBrands;
+use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WooCommerceProductBundles;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\YoastWooCommerceSeo;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
@@ -39,6 +41,7 @@ class IntegrationServiceProvider extends AbstractServiceProvider {
 	public function register(): void {
 		$this->share_with_tags( YoastWooCommerceSeo::class );
 		$this->share_with_tags( WooCommerceBrands::class, WP::class );
+		$this->share_with_tags( WooCommerceProductBundles::class, AttributeManager::class );
 
 		$this->share_with_tags(
 			IntegrationInitializer::class,
