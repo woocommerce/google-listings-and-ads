@@ -27,6 +27,11 @@ const GUIDE_NAME = 'submission-success';
 const EVENT_NAME = 'gla_modal_closed';
 const CONFIRM_BUTTON_CLASS = 'components-guide__finish-button';
 
+const productFeedPath = getNewPath(
+	{ guide: undefined },
+	'/google/product-feed'
+);
+
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
 		<div className="gla-submission-success-guide__logo-item">
@@ -45,20 +50,30 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					'You have successfully set up Google Listings & Ads!',
+					'You have successfully set up Google Listings & Ads! 🎉',
 					'google-listings-and-ads'
 				) }
 			>
 				<p>
 					{ __(
-						'You can review and edit your product feed at any time on this page. We will also notify you of any product feed issues to ensure your products get approved and perform well on Google.',
+						'Google reviews product listings in 3-5 days. If approved, your products will automatically be live and searchable on Google.',
 						'google-listings-and-ads'
 					) }
 				</p>
 				<p>
-					{ __(
-						'Google reviews product listings in 3-5 days. If approved, your products will automatically be live and searchable on Google.',
-						'google-listings-and-ads'
+					{ createInterpolateElement(
+						__(
+							'<productFeedLink>Manage and edit your product feed in WooCommerce.</productFeedLink> We will also notify you of any product feed issues to ensure your products get approved and perform well on Google.',
+							'google-listings-and-ads'
+						),
+						{
+							productFeedLink: (
+								<ContentLink
+									href={ productFeedPath }
+									context="product-feed"
+								/>
+							),
+						}
 					) }
 				</p>
 			</GuidePageContent>
@@ -69,43 +84,55 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					`You've been automatically enrolled in Google's Free Listings program.`,
+					'Boost listings with up to $150 free ad credits',
 					'google-listings-and-ads'
 				) }
 			>
-				{ createInterpolateElement(
-					__(
-						'Once approved, your products will be listed as part of a free program, <freeListingsLink>Google Free Listings</freeListingsLink>. You can opt out of this program in <merchantCenterLink>Google Merchant Center</merchantCenterLink>.',
+				<p>
+					{ createInterpolateElement(
+						__(
+							'Give your products a boost and create a paid <link>Smart Shopping campaign</link>! Your ads will run once your products are approved by Google.',
+							'google-listings-and-ads'
+						),
+						{
+							link: (
+								<ContentLink
+									href="https://support.google.com/google-ads/answer/7674739"
+									context="about-smart-shopping-campaigns"
+								/>
+							),
+						}
+					) }
+				</p>
+				<p>
+					{ __(
+						'Get up to $150* in free ad credit for if you’re new to Google Ads. You can edit or cancel your campaign at any time.',
 						'google-listings-and-ads'
-					),
-					{
-						// TODO: The free listings link will be added when its URL is ready
-						freeListingsLink: (
-							<ContentLink
-								href="/"
-								context="setup-mc-free-listings"
-							/>
+					) }
+				</p>
+				<cite>
+					{ createInterpolateElement(
+						__(
+							'*Ad credit amounts vary by country and region. Eligibility criteria: The account has no other promotions applied. The account is billed to a country where Google Partners promotions are offered. The account served its first ad impression within the last 14 days. Review the static terms <link>here</link>.',
+							'google-listings-and-ads'
 						),
-						merchantCenterLink: (
-							<ContentLink
-								href="https://www.google.com/retail/solutions/merchant-center/"
-								context="setup-mc-merchant-center"
-							/>
-						),
-					}
-				) }
+						{
+							link: (
+								<ContentLink
+									href="https://www.google.com/ads/coupons/terms.html"
+									context="terms-of-ads-coupons"
+								/>
+							),
+						}
+					) }
+				</cite>
 			</GuidePageContent>
 		),
 	},
 ];
 
 const handleGuideFinish = ( e ) => {
-	const nextQuery = {
-		...getQuery(),
-		guide: undefined,
-	};
-	const path = getNewPath( nextQuery );
-	getHistory().replace( path );
+	getHistory().replace( productFeedPath );
 
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
 	// here is a workaround by identifying the close button's class name.
@@ -156,6 +183,7 @@ const GuideImplementation = () => {
 	return (
 		<Guide
 			className="gla-submission-success-guide"
+			backButtonText={ __( 'Back', 'google-listings-and-ads' ) }
 			pages={ pages }
 			renderFinish={ renderFinish }
 			onFinish={ handleGuideFinish }

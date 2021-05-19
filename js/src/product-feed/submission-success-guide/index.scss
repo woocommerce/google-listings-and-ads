@@ -3,7 +3,7 @@
 		height: auto;
 		@include break-small() {
 			max-width: 517px;
-			height: 556px;
+			max-height: none;
 		}
 	}
 
@@ -59,7 +59,7 @@
 			justify-content: flex-end;
 			width: 100%;
 			height: auto;
-			margin: 0;
+			margin: calc(var(--large-gap) / 2) 0 0;
 			padding: 0 $grid-unit-30 $grid-unit-30;
 			box-sizing: border-box;
 
