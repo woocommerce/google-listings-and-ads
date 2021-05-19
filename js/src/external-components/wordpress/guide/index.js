@@ -34,6 +34,7 @@ import FinishButton from './finish-button';
  * @param {string} [props.className] A custom class to add to the modal.
  * @param {string} props.contentLabel This property is used as the modal's accessibility label.
  *                                    It is required for accessibility reasons.
+ * @param {string} [props.backButtonText] Use this to customize the label of the *Previous* button shown at the end of the guide.
  * @param {string} [props.finishButtonText] Use this to customize the label of the *Finish* button shown at the end of the guide.
  * @param {renderFinishCallback} [props.renderFinish] A function for rendering custom finish block shown at the end of the guide.
  * @param {Function} props.onFinish A function which is called when the guide is finished.
@@ -45,6 +46,7 @@ import FinishButton from './finish-button';
 export default function Guide( {
 	className,
 	contentLabel,
+	backButtonText,
 	finishButtonText,
 	renderFinish = ( finishButton ) => finishButton,
 	onFinish,
@@ -119,7 +121,7 @@ export default function Guide( {
 							className="components-guide__back-button"
 							onClick={ goBack }
 						>
-							{ __( 'Previous' ) }
+							{ backButtonText || __( 'Previous' ) }
 						</Button>
 					) }
 					{ canGoForward && (
