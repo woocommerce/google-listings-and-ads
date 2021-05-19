@@ -68,17 +68,14 @@ const ProgramsReport = () => {
 
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
-	const availableMetrics =
-		totals &&
-		performanceMetrics.filter( ( { key } ) =>
-			totals.hasOwnProperty( key )
-		);
+	const availableMetrics = performanceMetrics.filter( ( { key } ) =>
+		totals.hasOwnProperty( key )
+	);
 
 	// Anticipate all to come, show all column headers if the data is still being loaded.
-	const expectedTableMetrics =
-		loaded && totals
-			? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
-			: tableMetrics;
+	const expectedTableMetrics = loaded
+		? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
+		: tableMetrics;
 
 	return (
 		<div className="gla-dashboard">
