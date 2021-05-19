@@ -1,25 +1,10 @@
 {
-	"campaigns": [
+	"free_listings": [
 		{
-			"id": 123,
-			"name": "One",
-			"status": "enabled",
+			"type": "foo",
 			"subtotals": {
-				"sales": 11,
-				"spend": 63.14,
 				"clicks": 139,
 				"impressions": 16037
-			}
-		},
-		{
-			"id": 234,
-			"name": "Two",
-			"status": "enabled",
-			"subtotals": {
-				"sales": 0,
-				"spend": 9.87,
-				"clicks": 15,
-				"impressions": 901
 			}
 		}
 	],

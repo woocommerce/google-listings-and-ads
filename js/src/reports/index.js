@@ -46,6 +46,12 @@ export { default as ProductsReport } from './products';
 /**
  * @typedef {Object} ProgramsData
  * @property {number} id ProgramId
+ * @property {string} name Program's name.
+ * @property {TotalsData} subtotals Performance data.
+ */
+
+/**
+ * @typedef {Object} FreeListingsData
  * @property {TotalsData} subtotals Performance data.
  */
 
