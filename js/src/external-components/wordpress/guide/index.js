@@ -19,12 +19,28 @@ import { Modal, KeyboardShortcuts, Button } from '@wordpress/components';
 import PageControl from './page-control';
 import FinishButton from './finish-button';
 
+/**
+ * `Guide` is a React component that renders a user guide in a modal.
+ * The guide consists of several pages which the user can step through one by one.
+ * The guide is finished when the modal is closed or when the user clicks *Finish* on the last page of the guide.
+ *
+ * @param {Object} props React props.
+ * @param {string} [props.className] A custom class to add to the modal.
+ * @param {string} props.contentLabel This property is used as the modal's accessibility label.
+ *                                    It is required for accessibility reasons.
+ * @param {string} [props.finishButtonText] Use this to customize the label of the *Finish* button shown at the end of the guide.
+ * @param {Function} props.onFinish A function which is called when the guide is finished.
+ *                                  The guide is finished when the modal is closed
+ *                                  or when the user clicks *Finish* on the last page of the guide.
+ * @param {Array<Object>} props.pages A list of objects describing each page in the guide.
+ *                                    Each object must contain a 'content' property and may optionally contain a 'image' property.
+ */
 export default function Guide( {
 	className,
 	contentLabel,
 	finishButtonText,
 	onFinish,
-	pages = [],
+	pages,
 } ) {
 	const [ currentPage, setCurrentPage ] = useState( 0 );
 
