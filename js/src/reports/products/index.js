@@ -23,6 +23,7 @@ import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 import SubNav from '../sub-nav';
 import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
+import ReportsTabNav from '../reports-tab-nav';
 
 /**
  * Available metrics and their human-readable labels.
@@ -117,8 +118,14 @@ const ProductsReportPage = () => {
 
 	return (
 		<>
-			{ ! navigationEnabled && <MainTabNav /> }
-			<SubNav initialName="products" />
+			{ navigationEnabled ? (
+				<ReportsTabNav />
+			) : (
+				<>
+					<MainTabNav />
+					<SubNav initialName="products" />
+				</>
+			) }
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />
 			) : (

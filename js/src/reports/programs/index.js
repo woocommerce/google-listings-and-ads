@@ -16,6 +16,7 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import '../../dashboard/index.scss';
+import ReportsTabNav from '../reports-tab-nav';
 
 /**
  * Available metrics and their human-readable labels.
@@ -65,9 +66,14 @@ const ProgramsReport = () => {
 
 	return (
 		<div className="gla-dashboard">
-			{ ! navigationEnabled && <MainTabNav /> }
-			<SubNav initialName="programs" />
-
+			{ navigationEnabled ? (
+				<ReportsTabNav />
+			) : (
+				<>
+					<MainTabNav />
+					<SubNav initialName="programs" />
+				</>
+			) }
 			<ProgramsReportFilters query={ getQuery() } report={ reportId } />
 			<div className="gla-reports__performance">
 				<SummarySection
