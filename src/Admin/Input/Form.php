@@ -81,8 +81,14 @@ class Form implements FormInterface {
 	 * @param FormInterface $form
 	 *
 	 * @return FormInterface
+	 *
+	 * @throws FormException If form is already submitted.
 	 */
 	public function add( FormInterface $form ): FormInterface {
+		if ( $this->is_submitted ) {
+			throw FormException::cannot_modify_submitted();
+		}
+
 		$this->children[ $form->get_name() ] = $form;
 		$form->set_parent( $this );
 
@@ -95,8 +101,14 @@ class Form implements FormInterface {
 	 * @param string $name
 	 *
 	 * @return FormInterface
+	 *
+	 * @throws FormException If form is already submitted.
 	 */
 	public function remove( string $name ): FormInterface {
+		if ( $this->is_submitted ) {
+			throw FormException::cannot_modify_submitted();
+		}
+
 		if ( isset( $this->children[ $name ] ) ) {
 			$this->children[ $name ]->set_parent( null );
 			unset( $this->children[ $name ] );

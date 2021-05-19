@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\BooleanSelect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Decimal;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\FormException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Integer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
@@ -166,7 +167,8 @@ class AttributesForm extends Form {
 	 *
 	 * @return AttributesForm
 	 *
-	 * @throws InvalidValue If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 * @throws InvalidValue  If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 * @throws FormException If form is already submitted.
 	 */
 	public function add_attribute( string $attribute_type, ?string $input_type = null ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
@@ -196,7 +198,8 @@ class AttributesForm extends Form {
 	 *
 	 * @return AttributesForm
 	 *
-	 * @throws InvalidValue If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 * @throws InvalidValue  If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 * @throws FormException If form is already submitted.
 	 */
 	public function remove_attribute( string $attribute_type ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
@@ -215,8 +218,14 @@ class AttributesForm extends Form {
 	 * @param string $input_type
 	 *
 	 * @return $this
+	 *
+	 * @throws FormException If form is already submitted.
 	 */
 	public function set_attribute_input( string $attribute_type, string $input_type ): AttributesForm {
+		if ( $this->is_submitted ) {
+			throw FormException::cannot_modify_submitted();
+		}
+
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
 		$this->validate_interface( $input_type, InputInterface::class );
 
