@@ -22,4 +22,35 @@
 			}
 		}
 	}
+
+	// the following is only applicable when WC Navigation is enabled
+	// and the page is on a large screen with .is-wc-nav-expanded applied.
+	&.has-woocommerce-navigation.is-wc-nav-expanded {
+
+		// #wpbody has an *inline style* margin-top: 60px
+		// that is applied programmatically on large screen.
+		// we "undo" workaround it by specifying margin-top: -60px
+		// in the child #wpbody-content.
+		#wpbody {
+			#wpbody-content {
+				margin-top: -60px;
+			}
+		}
+
+		.woocommerce-layout__header {
+			// WC Navigation lies inside woocommerce-layout__header,
+			// so we need to display this.
+			display: block;
+
+			// width of the WC Navigation sidebar.
+			width: 240px;
+
+			// only display the top left WC navigation,
+			// do not display the h1 page title element
+			// and the top right activity panel.
+			&-wrapper > *:not(.woocommerce-navigation) {
+				display: none;
+			}
+		}
+	}
 }
