@@ -3,24 +3,6 @@
  */
 import { getReportQuery, freeFields, paidFields } from './utils';
 
-// Needed as wc-admin breaks tests
-// https://github.com/woocommerce/woocommerce-admin/issues/6483
-jest.mock( '@woocommerce/date', () => ( {
-	getCurrentDates: jest
-		.fn()
-		.mockName( 'getCurrentDates' )
-		.mockReturnValue( {
-			primary: {
-				before: new Date(),
-				after: new Date(),
-			},
-			secondary: {
-				before: new Date(),
-				after: new Date(),
-			},
-		} ),
-} ) );
-
 /**
  * Calls given function with all combinations of possible categories and dataReferences.
  *
