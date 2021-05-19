@@ -9,7 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import useProgramsReport from './useProgramsReport';
-import TabNav from '../../tab-nav';
+import MainTabNav from '../../main-tab-nav';
 import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
@@ -65,7 +65,7 @@ const ProgramsReport = () => {
 
 	return (
 		<div className="gla-dashboard">
-			{ ! navigationEnabled && <TabNav /> }
+			{ ! navigationEnabled && <MainTabNav /> }
 			<SubNav initialName="programs" />
 
 			<ProgramsReportFilters query={ getQuery() } report={ reportId } />

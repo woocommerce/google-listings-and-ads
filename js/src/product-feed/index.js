@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import TabNav from '../tab-nav';
+import MainTabNav from '../main-tab-nav';
 import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
@@ -15,7 +15,7 @@ const ProductFeed = () => {
 
 	return (
 		<>
-			{ ! navigationEnabled && <TabNav /> }
+			{ ! navigationEnabled && <MainTabNav /> }
 			<SubmissionSuccessGuide />
 			<ComingSoonNotice />
 			<div className="gla-product-feed">

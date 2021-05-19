@@ -50,7 +50,7 @@ const getSelectedTabKey = () => {
 	return tabs.find( ( el ) => el.path === path )?.key;
 };
 
-const TabNav = () => {
+const MainTabNav = () => {
 	useEffect( () => {
 		// Highlight the wp-admin dashboard menu
 		const marketingMenu = document.querySelector(
@@ -76,4 +76,4 @@ const TabNav = () => {
 	return <AppTabNav tabs={ tabs } selectedKey={ selectedKey } />;
 };
 
-export default TabNav;
+export default MainTabNav;

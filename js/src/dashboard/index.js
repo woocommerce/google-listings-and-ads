@@ -8,7 +8,7 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import TabNav from '../tab-nav';
+import MainTabNav from '../main-tab-nav';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
@@ -32,7 +32,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="gla-dashboard">
-			{ ! navigationEnabled && <TabNav /> }
+			{ ! navigationEnabled && <MainTabNav /> }
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }

@@ -16,7 +16,7 @@ import {
 import useProductsReport from './useProductsReport';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
-import TabNav from '../../tab-nav';
+import MainTabNav from '../../main-tab-nav';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
@@ -117,7 +117,7 @@ const ProductsReportPage = () => {
 
 	return (
 		<>
-			{ ! navigationEnabled && <TabNav /> }
+			{ ! navigationEnabled && <MainTabNav /> }
 			<SubNav initialName="products" />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />
