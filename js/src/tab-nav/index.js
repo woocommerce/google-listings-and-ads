@@ -1,68 +1,45 @@
 /**
  * External dependencies
  */
-import { NavigableMenu } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
-import classnames from 'classnames';
+import { getPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { glaData } from '.~/constants';
-import './index.scss';
+import AppTabNav from '.~/components/app-tab-nav';
 
 let tabs = [
 	{
 		name: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
-		className: 'tab-dashboard',
-		path: '%2Fgoogle%2Fdashboard',
+		path: '/google/dashboard',
 	},
 	{
 		name: 'reports',
 		title: __( 'Reports', 'google-listings-and-ads' ),
-		className: 'tab-reports',
-		path: '%2Fgoogle%2Freports%2Fprograms',
+		path: '/google/reports/programs',
 	},
 	{
 		name: 'product-feed',
 		title: __( 'Product Feed', 'google-listings-and-ads' ),
-		className: 'tab-product-fee',
-		path: '%2Fgoogle%2Fproduct-feed',
+		path: '/google/product-feed',
 	},
 	{
 		name: 'settings',
 		title: __( 'Settings', 'google-listings-and-ads' ),
-		className: 'tab-settings',
-		path: '%2Fgoogle%2Fsettings',
+		path: '/google/settings',
 	},
 ];
+
 // Hide reports tab.
 if ( ! glaData.enableReports ) {
 	tabs = tabs.filter( ( { name } ) => name !== 'reports' );
 }
 
-const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
-	return (
-		<Link
-			role="tab"
-			tabIndex={ selected ? null : -1 }
-			aria-selected={ selected }
-			id={ tabId }
-			href={ 'admin.php?page=wc-admin&path=' + path }
-			{ ...rest }
-		>
-			{ children }
-		</Link>
-	);
-};
-
-const TabNav = ( props ) => {
-	const { initialName } = props;
-	const activeClass = 'is-active';
-
+const TabNav = () => {
 	useEffect( () => {
 		// Highlight the wp-admin dashboard menu
 		const marketingMenu = document.querySelector(
@@ -83,35 +60,10 @@ const TabNav = ( props ) => {
 		}
 	}, [] );
 
-	return (
-		<div className="gla-tab-nav">
-			<NavigableMenu
-				role="tablist"
-				orientation="horizontal"
-				className="gla-tab-nav__tabs"
-			>
-				{ tabs.map( ( tab ) => (
-					<TabLink
-						className={ classnames(
-							'components-button',
-							'gla-tab-nav__tabs-item',
-							tab.className,
-							{
-								[ activeClass ]: tab.name === initialName,
-							}
-						) }
-						tabId={ `${ tab.name }` }
-						aria-controls={ `${ tab.name }-view` }
-						selected={ tab.name === initialName }
-						key={ tab.name }
-						path={ tab.path }
-					>
-						{ tab.title }
-					</TabLink>
-				) ) }
-			</NavigableMenu>
-		</div>
-	);
+	const path = getPath();
+	const selectedName = tabs.find( ( el ) => el.path === path )?.name;
+
+	return <AppTabNav tabs={ tabs } initialName={ selectedName } />;
 };
 
 export default TabNav;
