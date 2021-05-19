@@ -23,11 +23,11 @@ class Settings implements Service, Registerable {
 				wc_admin_register_page(
 					[
 						'title'    => __( 'Settings', 'google-listings-and-ads' ),
-						'parent'   => '',
+						'parent'   => 'google-listings-and-ads-category',
 						'path'     => '/google/settings',
 						'id'       => 'google-settings',
 						'nav_args' => [
-							'order'  => 30,
+							'order'  => 40,
 							'parent' => 'google-listings-and-ads-category',
 						],
 					]

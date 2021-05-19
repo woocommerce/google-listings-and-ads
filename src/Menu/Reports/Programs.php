@@ -22,10 +22,14 @@ class Programs implements Service, Registerable {
 			function() {
 				wc_admin_register_page(
 					[
-						'title'  => __( 'Programs Report', 'google-listings-and-ads' ),
-						'parent' => 'woocommerce-marketing',
-						'path'   => '/google/reports/programs',
-						'id'     => 'google-reports-programs',
+						'title'    => __( 'Programs Report', 'google-listings-and-ads' ),
+						'parent'   => 'google-reports',
+						'path'     => '/google/reports/programs',
+						'id'       => 'google-reports-programs',
+						'nav_args' => [
+							'order'  => 10,
+							'parent' => 'google-reports',
+						],
 					]
 				);
 			}

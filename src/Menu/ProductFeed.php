@@ -23,11 +23,11 @@ class ProductFeed implements Service, Registerable {
 				wc_admin_register_page(
 					[
 						'title'    => __( 'Product Feed', 'google-listings-and-ads' ),
-						'parent'   => '',
+						'parent'   => 'google-listings-and-ads-category',
 						'path'     => '/google/product-feed',
 						'id'       => 'google-product-feed',
 						'nav_args' => [
-							'order'  => 20,
+							'order'  => 30,
 							'parent' => 'google-listings-and-ads-category',
 						],
 					]
