@@ -32,7 +32,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="gla-dashboard">
-			{ ! navigationEnabled && <TabNav initialName="dashboard" /> }
+			{ ! navigationEnabled && <TabNav /> }
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }

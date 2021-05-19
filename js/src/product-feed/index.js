@@ -15,7 +15,7 @@ const ProductFeed = () => {
 
 	return (
 		<>
-			{ ! navigationEnabled && <TabNav initialName="product-feed" /> }
+			{ ! navigationEnabled && <TabNav /> }
 			<SubmissionSuccessGuide />
 			<ComingSoonNotice />
 			<div className="gla-product-feed">

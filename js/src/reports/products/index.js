@@ -117,7 +117,7 @@ const ProductsReportPage = () => {
 
 	return (
 		<>
-			{ ! navigationEnabled && <TabNav initialName="reports" /> }
+			{ ! navigationEnabled && <TabNav /> }
 			<SubNav initialName="products" />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />

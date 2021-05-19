@@ -11,7 +11,7 @@ const Settings = () => {
 
 	return (
 		<div className="gla-settings">
-			{ ! navigationEnabled && <TabNav initialName="settings" /> }
+			{ ! navigationEnabled && <TabNav /> }
 			<DisconnectAccounts />
 		</div>
 	);

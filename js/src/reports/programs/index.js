@@ -65,7 +65,7 @@ const ProgramsReport = () => {
 
 	return (
 		<div className="gla-dashboard">
-			{ ! navigationEnabled && <TabNav initialName="reports" /> }
+			{ ! navigationEnabled && <TabNav /> }
 			<SubNav initialName="programs" />
 
 			<ProgramsReportFilters query={ getQuery() } report={ reportId } />
