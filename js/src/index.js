@@ -116,20 +116,38 @@ addFilter(
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Programs Report', 'google-listings-and-ads' ),
+					__( 'Reports', 'google-listings-and-ads' ),
 				],
 				container: ProgramsReport,
 				path: '/google/reports/programs',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				navArgs: {
+					id: 'google-reports',
+				},
 			},
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Products Report', 'google-listings-and-ads' ),
+					__( 'Reports', 'google-listings-and-ads' ),
+				],
+				container: ProgramsReport,
+				path: '/google/reports/programs',
+				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				navArgs: {
+					id: 'google-reports-programs',
+				},
+			},
+			{
+				breadcrumbs: [
+					...initialBreadcrumbs,
+					__( 'Reports', 'google-listings-and-ads' ),
 				],
 				container: ProductsReport,
 				path: '/google/reports/products',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
+				navArgs: {
+					id: 'google-reports-products',
+				},
 			},
 			{
 				breadcrumbs: [
