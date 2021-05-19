@@ -105,7 +105,7 @@ addFilter(
 				breadcrumbs: [
 					...initialBreadcrumbs,
 					__(
-						'Create your free campaign',
+						'Create your paid campaign',
 						'google-listings-and-ads'
 					),
 				],
