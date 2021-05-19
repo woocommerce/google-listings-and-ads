@@ -2,14 +2,14 @@
  * Internal dependencies
  */
 import selectWithText from './select-with-text-input';
-import number from './number';
+import integer from './integer';
 
 window.jQuery( function ( $ ) {
 	'use strict';
 
 	const init = () => {
 		selectWithText( $ );
-		number( $ );
+		integer( $ );
 	};
 
 	$( '#woocommerce-product-data' ).on(

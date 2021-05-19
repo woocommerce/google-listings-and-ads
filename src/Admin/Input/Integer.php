@@ -6,15 +6,15 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Number
+ * Class Integer
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  */
-class Number extends Input {
+class Integer extends Input {
 	/**
-	 * Number constructor.
+	 * Integer constructor.
 	 */
 	public function __construct() {
-		parent::__construct( 'number' );
+		parent::__construct( 'integer' );
 	}
 }

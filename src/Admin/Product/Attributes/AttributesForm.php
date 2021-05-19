@@ -4,9 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\BooleanSelect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Decimal;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Number;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Integer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
@@ -140,9 +141,11 @@ class AttributesForm extends Form {
 		switch ( $attribute::get_value_type() ) {
 			case 'integer':
 			case 'int':
+				$input_type = Integer::class;
+				break;
 			case 'float':
 			case 'double':
-				$input_type = Number::class;
+				$input_type = Decimal::class;
 				break;
 			case 'bool':
 			case 'boolean':
