@@ -20,6 +20,12 @@ import PageControl from './page-control';
 import FinishButton from './finish-button';
 
 /**
+ * @callback renderFinishCallback
+ * @param {JSX.Element} finishButton The built-in finish button of this Guide component.
+ * @return {JSX.Element} React element for rendering.
+ */
+
+/**
  * `Guide` is a React component that renders a user guide in a modal.
  * The guide consists of several pages which the user can step through one by one.
  * The guide is finished when the modal is closed or when the user clicks *Finish* on the last page of the guide.
@@ -29,6 +35,7 @@ import FinishButton from './finish-button';
  * @param {string} props.contentLabel This property is used as the modal's accessibility label.
  *                                    It is required for accessibility reasons.
  * @param {string} [props.finishButtonText] Use this to customize the label of the *Finish* button shown at the end of the guide.
+ * @param {renderFinishCallback} [props.renderFinish] A function for rendering custom finish block shown at the end of the guide.
  * @param {Function} props.onFinish A function which is called when the guide is finished.
  *                                  The guide is finished when the modal is closed
  *                                  or when the user clicks *Finish* on the last page of the guide.
@@ -39,6 +46,7 @@ export default function Guide( {
 	className,
 	contentLabel,
 	finishButtonText,
+	renderFinish = ( finishButton ) => finishButton,
 	onFinish,
 	pages,
 } ) {
@@ -61,6 +69,21 @@ export default function Guide( {
 
 	if ( pages.length === 0 ) {
 		return null;
+	}
+
+	let finishBlock = null;
+
+	if ( ! canGoForward ) {
+		const finishButton = (
+			<FinishButton
+				className="components-guide__finish-button"
+				onClick={ onFinish }
+			>
+				{ finishButtonText || __( 'Finish' ) }
+			</FinishButton>
+		);
+
+		finishBlock = renderFinish( finishButton );
 	}
 
 	return (
@@ -88,15 +111,6 @@ export default function Guide( {
 					/>
 
 					{ pages[ currentPage ].content }
-
-					{ ! canGoForward && (
-						<FinishButton
-							className="components-guide__inline-finish-button"
-							onClick={ onFinish }
-						>
-							{ finishButtonText || __( 'Finish' ) }
-						</FinishButton>
-					) }
 				</div>
 
 				<div className="components-guide__footer">
@@ -116,14 +130,7 @@ export default function Guide( {
 							{ __( 'Next' ) }
 						</Button>
 					) }
-					{ ! canGoForward && (
-						<FinishButton
-							className="components-guide__finish-button"
-							onClick={ onFinish }
-						>
-							{ finishButtonText || __( 'Finish' ) }
-						</FinishButton>
-					) }
+					{ finishBlock }
 				</div>
 			</div>
 		</Modal>
