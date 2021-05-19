@@ -39,6 +39,16 @@ if ( ! glaData.enableReports ) {
 	tabs = tabs.filter( ( { name } ) => name !== 'reports' );
 }
 
+const getSelectedTabName = () => {
+	const path = getPath();
+
+	if ( path.startsWith( '/google/reports' ) ) {
+		return 'reports';
+	}
+
+	return tabs.find( ( el ) => el.path === path )?.name;
+};
+
 const TabNav = () => {
 	useEffect( () => {
 		// Highlight the wp-admin dashboard menu
@@ -60,8 +70,7 @@ const TabNav = () => {
 		}
 	}, [] );
 
-	const path = getPath();
-	const selectedName = tabs.find( ( el ) => el.path === path )?.name;
+	const selectedName = getSelectedTabName();
 
 	return <AppTabNav tabs={ tabs } initialName={ selectedName } />;
 };
