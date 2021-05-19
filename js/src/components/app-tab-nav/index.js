@@ -26,7 +26,7 @@ const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
 };
 
 const AppTabNav = ( props ) => {
-	const { initialName, tabs } = props;
+	const { selectedKey, tabs } = props;
 
 	return (
 		<div className="app-tab-nav">
@@ -41,13 +41,13 @@ const AppTabNav = ( props ) => {
 							'components-button',
 							'app-tab-nav__tabs-item',
 							{
-								'is-active': tab.name === initialName,
+								'is-active': tab.key === selectedKey,
 							}
 						) }
-						tabId={ `${ tab.name }` }
-						aria-controls={ `${ tab.name }-view` }
-						selected={ tab.name === initialName }
-						key={ tab.name }
+						tabId={ `${ tab.key }` }
+						aria-controls={ `${ tab.key }-view` }
+						selected={ tab.key === selectedKey }
+						key={ tab.key }
 						path={ tab.path }
 					>
 						{ tab.title }

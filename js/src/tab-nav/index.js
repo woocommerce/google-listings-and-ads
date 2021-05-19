@@ -13,22 +13,22 @@ import AppTabNav from '.~/components/app-tab-nav';
 
 let tabs = [
 	{
-		name: 'dashboard',
+		key: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
 		path: '/google/dashboard',
 	},
 	{
-		name: 'reports',
+		key: 'reports',
 		title: __( 'Reports', 'google-listings-and-ads' ),
 		path: '/google/reports/programs',
 	},
 	{
-		name: 'product-feed',
+		key: 'product-feed',
 		title: __( 'Product Feed', 'google-listings-and-ads' ),
 		path: '/google/product-feed',
 	},
 	{
-		name: 'settings',
+		key: 'settings',
 		title: __( 'Settings', 'google-listings-and-ads' ),
 		path: '/google/settings',
 	},
@@ -36,17 +36,18 @@ let tabs = [
 
 // Hide reports tab.
 if ( ! glaData.enableReports ) {
-	tabs = tabs.filter( ( { name } ) => name !== 'reports' );
+	tabs = tabs.filter( ( { key } ) => key !== 'reports' );
 }
 
-const getSelectedTabName = () => {
+const getSelectedTabKey = () => {
 	const path = getPath();
 
+	// This is to cater for both Programs Report and Products Report.
 	if ( path.startsWith( '/google/reports' ) ) {
 		return 'reports';
 	}
 
-	return tabs.find( ( el ) => el.path === path )?.name;
+	return tabs.find( ( el ) => el.path === path )?.key;
 };
 
 const TabNav = () => {
@@ -70,9 +71,9 @@ const TabNav = () => {
 		}
 	}, [] );
 
-	const selectedName = getSelectedTabName();
+	const selectedKey = getSelectedTabKey();
 
-	return <AppTabNav tabs={ tabs } initialName={ selectedName } />;
+	return <AppTabNav tabs={ tabs } selectedKey={ selectedKey } />;
 };
 
 export default TabNav;
