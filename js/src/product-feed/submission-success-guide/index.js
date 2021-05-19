@@ -2,9 +2,13 @@
  * External dependencies
  */
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
-import { createInterpolateElement, useEffect } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useEffect,
+	useCallback,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Guide } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -12,12 +16,15 @@ import { recordEvent } from '@woocommerce/tracks';
  */
 import { ReactComponent as GoogleLogoSvg } from './google-logo.svg';
 import { ReactComponent as WooCommerceLogoSvg } from './woocommerce-logo.svg';
+import Guide from '.~/external-components/wordpress/guide';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
+import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import './index.scss';
 
 const GUIDE_NAME = 'submission-success';
+const EVENT_NAME = 'gla_modal_closed';
 const CONFIRM_BUTTON_CLASS = 'components-guide__finish-button';
 
 const image = (
@@ -92,8 +99,6 @@ const pages = [
 	},
 ];
 
-// TODO: The current close method is temporarily for demo.
-//       Need to reconsider how this guide modal would be triggered later.
 const handleGuideFinish = ( e ) => {
 	const nextQuery = {
 		...getQuery(),
@@ -108,7 +113,7 @@ const handleGuideFinish = ( e ) => {
 	const action = target.classList.contains( CONFIRM_BUTTON_CLASS )
 		? 'confirm'
 		: 'dismiss';
-	recordEvent( 'gla_modal_closed', {
+	recordEvent( EVENT_NAME, {
 		context: GUIDE_NAME,
 		action,
 	} );
@@ -119,11 +124,40 @@ const GuideImplementation = () => {
 		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
 	}, [] );
 
+	const renderFinish = useCallback( () => {
+		return (
+			<>
+				<div className="gla-submission-success-guide__space_holder" />
+				<Button
+					isSecondary
+					className={ CONFIRM_BUTTON_CLASS }
+					onClick={ handleGuideFinish }
+				>
+					{ __( 'Maybe later', 'google-listings-and-ads' ) }
+				</Button>
+				<AddPaidCampaignButton
+					isPrimary
+					isSecondary={ false }
+					isSmall={ false }
+					eventName={ EVENT_NAME }
+					eventProps={ {
+						context: GUIDE_NAME,
+						action: 'create-paid-campaign',
+					} }
+					buttonText={ __(
+						'Create paid campaign',
+						'google-listings-and-ads'
+					) }
+				/>
+			</>
+		);
+	}, [] );
+
 	return (
 		<Guide
 			className="gla-submission-success-guide"
-			finishButtonText={ __( 'Got it', 'google-listings-and-ads' ) }
 			pages={ pages }
+			renderFinish={ renderFinish }
 			onFinish={ handleGuideFinish }
 		/>
 	);
@@ -134,9 +168,6 @@ const GuideImplementation = () => {
  *
  * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
- *
- * TODO: The current open method is temporarily for demo.
- *       Need to reconsider how this guide modal would be triggered later.
  */
 export default function SubmissionSuccessGuide() {
 	const isOpen = getQuery().guide === GUIDE_NAME;

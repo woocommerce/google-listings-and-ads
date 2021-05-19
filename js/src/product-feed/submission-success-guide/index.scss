@@ -48,6 +48,13 @@
 			@media (max-width: $break-small) {
 				// Prevent layout break on small mobile devices
 				position: static;
+				flex-wrap: wrap;
+
+				.components-button {
+					justify-content: center;
+					width: 100%;
+					margin-top: 12px;
+				}
 			}
 			justify-content: flex-end;
 			width: 100%;
@@ -104,5 +111,9 @@
 		height: 63px;
 		margin: 0 28px;
 		background-color: $gray-600;
+	}
+
+	&__space_holder {
+		flex: 1 1 0;
 	}
 }

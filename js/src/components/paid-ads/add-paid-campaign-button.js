@@ -30,12 +30,14 @@ import recordEvent from '.~/utils/recordEvent';
  * @param {string} [props.eventProps.href] Destination path. This would default to a path with
  * `'/google/setup-ads'` when users have not completed ads setup, or
  * `'/google/campaigns/create'` when users have completed ads setup.
+ * @param {string} [props.buttonText] Customize the text of this button.
  * @return {AppButton} AppButton
  */
 const AddPaidCampaignButton = ( props ) => {
 	const {
 		eventName = 'gla_add_paid_campaign_clicked',
 		eventProps,
+		buttonText,
 		onClick = () => {},
 		...rest
 	} = props;
@@ -57,7 +59,8 @@ const AddPaidCampaignButton = ( props ) => {
 
 	return (
 		<AppButton isSmall isSecondary onClick={ handleClick } { ...rest }>
-			{ __( 'Add paid campaign', 'google-listings-and-ads' ) }
+			{ buttonText ||
+				__( 'Add paid campaign', 'google-listings-and-ads' ) }
 		</AppButton>
 	);
 };

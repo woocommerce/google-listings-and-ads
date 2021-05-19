@@ -69,6 +69,7 @@ All event names are prefixed by `wcadmin_gla_`.
     * `confirm` is used when the confirm button on the modal is clicked
     * `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
     * `create-another-campaign` is used when the button "Create another campaign" is clicked
+    * `create-paid-campaign` is used when the button "Create paid campaign" is clicked
 
 * `modal_content_link_click` - Clicking on a text link within the modal content
   * `context`: indicate which link is clicked
