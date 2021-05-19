@@ -14,7 +14,7 @@ const compareBy = 'programs';
 const compareParam = 'filter';
 
 /**
- * All products table, with compare feature.
+ * All programs table, with compare feature.
  *
  * @see AllProgramsTableCard
  * @see AppTableCard

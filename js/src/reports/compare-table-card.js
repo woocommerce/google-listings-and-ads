@@ -110,7 +110,7 @@ const CompareTableCard = ( {
 	 * for a given row.
 	 * Creates a cell for every ~metric item, displays `"Unavailable"`, when the data is `null`.
 	 *
-	 * @param {ProductsData} row Row of data for data table.
+	 * @param {ReportData} row Row of data for data table.
 	 *
 	 * @return {Array<Object>} Single row for {@link module:@woocommerce/components#TableCard.Props.rows}.
 	 */
