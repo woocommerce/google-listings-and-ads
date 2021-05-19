@@ -21,7 +21,7 @@ use Automattic\Jetpack\Config;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
-use Automattic\WooCommerce\GoogleListingsAndAds\VersionValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\DependencyValidator;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -34,8 +34,8 @@ if ( ! Autoloader::init() ) {
 	return;
 }
 
-// Validate the versions of everything our plugin depends on.
-if ( ! ( new VersionValidator() )->validate() ) {
+// Validate the plugin dependencies.
+if ( ! ( new DependencyValidator() )->validate() ) {
 	return;
 }
 
