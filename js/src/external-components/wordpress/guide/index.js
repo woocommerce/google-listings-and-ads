@@ -9,8 +9,7 @@
  * External dependencies
  */
 import classnames from 'classnames';
-import { useState, useEffect, Children } from '@wordpress/element';
-import deprecated from '@wordpress/deprecated';
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Modal, KeyboardShortcuts, Button } from '@wordpress/components';
 
@@ -21,7 +20,6 @@ import PageControl from './page-control';
 import FinishButton from './finish-button';
 
 export default function Guide( {
-	children,
 	className,
 	contentLabel,
 	finishButtonText,
@@ -29,18 +27,6 @@ export default function Guide( {
 	pages = [],
 } ) {
 	const [ currentPage, setCurrentPage ] = useState( 0 );
-
-	useEffect( () => {
-		if ( Children.count( children ) ) {
-			deprecated( 'Passing children to <Guide>', {
-				alternative: 'the `pages` prop',
-			} );
-		}
-	}, [ children ] );
-
-	if ( Children.count( children ) ) {
-		pages = Children.map( children, ( child ) => ( { content: child } ) );
-	}
 
 	const canGoBack = currentPage > 0;
 	const canGoForward = currentPage < pages.length - 1;
