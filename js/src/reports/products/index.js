@@ -98,7 +98,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 			<CompareProductsTableCard
 				trackEventReportId={ trackEventId }
 				metrics={ metrics }
-				loaded={ loaded }
+				isLoading={ ! loaded }
 				products={ products }
 			/>
 		</>
