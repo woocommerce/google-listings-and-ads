@@ -43,7 +43,7 @@
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
 		"@wordpress/e2e-test-utils": "^4.15.0",
 		"@wordpress/env": "^2.1.0",
-		"@wordpress/scripts": "^12.5.0",
+		"@wordpress/scripts": "^14.1.1",
 		"prettier": "npm:wp-prettier@^2.0.5",
 		"stylelint-config-wordpress": "^17.0.0"
 	},
