@@ -64,19 +64,20 @@ const ProgramsReport = () => {
 	const {
 		loaded,
 		data: { totals, intervals, freeListings, campaigns },
-		reportQuery: { orderby, order },
+		reportQuery: { fields, orderby, order },
 	} = useProgramsReport();
 
-	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
-	const availableMetrics = performanceMetrics.filter( ( { key } ) =>
-		totals.hasOwnProperty( key )
-	);
+	// Anticipate all requested fields to come, show available once loaded.
+	const availableMetrics = loaded
+		? performanceMetrics.filter( ( { key } ) =>
+				totals.hasOwnProperty( key )
+		  )
+		: performanceMetrics.filter( ( { key } ) => fields.includes( key ) );
 
-	// Anticipate all to come, show all column headers if the data is still being loaded.
 	const expectedTableMetrics = loaded
 		? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
-		: tableMetrics;
+		: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
 
 	return (
 		<div className="gla-dashboard">
