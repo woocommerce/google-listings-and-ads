@@ -12,6 +12,8 @@ Native integration with Google that allows merchants to easily display their pro
 
 == Description ==
 
+*Note: This extension is currently in beta. Certain functionality like Reporting may be limited.*
+
 Google Listings & Ads makes it simple to showcase your products to shoppers across Google. Whether you’re brand new to digital advertising or a marketing expert, you can expand your reach and grow your business, for free and with ads.
 
 Sync your store with Google to list products for free, run paid ads, and track performance straight from your store dashboard.
