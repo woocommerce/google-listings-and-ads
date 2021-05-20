@@ -27,7 +27,7 @@ const emptyData = {
  * @typedef { import(".~/data/utils").ReportFieldsSchema } ReportFieldsSchema
  * @typedef { import(".~/data/utils").PerformanceData } PerformanceData
  * @typedef { import("../index.js").ProgramsReportData } ProgramsReportData
- * @typedef { import("../index.js").ReportSchema<ProgramsReportData> } ProgramsReportSchema
+ * @typedef { import("../index.js").ProgramsReportSchema } ProgramsReportSchema
  */
 
 /**

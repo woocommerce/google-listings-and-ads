@@ -134,10 +134,12 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 };
 
 /**
- * @typedef {Object} ReportData
+ * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
- * @property {Object|null} data The report data of specified parameters. It would return `null` before the data is fetched.
+ * @property {ReportData} data Fetched report data.
+ * @template ReportData
  */
+
 /**
  * Select report data according to parameters and URL query.
  *
@@ -147,7 +149,7 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {ReportData} Report data.
+ * @return {ReportSchema} Report data.
  */
 export const getReport = createRegistrySelector(
 	( select ) => ( state, category, type, query, dateReference ) => {
