@@ -64,6 +64,7 @@ const ProgramsReport = () => {
 	const {
 		loaded,
 		data: { totals, intervals, freeListings, campaigns },
+		reportQuery: { orderby, order },
 	} = useProgramsReport();
 
 	// Show only available data.
@@ -103,6 +104,8 @@ const ProgramsReport = () => {
 				<CompareProgramsTableCard
 					trackEventReportId={ trackEventId }
 					isLoading={ ! loaded }
+					orderby={ orderby }
+					order={ order }
 					metrics={ expectedTableMetrics }
 					freeListings={ freeListings }
 					campaigns={ campaigns }

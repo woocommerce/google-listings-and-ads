@@ -9,7 +9,6 @@ import { useMemo } from '@wordpress/element';
  */
 import CompareTableCard from '../compare-table-card';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
-import useUrlQuery from '.~/hooks/useUrlQuery';
 
 const compareBy = 'programs';
 const compareParam = 'filter';
@@ -21,20 +20,23 @@ const compareParam = 'filter';
  * @see AppTableCard
  *
  * @param {Object} props React props.
- * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {boolean} props.isLoading Whether the data is still being loaded.
+ * @param {string} [props.orderby] Key by which the programs should be ordered.
+ * @param {string} [props.order] Sorting order, 'desc' or 'asc'.
+ * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {Array<FreeListingsData>} props.freeListings Report's programs data.
  * @param {Array<ProgramsData>} props.campaigns Report's programs data.
  * @param {Object} [props.restProps] Properties to be forwarded to CompareTableCard.
  */
 const CompareProgramsTableCard = ( {
-	metrics,
 	isLoading,
+	orderby,
+	order,
+	metrics,
 	freeListings,
 	campaigns,
 	...restProps
 } ) => {
-	const { orderby, order } = useUrlQuery();
 	/**
 	 * Glue freeListings and campaigns together, hardcode Free Listings name and id.
 	 *
@@ -57,8 +59,8 @@ const CompareProgramsTableCard = ( {
 			...campaigns,
 		];
 
-		// Sort merged lists. Preferably, both lists should be already sorted by the server-side.
-		if ( orderby ) {
+		// Sort only merged lists. Individual lists should be already sorted by the server-side.
+		if ( campaigns.length ) {
 			mergedPrograms.sort( ( program1, program2 ) => {
 				return (
 					// Consider `undefined` the lowest.
