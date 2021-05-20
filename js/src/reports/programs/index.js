@@ -14,7 +14,6 @@ import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
-import '../../dashboard/index.scss';
 
 /**
  * Available metrics and their human-readable labels.
@@ -80,7 +79,7 @@ const ProgramsReport = () => {
 		: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
 
 	return (
-		<div className="gla-dashboard">
+		<>
 			<TabNav initialName="reports" />
 			<SubNav initialName="programs" />
 
@@ -88,31 +87,27 @@ const ProgramsReport = () => {
 				query={ getQuery() }
 				trackEventId={ trackEventId }
 			/>
-			<div className="gla-reports__performance">
-				<SummarySection
-					loaded={ loaded }
-					metrics={ availableMetrics }
-					expectedLength={ performanceMetrics.length }
-					totals={ totals }
-				/>
-				<ChartSection
-					metrics={ availableMetrics }
-					loaded={ loaded }
-					intervals={ intervals }
-				/>
-			</div>
-			<div className="gla-dashboard__programs">
-				<CompareProgramsTableCard
-					trackEventReportId={ trackEventId }
-					isLoading={ ! loaded }
-					orderby={ orderby }
-					order={ order }
-					metrics={ expectedTableMetrics }
-					freeListings={ freeListings }
-					campaigns={ campaigns }
-				/>
-			</div>
-		</div>
+			<SummarySection
+				loaded={ loaded }
+				metrics={ availableMetrics }
+				expectedLength={ performanceMetrics.length }
+				totals={ totals }
+			/>
+			<ChartSection
+				metrics={ availableMetrics }
+				loaded={ loaded }
+				intervals={ intervals }
+			/>
+			<CompareProgramsTableCard
+				trackEventReportId={ trackEventId }
+				isLoading={ ! loaded }
+				orderby={ orderby }
+				order={ order }
+				metrics={ expectedTableMetrics }
+				freeListings={ freeListings }
+				campaigns={ campaigns }
+			/>
+		</>
 	);
 };
 
