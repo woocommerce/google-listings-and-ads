@@ -94,12 +94,15 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		 */
 		$variation = wc_get_product( $variation_id );
 
-		$form = $this->get_form( $variation, $variation_index );
-
+		$form           = $this->get_form( $variation, $variation_index );
 		$form_view_data = $form->get_view_data();
+
 		// phpcs:disable WordPress.Security.NonceVerification
+		if ( empty( $_POST[ $form_view_data['name'] ] ) ) {
+			return;
+		}
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) ) : [];
+		$submitted_data = (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) );
 
 		$form->submit( $submitted_data );
 		$form_data = $form->get_data();
