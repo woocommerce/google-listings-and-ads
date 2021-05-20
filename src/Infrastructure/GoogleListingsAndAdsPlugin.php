@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\WCAdminValidator;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -107,6 +108,12 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * Register our services.
 	 */
 	protected function register_services(): void {
+		// Don't register anything if WooCommerce Admin isn't enabled, and show the dependency notice.
+		if ( ! ( new WCAdminValidator() )->validate() ) {
+			$this->registered_services = [];
+			return;
+		}
+
 		static $registered = false;
 		if ( $registered ) {
 			return;
