@@ -9,6 +9,7 @@ import { useState } from '@wordpress/element';
  */
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
+import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import FormContent from './form-content';
 
 /**
@@ -49,16 +50,22 @@ const SetupFreeListings = ( {
 } ) => {
 	const [ saving, setSaving ] = useState( false );
 
-	if ( ! settings || ! shippingRates || ! shippingTimes ) {
+	if ( ! settings || ! shippingRates || ! shippingTimes || ! countries ) {
 		return <AppSpinner />;
 	}
 
-	const handleValidate = () => {
-		const errors = {};
+	const handleValidate = ( values ) => {
+		const {
+			shipping_country_rates: shippingRatesData,
+			shipping_country_times: shippingTimesData,
+		} = values;
 
-		// TODO: validation logic.
-
-		return errors;
+		return checkErrors(
+			values,
+			shippingRatesData,
+			shippingTimesData,
+			countries
+		);
 	};
 
 	const handleSubmit = async () => {
