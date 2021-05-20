@@ -46,7 +46,7 @@ class ThirdPartyServiceProvider extends AbstractServiceProvider {
 	 * @return void
 	 */
 	public function register() {
-		$jetpack_id = new RawArgument( 'connection-test' );
+		$jetpack_id = new RawArgument( $this->get_slug() );
 		$this->share( Manager::class )->addArgument( $jetpack_id );
 
 		$this->share( Config::class )->addMethodCall(
