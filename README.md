@@ -23,6 +23,22 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
  - WooCommerce 4.5+
  - PHP 7.3+
 
+## Browsers supported
+
+As per [WordPress Core Handbook](https://make.wordpress.org/core/handbook/best-practices/browser-support/) we currently support:
+
+> - Last 1 Android versions.
+> - Last 1 ChromeAndroid versions.
+> - Last 2 Chrome versions.
+> - Last 2 Firefox versions.
+> - Last 2 Safari versions.
+> - Last 2 iOS versions.
+> - Last 2 Edge versions.
+> - Last 2 Opera versions.
+> - Browsers with > 1% usage based on [can I use browser usage table](https://caniuse.com/usage-table)
+
+:warning: We do not support Internet Explorer.
+
 ## Development
 
 After cloning the repo, install dependencies:
@@ -83,7 +99,7 @@ To stop the Docker container:
 
 `npm run wp-env stop`
 
-To delete the Docker container (this will **delete everything** in the WordPress Docker container): 
+To delete the Docker container (this will **delete everything** in the WordPress Docker container):
 
 `npm run wp-env destroy`
 
