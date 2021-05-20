@@ -9,6 +9,7 @@ import { useMemo } from '@wordpress/element';
  */
 import CompareTableCard from '../compare-table-card';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
+import useUrlQuery from '.~/hooks/useUrlQuery';
 
 const compareBy = 'programs';
 const compareParam = 'filter';
@@ -33,6 +34,7 @@ const CompareProgramsTableCard = ( {
 	campaigns,
 	...restProps
 } ) => {
+	const { orderby, order } = useUrlQuery();
 	/**
 	 * Glue freeListings and campaigns together, hardcode Free Listings name and id.
 	 *
@@ -46,7 +48,7 @@ const CompareProgramsTableCard = ( {
 			return campaigns;
 		}
 		// For V1 we assume, there is only one "Free listings" object.
-		return [
+		const mergedPrograms = [
 			{
 				...freeListings[ 0 ],
 				name: __( 'Free Listings', 'google-listings-and-ads' ),
@@ -54,7 +56,25 @@ const CompareProgramsTableCard = ( {
 			},
 			...campaigns,
 		];
-	}, [ isLoading, freeListings, campaigns ] );
+
+		// Sort merged lists. Preferably, both lists should be already sorted by the server-side.
+		if ( orderby ) {
+			mergedPrograms.sort( ( program1, program2 ) => {
+				return (
+					// Consider `undefined` the lowest.
+					( program1.subtotals[ orderby ] ||
+						Number.NEGATIVE_INFINITY ) -
+					( program2.subtotals[ orderby ] ||
+						Number.NEGATIVE_INFINITY )
+				);
+			} );
+			if ( order === 'desc' ) {
+				mergedPrograms.reverse();
+			}
+		}
+
+		return mergedPrograms;
+	}, [ isLoading, freeListings, campaigns, orderby, order ] );
 
 	return (
 		<CompareTableCard
