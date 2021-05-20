@@ -98,7 +98,8 @@ function transfromReportForType( getReport, type, query ) {
 		};
 	}
 
-	return { data, loaded };
+	const reportQuery = primary.reportQuery;
+	return { data, loaded, reportQuery };
 }
 
 /**
@@ -157,7 +158,8 @@ function transformReportAggregated( getReport, query ) {
 		};
 	}
 
-	return { data, loaded };
+	const reportQuery = paid.primary.reportQuery;
+	return { data, loaded, reportQuery };
 }
 
 /**

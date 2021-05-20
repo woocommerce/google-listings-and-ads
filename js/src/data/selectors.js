@@ -137,6 +137,7 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
  * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
  * @property {ReportData} data Fetched report data.
+ * @property {ReportQuery} reportQuery The actual, resolved query used to request the report. Available synchronously.
  * @template ReportData
  */
 
@@ -154,18 +155,21 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 export const getReport = createRegistrySelector(
 	( select ) => ( state, category, type, query, dateReference ) => {
 		const selector = select( STORE_KEY );
-		const args = [
+		const reportQuery = getReportQuery(
 			category,
 			type,
-			getReportQuery( category, type, query, dateReference ),
-		];
+			query,
+			dateReference
+		);
+		const args = [ category, type, reportQuery ];
 
 		return {
-			data: selector.getReportByApiQuery( ...args ),
+			reportQuery,
 			loaded: selector.hasFinishedResolution(
 				'getReportByApiQuery',
 				args
 			),
+			data: selector.getReportByApiQuery( ...args ),
 		};
 	}
 );
