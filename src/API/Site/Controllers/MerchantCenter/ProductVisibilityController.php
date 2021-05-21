@@ -52,11 +52,11 @@ class ProductVisibilityController extends BaseController {
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'mc/product-visibility/batch',
+			'mc/product-visibility',
 			[
 				[
 					'methods'             => TransportMethods::EDITABLE,
-					'callback'            => $this->get_batch_update_callback(),
+					'callback'            => $this->get_update_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
@@ -69,7 +69,7 @@ class ProductVisibilityController extends BaseController {
 	 *
 	 * @return callable
 	 */
-	protected function get_batch_update_callback(): callable {
+	protected function get_update_callback(): callable {
 		return function( Request $request ) {
 			$ids     = $request->get_param( 'ids' );
 			$visible = $request->get_param( 'visible' ) ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW;
@@ -122,7 +122,6 @@ class ProductVisibilityController extends BaseController {
 				'description'       => __( 'Products whose visibility was not changed.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
 				'items'             => [
 					'type' => 'numeric',
 				],
@@ -138,6 +137,6 @@ class ProductVisibilityController extends BaseController {
 	 * @return string
 	 */
 	protected function get_schema_title(): string {
-		return 'batch_product_visibility';
+		return 'product_visibility';
 	}
 }
