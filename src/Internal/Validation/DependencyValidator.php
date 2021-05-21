@@ -34,10 +34,8 @@ abstract class DependencyValidator implements Validatable {
 	 * @param string $message
 	 */
 	protected function admin_notice( string $message ) {
-		?>
-		<div class="notice notice-error">
-			<p><?php echo esc_html( $message ); ?></p>
-		</div>
-		<?php
+		echo '<div class="notice notice-error">' . PHP_EOL;
+		echo '	<p>' . esc_html( $message ) . '</p>' . PHP_EOL;
+		echo '</div>' . PHP_EOL;
 	}
 }
