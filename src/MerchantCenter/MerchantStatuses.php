@@ -348,11 +348,16 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = $product_helper->maybe_swap_for_parent_id( $wc_product_id );
-			if ( $wc_parent_id === $wc_product_id ) {
-				continue;
+			try {
+				$wc_parent_id = $product_helper->maybe_swap_for_parent_id( $wc_product_id );
+				if ( $wc_parent_id === $wc_product_id ) {
+					continue;
+				}
+				$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
+			} catch ( InvalidValue $e ) {
+				// Just don't include invalid products (or their parents).
+				;
 			}
-			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
 		}
 	}
 
