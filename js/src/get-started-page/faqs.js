@@ -1,22 +1,14 @@
 /**
  * External dependencies
  */
-import { Panel, PanelBody, PanelRow } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
+import FaqsPanel from '.~/components/faqs-panel';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-
-const recordToggleEvent = ( id, isOpened ) => {
-	recordEvent( 'gla_get_started_faq', {
-		id,
-		action: isOpened ? 'expand' : 'collapse',
-	} );
-};
 
 const faqItems = [
 	{
@@ -272,32 +264,7 @@ const faqItems = [
 ];
 
 const Faqs = () => {
-	const getPanelToggleHandler = ( id ) => ( isOpened ) => {
-		recordToggleEvent( id, isOpened );
-	};
-
-	return (
-		<Panel
-			className="gla-get-started-fags"
-			header={ __(
-				'Frequently asked questions',
-				'google-listings-and-ads'
-			) }
-		>
-			{ faqItems.map( ( { trackId, question, answer } ) => {
-				return (
-					<PanelBody
-						key={ trackId }
-						title={ question }
-						initialOpen={ false }
-						onToggle={ getPanelToggleHandler( trackId ) }
-					>
-						<PanelRow>{ answer }</PanelRow>
-					</PanelBody>
-				);
-			} ) }
-		</Panel>
-	);
+	return <FaqsPanel trackName="gla_get_started_faq" faqItems={ faqItems } />;
 };
 
 export default Faqs;

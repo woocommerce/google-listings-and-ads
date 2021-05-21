@@ -2,14 +2,7 @@
 	max-width: 824px;
 	margin: 0 auto;
 
-	.components-card,
-	.components-panel {
+	.components-card {
 		margin-bottom: calc(var(--main-gap) * 1.5);
-	}
-}
-
-.gla-get-started-fags {
-	.components-panel__row {
-		display: block;
 	}
 }
