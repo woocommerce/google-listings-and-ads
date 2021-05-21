@@ -17,6 +17,7 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import WordPressDotComAccount from './wordpressdotcom-account';
 import GoogleAccount from '.~/components/google-account';
 import GoogleMCAccount from './google-mc-account';
+import Faqs from './faqs';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
@@ -52,6 +53,7 @@ const SetupAccounts = ( props ) => {
 			<WordPressDotComAccount />
 			<GoogleAccount disabled={ isGoogleAccountDisabled } />
 			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
+			<Faqs />
 			<StepContentFooter>
 				<Button
 					isPrimary

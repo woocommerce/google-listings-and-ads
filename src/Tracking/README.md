@@ -60,6 +60,10 @@ All event names are prefixed by `wcadmin_gla_`.
   * `target`: button ID
   * `trigger`: action (e.g. `click`)
 
+* `setup_mc_faq` - Clicking on faq items to collapse or expand it in the Setup Merchant Center page
+  * `id`: (faq identifier)
+  * `action`: (`expand`|`collapse`)
+
 * `modal_open` - A modal is opend
   * `context`: indicate which modal is opened
 
