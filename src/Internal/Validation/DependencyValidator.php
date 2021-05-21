@@ -12,13 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal
  */
-abstract class DependencyValidator {
-	/**
-	 * Validate all dependencies that we require for the plugin to function properly.
-	 *
-	 * @return bool
-	 */
-	abstract public function validate(): bool;
+abstract class DependencyValidator implements Validatable {
 
 	/**
 	 * Add a standard dependency validation error notice.
