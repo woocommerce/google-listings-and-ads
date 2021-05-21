@@ -15,6 +15,25 @@ defined( 'ABSPATH' ) || exit;
 abstract class DependencyValidator implements Validatable {
 
 	/**
+	 * @var DependencyValidator[]
+	 */
+	private static $instances = [];
+
+	/**
+	 * Get the instance of the Dependency object.
+	 *
+	 * @return DependencyValidator
+	 */
+	public static function instance(): DependencyValidator {
+		$class = get_called_class();
+		if ( ! isset( self::$instances[ $class ] ) ) {
+			self::$instances[ $class ] = new $class();
+		}
+		return self::$instances[ $class ];
+	}
+
+
+	/**
 	 * Add a standard dependency validation error notice.
 	 *
 	 * @param RuntimeException $e

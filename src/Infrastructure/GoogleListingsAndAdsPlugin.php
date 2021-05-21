@@ -109,7 +109,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 */
 	protected function maybe_register_services(): void {
 		// Don't register anything if WooCommerce Admin isn't enabled, and show the dependency notice.
-		if ( ! ( new WCAdminValidator() )->validate() ) {
+		if ( ! WCAdminValidator::instance()->validate() ) {
 			$this->registered_services = [];
 			return;
 		}

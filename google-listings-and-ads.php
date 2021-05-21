@@ -35,7 +35,7 @@ if ( ! Autoloader::init() ) {
 }
 
 // Validate the versions of everything our plugin depends on.
-if ( ! ( new VersionValidator() )->validate() ) {
+if ( ! VersionValidator::instance()->validate() ) {
 	return;
 }
 
