@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation;
 
-use RuntimeException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExtensionDependencyException;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,7 +23,7 @@ class WCAdminValidator extends DependencyValidator {
 		try {
 			$this->validate_wc_admin_active();
 			return true;
-		} catch ( RuntimeException $e ) {
+		} catch ( ExtensionDependencyException $e ) {
 			$this->add_admin_notice( $e );
 			return false;
 		}
@@ -32,13 +32,11 @@ class WCAdminValidator extends DependencyValidator {
 	/**
 	 * Validate that WooCommerce Admin is enabled.
 	 *
-	 * @throws RuntimeException When the WooCommerce Admin is disabled by hook.
+	 * @throws ExtensionDependencyException When the WooCommerce Admin is disabled by hook.
 	 */
 	protected function validate_wc_admin_active() {
 		if ( apply_filters( 'woocommerce_admin_disabled', false ) ) {
-			throw new RuntimeException(
-				__( 'Google Listings and Ads requires WooCommerce Admin to be enabled.', 'google-listings-and-ads' )
-			);
+			throw ExtensionDependencyException::missing_required_plugin( 'WooCommerce Admin' );
 		}
 	}
 }
