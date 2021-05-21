@@ -243,7 +243,7 @@ const faqItems = [
 					<li>
 						{ createInterpolateElement(
 							__(
-								'Full terms and conditions can be found here <link>http://www.google.com/ads/coupons/terms.html</link>.',
+								'Full terms and conditions can be found here <link>https://www.google.com/ads/coupons/terms.html</link>.',
 								'google-listings-and-ads'
 							),
 							{
@@ -251,7 +251,7 @@ const faqItems = [
 									<AppDocumentationLink
 										context="faqs"
 										linkId="terms-and-conditions-of-google-ads-coupons"
-										href="http://www.google.com/ads/coupons/terms.html"
+										href="https://www.google.com/ads/coupons/terms.html"
 									/>
 								),
 							}
