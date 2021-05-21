@@ -14,7 +14,6 @@ import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
-import '../../dashboard/index.scss';
 
 /**
  * Available metrics and their human-readable labels.
@@ -64,21 +63,23 @@ const ProgramsReport = () => {
 	const {
 		loaded,
 		data: { totals, intervals, freeListings, campaigns },
+		reportQuery: { fields, orderby, order },
 	} = useProgramsReport();
 
-	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
-	const availableMetrics = performanceMetrics.filter( ( { key } ) =>
-		totals.hasOwnProperty( key )
-	);
+	// Anticipate all requested fields to come, show available once loaded.
+	const availableMetrics = loaded
+		? performanceMetrics.filter( ( { key } ) =>
+				totals.hasOwnProperty( key )
+		  )
+		: performanceMetrics.filter( ( { key } ) => fields.includes( key ) );
 
-	// Anticipate all to come, show all column headers if the data is still being loaded.
 	const expectedTableMetrics = loaded
 		? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
-		: tableMetrics;
+		: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
 
 	return (
-		<div className="gla-dashboard">
+		<>
 			<TabNav initialName="reports" />
 			<SubNav initialName="programs" />
 
@@ -86,29 +87,27 @@ const ProgramsReport = () => {
 				query={ getQuery() }
 				trackEventId={ trackEventId }
 			/>
-			<div className="gla-reports__performance">
-				<SummarySection
-					loaded={ loaded }
-					metrics={ availableMetrics }
-					expectedLength={ performanceMetrics.length }
-					totals={ totals }
-				/>
-				<ChartSection
-					metrics={ availableMetrics }
-					loaded={ loaded }
-					intervals={ intervals }
-				/>
-			</div>
-			<div className="gla-dashboard__programs">
-				<CompareProgramsTableCard
-					trackEventReportId={ trackEventId }
-					isLoading={ ! loaded }
-					metrics={ expectedTableMetrics }
-					freeListings={ freeListings }
-					campaigns={ campaigns }
-				/>
-			</div>
-		</div>
+			<SummarySection
+				loaded={ loaded }
+				metrics={ availableMetrics }
+				expectedLength={ performanceMetrics.length }
+				totals={ totals }
+			/>
+			<ChartSection
+				metrics={ availableMetrics }
+				loaded={ loaded }
+				intervals={ intervals }
+			/>
+			<CompareProgramsTableCard
+				trackEventReportId={ trackEventId }
+				isLoading={ ! loaded }
+				orderby={ orderby }
+				order={ order }
+				metrics={ expectedTableMetrics }
+				freeListings={ freeListings }
+				campaigns={ campaigns }
+			/>
+		</>
 	);
 };
 

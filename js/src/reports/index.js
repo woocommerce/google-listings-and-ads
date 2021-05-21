@@ -12,14 +12,8 @@ export { default as ProductsReport } from './products';
  */
 
 /**
- * @typedef {Object} ReportSchema
- * @property {boolean} loaded Whether the data have been loaded.
- * @property {ReportData} data Fetched report data.
- * @template {ProductsReportData | ProgramsReportData} ReportData
- */
-
-/**
- * @typedef {ReportSchema<ProductsReportData>} ProductsReportSchema
+ * @typedef {import('.~/data/selectors').ReportSchema<ProductsReportData>} ProductsReportSchema
+ * @typedef {import('.~/data/selectors').ReportSchema<ProductsReportData>} ProgramsReportSchema
  */
 
 /**
