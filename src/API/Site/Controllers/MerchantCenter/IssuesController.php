@@ -83,7 +83,8 @@ class IssuesController extends BaseOptionsController {
 				try {
 					$issue['product_id'] = $this->product_helper->maybe_swap_for_parent_id( $issue['product_id'] );
 				} catch ( InvalidValue $e ) {
-					continue;
+					// Just don't include invalid products.
+					;
 				}
 			}
 
