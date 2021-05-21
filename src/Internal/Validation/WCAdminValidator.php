@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation;
 
 use RuntimeException;
 
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class WCAdminValidator
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation
  */
 class WCAdminValidator extends DependencyValidator {
 
