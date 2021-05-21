@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal;
 
 use RuntimeException;
 
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class DependencyValidator
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal
  */
 abstract class DependencyValidator {
 	/**
@@ -18,27 +18,21 @@ abstract class DependencyValidator {
 	 *
 	 * @return bool
 	 */
-	public function validate(): bool {
-		try {
-			$this->validate_all();
-
-			return true;
-		} catch ( RuntimeException $e ) {
-			add_action(
-				'admin_notices',
-				function() use ( $e ) {
-					$this->admin_notice( $e->getMessage() );
-				}
-			);
-
-			return false;
-		}
-	}
+	abstract public function validate(): bool;
 
 	/**
-	 * Execute all validation methods.
+	 * Add a standard dependency validation error notice.
+	 *
+	 * @param RuntimeException $e
 	 */
-	abstract protected function validate_all(): void;
+	protected function add_admin_notice( RuntimeException $e ) {
+		add_action(
+			'admin_notices',
+			function() use ( $e ) {
+				$this->admin_notice( $e->getMessage() );
+			}
+		);
+	}
 
 	/**
 	 * Display an admin notice with the provided message.

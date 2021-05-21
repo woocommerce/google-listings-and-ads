@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal;
 
 use RuntimeException;
 
@@ -10,15 +10,23 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class WCAdminValidator
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal
  */
 class WCAdminValidator extends DependencyValidator {
 
 	/**
-	 * Execute all validation methods.
+	 * Validate all dependencies that we require for the plugin to function properly.
+	 *
+	 * @return bool
 	 */
-	protected function validate_all(): void {
-		$this->validate_wc_admin_active();
+	public function validate(): bool {
+		try {
+			$this->validate_wc_admin_active();
+			return true;
+		} catch ( RuntimeException $e ) {
+			$this->add_admin_notice( $e );
+			return false;
+		}
 	}
 
 	/**
