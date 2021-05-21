@@ -268,9 +268,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
 		foreach ( $mc_statuses as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-			$wc_product    = wc_get_product( $wc_product_id );
-
 			// Skip products not synced by this extension.
+			if ( ! $wc_product_id ) {
+				continue;
+			}
+			$wc_product = wc_get_product( $wc_product_id );
+			// Skip products that are no longer in WooCommerce.
 			if ( ! $wc_product ) {
 				continue;
 			}
@@ -334,9 +337,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		foreach ( $mc_statuses as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-
 			// Skip products not synced by this extension.
 			if ( ! $wc_product_id ) {
+				continue;
+			}
+			// Skip products that are no longer in WooCommerce.
+			$wc_product = wc_get_product( $wc_product_id );
+			if ( ! $wc_product ) {
 				continue;
 			}
 
