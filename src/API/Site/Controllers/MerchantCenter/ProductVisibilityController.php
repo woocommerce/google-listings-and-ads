@@ -72,7 +72,14 @@ class ProductVisibilityController extends BaseController {
 	protected function get_update_callback(): callable {
 		return function( Request $request ) {
 			$ids     = $request->get_param( 'ids' );
-			$visible = $request->get_param( 'visible' ) ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW;
+			$visible = $request->get_param( 'visible' );
+			if ( ! is_bool( $visible ) ) {
+				return new Response(
+					[ 'message' => __( 'Visible must be true or false.', 'google-listings-and-ads' ) ],
+					400
+				);
+			}
+			$visible = $visible ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW;
 
 			$success = [];
 			$errors  = [];
@@ -90,7 +97,6 @@ class ProductVisibilityController extends BaseController {
 
 			sort( $success );
 			sort( $errors );
-
 			return new Response(
 				[
 					'success' => $success,
