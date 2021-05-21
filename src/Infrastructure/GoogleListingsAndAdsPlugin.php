@@ -47,7 +47,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * @return void
 	 */
 	public function activate(): void {
-		$this->register_services();
+		$this->maybe_register_services();
 
 		foreach ( $this->registered_services as $service ) {
 			if ( $service instanceof Activateable ) {
@@ -64,7 +64,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * @return void
 	 */
 	public function deactivate(): void {
-		$this->register_services();
+		$this->maybe_register_services();
 
 		foreach ( $this->registered_services as $service ) {
 			if ( $service instanceof Deactivateable ) {
@@ -84,7 +84,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 		add_action(
 			self::SERVICE_REGISTRATION_HOOK,
 			function() {
-				$this->register_services();
+				$this->maybe_register_services();
 			},
 			20
 		);
@@ -105,9 +105,9 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	}
 
 	/**
-	 * Register our services.
+	 * Register our services if dependency validation passes.
 	 */
-	protected function register_services(): void {
+	protected function maybe_register_services(): void {
 		// Don't register anything if WooCommerce Admin isn't enabled, and show the dependency notice.
 		if ( ! ( new WCAdminValidator() )->validate() ) {
 			$this->registered_services = [];
