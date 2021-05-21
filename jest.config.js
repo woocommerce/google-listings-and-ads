@@ -21,6 +21,8 @@ module.exports = {
 	],
 	moduleNameMapper: {
 		// Transform our `.~/` alias.
+		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
+		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		'\\.~/(.*)$': '<rootDir>/js/src/$1',
 	},
 	// Exclude e2e tests from unit testing.
