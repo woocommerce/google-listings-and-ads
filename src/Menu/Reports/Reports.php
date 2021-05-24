@@ -17,12 +17,10 @@ class Reports implements Service, Registerable {
 	 * Register a service.
 	 */
 	public function register(): void {
-		$is_reports_enabled = apply_filters( 'gla_enable_reports', false );
-
 		add_action(
 			'admin_menu',
 			function() {
-				if ( $is_reports_enabled ) {
+				if ( apply_filters( 'gla_enable_reports', true ) ) {
 					wc_admin_register_page(
 						[
 							'title'    => __( 'Reports', 'google-listings-and-ads' ),
