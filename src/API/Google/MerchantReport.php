@@ -73,6 +73,11 @@ class MerchantReport implements OptionsAwareInterface {
 				$this->report_data['next_page'] = $results->getNextPageToken();
 			}
 
+			// Sort intervals to generate an ordered graph.
+			if ( isset( $this->report_data['intervals'] ) ) {
+				ksort( $this->report_data['intervals'] );
+			}
+
 			$this->remove_report_indexes( [ 'products', 'free_listings', 'intervals' ] );
 
 			return $this->report_data;

@@ -77,6 +77,11 @@ class AdsReport implements OptionsAwareInterface {
 				$this->report_data['next_page'] = $page->getNextPageToken();
 			}
 
+			// Sort intervals to generate an ordered graph.
+			if ( isset( $this->report_data['intervals'] ) ) {
+				ksort( $this->report_data['intervals'] );
+			}
+
 			$this->remove_report_indexes( [ 'products', 'campaigns', 'intervals' ] );
 
 			return $this->report_data;
