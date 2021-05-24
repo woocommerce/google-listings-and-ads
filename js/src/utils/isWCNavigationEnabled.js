@@ -4,7 +4,7 @@
  * @return {boolean} True / false.
  */
 const isWCNavigationEnabled = () => {
-	return window.wcAdminFeatures?.navigation;
+	return !! window.wcAdminFeatures?.navigation;
 };
 
 export default isWCNavigationEnabled;
