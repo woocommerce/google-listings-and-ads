@@ -124,18 +124,6 @@ addFilter(
 				path: '/google/reports/programs',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 				navArgs: {
-					id: 'google-reports',
-				},
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Reports', 'google-listings-and-ads' ),
-				],
-				container: ProgramsReport,
-				path: '/google/reports/programs',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-				navArgs: {
 					id: 'google-reports-programs',
 				},
 			},
