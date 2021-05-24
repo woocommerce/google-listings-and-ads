@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import MainTabNav from '../main-tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
@@ -15,15 +15,13 @@ import ComingSoonNotice from './coming-soon-notice';
 import './index.scss';
 import useProductFeedPrefetch from './useProductFeedPrefetch';
 import AppSpinner from '.~/components/app-spinner';
-import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 
 const ProductFeed = () => {
 	const { hasFinishedResolution, data } = useProductFeedPrefetch();
-	const navigationEnabled = isWCNavigationEnabled();
 
 	return (
 		<>
-			{ ! navigationEnabled && <MainTabNav /> }
+			<NavigationClassic />
 			<SubmissionSuccessGuide />
 			<ComingSoonNotice />
 			<div className="gla-product-feed">

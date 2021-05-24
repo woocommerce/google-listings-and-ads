@@ -9,7 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  */
 import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import useProgramsReport from './useProgramsReport';
-import MainTabNav from '../../main-tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
@@ -87,7 +87,7 @@ const ProgramsReport = () => {
 				<ReportsTabNav />
 			) : (
 				<>
-					<MainTabNav />
+					<NavigationClassic />
 					<SubNav initialName="programs" />
 				</>
 			) }

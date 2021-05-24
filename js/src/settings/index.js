@@ -1,17 +1,14 @@
 /**
  * Internal dependencies
  */
-import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
-import MainTabNav from '../main-tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import DisconnectAccounts from './disconnect-accounts';
 import './index.scss';
 
 const Settings = () => {
-	const navigationEnabled = isWCNavigationEnabled();
-
 	return (
 		<div className="gla-settings">
-			{ ! navigationEnabled && <MainTabNav /> }
+			<NavigationClassic />
 			<DisconnectAccounts />
 		</div>
 	);

@@ -16,7 +16,7 @@ import {
 import useProductsReport from './useProductsReport';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
-import MainTabNav from '../../main-tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
@@ -122,7 +122,7 @@ const ProductsReportPage = () => {
 				<ReportsTabNav />
 			) : (
 				<>
-					<MainTabNav />
+					<NavigationClassic />
 					<SubNav initialName="products" />
 				</>
 			) }

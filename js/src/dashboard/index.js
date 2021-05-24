@@ -8,19 +8,17 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import MainTabNav from '../main-tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
 import { glaData } from '.~/constants';
-import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import './index.scss';
 
 const Dashboard = () => {
 	const trackEventReportId = 'dashboard';
 	const { enableReports } = glaData;
-	const navigationEnabled = isWCNavigationEnabled();
 
 	const ReportsLink = () => {
 		return (
@@ -32,7 +30,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="gla-dashboard">
-			{ ! navigationEnabled && <MainTabNav /> }
+			<NavigationClassic />
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }
