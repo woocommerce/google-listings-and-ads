@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation
  */
-abstract class DependencyValidator implements Validatable {
+abstract class DependencyValidator implements DependencyValidatorInterface {
 
 	/**
 	 * @var DependencyValidator[]
