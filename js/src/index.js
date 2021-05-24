@@ -19,11 +19,13 @@ import { ProgramsReport, ProductsReport } from './reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
 import './data';
+import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
 
 addFilter(
 	'woocommerce_admin_pages_list',
 	'woocommerce-marketing',
 	( pages ) => {
+		const navigationEnabled = isWCNavigationEnabled();
 		const initialBreadcrumbs = [
 			[ '', wcSettings.woocommerceTranslation ],
 		];
@@ -33,7 +35,7 @@ addFilter(
 		 * we want to display the plugin under WC Marketing;
 		 * otherwise, display it under WC Navigation - Extensions.
 		 */
-		if ( window.wcAdminFeatures?.navigation !== true ) {
+		if ( ! navigationEnabled ) {
 			initialBreadcrumbs.push( [
 				'/marketing',
 				__( 'Marketing', 'google-listings-and-ads' ),
