@@ -275,6 +275,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$wc_product = wc_get_product( $wc_product_id );
 			// Skip products that are no longer in WooCommerce.
 			if ( ! $wc_product ) {
+				do_action(
+					'gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
+					__METHOD__,
+				);
 				continue;
 			}
 
@@ -344,6 +349,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			// Skip products that are no longer in WooCommerce.
 			$wc_product = wc_get_product( $wc_product_id );
 			if ( ! $wc_product ) {
+				do_action(
+					'gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
+					__METHOD__,
+				);
 				continue;
 			}
 
@@ -362,8 +372,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				}
 				$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
 			} catch ( InvalidValue $e ) {
-				// Just don't include invalid products (or their parents).
-				;
+
+				// Don't include invalid products (or their parents).
+				do_action(
+					'gla_debug_message',
+					sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $wc_product_id ),
+					__METHOD__,
+				);
 			}
 		}
 	}
