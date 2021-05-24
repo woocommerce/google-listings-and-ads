@@ -8,23 +8,23 @@ use RuntimeException;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class DependencyValidator
+ * Class RequirementValidator
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation
  */
-abstract class DependencyValidator implements DependencyValidatorInterface {
+abstract class RequirementValidator implements RequirementValidatorInterface {
 
 	/**
-	 * @var DependencyValidator[]
+	 * @var RequirementValidator[]
 	 */
 	private static $instances = [];
 
 	/**
-	 * Get the instance of the Dependency object.
+	 * Get the instance of the RequirementValidator object.
 	 *
-	 * @return DependencyValidator
+	 * @return RequirementValidator
 	 */
-	public static function instance(): DependencyValidator {
+	public static function instance(): RequirementValidator {
 		$class = get_called_class();
 		if ( ! isset( self::$instances[ $class ] ) ) {
 			self::$instances[ $class ] = new $class();
@@ -34,7 +34,7 @@ abstract class DependencyValidator implements DependencyValidatorInterface {
 
 
 	/**
-	 * Add a standard dependency validation error notice.
+	 * Add a standard requirement validation error notice.
 	 *
 	 * @param RuntimeException $e
 	 */

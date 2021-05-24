@@ -8,23 +8,23 @@ use RuntimeException;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ExtensionDependencyException
+ * Class ExtensionRequirementException
  *
  * Error messages generated in this class should be translated, as they are intended to be displayed
  * to end users.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
-class ExtensionDependencyException extends RuntimeException implements GoogleListingsAndAdsException {
+class ExtensionRequirementException extends RuntimeException implements GoogleListingsAndAdsException {
 
 	/**
-	 * Create a new instance of the exception when a required plugin/extension isn't enabled.
+	 * Create a new instance of the exception when a required plugin/extension isn't activated.
 	 *
 	 * @param string $plugin_name The name of the missing required plugin.
 	 *
 	 * @return static
 	 */
-	public static function missing_required_plugin( string $plugin_name ): ExtensionDependencyException {
+	public static function missing_required_plugin( string $plugin_name ): ExtensionRequirementException {
 		return new static(
 			sprintf(
 				/* translators: 1 the missing plugin name */

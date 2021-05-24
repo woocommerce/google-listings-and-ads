@@ -6,15 +6,15 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Interface DependencyValidatorInterface
+ * Interface RequirementValidatorInterface
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation
  */
-interface DependencyValidatorInterface {
+interface RequirementValidatorInterface {
 	/**
-	 * Validate dependencies that we require for the plugin to function properly.
+	 * Validate requirements for plugin to function properly.
 	 *
-	 * @return bool True if the dependencies are valid.
+	 * @return bool True if the requirements are met.
 	 */
 	public function validate(): bool;
 }

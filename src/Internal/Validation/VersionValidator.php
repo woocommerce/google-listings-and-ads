@@ -12,10 +12,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation
  */
-class VersionValidator extends DependencyValidator {
+class VersionValidator extends RequirementValidator {
 
 	/**
-	 * Validate all dependencies that we require for the plugin to function properly.
+	 * Validate all requirements for the plugin to function properly.
 	 *
 	 * @return bool
 	 */
