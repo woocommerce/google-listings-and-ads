@@ -20,9 +20,9 @@ module.exports = {
 		`<rootDir>/node_modules/(?!@woocommerce/(${ wcPackagesNeedTransform })/build/)`,
 	],
 	moduleNameMapper: {
-		// Transform our `.~/` alias.
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
+		// Transform our `.~/` alias.
 		'^\\.~/(.*)$': '<rootDir>/js/src/$1',
 	},
 	// Exclude e2e tests from unit testing.
