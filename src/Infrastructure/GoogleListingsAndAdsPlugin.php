@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation\WCAdminValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\WCAdminValidator;
 use Psr\Container\ContainerInterface;
 
 /**

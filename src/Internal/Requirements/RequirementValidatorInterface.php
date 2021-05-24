@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Interface RequirementValidatorInterface
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation
+ * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
 interface RequirementValidatorInterface {
 	/**

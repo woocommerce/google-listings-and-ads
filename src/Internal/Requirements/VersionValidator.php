@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidVersion;
 
@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class VersionValidator
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\Validation
+ * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
 class VersionValidator extends RequirementValidator {
 
