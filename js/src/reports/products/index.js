@@ -21,8 +21,6 @@ import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
-import SubNav from '../sub-nav';
-import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import ReportsTabNav from '../reports-tab-nav';
 
 /**
@@ -114,18 +112,11 @@ const ProductsReportPage = () => {
 	const { loaded, data: campaigns } = useAdsCampaigns();
 	const hasPaidSource =
 		loaded && campaigns.some( ( { status } ) => status === 'enabled' );
-	const navigationEnabled = isWCNavigationEnabled();
 
 	return (
 		<>
-			{ navigationEnabled ? (
-				<ReportsTabNav />
-			) : (
-				<>
-					<NavigationClassic />
-					<SubNav initialName="products" />
-				</>
-			) }
+			<NavigationClassic />
+			<ReportsTabNav />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />
 			) : (

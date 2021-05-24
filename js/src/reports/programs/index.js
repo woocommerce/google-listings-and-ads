@@ -7,10 +7,8 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import useProgramsReport from './useProgramsReport';
 import NavigationClassic from '.~/components/navigation-classic';
-import SubNav from '../sub-nav';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
@@ -59,7 +57,6 @@ const tableMetrics = [
 ];
 
 const ProgramsReport = () => {
-	const navigationEnabled = isWCNavigationEnabled();
 	const trackEventId = 'reports-programs';
 
 	// Only after calling the API we would know if the default "All listings" includes or not any paid listings.
@@ -83,14 +80,8 @@ const ProgramsReport = () => {
 
 	return (
 		<>
-			{ navigationEnabled ? (
-				<ReportsTabNav />
-			) : (
-				<>
-					<NavigationClassic />
-					<SubNav initialName="programs" />
-				</>
-			) }
+			<NavigationClassic />
+			<ReportsTabNav />
 			<ProgramsReportFilters
 				query={ getQuery() }
 				trackEventId={ trackEventId }

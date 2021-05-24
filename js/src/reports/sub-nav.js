@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { NavigableMenu } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
 
@@ -12,31 +11,16 @@ import classnames from 'classnames';
 import './sub-nav.scss';
 
 /**
- * Array of links, with `{ name, title, path }`.
- */
-const tabs = [
-	{
-		name: 'programs',
-		title: __( 'Programs', 'google-listings-and-ads' ),
-		path: '%2Fgoogle%2Freports%2Fprograms',
-	},
-	{
-		name: 'products',
-		title: __( 'Products', 'google-listings-and-ads' ),
-		path: '%2Fgoogle%2Freports%2Fproducts',
-	},
-];
-
-/**
  * Navigation component that mimics the existing 3rd level navigation component written with jQuery.
  * Pre-configured to be used at "Reports" tab. Consists of "Programs" and "Products" links.
- * Relies on globa `.subsubsub` class.
+ * Relies on global `.subsubsub` class.
  *
  * @param {Object} props
- * @param {string} props.initialName Name of the current tab.
+ * @param {string} props.selectedKey Key of the selected tab.
+ * @param {Array<Object>} props.tabs Array of tabs; each tab is an object `{ key, title, path }`.
  */
 const SubNav = ( props ) => {
-	const { initialName } = props;
+	const { selectedKey, tabs } = props;
 
 	// Add bunch of spaces `' '` here and there to match jQuery implementation.
 	return (
@@ -46,19 +30,19 @@ const SubNav = ( props ) => {
 			className="subsubsub gla-sub-nav"
 		>
 			{ tabs.map( ( tab, index ) => {
-				const isCurrent = tab.name === initialName;
+				const isCurrent = tab.key === selectedKey;
 
 				return (
 					<>
 						<Link
-							key={ tab.name }
+							key={ tab.key }
 							className={ classnames( { current: isCurrent } ) }
 							tabIndex={ isCurrent ? null : -1 }
-							id={ `${ tab.name }` }
+							id={ `${ tab.key }` }
 							href={ 'admin.php?page=wc-admin&path=' + tab.path }
 							role="tab"
 							aria-selected={ isCurrent }
-							aria-controls={ `${ tab.name }-view` }
+							aria-controls={ `${ tab.key }-view` }
 							aria-current={ isCurrent ? 'page' : false }
 						>
 							{ tab.title + ' ' }
