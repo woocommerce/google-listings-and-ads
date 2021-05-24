@@ -24,7 +24,7 @@ const tabs = [
 	},
 ];
 
-const ReportsTabNav = () => {
+const ReportsNavigation = () => {
 	const navigationEnabled = isWCNavigationEnabled();
 	const path = getPath();
 	const selectedKey = tabs.find( ( el ) => el.path === path )?.key;
@@ -36,4 +36,4 @@ const ReportsTabNav = () => {
 	);
 };
 
-export default ReportsTabNav;
+export default ReportsNavigation;

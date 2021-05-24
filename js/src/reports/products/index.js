@@ -21,7 +21,7 @@ import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
-import ReportsTabNav from '../reports-tab-nav';
+import ReportsNavigation from '../reports-navigation';
 
 /**
  * Available metrics and their human-readable labels.
@@ -116,7 +116,7 @@ const ProductsReportPage = () => {
 	return (
 		<>
 			<NavigationClassic />
-			<ReportsTabNav />
+			<ReportsNavigation />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />
 			) : (

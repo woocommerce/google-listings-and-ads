@@ -13,7 +13,7 @@ import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
-import ReportsTabNav from '../reports-tab-nav';
+import ReportsNavigation from '../reports-navigation';
 
 /**
  * Available metrics and their human-readable labels.
@@ -81,7 +81,7 @@ const ProgramsReport = () => {
 	return (
 		<>
 			<NavigationClassic />
-			<ReportsTabNav />
+			<ReportsNavigation />
 			<ProgramsReportFilters
 				query={ getQuery() }
 				trackEventId={ trackEventId }
