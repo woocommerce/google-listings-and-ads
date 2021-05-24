@@ -35,6 +35,9 @@ export function getPerformanceQuery( type, query, dateReference ) {
 }
 
 /**
+ * @typedef {import('./selectors').ReportQuery} ReportQuery
+ */
+/**
  * Get report query for fetching report data from API.
  *
  * @param  {string} category Category of report, 'programs' or 'products'.
@@ -42,7 +45,7 @@ export function getPerformanceQuery( type, query, dateReference ) {
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {Object} The report query for fetching report data from API.
+ * @return {ReportQuery} The report query for fetching report data from API.
  */
 export function getReportQuery( category, type, query, dateReference ) {
 	const baseQuery = getPerformanceQuery( type, query, dateReference );
@@ -74,7 +77,7 @@ export function getReportQuery( category, type, query, dateReference ) {
  *
  * @param  {string} category Category of report, 'programs' or 'products'.
  * @param  {string} type Type of report, 'free' or 'paid'.
- * @param  {Object} reportQuery The query parameters of report API.
+ * @param  {ReportQuery} reportQuery The query parameters of report API.
  *
  * @return {string} The report key.
  */

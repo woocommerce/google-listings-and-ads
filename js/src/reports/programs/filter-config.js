@@ -58,6 +58,8 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 			'paged',
 			'per_page',
 			'selectedMetric',
+			'orderby',
+			'order',
 		],
 		param: 'filter',
 		showFilters: () => true,

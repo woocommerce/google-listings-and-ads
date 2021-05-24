@@ -10,4 +10,6 @@ module.exports = {
 		// Transform our `.~/` alias.
 		'\\.~/(.*)$': '<rootDir>/js/src/$1',
 	},
+	// Exclude e2e tests from unit testing.
+	testPathIgnorePatterns: [ '/node_modules/', '/tests/e2e/' ],
 };

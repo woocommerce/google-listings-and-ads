@@ -27,7 +27,7 @@ const emptyData = {
  * @typedef { import(".~/data/utils").ReportFieldsSchema } ReportFieldsSchema
  * @typedef { import(".~/data/utils").PerformanceData } PerformanceData
  * @typedef { import("../index.js").ProgramsReportData } ProgramsReportData
- * @typedef { import("../index.js").ReportSchema<ProgramsReportData> } ProgramsReportSchema
+ * @typedef { import("../index.js").ProgramsReportSchema } ProgramsReportSchema
  */
 
 /**
@@ -98,7 +98,8 @@ function transfromReportForType( getReport, type, query ) {
 		};
 	}
 
-	return { data, loaded };
+	const reportQuery = primary.reportQuery;
+	return { data, loaded, reportQuery };
 }
 
 /**
@@ -157,7 +158,8 @@ function transformReportAggregated( getReport, query ) {
 		};
 	}
 
-	return { data, loaded };
+	const reportQuery = paid.primary.reportQuery;
+	return { data, loaded, reportQuery };
 }
 
 /**

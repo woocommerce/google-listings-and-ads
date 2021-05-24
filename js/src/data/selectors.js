@@ -106,21 +106,25 @@ export const getMCProductFeed = ( state, query ) => {
 };
 
 /**
+ * @typedef {Object} ReportQuery
+ * @property {string} after Start date in 'YYYY-MM-DD' format.
+ * @property {string} before End date in 'YYYY-MM-DD' format.
+ * @property {Array<string>} fields An array of performance metrics field to retrieve.
+ * @property {string} [ids] Filter product or campaign by a comma separated list of IDs.
+ * @property {string} [orderby] Column to order the results by, this must be one of the fields in requesting.
+ * @property {string} [order] Results order, 'desc' or 'asc'.
+ * @property {string} [interval] How to segment the data. Note that the 'free' type data only supports segmenting by day,
+ *                                         but the 'paid' type report allows any of the following values:
+ *                                         'day', 'week', 'month', 'quarter', 'year'
+ */
+
+/**
  * Select report data according to parameters and report API query.
  *
  * @param  {Object} state The current store state will be injected by `wp.data`.
  * @param  {string} category Category of report, 'programs' or 'products'.
  * @param  {string} type Type of report, 'free' or 'paid'.
- * @param  {Object} reportQuery Query options of report API.
- * @param  {string} reportQuery.after Start date in 'YYYY-MM-DD' format.
- * @param  {string} reportQuery.before End date in 'YYYY-MM-DD' format.
- * @param  {Array<string>} reportQuery.fields An array of performance metrics field to retrieve.
- * @param  {string} [reportQuery.ids] Filter product or campaign by a comma separated list of IDs.
- * @param  {string} [reportQuery.orderby] Column to order the results by, this must be one of the fields in requesting.
- * @param  {string} [reportQuery.order] Results order, 'desc' or 'asc'.
- * @param  {string} [reportQuery.interval] How to segment the data. Note that the 'free' type data only supports segmenting by day,
- *                                         but the 'paid' type report allows any of the following values:
- *                                         'day', 'week', 'month', 'quarter', 'year'
+ * @param  {ReportQuery} reportQuery Query options of report API.
  *
  * @return {Object|null} The report data of specified parameters. It would return `null` before the data is fetched.
  */
@@ -130,10 +134,13 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
 };
 
 /**
- * @typedef {Object} ReportData
+ * @typedef {Object} ReportSchema
  * @property {boolean} loaded Whether the data have been loaded.
- * @property {Object|null} data The report data of specified parameters. It would return `null` before the data is fetched.
+ * @property {ReportData} data Fetched report data.
+ * @property {ReportQuery} reportQuery The actual, resolved query used to request the report. Available synchronously.
+ * @template ReportData
  */
+
 /**
  * Select report data according to parameters and URL query.
  *
@@ -143,23 +150,26 @@ export const getReportByApiQuery = ( state, category, type, reportQuery ) => {
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {ReportData} Report data.
+ * @return {ReportSchema} Report data.
  */
 export const getReport = createRegistrySelector(
 	( select ) => ( state, category, type, query, dateReference ) => {
 		const selector = select( STORE_KEY );
-		const args = [
+		const reportQuery = getReportQuery(
 			category,
 			type,
-			getReportQuery( category, type, query, dateReference ),
-		];
+			query,
+			dateReference
+		);
+		const args = [ category, type, reportQuery ];
 
 		return {
-			data: selector.getReportByApiQuery( ...args ),
+			reportQuery,
 			loaded: selector.hasFinishedResolution(
 				'getReportByApiQuery',
 				args
 			),
+			data: selector.getReportByApiQuery( ...args ),
 		};
 	}
 );

@@ -20,15 +20,19 @@ const compareParam = 'filter';
  * @see AppTableCard
  *
  * @param {Object} props React props.
- * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {boolean} props.isLoading Whether the data is still being loaded.
+ * @param {string} [props.orderby] Key by which the programs should be ordered.
+ * @param {string} [props.order] Sorting order, 'desc' or 'asc'.
+ * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {Array<FreeListingsData>} props.freeListings Report's programs data.
  * @param {Array<ProgramsData>} props.campaigns Report's programs data.
  * @param {Object} [props.restProps] Properties to be forwarded to CompareTableCard.
  */
 const CompareProgramsTableCard = ( {
-	metrics,
 	isLoading,
+	orderby,
+	order,
+	metrics,
 	freeListings,
 	campaigns,
 	...restProps
@@ -46,7 +50,7 @@ const CompareProgramsTableCard = ( {
 			return campaigns;
 		}
 		// For V1 we assume, there is only one "Free listings" object.
-		return [
+		const mergedPrograms = [
 			{
 				...freeListings[ 0 ],
 				name: __( 'Free Listings', 'google-listings-and-ads' ),
@@ -54,7 +58,25 @@ const CompareProgramsTableCard = ( {
 			},
 			...campaigns,
 		];
-	}, [ isLoading, freeListings, campaigns ] );
+
+		// Sort only merged lists. Individual lists should be already sorted by the server-side.
+		if ( campaigns.length ) {
+			mergedPrograms.sort( ( program1, program2 ) => {
+				return (
+					// Consider `undefined` the lowest.
+					( program1.subtotals[ orderby ] ||
+						Number.NEGATIVE_INFINITY ) -
+					( program2.subtotals[ orderby ] ||
+						Number.NEGATIVE_INFINITY )
+				);
+			} );
+			if ( order === 'desc' ) {
+				mergedPrograms.reverse();
+			}
+		}
+
+		return mergedPrograms;
+	}, [ isLoading, freeListings, campaigns, orderby, order ] );
 
 	return (
 		<CompareTableCard
