@@ -8,7 +8,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
-import './sub-nav.scss';
+import './index.scss';
 
 /**
  * Navigation component that mimics the existing 3rd level navigation component written with jQuery.
@@ -19,7 +19,7 @@ import './sub-nav.scss';
  * @param {string} props.selectedKey Key of the selected tab.
  * @param {Array<Object>} props.tabs Array of tabs; each tab is an object `{ key, title, path }`.
  */
-const SubNav = ( props ) => {
+const AppSubNav = ( props ) => {
 	const { selectedKey, tabs } = props;
 
 	// Add bunch of spaces `' '` here and there to match jQuery implementation.
@@ -55,4 +55,4 @@ const SubNav = ( props ) => {
 	);
 };
 
-export default SubNav;
+export default AppSubNav;
