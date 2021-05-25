@@ -30,6 +30,10 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		add_filter(
 			'woocommerce_marketing_menu_items',
 			function( $menu_items ) {
+				if ( Features::is_enabled( 'navigation' ) ) {
+					return $menu_items;
+				}
+
 				return $this->add_items( $menu_items );
 			}
 		);
@@ -37,36 +41,10 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		add_action(
 			'admin_menu',
 			function() {
-				if ( ! Features::is_enabled( 'navigation' ) ) {
-					$this->fix_menu_paths();
+				if ( Features::is_enabled( 'navigation' ) ) {
+					$this->register_navigation_pages();
 				} else {
-					wc_admin_register_page(
-						[
-							'id'       => 'google-listings-and-ads-category',
-							'title'    => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-							'parent'   => 'woocommerce',
-							'path'     => '/google/dashboard',
-							'nav_args' => [
-								'title'        => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-								'is_category'  => true,
-								'menuId'       => 'plugins',
-								'is_top_level' => true,
-							],
-						]
-					);
-
-					wc_admin_register_page(
-						[
-							'id'       => 'google-dashboard',
-							'title'    => __( 'Dashboard', 'google-listings-and-ads' ),
-							'parent'   => 'google-listings-and-ads-category',
-							'path'     => '/google/dashboard',
-							'nav_args' => [
-								'order'  => 10,
-								'parent' => 'google-listings-and-ads-category',
-							],
-						]
-					);
+					$this->fix_menu_paths();
 				}
 			}
 		);
@@ -80,15 +58,46 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 	 * @return array
 	 */
 	protected function add_items( array $items ): array {
-		if ( ! Features::is_enabled( 'navigation' ) ) {
-			$items[] = [
-				'id'         => 'google-dashboard',
-				'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
-				'path'       => '/google/dashboard',
-				'capability' => 'manage_woocommerce',
-			];
-		}
+		$items[] = [
+			'id'         => 'google-dashboard',
+			'title'      => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+			'path'       => '/google/dashboard',
+			'capability' => 'manage_woocommerce',
+		];
 
 		return $items;
+	}
+
+	/**
+	 * Register navigation pages for WC Navigation.
+	 */
+	protected function register_navigation_pages(): void {
+		wc_admin_register_page(
+			[
+				'id'       => 'google-listings-and-ads-category',
+				'title'    => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				'parent'   => 'woocommerce',
+				'path'     => '/google/dashboard',
+				'nav_args' => [
+					'title'        => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+					'is_category'  => true,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
+				],
+			]
+		);
+
+		wc_admin_register_page(
+			[
+				'id'       => 'google-dashboard',
+				'title'    => __( 'Dashboard', 'google-listings-and-ads' ),
+				'parent'   => 'google-listings-and-ads-category',
+				'path'     => '/google/dashboard',
+				'nav_args' => [
+					'order'  => 10,
+					'parent' => 'google-listings-and-ads-category',
+				],
+			]
+		);
 	}
 }
