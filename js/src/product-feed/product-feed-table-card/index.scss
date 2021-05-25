@@ -1,4 +1,59 @@
 .gla-product-feed-table-card {
+	.components-card__header {
+		.woocommerce-table__actions {
+			align-items: center;
+			justify-content: flex-end;
+			min-height: 36px;
+
+			// Override 100% div width within actions
+			> div {
+				width: auto;
+			}
+
+		}
+	}
+
+	.app-tooltip__children-container {
+		// Clear the 4px space gap for SVG
+		line-height: 0;
+
+		> svg {
+			fill: $gray-600;
+		}
+	}
+
+	// Override the SelectControl to smaller size
+	.woocommerce-table__actions {
+		.components-base-control {
+			width: 250px;
+			height: 36px;
+			font-size: 13px;
+		}
+
+		.components-base-control__label {
+			font-size: 13px;
+		}
+
+		.with-value .components-base-control__label {
+			display: none;
+		}
+
+		.woocommerce-select-control__listbox {
+			top: 100%;
+		}
+
+		.woocommerce-select-control__option {
+			min-height: 36px;
+			font-size: 13px;
+		}
+
+		.woocommerce-select-control__control-input {
+			margin-top: 0;
+			font-size: 13px;
+			color: $gray-900;
+		}
+	}
+
 	.woocommerce-table {
 		margin-bottom: 0;
 	}
