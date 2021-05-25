@@ -52,15 +52,17 @@ const AppInputPriceControl = ( props ) => {
 	 * and pass up to the form state via onChange
 	 * to ensure that the number value in form state is consistent
 	 * with the string value the user is seeing.
+	 *
+	 * @param {...any} args
 	 */
-	const handleBlur = () => {
+	const handleBlur = ( ...args ) => {
 		const numberValue = parseStringToNumber( stringValue, currencySetting );
 
 		if ( numberValue !== value ) {
 			onChange( numberValue );
 		}
 
-		onBlur();
+		onBlur( ...args );
 	};
 
 	return (
