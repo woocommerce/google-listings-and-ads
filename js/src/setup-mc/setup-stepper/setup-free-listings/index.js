@@ -13,13 +13,13 @@ import { getNewPath } from '@woocommerce/navigation';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
+import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import FormContent from './form-content';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
-import checkErrors from './checkErrors';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 
 /**

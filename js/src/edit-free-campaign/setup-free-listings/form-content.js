@@ -35,12 +35,12 @@ const FormContent = ( {
 	saving = false,
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
-	const { errors, handleSubmit } = formProps;
+	const { isValidForm, handleSubmit } = formProps;
 
 	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
 
 	const isCompleteSetupDisabled =
-		shouldDisplayTaxRate === null || Object.keys( errors ).length >= 1;
+		shouldDisplayTaxRate === null || ! isValidForm;
 
 	return (
 		<StepContent>
