@@ -122,6 +122,7 @@ class AttributesTab implements Service, Registerable, Conditional {
 		}
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$submitted_data = (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) );
+		// phpcs:enable WordPress.Security.NonceVerification
 
 		$form->submit( $submitted_data );
 		$this->update_data( $product, $form->get_data() );
