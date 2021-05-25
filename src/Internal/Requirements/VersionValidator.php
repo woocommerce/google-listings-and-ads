@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidVersion;
 
@@ -10,28 +10,21 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class VersionValidator
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds
+ * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
-class VersionValidator {
+class VersionValidator extends RequirementValidator {
 
 	/**
-	 * Validate all versions that we require for the plugin to function properly.
+	 * Validate all requirements for the plugin to function properly.
 	 *
 	 * @return bool
 	 */
 	public function validate(): bool {
 		try {
 			$this->validate_php_version();
-
 			return true;
 		} catch ( InvalidVersion $e ) {
-			add_action(
-				'admin_notices',
-				function() use ( $e ) {
-					$this->admin_notice( $e->getMessage() );
-				}
-			);
-
+			$this->add_admin_notice( $e );
 			return false;
 		}
 	}
@@ -45,18 +38,5 @@ class VersionValidator {
 		if ( ! version_compare( PHP_VERSION, '7.3', '>=' ) ) {
 			throw InvalidVersion::from_php_version( PHP_VERSION, '7.3' );
 		}
-	}
-
-	/**
-	 * Display an admin notice with the provided message.
-	 *
-	 * @param string $message
-	 */
-	protected function admin_notice( string $message ) {
-		?>
-		<div class="notice notice-error">
-			<p><?php echo esc_html( $message ); ?></p>
-		</div>
-		<?php
 	}
 }
