@@ -9,7 +9,7 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
@@ -25,10 +25,22 @@ import AppCountrySelect from '.~/components/app-country-select';
 const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 	const { code } = useStoreCurrency();
 
-	const handleValidate = () => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
-		// TODO: validation logic.
+		if ( values.countries.length === 0 ) {
+			errors.countries = __(
+				'Please specify at least one country.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.rate <= 0 ) {
+			errors.rate = __(
+				'The estimated shipping rate must be bigger than 0.',
+				'google-listings-and-ads'
+			);
+		}
 
 		return errors;
 	};
@@ -43,13 +55,13 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 			initialValues={ {
 				countries,
 				currency: code,
-				rate: '',
+				rate: 0,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, handleSubmit } = formProps;
+				const { getInputProps, isValidForm, handleSubmit } = formProps;
 
 				return (
 					<AppModal
@@ -62,6 +74,7 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 							<Button
 								key="save"
 								isPrimary
+								disabled={ ! isValidForm }
 								onClick={ handleSubmit }
 							>
 								{ __(
@@ -86,7 +99,7 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
-							<AppInputControl
+							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
