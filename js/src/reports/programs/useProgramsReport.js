@@ -8,6 +8,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data/constants';
 import {
+	paidFields,
 	fieldsToPerformance,
 	mapReportFieldsToPerformance,
 } from '.~/data/utils';
@@ -138,6 +139,11 @@ function transformReportAggregated( getReport, query ) {
 	let data = emptyData;
 
 	if ( loaded && haveAllData ) {
+		const aggregatedIntervals = aggregateIntervals(
+			free.primary.data.intervals,
+			paid.primary.data.intervals
+		);
+
 		data = {
 			freeListings: free.primary.data.free_listings || [],
 			campaigns: paid.primary.data.campaigns || [],
@@ -145,10 +151,7 @@ function transformReportAggregated( getReport, query ) {
 			// https://github.com/woocommerce/google-listings-and-ads/issues/589#issuecomment-840317729
 			// But maybe its better to do it in more general level,
 			// as we need that for single type Product reports as well.
-			intervals: [
-				...( free.primary.data.intervals || [] ),
-				...( paid.primary.data.intervals || [] ),
-			],
+			intervals: aggregatedIntervals,
 			totals: mapReportFieldsToAggregatesPerformance(
 				paid.primary.data.totals,
 				paid.secondary.data.totals,
@@ -195,4 +198,38 @@ export function mapReportFieldsToAggregatesPerformance(
 		} ),
 		{}
 	);
+}
+
+function aggregateIntervals( intervals1, intervals2 ) {
+	// Convert to Map object
+	// Consider doing it on serverside
+	const intervals1Map = new Map(
+		intervals1.map( ( item ) => [ item.interval, item.subtotals ] )
+	);
+	const intervals2Map = new Map(
+		intervals2.map( ( item ) => [ item.interval, item.subtotals ] )
+	);
+	const allIntervals = [
+		...new Set( [ ...intervals1Map.keys(), ...intervals2Map.keys() ] ),
+	].sort();
+	// We assume subtotals has the consistent schema across all intervals, and the `paidFields` is the superset.
+	const result = allIntervals.reduce( ( acc, interval ) => {
+		acc.push( {
+			interval,
+			subtotals: mergeSubtotals(
+				paidFields,
+				intervals1Map.get( interval ),
+				intervals2Map.get( interval )
+			),
+		} );
+		return acc;
+	}, [] );
+	return result;
+}
+
+function mergeSubtotals( metrics, totals1 = {}, totals2 = {} ) {
+	return metrics.reduce( ( sum, metric ) => {
+		sum[ metric ] = ( totals1[ metric ] || 0 ) + ( totals2[ metric ] || 0 );
+		return sum;
+	}, {} );
 }
