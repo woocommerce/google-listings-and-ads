@@ -196,7 +196,7 @@ class AdsGroup implements OptionsAwareInterface {
 		$return  = [];
 		$results = ( new AdsGroupAdQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() )
-			->where( 'ad_group_ad.campaign', $campaign_resource_name )
+			->where( 'ad_group.campaign', $campaign_resource_name )
 			->get_results();
 
 		/** @var GoogleAdsRow $row */
@@ -259,7 +259,7 @@ class AdsGroup implements OptionsAwareInterface {
 		$return  = [];
 		$results = ( new AdsListingGroupQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() )
-			->where( 'ad_group_criterion.campaign', $campaign_resource_name )
+			->where( 'ad_group.campaign', $campaign_resource_name )
 			->get_results();
 
 		/** @var GoogleAdsRow $row */
