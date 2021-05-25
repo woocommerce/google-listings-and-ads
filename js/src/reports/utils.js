@@ -124,7 +124,7 @@ export function addBaseToPerformance( performance, base ) {
 			...acc,
 			[ key ]: fieldsToPerformance(
 				performance[ key ].value,
-				base[ key ].value,
+				base[ key ]?.value,
 				performance[ key ].missingFreeListingsData ||
 					base[ key ].missingFreeListingsData
 			),
