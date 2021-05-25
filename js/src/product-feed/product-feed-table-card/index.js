@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import {
 	CheckboxControl,
@@ -27,6 +27,7 @@ import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
 import { useAppDispatch } from '.~/data';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import EditVisibilityAction from './edit-visibility-action';
 import statusLabelMap from './statusLabelMap';
 
@@ -48,6 +49,7 @@ const ProductFeedTableCard = () => {
 		query
 	);
 	const { updateMCProductVisibility } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const handleSelectAllCheckboxChange = ( checked ) => {
 		if ( checked ) {
@@ -123,7 +125,22 @@ const ProductFeedTableCard = () => {
 
 	const handleEditVisibilityClick = ( visible ) => {
 		const ids = Array.from( selectedRows );
-		updateMCProductVisibility( ids, visible );
+		const { length } = ids;
+
+		updateMCProductVisibility( ids, visible ).then( () => {
+			const message = sprintf(
+				// translators: %d: number of products are updated successfully, with minimum value of 1.
+				_n(
+					'You successfully changed the channel visibility of %d product',
+					'You successfully changed the channel visibility of %d products',
+					length,
+					'google-listings-and-ads'
+				),
+				length
+			);
+			createNotice( 'success', message );
+		} );
+
 		handleSelectAllCheckboxChange( false );
 	};
 
