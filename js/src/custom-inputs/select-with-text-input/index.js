@@ -16,7 +16,7 @@ const init = ( jQuery ) => {
 	selectWithTextInputBoxes.each( function ( i, input ) {
 		toggleCustomInput( jQuery( input ) );
 	} );
-	selectWithTextInputBoxes.change( function () {
+	selectWithTextInputBoxes.on( 'change', function () {
 		toggleCustomInput( jQuery( this ) );
 	} );
 };

@@ -10,7 +10,7 @@ const replaceNonInteger = ( input ) => {
 
 const init = ( jQuery ) => {
 	const integerInput = jQuery( '.gla-input-integer[type=text]' );
-	integerInput.change( function () {
+	integerInput.on( 'change', function () {
 		replaceNonInteger( jQuery( this ) );
 	} );
 	integerInput.on( 'keyup', function () {
