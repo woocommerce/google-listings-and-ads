@@ -39,6 +39,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 		if ( function_exists( 'wc_get_logger' ) ) {
 			$this->logger = wc_get_logger();
 
+			add_action( 'gla_debug_message', [ $this, 'log_message' ], 10, 2 );
 			add_action( 'gla_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_mc_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_ads_client_exception', [ $this, 'log_exception' ], 10, 2 );
@@ -49,12 +50,12 @@ class DebugLogger implements Service, Registerable, Conditional {
 	}
 
 	/**
-	 * Log a JSON response.
+	 * Log an exception.
 	 *
 	 * @param Exception $exception
 	 * @param string    $method
 	 */
-	public function log_exception( $exception, string $method ) {
+	public function log_exception( $exception, string $method ): void {
 		$this->log( $exception->getMessage(), $method );
 	}
 
@@ -64,8 +65,18 @@ class DebugLogger implements Service, Registerable, Conditional {
 	 * @param JSON   $response
 	 * @param string $method
 	 */
-	public function log_response( $response, string $method ) {
+	public function log_response( $response, string $method ): void {
 		$message = wp_json_encode( $response, JSON_PRETTY_PRINT );
+		$this->log( $message, $method );
+	}
+
+	/**
+	 * Log a generic note.
+	 *
+	 * @param string $message
+	 * @param string $method
+	 */
+	public function log_message( string $message, string $method ): void {
 		$this->log( $message, $method );
 	}
 
