@@ -5,7 +5,6 @@ import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import {
 	CheckboxControl,
-	Button,
 	Card,
 	CardHeader,
 	CardBody,
@@ -26,7 +25,9 @@ import classnames from 'classnames';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
+import { useAppDispatch } from '.~/data';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import EditVisibilityAction from './edit-visibility-action';
 import statusLabelMap from './statusLabelMap';
 
 const PER_PAGE = 10;
@@ -46,9 +47,7 @@ const ProductFeedTableCard = () => {
 		'getMCProductFeed',
 		query
 	);
-
-	// TODO: what happens upon clicking the Edit Visibility button.
-	const handleEditVisibilityClick = () => {};
+	const { updateMCProductVisibility } = useAppDispatch();
 
 	const handleSelectAllCheckboxChange = ( checked ) => {
 		if ( checked ) {
@@ -122,18 +121,17 @@ const ProductFeedTableCard = () => {
 		{ key: 'action', label: '', required: true },
 	];
 
+	const handleEditVisibilityClick = ( visible ) => {
+		const ids = Array.from( selectedRows );
+		updateMCProductVisibility( ids, visible );
+		handleSelectAllCheckboxChange( false );
+	};
+
 	const actions = (
-		<Button
-			isSecondary
-			disabled={ selectedRows.size === 0 }
-			title={ __(
-				'Select one or more products',
-				'google-listings-and-ads'
-			) }
-			onClick={ handleEditVisibilityClick }
-		>
-			{ __( 'Edit channel visibility', 'google-listings-and-ads' ) }
-		</Button>
+		<EditVisibilityAction
+			selectedSize={ selectedRows.size }
+			onActionClick={ handleEditVisibilityClick }
+		/>
 	);
 
 	return (
