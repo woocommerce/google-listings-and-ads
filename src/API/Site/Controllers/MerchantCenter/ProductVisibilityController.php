@@ -58,6 +58,7 @@ class ProductVisibilityController extends BaseController {
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->get_update_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -73,13 +74,6 @@ class ProductVisibilityController extends BaseController {
 		return function( Request $request ) {
 			$ids     = $request->get_param( 'ids' );
 			$visible = $request->get_param( 'visible' );
-			if ( ! is_bool( $visible ) ) {
-				return new Response(
-					[ 'message' => __( 'Visible must be true or false.', 'google-listings-and-ads' ) ],
-					400
-				);
-			}
-			$visible = $visible ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW;
 
 			$success = [];
 			$errors  = [];
@@ -87,7 +81,10 @@ class ProductVisibilityController extends BaseController {
 				try {
 					$product_id = $this->product_helper->maybe_swap_for_parent_id( intval( $product_id ) );
 					$product    = wc_get_product( $product_id );
-					$product->update_meta_data( $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ), $visible );
+					$product->update_meta_data(
+						$this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ),
+						$visible ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW
+					);
 					$product->save();
 					$success[] = $product_id;
 				} catch ( Exception $e ) {
@@ -131,6 +128,31 @@ class ProductVisibilityController extends BaseController {
 				'items'             => [
 					'type' => 'numeric',
 				],
+			],
+		];
+	}
+
+	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params(): array {
+		return [
+			'context' => $this->get_context_param( [ 'default' => 'view' ] ),
+			'ids'     => [
+				'description'       => __( 'IDs of the products to update.', 'google-listings-and-ads' ),
+				'type'              => 'array',
+				'sanitize_callback' => 'wp_parse_slug_list',
+				'validate_callback' => 'rest_validate_request_arg',
+				'items'             => [
+					'type' => 'integer',
+				],
+			],
+			'visible' => [
+				'description'       => __( 'New Visibility status for the specified products.', 'google-listings-and-ads' ),
+				'type'              => 'boolean',
+				'validate_callback' => 'rest_validate_request_arg',
 			],
 		];
 	}
