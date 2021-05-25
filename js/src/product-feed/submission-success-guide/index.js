@@ -25,7 +25,7 @@ import './index.scss';
 
 const GUIDE_NAME = 'submission-success';
 const EVENT_NAME = 'gla_modal_closed';
-const CONFIRM_BUTTON_CLASS = 'components-guide__finish-button';
+const LATER_BUTTON_CLASS = 'components-guide__finish-button';
 
 const productFeedPath = getNewPath(
 	{ guide: undefined },
@@ -137,8 +137,8 @@ const handleGuideFinish = ( e ) => {
 	// Since there is no built-in way to distinguish the modal/guide is closed by what action,
 	// here is a workaround by identifying the close button's class name.
 	const target = e.currentTarget || e.target;
-	const action = target.classList.contains( CONFIRM_BUTTON_CLASS )
-		? 'confirm'
+	const action = target.classList.contains( LATER_BUTTON_CLASS )
+		? 'maybe-later'
 		: 'dismiss';
 	recordEvent( EVENT_NAME, {
 		context: GUIDE_NAME,
@@ -157,7 +157,7 @@ const GuideImplementation = () => {
 				<div className="gla-submission-success-guide__space_holder" />
 				<Button
 					isSecondary
-					className={ CONFIRM_BUTTON_CLASS }
+					className={ LATER_BUTTON_CLASS }
 					onClick={ handleGuideFinish }
 				>
 					{ __( 'Maybe later', 'google-listings-and-ads' ) }
