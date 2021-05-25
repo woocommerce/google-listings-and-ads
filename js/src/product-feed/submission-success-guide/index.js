@@ -171,11 +171,9 @@ const GuideImplementation = () => {
 						context: GUIDE_NAME,
 						action: 'create-paid-campaign',
 					} }
-					buttonText={ __(
-						'Create paid campaign',
-						'google-listings-and-ads'
-					) }
-				/>
+				>
+					{ __( 'Create paid campaign', 'google-listings-and-ads' ) }
+				</AddPaidCampaignButton>
 			</>
 		);
 	}, [] );
