@@ -16,9 +16,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
-use Exception;
 use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
 use DateTime;
+use Exception;
 
 /**
  * Class MerchantStatuses
@@ -72,6 +72,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		'products' => [],
 		'parents'  => [],
 	];
+
+	/**
+	 * @var string[] Lookup of WooCommerce Product Names.
+	 */
+	protected $product_name_lookup = [];
 
 	/**
 	 * MerchantStatuses constructor.
@@ -148,7 +153,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$page_token        = null;
 		do {
 			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
-			$statuses = $response->getResources();
+			$statuses = $this->filter_valid_statuses( $response->getResources() );
 			$this->refresh_product_issues( $statuses );
 			$this->sum_status_counts( $statuses );
 
@@ -233,6 +238,53 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
+	 * Return only the valid statuses from a provided array. Invalid statuses:
+	 * - Aren't synced by this extension (invalid ID format), or
+	 * - Map to products no longer in WooCommerce (deleted or uploaded by a previous connection).
+	 * Also populates the $product_name_lookup used in refresh_product_issues()
+	 *
+	 * @param Shopping_Product_Status[] $mc_statuses
+	 * @return Shopping_Product_Status[] Statuses found to be valid.
+	 */
+	protected function filter_valid_statuses( array $mc_statuses ): array {
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
+
+		return array_values(
+			array_filter(
+				$mc_statuses,
+				function( $product ) use ( $product_helper ) {
+					$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
+					// Skip products not synced by this extension.
+					if ( ! $wc_product_id ) {
+						return false;
+					}
+
+					// Product previously found/validated.
+					if ( ! empty( $this->product_name_lookup[ $wc_product_id ] ) ) {
+						return true;
+					}
+
+					$wc_product = wc_get_product( $wc_product_id );
+					// Skip products that are no longer in WooCommerce.
+					if ( ! $wc_product ) {
+						do_action(
+							'gla_debug_message',
+							sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
+							__METHOD__ . ' in remove_invalid_statuses()',
+						);
+						return false;
+					}
+
+					$this->product_name_lookup[ $wc_product_id ] = $wc_product->get_name();
+					return true;
+				}
+			)
+		);
+
+	}
+
+	/**
 	 * Retrieve all account-level issues and store them in the database.
 	 *
 	 * @throws Exception If the account state can't be retrieved from Google.
@@ -258,33 +310,19 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Retrieve all product-level issues and store them in the database.
 	 *
-	 * @param Shopping_Product_Status[] $mc_statuses
+	 * @param Shopping_Product_Status[] $validated_mc_statuses Product statuses of validated products.
 	 */
-	protected function refresh_product_issues( array $mc_statuses ): void {
+	protected function refresh_product_issues( array $validated_mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
 		$product_issues = [];
 		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
-		foreach ( $mc_statuses as $product ) {
+		foreach ( $validated_mc_statuses as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-			// Skip products not synced by this extension.
-			if ( ! $wc_product_id ) {
-				continue;
-			}
-			$wc_product = wc_get_product( $wc_product_id );
-			// Skip products that are no longer in WooCommerce.
-			if ( ! $wc_product ) {
-				do_action(
-					'gla_debug_message',
-					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
-					__METHOD__,
-				);
-				continue;
-			}
 
 			$product_issue_template = [
-				'product'    => $wc_product->get_name(),
+				'product'    => $this->product_name_lookup[ $wc_product_id ],
 				'product_id' => $wc_product_id,
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
@@ -334,30 +372,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Add the provided status counts to the overall totals.
 	 *
-	 * @param Shopping_Product_Status[] $mc_statuses
+	 * @param Shopping_Product_Status[] $validated_mc_statuses Product statuses of validated products.
 	 */
-	protected function sum_status_counts( array $mc_statuses ): void {
+	protected function sum_status_counts( array $validated_mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 
-		foreach ( $mc_statuses as $product ) {
+		foreach ( $validated_mc_statuses as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-			// Skip products not synced by this extension.
-			if ( ! $wc_product_id ) {
-				continue;
-			}
-			// Skip products that are no longer in WooCommerce.
-			$wc_product = wc_get_product( $wc_product_id );
-			if ( ! $wc_product ) {
-				do_action(
-					'gla_debug_message',
-					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
-					__METHOD__,
-				);
-				continue;
-			}
-
-			$status = $this->get_product_shopping_status( $product );
+			$status        = $this->get_product_shopping_status( $product );
 			if ( is_null( $status ) ) {
 				continue;
 			}
