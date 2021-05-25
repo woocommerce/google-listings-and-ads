@@ -192,7 +192,7 @@ class AttributesForm extends Form {
 	}
 
 	/**
-	 * Add an attribute to the form
+	 * Remove an attribute from the form
 	 *
 	 * @param string $attribute_type An attribute class extending AttributeInterface
 	 *
