@@ -6,8 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -24,31 +22,31 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ProductVisibilityController extends BaseController implements ContainerAwareInterface {
+class ProductVisibilityController extends BaseController {
 
 	use PluginHelper;
-	use ContainerAwareTrait;
 
 	/**
 	 * @var ProductHelper $product_helper
 	 */
 	protected $product_helper;
+
 	/**
-	 * @var ProductMetaHandler $meta_handler
+	 * @var MerchantIssueQuery $issue_query
 	 */
-	protected $meta_handler;
+	protected $issue_query;
 
 	/**
 	 * ProductVisibilityController constructor.
 	 *
 	 * @param RESTServer         $server
 	 * @param ProductHelper      $product_helper
-	 * @param ProductMetaHandler $meta_handler
+	 * @param MerchantIssueQuery $issue_query
 	 */
-	public function __construct( RESTServer $server, ProductHelper $product_helper, ProductMetaHandler $meta_handler ) {
+	public function __construct( RESTServer $server, ProductHelper $product_helper, MerchantIssueQuery $issue_query ) {
 		parent::__construct( $server );
 		$this->product_helper = $product_helper;
-		$this->meta_handler   = $meta_handler;
+		$this->issue_query    = $issue_query;
 	}
 
 	/**
@@ -75,7 +73,7 @@ class ProductVisibilityController extends BaseController implements ContainerAwa
 	 * @return callable
 	 */
 	protected function get_update_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$ids     = $request->get_param( 'ids' );
 			$visible = $request->get_param( 'visible' );
 
@@ -89,13 +87,14 @@ class ProductVisibilityController extends BaseController implements ContainerAwa
 				}
 
 				if ( ! $visible ) {
-					$this->remove_product_issues( $product_id );
+					$this->issue_query->delete( 'product_id', $product_id );
 				}
 				$success[] = $product_id;
 			}
 
 			sort( $success );
 			sort( $errors );
+
 			return new Response(
 				[
 					'success' => $success,
@@ -188,20 +187,10 @@ class ProductVisibilityController extends BaseController implements ContainerAwa
 				$new_visibility ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW
 			);
 			$product->save();
+
 			return true;
 		} catch ( Exception $e ) {
 			return false;
 		}
-	}
-
-	/**
-	 * Delete cached Merchant Center issues associated with the given product ID.
-	 *
-	 * @param int $product_id
-	 */
-	protected function remove_product_issues( int $product_id ): void {
-		/** @var MerchantIssueQuery $issue_query */
-		$issue_query = $this->container->get( MerchantIssueQuery::class );
-		$issue_query->delete( 'product_id', $product_id );
 	}
 }

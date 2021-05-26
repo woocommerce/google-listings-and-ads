@@ -34,6 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -80,7 +81,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( MerchantCenterProductStatsController::class, MerchantStatuses::class );
 		$this->share( MerchantCenterIssuesController::class, MerchantStatuses::class, ProductHelper::class );
 		$this->share( MerchantCenterProductFeedController::class, ProductFeedQueryHelper::class );
-		$this->share( MerchantCenterProductVisibilityController::class, ProductHelper::class, ProductMetaHandler::class );
+		$this->share( MerchantCenterProductVisibilityController::class, ProductHelper::class, MerchantIssueQuery::class );
 		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class );
 		$this->share_with_container( MerchantCenterAccountController::class );
 		$this->share_with_container( MerchantCenterReportsController::class );
