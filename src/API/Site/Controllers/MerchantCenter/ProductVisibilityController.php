@@ -60,7 +60,7 @@ class ProductVisibilityController extends BaseController {
 					'methods'             => TransportMethods::EDITABLE,
 					'callback'            => $this->get_update_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => $this->get_collection_params(),
+					'args'                => $this->get_update_args(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -134,11 +134,11 @@ class ProductVisibilityController extends BaseController {
 	}
 
 	/**
-	 * Get the query params for collections.
+	 * Get the arguments for the update endpoint.
 	 *
 	 * @return array
 	 */
-	public function get_collection_params(): array {
+	public function get_update_args(): array {
 		return [
 			'context' => $this->get_context_param( [ 'default' => 'view' ] ),
 			'ids'     => [
