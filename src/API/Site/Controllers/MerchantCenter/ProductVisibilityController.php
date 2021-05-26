@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
@@ -21,9 +24,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class ProductVisibilityController extends BaseController {
+class ProductVisibilityController extends BaseController implements ContainerAwareInterface {
 
 	use PluginHelper;
+	use ContainerAwareTrait;
 
 	/**
 	 * @var ProductHelper $product_helper
@@ -78,18 +82,16 @@ class ProductVisibilityController extends BaseController {
 			$success = [];
 			$errors  = [];
 			foreach ( $ids as $product_id ) {
-				try {
-					$product_id = $this->product_helper->maybe_swap_for_parent_id( intval( $product_id ) );
-					$product    = wc_get_product( $product_id );
-					$product->update_meta_data(
-						$this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ),
-						$visible ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW
-					);
-					$product->save();
-					$success[] = $product_id;
-				} catch ( Exception $e ) {
+				$product_id = intval( $product_id );
+				if ( ! $this->change_product_visibility( $product_id, $visible ) ) {
 					$errors[] = $product_id;
+					continue;
 				}
+
+				if ( ! $visible ) {
+					$this->remove_product_issues( $product_id );
+				}
+				$success[] = $product_id;
 			}
 
 			sort( $success );
@@ -166,5 +168,40 @@ class ProductVisibilityController extends BaseController {
 	 */
 	protected function get_schema_title(): string {
 		return 'product_visibility';
+	}
+
+	/**
+	 * Update a product's Merchant Center visibility setting (or parent product, for variations).
+	 *
+	 * @param int  $product_id
+	 * @param bool $new_visibility True for visible, false for not visible.
+	 *
+	 * @return bool True if the product was found and updated correctly.
+	 */
+	protected function change_product_visibility( int $product_id, bool $new_visibility ): bool {
+		try {
+			$product_id = $this->product_helper->maybe_swap_for_parent_id( $product_id );
+			// Use $product->save() instead of ProductMetaHandler to trigger MC sync.
+			$product = wc_get_product( $product_id );
+			$product->update_meta_data(
+				$this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ),
+				$new_visibility ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW
+			);
+			$product->save();
+			return true;
+		} catch ( Exception $e ) {
+			return false;
+		}
+	}
+
+	/**
+	 * Delete cached Merchant Center issues associated with the given product ID.
+	 *
+	 * @param int $product_id
+	 */
+	protected function remove_product_issues( int $product_id ): void {
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issue_query->delete( 'product_id', $product_id );
 	}
 }
