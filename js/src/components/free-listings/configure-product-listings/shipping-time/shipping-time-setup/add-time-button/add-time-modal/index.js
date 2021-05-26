@@ -26,7 +26,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 		const errors = {};
 
 		if ( values.countries.length === 0 ) {
-			errors.countryCodes = __(
+			errors.countries = __(
 				'Please specify at least one country.',
 				'google-listings-and-ads'
 			);
