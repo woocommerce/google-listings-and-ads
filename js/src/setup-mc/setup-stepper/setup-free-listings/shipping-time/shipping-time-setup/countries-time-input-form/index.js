@@ -13,7 +13,7 @@ import CountriesTimeInput from '../countries-time-input';
 const CountriesTimeInputForm = ( props ) => {
 	const { savedValue } = props;
 	const [ value, setValue ] = useState( savedValue );
-	const { upsertShippingTimes, deleteShippingTimes } = useAppDispatch();
+	const { upsertShippingTimes } = useAppDispatch();
 
 	useEffect( () => {
 		setValue( savedValue );
@@ -21,9 +21,7 @@ const CountriesTimeInputForm = ( props ) => {
 
 	const debouncedUpsertShippingTime = useDebouncedCallback( ( v ) => {
 		const { countries: countryCodes, time } = v;
-		if ( time ) {
-			upsertShippingTimes( { countryCodes, time } );
-		}
+		upsertShippingTimes( { countryCodes, time } );
 	}, 500 );
 
 	const handleChange = ( v ) => {
@@ -31,19 +29,7 @@ const CountriesTimeInputForm = ( props ) => {
 		debouncedUpsertShippingTime.callback( v );
 	};
 
-	const handleBlur = () => {
-		if ( value.time === '' ) {
-			deleteShippingTimes( value.countries );
-		}
-	};
-
-	return (
-		<CountriesTimeInput
-			value={ value }
-			onChange={ handleChange }
-			onBlur={ handleBlur }
-		/>
-	);
+	return <CountriesTimeInput value={ value } onChange={ handleChange } />;
 };
 
 export default CountriesTimeInputForm;
