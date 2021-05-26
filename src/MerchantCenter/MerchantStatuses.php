@@ -12,9 +12,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
 use DateTime;
@@ -38,6 +40,7 @@ use Exception;
 class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	use ContainerAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * The lifetime of the status-related data.
@@ -76,7 +79,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * @var string[] Lookup of WooCommerce Product Names.
 	 */
-	protected $product_name_lookup = [];
+	protected $product_data_lookup = [];
 
 	/**
 	 * MerchantStatuses constructor.
@@ -261,7 +264,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					}
 
 					// Product previously found/validated.
-					if ( ! empty( $this->product_name_lookup[ $wc_product_id ] ) ) {
+					if ( ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
 						return true;
 					}
 
@@ -276,7 +279,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 						return false;
 					}
 
-					$this->product_name_lookup[ $wc_product_id ] = $wc_product->get_name();
+					$this->product_data_lookup[ $wc_product_id ] = [
+						'name'       => $wc_product->get_name(),
+						'visibility' => $wc_product->get_meta( $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ) ),
+					];
 					return true;
 				}
 			)
@@ -321,8 +327,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		foreach ( $validated_mc_statuses as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
+			// Unsynced issues shouldn't be shown.
+			if ( $this->product_data_lookup[ $wc_product_id ]['visibility'] === ChannelVisibility::DONT_SYNC_AND_SHOW ) {
+				continue;
+			}
+
 			$product_issue_template = [
-				'product'    => $this->product_name_lookup[ $wc_product_id ],
+				'product'    => $this->product_data_lookup[ $wc_product_id ]['name'],
 				'product_id' => $wc_product_id,
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
