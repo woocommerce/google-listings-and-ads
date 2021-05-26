@@ -70,4 +70,15 @@ class InvalidValue extends LogicException implements GoogleListingsAndAdsExcepti
 	public static function not_in_allowed_list( $key, array $allowed_values ): InvalidValue {
 		return new static( sprintf( 'The value of %s must be either of [%s].', $key, implode( ', ', $allowed_values ) ) );
 	}
+
+	/**
+	 * Create a new instance of the exception when a value isn't a valid product ID.
+	 *
+	 * @param mixed $value The provided product ID that isn't valid.
+	 *
+	 * @return static
+	 */
+	public static function not_valid_product_id( $value ): InvalidValue {
+		return new static( sprintf( 'Invalid product ID: %s', $value ) );
+	}
 }

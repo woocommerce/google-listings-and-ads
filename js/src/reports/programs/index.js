@@ -8,12 +8,12 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useProgramsReport, { usePerformanceReport } from './useProgramsReport';
-import TabNav from '../../tab-nav';
-import SubNav from '../sub-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
+import ReportsNavigation from '../reports-navigation';
 
 /**
  * Available metrics and their human-readable labels.
@@ -87,9 +87,8 @@ const ProgramsReport = () => {
 
 	return (
 		<>
-			<TabNav initialName="reports" />
-			<SubNav initialName="programs" />
-
+			<NavigationClassic />
+			<ReportsNavigation />
 			<ProgramsReportFilters
 				query={ getQuery() }
 				trackEventId={ trackEventId }

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
+use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -29,6 +30,10 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 		add_filter(
 			'woocommerce_marketing_menu_items',
 			function( $menu_items ) {
+				if ( Features::is_enabled( 'navigation' ) ) {
+					return $menu_items;
+				}
+
 				return $this->add_items( $menu_items );
 			}
 		);
@@ -36,7 +41,11 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 		add_action(
 			'admin_menu',
 			function() {
-				$this->fix_menu_paths();
+				if ( Features::is_enabled( 'navigation' ) ) {
+					$this->register_navigation_pages();
+				} else {
+					$this->fix_menu_paths();
+				}
 			}
 		);
 	}
@@ -57,5 +66,25 @@ class GetStarted implements Service, Registerable, MerchantCenterAwareInterface 
 		];
 
 		return $items;
+	}
+
+	/**
+	 * Register navigation pages for WC Navigation.
+	 */
+	protected function register_navigation_pages(): void {
+		wc_admin_register_page(
+			[
+				'id'       => 'google-start',
+				'title'    => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+				'parent'   => 'woocommerce',
+				'path'     => '/google/start',
+				'nav_args' => [
+					'title'        => __( 'Google Listings & Ads', 'google-listings-and-ads' ),
+					'is_category'  => false,
+					'menuId'       => 'plugins',
+					'is_top_level' => true,
+				],
+			]
+		);
 	}
 }

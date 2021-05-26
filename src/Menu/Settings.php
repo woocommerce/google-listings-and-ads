@@ -22,10 +22,14 @@ class Settings implements Service, Registerable {
 			function() {
 				wc_admin_register_page(
 					[
-						'title'  => __( 'Settings', 'google-listings-and-ads' ),
-						'parent' => '',
-						'path'   => '/google/settings',
-						'id'     => 'google-settings',
+						'title'    => __( 'Settings', 'google-listings-and-ads' ),
+						'parent'   => 'google-listings-and-ads-category',
+						'path'     => '/google/settings',
+						'id'       => 'google-settings',
+						'nav_args' => [
+							'order'  => 40,
+							'parent' => 'google-listings-and-ads-category',
+						],
 					]
 				);
 			}

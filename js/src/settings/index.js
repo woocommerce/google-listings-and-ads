@@ -1,14 +1,14 @@
 /**
  * Internal dependencies
  */
-import TabNav from '../tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import DisconnectAccounts from './disconnect-accounts';
 import './index.scss';
 
 const Settings = () => {
 	return (
 		<div className="gla-settings">
-			<TabNav initialName="settings" />
+			<NavigationClassic />
 			<DisconnectAccounts />
 		</div>
 	);
