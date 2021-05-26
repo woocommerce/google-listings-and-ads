@@ -9,7 +9,7 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
-import AppInputControl from '.~/components/app-input-control';
+import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
@@ -22,10 +22,22 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {function(AggregatedShippingTime): void} props.onSubmit Called with submitted value.
  */
 const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
-	const handleValidate = () => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
-		// TODO: validation logic.
+		if ( values.countries.length === 0 ) {
+			errors.countryCodes = __(
+				'Please specify at least one country.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.time < 0 ) {
+			errors.time = __(
+				'The estimated shipping time cannot be less than 0.',
+				'google-listings-and-ads'
+			);
+		}
 
 		return errors;
 	};
@@ -39,13 +51,13 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 		<Form
 			initialValues={ {
 				countries,
-				time: '',
+				time: 0,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, handleSubmit } = formProps;
+				const { getInputProps, isValidForm, handleSubmit } = formProps;
 
 				return (
 					<AppModal
@@ -57,6 +69,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 							<Button
 								key="save"
 								isPrimary
+								disabled={ ! isValidForm }
 								onClick={ handleSubmit }
 							>
 								{ __(
@@ -81,7 +94,7 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
-							<AppInputControl
+							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',
 									'google-listings-and-ads'
