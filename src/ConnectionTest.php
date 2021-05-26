@@ -22,6 +22,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
@@ -423,6 +424,14 @@ class ConnectionTest implements Service, Registerable {
 							</p>
 						</td>
 					</tr>
+					<tr>
+						<th>Clear Status Cache:</th>
+						<td>
+							<p>
+								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'clear-mc-status-cache' ], $url ), 'clear-mc-status-cache' ) ); ?>">Clear</a>
+							</p>
+						</td>
+					</tr>
 				</table>
 
 				</details>
@@ -803,12 +812,17 @@ class ConnectionTest implements Service, Registerable {
 			$this->send_rest_request( $request );
 		}
 
-		if( 'wcs-google-mc-switch-url' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-switch-url' ) ) {
+		if ( 'wcs-google-mc-switch-url' === $_GET['action'] && check_admin_referer( 'wcs-google-mc-switch-url' ) ) {
 			$request = new Request( 'POST', '/wc/gla/mc/accounts/switch-url' );
 			if ( is_numeric( $_GET['account_id'] ?? false ) ) {
 				$request->set_body_params( [ 'id' => $_GET['account_id'] ] );
 			}
 			$this->send_rest_request( $request );
+		}
+
+		if ( 'clear-mc-status-cache' === $_GET['action'] && check_admin_referer( 'clear-mc-status-cache' ) ) {
+			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+			$this->response .= 'Merchant Center statuses transient successfully deleted.';
 		}
 
 		if ( 'wcs-google-accounts-check' === $_GET['action'] && check_admin_referer( 'wcs-google-accounts-check' ) ) {

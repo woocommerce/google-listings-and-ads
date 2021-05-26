@@ -255,7 +255,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return int The parent ID or product ID of it doesn't have a parent.
 	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
-	public function maybe_swap_for_parent_id( int $product_id ): ?int {
+	public function maybe_swap_for_parent_id( int $product_id ): int {
 		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
 			throw InvalidValue::not_valid_product_id( $product_id );
