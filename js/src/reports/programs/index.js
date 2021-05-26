@@ -7,7 +7,7 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import useProgramsReport from './useProgramsReport';
+import useProgramsReport, { usePerformanceReport } from './useProgramsReport';
 import NavigationClassic from '.~/components/navigation-classic';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
@@ -78,6 +78,13 @@ const ProgramsReport = () => {
 		? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
 		: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
 
+	const {
+		loaded: performanceLoaded,
+		data: performanceTotals,
+	} = usePerformanceReport( totals );
+	// Use 'primary' data before the previous period is loaded.
+	const availablePerformance = performanceLoaded ? performanceTotals : totals;
+
 	return (
 		<>
 			<NavigationClassic />
@@ -90,7 +97,7 @@ const ProgramsReport = () => {
 				loaded={ loaded }
 				metrics={ availableMetrics }
 				expectedLength={ performanceMetrics.length }
-				totals={ totals }
+				totals={ availablePerformance }
 			/>
 			<ChartSection
 				metrics={ availableMetrics }

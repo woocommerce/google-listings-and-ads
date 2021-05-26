@@ -13,13 +13,13 @@ export { default as ProductsReport } from './products';
 
 /**
  * @typedef {import('.~/data/selectors').ReportSchema<ProductsReportData>} ProductsReportSchema
- * @typedef {import('.~/data/selectors').ReportSchema<ProductsReportData>} ProgramsReportSchema
+ * @typedef {import('.~/data/selectors').ReportSchema<ProgramsReportData>} ProgramsReportSchema
  */
 
 /**
  * @typedef {Object} ProductsReportData
  * @property {Array<ProductsData>} products Products data.
- * @property {Array<IntervalsData>} intervals Intervals data.
+ * @property {Array<IntervalsData> | null} intervals Intervals data.
  * @property {PerformanceData} totals Performance data.
  */
 
@@ -33,7 +33,7 @@ export { default as ProductsReport } from './products';
  * @typedef {Object} ProgramsReportData
  * @property {Array<ProgramsData>} freeListings Free listings data
  * @property {Array<ProgramsData>} campaigns Paid campaigns data.
- * @property {Array<IntervalsData>} intervals Intervals data.
+ * @property {Array<IntervalsData> | null} intervals Intervals data.
  * @property {PerformanceData} totals Performance data.
  */
 
