@@ -49,8 +49,8 @@ function sumProperies( metrics, totals1 = {}, totals2 = {} ) {
  * Aggregate and sort intervals.
  * Sums paid+free subtotals if they overlap.
  *
- * @param {Array<IntervalsData>} intervals1
- * @param {Array<IntervalsData>} intervals2
+ * @param {Array<IntervalsData>} [intervals1]
+ * @param {Array<IntervalsData>} [intervals2]
  * @return {Array<IntervalsData>} Aggregated intervals.
  */
 export function aggregateIntervals( intervals1, intervals2 ) {

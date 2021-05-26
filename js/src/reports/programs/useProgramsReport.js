@@ -73,10 +73,9 @@ export default function useProgramsReport() {
 		return {
 			freeListings: freeData.free_listings || emptyData.free_listings,
 			campaigns: paidData.campaigns || emptyData.campaigns,
-			intervals: aggregateIntervals(
-				paidData.intervals,
-				freeData.intervals
-			),
+			intervals:
+				aggregateIntervals( paidData.intervals, freeData.intervals ) ||
+				emptyData.intervals,
 			// Translate totals to performance, sum free+paid, mark missing if applicable.
 			totals: sumToPerformance(
 				paidData.totals,
