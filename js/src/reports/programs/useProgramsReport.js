@@ -117,7 +117,7 @@ function usePreviousTotals( query ) {
 		// That saves some computations.
 		// Alternatively, we could consider UI where chunks of loaded data are being shown.
 		if ( ! loaded || ! paidData || ! freeData ) {
-			return emptyData;
+			return emptyData.totals;
 		}
 
 		return sumToPerformance( paidData.totals, freeData.totals, expectBoth );
@@ -134,7 +134,7 @@ export function usePerformanceReport( totals ) {
 	const { loaded, data: previousTotals } = usePreviousTotals( query );
 
 	const performance = useMemo( () => {
-		if ( ! loaded || ! previousTotals ) {
+		if ( ! loaded ) {
 			return totals;
 		}
 
