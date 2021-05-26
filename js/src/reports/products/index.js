@@ -16,12 +16,12 @@ import {
 import useProductsReport from './useProductsReport';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
-import TabNav from '../../tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
-import SubNav from '../sub-nav';
+import ReportsNavigation from '../reports-navigation';
 
 /**
  * Available metrics and their human-readable labels.
@@ -115,8 +115,8 @@ const ProductsReportPage = () => {
 
 	return (
 		<>
-			<TabNav initialName="reports" />
-			<SubNav initialName="products" />
+			<NavigationClassic />
+			<ReportsNavigation />
 			{ loaded ? (
 				<ProductsReport hasPaidSource={ hasPaidSource } />
 			) : (

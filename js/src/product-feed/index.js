@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import TabNav from '../tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
@@ -21,7 +21,7 @@ const ProductFeed = () => {
 
 	return (
 		<>
-			<TabNav initialName="product-feed" />
+			<NavigationClassic />
 			<SubmissionSuccessGuide />
 			<ComingSoonNotice />
 			<div className="gla-product-feed">

@@ -36,6 +36,7 @@ const AddPaidCampaignButton = ( props ) => {
 	const {
 		eventName = 'gla_add_paid_campaign_clicked',
 		eventProps,
+		children,
 		onClick = () => {},
 		...rest
 	} = props;
@@ -57,7 +58,7 @@ const AddPaidCampaignButton = ( props ) => {
 
 	return (
 		<AppButton isSmall isSecondary onClick={ handleClick } { ...rest }>
-			{ __( 'Add paid campaign', 'google-listings-and-ads' ) }
+			{ children || __( 'Add paid campaign', 'google-listings-and-ads' ) }
 		</AppButton>
 	);
 };

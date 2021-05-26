@@ -8,7 +8,7 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import TabNav from '../tab-nav';
+import NavigationClassic from '.~/components/navigation-classic';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
@@ -19,6 +19,7 @@ import './index.scss';
 const Dashboard = () => {
 	const trackEventReportId = 'dashboard';
 	const { enableReports } = glaData;
+
 	const ReportsLink = () => {
 		return (
 			<Link href={ getNewPath( null, '/google/reports/programs' ) }>
@@ -29,7 +30,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="gla-dashboard">
-			<TabNav initialName="dashboard" />
+			<NavigationClassic />
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker
 					trackEventReportId={ trackEventReportId }

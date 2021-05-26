@@ -22,10 +22,14 @@ class Products implements Service, Registerable {
 			function() {
 				wc_admin_register_page(
 					[
-						'title'  => __( 'Products Report', 'google-listings-and-ads' ),
-						'parent' => 'woocommerce-marketing',
-						'path'   => '/google/reports/products',
-						'id'     => 'google-reports-products',
+						'title'    => __( 'Products Report', 'google-listings-and-ads' ),
+						'parent'   => 'google-reports',
+						'path'     => '/google/reports/products',
+						'id'       => 'google-reports-products',
+						'nav_args' => [
+							'order'  => 20,
+							'parent' => 'google-reports',
+						],
 					]
 				);
 			}

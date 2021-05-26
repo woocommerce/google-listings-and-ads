@@ -3,7 +3,7 @@
 		height: auto;
 		@include break-small() {
 			max-width: 517px;
-			height: 556px;
+			max-height: none;
 		}
 	}
 
@@ -48,11 +48,18 @@
 			@media (max-width: $break-small) {
 				// Prevent layout break on small mobile devices
 				position: static;
+				flex-wrap: wrap;
+
+				.components-button {
+					justify-content: center;
+					width: 100%;
+					margin-top: 12px;
+				}
 			}
 			justify-content: flex-end;
 			width: 100%;
 			height: auto;
-			margin: 0;
+			margin: calc(var(--large-gap) / 2) 0 0;
 			padding: 0 $grid-unit-30 $grid-unit-30;
 			box-sizing: border-box;
 
@@ -104,5 +111,9 @@
 		height: 63px;
 		margin: 0 28px;
 		background-color: $gray-600;
+	}
+
+	&__space_holder {
+		flex: 1 1 0;
 	}
 }
