@@ -72,7 +72,7 @@ export function aggregateIntervals( intervals1, intervals2 ) {
 		...new Set( [ ...intervals1Map.keys(), ...intervals2Map.keys() ] ),
 	].sort();
 	// We assume subtotals has the consistent schema across all intervals, and the `paidFields` is the superset.
-	const result = allIntervals.map( ( acc, interval ) => ( {
+	const result = allIntervals.map( ( interval ) => ( {
 		interval,
 		subtotals: sumProperies(
 			paidFields,
