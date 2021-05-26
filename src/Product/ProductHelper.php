@@ -195,6 +195,24 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
+	 * Attempt to get the WooCommerce product title.
+	 * The MC ID is converted to a WC ID before retrieving the product.
+	 * If we can't retrieve the title we fallback to the original MC ID.
+	 *
+	 * @param string $mc_product_id Merchant Center product ID.
+	 *
+	 * @return string
+	 */
+	public function get_wc_product_title( string $mc_product_id ): string {
+		$product = wc_get_product( $this->get_wc_product_id( $mc_product_id ) );
+		if ( ! $product ) {
+			return $mc_product_id;
+		}
+
+		return $product->get_title();
+	}
+
+	/**
 	 * @param WC_Product $product
 	 *
 	 * @return bool
