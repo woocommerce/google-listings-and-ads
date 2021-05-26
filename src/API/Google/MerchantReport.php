@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantProduct
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use DateTime;
 use Exception;
 use Google\Exception as GoogleException;
@@ -34,12 +35,21 @@ class MerchantReport implements OptionsAwareInterface {
 	protected $service;
 
 	/**
+	 * Product helper class.
+	 *
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * Merchant Report constructor.
 	 *
 	 * @param ShoppingService $service
+	 * @param ProductHelper   $product_helper
 	 */
-	public function __construct( ShoppingService $service ) {
-		$this->service = $service;
+	public function __construct( ShoppingService $service, ProductHelper $product_helper ) {
+		$this->service        = $service;
+		$this->product_helper = $product_helper;
 	}
 
 	/**
@@ -118,6 +128,12 @@ class MerchantReport implements OptionsAwareInterface {
 					'subtotals' => $metrics,
 				]
 			);
+
+			// Retrieve product title and add to report.
+			if ( empty( $this->report_data['products'][ $product_id ]['title'] ) ) {
+				$title = $this->product_helper->get_wc_product_title( (string) $product_id );
+				$this->report_data['products'][ $product_id ]['title'] = $title;
+			}
 		}
 
 		if ( $segments && ! empty( $args['interval'] ) ) {
