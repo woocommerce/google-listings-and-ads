@@ -22,8 +22,8 @@ const emptyData = {
 	free_listings: [],
 	campaigns: [],
 	intervals: [],
-	totals: {},
 };
+const emptyTotals = {};
 /**
  * @type {import('.~/data/selectors').ReportSchema}
  */
@@ -48,7 +48,7 @@ const emptyReport = {
  */
 export default function useProgramsReport() {
 	const query = useUrlQuery();
-	const { paid, free, expectBoth } = useSelect(
+	const { paid, free } = useSelect(
 		( select ) => {
 			const { getReport } = select( STORE_KEY );
 			return getReports( getReport, query, 'primary' );
@@ -77,14 +77,8 @@ export default function useProgramsReport() {
 				paidData.intervals,
 				freeData.intervals
 			),
-			// Translate totals to performance, sum free+paid, mark missing if applicable.
-			totals: sumToPerformance(
-				paidData.totals,
-				freeData.totals,
-				expectBoth
-			),
 		};
-	}, [ loaded, paid.data, free.data, expectBoth ] );
+	}, [ loaded, paid.data, free.data ] );
 
 	return {
 		loaded,
@@ -96,17 +90,18 @@ export default function useProgramsReport() {
 /**
  * Get programs report totals, from the previous period.
  *
- * @param {Object} query URL query to be forwarded to `getReport`.
+ * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
  * @return {{loaded: boolean, data: PerformanceData}} Loaded flag, and eventually the fetched data.
  */
-function usePreviousTotals( query ) {
+function useTotals( dateReference ) {
+	const query = useUrlQuery();
 	const { paid, free, expectBoth } = useSelect(
 		( select ) => {
 			const { getReport } = select( STORE_KEY );
-			return getReports( getReport, query, 'secondary' );
+			return getReports( getReport, query, dateReference );
 		},
-		[ query ]
+		[ query, dateReference ]
 	);
 	const loaded = paid.loaded && free.loaded;
 
@@ -117,7 +112,7 @@ function usePreviousTotals( query ) {
 		// That saves some computations.
 		// Alternatively, we could consider UI where chunks of loaded data are being shown.
 		if ( ! loaded || ! paidData || ! freeData ) {
-			return emptyData;
+			return emptyTotals;
 		}
 
 		return sumToPerformance( paidData.totals, freeData.totals, expectBoth );
@@ -129,21 +124,19 @@ function usePreviousTotals( query ) {
 	};
 }
 
-export function usePerformanceReport( totals ) {
-	const query = useUrlQuery();
-	const { loaded, data: previousTotals } = usePreviousTotals( query );
+export function usePerformanceReport() {
+	const primary = useTotals( 'primary' );
+	const secondary = useTotals( 'secondary' );
 
-	const performance = useMemo( () => {
-		if ( ! loaded || ! previousTotals ) {
-			return totals;
-		}
-
-		return addBaseToPerformance( totals, previousTotals );
-	}, [ loaded, previousTotals, totals ] );
+	const data =
+		primary.loaded && secondary.loaded
+			? addBaseToPerformance( primary.data, secondary.data )
+			: primary.data;
 
 	return {
-		loaded,
-		data: performance,
+		// Only consider primary for displaying the main performance as soon as possible.
+		loaded: primary.loaded,
+		data,
 	};
 }
 

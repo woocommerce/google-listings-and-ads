@@ -62,28 +62,23 @@ const ProgramsReport = () => {
 	// Only after calling the API we would know if the default "All listings" includes or not any paid listings.
 	const {
 		loaded,
-		data: { totals, intervals, freeListings, campaigns },
+		data: { intervals, freeListings, campaigns },
 		reportQuery: { fields, orderby, order },
 	} = useProgramsReport();
 
+	const { loaded: totalsLoaded, data: totals } = usePerformanceReport();
+
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	// Anticipate all requested fields to come, show available once loaded.
-	const availableMetrics = loaded
+	const availableMetrics = totalsLoaded
 		? performanceMetrics.filter( ( { key } ) =>
 				totals.hasOwnProperty( key )
 		  )
 		: performanceMetrics.filter( ( { key } ) => fields.includes( key ) );
 
-	const expectedTableMetrics = loaded
+	const expectedTableMetrics = totalsLoaded
 		? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
 		: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
-
-	const {
-		loaded: performanceLoaded,
-		data: performanceTotals,
-	} = usePerformanceReport( totals );
-	// Use 'primary' data before the previous period is loaded.
-	const availablePerformance = performanceLoaded ? performanceTotals : totals;
 
 	return (
 		<>
@@ -95,10 +90,10 @@ const ProgramsReport = () => {
 				trackEventId={ trackEventId }
 			/>
 			<SummarySection
-				loaded={ loaded }
+				loaded={ totalsLoaded }
 				metrics={ availableMetrics }
 				expectedLength={ performanceMetrics.length }
-				totals={ availablePerformance }
+				totals={ totals }
 			/>
 			<ChartSection
 				metrics={ availableMetrics }
