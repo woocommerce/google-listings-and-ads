@@ -94,12 +94,16 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		 */
 		$variation = wc_get_product( $variation_id );
 
-		$form = $this->get_form( $variation, $variation_index );
-
+		$form           = $this->get_form( $variation, $variation_index );
 		$form_view_data = $form->get_view_data();
+
 		// phpcs:disable WordPress.Security.NonceVerification
+		if ( empty( $_POST[ $form_view_data['name'] ] ) ) {
+			return;
+		}
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) ) : [];
+		$submitted_data = (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) );
+		// phpcs:enable WordPress.Security.NonceVerification
 
 		$form->submit( $submitted_data );
 		$form_data = $form->get_data();
@@ -117,10 +121,12 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 	 */
 	protected function get_form( WC_Product_Variation $variation, int $variation_index ): Form {
 		$attribute_types = $this->attribute_manager->get_attribute_types_for_product( $variation );
+		$attribute_form  = new AttributesForm( $attribute_types );
+		$attribute_form->set_name( (string) $variation_index );
 
 		$form = new Form();
 		$form->set_name( 'variation_attributes' )
-			 ->add( new AttributesForm( $attribute_types ), (string) $variation_index )
+			 ->add( $attribute_form )
 			 ->set_data( [ (string) $variation_index => $this->attribute_manager->get_all_values( $variation ) ] );
 
 		return $form;

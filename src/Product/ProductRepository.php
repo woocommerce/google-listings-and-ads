@@ -135,7 +135,7 @@ class ProductRepository implements Service {
 	public function find_sync_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): array {
 		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->filter_without_recent_sync_failure( $results, false );
+		return $this->filter_sync_ready_products( $results, false );
 	}
 
 	/**
@@ -150,18 +150,26 @@ class ProductRepository implements Service {
 	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
 		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->filter_without_recent_sync_failure( $results, true );
+		return $this->filter_sync_ready_products( $results, true );
 	}
 
 	/**
-	 * Filters and returns a list of products that have not failed to sync recently
+	 * Filters and returns a list of products that are ready to be submitted to Google Merchant Center.
 	 *
 	 * @param WC_Product[] $products
 	 * @param bool         $return_ids
 	 *
 	 * @return WC_Product[]
 	 */
-	protected function filter_without_recent_sync_failure( array $products, $return_ids = false ): array {
+	protected function filter_sync_ready_products( array $products, bool $return_ids = false ): array {
+		/**
+		 * Filters the list of products ready to be synced.
+		 *
+		 * @param WC_Product[] $products Sync-ready WooCommerce products
+		 */
+		$products = apply_filters( 'gla_get_sync_ready_products', $products );
+
+		// skip products that have recently failed to sync.
 		$results = [];
 		foreach ( $products as $product ) {
 			$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product->get_id() );
