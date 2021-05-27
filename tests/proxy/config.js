@@ -4,5 +4,5 @@ module.exports = {
 	host: 'localhost',
 	connectServer:
 		process.env.WOOCOMMERCE_CONNECT_SERVER ||
-		'https://api-vigo.woocommerce.com',
+		'https://api-vipgo.woocommerce.com',
 };
