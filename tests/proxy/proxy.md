@@ -18,5 +18,10 @@ On your test site you will need to run a PHP snippet to use the proxy to handle 
 define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://localhost:5500' );
 ```
 
+Or, if your test site is running within a docker container, the PHP snippet would be the following instead:
+
+```php
+define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5500' );
+```
 
 At the moment only the report data is mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports.
