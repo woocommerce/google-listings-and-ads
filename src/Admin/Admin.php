@@ -219,6 +219,6 @@ class Admin implements Service, Registerable, Conditional {
 	 * @return bool Whether reports should be enabled .
 	 */
 	protected function enableReports(): bool {
-		return apply_filters( 'gla_enable_reports', false );
+		return apply_filters( 'gla_enable_reports', true );
 	}
 }
