@@ -29,9 +29,6 @@ const CompareProductsTableCard = ( {
 	products,
 	...restProps
 } ) => {
-	// TODO: the product name is not yet available from API and needs to be implemented later.
-	const nameCell = ( row ) => `Product #${ row.id }`;
-
 	return (
 		<CompareTableCard
 			title={ __( 'Products', 'google-listings-and-ads' ) }
@@ -40,7 +37,7 @@ const CompareProductsTableCard = ( {
 				'google-listings-and-ads'
 			) }
 			nameHeader={ __( 'Product title', 'google-listings-and-ads' ) }
-			nameCell={ nameCell }
+			nameCell={ ( row ) => row.name || row.title }
 			compareBy={ compareBy }
 			compareParam={ compareParam }
 			metrics={ metrics }
