@@ -22,7 +22,7 @@ class Reports implements Service, Registerable {
 			'admin_menu',
 			function() {
 				if (
-					apply_filters( 'gla_enable_reports', false ) &&
+					apply_filters( 'gla_enable_reports', true ) &&
 					Features::is_enabled( 'navigation' )
 				) {
 					$this->register_navigation_pages();
