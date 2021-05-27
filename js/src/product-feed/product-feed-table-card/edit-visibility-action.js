@@ -16,13 +16,13 @@ const tipText = __( 'Select channel visibility', 'google-listings-and-ads' );
 
 const options = [
 	{
-		key: true,
-		value: { id: true },
+		key: 0,
+		value: true,
 		label: __( 'Sync and show', 'google-listings-and-ads' ),
 	},
 	{
-		key: false,
-		value: { id: false },
+		key: 1,
+		value: false,
 		label: __( 'Don’t sync and show', 'google-listings-and-ads' ),
 	},
 ];
@@ -73,7 +73,8 @@ export default function EditVisibilityAction( {
 	}
 
 	const handleClick = () => {
-		onActionClick( selectedVisible );
+		const option = options.find( ( { key } ) => key === selectedVisible );
+		onActionClick( option.value );
 	};
 
 	return (
