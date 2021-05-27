@@ -131,6 +131,10 @@ export function* getMCIssues( query ) {
 	}
 }
 
+getMCIssues.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.UPDATE_MC_PRODUCTS_VISIBILITY;
+};
+
 export function* getMCProductFeed( query ) {
 	try {
 		const response = yield apiFetch( {
@@ -150,6 +154,10 @@ export function* getMCProductFeed( query ) {
 }
 
 getMCProductFeed.shouldInvalidate = ( action, query ) => {
+	if ( action.type === TYPES.UPDATE_MC_PRODUCTS_VISIBILITY ) {
+		return true;
+	}
+
 	return (
 		action.type === TYPES.RECEIVE_MC_PRODUCT_FEED &&
 		( action.query.per_page !== query.per_page ||
