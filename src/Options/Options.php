@@ -38,6 +38,7 @@ final class Options implements OptionsInterface, Service {
 		self::MERCHANT_ID            => true,
 		self::SHIPPING_RATES         => true,
 		self::SHIPPING_TIMES         => true,
+		self::REDIRECT_TO_ONBOARDING => true,
 		self::SITE_VERIFICATION      => true,
 		self::TARGET_AUDIENCE        => true,
 		self::WP_TOS_ACCEPTED        => true,

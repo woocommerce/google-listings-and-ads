@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ActivationRedirect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\MetaBoxInitializer;
@@ -85,6 +86,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		Installer::class              => true,
+		ActivationRedirect::class     => true,
 		Admin::class                  => true,
 		Reports::class                => true,
 		Programs::class               => true,
@@ -187,6 +189,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			MerchantCenterService::class,
 			AdsService::class
 		);
+		$this->conditionally_share_with_tags( ActivationRedirect::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
