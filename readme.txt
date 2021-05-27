@@ -115,6 +115,38 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 0.6.0 - 2021-05-27 =
+* Fix - Add FAQs to step 1 of the MC setup flow.
+* Fix - Add extra product attributes.
+* Fix - Add validations for the main steps of edit free listings.
+* Fix - Admin Notes 2 to 4.
+* Fix - Aggregate intervals from free and paid campaigns, render programs report w/o waiting for secondary request.
+* Fix - Change JetPack connection name.
+* Fix - Changes to Success Modal after first setup.
+* Fix - Connect programs report page to the API data.
+* Fix - Connect programs report table to API data.
+* Fix - Consistent currency format across all summary list usages.
+* Fix - Edit the channel visibility of products on the Product Feed page.
+* Fix - Error notice if WooCommerce Admin isn't active.
+* Fix - Fix fatal in Product Feed API.
+* Fix - Get started copy updates.
+* Fix - Implement the deletion feature of paid campaigns for the dashboard page.
+* Fix - Integration with new WC Navigation.
+* Fix - Make `getReport` ignore unsupported orderby query params.
+* Fix - Make unit-tests run with @woocommerce packages.
+* Fix - Make unit-tests run with `woocommerce/date` (~`/components`~) dependency.
+* Fix - Move @woocommerce/* dependency tests to /tests/unit.
+* Fix - Note lack of support for IE in `README.md`.
+* Fix - Prefetch product feed data to prevent multiple duplicated Google API requests.
+* Fix - REST endpoint for batch product channel visibility updates.
+* Fix - Redirect to onboarding / get started page on plugin activation.
+* Fix - Remove product feed coming soon notice and show reports by default.
+* Fix - Run unit tests on TravisCI,.
+* Fix - Silently skip Product Feed products that are no longer in WooCommerce .
+* Fix - Sort report API results by date index.
+* Fix - Sort the merged programs table.
+* Tweak - WC 5.4 compatibility.
+
 = 0.5.6 - 2021-05-17 =
 * Fix - Add Color, Material, and Pattern attributes.
 * Fix - Add Size, Size System, and Size Type product attributes.
