@@ -35,9 +35,9 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 			);
 		}
 
-		if ( values.rate <= 0 ) {
+		if ( values.rate < 0 ) {
 			errors.rate = __(
-				'The estimated shipping rate must be bigger than 0.',
+				'The estimated shipping rate cannot be less than 0.',
 				'google-listings-and-ads'
 			);
 		}

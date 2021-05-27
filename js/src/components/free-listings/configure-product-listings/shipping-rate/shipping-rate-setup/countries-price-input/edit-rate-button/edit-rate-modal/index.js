@@ -50,9 +50,9 @@ const EditRateModal = ( {
 			);
 		}
 
-		if ( values.price <= 0 ) {
+		if ( values.price < 0 ) {
 			errors.price = __(
-				'The estimated shipping rate must be bigger than 0.',
+				'The estimated shipping rate cannot be less than 0.',
 				'google-listings-and-ads'
 			);
 		}
