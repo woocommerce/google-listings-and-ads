@@ -74,7 +74,7 @@ const EditRateModal = ( {
 			initialValues={ {
 				countries: rate.countries,
 				currency: rate.currency,
-				price: parseFloat( rate.price ),
+				price: rate.price,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
