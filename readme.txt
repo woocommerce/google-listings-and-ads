@@ -165,10 +165,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Resolve `@woocommerce/experimental.Text` to suppress build warnings.
 * Fix - Specify `argsRef.current` as dependency in `useAppSelectDispatch`.
 
-= 0.5.4 - 2021-04-30 =
-* Fix - Add readme and assets for releasing to WordPress.org.
-* Fix - Additional testing flags.
-* Fix - Conditionally hide Reports tab and show a coming soon notice on Product Feed tab.
-* Fix - Fix condition that filters TabNav's tabs.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
