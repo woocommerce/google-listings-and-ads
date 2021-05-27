@@ -32,12 +32,7 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5500'
 ```
 
 #### Non Mac users
-To make `host.docker.internal` work on non-Mac environments, you will need to add a flag `--add-host=host.docker.internal:host-gateway` or config to your `docker-composer.yml`:
-```yml
-  phpfpm:
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-```
+`host.docker.internal` works only on Mac environments. On others, you would have to use `172.17.0.1` instead of `localhost` in the PHP snippet and in `tests/proxy/config.js`.
 
 ### Available mocks
 
