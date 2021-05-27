@@ -36,7 +36,7 @@ const GetStartedCard = () => {
 					</Text>
 					<Text variant="body" className="description">
 						{ __(
-							'Reach more shoppers and drive sales for your store. Integrate with Google Merchant Center to list your products for free and launch paid ad campaigns.',
+							'Reach more shoppers and drive sales for your store. Integrate with Google to list your products for free and launch paid ad campaigns.',
 							'google-listings-and-ads'
 						) }
 					</Text>

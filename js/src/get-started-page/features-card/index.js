@@ -28,7 +28,7 @@ const FeaturesCard = () => {
 						variant="label"
 					>
 						{ __(
-							'Connect your store, seamlessly',
+							'Connect your store seamlessly',
 							'google-listings-and-ads'
 						) }
 					</Text>
