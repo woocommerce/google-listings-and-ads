@@ -11,7 +11,6 @@ import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
 import ProductStatistics from './product-statistics';
-import ComingSoonNotice from './coming-soon-notice';
 import './index.scss';
 import useProductFeedPrefetch from './useProductFeedPrefetch';
 import AppSpinner from '.~/components/app-spinner';
@@ -23,7 +22,6 @@ const ProductFeed = () => {
 		<>
 			<NavigationClassic />
 			<SubmissionSuccessGuide />
-			<ComingSoonNotice />
 			<div className="gla-product-feed">
 				{ ! hasFinishedResolution && <AppSpinner /> }
 				{ hasFinishedResolution &&
