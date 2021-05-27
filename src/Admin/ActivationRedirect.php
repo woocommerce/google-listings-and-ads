@@ -11,7 +11,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
  * Class ActivationRedirect
@@ -22,7 +21,6 @@ class ActivationRedirect implements Activateable, Service, Registerable, Options
 
 	use MerchantCenterAwareTrait;
 	use OptionsAwareTrait;
-	use PluginHelper;
 
 	protected const OPTION = OptionsInterface::REDIRECT_TO_ONBOARDING;
 
