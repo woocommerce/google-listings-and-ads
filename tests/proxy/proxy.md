@@ -6,11 +6,18 @@ Since data returned from the Google API can rely on actual live campaigns, the p
 Prerequisites:
 `npm install`
 
-To run:
-`npm run test-proxy`
+### Run proxy
 
-Run using a local connect server:
-`WOOCOMMERCE_CONNECT_SERVER=http://localhost:5000 npm run test-proxy`
+```
+npm run test-proxy
+```
+
+Or, if you want to use a local connect server:
+```
+WOOCOMMERCE_CONNECT_SERVER=http://localhost:5000 npm run test-proxy
+```
+
+### Connect test site to proxy
 
 On your test site you will need to run a PHP snippet to use the proxy to handle any requests:
 
@@ -23,5 +30,15 @@ Or, if your test site is running within a docker container, the PHP snippet woul
 ```php
 define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5500' );
 ```
+
+#### Non Mac users
+To make `host.docker.internal` work on non-Mac environments, you will need to add a flag `--add-host=host.docker.internal:host-gateway` or config to your `docker-composer.yml`:
+```yml
+  phpfpm:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+```
+
+### Available mocks
 
 At the moment only the report data is mocked, the rest of the requests are sent on to the connect server. The mocks folder contains example responses for the reports.
