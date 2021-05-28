@@ -37,7 +37,7 @@ const CompareProductsTableCard = ( {
 				'google-listings-and-ads'
 			) }
 			nameHeader={ __( 'Product title', 'google-listings-and-ads' ) }
-			nameCell={ ( row ) => row.name || row.title }
+			nameCell={ ( row ) => row.name }
 			compareBy={ compareBy }
 			compareParam={ compareParam }
 			metrics={ metrics }
