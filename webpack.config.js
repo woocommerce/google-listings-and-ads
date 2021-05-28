@@ -35,9 +35,12 @@ const requestToHandle = ( request ) => {
 const webpackConfig = {
 	...defaultConfig,
 	resolve: {
+		...defaultConfig.resolve,
 		alias: {
 			'.~': path.resolve( process.cwd(), 'js/src/' ),
 		},
+		// Resolve jsx/tsx files for `@woocommerce/data`...`/with-plugins-hydration`
+		extensions: [ '.ts', '.tsx', '.js', '.jsx', '.json' ],
 	},
 	plugins: [
 		...defaultConfig.plugins.filter(
