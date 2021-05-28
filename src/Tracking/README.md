@@ -81,6 +81,8 @@ All event names are prefixed by `wcadmin_gla_`.
 * `modal_open` - A modal is opend
   * `context`: indicate which modal is opened
 
+* `pre_launch_checklist_complete` - Triggered when all checklist items are complete / checked.
+
 * `setup_mc` - Setup Merchant Center
   * `target`: button ID
   * `trigger`: action (e.g. `click`)
