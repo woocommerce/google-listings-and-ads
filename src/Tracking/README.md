@@ -19,8 +19,6 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 
 All event names are prefixed by `wcadmin_gla_`.
 
-* `extension_loaded` - DEMO when the extension is loaded
-
 * `get_started_faq` - Clicking on getting started page faq item to collapse or expand it
   * `id`: (faq identifier)
   * `action`: (`expand`|`collapse`)

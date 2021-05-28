@@ -34,7 +34,6 @@ class EventTracking implements Service, Registerable {
 	 * @var string[]
 	 */
 	protected $events = [
-		Loaded::class,
 		SiteVerificationEvents::class,
 	];
 
