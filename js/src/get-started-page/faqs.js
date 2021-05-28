@@ -164,100 +164,57 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'what-are-the-terms-and-conditions-for-ad-credit-offer',
+		trackId: 'how-can-i-get-the-ad-credit-offer',
 		question: __(
-			'What are the terms and conditions for the $150 ad credit offer?',
+			'How can I get the $150 ad credit offer?',
 			'google-listings-and-ads'
 		),
 		answer: (
 			<>
-				{ __(
-					'Terms and conditions for US-based retailers',
-					'google-listings-and-ads'
-				) }
-				<br />
-				{ createInterpolateElement(
-					__(
-						'Amounts differ by currencies and countries, <link>Learn about your coupon values</link>.',
-						'google-listings-and-ads'
-					),
-					{
-						link: (
-							<AppDocumentationLink
-								context="faqs"
-								linkId="learn-about-google-ads-coupon-values"
-								href="https://support.google.com/google-ads/answer/7624810"
-							/>
-						),
-					}
-				) }
 				<p>
 					{ __(
-						'Terms and conditions for this offer:',
+						'Ad credit amounts vary by country and region.',
 						'google-listings-and-ads'
 					) }
 				</p>
-				<ol>
-					<li>
-						{ __(
-							'Offer available to customers with a billing address in the United States only. One promotional code per advertiser.',
+				<p>
+					{ __(
+						'The eligibility criteria:',
+						'google-listings-and-ads'
+					) }
+					<br />
+					{ __(
+						'The account has no other promotions applied.',
+						'google-listings-and-ads'
+					) }
+					<br />
+					{ __(
+						'The account is billed to a country where Google Partners promotions are offered.',
+						'google-listings-and-ads'
+					) }
+					<br />
+					{ __(
+						'The account served its first ad impression within the last 14 days.',
+						'google-listings-and-ads'
+					) }
+				</p>
+				<p>
+					{ createInterpolateElement(
+						__(
+							'Review the static terms <link>here</link>.',
 							'google-listings-and-ads'
-						) }
-					</li>
-					<li>
-						{ __(
-							'To activate this offer: Click on the button or link associated with this offer before December 31, 2021 for the promotional code to be automatically applied to your account. In order to participate in this offer, the promotional code must be applied to your first Google Ads account within 14 days of your first ad impression being served from such account.',
-							'google-listings-and-ads'
-						) }
-					</li>
-					<li>
-						{ __(
-							'To earn the credit: Start advertising! The advertising costs you accrue in this account in the 30 days following your entry of the promotional code, excluding any taxes, will be matched with an advertising credit in the same amount, up to a maximum value of $150.',
-							'google-listings-and-ads'
-						) }
-					</li>
-					<li>
-						{ __(
-							'Once 2 and 3 are completed, the credit will typically be applied within 5 days to the Billing Summary of your account.',
-							'google-listings-and-ads'
-						) }
-					</li>
-					<li>
-						{ __(
-							'Credits apply to future advertising costs only. Credits cannot be applied to costs accrued before the code was entered.',
-							'google-listings-and-ads'
-						) }
-					</li>
-					<li>
-						{ __(
-							'You won’t receive a notification once your credit is used up and any additional advertising costs will be charged to your form of payment. If you don’t want to continue advertising, you can pause or delete your campaigns at any time.',
-							'google-listings-and-ads'
-						) }
-					</li>
-					<li>
-						{ __(
-							'Your account must be successfully billed by Google Ads and remain in good standing in order to qualify for the promotional credit.',
-							'google-listings-and-ads'
-						) }
-					</li>
-					<li>
-						{ createInterpolateElement(
-							__(
-								'Full terms and conditions can be found here <link>https://www.google.com/ads/coupons/terms.html</link>.',
-								'google-listings-and-ads'
+						),
+						{
+							link: (
+								<AppDocumentationLink
+									context="faqs"
+									linkId="terms-and-conditions-of-google-ads-coupons"
+									href="http://www.google.com/ads/coupons/terms.html"
+								/>
 							),
-							{
-								link: (
-									<AppDocumentationLink
-										context="faqs"
-										linkId="terms-and-conditions-of-google-ads-coupons"
-										href="https://www.google.com/ads/coupons/terms.html"
-									/>
-								),
-							}
-						) }
-					</li>
-				</ol>
+						}
+					) }
+				</p>
 			</>
 		),
 	},

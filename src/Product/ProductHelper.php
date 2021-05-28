@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
@@ -33,12 +34,19 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $meta_handler;
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
 	 * ProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
+	 * @param WC                 $wc
 	 */
-	public function __construct( ProductMetaHandler $meta_handler ) {
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc ) {
 		$this->meta_handler = $meta_handler;
+		$this->wc           = $wc;
 	}
 
 	/**
@@ -69,7 +77,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 
 		// mark the parent product as synced if it's a variation
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$parent_product = wc_get_product( $product->get_parent_id() );
+			$parent_product = $this->get_wc_product( $product->get_parent_id() );
 			$this->mark_as_synced( $parent_product, $google_product );
 		}
 	}
@@ -89,7 +97,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 
 		// mark the parent product as un-synced if it's a variation
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$parent_product = wc_get_product( $product->get_parent_id() );
+			$parent_product = $this->get_wc_product( $product->get_parent_id() );
 			$this->mark_as_unsynced( $parent_product );
 		}
 	}
@@ -126,7 +134,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		// mark the parent product as invalid if it's a variation
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
 			$wc_parent_id   = $product->get_parent_id();
-			$parent_product = wc_get_product( $wc_parent_id );
+			$parent_product = $this->get_wc_product( $wc_parent_id );
 
 			$parent_errors = ! empty( $this->meta_handler->get_errors( $wc_parent_id ) ) ?
 				$this->meta_handler->get_errors( $wc_parent_id ) :
@@ -151,7 +159,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		// mark the parent product as pending if it's a variation
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
 			$wc_parent_id   = $product->get_parent_id();
-			$parent_product = wc_get_product( $wc_parent_id );
+			$parent_product = $this->get_wc_product( $wc_parent_id );
 			$this->mark_as_pending( $parent_product );
 		}
 	}
@@ -210,6 +218,18 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		}
 
 		return $product->get_title();
+	}
+
+	/**
+	 * Get WooCommerce product
+	 *
+	 * @param int|false $product_id
+	 *
+	 * @return WC_Product
+	 * @throws InvalidValue If the given ID doesn't reference a valid product.
+	 */
+	public function get_wc_product( $product_id ): WC_Product {
+		return $this->wc->get_product( $product_id );
 	}
 
 	/**
@@ -273,11 +293,8 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return int The parent ID or product ID of it doesn't have a parent.
 	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
-	public function maybe_swap_for_parent_id( int $product_id ): ?int {
-		$product = wc_get_product( $product_id );
-		if ( ! $product ) {
-			throw InvalidValue::not_valid_product_id( $product_id );
-		}
+	public function maybe_swap_for_parent_id( int $product_id ): int {
+		$product = $this->get_wc_product( $product_id );
 		if ( $product instanceof WC_Product_Variation ) {
 			return $product->get_parent_id();
 		}

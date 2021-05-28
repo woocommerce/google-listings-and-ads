@@ -59,7 +59,7 @@ const webpackConfig = {
 		),
 		'custom-inputs': path.resolve(
 			process.cwd(),
-			'js/src/custom-inputs/select-with-text-input',
+			'js/src/custom-inputs',
 			'index.js'
 		),
 		'product-attributes': path.resolve(

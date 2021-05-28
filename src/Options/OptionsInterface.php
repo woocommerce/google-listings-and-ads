@@ -23,6 +23,7 @@ interface OptionsInterface {
 	public const MERCHANT_ACCOUNT_STATE = 'merchant_account_state';
 	public const MERCHANT_CENTER        = 'merchant_center';
 	public const MERCHANT_ID            = 'merchant_id';
+	public const REDIRECT_TO_ONBOARDING = 'redirect_to_onboarding';
 	public const SHIPPING_RATES         = 'shipping_rates';
 	public const SHIPPING_TIMES         = 'shipping_times';
 	public const SITE_VERIFICATION      = 'site_verification';

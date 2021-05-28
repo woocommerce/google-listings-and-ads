@@ -3,10 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Checkbox;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\BooleanSelect;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Decimal;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\FormException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Number;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Integer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
@@ -70,12 +72,24 @@ class AttributesForm extends Form {
 			 */
 			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
-			if ( ! empty( $applicable_types ) ) {
-				$input['gla_wrapper_class']  = $input['gla_wrapper_class'] ?? '';
-				$input['gla_wrapper_class'] .= ' show_if_' . join( ' show_if_', $applicable_types );
+			/**
+			 * Filters the list of product types to hide the attribute for.
+			 */
+			$hidden_types = apply_filters( "gla_attribute_hidden_product_types_{$attribute_id}", [] );
 
-				$view_data['children'][ $index ] = $input;
+			$visible_types = array_diff( $applicable_types, $hidden_types );
+
+			$input['gla_wrapper_class'] = $input['gla_wrapper_class'] ?? '';
+
+			if ( ! empty( $visible_types ) ) {
+				$input['gla_wrapper_class'] .= ' show_if_' . join( ' show_if_', $visible_types );
 			}
+
+			if ( ! empty( $hidden_types ) ) {
+				$input['gla_wrapper_class'] .= ' hide_if_' . join( ' hide_if_', $hidden_types );
+			}
+
+			$view_data['children'][ $index ] = $input;
 		}
 
 		return $view_data;
@@ -105,7 +119,7 @@ class AttributesForm extends Form {
 			}
 
 			// add a 'default' value option
-			$value_options = [ '' => 'Default' ] + $value_options;
+			$value_options = [ '' => __( 'Default', 'google-listings-and-ads' ) ] + $value_options;
 
 			$input->set_options( $value_options );
 		}
@@ -128,13 +142,15 @@ class AttributesForm extends Form {
 		switch ( $attribute::get_value_type() ) {
 			case 'integer':
 			case 'int':
+				$input_type = Integer::class;
+				break;
 			case 'float':
 			case 'double':
-				$input_type = Number::class;
+				$input_type = Decimal::class;
 				break;
 			case 'bool':
 			case 'boolean':
-				$input_type = Checkbox::class;
+				$input_type = BooleanSelect::class;
 				break;
 			default:
 				$input_type = Text::class;
@@ -151,9 +167,10 @@ class AttributesForm extends Form {
 	 *
 	 * @return AttributesForm
 	 *
-	 * @throws InvalidValue If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 * @throws InvalidValue  If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 * @throws FormException If form is already submitted.
 	 */
-	protected function add_attribute( string $attribute_type, ?string $input_type = null ): AttributesForm {
+	public function add_attribute( string $attribute_type, ?string $input_type = null ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
 		$attribute = new $attribute_type();
 
@@ -167,9 +184,55 @@ class AttributesForm extends Form {
 		$attribute_input = $this->init_input( new $input_type(), $attribute );
 
 		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
-		$this->add( $attribute_input, $attribute_id );
+		$this->add( $attribute_input );
 
 		$this->attribute_types[ $attribute_id ] = $attribute_type;
+
+		return $this;
+	}
+
+	/**
+	 * Remove an attribute from the form
+	 *
+	 * @param string $attribute_type An attribute class extending AttributeInterface
+	 *
+	 * @return AttributesForm
+	 *
+	 * @throws InvalidValue  If the attribute type is invalid or an invalid input type is specified for the attribute.
+	 * @throws FormException If form is already submitted.
+	 */
+	public function remove_attribute( string $attribute_type ): AttributesForm {
+		$this->validate_interface( $attribute_type, AttributeInterface::class );
+
+		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
+		unset( $this->attribute_types[ $attribute_id ] );
+		$this->remove( $attribute_id );
+
+		return $this;
+	}
+
+	/**
+	 * Sets the input type for the given attribute.
+	 *
+	 * @param string $attribute_type
+	 * @param string $input_type
+	 *
+	 * @return $this
+	 *
+	 * @throws FormException If form is already submitted.
+	 */
+	public function set_attribute_input( string $attribute_type, string $input_type ): AttributesForm {
+		if ( $this->is_submitted ) {
+			throw FormException::cannot_modify_submitted();
+		}
+
+		$this->validate_interface( $attribute_type, AttributeInterface::class );
+		$this->validate_interface( $input_type, InputInterface::class );
+
+		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
+		if ( $this->has( $attribute_id ) ) {
+			$this->children[ $attribute_id ] = $this->init_input( new $input_type(), new $attribute_type() );
+		}
 
 		return $this;
 	}

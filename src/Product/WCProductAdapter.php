@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
@@ -421,6 +422,15 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 				wc_get_price_excluding_tax( $product, [ 'price' => $regular_price ] ) :
 				wc_get_price_including_tax( $product, [ 'price' => $regular_price ] );
 
+			/**
+			 * Filters the calculated product price.
+			 *
+			 * @param float      $price   Calculated price of the product
+			 * @param WC_Product $product WooCommerce product
+			 * @param bool       $tax_excluded Whether tax is excluded from product price
+			 */
+			$price = apply_filters( 'gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
+
 			$this->setPrice(
 				new Google_Service_ShoppingContent_Price(
 					[
@@ -462,6 +472,15 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 				wc_get_price_excluding_tax( $product, [ 'price' => $sale_price ] ) :
 				wc_get_price_including_tax( $product, [ 'price' => $sale_price ] );
 
+			/**
+			 * Filters the calculated product sale price.
+			 *
+			 * @param float      $sale_price   Calculated sale price of the product
+			 * @param WC_Product $product      WooCommerce product
+			 * @param bool       $tax_excluded Whether tax is excluded from product price
+			 */
+			$sale_price = apply_filters( 'gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
+
 			// If the sale price dates no longer apply, make sure we don't include a sale price.
 			$now                 = new WC_DateTime();
 			$sale_price_end_date = $product->get_date_on_sale_to();
@@ -487,9 +506,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @param WC_Product $product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	protected function get_wc_product_sale_price_effective_date( WC_Product $product ): string {
+	protected function get_wc_product_sale_price_effective_date( WC_Product $product ): ?string {
 		$start_date = $product->get_date_on_sale_from();
 		$end_date   = $product->get_date_on_sale_to();
 
@@ -515,6 +534,10 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		) {
 			$end_date = clone $start_date;
 			$end_date->add( new DateInterval( 'P1D' ) );
+		}
+
+		if ( empty( $start_date ) && empty( $end_date ) ) {
+			return null;
 		}
 
 		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
@@ -592,6 +615,13 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		$metadata->addPropertyConstraint( 'ageGroup', new Assert\Choice( array_keys( AgeGroup::get_value_options() ) ) );
 		$metadata->addPropertyConstraint( 'adult', new Assert\Type( 'boolean' ) );
+
+		$metadata->addPropertyConstraint( 'condition', new Assert\Choice( array_keys( Condition::get_value_options() ) ) );
+
+		$metadata->addPropertyConstraint( 'multipack', new Assert\Type( 'integer' ) );
+		$metadata->addPropertyConstraint( 'multipack', new Assert\PositiveOrZero() );
+
+		$metadata->addPropertyConstraint( 'isBundle', new Assert\Type( 'boolean' ) );
 	}
 
 	/**

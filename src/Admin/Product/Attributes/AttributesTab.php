@@ -113,12 +113,16 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @param WC_Product $product
 	 */
 	private function handle_update_product( WC_Product $product ) {
-		$form = $this->get_form( $product );
-
+		$form           = $this->get_form( $product );
 		$form_view_data = $form->get_view_data();
+
 		// phpcs:disable WordPress.Security.NonceVerification
+		if ( empty( $_POST[ $form_view_data['name'] ] ) ) {
+			return;
+		}
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$submitted_data = ! empty( $_POST[ $form_view_data['name'] ] ) ? (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) ) : [];
+		$submitted_data = (array) wc_clean( wp_unslash( $_POST[ $form_view_data['name'] ] ) );
+		// phpcs:enable WordPress.Security.NonceVerification
 
 		$form->submit( $submitted_data );
 		$this->update_data( $product, $form->get_data() );

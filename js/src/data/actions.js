@@ -718,3 +718,36 @@ export function* receiveMCProductFeed( query, data ) {
 		data,
 	};
 }
+
+/**
+ * Update the channel visibility of products by product IDs.
+ *
+ * @param {Array<number>} ids Product IDs to be updated.
+ * @param {boolean} visible Visibility of products to be updated.
+ *                          `true` is "Sync and show" and `false` is "Don't sync and show".
+ */
+export function* updateMCProductVisibility( ids, visible ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/product-visibility`,
+			method: 'POST',
+			data: {
+				ids,
+				visible,
+			},
+		} );
+
+		return {
+			type: TYPES.UPDATE_MC_PRODUCTS_VISIBILITY,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to update the channel visibility of products. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}

@@ -2,16 +2,18 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
+import { useMemo } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { STORE_KEY } from '.~/data/constants';
 import {
-	fieldsToPerformance,
-	mapReportFieldsToPerformance,
-} from '.~/data/utils';
-import { getIdsFromQuery } from '../utils';
+	getIdsFromQuery,
+	aggregateIntervals,
+	sumToPerformance,
+	addBaseToPerformance,
+} from '../utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '.~/constants';
 
@@ -21,6 +23,14 @@ const emptyData = {
 	campaigns: [],
 	intervals: [],
 	totals: {},
+};
+/**
+ * @type {import('.~/data/selectors').ReportSchema}
+ */
+const emptyReport = {
+	loaded: true,
+	data: {},
+	reportQuery: null,
 };
 
 /**
@@ -38,161 +48,135 @@ const emptyData = {
  */
 export default function useProgramsReport() {
 	const query = useUrlQuery();
-	return useSelect(
+	const { paid, free, expectBoth } = useSelect(
 		( select ) => {
 			const { getReport } = select( STORE_KEY );
-
-			const queriedPrograms = getIdsFromQuery(
-				query[ REPORT_PROGRAM_PARAM ]
-			);
-			const containsFree =
-				queriedPrograms.length === 0 ||
-				queriedPrograms.includes( FREE_LISTINGS_PROGRAM_ID );
-
-			const containsPaid =
-				queriedPrograms.length === 0 ||
-				queriedPrograms.some(
-					( id ) => id !== FREE_LISTINGS_PROGRAM_ID
-				);
-			if ( containsFree && containsPaid ) {
-				return transformReportAggregated( getReport, query );
-			} else if ( containsFree && ! containsPaid ) {
-				return transfromReportForType( getReport, 'free', query );
-			} else if ( ! containsFree && containsPaid ) {
-				return transfromReportForType( getReport, 'paid', query );
-			}
+			return getReports( getReport, query, 'primary' );
 		},
 		[ query ]
 	);
-}
+	const loaded = paid.loaded && free.loaded;
+	// Assume paid being a superset.
+	const reportQuery = paid.reportQuery || free.reportQuery;
 
-/**
- * Transforms raw report data given by API,
- * for the current and the previous time,
- * to a single object to be used by UI components.
- *
- * @param  {Function} getReport Report selector.
- * @param  {string} type Data source of program type, 'free' or 'paid'.
- * @param  {Object} query Query parameters in the URL.
- *
- * @return {ProgramsReportSchema} The fetched programs report data and its status.
- */
-function transfromReportForType( getReport, type, query ) {
-	const primary = getReport( category, type, query, 'primary' );
-	const secondary = getReport( category, type, query, 'secondary' );
+	// Memoize expensive aggregation of intervals, and merging of
+	const data = useMemo( () => {
+		const freeData = free.data;
+		const paidData = paid.data;
+		// We return empty data when partials are still being loaded.
+		// That saves some computations.
+		// Alternatively, we could consider UI where chunks of loaded data are being shown.
+		if ( ! loaded || ! paidData || ! freeData ) {
+			return emptyData;
+		}
 
-	const loaded = primary.loaded && secondary.loaded;
-	const haveAllData = primary.data && secondary.data;
-
-	let data = emptyData;
-
-	if ( loaded && haveAllData ) {
-		data = {
-			freeListings: primary.data.free_listings || [],
-			campaigns: primary.data.campaigns || [],
-			intervals: primary.data.intervals || [],
-			totals: mapReportFieldsToPerformance(
-				primary.data.totals,
-				secondary.data.totals
+		return {
+			freeListings: freeData.free_listings || emptyData.free_listings,
+			campaigns: paidData.campaigns || emptyData.campaigns,
+			intervals:
+				aggregateIntervals( paidData.intervals, freeData.intervals ) ||
+				emptyData.intervals,
+			// Translate totals to performance, sum free+paid, mark missing if applicable.
+			totals: sumToPerformance(
+				paidData.totals,
+				freeData.totals,
+				expectBoth
 			),
 		};
-	}
+	}, [ loaded, paid.data, free.data, expectBoth ] );
 
-	const reportQuery = primary.reportQuery;
-	return { data, loaded, reportQuery };
+	return {
+		loaded,
+		reportQuery,
+		data,
+	};
 }
 
 /**
- * Transforms raw report data given by API, for free & paid programs,
- * for the current and the previous time,
- * to a single object, to be used by UI components.
+ * Get programs report totals, from the previous period.
  *
- * @param  {Function} getReport Report selector.
- * @param  {Object} query Query parameters in the URL.
+ * @param {Object} query URL query to be forwarded to `getReport`.
  *
- * @return {ProgramsReportSchema} The fetched programs report data and its status.
+ * @return {{loaded: boolean, data: PerformanceData}} Loaded flag, and eventually the fetched data.
  */
-function transformReportAggregated( getReport, query ) {
-	// The glue code for summing up two reports could be moved to the serverside,
-	// where the data is more accesible.
-	// That could improve the UX by reducing the latency of XHR pipeline.
-	const free = {
-		primary: getReport( category, 'free', query, 'primary' ),
-		secondary: getReport( category, 'free', query, 'secondary' ),
-	};
-	const paid = {
-		primary: getReport( category, 'paid', query, 'primary' ),
-		secondary: getReport( category, 'paid', query, 'secondary' ),
-	};
-	const loaded =
-		free.primary.loaded &&
-		free.secondary.loaded &&
-		paid.primary.loaded &&
-		paid.secondary.loaded;
-	const haveAllData =
-		free.primary.data &&
-		free.secondary.data &&
-		paid.primary.data &&
-		paid.secondary.data;
-
-	let data = emptyData;
-
-	if ( loaded && haveAllData ) {
-		data = {
-			freeListings: free.primary.data.free_listings || [],
-			campaigns: paid.primary.data.campaigns || [],
-			// We need to combine the intervals here
-			// https://github.com/woocommerce/google-listings-and-ads/issues/589#issuecomment-840317729
-			// But maybe its better to do it in more general level,
-			// as we need that for single type Product reports as well.
-			intervals: [
-				...( free.primary.data.intervals || [] ),
-				...( paid.primary.data.intervals || [] ),
-			],
-			totals: mapReportFieldsToAggregatesPerformance(
-				paid.primary.data.totals,
-				paid.secondary.data.totals,
-				free.primary.data.totals,
-				free.secondary.data.totals
-			),
-		};
-	}
-
-	const reportQuery = paid.primary.reportQuery;
-	return { data, loaded, reportQuery };
-}
-
-/**
- * Calculate performance data by each metric,
- * sum totals from paid and free programs,
- * state missing free data as `missingFreeListingsData`.
- *
- * `paid`'s keys should be a subset of `free`s keys. and should be same as `paidBase` keys.
- *
- * @param {ReportFieldsSchema} paid The primary report fields fetched for paid campaigns.
- * @param {ReportFieldsSchema} paidBase The secondary report fields fetched for paid campaigns.
- * @param {ReportFieldsSchema} free The primary report fields fetched for free campaigns.
- * @param {ReportFieldsSchema} freeBase The secondary report fields fetched for free campaigns.
- *
- * @return {PerformanceData} The calculated performance data of each metric.
- */
-export function mapReportFieldsToAggregatesPerformance(
-	paid,
-	paidBase,
-	free,
-	freeBase
-) {
-	return Object.keys( paid ).reduce(
-		( acc, key ) => ( {
-			...acc,
-			[ key ]: fieldsToPerformance(
-				// State the lack of `free*[key]` data as `missingFreeListingsData`,
-				// but sum gracefully as `0`.
-				Number( paid[ key ] ) + Number( free[ key ] || 0 ),
-				Number( paidBase[ key ] ) + Number( freeBase[ key ] || 0 ),
-				free[ key ] === undefined || freeBase[ key ] === undefined
-			),
-		} ),
-		{}
+function usePreviousTotals( query ) {
+	const { paid, free, expectBoth } = useSelect(
+		( select ) => {
+			const { getReport } = select( STORE_KEY );
+			return getReports( getReport, query, 'secondary' );
+		},
+		[ query ]
 	);
+	const loaded = paid.loaded && free.loaded;
+
+	const data = useMemo( () => {
+		const freeData = free.data;
+		const paidData = paid.data;
+		// We return empty data when partials are still being loaded.
+		// That saves some computations.
+		// Alternatively, we could consider UI where chunks of loaded data are being shown.
+		if ( ! loaded || ! paidData || ! freeData ) {
+			return emptyData.totals;
+		}
+
+		return sumToPerformance( paidData.totals, freeData.totals, expectBoth );
+	}, [ loaded, paid.data, free.data, expectBoth ] );
+
+	return {
+		loaded,
+		data,
+	};
+}
+
+export function usePerformanceReport( totals ) {
+	const query = useUrlQuery();
+	const { loaded, data: previousTotals } = usePreviousTotals( query );
+
+	const performance = useMemo( () => {
+		if ( ! loaded ) {
+			return totals;
+		}
+
+		return addBaseToPerformance( totals, previousTotals );
+	}, [ loaded, previousTotals, totals ] );
+
+	return {
+		loaded,
+		data: performance,
+	};
+}
+
+/**
+ * Gets `free` or `paid` report, or both.
+ * Fetches according to queried params.
+ * Returns uniform structure of `{free, paid}` reports, with dummy ones if applicable.
+ *
+ * @param  {Function} getReport Report selector.
+ * @param  {Object} query Query parameters in the URL.
+ * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
+ *
+ * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema, expectBoth: boolean}} The fetched programs reports, and a flag whether both were expected..
+ */
+function getReports( getReport, query, dateReference ) {
+	const queriedPrograms = getIdsFromQuery( query[ REPORT_PROGRAM_PARAM ] );
+	const containsFree =
+		queriedPrograms.length === 0 ||
+		queriedPrograms.includes( FREE_LISTINGS_PROGRAM_ID );
+
+	const containsPaid =
+		queriedPrograms.length === 0 ||
+		queriedPrograms.some( ( id ) => id !== FREE_LISTINGS_PROGRAM_ID );
+
+	const result = {
+		free:
+			( containsFree &&
+				getReport( category, 'free', query, dateReference ) ) ||
+			emptyReport,
+		paid:
+			( containsPaid &&
+				getReport( category, 'paid', query, dateReference ) ) ||
+			emptyReport,
+		expectBoth: containsFree && containsFree,
+	};
+	return result;
 }

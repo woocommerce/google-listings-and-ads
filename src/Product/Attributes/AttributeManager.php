@@ -22,10 +22,11 @@ class AttributeManager implements Service {
 	use PluginHelper;
 	use ValidateInterface;
 
-	protected const ATTRIBUTES = [
+	public const ATTRIBUTES = [
 		GTIN::class,
 		MPN::class,
 		Brand::class,
+		Condition::class,
 		Gender::class,
 		Size::class,
 		SizeSystem::class,
@@ -34,6 +35,8 @@ class AttributeManager implements Service {
 		Material::class,
 		Pattern::class,
 		AgeGroup::class,
+		Multipack::class,
+		IsBundle::class,
 		Adult::class,
 	];
 
