@@ -32,6 +32,10 @@ All event names are prefixed by `wcadmin_gla_`.
   * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
 
+* `dashboard_edit_program_click` - Triggered when "continue" to edit program button is clicked
+  * `programId`: program id
+  * `url`: url (free or paid)
+
 * `disconnected_accounts` - Accounts are disconnected from the Setting page
   * `context`: (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
 
