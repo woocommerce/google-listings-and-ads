@@ -130,9 +130,9 @@ class MerchantReport implements OptionsAwareInterface {
 			);
 
 			// Retrieve product title and add to report.
-			if ( empty( $this->report_data['products'][ $product_id ]['title'] ) ) {
-				$title = $this->product_helper->get_wc_product_title( (string) $product_id );
-				$this->report_data['products'][ $product_id ]['title'] = $title;
+			if ( empty( $this->report_data['products'][ $product_id ]['name'] ) ) {
+				$name = $this->product_helper->get_wc_product_title( (string) $product_id );
+				$this->report_data['products'][ $product_id ]['name'] = $name;
 			}
 		}
 
