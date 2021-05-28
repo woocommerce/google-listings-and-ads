@@ -494,12 +494,16 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @return string|null
 	 */
 	protected function get_product_shopping_status( Shopping_Product_Status $product_status ): ?string {
+		$status = null;
 		foreach ( $product_status->getDestinationStatuses() as $d ) {
-			if ( $d->getDestination() === 'Shopping' ) {
-				return $d->getStatus();
+			if ( $d->getDestination() === 'SurfacesAcrossGoogle' ) {
+				$status = $d->getStatus();
+			} elseif ( $d->getDestination() === 'Shopping' ) {
+				$status = $d->getStatus();
+				break;
 			}
 		}
-		return null;
+		return $status;
 	}
 
 	/**
