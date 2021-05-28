@@ -91,6 +91,11 @@ All event names are prefixed by `wcadmin_gla_`.
   * `id`: (faq identifier)
   * `action`: (`expand`|`collapse`)
 
+* `site_verify_failure` - When a site verification with Google fails
+  * `step` : the step of the process that failed (token, meta-tag, unknown)
+
+* `site_verify_success` - When a site is successfully verified with Google
+
 * `table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `column`: name of the column
