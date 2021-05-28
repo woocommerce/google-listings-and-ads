@@ -39,7 +39,7 @@ All event names are prefixed by `wcadmin_gla_`.
   * `column`: name of the column
   * `status`: (`on`|`off`)
 
-* `gla_table_sort` - Sorting table
+* `table_sort` - Sorting table
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `column`: name of the column
   * `direction`: (`asc`|`desc`)
@@ -83,7 +83,7 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which page / module the link is in
   * `link_id`: a unique ID for the link within the page / module
 
-* `gla_free_campaign_edited` - Saving changes to the free campaign.
+* `free_campaign_edited` - Saving changes to the free campaign.
 
 * `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
   * `context`: indicate which page the link is in.
