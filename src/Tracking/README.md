@@ -28,7 +28,7 @@ All event names are prefixed by `wcadmin_gla_`.
   * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
   * `href`: indicate the destination where the users is directed to.
 
-* `datepicker_update` - Changing datepicker
+* `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
   * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
 
@@ -40,7 +40,7 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which link is clicked
   * `href`: link's URL
 
-* `filter` - Changing products & variations filter
+* `filter` - Triggered when changing products & variations filter
   * `report`: name of the report (e.g. `"reports-products"`)
   * `filter`: value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
   * `variationFilter`: value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
