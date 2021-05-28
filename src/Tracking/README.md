@@ -83,6 +83,14 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `pre_launch_checklist_complete` - Triggered when all checklist items are complete / checked.
 
+* `setup_ads` - Triggered on events during ads setup and editing
+  * `target`: button ID
+  * `trigger`: action (e.g. `click`)
+
+* `setup_ads_faq` - Clicking on faq items to collapse or expand it in the Setup Ads page
+  * `id`: (faq identifier)
+  * `action`: (`expand`|`collapse`)
+
 * `setup_mc` - Setup Merchant Center
   * `target`: button ID
   * `trigger`: action (e.g. `click`)
