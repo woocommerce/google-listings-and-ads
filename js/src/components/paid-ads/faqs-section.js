@@ -12,7 +12,7 @@ import Section from '.~/wcdl/section';
 
 const FaqsSection = () => {
 	const getPanelToggleHandler = ( id ) => ( isOpened ) => {
-		recordEvent( 'gla_setup_ads_faqs', {
+		recordEvent( 'gla_setup_ads_faq', {
 			id,
 			action: isOpened ? 'expand' : 'collapse',
 		} );
