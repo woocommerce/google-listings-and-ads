@@ -648,29 +648,6 @@ export function receiveReport( reportKey, data ) {
 	};
 }
 
-// TODO: deprecated actions to be removed after relevant actions migrating to corresponding batch actions.
-export function* upsertShippingRate( shippingRate ) {
-	const { countryCode, currency, rate } = shippingRate;
-	yield upsertShippingRates( {
-		countryCodes: [ countryCode ],
-		currency,
-		rate,
-	} );
-}
-
-export function* deleteShippingRate( countryCode ) {
-	yield deleteShippingRates( [ countryCode ] );
-}
-
-export function* upsertShippingTime( shippingTime ) {
-	const { countryCode, time } = shippingTime;
-	yield upsertShippingTimes( { countryCodes: [ countryCode ], time } );
-}
-
-export function* deleteShippingTime( countryCode ) {
-	yield deleteShippingTimes( [ countryCode ] );
-}
-
 export function* fetchMCSetup() {
 	try {
 		const response = yield apiFetch( {
