@@ -35,6 +35,11 @@ All event names are prefixed by `wcadmin_gla_`.
 * `disconnected_accounts` - Accounts are disconnected from the Setting page
   * `context`: (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
 
+* `documentation_link_click` - When a documentation link is clicked.
+  * `link_id`: link identifier
+  * `context`: indicate which link is clicked
+  * `href`: link's URL
+
 * `filter` - Changing products & variations filter
   * `report`: name of the report (e.g. `"reports-products"`)
   * `filter`: value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
@@ -48,10 +53,6 @@ All event names are prefixed by `wcadmin_gla_`.
 * `get_started_faq` - Clicking on getting started page faq item to collapse or expand it
   * `id`: (faq identifier)
   * `action`: (`expand`|`collapse`)
-
-* `get_started_faq_link_clicked` - Clicking on a text link within FAQ item
-  * `id`: (faq identifier)
-  * `href`
 
 * `get_started_notice_link_click` - Clicking on a text link within the notice on the Get Started page
   * `link_id`: link identifier
