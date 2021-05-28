@@ -9,24 +9,25 @@ import { __ } from '@wordpress/i18n';
 import { getIdsFromQuery } from '../utils';
 import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '.~/constants';
 
-export const programsFilterConfig = ( adsCampaigns ) => {
-	if ( ! adsCampaigns ) {
-		adsCampaigns = [];
-	}
-	const programsList = [
-		{
-			id: FREE_LISTINGS_PROGRAM_ID,
-			name: __( 'Free Listings', 'google-listings-and-ads' ),
-		},
-		...adsCampaigns,
-	];
+const freeListingsPrograms = [
+	{
+		id: FREE_LISTINGS_PROGRAM_ID,
+		name: __( 'Free Listings', 'google-listings-and-ads' ),
+	},
+];
+
+export const createProgramsFilterConfig = () => {
+	let resolveAdsCampaigns;
+
+	const promiseProgramsList = new Promise( ( resolve ) => {
+		resolveAdsCampaigns = resolve;
+	} ).then( ( adsCampaigns ) => {
+		return freeListingsPrograms.concat( adsCampaigns );
+	} );
+
 	const autocompleter = {
 		name: 'programs',
-		// Promise.resolve will not be needed after
-		// https://github.com/woocommerce/woocommerce-admin/issues/6061
-		options: () => {
-			return Promise.resolve( programsList );
-		},
+		options: () => promiseProgramsList,
 		getOptionIdentifier: ( option ) => option.id,
 		getOptionLabel: ( option ) => option.name,
 		getOptionKeywords: ( option ) => [ option.name ],
@@ -41,16 +42,17 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 	function getLabels( param ) {
 		// Get program id(s) from query parameter.
 		const ids = new Set( getIdsFromQuery( param ) );
-		const result = programsList
-			.filter( ( campaign ) => ids.has( campaign.id ) )
-			.map( ( campaign ) => ( {
-				key: campaign.id,
-				label: campaign.name,
-			} ) );
-		return Promise.resolve( result );
+		return promiseProgramsList.then( ( programsList ) => {
+			return programsList
+				.filter( ( campaign ) => ids.has( campaign.id ) )
+				.map( ( campaign ) => ( {
+					key: campaign.id,
+					label: campaign.name,
+				} ) );
+		} );
 	}
 
-	return {
+	const filterConfig = {
 		label: __( 'Show', 'google-listings-and-ads' ),
 		staticParams: [
 			'period',
@@ -124,6 +126,11 @@ export const programsFilterConfig = ( adsCampaigns ) => {
 			},
 		],
 	};
-};
 
-export const programsFilter = programsFilterConfig;
+	return ( { data, loaded } ) => {
+		if ( loaded ) {
+			resolveAdsCampaigns( data );
+		}
+		return filterConfig;
+	};
+};

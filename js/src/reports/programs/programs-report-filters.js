@@ -19,13 +19,14 @@ import {
 	recordDatepickerUpdateEvent,
 	recordFilterEvent,
 } from '.~/utils/recordEvent';
-import { programsFilter } from './filter-config';
+import { createProgramsFilterConfig } from './filter-config';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import ReportFilters from '.~/external-components/woocommerce/filters';
 
 // TODO: Consider importing it from something like '@woocommerce/wc-admin-settings'.
 const siteLocale = wcSettings.locale.siteLocale;
+const getProgramsFilter = createProgramsFilterConfig();
 
 /**
  * Set of filters to be used in Programs Report page.
@@ -39,7 +40,7 @@ const siteLocale = wcSettings.locale.siteLocale;
  */
 const ProgramsReportFilters = ( props ) => {
 	const { query, trackEventId } = props;
-	const { data: adsCampaigns } = useAdsCampaigns();
+	const filtersConfig = [ getProgramsFilter( useAdsCampaigns() ) ];
 
 	const { period, compare, before, after } = getDateParamsFromQuery( query );
 	const { primary: primaryDate, secondary: secondaryDate } = getCurrentDates(
@@ -81,8 +82,6 @@ const ProgramsReportFilters = ( props ) => {
 		} );
 
 	const updatedQuery = { ...query };
-
-	const filtersConfig = [ programsFilter( adsCampaigns ) ];
 
 	return (
 		<ReportFilters
