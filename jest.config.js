@@ -5,6 +5,7 @@ const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
 const wcPackagesNeedTransform = [
 	'components',
 	'components/node_modules/@woocommerce/navigation',
+	'components/node_modules/@woocommerce/currency',
 	'currency',
 	'data',
 	'date',
