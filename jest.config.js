@@ -4,21 +4,20 @@ const defaultConfig = require( '@wordpress/scripts/config/jest-unit.config' );
 
 const wcPackagesNeedTransform = [
 	'components',
-	'components/node_modules/@woocommerce/navigation',
-	'components/node_modules/@woocommerce/currency',
 	'currency',
 	'data',
 	'date',
 	'navigation',
 	'number',
 	'tracks',
+	'experimental',
 ].join( '|' );
 
 module.exports = {
 	...defaultConfig,
 	// Workaround https://github.com/woocommerce/woocommerce-admin/issues/6483.
 	transformIgnorePatterns: [
-		`<rootDir>/node_modules/(?!@woocommerce/(${ wcPackagesNeedTransform })/build/)`,
+		`<rootDir>/node_modules/(?!@woocommerce/(${ wcPackagesNeedTransform })(/node_modules/@woocommerce/(${ wcPackagesNeedTransform }))?/build/)`,
 	],
 	moduleNameMapper: {
 		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
