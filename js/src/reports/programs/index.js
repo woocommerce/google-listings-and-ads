@@ -66,15 +66,16 @@ const ProgramsReport = () => {
 		reportQuery: { fields, orderby, order },
 	} = useProgramsReport();
 
+	const hasFieldInResults = loaded && Object.keys( totals ).length > 0;
 	// Until ~Q4 2021, free listings, may not have all metrics.
 	// Anticipate all requested fields to come, show available once loaded.
-	const availableMetrics = loaded
+	const availableMetrics = hasFieldInResults
 		? performanceMetrics.filter( ( { key } ) =>
 				totals.hasOwnProperty( key )
 		  )
 		: performanceMetrics.filter( ( { key } ) => fields.includes( key ) );
 
-	const expectedTableMetrics = loaded
+	const expectedTableMetrics = hasFieldInResults
 		? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
 		: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
 
