@@ -79,14 +79,14 @@ class TrackerSnapshot implements Conditional, OptionsAwareInterface, Registerabl
 	}
 
 	/**
-	 * Get boolean value from options.
+	 * Get boolean value from options, return as yes or no.
 	 *
 	 * @param string $key Option key name.
 	 *
-	 * @return bool
+	 * @return string
 	 */
-	protected function get_boolean_value( string $key ): bool {
-		return (bool) $this->options->get( $key );
+	protected function get_boolean_value( string $key ): string {
+		return (bool) $this->options->get( $key ) ? 'yes' : 'no';
 	}
 
 	/**
