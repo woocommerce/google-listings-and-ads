@@ -18,6 +18,30 @@ export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 export const recordTableSortEvent = ( report, column, direction ) => {
 	recordEvent( 'gla_table_sort', { report, column, direction } );
 };
+
+/**
+ * Records table's page tracking event.
+ * When the `direction` is 'goto', then the event name would be 'gla_table_go_to_page'.
+ * Otherwise, the event name would be 'gla_table_page_click'.
+ *
+ * @param {string} context Name of the table.
+ * @param {number} page Page number of the table. Start from 1.
+ * @param {string} direction Direction of page to be changed. 'next', 'previous', or 'goto'.
+ */
+export const recordTablePageEvent = ( context, page, direction ) => {
+	const properties = { context };
+	let eventName;
+
+	if ( direction === 'goto' ) {
+		eventName = 'gla_table_go_to_page';
+		properties.page = page;
+	} else {
+		eventName = 'gla_table_page_click';
+		properties.direction = direction;
+	}
+	recordEvent( eventName, properties );
+};
+
 /**
  * Records `gla_datepicker_update` tracking event, with data that comes from
  * `DateRangeFilterPicker`'s `onRangeSelect` callback.
