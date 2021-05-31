@@ -6,6 +6,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 /**
@@ -13,8 +16,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
-class TrackerSnapshot implements Service, Registerable, Conditional {
+class TrackerSnapshot implements Conditional, OptionsAwareInterface, Registerable, Service {
 
+	use OptionsAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -64,8 +68,48 @@ class TrackerSnapshot implements Service, Registerable, Conditional {
 	 */
 	protected function get_settings(): array {
 		return [
-			'version' => $this->get_version(),
+			'version'          => $this->get_version(),
+			'db_version'       => $this->options->get( OptionsInterface::DB_VERSION ),
+			'tos_accepted'     => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
+			'google_connected' => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
+			'mc_setup'         => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
+			'ads_setup'        => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
+			'target_audience'  => $this->get_target_countries(),
 		];
+	}
+
+	/**
+	 * Get boolean value from options.
+	 *
+	 * @param string $key Option key name.
+	 *
+	 * @return bool
+	 */
+	protected function get_boolean_value( string $key ): bool {
+		return (bool) $this->options->get( $key );
+	}
+
+	/**
+	 * Get a comma separated list of target country codes.
+	 * Returns "all" when all countries are selected.
+	 *
+	 * @return string
+	 */
+	protected function get_target_countries(): string {
+		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
+		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
+			return '';
+		}
+
+		$countries = '';
+		$location  = strtolower( $target_audience['location'] );
+		if ( 'all' === $location ) {
+			$countries = 'all';
+		} elseif ( 'selected' === $location && ! empty( $target_audience['countries'] ) ) {
+			$countries = implode( ',', $target_audience['countries'] );
+		}
+
+		return $countries;
 	}
 
 }
