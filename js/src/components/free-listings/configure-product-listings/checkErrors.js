@@ -23,10 +23,11 @@ const checkErrors = (
 
 	if (
 		values.shipping_rate === 'flat' &&
-		shippingRates.length < finalCountryCodes.length
+		( shippingRates.length < finalCountryCodes.length ||
+			shippingRates.some( ( el ) => el.rate < 0 ) )
 	) {
 		errors.shipping_rate = __(
-			'Please specify shipping rates for all the countries.',
+			'Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0.',
 			'google-listings-and-ads'
 		);
 	}
@@ -54,10 +55,11 @@ const checkErrors = (
 
 	if (
 		values.shipping_time === 'flat' &&
-		shippingTimes.length < finalCountryCodes.length
+		( shippingTimes.length < finalCountryCodes.length ||
+			shippingTimes.some( ( el ) => el.time < 0 ) )
 	) {
 		errors.shipping_time = __(
-			'Please specify shipping times for all the countries.',
+			'Please specify shipping times for all the countries. And the estimated shipping time cannot be less than 0.',
 			'google-listings-and-ads'
 		);
 	}
