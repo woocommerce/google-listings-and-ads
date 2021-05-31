@@ -108,10 +108,18 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `site_verify_success` - When a site is successfully verified with Google
 
+* `table_go_to_page` - When table pagination is changed by entering page via "Go to page" input
+  * `context`: name of the table
+  * `page`: Page number of the table. Start from 1.
+
 * `table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `column`: name of the column
   * `status`: (`on`|`off`)
+
+* `table_page_click` - When table pagination is clicked
+  * `context`: name of the table
+  * `direction`: direction of page to be changed. `("next" | "previous")`
 
 * `table_sort` - Sorting table
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
