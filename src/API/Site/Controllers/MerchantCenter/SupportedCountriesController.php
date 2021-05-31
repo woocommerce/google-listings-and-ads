@@ -90,6 +90,13 @@ class SupportedCountriesController extends BaseController {
 			];
 		}
 
+		uasort(
+			$supported,
+			function( $a, $b ) {
+				return $a['name'] <=> $b['name'];
+			}
+		);
+
 		return $supported;
 	}
 
