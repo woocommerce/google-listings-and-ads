@@ -67,6 +67,10 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which page / module the link is in
   * `link_id`: a unique ID for the link within the page / module
 
+* `google_mc_link_click` - Clicking on a Google Merchant Center link.
+  * `context`: indicate which page / module the link is in
+  * `href`: link's URL
+
 * `help_click` - "Help" button is clicked.
   * `context`: indicate the place where the button is located, e.g. `setup-ads`.
 

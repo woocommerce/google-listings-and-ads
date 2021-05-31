@@ -6,6 +6,7 @@ import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import AppButton from '.~/components/app-button';
 import SummaryCard from './summary-card';
 
 /**
@@ -38,10 +39,23 @@ const PerformanceCard = ( {
 			<div className="gla-summary-card__body">
 				<p>
 					{ __(
-						'There was an error loading report data. Please try again later.',
+						"We're having trouble loading this data. Try again later, or track your performance in Google Merchant Center.",
 						'google-listings-and-ads'
-					) }{ ' ' }
+					) }
 				</p>
+				<AppButton
+					eventName="gla_google_mc_link_click"
+					eventProps={ { context: 'dashboard' } }
+					href="https://merchants.google.com/mc/reporting/dashboard"
+					target="_blank"
+					isSmall
+					isSecondary
+				>
+					{ __(
+						'Open Google Merchant Center',
+						'google-listings-and-ads'
+					) }
+				</AppButton>
 			</div>
 		);
 	} else {
