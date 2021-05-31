@@ -29,8 +29,16 @@
 			flex-direction: row;
 		}
 
+		// Make SummaryNumbers (an placeholders) adapt to a higher SummaryCard.
 		.woocommerce-summary__item-container {
 			margin: 0;
+			height: 100%;
+		}
+
+		.woocommerce-summary__item {
+			min-height: 117px;
+			height: 100%;
+			justify-content: center;
 		}
 
 		.components-card {
