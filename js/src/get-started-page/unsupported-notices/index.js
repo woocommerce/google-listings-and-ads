@@ -55,7 +55,7 @@ const UnsupportedLanguage = () => {
 						<AppDocumentationLink
 							className="gla-get-started-notice__link"
 							href="https://support.google.com/merchants/answer/160637"
-							eventName="get_started_notice_link_click"
+							eventName="gla_get_started_notice_link_click"
 							context="get-started"
 							linkId="supported-languages"
 						/>
@@ -98,7 +98,7 @@ const UnsupportedCountry = () => {
 						<AppDocumentationLink
 							className="gla-get-started-notice__link"
 							href="https://support.google.com/merchants/answer/160637"
-							eventName="get_started_notice_link_click"
+							eventName="gla_get_started_notice_link_click"
 							context="get-started"
 							linkId="supported-countries"
 						/>

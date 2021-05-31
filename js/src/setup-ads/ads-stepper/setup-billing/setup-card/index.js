@@ -44,7 +44,7 @@ const SetupCard = ( props ) => {
 							isSecondary
 							href={ billingUrl }
 							target="_blank"
-							eventName="ads_set_up_billing_click"
+							eventName="gla_ads_set_up_billing_click"
 							eventProps={ {
 								context: 'setup-ads',
 								link_id: 'set-up-billing',
