@@ -28,6 +28,10 @@ All event names are prefixed by `wcadmin_gla_`.
   * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
   * `href`: indicate the destination where the users is directed to.
 
+* `chart_tab_click` - Triggered when a chart tab is clicked
+  * `report`: name of the report (e.g. `"reports-programs" | "reports-products"`)
+  * `context`: metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
+
 * `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
   * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
