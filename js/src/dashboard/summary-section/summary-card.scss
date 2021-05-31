@@ -23,13 +23,11 @@
 		// not to make the UI jumpy once preloaders is replaced with an error.
 		min-height: 117px;
 
-		.components-button {
-			margin-top: $grid-unit-20;
-		}
-	}
+		gap: $grid-unit-20;
 
-	&__text {
-		margin: 0;
+		& > * {
+			margin: 0;
+		}
 	}
 
 	.woocommerce-summary {

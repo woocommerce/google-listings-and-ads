@@ -17,7 +17,7 @@ const PromotionContent = ( { adsAccount } ) => {
 
 	return (
 		<>
-			<p className="gla-summary-card__text">
+			<p>
 				{ showFreeCredit
 					? __(
 							'Create your first campaign and get up to $150* free',

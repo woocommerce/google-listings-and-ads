@@ -37,7 +37,7 @@ const PerformanceCard = ( {
 	} else if ( ! data ) {
 		content = (
 			<div className="gla-summary-card__body">
-				<p className="gla-summary-card__text">
+				<p>
 					{ __(
 						"We're having trouble loading this data. Try again later, or track your performance in Google Merchant Center.",
 						'google-listings-and-ads'
