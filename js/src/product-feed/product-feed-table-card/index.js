@@ -22,6 +22,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import { recordTablePageEvent } from '.~/utils/recordEvent';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
@@ -68,11 +69,12 @@ const ProductFeedTableCard = () => {
 		}
 	};
 
-	const handlePageChange = ( newPage ) => {
+	const handlePageChange = ( newPage, direction ) => {
 		setQuery( {
 			...query,
 			page: newPage,
 		} );
+		recordTablePageEvent( 'product-feed', newPage, direction );
 	};
 
 	const handleSort = ( orderby, order ) => {
