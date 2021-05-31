@@ -5,5 +5,8 @@
 	    "mode": "typescript"
     },
     "import/resolver": "webpack"
+  },
+  "rules": {
+    "@wordpress/no-unsafe-wp-apis" : 1
   }
 }
