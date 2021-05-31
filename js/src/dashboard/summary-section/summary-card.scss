@@ -18,9 +18,18 @@
 		border: 1px solid #e0e0e0;
 		background-color: #f8f9fa;
 		color: #757575;
+		text-align: center;
 		// Make it match the SummaryNumber placeholder's height
 		// not to make the UI jumpy once preloaders is replaced with an error.
 		min-height: 117px;
+
+		.components-button {
+			margin-top: $grid-unit-20;
+		}
+	}
+
+	&__text {
+		margin: 0;
 	}
 
 	.woocommerce-summary {
