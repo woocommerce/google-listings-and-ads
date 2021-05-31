@@ -27,6 +27,7 @@ const numberFormatSetting = { precision: 0 };
  * @param {string} props.label Metric label.
  * @param {string} [props.href] An internal link to the report focused on this metric.
  * @param {boolean} [props.selected] Whether show a highlight style on this metric.
+ * @param {Function} [props.onLinkClickCallback] A function to be called after a SummaryNumber, rendered as a link, is clicked.
  * @param {boolean} [props.isCurrency=false] Display `data.value` and `data.prevValue` as price format if true.
  *                                           Otherwise, display as number format.
  * @param {import('.~/data/utils').PerformanceMetrics} props.data Data as get from API.
@@ -37,6 +38,7 @@ const MetricNumber = ( {
 	label,
 	href,
 	selected,
+	onLinkClickCallback,
 	isCurrency = false,
 	data: { value, prevValue, delta, missingFreeListingsData },
 } ) => {
@@ -79,6 +81,7 @@ const MetricNumber = ( {
 			href={ href }
 			selected={ selected }
 			delta={ delta }
+			onLinkClickCallback={ onLinkClickCallback }
 			{ ...valueProps }
 		/>
 	);
