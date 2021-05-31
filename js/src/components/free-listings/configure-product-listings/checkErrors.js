@@ -37,7 +37,7 @@ const checkErrors = (
 		values.free_shipping_threshold < 0
 	) {
 		errors.free_shipping_threshold = __(
-			'Please specify minimum order price for free shipping',
+			'Please specify a valid minimum order price for free shipping',
 			'google-listings-and-ads'
 		);
 	}
