@@ -21,6 +21,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import { recordTablePageEvent } from '.~/utils/recordEvent';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import HelpPopover from '.~/components/help-popover';
@@ -90,8 +91,9 @@ const IssuesTableCard = () => {
 		}
 	);
 
-	const handlePageChange = ( newPage ) => {
+	const handlePageChange = ( newPage, direction ) => {
 		setPage( newPage );
+		recordTablePageEvent( 'issues-to-resolve', newPage, direction );
 	};
 
 	return (
