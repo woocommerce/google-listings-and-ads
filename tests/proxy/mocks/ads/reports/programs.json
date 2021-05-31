@@ -1,0 +1,123 @@
+{
+  "results": [
+    {
+      "campaign": {
+        "status": "ENABLED",
+        "name": "Spring",
+        "id": "1234567890"
+      },
+      "metrics": {
+        "clicks": "12",
+        "conversions": 1,
+        "conversionsValue": 20,
+        "costMicros": "6650000",
+        "impressions": "1987"
+      },
+      "segments": {
+        "date": "2021-05-01"
+      }
+    },
+    {
+      "campaign": {
+        "status": "ENABLED",
+        "name": "Summer",
+        "id": "3456789012"
+      },
+      "metrics": {
+        "clicks": "98",
+        "conversions": 3,
+        "conversionsValue": 15,
+        "costMicros": "2260000",
+        "impressions": "123"
+      },
+      "segments": {
+        "date": "2021-05-02"
+      }
+    },
+    {
+      "campaign": {
+        "status": "ENABLED",
+        "name": "Autumn",
+        "id": "5678901234"
+      },
+      "metrics": {
+        "clicks": "7",
+        "conversions": 5,
+        "conversionsValue": 82,
+        "costMicros": "120000",
+        "impressions": "842"
+      },
+      "segments": {
+        "date": "2021-05-03"
+      }
+    },
+    {
+      "campaign": {
+        "status": "ENABLED",
+        "name": "Winter",
+        "id": "7890123456"
+      },
+      "metrics": {
+        "clicks": "83",
+        "conversions": 2,
+        "conversionsValue": 34,
+        "costMicros": "7890000",
+        "impressions": "2831"
+      },
+      "segments": {
+        "date": "2021-05-04"
+      }
+    },
+    {
+      "campaign": {
+        "status": "ENABLED",
+        "name": "Summer",
+        "id": "3456789012"
+      },
+      "metrics": {
+        "clicks": "118",
+        "conversions": 7,
+        "conversionsValue": 123,
+        "costMicros": "82360000",
+        "impressions": "9627"
+      },
+      "segments": {
+        "date": "2021-05-05"
+      }
+    },
+    {
+      "campaign": {
+        "status": "ENABLED",
+        "name": "Winter",
+        "id": "7890123456"
+      },
+      "metrics": {
+        "clicks": "12",
+        "conversions": 0,
+        "conversionsValue": 0,
+        "costMicros": "1020000",
+        "impressions": "375"
+      },
+      "segments": {
+        "date": "2021-05-06"
+      }
+    },
+    {
+      "campaign": {
+        "status": "ENABLED",
+        "name": "Winter",
+        "id": "7890123456"
+      },
+      "metrics": {
+        "clicks": "83",
+        "conversions": 8,
+        "conversionsValue": 964,
+        "costMicros": "3680000",
+        "impressions": "1450"
+      },
+      "segments": {
+        "date": "2021-05-07"
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+	"free_listings": [
+		{
+			"type": "footwo",
+			"subtotals": {
+				"clicks": 139,
+				"impressions": 16037
+			}
+		}
+	],
+	"intervals": [
+		{
+			"interval": "2020-07",
+			"subtotals": {
+				"sales": 0,
+				"spend": 38,
+				"clicks": 90,
+				"impressions": 9941
+			}
+		},
+		{
+			"interval": "2020-08",
+			"subtotals": {
+				"sales": 11,
+				"spend": 35.01,
+				"clicks": 64,
+				"impressions": 6997
+			}
+		},
+		{
+			"interval": "2020-09",
+			"subtotals": {
+				"sales": 5,
+				"spend": 23,
+				"clicks": 3,
+				"impressions": 500
+			}
+		}
+	],
+	"totals": {
+		"clicks": 5626,
+		"impressions": 23340
+	}
+}

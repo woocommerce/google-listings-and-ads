@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
@@ -105,7 +106,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share( Merchant::class, Google_Service_ShoppingContent::class );
-		$this->share( MerchantReport::class, Google_Service_ShoppingContent::class );
+		$this->share( MerchantReport::class, Google_Service_ShoppingContent::class, ProductHelper::class );
 
 		$this->add(
 			SiteVerification::class,

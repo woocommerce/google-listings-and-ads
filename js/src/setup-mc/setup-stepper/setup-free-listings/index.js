@@ -103,7 +103,6 @@ const SetupFreeListings = () => {
 					offers_free_shipping: settings.offers_free_shipping,
 					free_shipping_threshold: settings.free_shipping_threshold,
 					shipping_time: settings.shipping_time,
-					share_shipping_time: settings.share_shipping_time,
 					tax_rate: settings.tax_rate,
 					website_live: settings.website_live,
 					checkout_process_secure: settings.checkout_process_secure,

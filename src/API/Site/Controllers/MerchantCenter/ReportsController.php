@@ -131,6 +131,11 @@ class ReportsController extends BaseReportsController {
 							'description' => __( 'Product ID.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
+						'name'      => [
+							'type'        => 'string',
+							'description' => __( 'Product name.', 'google-listings-and-ads' ),
+							'context'     => [ 'view', 'edit' ],
+						],
 						'subtotals' => $this->get_totals_schema(),
 					],
 				],

@@ -83,10 +83,9 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param BatchProductEntry $product_entry
 	 */
 	public function mark_as_synced( BatchProductEntry $product_entry ) {
-		$wc_product     = wc_get_product( $product_entry->get_wc_product_id() );
+		$wc_product     = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
 		$google_product = $product_entry->get_google_product();
 
-		$this->validate_instanceof( $wc_product, WC_Product::class );
 		$this->validate_instanceof( $google_product, GoogleProduct::class );
 
 		$this->product_helper->mark_as_synced( $wc_product, $google_product );
@@ -96,9 +95,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param BatchProductEntry $product_entry
 	 */
 	public function mark_as_unsynced( BatchProductEntry $product_entry ) {
-		$wc_product = wc_get_product( $product_entry->get_wc_product_id() );
-
-		$this->validate_instanceof( $wc_product, WC_Product::class );
+		$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
 
 		$this->product_helper->mark_as_unsynced( $wc_product );
 	}
@@ -111,10 +108,8 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param BatchInvalidProductEntry $product_entry
 	 */
 	public function mark_as_invalid( BatchInvalidProductEntry $product_entry ) {
-		$wc_product = wc_get_product( $product_entry->get_wc_product_id() );
+		$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
 		$errors     = $product_entry->get_errors();
-
-		$this->validate_instanceof( $wc_product, WC_Product::class );
 
 		$this->product_helper->mark_as_invalid( $wc_product, $errors );
 	}

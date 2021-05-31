@@ -38,7 +38,6 @@ class MerchantCenterSettings extends ArrayWithRequiredKeys implements ValueInter
 				'offers_free_shipping'    => false,
 				'free_shipping_threshold' => 0,
 				'shipping_time'           => 'flat',
-				'share_shipping_time'     => false,
 				'tax_rate'                => 'destination',
 				'website_live'            => false,
 				'checkout_process_secure' => false,

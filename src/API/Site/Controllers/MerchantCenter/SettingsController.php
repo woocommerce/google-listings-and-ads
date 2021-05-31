@@ -129,13 +129,6 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'share_shipping_time'     => [
-				'type'              => 'boolean',
-				'description'       => __( 'Whether the share shipping rates with Google.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
-			],
 			'tax_rate'                => [
 				'type'              => 'string',
 				'description'       => __(
