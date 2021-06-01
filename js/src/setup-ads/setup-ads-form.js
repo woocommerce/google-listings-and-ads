@@ -15,6 +15,7 @@ import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
 import validateForm from '.~/utils/paid-ads/validateForm';
+import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
 // when amount is null or undefined in an onChange callback,
 // it will cause runtime error with the Form component.
@@ -65,6 +66,9 @@ const SetupAdsForm = () => {
 			onSubmitCallback={ ( values ) => {
 				const { amount, country: countryArr } = values;
 				const country = countryArr && countryArr[ 0 ];
+
+				recordLaunchPaidCampaignClickEvent( amount, country );
+
 				handleSetupComplete( amount, country, () => {
 					setSubmitted( true );
 				} );
