@@ -22,7 +22,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
-import { recordTablePageEvent } from '.~/utils/recordEvent';
+import recordEvent, { recordTablePageEvent } from '.~/utils/recordEvent';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
@@ -33,6 +33,7 @@ import EditVisibilityAction from './edit-visibility-action';
 import statusLabelMap from './statusLabelMap';
 
 const PER_PAGE = 10;
+const EVENT_CONTEXT = 'product-feed';
 
 /**
  * Product Feed table.
@@ -74,7 +75,7 @@ const ProductFeedTableCard = () => {
 			...query,
 			page: newPage,
 		} );
-		recordTablePageEvent( 'product-feed', newPage, direction );
+		recordTablePageEvent( EVENT_CONTEXT, newPage, direction );
 	};
 
 	const handleSort = ( orderby, order ) => {
@@ -141,6 +142,12 @@ const ProductFeedTableCard = () => {
 				length
 			);
 			createNotice( 'success', message );
+
+			recordEvent( 'gla_bulk_edit_clicked', {
+				context: EVENT_CONTEXT,
+				number_of_items: length,
+				visibility_to: visible ? 'sync_and_show' : 'dont_sync_and_show',
+			} );
 		} );
 
 		handleSelectAllCheckboxChange( false );
