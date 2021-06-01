@@ -96,11 +96,11 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 		$product_id = $post->ID;
 		$product    = wc_get_product( $product_id );
 		return [
-			'product_id' => $product_id,
-			'product'    => $product,
-			'visibility' => $this->product_helper->get_visibility( $product ),
-			'synced_at'  => $this->meta_handler->get_synced_at( $product_id ),
-			'issues'     => [], // todo: replace this with the list of issues retrieved from Google's Product Statuses API
+			'product_id'  => $product_id,
+			'product'     => $product,
+			'visibility'  => $this->product_helper->get_visibility( $product ),
+			'sync_status' => $this->meta_handler->get_sync_status( $product_id ),
+			'issues'      => $this->meta_handler->get_errors( $product_id ),
 		];
 	}
 
