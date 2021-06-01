@@ -34,7 +34,7 @@ const TermsModal = ( props ) => {
 					key="1"
 					isPrimary
 					disabled={ ! agree }
-					eventName="gla_create_new_ads_account_button_click"
+					eventName="gla_ads_account_create_button_click"
 					onClick={ handleCreateAccountClick }
 				>
 					{ __( 'Create account', 'google-listings-and-ads' ) }

@@ -42,7 +42,7 @@ const ConnectAccount = () => {
 				<AppButton
 					isSecondary
 					loading={ loading || data }
-					eventName="gla_connect_wordpress_account_button_click"
+					eventName="gla_wordpress_account_connect_button_click"
 					onClick={ handleConnectClick }
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
