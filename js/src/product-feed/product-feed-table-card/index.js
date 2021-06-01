@@ -34,6 +34,8 @@ import statusLabelMap from './statusLabelMap';
 
 const PER_PAGE = 10;
 const EVENT_CONTEXT = 'product-feed';
+const toVisibilityEventProp = ( visible ) =>
+	visible ? 'sync_and_show' : 'dont_sync_and_show';
 
 /**
  * Product Feed table.
@@ -146,7 +148,7 @@ const ProductFeedTableCard = () => {
 			recordEvent( 'gla_bulk_edit_clicked', {
 				context: EVENT_CONTEXT,
 				number_of_items: length,
-				visibility_to: visible ? 'sync_and_show' : 'dont_sync_and_show',
+				visibility_to: toVisibilityEventProp( visible ),
 			} );
 		} );
 
@@ -228,6 +230,13 @@ const ProductFeedTableCard = () => {
 										display: (
 											<EditProductLink
 												productId={ el.id }
+												eventName="gla_edit_product_click"
+												eventProps={ {
+													status: el.status,
+													visibility: toVisibilityEventProp(
+														el.visible
+													),
+												} }
 											/>
 										),
 									},
