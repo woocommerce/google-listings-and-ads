@@ -49,6 +49,14 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which link is clicked
   * `href`: link's URL
 
+* `edit_product_click` - Trigger when edit links are clicked from product feed table
+  * `status`: `("approved" | "partially_approved" | "expiring" | "pending" | "disapproved" | "not_synced")`
+  * `visibility`: `("sync_and_show" | "dont_sync_and_show")`
+
+* `edit_product_issue_click` - Trigger when edit links are clicked from Issues to resolve table
+  * `code`: issue code returned from Google
+  * `issue`: issue description returned from Google
+
 * `filter` - Triggered when changing products & variations filter
   * `report`: name of the report (e.g. `"reports-products"`)
   * `filter`: value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
