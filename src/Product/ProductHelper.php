@@ -118,6 +118,13 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 
 		$wc_product_id = $product->get_id();
 
+		do_action(
+			'gla_log_errors',
+			sprintf( 'Error syncing product ID %d', $wc_product_id ),
+			$errors,
+			__METHOD__
+		);
+
 		$this->meta_handler->update_errors( $wc_product_id, $errors );
 		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::HAS_ERRORS );
 		$this->update_empty_visibility( $product );
