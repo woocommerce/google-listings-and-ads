@@ -584,7 +584,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		preg_match( '/^\[([^\]]+)\]\s*(.+)$/', $text, $matches );
 		if ( count( $matches ) !== 3 ) {
 			return [
-				'code'  => 'presync_error_attrib',
+				'code'  => 'presync_error_attrib_' . md5( $text ),
 				'issue' => $text,
 			];
 		}
