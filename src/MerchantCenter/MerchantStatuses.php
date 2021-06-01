@@ -594,6 +594,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		if( 'imageLink' === $matches[1] ) {
 			$matches[1] = 'image';
 		}
+		$matches[2] = trim( $matches[2], ' .' );
 		return [
 			'code'  => 'presync_error_' . $matches[1],
 			'issue' => "{$matches[2]} [{$matches[1]}]",
