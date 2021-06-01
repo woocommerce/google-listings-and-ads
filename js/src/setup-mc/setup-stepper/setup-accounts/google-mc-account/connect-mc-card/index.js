@@ -95,6 +95,7 @@ const ConnectMCCard = ( props ) => {
 						isSecondary
 						loading={ loading }
 						disabled={ ! value }
+						eventName="gla_connect_mc_account_button_click"
 						onClick={ handleConnectClick }
 					>
 						{ __( 'Connect', 'google-listings-and-ads' ) }

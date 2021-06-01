@@ -121,6 +121,18 @@ All event names are prefixed by `wcadmin_gla_`.
 * `tooltip_viewed` - Viewing tooltip
   * `id`: (tooltip identifier)
 
+* `connect_wordpress_account_button_click` - Clicking on the button to connect WordPress.com account.
+
+* `connect_google_account_button_click` - Clicking on the button to connect Google account.
+
+* `connect_mc_account_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
+
+* `create_new_mc_account_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
+
+* `connect_ads_account_button_click` - Clicking on the button to connect an existing Google Ads account.
+
+* `create_new_ads_account_button_click` - Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
+
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.

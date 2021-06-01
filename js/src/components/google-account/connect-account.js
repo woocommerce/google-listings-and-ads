@@ -45,6 +45,7 @@ const ConnectAccount = ( props ) => {
 					isSecondary
 					disabled={ disabled }
 					loading={ loading || data }
+					eventName="gla_connect_google_account_button_click"
 					onClick={ handleConnectClick }
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
