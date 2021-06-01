@@ -144,12 +144,12 @@ const ProductFeedTableCard = () => {
 				length
 			);
 			createNotice( 'success', message );
+		} );
 
-			recordEvent( 'gla_bulk_edit_clicked', {
-				context: EVENT_CONTEXT,
-				number_of_items: length,
-				visibility_to: toVisibilityEventProp( visible ),
-			} );
+		recordEvent( 'gla_bulk_edit_clicked', {
+			context: EVENT_CONTEXT,
+			number_of_items: length,
+			visibility_to: toVisibilityEventProp( visible ),
 		} );
 
 		handleSelectAllCheckboxChange( false );
