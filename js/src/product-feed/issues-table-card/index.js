@@ -155,6 +155,11 @@ const IssuesTableCard = () => {
 										display: el.type === 'product' && (
 											<EditProductLink
 												productId={ el.product_id }
+												eventName="gla_edit_product_issue_click"
+												eventProps={ {
+													code: el.code,
+													issue: el.issue,
+												} }
 											/>
 										),
 									},
