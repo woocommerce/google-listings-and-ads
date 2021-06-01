@@ -387,27 +387,26 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Include local presync product validation issues in the merchant issues table.
 	 */
 	protected function refresh_presync_product_issues(): void {
-
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
-		$products = $product_repository->find_presync_error_products();
-		$product_issues = [];
-		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
+		$products           = $product_repository->find_presync_error_products();
+		$product_issues     = [];
+		$created_at         = $this->current_time->format( 'Y-m-d H:i:s' );
 
-		foreach($products as $p) {
+		foreach ( $products as $p ) {
 			// Skip parent products (so product titles clearly indicate which variation neds fixing).
 			if ( $p->get_type() === 'variable' ) {
 				continue;
 			}
 
-			$presync_errors = $p->get_meta($this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS ) );
+			$presync_errors = $p->get_meta( $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS ) );
 			// Skip products without error descriptions.
 			if ( empty( $presync_errors ) ) {
 				continue;
 			}
 
-			foreach( $presync_errors as $text ) {
-				$issue_parts = $this->parse_presync_issue_text( $text );
+			foreach ( $presync_errors as $text ) {
+				$issue_parts      = $this->parse_presync_issue_text( $text );
 				$product_issues[] = [
 					'product'              => $p->get_name(),
 					'product_id'           => $p->get_id(),
@@ -582,7 +581,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	protected function parse_presync_issue_text( string $text ): array {
 		$matches = [];
-		preg_match( '/^\[([^\]]+)\]\s*(.+)$/', $text, $matches);
+		preg_match( '/^\[([^\]]+)\]\s*(.+)$/', $text, $matches );
 		if ( count( $matches ) !== 3 ) {
 			return [
 				'code'  => 'presync_error_attrib',
@@ -591,7 +590,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		// Convert imageLink to image
-		if( 'imageLink' === $matches[1] ) {
+		if ( 'imageLink' === $matches[1] ) {
 			$matches[1] = 'image';
 		}
 		$matches[2] = trim( $matches[2], ' .' );
