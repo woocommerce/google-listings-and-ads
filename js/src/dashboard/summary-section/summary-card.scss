@@ -2,16 +2,16 @@
 	& > div:last-child {
 		// Make card contents within a row have the same height
 		flex: 1;
-		display: flex;
-		flex-direction: column;
 	}
 
 	&__body {
 		// Make card contents within a row have the same height
 		flex: 1;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
+		// This could be just display: flex, but since Safari 14.0 is still supported,
+		// and does not support gap for flexbox, we use grid instead.
+		display: grid;
+		grid-auto-flow: row;
+		justify-items: center;
 		align-items: center;
 		height: 100%;
 		padding: var(--main-gap);
