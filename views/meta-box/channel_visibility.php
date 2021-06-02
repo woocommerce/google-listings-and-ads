@@ -25,8 +25,8 @@ $visibility = $this->visibility;
 /**
  * @var string $sync_status
  */
-$sync_status = $this->sync_status;
-$show_status = $visibility === ChannelVisibility::SYNC_AND_SHOW && $sync_status !== SyncStatus::SYNCED;
+$sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
+$show_status = $visibility === ChannelVisibility::SYNC_AND_SHOW && $this->sync_status !== SyncStatus::SYNCED;
 
 /**
  * @var array $issues
