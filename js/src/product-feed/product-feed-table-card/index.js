@@ -146,7 +146,7 @@ const ProductFeedTableCard = () => {
 			createNotice( 'success', message );
 		} );
 
-		recordEvent( 'gla_bulk_edit_clicked', {
+		recordEvent( 'gla_bulk_edit_click', {
 			context: EVENT_CONTEXT,
 			number_of_items: length,
 			visibility_to: toVisibilityEventProp( visible ),
