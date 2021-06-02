@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu;
 
-use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -18,6 +17,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 
 	use MenuFixesTrait;
 	use MerchantCenterAwareTrait;
+	use WooAdminNavigationTrait;
 
 	/**
 	 * Register a service.
@@ -30,7 +30,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		add_filter(
 			'woocommerce_marketing_menu_items',
 			function( $menu_items ) {
-				if ( Features::is_enabled( 'navigation' ) ) {
+				if ( $this->is_woo_nav_enabled() ) {
 					return $menu_items;
 				}
 
@@ -41,7 +41,7 @@ class Dashboard implements Service, Registerable, MerchantCenterAwareInterface {
 		add_action(
 			'admin_menu',
 			function() {
-				if ( Features::is_enabled( 'navigation' ) ) {
+				if ( $this->is_woo_nav_enabled() ) {
 					$this->register_navigation_pages();
 				} else {
 					$this->fix_menu_paths();
