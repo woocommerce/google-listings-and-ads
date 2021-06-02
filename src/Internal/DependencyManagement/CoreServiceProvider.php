@@ -240,7 +240,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags(
 			ProductSyncer::class,
 			GoogleProductService::class,
-			BatchProductHelper::class
+			BatchProductHelper::class,
+			ProductHelper::class
 		);
 
 		// Set up inflector for tracks classes.

@@ -60,19 +60,15 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::SYNCED );
 		$this->update_empty_visibility( $product );
 
-		$target_countries = $this->merchant_center->get_target_countries();
-
 		// merge and update all google product ids
 		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
-		// filter google ids for selected target countries
-		$current_google_ids = array_intersect_key( $current_google_ids, array_flip( $target_countries ) );
-
-		$google_ids = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
+		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
 		$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
 
 		// check if product is synced completely and remove any previous errors if it is
 		$synced_countries = array_keys( $google_ids );
+		$target_countries = $this->merchant_center->get_target_countries();
 		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
 			$this->meta_handler->delete_errors( $wc_product_id );
 			$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
@@ -104,6 +100,34 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 			$parent_product = $this->get_wc_product( $product->get_parent_id() );
 			$this->mark_as_unsynced( $parent_product );
 		}
+	}
+
+	/**
+	 * @param WC_Product $product
+	 * @param string     $google_id
+	 */
+	public function remove_google_id( WC_Product $product, string $google_id ) {
+		$wc_product_id = $product->get_id();
+
+		$google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
+		if ( empty( $google_ids ) ) {
+			return;
+		}
+
+		$idx = array_search( $google_id, $google_ids, true );
+		if ( false === $idx ) {
+			return;
+		}
+
+		unset( $google_ids[ $idx ] );
+
+		if ( ! empty( $google_ids ) ) {
+			$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
+		} else {
+			// if there are no Google IDs left then this product is no longer considered "synced"
+			$this->mark_as_unsynced( $product );
+		}
+
 	}
 
 	/**
