@@ -2,7 +2,11 @@
   "extends": [ "plugin:@woocommerce/eslint-plugin/recommended" ],
   "settings": {
     "jsdoc": {
-	  "mode": "typescript"
-    }
+	    "mode": "typescript"
+    },
+    "import/resolver": "webpack"
+  },
+  "rules": {
+    "@wordpress/no-unsafe-wp-apis" : 1
   }
 }
