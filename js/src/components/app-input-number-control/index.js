@@ -18,6 +18,7 @@ import useNumberFormat from '.~/hooks/useNumberFormat';
  * @param {Object} props Props that will be passed to AppInputControl.
  * @param {number} props.value Value of number type.
  * @param {(value: number) => void} props.onChange onChange callback with value of number type.
+ * @param {(event: Object, value: number) => void} props.onBlur onBlur callback with event and value of number type.
  * @param {any} props.suffix AppInputControl's suffix.
  * @param {Object} [props.numberSettings] Settings for formatting the number to string and parsing the string to number.
  * @param {number} [props.numberSettings.precision] Number of decimal places after the decimal separator. Default to 0
@@ -29,6 +30,7 @@ const AppInputNumberControl = ( props ) => {
 		value,
 		numberSettings: settings,
 		onChange = () => {},
+		onBlur = () => {},
 		...rest
 	} = props;
 	const numberSettings = useStoreNumberSettings( settings );
@@ -40,34 +42,46 @@ const AppInputNumberControl = ( props ) => {
 	const stringValue = numberFormat( value );
 
 	/**
-	 * Parse the user input string value into number value and propagate up via onChange.
+	 * Get number value from string value, by passing the string value
+	 * through `numberFormat` (which respects the `numberSettings`)
+	 * and `parseStringToNumber` functions.
 	 *
-	 * @param {string} val User input string value.
+	 * e.g. If the `numberSettings` is `{ precision: 2 }` and the string value is `"1.2345"`,
+	 * the return number value would be `1.23`.
+	 *
+	 * @param {string} v String value.
+	 * @return {number} Number value.
 	 */
-	const handleChange = ( val ) => {
-		/**
-		 * Formatted string value based on the passed in `numberSettings` props.
-		 * e.g. If the `numberSettings` is `{ precision: 2 }` and users' input value string is `"1.2345"`,
-		 * the input value `"1.2345"` would be formatted to `"1.23"`.
-		 */
-		const formattedString = numberFormat( val );
-
-		/**
-		 * Parse the formatted string into number.
-		 * e.g. formatted string `"1.23"` would be parsed into number `1.23`.
-		 */
+	const getNumberFromString = ( v ) => {
+		const formattedString = numberFormat( v );
 		const numberValue = parseStringToNumber(
 			formattedString,
 			numberSettings
 		);
 
+		return numberValue;
+	};
+
+	/**
+	 * Parse the user input string value into number value and propagate up via onChange.
+	 *
+	 * @param {string} val User input string value.
+	 */
+	const handleChange = ( val ) => {
+		const numberValue = getNumberFromString( val );
 		onChange( numberValue );
+	};
+
+	const handleBlur = ( e ) => {
+		const numberValue = getNumberFromString( e.target.value );
+		onBlur( e, numberValue );
 	};
 
 	return (
 		<AppInputControl
 			value={ stringValue }
 			onChange={ handleChange }
+			onBlur={ handleBlur }
 			{ ...rest }
 		/>
 	);
