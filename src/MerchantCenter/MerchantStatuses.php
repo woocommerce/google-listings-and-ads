@@ -394,7 +394,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$created_at         = $this->current_time->format( 'Y-m-d H:i:s' );
 
 		foreach ( $products as $p ) {
-			// Skip parent products (so product titles clearly indicate which variation neds fixing).
+			// Skip parent products (so product titles clearly indicate which variation needs fixing).
 			if ( 'variable' === $p->get_type() ) {
 				continue;
 			}
