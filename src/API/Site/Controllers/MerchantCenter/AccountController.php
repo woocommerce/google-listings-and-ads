@@ -602,6 +602,8 @@ class AccountController extends BaseOptionsController {
 				$clean_account_website_url = $this->strip_url_protocol( $account_website_url );
 				$clean_site_website_url    = $this->strip_url_protocol( $site_website_url );
 
+				do_action( 'gla_url_switch_required', [] );
+
 				throw new ExceptionWithResponseData(
 					sprintf(
 					/* translators: 1: is a website URL (without the protocol) */
@@ -620,6 +622,8 @@ class AccountController extends BaseOptionsController {
 
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
+
+			do_action( 'gla_url_switch_success', [] );
 		}
 	}
 
