@@ -29,7 +29,6 @@ const AppInputNumberControl = ( props ) => {
 		value,
 		numberSettings: settings,
 		onChange = () => {},
-		onBlur = () => {},
 		...rest
 	} = props;
 	const numberSettings = useStoreNumberSettings( settings );
@@ -46,39 +45,29 @@ const AppInputNumberControl = ( props ) => {
 	 * @param {string} val User input string value.
 	 */
 	const handleChange = ( val ) => {
-		const numberValue = parseStringToNumber( val, numberSettings );
+		/**
+		 * Formatted string value based on the passed in `numberSettings` props.
+		 * e.g. If the `numberSettings` is `{ precision: 2 }` and users' input value string is `"1.2345"`,
+		 * the input value `"1.2345"` would be formatted to `"1.23"`.
+		 */
+		const formattedString = numberFormat( val );
+
+		/**
+		 * Parse the formatted string into number.
+		 * e.g. formatted string `"1.23"` would be parsed into number `1.23`.
+		 */
+		const numberValue = parseStringToNumber(
+			formattedString,
+			numberSettings
+		);
+
 		onChange( numberValue );
-	};
-
-	/**
-	 * Blur event handler to parse stringValue into number,
-	 * and propagate up to the form state via onChange.
-	 *
-	 * If users type in a value like "1.2345",
-	 * the form state would be 1.2345 and the display would be formatted into "1.23",
-	 * which can be problematic.
-	 * So, on blur event, we parse the displayed string value into number
-	 * and pass up to the form state via onChange
-	 * to ensure that the number value in form state is consistent
-	 * with the string value the user is seeing.
-	 *
-	 * @param {...any} args
-	 */
-	const handleBlur = ( ...args ) => {
-		const numberValue = parseStringToNumber( stringValue, numberSettings );
-
-		if ( numberValue !== value ) {
-			onChange( numberValue );
-		}
-
-		onBlur( ...args );
 	};
 
 	return (
 		<AppInputControl
 			value={ stringValue }
 			onChange={ handleChange }
-			onBlur={ handleBlur }
 			{ ...rest }
 		/>
 	);
