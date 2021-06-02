@@ -80,14 +80,16 @@ class Merchant implements OptionsAwareInterface {
 			$id     = $this->options->get_merchant_id();
 			$params = $overwrite ? [ 'overwrite' => true ] : [];
 			$this->service->accounts->claimwebsite( $id, $id, $params );
+			do_action( 'gla_site_claim_success', [ 'details' => 'google_proxy' ] );
 		} catch ( GoogleException $e ) {
 			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
+
 			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
 			if ( 403 === $e->getCode() ) {
 				$error_message = __( 'Website already claimed, use overwrite to complete the process.', 'google-listings-and-ads' );
 			}
 			throw new Exception( $error_message, $e->getCode() );
-
 		}
 		return true;
 	}

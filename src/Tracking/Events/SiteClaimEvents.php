@@ -18,7 +18,7 @@ class SiteClaimEvents extends BaseEvent {
 	 * Register the tracking class.
 	 */
 	public function register(): void {
-		add_action( 'gla_site_claim_required', [ $this, 'track_site_claim_required' ] );
+		add_action( 'gla_site_claim_overwrite_required', [ $this, 'track_site_claim_overwrite_required' ] );
 		add_action( 'gla_site_claim_success', [ $this, 'track_site_claim_success' ] );
 		add_action( 'gla_site_claim_failure', [ $this, 'track_site_claim_failure' ] );
 		add_action( 'gla_url_switch_required', [ $this, 'track_url_switch_required' ] );
@@ -26,12 +26,12 @@ class SiteClaimEvents extends BaseEvent {
 	}
 
 	/**
-	 * Track when a site claim needs to be overwritten
+	 * Track when a site claim needs to be overwritten.
 	 *
 	 * @param array $properties Optional additional properties to pass with the event.
 	 */
-	public function track_site_claim_required( array $properties = [] ): void {
-		$properties['action'] = 'required';
+	public function track_site_claim_overwrite_required( array $properties = [] ): void {
+		$properties['action'] = 'overwrite_required';
 		$this->track_site_claim_event( $properties );
 	}
 

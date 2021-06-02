@@ -202,15 +202,18 @@ class Proxy implements OptionsAwareInterface {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() && isset( $response['status'] ) && 'success' === $response['status'] ) {
+				do_action( 'gla_site_claim_success', [ 'details' => 'google_manager' ] );
 				return true;
 			}
 
 			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'gla_site_claim_failure', [ 'details' => 'google_manager' ] );
 
 			$error = $response['message'] ?? __( 'Invalid response when claiming website', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'gla_site_claim_failure', [ 'details' => 'google_manager' ] );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ) );
 		}
