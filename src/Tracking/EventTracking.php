@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\BaseEvent;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
 use Psr\Container\ContainerInterface;
 
@@ -35,6 +36,7 @@ class EventTracking implements Service, Registerable {
 	 */
 	protected $events = [
 		SiteVerificationEvents::class,
+		SiteClaimEvents::class,
 	];
 
 	/**

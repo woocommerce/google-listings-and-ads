@@ -69,7 +69,7 @@ class SiteClaimEvents extends BaseEvent {
 	 *
 	 * @param array $properties Optional additional properties to pass with the event.
 	 */
-	public function track_mc_url_switch_required( array $properties = [] ): void {
+	public function track_url_switch_required( array $properties = [] ): void {
 		$properties['action'] = 'required';
 		$this->track_url_switch_event( $properties );
 	}
