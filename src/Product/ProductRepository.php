@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Product;
 
 /**
@@ -287,6 +288,33 @@ class ProductRepository implements Service {
 		];
 
 		return $this->find_ids( $args, $limit, $offset );
+	}
+
+
+
+	/**
+	 * Find and return an array of WooCommerce product objects that are pending synchronization,
+	 * but have failed pre-sync validation.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return WC_Product[] Array of WooCommerce product objects
+	 */
+	public function find_presync_error_products( int $limit = -1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			'relation' => 'AND',
+			$this->get_sync_ready_products_meta_query(),
+			[
+				[
+					'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
+					'compare' => '=',
+					'value'   => SyncStatus::HAS_ERRORS,
+				],
+			],
+		];
+
+		return $this->find( $args, $limit, $offset );
 	}
 
 	/**
