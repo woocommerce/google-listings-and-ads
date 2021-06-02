@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
@@ -38,14 +39,21 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 	protected $batch_helper;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * ProductSyncer constructor.
 	 *
 	 * @param GoogleProductService $google_service
 	 * @param BatchProductHelper   $batch_helper
+	 * @param ProductHelper        $product_helper
 	 */
-	public function __construct( GoogleProductService $google_service, BatchProductHelper $batch_helper ) {
+	public function __construct( GoogleProductService $google_service, BatchProductHelper $batch_helper, ProductHelper $product_helper ) {
 		$this->google_service = $google_service;
 		$this->batch_helper   = $batch_helper;
+		$this->product_helper = $product_helper;
 	}
 
 	/**
@@ -85,9 +93,9 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 		$updated_products = [];
 		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_product_entries ) {
+		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_entries ) {
 			try {
-				$response = $this->google_service->insert_batch( $batch_product_entries );
+				$response = $this->google_service->insert_batch( $batch_entries );
 
 				$updated_products = array_merge( $updated_products, $response->get_products() );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
@@ -100,10 +108,7 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 			}
 		}
 
-		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
-		if ( ! empty( $internal_error_products ) && apply_filters( 'gla_products_update_retry_on_failure', true, $invalid_products ) ) {
-			do_action( 'gla_batch_retry_update_products', $internal_error_products );
-		}
+		$this->handle_update_errors( $invalid_products );
 
 		do_action(
 			'gla_batch_updated_products',
@@ -153,9 +158,9 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 		$deleted_products = [];
 		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_product_entries ) {
+		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_entries ) {
 			try {
-				$response = $this->google_service->delete_batch( $batch_product_entries );
+				$response = $this->google_service->delete_batch( $batch_entries );
 
 				$deleted_products = array_merge( $deleted_products, $response->get_products() );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
@@ -166,13 +171,7 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 			}
 		}
 
-		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
-		if ( ! empty( $internal_error_products ) && apply_filters( 'gla_products_delete_retry_on_failure', true, $invalid_products ) ) {
-			$id_map     = BatchProductIDRequestEntry::convert_to_id_map( $product_entries );
-			$failed_ids = array_intersect( $id_map->get(), $internal_error_products );
-
-			do_action( 'gla_batch_retry_delete_products', $failed_ids );
-		}
+		$this->handle_delete_errors( $invalid_products );
 
 		do_action(
 			'gla_batch_deleted_products',
@@ -181,6 +180,46 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 		);
 
 		return new BatchProductResponse( $deleted_products, $invalid_products );
+	}
+
+	/**
+	 * @param BatchInvalidProductEntry[] $invalid_products
+	 */
+	protected function handle_update_errors( array $invalid_products ) {
+		$error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
+		if ( ! empty( $error_products ) && apply_filters( 'gla_products_update_retry_on_failure', true, $invalid_products ) ) {
+			do_action( 'gla_batch_retry_update_products', $error_products );
+		}
+	}
+
+	/**
+	 * @param BatchInvalidProductEntry[] $invalid_products
+	 */
+	protected function handle_delete_errors( array $invalid_products ) {
+		$internal_error_ids = [];
+		foreach ( $invalid_products as $invalid_product ) {
+			$google_product_id = $invalid_product->get_google_product_id();
+			$wc_product_id     = $invalid_product->get_wc_product_id();
+			$wc_product        = wc_get_product( $wc_product_id );
+			if ( ! $wc_product instanceof WC_Product || empty( $google_product_id ) ) {
+				continue;
+			}
+
+			// not found
+			if ( $invalid_product->has_error( GoogleProductService::NOT_FOUND_ERROR_REASON ) ) {
+				$this->product_helper->remove_google_id( $wc_product, $google_product_id );
+			}
+
+			// internal error
+			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
+				$internal_error_ids[ $google_product_id ] = $wc_product_id;
+			}
+		}
+
+		// call an action to retry if any products with internal errors exist
+		if ( ! empty( $internal_error_ids ) && apply_filters( 'gla_products_delete_retry_on_failure', true, $invalid_products ) ) {
+			do_action( 'gla_batch_retry_delete_products', $internal_error_ids );
+		}
 	}
 
 	/**

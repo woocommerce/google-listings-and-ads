@@ -28,7 +28,8 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	use OptionsAwareTrait;
 	use ValidateInterface;
 
-	public const INTERNAL_ERROR_REASON = 'internalError';
+	public const INTERNAL_ERROR_REASON  = 'internalError';
+	public const NOT_FOUND_ERROR_REASON = 'notFound';
 
 	/**
 	 * This is the maximum batch size recommended by Google
@@ -150,7 +151,7 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 		$merchant_id     = $this->options->get_merchant_id();
 		$request_entries = [];
 
-		// An array of WooCommerce product IDs mapped to each batch ID. Used to parse Google's batch response.
+		// An array of product entries mapped to each batch ID. Used to parse Google's batch response.
 		$batch_id_product_map = [];
 
 		$batch_id = 0;
@@ -172,7 +173,7 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 			}
 			$request_entries[] = $request_entry;
 
-			$batch_id_product_map[ $batch_id ] = $product_entry->get_wc_product_id();
+			$batch_id_product_map[ $batch_id ] = $product_entry;
 
 			$batch_id++;
 		}
@@ -183,8 +184,8 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * @param GoogleBatchResponse $responses
-	 * @param int[]               $batch_id_product_map An array of WooCommerce product IDs mapped to each batch ID. Used to parse Google's batch response.
+	 * @param GoogleBatchResponse                                     $responses
+	 * @param BatchProductRequestEntry[]|BatchProductIDRequestEntry[] $batch_id_product_map An array of product entries mapped to each batch ID. Used to parse Google's batch response.
 	 *
 	 * @return BatchProductResponse
 	 */
@@ -197,13 +198,19 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 		 */
 		foreach ( $responses as $response ) {
 			// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			// WooCommerce product ID is mapped to batchId when sending the request
-			$wc_product_id = $batch_id_product_map[ $response->batchId ];
+			// Product entry is mapped to batchId when sending the request
+			$product_entry = $batch_id_product_map[ $response->batchId ];
+			$wc_product_id = $product_entry->get_wc_product_id();
+			if ( $product_entry instanceof BatchProductRequestEntry ) {
+				$google_product_id = $product_entry->get_product()->getId();
+			} else {
+				$google_product_id = $product_entry->get_product_id();
+			}
 
 			if ( empty( $response->getErrors() ) ) {
 				$result_products[] = new BatchProductEntry( $wc_product_id, $response->getProduct() );
 			} else {
-				$errors[] = new BatchInvalidProductEntry( $wc_product_id, self::get_batch_response_error_messages( $response ) );
+				$errors[] = new BatchInvalidProductEntry( $wc_product_id, $google_product_id, self::get_batch_response_error_messages( $response ) );
 			}
 		}
 
