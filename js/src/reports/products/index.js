@@ -89,6 +89,7 @@ const ProductsReport = ( { hasPaidSource } ) => {
 				metrics={ metrics }
 				loaded={ loaded }
 				totals={ totals }
+				trackEventId={ trackEventId }
 			/>
 			<ChartSection
 				metrics={ metrics }

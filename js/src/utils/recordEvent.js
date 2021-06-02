@@ -41,6 +41,17 @@ export const recordFilterEvent = ( data ) => {
 	recordEvent( 'gla_filter', data );
 };
 
+/**
+ * Records `gla_chart_tab_click` tracking event.
+ *
+ * @param {Object} data
+ * @param {string} data.report Name of the report.
+ * @param {string} data.context Metric key of the clicked tab.
+ */
+export const recordChartTabClickEvent = ( data ) => {
+	recordEvent( 'gla_chart_tab_click', data );
+};
+
 export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_mc', {
 		target,
