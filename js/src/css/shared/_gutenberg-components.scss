@@ -39,6 +39,19 @@
 	border: none;
 }
 
+// hack to align multiple lines of label after the radio/checkbox to the same indentation
+.components-base-control__field,
+.components-radio-control__option {
+	display: flex;
+
+	> label {
+		flex: 1 1 0;
+	}
+}
+.components-radio-control__input[type="radio"] {
+	margin-right: 10px;
+}
+
 // hack to fix InputControl suffix's empty right margin.
 .components-input-control__suffix {
 	margin-right: 8px;

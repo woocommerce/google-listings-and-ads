@@ -1,5 +1,6 @@
 .app-radio-content-control {
-	.app-radio-content-control__content {
-		margin-left: 22px;
+	.app-radio-content-control__content:not(:empty) {
+		margin-top: $grid-unit-10;
+		margin-left: 30px;
 	}
 }
