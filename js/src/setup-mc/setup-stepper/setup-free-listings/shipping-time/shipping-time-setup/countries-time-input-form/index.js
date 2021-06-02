@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { useDebouncedCallback } from 'use-debounce';
 
 /**
  * Internal dependencies
@@ -19,17 +18,22 @@ const CountriesTimeInputForm = ( props ) => {
 		setValue( savedValue );
 	}, [ savedValue ] );
 
-	const debouncedUpsertShippingTime = useDebouncedCallback( ( v ) => {
-		const { countries: countryCodes, time } = v;
-		upsertShippingTimes( { countryCodes, time } );
-	}, 500 );
+	const handleBlur = ( event, numberValue ) => {
+		const { countries, time } = value;
 
-	const handleChange = ( v ) => {
-		setValue( v );
-		debouncedUpsertShippingTime.callback( v );
+		if ( time === numberValue ) {
+			return;
+		}
+
+		setValue( {
+			countries,
+			time: numberValue,
+		} );
+
+		upsertShippingTimes( { countryCodes: countries, time: numberValue } );
 	};
 
-	return <CountriesTimeInput value={ value } onChange={ handleChange } />;
+	return <CountriesTimeInput value={ value } onBlur={ handleBlur } />;
 };
 
 export default CountriesTimeInputForm;
