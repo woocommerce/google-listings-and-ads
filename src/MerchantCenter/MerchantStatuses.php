@@ -331,7 +331,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
 			// Unsynced issues shouldn't be shown.
-			if ( $this->product_data_lookup[ $wc_product_id ]['visibility'] === ChannelVisibility::DONT_SYNC_AND_SHOW ) {
+			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_data_lookup[ $wc_product_id ]['visibility'] ) {
 				continue;
 			}
 
@@ -395,7 +395,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		foreach ( $products as $p ) {
 			// Skip parent products (so product titles clearly indicate which variation neds fixing).
-			if ( $p->get_type() === 'variable' ) {
+			if ( 'variable' === $p->get_type() ) {
 				continue;
 			}
 
@@ -541,9 +541,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	protected function get_product_shopping_status( Shopping_Product_Status $product_status ): ?string {
 		$status = null;
 		foreach ( $product_status->getDestinationStatuses() as $d ) {
-			if ( $d->getDestination() === 'SurfacesAcrossGoogle' ) {
+			if ( 'SurfacesAcrossGoogle' === $d->getDestination() ) {
 				$status = $d->getStatus();
-			} elseif ( $d->getDestination() === 'Shopping' ) {
+			} elseif ( 'Shopping' === $d->getDestination() ) {
 				$status = $d->getStatus();
 				break;
 			}
