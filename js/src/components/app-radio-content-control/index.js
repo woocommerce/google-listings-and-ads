@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import classnames from 'classnames';
 import { RadioControl } from '@wordpress/components';
 
 /**
@@ -10,7 +11,7 @@ import './index.scss';
 
 const AppRadioContentControl = ( props ) => {
 	const {
-		className = '',
+		className,
 		label,
 		value,
 		selected,
@@ -20,7 +21,7 @@ const AppRadioContentControl = ( props ) => {
 	} = props;
 
 	return (
-		<div className={ `app-radio-content-control ${ className }` }>
+		<div className={ classnames( 'app-radio-content-control', className ) }>
 			<RadioControl
 				selected={ selected }
 				options={ [
