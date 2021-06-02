@@ -28,7 +28,7 @@ All event names are prefixed by `wcadmin_gla_`.
   * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
   * `href`: indicate the destination where the users is directed to.
 
-* `bulk_edit_clicked` - Triggered when the product feed "bulk edit" functionality is being used
+* `bulk_edit_click` - Triggered when the product feed "bulk edit" functionality is being used
   * `context`: name of the table
   * `number_of_items`: edit how many items
   * `visibility_to`: `("sync_and_show" | "dont_sync_and_show")`
