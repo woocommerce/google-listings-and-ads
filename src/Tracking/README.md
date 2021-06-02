@@ -80,7 +80,7 @@ All event names are prefixed by `wcadmin_gla_`.
 * `help_click` - "Help" button is clicked.
   * `context`: indicate the place where the button is located, e.g. `setup-ads`.
 
-* `launch_paid_campaign_clicked` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
+* `launch_paid_campaign_button_click` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
   * `audience`: daily average cost of the paid campaign
   * `budget`: country code of the paid campaign audience country
 
