@@ -12,7 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -159,7 +158,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
 
-			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
+			if ( ! $this->product_helper->is_sync_ready( $product ) ) {
 				continue;
 			}
 

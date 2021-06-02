@@ -12,7 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 use WC_Product_Variable;
 
@@ -148,7 +147,7 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 		}
 
 		// Schedule an update job if product sync is enabled.
-		if ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->product_helper->get_visibility( $product ) ) {
+		if ( $this->product_helper->is_sync_ready( $product ) ) {
 			$product_ids = $this->get_product_ids_for_sync( $product );
 
 			// Bail if we have no product IDs.
@@ -160,7 +159,7 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 			$this->update_products_job->start( [ $product_ids ] );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
-			// delete the product from Google Merchant Center if it's already synced AND sync has been disabled.
+			// Delete the product from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
 			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
 			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 			$this->set_already_scheduled( $product_id );

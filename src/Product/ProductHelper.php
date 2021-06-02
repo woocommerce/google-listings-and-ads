@@ -245,6 +245,17 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function is_sync_ready( WC_Product $product ): bool {
+		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_visibility( $product ) ) &&
+			   ( in_array( $product->get_type(), ProductRepository::get_supported_product_types(), true ) ) &&
+			   ( 'publish' === $product->get_status() );
+	}
+
+	/**
 	 * @param WC_Product $wc_product
 	 *
 	 * @return string
