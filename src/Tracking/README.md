@@ -23,6 +23,10 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate the place where the button is located.
   * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'` or `'/google/campaigns/create'`.
 
+* `ads_account_connect_button_click` - Clicking on the button to connect an existing Google Ads account.
+
+* `ads_account_create_button_click` - Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
+
 * `ads_set_up_billing_click` - "Set up billing" button for Google Ads account is clicked.
   * `context`: indicate the place where the button is located, e.g. `setup-ads`.
   * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
@@ -63,12 +67,18 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which link is clicked
   * `href`: link's URL
 
+* `google_account_connect_button_click` - Clicking on the button to connect Google account.
+
 * `google_ads_account_link_click` - Clicking on a Google Ads account text link.
   * `context`: indicate which page / module the link is in
   * `link_id`: a unique ID for the link within the page / module
 
 * `help_click` - "Help" button is clicked.
   * `context`: indicate the place where the button is located, e.g. `setup-ads`.
+
+* `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
+
+* `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 
 * `modal_closed` - A modal is closed
   * `context`: indicate which modal is closed
@@ -122,16 +132,6 @@ All event names are prefixed by `wcadmin_gla_`.
   * `id`: (tooltip identifier)
 
 * `wordpress_account_connect_button_click` - Clicking on the button to connect WordPress.com account.
-
-* `google_account_connect_button_click` - Clicking on the button to connect Google account.
-
-* `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
-
-* `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
-
-* `ads_account_connect_button_click` - Clicking on the button to connect an existing Google Ads account.
-
-* `ads_account_create_button_click` - Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
 
 <!-- -- >
 ## Developer Info
