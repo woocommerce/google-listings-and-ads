@@ -48,9 +48,9 @@ function isNotOurStep( location ) {
  */
 
 /**
- * Due to lack of single API for updating shipping data alltogether,
- * we need to send deletes and adds separately.
- * Also, we need to send upserts separately for each price.
+ * Due to the lack of a single API for updating shipping data altogether,
+ * we need to send upserts separately for each price/time.
+ * Deletes are not needed, as we validate the form not to miss any available country.
  *
  * @param {(groupedCountrySetting: ShippingRate) => Promise} batchUpsertAction
  * @param {Array<ShippingRate>} newData
