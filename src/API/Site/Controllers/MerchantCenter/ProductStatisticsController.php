@@ -5,7 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncCount;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
@@ -31,9 +31,9 @@ class ProductStatisticsController extends BaseOptionsController {
 	/**
 	 * Helper class to count scheduled sync jobs.
 	 *
-	 * @var ProductSyncCount
+	 * @var ProductSyncStats
 	 */
-	protected $sync_count;
+	protected $sync_stats;
 
 
 	/**
@@ -41,12 +41,12 @@ class ProductStatisticsController extends BaseOptionsController {
 	 *
 	 * @param RESTServer       $server
 	 * @param MerchantStatuses $merchant_statuses
-	 * @param ProductSyncCount $sync_count
+	 * @param ProductSyncStats $sync_stats
 	 */
-	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncCount $sync_count ) {
+	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats ) {
 		parent::__construct( $server );
 		$this->merchant_statuses = $merchant_statuses;
-		$this->sync_count        = $sync_count;
+		$this->sync_stats        = $sync_stats;
 	}
 
 	/**
@@ -110,7 +110,7 @@ class ProductStatisticsController extends BaseOptionsController {
 		try {
 			$response = $this->merchant_statuses->get_product_statistics( $force_refresh );
 
-			$response['scheduled_sync'] = $this->sync_count->get_count();
+			$response['scheduled_sync'] = $this->sync_stats->get_count();
 
 			return $this->prepare_item_for_response( $response, $request );
 		} catch ( Exception $e ) {

@@ -8,14 +8,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ProductSyncCount
+ * Class ProductSyncStats
  *
  * Counts how many scheduled jobs we have for syncing products.
  * A scheduled job can either be a batch or an individual product.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class ProductSyncCount {
+class ProductSyncStats {
 
 	/**
 	 * The ActionScheduler object.
@@ -35,7 +35,7 @@ class ProductSyncCount {
 	];
 
 	/**
-	 * ProductSyncCount constructor.
+	 * ProductSyncStats constructor.
 	 *
 	 * @param ActionScheduler $scheduler
 	 */
