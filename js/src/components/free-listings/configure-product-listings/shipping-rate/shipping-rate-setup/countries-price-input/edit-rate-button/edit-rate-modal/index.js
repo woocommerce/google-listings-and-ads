@@ -9,7 +9,7 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 import './index.scss';
@@ -40,10 +40,22 @@ const EditRateModal = ( {
 		onDelete( rate.countries );
 	};
 
-	const handleValidate = () => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
-		// TODO: validation logic.
+		if ( values.countries.length === 0 ) {
+			errors.countries = __(
+				'Please specify at least one country.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.price < 0 ) {
+			errors.price = __(
+				'The estimated shipping rate cannot be less than 0.',
+				'google-listings-and-ads'
+			);
+		}
 
 		return errors;
 	};
@@ -68,7 +80,12 @@ const EditRateModal = ( {
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, values, handleSubmit } = formProps;
+				const {
+					getInputProps,
+					values,
+					isValidForm,
+					handleSubmit,
+				} = formProps;
 
 				return (
 					<AppModal
@@ -89,6 +106,7 @@ const EditRateModal = ( {
 							<Button
 								key="save"
 								isPrimary
+								disabled={ ! isValidForm }
 								onClick={ handleSubmit }
 							>
 								{ __(
@@ -113,7 +131,7 @@ const EditRateModal = ( {
 									{ ...getInputProps( 'countries' ) }
 								/>
 							</div>
-							<AppInputControl
+							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'

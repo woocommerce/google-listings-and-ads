@@ -7,7 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppInputControl from '.~/components/app-input-control';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
@@ -38,27 +38,21 @@ const CountriesPriceInput = ( {
 		return <AppSpinner />;
 	}
 
-	const handleBlur = ( e ) => {
-		const { value: nextPrice } = e.target;
-
-		if ( nextPrice === price ) {
+	const handleBlur = ( event, numberValue ) => {
+		if ( price === numberValue ) {
 			return;
 		}
 
-		if ( nextPrice === '' ) {
-			onDelete( countries );
-		} else {
-			onChange( {
-				countries,
-				currency,
-				price: nextPrice,
-			} );
-		}
+		onChange( {
+			countries,
+			currency,
+			price: numberValue,
+		} );
 	};
 
 	return (
 		<div className="gla-countries-price-input">
-			<AppInputControl
+			<AppInputPriceControl
 				label={
 					<div className="label">
 						<div>
