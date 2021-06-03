@@ -34,9 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditFreeCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditPaidAdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\CreatePaidAdsCampaign;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Reports;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -91,8 +89,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ActivationRedirect::class     => true,
 		Admin::class                  => true,
 		Reports::class                => true,
-		Programs::class               => true,
-		Products::class               => true,
 		AssetsHandlerInterface::class => true,
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
@@ -200,8 +196,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( EditPaidAdsCampaign::class );
 		$this->conditionally_share_with_tags( CreatePaidAdsCampaign::class );
 		$this->conditionally_share_with_tags( Reports::class );
-		$this->conditionally_share_with_tags( Programs::class );
-		$this->conditionally_share_with_tags( Products::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
 		$this->conditionally_share_with_tags( Settings::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
