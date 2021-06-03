@@ -23,10 +23,23 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate the place where the button is located.
   * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'` or `'/google/campaigns/create'`.
 
+* `ads_account_connect_button_click` - Clicking on the button to connect an existing Google Ads account.
+
+* `ads_account_create_button_click` - Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
+
 * `ads_set_up_billing_click` - "Set up billing" button for Google Ads account is clicked.
   * `context`: indicate the place where the button is located, e.g. `setup-ads`.
   * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
   * `href`: indicate the destination where the users is directed to.
+
+* `bulk_edit_click` - Triggered when the product feed "bulk edit" functionality is being used
+  * `context`: name of the table
+  * `number_of_items`: edit how many items
+  * `visibility_to`: `("sync_and_show" | "dont_sync_and_show")`
+
+* `chart_tab_click` - Triggered when a chart tab is clicked
+  * `report`: name of the report (e.g. `"reports-programs" | "reports-products"`)
+  * `context`: metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
 
 * `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
   * `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
@@ -43,6 +56,14 @@ All event names are prefixed by `wcadmin_gla_`.
   * `link_id`: link identifier
   * `context`: indicate which link is clicked
   * `href`: link's URL
+
+* `edit_product_click` - Trigger when edit links are clicked from product feed table
+  * `status`: `("approved" | "partially_approved" | "expiring" | "pending" | "disapproved" | "not_synced")`
+  * `visibility`: `("sync_and_show" | "dont_sync_and_show")`
+
+* `edit_product_issue_click` - Trigger when edit links are clicked from Issues to resolve table
+  * `code`: issue code returned from Google
+  * `issue`: issue description returned from Google
 
 * `filter` - Triggered when changing products & variations filter
   * `report`: name of the report (e.g. `"reports-products"`)
@@ -63,12 +84,22 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate which link is clicked
   * `href`: link's URL
 
+* `google_account_connect_button_click` - Clicking on the button to connect Google account.
+
 * `google_ads_account_link_click` - Clicking on a Google Ads account text link.
   * `context`: indicate which page / module the link is in
   * `link_id`: a unique ID for the link within the page / module
 
 * `help_click` - "Help" button is clicked.
   * `context`: indicate the place where the button is located, e.g. `setup-ads`.
+
+* `launch_paid_campaign_button_click` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
+  * `audience`: country code of the paid campaign audience country
+  * `budget`: daily average cost of the paid campaign
+
+* `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
+
+* `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 
 * `modal_closed` - A modal is closed
   * `context`: indicate which modal is closed
@@ -108,10 +139,18 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `site_verify_success` - When a site is successfully verified with Google
 
+* `table_go_to_page` - When table pagination is changed by entering page via "Go to page" input
+  * `context`: name of the table
+  * `page`: page number (starting at 1)
+
 * `table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `column`: name of the column
   * `status`: (`on`|`off`)
+
+* `table_page_click` - When table pagination is clicked
+  * `context`: name of the table
+  * `direction`: direction of page to be changed. `("next" | "previous")`
 
 * `table_sort` - Sorting table
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
@@ -120,6 +159,8 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `tooltip_viewed` - Viewing tooltip
   * `id`: (tooltip identifier)
+
+* `wordpress_account_connect_button_click` - Clicking on the button to connect WordPress.com account.
 
 <!-- -- >
 ## Developer Info

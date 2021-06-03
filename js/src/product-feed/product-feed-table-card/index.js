@@ -22,6 +22,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import recordEvent, { recordTablePageEvent } from '.~/utils/recordEvent';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import './index.scss';
@@ -32,6 +33,9 @@ import EditVisibilityAction from './edit-visibility-action';
 import statusLabelMap from './statusLabelMap';
 
 const PER_PAGE = 10;
+const EVENT_CONTEXT = 'product-feed';
+const toVisibilityEventProp = ( visible ) =>
+	visible ? 'sync_and_show' : 'dont_sync_and_show';
 
 /**
  * Product Feed table.
@@ -68,11 +72,12 @@ const ProductFeedTableCard = () => {
 		}
 	};
 
-	const handlePageChange = ( newPage ) => {
+	const handlePageChange = ( newPage, direction ) => {
 		setQuery( {
 			...query,
 			page: newPage,
 		} );
+		recordTablePageEvent( EVENT_CONTEXT, newPage, direction );
 	};
 
 	const handleSort = ( orderby, order ) => {
@@ -139,6 +144,12 @@ const ProductFeedTableCard = () => {
 				length
 			);
 			createNotice( 'success', message );
+		} );
+
+		recordEvent( 'gla_bulk_edit_click', {
+			context: EVENT_CONTEXT,
+			number_of_items: length,
+			visibility_to: toVisibilityEventProp( visible ),
 		} );
 
 		handleSelectAllCheckboxChange( false );
@@ -219,6 +230,13 @@ const ProductFeedTableCard = () => {
 										display: (
 											<EditProductLink
 												productId={ el.id }
+												eventName="gla_edit_product_click"
+												eventProps={ {
+													status: el.status,
+													visibility: toVisibilityEventProp(
+														el.visible
+													),
+												} }
 											/>
 										),
 									},

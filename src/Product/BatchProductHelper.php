@@ -12,7 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -159,7 +158,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
 
-			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_helper->get_visibility( $product ) ) {
+			if ( ! $this->product_helper->is_sync_ready( $product ) ) {
 				continue;
 			}
 
@@ -216,15 +215,14 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * Filters the list of invalid product entries and returns an array of WooCommerce product IDs with internal errors
 	 *
-	 * @param BatchInvalidProductEntry[] $args
+	 * @param BatchInvalidProductEntry[] $invalid_products
 	 *
 	 * @return int[] An array of WooCommerce product ids.
 	 */
-	public function get_internal_error_products( array $args ): array {
+	public function get_internal_error_products( array $invalid_products ): array {
 		$internal_error_ids = [];
-		foreach ( $args as $invalid_product ) {
-			$errors = $invalid_product->get_errors();
-			if ( ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] ) ) {
+		foreach ( $invalid_products as $invalid_product ) {
+			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
 				$product_id = $invalid_product->get_wc_product_id();
 
 				$internal_error_ids[ $product_id ] = $product_id;
@@ -232,5 +230,29 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 		}
 
 		return $internal_error_ids;
+	}
+
+	/**
+	 * Filters and returns an array of request entries for Google products that should no longer be submitted for the selected target audience.
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return BatchProductIDRequestEntry[]
+	 */
+	public function generate_stale_products_request_entries( array $products ): array {
+		$target_audience = $this->merchant_center->get_target_countries();
+		$request_entries = [];
+		foreach ( $products as $product ) {
+			$google_ids = $this->meta_handler->get_google_ids( $product->get_id() );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( $target_audience ) );
+			foreach ( $stale_ids as $stale_id ) {
+				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
+					$product->get_id(),
+					$stale_id
+				);
+			}
+		}
+
+		return $request_entries;
 	}
 }

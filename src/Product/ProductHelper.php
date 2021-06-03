@@ -103,6 +103,34 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
+	 * @param WC_Product $product
+	 * @param string     $google_id
+	 */
+	public function remove_google_id( WC_Product $product, string $google_id ) {
+		$wc_product_id = $product->get_id();
+
+		$google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
+		if ( empty( $google_ids ) ) {
+			return;
+		}
+
+		$idx = array_search( $google_id, $google_ids, true );
+		if ( false === $idx ) {
+			return;
+		}
+
+		unset( $google_ids[ $idx ] );
+
+		if ( ! empty( $google_ids ) ) {
+			$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
+		} else {
+			// if there are no Google IDs left then this product is no longer considered "synced"
+			$this->mark_as_unsynced( $product );
+		}
+
+	}
+
+	/**
 	 * Marks a WooCommerce product as invalid and stores the errors in a meta data key.
 	 *
 	 * Note: If a product variation is invalid then the parent product is also marked as invalid.
@@ -242,6 +270,17 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		$google_ids = $this->meta_handler->get_google_ids( $product->get_id() );
 
 		return ! empty( $synced_at ) && ! empty( $google_ids );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 */
+	public function is_sync_ready( WC_Product $product ): bool {
+		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_visibility( $product ) ) &&
+			   ( in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) &&
+			   ( 'publish' === $product->get_status() );
 	}
 
 	/**

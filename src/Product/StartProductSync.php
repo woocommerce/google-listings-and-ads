@@ -5,8 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,9 +16,20 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class StartProductSync implements ContainerAwareInterface, Registerable, Service {
+class StartProductSync implements Registerable, Service {
+	/**
+	 * @var JobRepository
+	 */
+	protected $job_repository;
 
-	use ContainerAwareTrait;
+	/**
+	 * StartProductSync constructor.
+	 *
+	 * @param JobRepository $job_repository
+	 */
+	public function __construct( JobRepository $job_repository ) {
+		$this->job_repository = $job_repository;
+	}
 
 	/**
 	 * Register a service.
@@ -27,17 +38,19 @@ class StartProductSync implements ContainerAwareInterface, Registerable, Service
 		add_action(
 			'gla_mc_settings_sync',
 			function() {
-				$this->start_update();
+				$this->on_settings_sync();
 			}
 		);
 	}
 
 	/**
-	 * Start updating all products.
+	 * Start the cleanup and update all products.
 	 */
-	protected function start_update() {
-		/** @var UpdateAllProducts $update */
-		$update = $this->container->get( UpdateAllProducts::class );
+	protected function on_settings_sync() {
+		$cleanup = $this->job_repository->get( CleanupProductsJob::class );
+		$cleanup->start();
+
+		$update = $this->job_repository->get( UpdateAllProducts::class );
 		$update->start();
 	}
 }

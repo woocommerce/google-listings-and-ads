@@ -151,7 +151,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-		// Update product stats and issues page by page.
+		// Update MC product stats and issues page by page.
 		$this->mc_statuses = [];
 		$page_token        = null;
 		do {
@@ -168,6 +168,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		// Update account issues.
 		$this->refresh_account_issues();
+
+		// Update presync product validation issues.
+		$this->refresh_presync_product_issues();
 
 		// Delete stale issues.
 		$delete_before = clone $this->current_time;
@@ -328,7 +331,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
 			// Unsynced issues shouldn't be shown.
-			if ( $this->product_data_lookup[ $wc_product_id ]['visibility'] === ChannelVisibility::DONT_SYNC_AND_SHOW ) {
+			if ( ChannelVisibility::DONT_SYNC_AND_SHOW === $this->product_data_lookup[ $wc_product_id ]['visibility'] ) {
 				continue;
 			}
 
@@ -366,7 +369,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 		);
 
-		// Product issue cleanup: sorting (by product ID) and sort applicable countries.
+		// Product issue cleanup: sorting (by product ID) and encode applicable countries.
 		ksort( $product_issues );
 		$product_issues = array_map(
 			function ( $unique_key, $issue ) {
@@ -378,6 +381,48 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		);
 
 		$this->container->get( MerchantIssueQuery::class )->update_or_insert( array_values( $product_issues ) );
+	}
+
+	/**
+	 * Include local presync product validation issues in the merchant issues table.
+	 */
+	protected function refresh_presync_product_issues(): void {
+		/** @var ProductRepository $product_repository */
+		$product_repository = $this->container->get( ProductRepository::class );
+		$products           = $product_repository->find_presync_error_products();
+		$product_issues     = [];
+		$created_at         = $this->current_time->format( 'Y-m-d H:i:s' );
+
+		foreach ( $products as $p ) {
+			// Skip parent products (so product titles clearly indicate which variation needs fixing).
+			if ( 'variable' === $p->get_type() ) {
+				continue;
+			}
+
+			$presync_errors = $p->get_meta( $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS ) );
+			// Skip products without error descriptions.
+			if ( empty( $presync_errors ) ) {
+				continue;
+			}
+
+			foreach ( $presync_errors as $text ) {
+				$issue_parts      = $this->parse_presync_issue_text( $text );
+				$product_issues[] = [
+					'product'              => $p->get_name(),
+					'product_id'           => $p->get_id(),
+					'code'                 => $issue_parts['code'],
+					'issue'                => $issue_parts['issue'],
+					'action'               => __( 'Update this attribute in your product data', 'google-listings-and-ads' ),
+					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+					'applicable_countries' => '["all"]',
+					'created_at'           => $created_at,
+				];
+			}
+		}
+
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issue_query->update_or_insert( $product_issues );
 	}
 
 	/**
@@ -496,9 +541,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	protected function get_product_shopping_status( Shopping_Product_Status $product_status ): ?string {
 		$status = null;
 		foreach ( $product_status->getDestinationStatuses() as $d ) {
-			if ( $d->getDestination() === 'SurfacesAcrossGoogle' ) {
+			if ( 'SurfacesAcrossGoogle' === $d->getDestination() ) {
 				$status = $d->getStatus();
-			} elseif ( $d->getDestination() === 'Shopping' ) {
+			} elseif ( 'Shopping' === $d->getDestination() ) {
 				$status = $d->getStatus();
 				break;
 			}
@@ -524,6 +569,34 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		return [
 			self::TYPE_ACCOUNT,
 			self::TYPE_PRODUCT,
+		];
+	}
+
+	/**
+	 * Parse the code and formatted issue text out of the presync validation error text.
+	 *
+	 * @param string $text
+	 *
+	 * @return string[] With indexes `code` and `issue`
+	 */
+	protected function parse_presync_issue_text( string $text ): array {
+		$matches = [];
+		preg_match( '/^\[([^\]]+)\]\s*(.+)$/', $text, $matches );
+		if ( count( $matches ) !== 3 ) {
+			return [
+				'code'  => 'presync_error_attrib_' . md5( $text ),
+				'issue' => $text,
+			];
+		}
+
+		// Convert imageLink to image
+		if ( 'imageLink' === $matches[1] ) {
+			$matches[1] = 'image';
+		}
+		$matches[2] = trim( $matches[2], ' .' );
+		return [
+			'code'  => 'presync_error_' . $matches[1],
+			'issue' => "{$matches[2]} [{$matches[1]}]",
 		];
 	}
 }

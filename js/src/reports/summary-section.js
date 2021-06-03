@@ -7,6 +7,7 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { recordChartTabClickEvent } from '.~/utils/recordEvent';
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import MetricNumber from './metric-number';
 
@@ -24,12 +25,14 @@ const noValidData = {
  * @param {Array<Metric>} props.metrics Metrics to display.
  * @param {number} [props.expectedLength=metrics.length] Expected metrics to display, for example when the metrics array is not yet resolved.
  * @param {PerformanceData} props.totals Report's performance data.
+ * @param {string} props.trackEventId Report ID used in tracking events.
  */
 export default function SummarySection( {
 	loaded,
 	metrics,
 	expectedLength = metrics.length,
 	totals,
+	trackEventId,
 } ) {
 	const query = useUrlQuery();
 	if ( ! loaded ) {
@@ -37,6 +40,13 @@ export default function SummarySection( {
 	}
 
 	const { selectedMetric = metrics[ 0 ].key } = query;
+
+	const trackClickEvent = ( context ) => {
+		recordChartTabClickEvent( {
+			report: trackEventId,
+			context,
+		} );
+	};
 
 	return (
 		<SummaryList>
@@ -52,6 +62,7 @@ export default function SummarySection( {
 							selected={ selected }
 							isCurrency={ isCurrency }
 							data={ totals[ key ] || noValidData }
+							onLinkClickCallback={ () => trackClickEvent( key ) }
 						/>
 					);
 				} )

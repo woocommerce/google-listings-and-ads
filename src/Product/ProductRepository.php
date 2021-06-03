@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Product;
 
 /**
@@ -237,10 +238,15 @@ class ProductRepository implements Service {
 		$args['meta_query'] = $this->get_sync_ready_products_meta_query();
 
 		// don't include variable products in query
-		$args['type']        = $this->get_supported_product_types();
+		$args['type']        = ProductSyncer::get_supported_product_types();
 		$variable_type_index = array_search( 'variable', $args['type'], true );
 		if ( false !== $variable_type_index ) {
 			unset( $args['type'][ $variable_type_index ] );
+		}
+
+		// only include published products
+		if ( empty( $args['status'] ) ) {
+			$args['status'] = [ 'publish' ];
 		}
 
 		return $args;
@@ -289,6 +295,33 @@ class ProductRepository implements Service {
 		return $this->find_ids( $args, $limit, $offset );
 	}
 
+
+
+	/**
+	 * Find and return an array of WooCommerce product objects that are pending synchronization,
+	 * but have failed pre-sync validation.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return WC_Product[] Array of WooCommerce product objects
+	 */
+	public function find_presync_error_products( int $limit = -1, int $offset = 0 ): array {
+		$args['meta_query'] = [
+			'relation' => 'AND',
+			$this->get_sync_ready_products_meta_query(),
+			[
+				[
+					'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
+					'compare' => '=',
+					'value'   => SyncStatus::HAS_ERRORS,
+				],
+			],
+		];
+
+		return $this->find( $args, $limit, $offset );
+	}
+
 	/**
 	 * Find and return an array of WooCommerce products based on the provided arguments.
 	 *
@@ -326,19 +359,10 @@ class ProductRepository implements Service {
 
 		// only include supported product types
 		if ( empty( $args['type'] ) ) {
-			$args['type'] = $this->get_supported_product_types();
+			$args['type'] = ProductSyncer::get_supported_product_types();
 		}
 
 		return $args;
-	}
-
-	/**
-	 * Return the list of supported product types.
-	 *
-	 * @return array
-	 */
-	public function get_supported_product_types(): array {
-		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable', 'variation' ] );
 	}
 
 }

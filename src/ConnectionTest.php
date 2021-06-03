@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
@@ -23,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
@@ -615,6 +617,25 @@ class ConnectionTest implements Service, Registerable {
 					<input name="page" value="connection-test-admin-page" type="hidden" />
 					<input name="action" value="wcs-delete-synced-products" type="hidden" />
 				</form>
+				<form action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" method="GET">
+					<table class="form-table" role="presentation">
+						<tr>
+							<th>Cleanup All Products:</th>
+							<td>
+								<p>
+									<label for="async-cleanup-products">Async?</label>
+									<input id="async-cleanup-products" name="async" value=1 type="checkbox" <?php echo ! empty( $_GET['async'] ) ? 'checked' : ''; ?> />
+									<button class="button">Cleanup All Products
+									</button>
+								</p>
+							</td>
+						</tr>
+					</table>
+					<?php wp_nonce_field( 'wcs-cleanup-products' ); ?>
+					<input name="merchant_id" type="hidden" value="<?php echo ! empty( $_GET['merchant_id'] ) ? intval( $_GET['merchant_id'] ) : ''; ?>" />
+					<input name="page" value="connection-test-admin-page" type="hidden" />
+					<input name="action" value="wcs-cleanup-products" type="hidden" />
+				</form>
 			<?php } ?>
 		</div>
 		<?php
@@ -1073,6 +1094,40 @@ class ConnectionTest implements Service, Registerable {
 				$delete_job = $this->container->get( DeleteAllProducts::class );
 				$delete_job->start();
 				$this->response = 'Successfully scheduled a job to delete all synced products!';
+			}
+		}
+
+		if ( 'wcs-cleanup-products' === $_GET['action'] && check_admin_referer( 'wcs-cleanup-products' ) ) {
+			if ( empty( $_GET['async'] ) ) {
+				/** @var ProductSyncer $product_syncer */
+				$product_syncer = $this->container->get( ProductSyncer::class );
+				/** @var ProductRepository $product_repository */
+				$product_repository = $this->container->get( ProductRepository::class );
+				/** @var BatchProductHelper $batch_product_helper */
+				$batch_product_helper = $this->container->get( BatchProductHelper::class );
+
+				try {
+					$products = $product_repository->find_synced_products();
+					$stale_entries = $batch_product_helper->generate_stale_products_request_entries( $products );
+
+					$result = $product_syncer->delete_by_batch_requests( $stale_entries );
+
+					$this->response .= sprintf( '%s products cleaned up.', count( $result->get_products() ) ) . "\n";
+					if ( ! empty( $result->get_errors() ) ) {
+						$this->response .= sprintf( 'There were %s errors:', count( $result->get_errors() ) ) . "\n";
+						foreach ( $result->get_errors() as $invalid_product ) {
+							$this->response .= sprintf( "%s:\n%s", $invalid_product->get_wc_product_id(), implode( "\n", $invalid_product->get_errors() ) ) . "\n";
+						}
+					}
+				} catch ( ProductSyncerException $exception ) {
+					$this->response = 'Error cleaning up products: ' . $exception->getMessage();
+				}
+			} else {
+				// schedule a job
+				/** @var CleanupProductsJob $delete_job */
+				$delete_job = $this->container->get( CleanupProductsJob::class );
+				$delete_job->start();
+				$this->response = 'Successfully scheduled a job to cleanup all products!';
 			}
 		}
 	}
