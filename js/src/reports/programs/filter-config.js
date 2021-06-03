@@ -21,7 +21,7 @@ export const createProgramsFilterConfig = () => {
 	let resolveAdsCampaigns;
 	let promiseProgramsList;
 
-	function waitNextData() {
+	function waitForNextData() {
 		adsCampaigns = null;
 		promiseProgramsList = new Promise( ( resolve ) => {
 			resolveAdsCampaigns = resolve;
@@ -31,7 +31,7 @@ export const createProgramsFilterConfig = () => {
 	}
 
 	// Call for initializing
-	waitNextData();
+	waitForNextData();
 
 	const autocompleter = {
 		name: 'programs',
@@ -139,13 +139,13 @@ export const createProgramsFilterConfig = () => {
 		if ( loaded ) {
 			// Handle the case of no change in `loaded` status between continuous updates.
 			if ( adsCampaigns && adsCampaigns !== data ) {
-				waitNextData();
+				waitForNextData();
 			}
 
 			adsCampaigns = data;
 			resolveAdsCampaigns();
 		} else if ( adsCampaigns ) {
-			waitNextData();
+			waitForNextData();
 		}
 		return filterConfig;
 	};
