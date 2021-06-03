@@ -8,6 +8,13 @@
 		// and set it to wpbody-content margin-top to counter back.
 		.woocommerce-layout__header {
 			z-index: -1;
+
+			// only display the top left WC navigation,
+			// do not display the h1 page title element
+			// and the top right activity panel.
+			&-wrapper > *:not(.woocommerce-navigation) {
+				display: none;
+			}
 		}
 
 		// Hide StoreAlerts.
@@ -40,13 +47,6 @@
 
 			// width of the WC Navigation sidebar.
 			width: 240px;
-
-			// only display the top left WC navigation,
-			// do not display the h1 page title element
-			// and the top right activity panel.
-			&-wrapper > *:not(.woocommerce-navigation) {
-				display: none;
-			}
 		}
 	}
 }
