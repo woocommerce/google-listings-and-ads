@@ -22,14 +22,14 @@ const freeListingsProgramsIds = new Set(
 /**
  * Compares two sets.
  *
- * @param {Set} setA
- * @param {Set} setB
+ * @param {Set} subset
+ * @param {Set} superset
  * @return {boolean} true if these are sets of same elements.
  */
-function equalSet( setA, setB ) {
-	if ( setA.size !== setB.size ) return false;
-	for ( const a of setA ) {
-		if ( ! setB.has( a ) ) {
+function isSubset( subset, superset ) {
+	if ( subset.size > superset.size ) return false;
+	for ( const a of subset ) {
+		if ( ! superset.has( a ) ) {
 			return false;
 		}
 	}
@@ -71,8 +71,8 @@ export const createProgramsFilterConfig = () => {
 		// Get program id(s) from query parameter.
 		const ids = new Set( getIdsFromQuery( param ) );
 		let programs;
-		// If it's one of static values, resolve it immediately.
-		if ( equalSet( ids, freeListingsProgramsIds ) ) {
+		// If it's a subset of static values, resolve it immediately.
+		if ( isSubset( ids, freeListingsProgramsIds ) ) {
 			programs = freeListingsPrograms;
 		} else {
 			// If there are any paid programs, resolve it once we get it.
