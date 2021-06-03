@@ -312,7 +312,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
 				'action_url' => $issue->getDocumentation(),
 				'created_at' => $created_at,
-				'type'       => 'account',
+				'type'       => self::TYPE_ACCOUNT,
 				'severity'   => $issue->getSeverity(),
 			];
 		}
