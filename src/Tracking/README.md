@@ -141,7 +141,7 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `table_go_to_page` - When table pagination is changed by entering page via "Go to page" input
   * `context`: name of the table
-  * `page`: Page number of the table. Start from 1.
+  * `page`: page number (starting at 1)
 
 * `table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
