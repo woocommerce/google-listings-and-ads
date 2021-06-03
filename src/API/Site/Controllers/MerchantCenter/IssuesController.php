@@ -43,7 +43,7 @@ class IssuesController extends BaseOptionsController {
 		$this->product_helper    = $product_helper;
 
 		add_filter(
-			'gla_merchant_issue_override',
+			'woocommerce_gla_merchant_issue_override',
 			function( $issue ) {
 				return $this->maybe_override_issue_values( $issue );
 			}
@@ -84,7 +84,7 @@ class IssuesController extends BaseOptionsController {
 
 			// Replace variation IDs with parent ID (for Edit links).
 			foreach ( $results['issues'] as &$issue ) {
-				$issue = apply_filters( 'gla_merchant_issue_override', $issue );
+				$issue = apply_filters( 'woocommerce_gla_merchant_issue_override', $issue );
 
 				if ( empty( $issue['product_id'] ) ) {
 					continue;
