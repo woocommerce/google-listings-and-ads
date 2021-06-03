@@ -227,7 +227,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'code'       => $row['code'],
 				'action'     => $row['action'],
 				'action_url' => $row['action_url'],
-				'severity'   => $row['severity'],
+				'severity'   => $this->is_warning_severity( $row ) ? 'warning' : 'error',
 			];
 			if ( $issue['product_id'] ) {
 				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
@@ -610,5 +610,25 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			'code'  => 'presync_error_' . $matches[1],
 			'issue' => "{$matches[2]} [{$matches[1]}]",
 		];
+	}
+
+	/**
+	 * Return true if a Merchant Issue's severity is warning-level.
+	 *
+	 * @param array $row
+	 *
+	 * @return bool
+	 */
+	protected function is_warning_severity( array $row ): bool {
+		return in_array(
+			$row['severity'],
+			[
+				'warning',
+				'suggested',
+				'demoted',
+				'unaffected',
+			],
+			true
+		);
 	}
 }
