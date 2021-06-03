@@ -81,8 +81,8 @@ All event names are prefixed by `wcadmin_gla_`.
   * `context`: indicate the place where the button is located, e.g. `setup-ads`.
 
 * `launch_paid_campaign_button_click` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
-  * `audience`: daily average cost of the paid campaign
-  * `budget`: country code of the paid campaign audience country
+  * `audience`: country code of the paid campaign audience country
+  * `budget`: daily average cost of the paid campaign
 
 * `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
 
