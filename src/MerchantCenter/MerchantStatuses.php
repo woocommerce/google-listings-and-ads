@@ -207,7 +207,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 
 		// Ensure account issues are shown first.
-		$issue_query->set_order( 'product_id' );
+		$issue_query->set_order( 'type' );
+		$issue_query->set_order( 'product' );
 		$issue_query->set_order( 'issue' );
 
 		// Filter by type if valid.
