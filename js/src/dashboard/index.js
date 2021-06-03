@@ -17,11 +17,14 @@ import { glaData } from '.~/constants';
 import './index.scss';
 import { subpaths } from '.~/utils/urls';
 import EditFreeCampaign from '.~/edit-free-campaign';
+import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
 
 const Dashboard = () => {
 	const query = getQuery();
 	if ( query.subpath === subpaths.editFreeListings ) {
 		return <EditFreeCampaign />;
+	} else if ( query.subpath === subpaths.editCampaign ) {
+		return <EditPaidAdsCampaign />;
 	}
 
 	const trackEventReportId = 'dashboard';

@@ -87,15 +87,6 @@ addFilter(
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Edit Paid Ads Campaign', 'google-listings-and-ads' ),
-				],
-				container: EditPaidAdsCampaign,
-				path: '/google/campaigns/edit',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
 					__(
 						'Create your paid campaign',
 						'google-listings-and-ads'
