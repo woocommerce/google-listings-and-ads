@@ -32,6 +32,11 @@ All event names are prefixed by `wcadmin_gla_`.
   * `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
   * `href`: indicate the destination where the users is directed to.
 
+* `bulk_edit_click` - Triggered when the product feed "bulk edit" functionality is being used
+  * `context`: name of the table
+  * `number_of_items`: edit how many items
+  * `visibility_to`: `("sync_and_show" | "dont_sync_and_show")`
+
 * `chart_tab_click` - Triggered when a chart tab is clicked
   * `report`: name of the report (e.g. `"reports-programs" | "reports-products"`)
   * `context`: metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
@@ -51,6 +56,14 @@ All event names are prefixed by `wcadmin_gla_`.
   * `link_id`: link identifier
   * `context`: indicate which link is clicked
   * `href`: link's URL
+
+* `edit_product_click` - Trigger when edit links are clicked from product feed table
+  * `status`: `("approved" | "partially_approved" | "expiring" | "pending" | "disapproved" | "not_synced")`
+  * `visibility`: `("sync_and_show" | "dont_sync_and_show")`
+
+* `edit_product_issue_click` - Trigger when edit links are clicked from Issues to resolve table
+  * `code`: issue code returned from Google
+  * `issue`: issue description returned from Google
 
 * `filter` - Triggered when changing products & variations filter
   * `report`: name of the report (e.g. `"reports-products"`)
@@ -126,10 +139,18 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `site_verify_success` - When a site is successfully verified with Google
 
+* `table_go_to_page` - When table pagination is changed by entering page via "Go to page" input
+  * `context`: name of the table
+  * `page`: page number (starting at 1)
+
 * `table_header_toggle` - Toggling display of table columns
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
   * `column`: name of the column
   * `status`: (`on`|`off`)
+
+* `table_page_click` - When table pagination is clicked
+  * `context`: name of the table
+  * `direction`: direction of page to be changed. `("next" | "previous")`
 
 * `table_sort` - Sorting table
   * `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
