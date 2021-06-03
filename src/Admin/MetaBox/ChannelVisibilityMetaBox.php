@@ -95,20 +95,13 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected function get_view_context( WP_Post $post, array $args ): array {
 		$product_id = $post->ID;
 		$product    = wc_get_product( $product_id );
-		$errors     = $this->meta_handler->get_errors( $product_id ) ?: [];
-
-		// Combine errors for variable products, which have a variation-indexed array of errors.
-		$first_key = array_key_first( $errors );
-		if ( ! empty( $errors ) && is_numeric( $first_key ) && 0 !== $first_key ) {
-			$errors = array_unique( array_merge( ...$errors ) );
-		}
 
 		return [
 			'product_id'  => $product_id,
 			'product'     => $product,
 			'visibility'  => $this->product_helper->get_visibility( $product ),
 			'sync_status' => $this->meta_handler->get_sync_status( $product_id ),
-			'issues'      => $errors,
+			'issues'      => $this->product_helper->get_validation_errors( $product ),
 		];
 	}
 
