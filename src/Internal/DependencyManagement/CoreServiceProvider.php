@@ -31,7 +31,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\CreatePaidAdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
@@ -91,7 +90,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
-		CreatePaidAdsCampaign::class  => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
 		GlobalSiteTag::class          => true,
@@ -188,7 +186,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
-		$this->conditionally_share_with_tags( CreatePaidAdsCampaign::class );
 		$this->conditionally_share_with_tags( Reports::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
 		$this->conditionally_share_with_tags( Settings::class );
