@@ -146,6 +146,11 @@ class IssuesController extends BaseOptionsController {
 							'description' => __( 'Documentation URL for issue and/or action.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
+						'severity'             => [
+							'type'        => 'string',
+							'description' => __( 'Severity level of the issue: warning or error.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
 						'applicable_countries' => [
 							'type'        => 'array',
 							'description' => __( 'Country codes of the product audience.', 'google-listings-and-ads' ),
