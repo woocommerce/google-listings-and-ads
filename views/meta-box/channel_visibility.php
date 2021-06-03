@@ -25,7 +25,11 @@ $visibility = $this->visibility;
 /**
  * @var string $sync_status
  */
-$sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
+if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
+	$sync_status = __( 'Issues detected', 'google-listings-and-ads' );
+} else {
+	$sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
+}
 $show_status = $visibility === ChannelVisibility::SYNC_AND_SHOW && $this->sync_status !== SyncStatus::SYNCED;
 
 /**
