@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Exception;
+use WC_Log_Levels;
 use WC_Logger;
 
 /**
@@ -57,7 +58,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 	 * @param string    $method
 	 */
 	public function log_exception( $exception, string $method ): void {
-		$this->log( $exception->getMessage(), $method );
+		$this->log( $exception->getMessage(), $method, WC_Log_Levels::ERROR );
 	}
 
 	/**
@@ -67,7 +68,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 	 * @param string $method
 	 */
 	public function log_error( string $message, string $method ): void {
-		$this->log( sprintf( 'Error: %s', $message ), $method );
+		$this->log( $message, $method, WC_Log_Levels::ERROR );
 	}
 
 	/**
@@ -96,9 +97,11 @@ class DebugLogger implements Service, Registerable, Conditional {
 	 *
 	 * @param string $message
 	 * @param string $method
+	 * @param string $level
 	 */
-	protected function log( string $message, string $method ) {
-		$this->logger->debug(
+	protected function log( string $message, string $method, string $level = WC_Log_Levels::DEBUG ) {
+		$this->logger->log(
+			$level,
 			sprintf( '%s %s', $method, $message ),
 			[
 				'source' => 'google-listings-and-ads',
