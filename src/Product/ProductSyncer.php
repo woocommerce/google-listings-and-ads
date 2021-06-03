@@ -184,6 +184,15 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
+	 * Return the list of supported product types.
+	 *
+	 * @return array
+	 */
+	public static function get_supported_product_types(): array {
+		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable', 'variation' ] );
+	}
+
+	/**
 	 * Validates whether Merchant Center is set up and connected.
 	 *
 	 * @throws ProductSyncerException If Google Merchant Center is not set up and connected.

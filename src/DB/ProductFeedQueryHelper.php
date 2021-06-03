@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WP_Query;
 use WP_REST_Request;
@@ -136,7 +137,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	protected function prepare_query_args(): array {
-		$product_types = $this->product_repository->get_supported_product_types();
+		$product_types = ProductSyncer::get_supported_product_types();
 		$product_types = array_diff( $product_types, [ 'variation' ] );
 
 		$args = [
