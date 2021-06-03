@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\BaseEvent;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
 use Psr\Container\ContainerInterface;
@@ -53,10 +52,11 @@ class EventTracking implements Service, Registerable {
 	 */
 	public function register(): void {
 		add_action(
-			'admin_init',
+			'init',
 			function() {
 				$this->register_events();
-			}
+			},
+			20 // After WC_Admin loads WC_Tracks class (init 10).
 		);
 	}
 
