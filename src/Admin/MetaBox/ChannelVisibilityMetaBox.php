@@ -99,7 +99,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'product_id' => $product_id,
 			'product'    => $product,
 			'visibility' => $this->product_helper->get_visibility( $product ),
-			'synced_at'  => $this->meta_handler->get_synced_at( $product_id ),
+			'synced_at'  => $this->meta_handler->get_synced_at( $product ),
 			'issues'     => [], // todo: replace this with the list of issues retrieved from Google's Product Statuses API
 		];
 	}
@@ -128,7 +128,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			$visibility = empty( $_POST['visibility'] ) ?
 				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
 				ChannelVisibility::cast( sanitize_key( $_POST['visibility'] ) );
-			$this->meta_handler->update_visibility( $product_id, $visibility );
+			$this->meta_handler->update_visibility( $product, $visibility );
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
