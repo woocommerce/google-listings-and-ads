@@ -9,11 +9,14 @@ function getAutocompleterOptions( config ) {
 }
 
 describe( 'createProgramsFilterConfig', () => {
-	const programA = { id: 'A' };
-	const programB = { id: 'B' };
-	const dataA = { loaded: true, data: [ programA ] };
-	const dataB = { loaded: true, data: [ programB ] };
-	const dataLoading = { loaded: false, data: [] };
+	let programA, programB, dataA, dataB, dataLoading;
+	beforeEach( () => {
+		programA = { id: 'A' };
+		programB = { id: 'B' };
+		dataA = { loaded: true, data: [ programA ] };
+		dataB = { loaded: true, data: [ programB ] };
+		dataLoading = { loaded: false, data: [] };
+	} );
 
 	test( 'should wait for data loaded to resolve programs asynchronously', () => {
 		const getConfig = createProgramsFilterConfig();
