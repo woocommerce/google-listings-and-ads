@@ -206,8 +206,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		// Filter by type if valid.
 		if ( in_array( $type, $this->get_valid_issue_types(), true ) ) {
-			$compare = self::TYPE_ACCOUNT === $type ? '=' : '>';
-			$issue_query->where( 'product_id', 0, $compare );
+			$issue_query->where( 'type', $type );
 		} elseif ( null !== $type ) {
 			throw InvalidValue::not_in_allowed_list( 'type filter', $this->get_valid_issue_types() );
 		}
@@ -221,13 +220,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$issues = [];
 		foreach ( $issue_query->get_results() as $row ) {
 			$issue = [
-				'type'       => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
+				'type'       => $row['type'],
 				'product_id' => intval( $row['product_id'] ),
 				'product'    => $row['product'],
 				'issue'      => $row['issue'],
 				'code'       => $row['code'],
 				'action'     => $row['action'],
 				'action_url' => $row['action_url'],
+				'severity'   => $row['severity'],
 			];
 			if ( $issue['product_id'] ) {
 				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
