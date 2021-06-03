@@ -631,7 +631,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$row['severity'],
 			[
 				'warning',
-				'suggested',
+				'suggestion',
 				'demoted',
 				'unaffected',
 			],
