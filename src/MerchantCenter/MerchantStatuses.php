@@ -428,7 +428,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					'product'              => $p->get_name(),
 					'product_id'           => $p->get_id(),
 					'code'                 => $issue_parts['code'],
-					'severity'             => 'error',
+					'severity'             => self::SEVERITY_ERROR,
 					'issue'                => $issue_parts['issue'],
 					'action'               => __( 'Update this attribute in your product data', 'google-listings-and-ads' ),
 					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
