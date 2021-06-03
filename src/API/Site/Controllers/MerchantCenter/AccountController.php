@@ -440,9 +440,13 @@ class AccountController extends BaseOptionsController {
 
 					// Sub-account: request overwrite confirmation.
 					if ( $state['set_id']['data']['from_mca'] ?? true ) {
+						do_action( 'gla_site_claim_overwrite_required', [] );
+
 						$step['data']['overwrite_required'] = true;
 						$e                                  = new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), null, $data );
 					} else {
+						do_action( 'gla_site_claim_failure', [ 'details' => 'independent_account' ] );
+
 						// Independent account: overwrite not possible.
 						throw new ExceptionWithResponseData(
 							__( 'Unable to claim website URL with this Merchant Center Account.', 'google-listings-and-ads' ),
@@ -598,6 +602,8 @@ class AccountController extends BaseOptionsController {
 				$clean_account_website_url = $this->strip_url_protocol( $account_website_url );
 				$clean_site_website_url    = $this->strip_url_protocol( $site_website_url );
 
+				do_action( 'gla_url_switch_required', [] );
+
 				throw new ExceptionWithResponseData(
 					sprintf(
 					/* translators: 1: is a website URL (without the protocol) */
@@ -616,6 +622,8 @@ class AccountController extends BaseOptionsController {
 
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
+
+			do_action( 'gla_url_switch_success', [] );
 		}
 	}
 

@@ -138,6 +138,13 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 			return;
 		}
 
+		do_action(
+			'gla_log_errors',
+			sprintf( 'Error syncing product ID %d', $product->get_id() ),
+			$errors,
+			__METHOD__
+		);
+
 		$this->meta_handler->update_errors( $product, $errors );
 		$this->meta_handler->update_sync_status( $product, SyncStatus::HAS_ERRORS );
 		$this->update_empty_visibility( $product );
@@ -330,5 +337,23 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 			return $product->get_parent_id();
 		}
 		return $product_id;
+	}
+
+	/**
+	 * Get validation errors for a specific product.
+	 * Combines errors for variable products, which have a variation-indexed array of errors.
+	 *
+	 * @param WC_Product $product
+	 * @return array
+	 */
+	public function get_validation_errors( WC_Product $product ): array {
+		$errors = $this->meta_handler->get_errors( $product ) ?: [];
+
+		$first_key = array_key_first( $errors );
+		if ( ! empty( $errors ) && is_numeric( $first_key ) && 0 !== $first_key ) {
+			$errors = array_unique( array_merge( ...$errors ) );
+		}
+
+		return $errors;
 	}
 }
