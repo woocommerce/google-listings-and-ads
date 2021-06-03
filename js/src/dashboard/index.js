@@ -22,7 +22,7 @@ const Dashboard = () => {
 
 	const ReportsLink = () => {
 		return (
-			<Link href={ getNewPath( null, '/google/reports/programs' ) }>
+			<Link href={ getNewPath( null, '/google/reports' ) }>
 				<Button isPrimary>View Reports</Button>
 			</Link>
 		);
