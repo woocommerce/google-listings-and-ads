@@ -17,13 +17,21 @@ const freeListingsPrograms = [
 ];
 
 export const createProgramsFilterConfig = () => {
+	let adsCampaigns;
 	let resolveAdsCampaigns;
+	let promiseProgramsList;
 
-	const promiseProgramsList = new Promise( ( resolve ) => {
-		resolveAdsCampaigns = resolve;
-	} ).then( ( adsCampaigns ) => {
-		return freeListingsPrograms.concat( adsCampaigns );
-	} );
+	function waitNextData() {
+		adsCampaigns = null;
+		promiseProgramsList = new Promise( ( resolve ) => {
+			resolveAdsCampaigns = resolve;
+		} ).then( () => {
+			return freeListingsPrograms.concat( adsCampaigns );
+		} );
+	}
+
+	// Call for initializing
+	waitNextData();
 
 	const autocompleter = {
 		name: 'programs',
@@ -129,7 +137,15 @@ export const createProgramsFilterConfig = () => {
 
 	return ( { data, loaded } ) => {
 		if ( loaded ) {
-			resolveAdsCampaigns( data );
+			// Handle the case of no change in `loaded` status between continuous updates.
+			if ( adsCampaigns && adsCampaigns !== data ) {
+				waitNextData();
+			}
+
+			adsCampaigns = data;
+			resolveAdsCampaigns();
+		} else if ( adsCampaigns ) {
+			waitNextData();
 		}
 		return filterConfig;
 	};
