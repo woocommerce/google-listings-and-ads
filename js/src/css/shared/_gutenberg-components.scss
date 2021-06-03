@@ -39,24 +39,6 @@
 	border: none;
 }
 
-// hack to align multiple lines of label after the radio/checkbox to the same indentation
-.components-base-control__field,
-.components-radio-control__option {
-	display: flex;
-
-	> label {
-		flex: 1 1 0;
-	}
-}
-.components-radio-control__input[type="radio"] {
-	margin-right: 10px;
-}
-
-// hack to fix InputControl suffix's empty right margin.
-.components-input-control__suffix {
-	margin-right: 8px;
-}
-
 // Hack to fix the Tooltip position of the top-right side close button in a Modal component.
 // The follow up can be found here: https://github.com/woocommerce/google-listings-and-ads/issues/203
 .components-modal {
