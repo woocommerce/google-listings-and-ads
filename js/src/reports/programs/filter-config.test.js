@@ -18,74 +18,82 @@ describe( 'createProgramsFilterConfig', () => {
 		dataLoading = { loaded: false, data: [] };
 	} );
 
-	test( 'should wait for data loaded to resolve programs asynchronously', () => {
+	test( 'should wait for data loaded to resolve programs asynchronously', async () => {
 		const getConfig = createProgramsFilterConfig();
 
-		return Promise.resolve()
-			.then( () => {
-				const config = getConfig( dataLoading );
-				const options = getAutocompleterOptions( config );
+		const config = getConfig( dataLoading );
+		const initialOptions = getAutocompleterOptions( config );
 
-				// Simulate data status from being loading to loaded,
-				// so it should not return the pending `options()` to block this test case.
-				options().then( ( programs ) => {
-					// The promise from the initial config should be resolved as well.
-					expect( programs.includes( programA ) ).toBe( true );
-				} );
-			} )
-			.then( () => {
-				const config = getConfig( dataA );
-				const options = getAutocompleterOptions( config );
-				return options().then( ( programs ) => {
-					expect( programs.includes( programA ) ).toBe( true );
-				} );
-			} );
+		// Not easily testable with Jest:
+		// expect( initialOptions ).to.be.not.fulfilled;
+
+		// Use the initial options promise, and assert it will eventually be resolved with programs that wil come.
+		const initialOptionsAssertion = initialOptions().then( ( programs ) => {
+			// The promise from the initial config should resolve with first loaded data.
+			expect( programs ).toContain( programA );
+		} );
+
+		// Feed the config with data.
+		const configWithA = getConfig( dataA );
+
+		// Assert options will resolve with programs.
+		const optionsWithA = getAutocompleterOptions( configWithA );
+		expect( await optionsWithA() ).toContain( programA );
+
+		// Make sure the initial promise is also resolved and asserted.
+		// Eslint complains about await for some reason.
+		return initialOptionsAssertion;
 	} );
 
-	test( 'should keep updating and resolving programs if no change in `loaded` status between continuous updates', () => {
+	test( 'should keep updating and resolving programs if no change in `loaded` status between continuous updates', async () => {
 		const getConfig = createProgramsFilterConfig();
 
 		getConfig( dataA );
+		// Update with the same data.
+		const configA = getConfig( dataA );
+		const options = getAutocompleterOptions( configA );
+		expect( await options() ).toContain( programA );
 
-		return Promise.resolve()
-			.then( () => {
-				const config = getConfig( dataA );
-				const options = getAutocompleterOptions( config );
-				return options().then( ( programs ) => {
-					expect( programs.includes( programA ) ).toBe( true );
-				} );
-			} )
-			.then( () => {
-				const config = getConfig( dataB );
-				const options = getAutocompleterOptions( config );
-				return options().then( ( programs ) => {
-					expect( programs.includes( programA ) ).toBe( false );
-					expect( programs.includes( programB ) ).toBe( true );
-				} );
-			} );
+		// Update with a new data.
+		const configB = getConfig( dataB );
+		const optionsAfterB = getAutocompleterOptions( configB );
+
+		// Assert the options will eventually resolve with new programs.
+		const programsAfterB = await optionsAfterB();
+		expect( programsAfterB ).not.toContain( programA );
+		expect( programsAfterB ).toContain( programB );
 	} );
 
-	test( 'should resolve next programs if the `loaded` status is changed', () => {
+	test( 'should resolve next programs if the `loaded` status is changed', async () => {
 		const getConfig = createProgramsFilterConfig();
 
-		return Promise.resolve()
-			.then( () => {
-				const config = getConfig( dataA );
-				const options = getAutocompleterOptions( config );
-				return options().then( ( programs ) => {
-					expect( programs.includes( programA ) ).toBe( true );
-				} );
-			} )
-			.then( () => {
-				getConfig( dataLoading );
-			} )
-			.then( () => {
-				const config = getConfig( dataB );
-				const options = getAutocompleterOptions( config );
-				return options().then( ( programs ) => {
-					expect( programs.includes( programA ) ).toBe( false );
-					expect( programs.includes( programB ) ).toBe( true );
-				} );
-			} );
+		const config = getConfig( dataA );
+		const options = getAutocompleterOptions( config );
+		expect( await options() ).toContain( programA );
+
+		// Start loading new data.
+		const configReloading = getConfig( dataLoading );
+		const optionsReloading = getAutocompleterOptions( configReloading );
+		// Not easily testable with Jest:
+		// expect( initialOptions ).to.be.not.fulfilled;
+
+		// We want assert it will eventually resolve with new data, without waiting for it here.
+		const loadingOptionsAssertion = optionsReloading().then(
+			( programs ) => {
+				// The promise from the reloading config, should resolve with the loaded data.
+				expect( programs ).toContain( programB );
+			}
+		);
+
+		// Update with a new data.
+		const configWithB = getConfig( dataB );
+		const optionsAfterB = getAutocompleterOptions( configWithB );
+		const programsAfterB = await optionsAfterB();
+		expect( programsAfterB ).not.toContain( programA );
+		expect( programsAfterB ).toContain( programB );
+
+		// Make sure the initial promise is also resolved and asserted.
+		// Eslint complains about await for some reason.
+		return loadingOptionsAssertion;
 	} );
 } );
