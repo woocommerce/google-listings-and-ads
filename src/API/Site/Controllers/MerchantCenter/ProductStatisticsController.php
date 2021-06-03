@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use WP_REST_Response as Response;
 use WP_REST_Request as Request;
@@ -27,16 +28,25 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected $merchant_statuses;
 
+	/**
+	 * Helper class to count scheduled sync jobs.
+	 *
+	 * @var ProductSyncStats
+	 */
+	protected $sync_stats;
+
 
 	/**
 	 * ProductStatisticsController constructor.
 	 *
 	 * @param RESTServer       $server
 	 * @param MerchantStatuses $merchant_statuses
+	 * @param ProductSyncStats $sync_stats
 	 */
-	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses ) {
+	public function __construct( RESTServer $server, MerchantStatuses $merchant_statuses, ProductSyncStats $sync_stats ) {
 		parent::__construct( $server );
 		$this->merchant_statuses = $merchant_statuses;
+		$this->sync_stats        = $sync_stats;
 	}
 
 	/**
@@ -98,10 +108,11 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected function get_product_status_stats( Request $request, bool $force_refresh = false ): Response {
 		try {
-			return $this->prepare_item_for_response(
-				$this->merchant_statuses->get_product_statistics( $force_refresh ),
-				$request
-			);
+			$response = $this->merchant_statuses->get_product_statistics( $force_refresh );
+
+			$response['scheduled_sync'] = $this->sync_stats->get_count();
+
+			return $this->prepare_item_for_response( $response, $request );
 		} catch ( Exception $e ) {
 			return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 		}
@@ -114,13 +125,13 @@ class ProductStatisticsController extends BaseOptionsController {
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'timestamp'  => [
+			'timestamp'      => [
 				'type'        => 'number',
 				'description' => __( 'Timestamp reflecting when the product status statistics were last generated.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'statistics' => [
+			'statistics'     => [
 				'type'        => 'object',
 				'description' => __( 'Merchant Center product status statistics.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
@@ -152,6 +163,12 @@ class ProductStatisticsController extends BaseOptionsController {
 						'context'     => [ 'view' ],
 					],
 				],
+			],
+			'scheduled_sync' => [
+				'type'        => 'number',
+				'description' => __( 'Amount of scheduled jobs which will sync products to Google.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
 			],
 		];
 	}
