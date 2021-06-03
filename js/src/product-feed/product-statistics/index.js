@@ -11,6 +11,7 @@ import {
 	Card,
 	CardHeader,
 	CardBody,
+	CardFooter,
 	__experimentalText as Text,
 	FlexItem,
 } from '@wordpress/components';
@@ -26,6 +27,7 @@ import {
  */
 import useMCProductStatistics from '.~/hooks/useMCProductStatistics';
 import ProductStatusHelpPopover from './product-status-help-popover';
+import StatusBox from './status-box';
 import './index.scss';
 
 const ProductStatistics = () => {
@@ -95,6 +97,9 @@ const ProductStatistics = () => {
 					</SummaryList>
 				) }
 			</CardBody>
+			<CardFooter gap={ 0 }>
+				<StatusBox />
+			</CardFooter>
 		</Card>
 	);
 };
