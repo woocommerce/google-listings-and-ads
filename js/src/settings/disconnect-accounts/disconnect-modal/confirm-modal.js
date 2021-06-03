@@ -35,7 +35,7 @@ const textDict = {
 				'google-listings-and-ads'
 			),
 			__(
-				'Any associated free listings and/or paid campaigns created by this WooCommerce extension will be paused. This cannot be undone.',
+				'Any paid campaigns created by this WooCommerce extension will be paused.',
 				'google-listings-and-ads'
 			),
 		],
