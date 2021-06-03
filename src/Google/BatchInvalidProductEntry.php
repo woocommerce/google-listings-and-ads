@@ -87,4 +87,22 @@ class BatchInvalidProductEntry {
 
 		return $this;
 	}
+
+	/**
+	 * @return array
+	 *
+	 * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	 */
+	public function jsonSerialize(): array {
+		$data = [
+			'woocommerce_id' => $this->get_wc_product_id(),
+			'errors'         => $this->get_errors(),
+		];
+
+		if ( null !== $this->get_google_product_id() ) {
+			$data['google_id'] = $this->get_google_product_id();
+		}
+
+		return $data;
+	}
 }

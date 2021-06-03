@@ -41,6 +41,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 
 			add_action( 'gla_debug_message', [ $this, 'log_message' ], 10, 2 );
 			add_action( 'gla_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'gla_error', [ $this, 'log_error' ], 10, 2 );
 			add_action( 'gla_mc_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_ads_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_sv_client_exception', [ $this, 'log_exception' ], 10, 2 );
@@ -60,9 +61,19 @@ class DebugLogger implements Service, Registerable, Conditional {
 	}
 
 	/**
+	 * Log an exception.
+	 *
+	 * @param string $message
+	 * @param string $method
+	 */
+	public function log_error( string $message, string $method ): void {
+		$this->log( sprintf( 'Error: %s', $message ), $method );
+	}
+
+	/**
 	 * Log a JSON response.
 	 *
-	 * @param JSON   $response
+	 * @param mixed  $response
 	 * @param string $method
 	 */
 	public function log_response( $response, string $method ): void {
