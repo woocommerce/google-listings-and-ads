@@ -43,19 +43,23 @@ const AppInputNumberControl = ( props ) => {
 
 	/**
 	 * Get number value from string value, by passing the string value
-	 * through `numberFormat` (which respects the `numberSettings`)
-	 * and `parseStringToNumber` functions.
+	 * through the following sequence:
 	 *
-	 * e.g. If the `numberSettings` is `{ precision: 2 }` and the string value is `"1.2345"`,
+	 * 1. `parseStringToNumber`: converts the string to number, to handle the `decimalSeparator` and `thousandSeparator`.
+	 * 2. `numberFormat`: converts the number to string, to handle the `precision`.
+	 * 3. `parseStringToNumber`: converts the string with the specified precision back to number.
+	 *
+	 * e.g. If the `numberSettings` is `{ precision: 2, decimalSeparator: "," }` and the string value is `"1,2345"`,
 	 * the return number value would be `1.23`.
 	 *
 	 * @param {string} v String value.
 	 * @return {number} Number value.
 	 */
 	const getNumberFromString = ( v ) => {
-		const formattedString = numberFormat( v );
+		const numberWithoutPrecision = parseStringToNumber( v, numberSettings );
+		const stringWithPrecision = numberFormat( numberWithoutPrecision );
 		const numberValue = parseStringToNumber(
-			formattedString,
+			stringWithPrecision,
 			numberSettings
 		);
 
