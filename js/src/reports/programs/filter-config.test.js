@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import { createProgramsFilterConfig } from './filter-config';
+import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 
 function getAutocompleterOptions( config ) {
 	const filter = config.filters.find( ( el ) => el?.settings?.autocompleter );
@@ -113,6 +114,28 @@ describe( 'createProgramsFilterConfig', () => {
 			labelA = { key: programA.id, label: programA.name };
 			labelB = { key: programB.id, label: programB.name };
 		} );
+
+		test( 'if getLabel is requested for free campaign Id, its resolved immediately without waiting for capmaigns data', async () => {
+			const getConfig = createProgramsFilterConfig();
+			// Initial run.
+			const getLabels = getGetLabels( getConfig( dataLoading ) );
+			// Request free campaign
+			const freeLabelsPromise = getLabels(
+				'' + FREE_LISTINGS_PROGRAM_ID
+			);
+
+			// Not easily testable with Jest:
+			// expect( freeLabelsPromise ).to.be.resolved;
+
+			// Assert resolved value
+			expect( await freeLabelsPromise ).toContainEqual(
+				expect.objectContaining( {
+					key: FREE_LISTINGS_PROGRAM_ID,
+					label: expect.any( String ),
+				} )
+			);
+		} );
+
 		test( 'after initial run should provide getLabels that would eventually resolve with data', () => {
 			const getConfig = createProgramsFilterConfig();
 
