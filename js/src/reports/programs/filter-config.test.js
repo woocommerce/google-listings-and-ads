@@ -11,8 +11,8 @@ function getAutocompleterOptions( config ) {
 describe( 'createProgramsFilterConfig', () => {
 	let programA, programB, dataA, dataB, dataLoading;
 	beforeEach( () => {
-		programA = { id: 'A' };
-		programB = { id: 'B' };
+		programA = { id: 65 };
+		programB = { id: 66 };
 		dataA = { loaded: true, data: [ programA ] };
 		dataB = { loaded: true, data: [ programB ] };
 		dataLoading = { loaded: false, data: [] };
