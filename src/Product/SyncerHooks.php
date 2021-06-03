@@ -149,8 +149,20 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
 			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 			$this->set_already_scheduled( $product_id );
+
+			do_action(
+				'gla_debug_message',
+				sprintf( 'Deleting product (ID: %s) from Google Merchant Center because it is not ready to be synced.', $product->get_id() ),
+				__METHOD__
+			);
 		} else {
 			$this->product_helper->mark_as_unsynced( $product );
+
+			do_action(
+				'gla_debug_message',
+				sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
+				__METHOD__
+			);
 		}
 	}
 

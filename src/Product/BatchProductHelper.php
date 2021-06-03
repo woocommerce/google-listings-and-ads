@@ -159,6 +159,12 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 			$this->validate_instanceof( $product, WC_Product::class );
 
 			if ( ! $this->product_helper->is_sync_ready( $product ) ) {
+				do_action(
+					'gla_debug_message',
+					sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
+					__METHOD__
+				);
+
 				continue;
 			}
 
@@ -172,6 +178,13 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 			$validation_result = $this->validate_product( $adapted_product );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation_result );
+
+				do_action(
+					'gla_debug_message',
+					sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), json_encode( $validation_result ) ),
+					__METHOD__
+				);
+
 				continue;
 			}
 
