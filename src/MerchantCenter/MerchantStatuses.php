@@ -299,8 +299,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	protected function refresh_account_issues(): void {
+		/** @var Merchant $merchant */
+		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
-		foreach ( $this->container->get( Merchant::class )->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
+		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [
 				'product_id' => 0,
 				'product'    => __( 'All products', 'google-listings-and-ads' ),
@@ -308,11 +311,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'issue'      => $issue->getTitle(),
 				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
 				'action_url' => $issue->getDocumentation(),
-				'created_at' => $this->current_time->format( 'Y-m-d H:i:s' ),
+				'created_at' => $created_at,
+				'type'       => 'account',
+				'severity'   => $issue->getSeverity(),
 			];
 		}
 
-		$this->container->get( MerchantIssueQuery::class )->update_or_insert( $account_issues );
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issue_query->update_or_insert( $account_issues );
 	}
 
 
@@ -336,8 +343,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			$product_issue_template = [
-				'product'    => $this->product_data_lookup[ $wc_product_id ]['name'],
-				'product_id' => $wc_product_id,
+				'product'              => $this->product_data_lookup[ $wc_product_id ]['name'],
+				'product_id'           => $wc_product_id,
+				'created_at'           => $created_at,
+				'applicable_countries' => [],
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
@@ -351,12 +360,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				);
 
 				$product_issues[ $hash_key ] = $product_issue_template + [
-					'code'                 => $item_level_issue->getCode(),
-					'issue'                => $item_level_issue->getDescription(),
-					'action'               => $item_level_issue->getDetail(),
-					'action_url'           => $item_level_issue->getDocumentation(),
-					'applicable_countries' => [],
-					'created_at'           => $created_at,
+					'code'       => $item_level_issue->getCode(),
+					'issue'      => $item_level_issue->getDescription(),
+					'action'     => $item_level_issue->getDetail(),
+					'action_url' => $item_level_issue->getDocumentation(),
+					'severity'   => $item_level_issue->getServability(),
 				];
 			}
 		}
@@ -380,7 +388,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$product_issues
 		);
 
-		$this->container->get( MerchantIssueQuery::class )->update_or_insert( array_values( $product_issues ) );
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issue_query->update_or_insert( array_values( $product_issues ) );
 	}
 
 	/**
@@ -411,10 +421,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					'product'              => $p->get_name(),
 					'product_id'           => $p->get_id(),
 					'code'                 => $issue_parts['code'],
+					'severity'             => 'error',
 					'issue'                => $issue_parts['issue'],
 					'action'               => __( 'Update this attribute in your product data', 'google-listings-and-ads' ),
 					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
 					'applicable_countries' => '["all"]',
+					'source'               => 'pre-sync',
 					'created_at'           => $created_at,
 				];
 			}
