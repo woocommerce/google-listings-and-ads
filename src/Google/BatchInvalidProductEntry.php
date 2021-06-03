@@ -20,6 +20,11 @@ class BatchInvalidProductEntry {
 	protected $wc_product_id;
 
 	/**
+	 * @var string|null Google product ID. Always defined if the method is delete.
+	 */
+	protected $google_product_id;
+
+	/**
 	 * @var string[]
 	 */
 	protected $errors;
@@ -27,12 +32,14 @@ class BatchInvalidProductEntry {
 	/**
 	 * BatchInvalidProductEntry constructor.
 	 *
-	 * @param int      $wc_product_id
-	 * @param string[] $errors
+	 * @param int         $wc_product_id
+	 * @param string|null $google_product_id
+	 * @param string[]    $errors
 	 */
-	public function __construct( int $wc_product_id, $errors = [] ) {
-		$this->wc_product_id = $wc_product_id;
-		$this->errors        = $errors;
+	public function __construct( int $wc_product_id, ?string $google_product_id = null, array $errors = [] ) {
+		$this->wc_product_id     = $wc_product_id;
+		$this->google_product_id = $google_product_id;
+		$this->errors            = $errors;
 	}
 
 	/**
@@ -43,10 +50,26 @@ class BatchInvalidProductEntry {
 	}
 
 	/**
+	 * @return string|null
+	 */
+	public function get_google_product_id(): ?string {
+		return $this->google_product_id;
+	}
+
+	/**
 	 * @return string[]
 	 */
 	public function get_errors(): array {
 		return $this->errors;
+	}
+
+	/**
+	 * @param string $error_reason
+	 *
+	 * @return bool
+	 */
+	public function has_error( string $error_reason ): bool {
+		return ! empty( $this->errors[ $error_reason ] );
 	}
 
 	/**

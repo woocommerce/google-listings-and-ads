@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\RefreshSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
@@ -63,11 +62,6 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	protected $delete_products_job;
 
 	/**
-	 * @var RefreshSyncedProducts
-	 */
-	protected $refresh_products_job;
-
-	/**
 	 * SyncerHooks constructor.
 	 *
 	 * @param BatchProductHelper $batch_helper
@@ -79,11 +73,10 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 		ProductHelper $product_helper,
 		JobRepository $job_repository
 	) {
-		$this->batch_helper         = $batch_helper;
-		$this->product_helper       = $product_helper;
-		$this->update_products_job  = $job_repository->get( UpdateProducts::class );
-		$this->delete_products_job  = $job_repository->get( DeleteProducts::class );
-		$this->refresh_products_job = $job_repository->get( RefreshSyncedProducts::class );
+		$this->batch_helper        = $batch_helper;
+		$this->product_helper      = $product_helper;
+		$this->update_products_job = $job_repository->get( UpdateProducts::class );
+		$this->delete_products_job = $job_repository->get( DeleteProducts::class );
 	}
 
 	/**
@@ -122,13 +115,6 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 
 		// when a product is restored from the trash, schedule a update job.
 		add_action( 'untrashed_post', $update, 90 );
-
-		// re-sync all products once the target audience option changes
-		$refresh = function() {
-			$this->refresh_products_job->start();
-		};
-		add_action( 'gla_options_updated_target_audience', $refresh, 90 );
-		add_action( 'gla_options_deleted_target_audience', $refresh, 90 );
 	}
 
 	/**

@@ -48,32 +48,30 @@ function isNotOurStep( location ) {
  */
 
 /**
- * Due to lack of single API for updating shipping data alltogether,
- * we need to send deletes and adds separately.
- * Also, we need to send upserts separately for each price.
+ * Due to the lack of a single API for updating shipping data altogether,
+ * we need to send upserts separately for each price/time.
+ * Deletes are not needed, as we validate the form not to miss any available country.
  *
- * @param {(individualCountrySetting: ShippingRate) => Promise} upsertAction
- * @param {(countries: Array<CountryCode>) => Promise} deleteAction
- * @param {Array<ShippingRate>} oldData
+ * @param {(groupedCountrySetting: ShippingRate) => Promise} batchUpsertAction
  * @param {Array<ShippingRate>} newData
+ * @param {Function} getGroupKey A callback function to ask for a unique key for each shipping group.
  */
-function saveShippingData( upsertAction, deleteAction, oldData, newData ) {
-	const mapCountryCode = ( rate ) => rate.countryCode;
-	const currentCountries = new Set( newData.map( mapCountryCode ) );
+function saveShippingData( batchUpsertAction, newData, getGroupKey ) {
+	const groupMap = new Map();
+	newData.forEach( ( item ) => {
+		const key = getGroupKey( item );
+		const { countryCode, ...rest } = item;
+		let group = groupMap.get( key );
 
-	// Send upserts.
-	const actions = newData.map( upsertAction );
+		if ( ! group ) {
+			group = { ...rest, countryCodes: [] };
+			groupMap.set( key, group );
+		}
 
-	const deletedCountries = oldData
-		.map( mapCountryCode )
-		.filter( ( country ) => ! currentCountries.has( country ) );
+		group.countryCodes.push( countryCode );
+	} );
 
-	if ( deletedCountries.length ) {
-		// Send delete.
-		actions.concat( deleteAction( deletedCountries ) );
-	}
-	// TODO: implement better batched upsert that accpets an array of ShippingRates (with different prices)
-	return actions;
+	return Array.from( groupMap.values() ).map( batchUpsertAction );
 }
 
 /**
@@ -94,10 +92,8 @@ export default function EditFreeCampaign() {
 	const {
 		saveTargetAudience,
 		saveSettings,
-		upsertShippingRate, // We need to use this one, as we serve non-aggregated ShippingRates
-		deleteShippingRates,
-		upsertShippingTime, // We need to use this one, as we serve non-aggregated ShippingTimes
-		deleteShippingTimes,
+		upsertShippingRates,
+		upsertShippingTimes,
 	} = useAppDispatch();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
@@ -186,16 +182,14 @@ export default function EditFreeCampaign() {
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
 				...saveShippingData(
-					upsertShippingRate,
-					deleteShippingRates,
-					savedShippingRates,
-					shippingRates
+					upsertShippingRates,
+					shippingRates,
+					( item ) => `${ item.currency }:${ item.rate }`
 				),
 				...saveShippingData(
-					upsertShippingTime,
-					deleteShippingTimes,
-					savedShippingTimes,
-					shippingTimes
+					upsertShippingTimes,
+					shippingTimes,
+					( item ) => item.time
 				),
 			] );
 			// Sync data once our changes are saved, even partially succesfully.
