@@ -87,7 +87,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id     = $product->get_id();
-			$errors = $this->product_helper->get_validation_errors( $product );
+			$errors = $product_helper->get_validation_errors( $product );
 
 			$products[ $id ] = [
 				'id'      => $id,
