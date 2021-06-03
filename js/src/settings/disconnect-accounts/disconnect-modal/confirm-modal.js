@@ -31,7 +31,7 @@ const textDict = {
 				'google-listings-and-ads'
 			),
 			__(
-				'Any product feed created by this WooCommerce extension will be deleted.',
+				'Any existing product listings will still be available in Google Merchant Center, where they can be managed, edited, or deleted manually.',
 				'google-listings-and-ads'
 			),
 			__(
