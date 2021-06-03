@@ -54,6 +54,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public const TYPE_PRODUCT = 'product';
 
 	/**
+	 * Issue severity levels.
+	 */
+	public const SEVERITY_WARNING = 'warning';
+	public const SEVERITY_ERROR   = 'error';
+
+	/**
 	 * @var DateTime $current_time For cache age operations.
 	 */
 	protected $current_time;
@@ -227,7 +233,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'code'       => $row['code'],
 				'action'     => $row['action'],
 				'action_url' => $row['action_url'],
-				'severity'   => $this->is_warning_severity( $row ) ? 'warning' : 'error',
+				'severity'   => $this->get_issue_severity( $row ),
 			];
 			if ( $issue['product_id'] ) {
 				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
@@ -613,14 +619,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Return true if a Merchant Issue's severity is warning-level.
+	 * Return a standardized Merchant Issue severity value.
 	 *
 	 * @param array $row
 	 *
-	 * @return bool
+	 * @return string
 	 */
-	protected function is_warning_severity( array $row ): bool {
-		return in_array(
+	protected function get_issue_severity( array $row ): string {
+		$is_warning = in_array(
 			$row['severity'],
 			[
 				'warning',
@@ -630,5 +636,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			],
 			true
 		);
+
+		return $is_warning ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
 	}
 }
