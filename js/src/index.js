@@ -15,7 +15,7 @@ import Dashboard from './dashboard';
 import EditFreeCampaign from './edit-free-campaign';
 import EditPaidAdsCampaign from './pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from './pages/create-paid-ads-campaign';
-import { ProgramsReport, ProductsReport } from './reports';
+import Reports from './pages/reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
 import './data';
@@ -120,23 +120,11 @@ addFilter(
 					...initialBreadcrumbs,
 					__( 'Reports', 'google-listings-and-ads' ),
 				],
-				container: ProgramsReport,
-				path: '/google/reports/programs',
+				container: Reports,
+				path: '/google/reports',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 				navArgs: {
 					id: 'google-reports',
-				},
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Reports', 'google-listings-and-ads' ),
-				],
-				container: ProductsReport,
-				path: '/google/reports/products',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-				navArgs: {
-					id: 'google-reports-products',
 				},
 			},
 			{
