@@ -37,5 +37,21 @@ export default function FullContainer( props ) {
 		};
 	}, [] );
 
+	useEffect( () => {
+		const wpBody = document.querySelector( '#wpbody' );
+		const wpBodyContent = document.querySelector( '#wpbody-content' );
+		if ( ! wpBody || ! wpBodyContent ) {
+			return;
+		}
+
+		wpBodyContent.style.marginTop = `-${ wpBody.style.marginTop }`;
+
+		return () => {
+			if ( wpBodyContent ) {
+				wpBodyContent.style.marginTop = null;
+			}
+		};
+	} );
+
 	return children;
 }
