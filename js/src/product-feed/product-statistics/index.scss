@@ -17,4 +17,46 @@
 			}
 		}
 	}
+
+	// The status box in the footer of the Overview card
+	.components-card__footer {
+		flex-direction: column;
+
+		.components-flex + .components-flex {
+			margin-top: $grid-unit-10;
+		}
+
+		.components-flex__item {
+			color: $gray-900;
+
+			&:first-child {
+				min-width: 130px;
+			}
+
+			&:nth-child(2) {
+				display: inline-flex;
+				align-items: center;
+				fill: currentColor;
+				color: #008a20;
+			}
+
+			&:last-child {
+				color: $gray-700;
+
+				&:not(:empty)::before {
+					content: "•";
+					display: inline-block;
+					margin: 0 $grid-unit-10;
+				}
+			}
+		}
+
+		.gridicon {
+			margin-right: $grid-unit-05;
+		}
+
+		.gridicons-sync {
+			transform: rotateZ(90deg);
+		}
+	}
 }
