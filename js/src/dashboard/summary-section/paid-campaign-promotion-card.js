@@ -10,7 +10,6 @@ import { Spinner } from '@woocommerce/components';
 import SummaryCard from './summary-card';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
-import './paid-campaign-promotion-card.scss';
 
 const PromotionContent = ( { adsAccount } ) => {
 	const showFreeCredit =
@@ -18,7 +17,7 @@ const PromotionContent = ( { adsAccount } ) => {
 
 	return (
 		<>
-			<p className="gla-paid-campaign-promotion-content__text">
+			<p>
 				{ showFreeCredit
 					? __(
 							'Create your first campaign and get up to $150* free',
@@ -41,7 +40,7 @@ function PaidCampaignPromotionCard( { title } ) {
 
 	return (
 		<SummaryCard title={ title }>
-			<div className="gla-paid-campaign-promotion-content">
+			<div className="gla-summary-card__body">
 				{ googleAdsAccount ? (
 					<PromotionContent adsAccount={ googleAdsAccount } />
 				) : (
