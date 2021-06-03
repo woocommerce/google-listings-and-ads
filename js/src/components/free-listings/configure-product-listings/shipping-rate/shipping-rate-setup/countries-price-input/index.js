@@ -38,22 +38,16 @@ const CountriesPriceInput = ( {
 		return <AppSpinner />;
 	}
 
-	const handleBlur = ( e ) => {
-		const { value: nextPrice } = e.target;
-
-		if ( nextPrice === price ) {
+	const handleBlur = ( event, numberValue ) => {
+		if ( price === numberValue ) {
 			return;
 		}
 
-		if ( nextPrice === '' ) {
-			onDelete( countries );
-		} else {
-			onChange( {
-				countries,
-				currency,
-				price: nextPrice,
-			} );
-		}
+		onChange( {
+			countries,
+			currency,
+			price: numberValue,
+		} );
 	};
 
 	return (
