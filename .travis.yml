@@ -1,6 +1,7 @@
 language: php
 sudo: false
-dist: trusty
+# We use Focal locally, but it does not support PHP 7.3 on Travis
+dist: bionic
 
 notifications:
   email: false
