@@ -166,7 +166,7 @@ export default function EditFreeCampaign() {
 	const { pageStep = '1' } = getQuery();
 	const dashboardURL = getNewPath(
 		// Clear the step we were at, but perserve programId to be able to highlight the program.
-		{ pageStep: undefined },
+		{ pageStep: undefined, subpath: undefined },
 		'/google/dashboard'
 	);
 

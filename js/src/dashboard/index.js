@@ -3,7 +3,7 @@
  */
 import { Link } from '@woocommerce/components';
 import { Button } from '@wordpress/components';
-import { getNewPath } from '@woocommerce/navigation';
+import { getNewPath, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -15,8 +15,15 @@ import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
 import { glaData } from '.~/constants';
 import './index.scss';
+import { subpaths } from '.~/utils/urls';
+import EditFreeCampaign from '.~/edit-free-campaign';
 
 const Dashboard = () => {
+	const query = getQuery();
+	if ( query.subpath === subpaths.editFreeListings ) {
+		return <EditFreeCampaign />;
+	}
+
 	const trackEventReportId = 'dashboard';
 	const { enableReports } = glaData;
 

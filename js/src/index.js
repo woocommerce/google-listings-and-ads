@@ -12,7 +12,6 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
-import EditFreeCampaign from './edit-free-campaign';
 import EditPaidAdsCampaign from './pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from './pages/create-paid-ads-campaign';
 import Reports from './pages/reports';
@@ -84,15 +83,6 @@ addFilter(
 				navArgs: {
 					id: 'google-dashboard',
 				},
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Edit Free Listings', 'google-listings-and-ads' ),
-				],
-				container: EditFreeCampaign,
-				path: '/google/edit-free-campaign',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
 				breadcrumbs: [
