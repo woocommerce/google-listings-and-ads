@@ -1,8 +1,20 @@
 /**
+ * We use the __experimentalText component to make the card header
+ * looks the same as other card headers on the Product Feed page.
+ */
+
+/**
  * External dependencies
  */
-import { format as formatDate } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
+import {
+	Card,
+	CardHeader,
+	CardBody,
+	__experimentalText as Text,
+	FlexItem,
+} from '@wordpress/components';
+
 import {
 	SummaryList,
 	SummaryListPlaceholder,
@@ -20,28 +32,19 @@ const ProductStatistics = () => {
 	const { hasFinishedResolution, data } = useMCProductStatistics();
 
 	return (
-		<div className="gla-product-statistics">
-			<div className="gla-product-statistics__last-updated">
-				{ ! hasFinishedResolution &&
-					__( 'Updating…', 'google-listings-and-ads' ) }
-				{ hasFinishedResolution &&
-					! data &&
-					__(
-						'An error occurred while loading product statistics. Please try again later.',
-						'google-listings-and-ads'
-					) }
-				{ hasFinishedResolution && data && (
-					<>
-						{ __( 'Last updated: ', 'google-listings-and-ads' ) }
-						{ formatDate(
-							'Y-m-d H:i:s',
-							new Date( data.timestamp * 1000 )
-						) }
-						<ProductStatusHelpPopover />
-					</>
-				) }
-			</div>
-			<div className="gla-product-statistics__summaries">
+		<Card className="gla-product-statistics">
+			<CardHeader justify="normal">
+				<FlexItem>
+					<Text variant="title.small" as="h2">
+						{ __( 'Overview', 'google-listings-and-ads' ) }
+					</Text>
+				</FlexItem>
+				<ProductStatusHelpPopover />
+			</CardHeader>
+			<CardBody
+				className="gla-product-statistics__summaries"
+				size={ null }
+			>
 				{ ! hasFinishedResolution && (
 					<SummaryListPlaceholder numberOfItems={ 5 } />
 				) }
@@ -91,8 +94,8 @@ const ProductStatistics = () => {
 						] }
 					</SummaryList>
 				) }
-			</div>
-		</div>
+			</CardBody>
+		</Card>
 	);
 };
 
