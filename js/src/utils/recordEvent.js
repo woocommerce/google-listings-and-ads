@@ -3,6 +3,10 @@
  */
 import { recordEvent } from '@woocommerce/tracks';
 
+/**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ */
+
 export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 	recordEvent( 'gla_table_header_toggle', {
 		report,
@@ -67,6 +71,19 @@ export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_ads', {
 		target,
 		trigger,
+	} );
+};
+
+/**
+ * Records `gla_launch_paid_campaign_button_click` tracking event.
+ *
+ * @param {number} budget Daily average cost of the paid campaign.
+ * @param {CountryCode} audience Country code of the paid campaign audience country.
+ */
+export const recordLaunchPaidCampaignClickEvent = ( budget, audience ) => {
+	recordEvent( 'gla_launch_paid_campaign_button_click', {
+		audience,
+		budget,
 	} );
 };
 

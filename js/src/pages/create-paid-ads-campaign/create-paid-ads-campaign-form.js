@@ -19,6 +19,7 @@ import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
 import createCampaign from '.~/apis/createCampaign';
 import validateForm from '.~/utils/paid-ads/validateForm';
+import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
@@ -35,6 +36,9 @@ const CreatePaidAdsCampaignForm = () => {
 		try {
 			const { amount, country: countryArr } = values;
 			const country = countryArr && countryArr[ 0 ];
+
+			recordLaunchPaidCampaignClickEvent( amount, country );
+
 			await createCampaign( amount, country );
 
 			createNotice(
