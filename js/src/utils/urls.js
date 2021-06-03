@@ -8,6 +8,7 @@ const dashboardPath = '/google/dashboard';
 export const subpaths = {
 	editFreeListings: '/free-listings/edit',
 	editCampaign: '/campaigns/edit',
+	createCampaign: '/campaigns/create',
 };
 
 export const EditFreeListingsUrl = getNewPath(
@@ -21,3 +22,8 @@ export const getEditCampaignUrl = ( programId ) => {
 		dashboardPath
 	);
 };
+
+export const createCampaignUrl = getNewPath(
+	{ subpath: subpaths.createCampaign },
+	dashboardPath
+);

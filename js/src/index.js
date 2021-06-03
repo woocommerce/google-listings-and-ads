@@ -12,8 +12,6 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
-import EditPaidAdsCampaign from './pages/edit-paid-ads-campaign';
-import CreatePaidAdsCampaign from './pages/create-paid-ads-campaign';
 import Reports from './pages/reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
@@ -83,18 +81,6 @@ addFilter(
 				navArgs: {
 					id: 'google-dashboard',
 				},
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__(
-						'Create your paid campaign',
-						'google-listings-and-ads'
-					),
-				],
-				container: CreatePaidAdsCampaign,
-				path: '/google/campaigns/create',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 			},
 			{
 				breadcrumbs: [

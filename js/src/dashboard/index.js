@@ -18,13 +18,17 @@ import './index.scss';
 import { subpaths } from '.~/utils/urls';
 import EditFreeCampaign from '.~/edit-free-campaign';
 import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
+import CreatePaidAdsCampaign from '.~/pages/create-paid-ads-campaign';
 
 const Dashboard = () => {
 	const query = getQuery();
-	if ( query.subpath === subpaths.editFreeListings ) {
-		return <EditFreeCampaign />;
-	} else if ( query.subpath === subpaths.editCampaign ) {
-		return <EditPaidAdsCampaign />;
+	switch ( query.subpath ) {
+		case subpaths.editFreeListings:
+			return <EditFreeCampaign />;
+		case subpaths.editCampaign:
+			return <EditPaidAdsCampaign />;
+		case subpaths.createCampaign:
+			return <CreatePaidAdsCampaign />;
 	}
 
 	const trackEventReportId = 'dashboard';
