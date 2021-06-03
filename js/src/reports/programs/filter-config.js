@@ -15,6 +15,26 @@ const freeListingsPrograms = [
 		name: __( 'Free Listings', 'google-listings-and-ads' ),
 	},
 ];
+const freeListingsProgramsIds = new Set(
+	freeListingsPrograms.map( ( program ) => program.id )
+);
+
+/**
+ * Compares two sets.
+ *
+ * @param {Set} setA
+ * @param {Set} setB
+ * @return {boolean} true if these are sets of same elements.
+ */
+function equalSet( setA, setB ) {
+	if ( setA.size !== setB.size ) return false;
+	for ( const a of setA ) {
+		if ( ! setB.has( a ) ) {
+			return false;
+		}
+	}
+	return true;
+}
 
 export const createProgramsFilterConfig = () => {
 	let adsCampaigns;
@@ -47,17 +67,24 @@ export const createProgramsFilterConfig = () => {
 		} ),
 	};
 
-	function getLabels( param ) {
+	async function getLabels( param ) {
 		// Get program id(s) from query parameter.
 		const ids = new Set( getIdsFromQuery( param ) );
-		return promiseProgramsList.then( ( programsList ) => {
-			return programsList
-				.filter( ( campaign ) => ids.has( campaign.id ) )
-				.map( ( campaign ) => ( {
-					key: campaign.id,
-					label: campaign.name,
-				} ) );
-		} );
+		let programs;
+		// If it's one of static values, resolve it immediately.
+		if ( equalSet( ids, freeListingsProgramsIds ) ) {
+			programs = freeListingsPrograms;
+		} else {
+			// If there are any paid programs, resolve it once we get it.
+			programs = ( await promiseProgramsList ).filter( ( campaign ) =>
+				ids.has( campaign.id )
+			);
+		}
+		// Map to labels and return.
+		return programs.map( ( campaign ) => ( {
+			key: campaign.id,
+			label: campaign.name,
+		} ) );
 	}
 
 	const filterConfig = {
