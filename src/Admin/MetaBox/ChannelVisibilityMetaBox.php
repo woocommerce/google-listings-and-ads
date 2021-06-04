@@ -141,13 +141,11 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			return;
 		}
 
-		$product = $this->product_helper->get_wc_product( $product_id );
-		if ( $product instanceof WC_Product ) {
-			$visibility = empty( $_POST['visibility'] ) ?
-				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
-				ChannelVisibility::cast( sanitize_key( $_POST['visibility'] ) );
-			$this->meta_handler->update_visibility( $product, $visibility );
-		}
+		$product    = $this->product_helper->get_wc_product( $product_id );
+		$visibility = empty( $_POST['visibility'] ) ?
+			ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
+			ChannelVisibility::cast( sanitize_key( $_POST['visibility'] ) );
+		$this->meta_handler->update_visibility( $product, $visibility );
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }
