@@ -26,7 +26,6 @@ defined( 'ABSPATH' ) || exit;
  * ContainerAware used to access:
  * - MerchantStatuses
  * - ProductHelper
- * - ProductMetaHandler
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
@@ -80,14 +79,12 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
-		/** @var ProductMetaHandler $meta_handler */
-		$meta_handler = $this->container->get( ProductMetaHandler::class );
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id     = $product->get_id();
-			$errors = $this->product_helper->get_validation_errors( $product );
+			$errors = $product_helper->get_validation_errors( $product );
 
 			$products[ $id ] = [
 				'id'      => $id,
