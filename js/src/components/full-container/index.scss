@@ -9,6 +9,10 @@
 		.woocommerce-layout__header {
 			z-index: -1;
 
+			// the layout header has a white background,
+			// we set to transparent to remove it.
+			background-color: transparent;
+
 			// only display the top left WC navigation,
 			// do not display the h1 page title element
 			// and the top right activity panel.
