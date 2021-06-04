@@ -34,10 +34,10 @@ const checkErrors = (
 	if (
 		values.shipping_rate === 'flat' &&
 		values.offers_free_shipping &&
-		! values.free_shipping_threshold
+		values.free_shipping_threshold < 0
 	) {
 		errors.free_shipping_threshold = __(
-			'Please specify minimum order price for free shipping',
+			'Please specify a valid minimum order price for free shipping',
 			'google-listings-and-ads'
 		);
 	}
