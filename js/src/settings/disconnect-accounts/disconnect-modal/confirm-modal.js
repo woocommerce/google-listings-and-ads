@@ -31,11 +31,11 @@ const textDict = {
 				'google-listings-and-ads'
 			),
 			__(
-				'Any existing product listings will still be available in Google Merchant Center, where they can be managed, edited, or deleted manually.',
+				'Any active product listings will continue to show on Google. They can be managed, edited, or deleted manually from Google Merchant Center (merchants.google.com).',
 				'google-listings-and-ads'
 			),
 			__(
-				'Any paid campaigns created by this WooCommerce extension will be paused.',
+				'Any ongoing paid campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
 				'google-listings-and-ads'
 			),
 		],
