@@ -9,7 +9,7 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
-import AppInputControl from '.~/components/app-input-control';
+import AppInputNumberControl from '.~/components/app-input-number-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AudienceCountrySelect from '.~/components/audience-country-select';
 import './index.scss';
@@ -25,10 +25,29 @@ const EditTimeModal = ( props ) => {
 		onRequestClose();
 	};
 
-	const handleValidate = () => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
-		// TODO: validation logic.
+		if ( values.countryCodes.length === 0 ) {
+			errors.countryCodes = __(
+				'Please specify at least one country.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.time === null ) {
+			errors.time = __(
+				'Please enter the estimated shipping time.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.time < 0 ) {
+			errors.time = __(
+				'The estimated shipping time cannot be less than 0.',
+				'google-listings-and-ads'
+			);
+		}
 
 		return errors;
 	};
@@ -57,7 +76,7 @@ const EditTimeModal = ( props ) => {
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, handleSubmit } = formProps;
+				const { getInputProps, isValidForm, handleSubmit } = formProps;
 
 				return (
 					<AppModal
@@ -78,6 +97,7 @@ const EditTimeModal = ( props ) => {
 							<Button
 								key="save"
 								isPrimary
+								disabled={ ! isValidForm }
 								onClick={ handleSubmit }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
@@ -98,7 +118,7 @@ const EditTimeModal = ( props ) => {
 									{ ...getInputProps( 'countryCodes' ) }
 								/>
 							</div>
-							<AppInputControl
+							<AppInputNumberControl
 								label={ __(
 									'Then the estimated shipping time displayed in the product listing is',
 									'google-listings-and-ads'

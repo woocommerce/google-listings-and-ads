@@ -22,10 +22,22 @@ const AddRateModal = ( props ) => {
 	const { code } = useStoreCurrency();
 	const remainingCountryCodes = useGetRemainingCountryCodes();
 
-	const handleValidate = () => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
-		// TODO: validation logic.
+		if ( values.countryCodes.length === 0 ) {
+			errors.countryCodes = __(
+				'Please specify at least one country.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.rate < 0 ) {
+			errors.rate = __(
+				'The estimated shipping rate cannot be less than 0.',
+				'google-listings-and-ads'
+			);
+		}
 
 		return errors;
 	};
@@ -47,13 +59,13 @@ const AddRateModal = ( props ) => {
 			initialValues={ {
 				countryCodes: remainingCountryCodes,
 				currency: code,
-				rate: '',
+				rate: 0,
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, handleSubmit } = formProps;
+				const { getInputProps, isValidForm, handleSubmit } = formProps;
 
 				return (
 					<AppModal
@@ -66,6 +78,7 @@ const AddRateModal = ( props ) => {
 							<Button
 								key="save"
 								isPrimary
+								disabled={ ! isValidForm }
 								onClick={ handleSubmit }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }

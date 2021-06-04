@@ -54,25 +54,23 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param GoogleProduct $google_product
 	 */
 	public function mark_as_synced( WC_Product $product, GoogleProduct $google_product ) {
-		$wc_product_id = $product->get_id();
-
-		$this->meta_handler->update_synced_at( $wc_product_id, time() );
-		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::SYNCED );
+		$this->meta_handler->update_synced_at( $product, time() );
+		$this->meta_handler->update_sync_status( $product, SyncStatus::SYNCED );
 		$this->update_empty_visibility( $product );
 
 		// merge and update all google product ids
-		$current_google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
+		$current_google_ids = $this->meta_handler->get_google_ids( $product );
 		$current_google_ids = ! empty( $current_google_ids ) ? $current_google_ids : [];
 		$google_ids         = array_unique( array_merge( $current_google_ids, [ $google_product->getTargetCountry() => $google_product->getId() ] ) );
-		$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
+		$this->meta_handler->update_google_ids( $product, $google_ids );
 
 		// check if product is synced completely and remove any previous errors if it is
 		$synced_countries = array_keys( $google_ids );
 		$target_countries = $this->merchant_center->get_target_countries();
 		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
-			$this->meta_handler->delete_errors( $wc_product_id );
-			$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
-			$this->meta_handler->delete_sync_failed_at( $wc_product_id );
+			$this->meta_handler->delete_errors( $product );
+			$this->meta_handler->delete_failed_sync_attempts( $product );
+			$this->meta_handler->delete_sync_failed_at( $product );
 		}
 
 		// mark the parent product as synced if it's a variation
@@ -86,14 +84,12 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param WC_Product $product
 	 */
 	public function mark_as_unsynced( WC_Product $product ) {
-		$wc_product_id = $product->get_id();
-
-		$this->meta_handler->delete_synced_at( $wc_product_id );
-		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::NOT_SYNCED );
-		$this->meta_handler->delete_google_ids( $wc_product_id );
-		$this->meta_handler->delete_errors( $wc_product_id );
-		$this->meta_handler->delete_failed_sync_attempts( $wc_product_id );
-		$this->meta_handler->delete_sync_failed_at( $wc_product_id );
+		$this->meta_handler->delete_synced_at( $product );
+		$this->meta_handler->update_sync_status( $product, SyncStatus::NOT_SYNCED );
+		$this->meta_handler->delete_google_ids( $product );
+		$this->meta_handler->delete_errors( $product );
+		$this->meta_handler->delete_failed_sync_attempts( $product );
+		$this->meta_handler->delete_sync_failed_at( $product );
 
 		// mark the parent product as un-synced if it's a variation
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
@@ -107,9 +103,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param string     $google_id
 	 */
 	public function remove_google_id( WC_Product $product, string $google_id ) {
-		$wc_product_id = $product->get_id();
-
-		$google_ids = $this->meta_handler->get_google_ids( $wc_product_id );
+		$google_ids = $this->meta_handler->get_google_ids( $product );
 		if ( empty( $google_ids ) ) {
 			return;
 		}
@@ -122,7 +116,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		unset( $google_ids[ $idx ] );
 
 		if ( ! empty( $google_ids ) ) {
-			$this->meta_handler->update_google_ids( $wc_product_id, $google_ids );
+			$this->meta_handler->update_google_ids( $product, $google_ids );
 		} else {
 			// if there are no Google IDs left then this product is no longer considered "synced"
 			$this->mark_as_unsynced( $product );
@@ -144,26 +138,24 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 			return;
 		}
 
-		$wc_product_id = $product->get_id();
-
 		do_action(
 			'gla_log_errors',
-			sprintf( 'Error syncing product ID %d', $wc_product_id ),
+			sprintf( 'Error syncing product ID %d', $product->get_id() ),
 			$errors,
 			__METHOD__
 		);
 
-		$this->meta_handler->update_errors( $wc_product_id, $errors );
-		$this->meta_handler->update_sync_status( $wc_product_id, SyncStatus::HAS_ERRORS );
+		$this->meta_handler->update_errors( $product, $errors );
+		$this->meta_handler->update_sync_status( $product, SyncStatus::HAS_ERRORS );
 		$this->update_empty_visibility( $product );
 
 		if ( ! empty( $errors[ GoogleProductService::INTERNAL_ERROR_REASON ] ) ) {
 			// update failed sync attempts count in case of internal errors
-			$failed_attempts = ! empty( $this->meta_handler->get_failed_sync_attempts( $wc_product_id ) ) ?
-				$this->meta_handler->get_failed_sync_attempts( $wc_product_id ) :
+			$failed_attempts = ! empty( $this->meta_handler->get_failed_sync_attempts( $product ) ) ?
+				$this->meta_handler->get_failed_sync_attempts( $product ) :
 				0;
-			$this->meta_handler->update_failed_sync_attempts( $wc_product_id, $failed_attempts + 1 );
-			$this->meta_handler->update_sync_failed_at( $wc_product_id, time() );
+			$this->meta_handler->update_failed_sync_attempts( $product, $failed_attempts + 1 );
+			$this->meta_handler->update_sync_failed_at( $product, time() );
 		}
 
 		// mark the parent product as invalid if it's a variation
@@ -171,11 +163,11 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 			$wc_parent_id   = $product->get_parent_id();
 			$parent_product = $this->get_wc_product( $wc_parent_id );
 
-			$parent_errors = ! empty( $this->meta_handler->get_errors( $wc_parent_id ) ) ?
-				$this->meta_handler->get_errors( $wc_parent_id ) :
+			$parent_errors = ! empty( $this->meta_handler->get_errors( $parent_product ) ) ?
+				$this->meta_handler->get_errors( $parent_product ) :
 				[];
 
-			$parent_errors[ $wc_product_id ] = $errors;
+			$parent_errors[ $product->get_id() ] = $errors;
 
 			$this->mark_as_invalid( $parent_product, $parent_errors );
 		}
@@ -189,7 +181,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param WC_Product $product
 	 */
 	public function mark_as_pending( WC_Product $product ) {
-		$this->meta_handler->update_sync_status( $product->get_id(), SyncStatus::PENDING );
+		$this->meta_handler->update_sync_status( $product, SyncStatus::PENDING );
 
 		// mark the parent product as pending if it's a variation
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
@@ -205,11 +197,11 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param WC_Product $product
 	 */
 	protected function update_empty_visibility( WC_Product $product ): void {
-		$product_id = $product instanceof WC_Product_Variation ? $product->get_parent_id() : $product->get_id();
-		$visibility = $this->meta_handler->get_visibility( $product_id );
+		$product    = $product instanceof WC_Product_Variation ? $this->get_wc_product( $product->get_parent_id() ) : $product;
+		$visibility = $this->meta_handler->get_visibility( $product );
 
 		if ( empty( $visibility ) ) {
-			$this->meta_handler->update_visibility( $product_id, ChannelVisibility::SYNC_AND_SHOW );
+			$this->meta_handler->update_visibility( $product, ChannelVisibility::SYNC_AND_SHOW );
 		}
 	}
 
@@ -219,7 +211,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return string[] An array of Google product IDs stored for each WooCommerce product
 	 */
 	public function get_synced_google_product_ids( WC_Product $product ): array {
-		return $this->meta_handler->get_google_ids( $product->get_id() );
+		return $this->meta_handler->get_google_ids( $product );
 	}
 
 	/**
@@ -247,7 +239,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return string
 	 */
 	public function get_wc_product_title( string $mc_product_id ): string {
-		$product = wc_get_product( $this->get_wc_product_id( $mc_product_id ) );
+		$product = $this->get_wc_product( $this->get_wc_product_id( $mc_product_id ) );
 		if ( ! $product ) {
 			return $mc_product_id;
 		}
@@ -273,8 +265,8 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return bool
 	 */
 	public function is_product_synced( WC_Product $product ): bool {
-		$synced_at  = $this->meta_handler->get_synced_at( $product->get_id() );
-		$google_ids = $this->meta_handler->get_google_ids( $product->get_id() );
+		$synced_at  = $this->meta_handler->get_synced_at( $product );
+		$google_ids = $this->meta_handler->get_google_ids( $product );
 
 		return ! empty( $synced_at ) && ! empty( $google_ids );
 	}
@@ -296,10 +288,10 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return string
 	 */
 	public function get_visibility( WC_Product $wc_product ): string {
-		$visibility = $this->meta_handler->get_visibility( $wc_product->get_id() );
+		$visibility = $this->meta_handler->get_visibility( $wc_product );
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			// todo: we might need to define visibility per variation later.
-			$visibility = $this->meta_handler->get_visibility( $wc_product->get_parent_id() );
+			$visibility = $this->meta_handler->get_visibility( $this->get_wc_product( $wc_product->get_parent_id() ) );
 		}
 
 		return $visibility;
@@ -313,7 +305,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return string
 	 */
 	public function get_sync_status( WC_Product $wc_product ): string {
-		return $this->meta_handler->get_sync_status( $wc_product->get_id() );
+		return $this->meta_handler->get_sync_status( $wc_product );
 	}
 
 	/**
@@ -325,9 +317,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 */
 	public function get_mc_status( WC_Product $wc_product ): string {
 		if ( $wc_product instanceof WC_Product_Variation ) {
-			return $this->meta_handler->get_mc_status( $wc_product->get_parent_id() );
+			return $this->meta_handler->get_mc_status( $this->get_wc_product( $wc_product->get_parent_id() ) );
 		}
-		return $this->meta_handler->get_mc_status( $wc_product->get_id() );
+		return $this->meta_handler->get_mc_status( $wc_product );
 	}
 
 	/**
@@ -355,7 +347,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return array
 	 */
 	public function get_validation_errors( WC_Product $product ): array {
-		$errors = $this->meta_handler->get_errors( $product->get_id() ) ?: [];
+		$errors = $this->meta_handler->get_errors( $product ) ?: [];
 
 		$first_key = array_key_first( $errors );
 		if ( ! empty( $errors ) && is_numeric( $first_key ) && 0 !== $first_key ) {

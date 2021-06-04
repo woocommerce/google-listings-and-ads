@@ -132,10 +132,10 @@ const IssuesTableCard = () => {
 								return [
 									{
 										display:
-											el.type === 'account' ? (
-												<ErrorIcon />
-											) : (
+											el.severity === 'warning' ? (
 												<WarningIcon />
+											) : (
+												<ErrorIcon />
 											),
 									},
 									{ display: el.product },

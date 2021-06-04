@@ -25,10 +25,29 @@ const EditRateModal = ( props ) => {
 		onRequestClose();
 	};
 
-	const handleValidate = () => {
+	const handleValidate = ( values ) => {
 		const errors = {};
 
-		// TODO: validation logic.
+		if ( values.countryCodes.length === 0 ) {
+			errors.countryCodes = __(
+				'Please specify at least one country.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.price === null ) {
+			errors.price = __(
+				'Please enter the estimated shipping rate.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if ( values.price < 0 ) {
+			errors.price = __(
+				'The estimated shipping rate cannot be less than 0.',
+				'google-listings-and-ads'
+			);
+		}
 
 		return errors;
 	};
@@ -64,7 +83,12 @@ const EditRateModal = ( props ) => {
 			onSubmitCallback={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, values, handleSubmit } = formProps;
+				const {
+					getInputProps,
+					values,
+					isValidForm,
+					handleSubmit,
+				} = formProps;
 
 				return (
 					<AppModal
@@ -85,6 +109,7 @@ const EditRateModal = ( props ) => {
 							<Button
 								key="save"
 								isPrimary
+								disabled={ ! isValidForm }
 								onClick={ handleSubmit }
 							>
 								{ __( 'Save', 'google-listings-and-ads' ) }
