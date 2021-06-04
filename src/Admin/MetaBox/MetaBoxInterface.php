@@ -79,4 +79,11 @@ interface MetaBoxInterface extends Service, Conditional, Renderable {
 	 * @return array
 	 */
 	public function get_callback_args(): array;
+
+	/**
+	 * Returns an array of CSS classes to apply to the box.
+	 *
+	 * @return array
+	 */
+	public function get_classes(): array;
 }

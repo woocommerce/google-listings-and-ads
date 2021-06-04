@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 use WP_Post;
@@ -85,6 +86,22 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	}
 
 	/**
+	 * Returns an array of CSS classes to apply to the box.
+	 *
+	 * @return array
+	 */
+	public function get_classes(): array {
+		$supported_types = ProductSyncer::get_supported_product_types();
+
+		return array_map(
+			function ( string $product_type ) {
+				return "show_if_{$product_type}";
+			},
+			$supported_types
+		);
+	}
+
+	/**
 	 * Returns an array of variables to be used in the view.
 	 *
 	 * @param WP_Post $post The WordPress post object the box is loaded for.
@@ -94,7 +111,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 */
 	protected function get_view_context( WP_Post $post, array $args ): array {
 		$product_id = $post->ID;
-		$product    = wc_get_product( $product_id );
+		$product    = $this->product_helper->get_wc_product( $product_id );
 
 		return [
 			'product_id'  => $product_id,
@@ -124,13 +141,11 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			return;
 		}
 
-		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product ) {
-			$visibility = empty( $_POST['visibility'] ) ?
-				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
-				ChannelVisibility::cast( sanitize_key( $_POST['visibility'] ) );
-			$this->meta_handler->update_visibility( $product, $visibility );
-		}
+		$product    = $this->product_helper->get_wc_product( $product_id );
+		$visibility = empty( $_POST['visibility'] ) ?
+			ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
+			ChannelVisibility::cast( sanitize_key( $_POST['visibility'] ) );
+		$this->meta_handler->update_visibility( $product, $visibility );
 		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }
