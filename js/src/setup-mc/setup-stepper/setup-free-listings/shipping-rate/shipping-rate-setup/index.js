@@ -43,7 +43,7 @@ const ShippingRateSetup = ( props ) => {
 	if ( countriesPriceArray.length === 0 ) {
 		countriesPriceArray.push( {
 			countries: selectedCountryCodes,
-			price: '',
+			price: null,
 			currency: currencyCode,
 		} );
 	}

@@ -3,9 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 
-use Automattic\WooCommerce\Admin\Features\Features;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\WooAdminNavigationTrait;
 
 /**
  * Class Reports
@@ -13,6 +13,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports
  */
 class Reports implements Service, Registerable {
+
+	use WooAdminNavigationTrait;
 
 	/**
 	 * Register a service.
@@ -23,7 +25,7 @@ class Reports implements Service, Registerable {
 			function() {
 				if (
 					apply_filters( 'gla_enable_reports', true ) &&
-					Features::is_enabled( 'navigation' )
+					$this->is_woo_nav_enabled()
 				) {
 					$this->register_navigation_pages();
 				}

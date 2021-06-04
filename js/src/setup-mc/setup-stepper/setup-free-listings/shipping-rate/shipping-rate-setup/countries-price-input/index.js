@@ -15,21 +15,13 @@ import CountryNames from '.~/components/free-listings/configure-product-listings
 import './index.scss';
 
 const CountriesPriceInput = ( props ) => {
-	const { value, onChange } = props;
+	const { value, onBlur } = props;
 	const { countries, currency, price } = value;
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
 	if ( ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
-
-	const handleChange = ( v ) => {
-		onChange( {
-			countries,
-			currency,
-			price: v,
-		} );
-	};
 
 	return (
 		<div className="gla-countries-price-input">
@@ -59,7 +51,7 @@ const CountriesPriceInput = ( props ) => {
 				}
 				suffix={ currency }
 				value={ price }
-				onChange={ handleChange }
+				onBlur={ onBlur }
 			/>
 		</div>
 	);

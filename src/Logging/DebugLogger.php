@@ -40,6 +40,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 		if ( function_exists( 'wc_get_logger' ) ) {
 			$this->logger = wc_get_logger();
 
+			add_action( 'gla_log_errors', [ $this, 'log_errors' ], 10, 3 );
 			add_action( 'gla_debug_message', [ $this, 'log_message' ], 10, 2 );
 			add_action( 'gla_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_error', [ $this, 'log_error' ], 10, 2 );
@@ -49,6 +50,24 @@ class DebugLogger implements Service, Registerable, Conditional {
 			add_action( 'gla_guzzle_client_exception', [ $this, 'log_exception' ], 10, 2 );
 			add_action( 'gla_guzzle_invalid_response', [ $this, 'log_response' ], 10, 2 );
 		}
+	}
+
+	/**
+	 * Log a list of error messages.
+	 *
+	 * @param string $message
+	 * @param array  $errors
+	 * @param string $method
+	 */
+	public function log_errors( string $message, array $errors, string $method ): void {
+		$this->log(
+			sprintf(
+				'%s %s',
+				$message,
+				wp_json_encode( $errors, JSON_PRETTY_PRINT )
+			),
+			$method
+		);
 	}
 
 	/**

@@ -45,7 +45,7 @@ export default function ShippingCountriesForm( {
 	if ( countriesTimeArray.length === 0 ) {
 		countriesTimeArray.push( {
 			countries: selectedCountryCodes,
-			time: '',
+			time: null,
 		} );
 	}
 
