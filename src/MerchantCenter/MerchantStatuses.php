@@ -54,6 +54,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public const TYPE_PRODUCT = 'product';
 
 	/**
+	 * Issue severity levels.
+	 */
+	public const SEVERITY_WARNING = 'warning';
+	public const SEVERITY_ERROR   = 'error';
+
+	/**
 	 * @var DateTime $current_time For cache age operations.
 	 */
 	protected $current_time;
@@ -201,13 +207,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 
 		// Ensure account issues are shown first.
-		$issue_query->set_order( 'product_id' );
+		$issue_query->set_order( 'type' );
+		$issue_query->set_order( 'product' );
 		$issue_query->set_order( 'issue' );
 
 		// Filter by type if valid.
 		if ( in_array( $type, $this->get_valid_issue_types(), true ) ) {
-			$compare = self::TYPE_ACCOUNT === $type ? '=' : '>';
-			$issue_query->where( 'product_id', 0, $compare );
+			$issue_query->where( 'type', $type );
 		} elseif ( null !== $type ) {
 			throw InvalidValue::not_in_allowed_list( 'type filter', $this->get_valid_issue_types() );
 		}
@@ -221,13 +227,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$issues = [];
 		foreach ( $issue_query->get_results() as $row ) {
 			$issue = [
-				'type'       => $row['product_id'] ? self::TYPE_PRODUCT : self::TYPE_ACCOUNT,
+				'type'       => $row['type'],
 				'product_id' => intval( $row['product_id'] ),
 				'product'    => $row['product'],
 				'issue'      => $row['issue'],
 				'code'       => $row['code'],
 				'action'     => $row['action'],
 				'action_url' => $row['action_url'],
+				'severity'   => $this->get_issue_severity( $row ),
 			];
 			if ( $issue['product_id'] ) {
 				$issue['applicable_countries'] = json_decode( $row['applicable_countries'], true );
@@ -299,8 +306,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @throws Exception If the account state can't be retrieved from Google.
 	 */
 	protected function refresh_account_issues(): void {
+		/** @var Merchant $merchant */
+		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
-		foreach ( $this->container->get( Merchant::class )->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
+		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [
 				'product_id' => 0,
 				'product'    => __( 'All products', 'google-listings-and-ads' ),
@@ -308,11 +318,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'issue'      => $issue->getTitle(),
 				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
 				'action_url' => $issue->getDocumentation(),
-				'created_at' => $this->current_time->format( 'Y-m-d H:i:s' ),
+				'created_at' => $created_at,
+				'type'       => self::TYPE_ACCOUNT,
+				'severity'   => $issue->getSeverity(),
 			];
 		}
 
-		$this->container->get( MerchantIssueQuery::class )->update_or_insert( $account_issues );
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issue_query->update_or_insert( $account_issues );
 	}
 
 
@@ -336,8 +350,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			$product_issue_template = [
-				'product'    => $this->product_data_lookup[ $wc_product_id ]['name'],
-				'product_id' => $wc_product_id,
+				'product'              => $this->product_data_lookup[ $wc_product_id ]['name'],
+				'product_id'           => $wc_product_id,
+				'created_at'           => $created_at,
+				'applicable_countries' => [],
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
@@ -351,12 +367,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				);
 
 				$product_issues[ $hash_key ] = $product_issue_template + [
-					'code'                 => $item_level_issue->getCode(),
-					'issue'                => $item_level_issue->getDescription(),
-					'action'               => $item_level_issue->getDetail(),
-					'action_url'           => $item_level_issue->getDocumentation(),
-					'applicable_countries' => [],
-					'created_at'           => $created_at,
+					'code'       => $item_level_issue->getCode(),
+					'issue'      => $item_level_issue->getDescription(),
+					'action'     => $item_level_issue->getDetail(),
+					'action_url' => $item_level_issue->getDocumentation(),
+					'severity'   => $item_level_issue->getServability(),
 				];
 			}
 		}
@@ -380,7 +395,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$product_issues
 		);
 
-		$this->container->get( MerchantIssueQuery::class )->update_or_insert( array_values( $product_issues ) );
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issue_query->update_or_insert( array_values( $product_issues ) );
 	}
 
 	/**
@@ -411,10 +428,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					'product'              => $p->get_name(),
 					'product_id'           => $p->get_id(),
 					'code'                 => $issue_parts['code'],
+					'severity'             => self::SEVERITY_ERROR,
 					'issue'                => $issue_parts['issue'],
 					'action'               => __( 'Update this attribute in your product data', 'google-listings-and-ads' ),
 					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
 					'applicable_countries' => '["all"]',
+					'source'               => 'pre-sync',
 					'created_at'           => $created_at,
 				];
 			}
@@ -601,5 +620,27 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			'code'  => 'presync_error_' . $matches[1],
 			'issue' => "{$matches[2]} [{$matches[1]}]",
 		];
+	}
+
+	/**
+	 * Return a standardized Merchant Issue severity value.
+	 *
+	 * @param array $row
+	 *
+	 * @return string
+	 */
+	protected function get_issue_severity( array $row ): string {
+		$is_warning = in_array(
+			$row['severity'],
+			[
+				'warning',
+				'suggestion',
+				'demoted',
+				'unaffected',
+			],
+			true
+		);
+
+		return $is_warning ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
 	}
 }

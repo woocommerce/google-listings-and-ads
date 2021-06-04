@@ -41,6 +41,13 @@ class IssuesController extends BaseOptionsController {
 		parent::__construct( $server );
 		$this->merchant_statuses = $merchant_statuses;
 		$this->product_helper    = $product_helper;
+
+		add_filter(
+			'woocommerce_gla_merchant_issue_override',
+			function( $issue ) {
+				return $this->maybe_override_issue_values( $issue );
+			}
+		);
 	}
 
 	/**
@@ -77,6 +84,8 @@ class IssuesController extends BaseOptionsController {
 
 			// Replace variation IDs with parent ID (for Edit links).
 			foreach ( $results['issues'] as &$issue ) {
+				$issue = apply_filters( 'woocommerce_gla_merchant_issue_override', $issue );
+
 				if ( empty( $issue['product_id'] ) ) {
 					continue;
 				}
@@ -146,6 +155,11 @@ class IssuesController extends BaseOptionsController {
 							'description' => __( 'Documentation URL for issue and/or action.', 'google-listings-and-ads' ),
 							'context'     => [ 'view' ],
 						],
+						'severity'             => [
+							'type'        => 'string',
+							'description' => __( 'Severity level of the issue: warning or error.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
+						],
 						'applicable_countries' => [
 							'type'        => 'array',
 							'description' => __( 'Country codes of the product audience.', 'google-listings-and-ads' ),
@@ -205,5 +219,25 @@ class IssuesController extends BaseOptionsController {
 	 */
 	protected function get_schema_title(): string {
 		return 'merchant_issues';
+	}
+
+
+	/**
+	 * In very rare instances, issue values need to be overridden manually.
+	 *
+	 * @param array $issue
+	 *
+	 * @return array The original issue with any possibly overridden values.
+	 */
+	protected function maybe_override_issue_values( array $issue ): array {
+		$is_account_issue = MerchantStatuses::TYPE_ACCOUNT === $issue['type'];
+		if ( $is_account_issue && "Account isn't eligible for enhanced free listings" === $issue['issue'] ) {
+			$issue['issue']      = 'Show products on additional surfaces across Google through enhanced free listings';
+			$issue['severity']   = MerchantStatuses::SEVERITY_WARNING;
+			$issue['action']     = 'Read about enhanced free listings';
+			$issue['action_url'] = 'https://support.google.com/merchants/answer/9199328?hl=en';
+		}
+
+		return $issue;
 	}
 }
