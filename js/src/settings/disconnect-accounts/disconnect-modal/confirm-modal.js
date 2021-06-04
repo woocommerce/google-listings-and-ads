@@ -57,11 +57,11 @@ const textDict = {
 				'google-listings-and-ads'
 			),
 			__(
-				'Any paid campaigns created by this WooCommerce extension will be paused.',
+				'Any ongoing paid campaigns will continue to run. They can be managed, edited, or deleted manually from Google Ads (ads.google.com).',
 				'google-listings-and-ads'
 			),
 			__(
-				'Configurations for Google Ads created through WooCommerce may also be lost. This cannot be undone.',
+				'Some configurations for Google Ads created through WooCommerce may be lost. This cannot be undone.',
 				'google-listings-and-ads'
 			),
 		],
