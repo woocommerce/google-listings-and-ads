@@ -18,6 +18,9 @@
 	}
 	.app-radio-content-control__content {
 		grid-column: text-start;
+		&:empty {
+			display: none;
+		}
 	}
 }
 
