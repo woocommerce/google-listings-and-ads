@@ -157,12 +157,6 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 			);
 		} else {
 			$this->product_helper->mark_as_unsynced( $product );
-
-			do_action(
-				'gla_debug_message',
-				sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
-				__METHOD__
-			);
 		}
 	}
 
