@@ -71,6 +71,15 @@ abstract class AbstractMetaBox implements MetaBoxInterface {
 	}
 
 	/**
+	 * Returns an array of CSS classes to apply to the box.
+	 *
+	 * @return array
+	 */
+	public function get_classes(): array {
+		return [];
+	}
+
+	/**
 	 * Function that fills the box with the desired content.
 	 *
 	 * The function should echo its output.

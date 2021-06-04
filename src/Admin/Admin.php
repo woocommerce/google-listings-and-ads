@@ -189,6 +189,13 @@ class Admin implements Service, Registerable, Conditional {
 	 * @param MetaBoxInterface $meta_box
 	 */
 	public function add_meta_box( MetaBoxInterface $meta_box ) {
+		add_filter(
+			"postbox_classes_{$meta_box->get_screen()}_{$meta_box->get_id()}",
+			function ( array $classes ) use ( $meta_box ) {
+				return array_merge( $classes, $meta_box->get_classes() );
+			}
+		);
+
 		add_meta_box(
 			$meta_box->get_id(),
 			$meta_box->get_title(),
