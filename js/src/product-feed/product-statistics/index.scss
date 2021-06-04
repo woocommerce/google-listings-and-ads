@@ -22,6 +22,19 @@
 	.components-card__footer {
 		flex-direction: column;
 
+		@media (max-width: $break-large) {
+			.components-flex {
+				flex-direction: column;
+				align-items: normal;
+				margin: $grid-unit-15 0;
+			}
+
+			.components-flex__item:not(:first-child) {
+				margin-top: $grid-unit-10;
+				margin-left: $grid-unit-20;
+			}
+		}
+
 		.components-flex + .components-flex {
 			margin-top: $grid-unit-10;
 		}
