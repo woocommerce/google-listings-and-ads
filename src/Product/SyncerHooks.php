@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WC_Product;
 use WC_Product_Variable;
 
@@ -26,6 +27,7 @@ defined( 'ABSPATH' ) || exit;
 class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface {
 
 	use MerchantCenterAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * Array of booleans mapped to product IDs indicating that they have been already
@@ -103,6 +105,8 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 		// when a product is added / updated, schedule a update job.
 		add_action( 'woocommerce_new_product', $update, 90 );
 		add_action( 'woocommerce_update_product', $update, 90 );
+		add_action( 'woocommerce_new_product_variation', $update, 90 );
+		add_action( 'woocommerce_update_product_variation', $update, 90 );
 
 		// if we don't attach to these we miss product gallery updates.
 		add_action( 'woocommerce_process_product_meta', $update, 90, 2 );
@@ -110,11 +114,23 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 		// when a product is trashed or removed, schedule a delete job.
 		add_action( 'wp_trash_post', $pre_delete, 90 );
 		add_action( 'before_delete_post', $pre_delete, 90 );
+		add_action( 'woocommerce_before_delete_product_variation', $pre_delete, 90 );
 		add_action( 'trashed_post', $delete, 90 );
 		add_action( 'deleted_post', $delete, 90 );
+		add_action( 'woocommerce_delete_product_variation', $delete, 90 );
+		add_action( 'woocommerce_trash_product_variation', $delete, 90 );
 
 		// when a product is restored from the trash, schedule a update job.
 		add_action( 'untrashed_post', $update, 90 );
+
+		// exclude the sync meta data when duplicating the product
+		add_action(
+			'woocommerce_duplicate_product_exclude_meta',
+			function ( array $exclude_meta ) {
+				return $this->get_duplicated_product_excluded_meta( $exclude_meta );
+			},
+			90
+		);
 	}
 
 	/**
@@ -127,8 +143,18 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	protected function handle_update_product( int $product_id ) {
 		$product = wc_get_product( $product_id );
 
-		// Bail if it's not a WooCommerce product.
+		// Bail if:
+		// - It's not a WooCommerce product.
+		// - An event is already scheduled for this product in the current request
 		if ( ! $product instanceof WC_Product || $this->already_scheduled( $product_id ) ) {
+			return;
+		}
+
+		// If it's a variable product we handle each variation separately
+		if ( $product instanceof WC_Product_Variable ) {
+			foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
+				$this->handle_update_product( $variation->get_id() );
+			}
 			return;
 		}
 
@@ -161,8 +187,11 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	 */
 	protected function handle_delete_product( int $product_id ) {
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
-			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get() ] );
-			$this->set_already_scheduled( $product_id );
+			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
+			if ( ! empty( $product_id_map ) ) {
+				$this->delete_products_job->start( [ $product_id_map ] );
+				$this->set_already_scheduled( $product_id );
+			}
 		}
 	}
 
@@ -173,9 +202,28 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
 		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product && $this->product_helper->is_product_synced( $product ) ) {
+		if ( $product instanceof WC_Product && ! $product instanceof WC_Product_Variable && $this->product_helper->is_product_synced( $product ) ) {
 			$this->delete_requests_map[ $product_id ] = $this->batch_helper->generate_delete_request_entries( [ $product ] );
 		}
+	}
+
+	/**
+	 * Return the list of metadata keys to be excluded when duplicating a product.
+	 *
+	 * @param array $exclude_meta The keys to exclude from the duplicate.
+	 *
+	 * @return array
+	 */
+	protected function get_duplicated_product_excluded_meta( array $exclude_meta ): array {
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNCED_AT );
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_FAILED_SYNC_ATTEMPTS );
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_FAILED_AT );
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_SYNC_STATUS );
+		$exclude_meta[] = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
+
+		return $exclude_meta;
 	}
 
 	/**
