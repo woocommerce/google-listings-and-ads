@@ -277,9 +277,16 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return bool
 	 */
 	public function is_sync_ready( WC_Product $product ): bool {
+		$product_status = $product->get_status();
+		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
+			// Check the post status of the parent product if it's a variation
+			$parent         = $this->get_wc_product( $product->get_parent_id() );
+			$product_status = $parent->get_status();
+		}
+
 		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_visibility( $product ) ) &&
 			   ( in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) &&
-			   ( 'publish' === $product->get_status() );
+			   ( 'publish' === $product_status );
 	}
 
 	/**
