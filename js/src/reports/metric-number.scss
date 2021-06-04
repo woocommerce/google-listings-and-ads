@@ -2,6 +2,10 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
+
+	.components-tooltip .components-popover__content {
+		text-align: left;
+	}
 }
 
 $icon-color: #949494;
