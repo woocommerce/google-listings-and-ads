@@ -173,8 +173,8 @@ class ProductRepository implements Service {
 		// skip products that have recently failed to sync.
 		$results = [];
 		foreach ( $products as $product ) {
-			$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product->get_id() );
-			$failed_at       = $this->meta_handler->get_sync_failed_at( $product->get_id() );
+			$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product );
+			$failed_at       = $this->meta_handler->get_sync_failed_at( $product );
 
 			// if it has failed less times than the specified threshold OR if syncing it hasn't failed within the specified window
 			if (

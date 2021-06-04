@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -18,30 +17,30 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  *
- * @method update_synced_at( int $product_id, $value )
- * @method delete_synced_at( int $product_id )
- * @method get_synced_at( int $product_id ): int
- * @method update_google_ids( int $product_id, array $value )
- * @method delete_google_ids( int $product_id )
- * @method get_google_ids( int $product_id ): array
- * @method update_visibility( int $product_id, $value )
- * @method delete_visibility( int $product_id )
- * @method get_visibility( int $product_id ): string
- * @method update_errors( int $product_id, array $value )
- * @method delete_errors( int $product_id )
- * @method get_errors( int $product_id ): array
- * @method update_failed_sync_attempts( int $product_id, int $value )
- * @method delete_failed_sync_attempts( int $product_id )
- * @method get_failed_sync_attempts( int $product_id ): int
- * @method update_sync_failed_at( int $product_id, int $value )
- * @method delete_sync_failed_at( int $product_id )
- * @method get_sync_failed_at( int $product_id ): int
- * @method update_sync_status( int $product_id, string $value )
- * @method delete_sync_status( int $product_id )
- * @method get_sync_status( int $product_id ): string
- * @method update_mc_status( int $product_id, string $value )
- * @method delete_mc_status( int $product_id )
- * @method get_mc_status( int $product_id ): string
+ * @method update_synced_at( WC_Product $product, $value )
+ * @method delete_synced_at( WC_Product $product )
+ * @method get_synced_at( WC_Product $product ): int
+ * @method update_google_ids( WC_Product $product, array $value )
+ * @method delete_google_ids( WC_Product $product )
+ * @method get_google_ids( WC_Product $product ): array
+ * @method update_visibility( WC_Product $product, $value )
+ * @method delete_visibility( WC_Product $product )
+ * @method get_visibility( WC_Product $product ): string
+ * @method update_errors( WC_Product $product, array $value )
+ * @method delete_errors( WC_Product $product )
+ * @method get_errors( WC_Product $product ): array
+ * @method update_failed_sync_attempts( WC_Product $product, int $value )
+ * @method delete_failed_sync_attempts( WC_Product $product )
+ * @method get_failed_sync_attempts( WC_Product $product ): int
+ * @method update_sync_failed_at( WC_Product $product, int $value )
+ * @method delete_sync_failed_at( WC_Product $product )
+ * @method get_sync_failed_at( WC_Product $product ): int
+ * @method update_sync_status( WC_Product $product, string $value )
+ * @method delete_sync_status( WC_Product $product )
+ * @method get_sync_status( WC_Product $product ): string
+ * @method update_mc_status( WC_Product $product, string $value )
+ * @method delete_mc_status( WC_Product $product )
+ * @method get_mc_status( WC_Product $product ): string
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -76,14 +75,14 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @throws BadMethodCallException If the method that's called doesn't exist.
 	 * @throws InvalidMeta            If the meta key is invalid.
 	 */
-	public function __call( $name, $arguments ) {
+	public function __call( string $name, $arguments ) {
 		$found_matches = preg_match( '/^([a-z]+)_([\w\d]+)$/i', $name, $matches );
 
 		if ( ! $found_matches ) {
 			throw new BadMethodCallException( sprintf( 'The method %s does not exist in class ProductMetaHandler', $name ) );
 		}
 
-		list( $function_name, $method, $key ) = $matches;
+		[ $function_name, $method, $key ] = $matches;
 
 		// validate the method
 		if ( ! in_array( $method, [ 'update', 'delete', 'get' ], true ) ) {
@@ -101,15 +100,14 @@ class ProductMetaHandler implements Service, Registerable {
 	}
 
 	/**
-	 * @param int    $product_id
-	 * @param string $key
-	 * @param mixed  $value
+	 * @param WC_Product $product
+	 * @param string     $key
+	 * @param mixed      $value
 	 *
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
-	public function update( int $product_id, string $key, $value ) {
+	public function update( WC_Product $product, string $key, $value ) {
 		self::validate_meta_key( $key );
-		self::validate_product_id( $product_id );
 
 		if ( isset( self::TYPES[ $key ] ) ) {
 			if ( in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
@@ -119,35 +117,33 @@ class ProductMetaHandler implements Service, Registerable {
 			}
 		}
 
-		update_post_meta( $product_id, $this->prefix_meta_key( $key ), $value );
+		update_post_meta( $product->get_id(), $this->prefix_meta_key( $key ), $value );
 	}
 
 	/**
-	 * @param int    $product_id
-	 * @param string $key
+	 * @param WC_Product $product
+	 * @param string     $key
 	 *
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
-	public function delete( int $product_id, string $key ) {
+	public function delete( WC_Product $product, string $key ) {
 		self::validate_meta_key( $key );
-		self::validate_product_id( $product_id );
 
-		delete_post_meta( $product_id, $this->prefix_meta_key( $key ) );
+		delete_post_meta( $product->get_id(), $this->prefix_meta_key( $key ) );
 	}
 
 	/**
-	 * @param int    $product_id
-	 * @param string $key
+	 * @param WC_Product $product
+	 * @param string     $key
 	 *
 	 * @return mixed The value
 	 *
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
-	public function get( int $product_id, string $key ) {
+	public function get( WC_Product $product, string $key ) {
 		self::validate_meta_key( $key );
-		self::validate_product_id( $product_id );
 
-		$value = get_post_meta( $product_id, $this->prefix_meta_key( $key ), true );
+		$value = get_post_meta( $product->get_id(), $this->prefix_meta_key( $key ), true );
 
 		if ( isset( self::TYPES[ $key ] ) && in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
 			$value = wc_string_to_bool( $value );
@@ -174,17 +170,6 @@ class ProductMetaHandler implements Service, Registerable {
 	 */
 	public static function is_meta_key_valid( string $key ): bool {
 		return isset( self::TYPES[ $key ] );
-	}
-
-	/**
-	 * @param int $product_id
-	 *
-	 * @throws InvalidArgument If the provided wc_product_id is not a valid WooCommerce product ID.
-	 */
-	protected static function validate_product_id( int $product_id ) {
-		if ( ! wc_get_product( $product_id ) instanceof WC_Product ) {
-			throw new InvalidArgument( 'Invalid WooCommerce product ID provided.' );
-		}
 	}
 
 	/**
