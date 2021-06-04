@@ -7,6 +7,7 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import './index.scss';
+import useWPBodyMarginOffsetEffect from './useWPBodyMarginOffsetEffect';
 
 /**
  * Make the wrapped component display in full container.
@@ -37,29 +38,7 @@ export default function FullContainer( props ) {
 		};
 	}, [] );
 
-	useEffect( () => {
-		const wpBodyContent = document.querySelector( '#wpbody-content' );
-		if ( ! wpBodyContent ) {
-			return;
-		}
-
-		const timeoutId = setTimeout( () => {
-			const wpBody = document.querySelector( '#wpbody' );
-			const marginTop =
-				wpBody && wpBody.style.marginTop
-					? `-${ wpBody.style.marginTop }`
-					: null;
-
-			wpBodyContent.style.marginTop = marginTop;
-		}, 210 );
-
-		return () => {
-			clearTimeout( timeoutId );
-			if ( wpBodyContent ) {
-				wpBodyContent.style.marginTop = null;
-			}
-		};
-	}, [] );
+	useWPBodyMarginOffsetEffect();
 
 	return children;
 }
