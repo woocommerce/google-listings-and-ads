@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use JsonSerializable;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -12,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-class BatchInvalidProductEntry {
+class BatchInvalidProductEntry implements JsonSerializable {
 
 	/**
 	 * @var int WooCommerce product ID.
