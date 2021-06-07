@@ -105,6 +105,10 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 
+* `mc_url_switch`
+  * `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
+  * `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
+
 * `modal_closed` - A modal is closed
   * `context`: indicate which modal is closed
   * `action`: indicate the modal is closed by what action (e.g. `maybe-later`|`dismiss` | `create-another-campaign`)
@@ -137,6 +141,14 @@ All event names are prefixed by `wcadmin_gla_`.
 * `setup_mc_faq` - Clicking on faq items to collapse or expand it in the Setup Merchant Center page
   * `id`: (faq identifier)
   * `action`: (`expand`|`collapse`)
+
+* `gla_site_claim` event
+  * `action` property is `overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required
+  * `action` property is `success`: URL has been successfully set or overwritten.
+  * `action` property is `failure`: 
+    *  `details` property is `independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA
+    * `details` property is `google_proxy`: claim failed using the user creds (in the `Merchant` class)
+    * `details` property is `google_manager`: claimed failed using MCA creds (paradoxically in the `Proxy` class)
 
 * `site_verify_failure` - When a site verification with Google fails
   * `step` : the step of the process that failed (token, meta-tag, unknown)
