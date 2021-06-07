@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Event;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
