@@ -25,12 +25,19 @@ class ProductRepository implements Service {
 	protected $meta_handler;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * ProductRepository constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
+	 * @param ProductHelper      $product_helper
 	 */
-	public function __construct( ProductMetaHandler $meta_handler ) {
-		$this->meta_handler = $meta_handler;
+	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper ) {
+		$this->meta_handler   = $meta_handler;
+		$this->product_helper = $product_helper;
 	}
 
 	/**
@@ -164,31 +171,28 @@ class ProductRepository implements Service {
 	 */
 	protected function filter_sync_ready_products( array $products, bool $return_ids = false ): array {
 		/**
-		 * Filters the list of products ready to be synced.
+		 * Filters the list of products ready to be synced (before applying filters to check failures and sync-ready status).
 		 *
 		 * @param WC_Product[] $products Sync-ready WooCommerce products
 		 */
-		$products = apply_filters( 'gla_get_sync_ready_products', $products );
+		$products = apply_filters( 'gla_get_sync_ready_products_pre_filter', $products );
 
-		// skip products that have recently failed to sync.
 		$results = [];
 		foreach ( $products as $product ) {
-			$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product );
-			$failed_at       = $this->meta_handler->get_sync_failed_at( $product );
-
-			// if it has failed less times than the specified threshold OR if syncing it hasn't failed within the specified window
-			if (
-				empty( $failed_attempts ) ||
-				empty( $failed_at ) ||
-				$failed_attempts <= ProductSyncer::FAILURE_THRESHOLD ||
-				$failed_at <= strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) )
-			) {
-
-				$results[] = $return_ids ? $product->get_id() : $product;
+			// skip if it's not sync ready or if syncing has recently failed
+			if ( ! $this->product_helper->is_sync_ready( $product ) || $this->product_helper->is_sync_failed_recently( $product ) ) {
+				continue;
 			}
+
+			$results[] = $return_ids ? $product->get_id() : $product;
 		}
 
-		return $results;
+		/**
+		 * Filters the list of products ready to be synced (after applying filters to check failures and sync-ready status).
+		 *
+		 * @param WC_Product[] $results Sync-ready WooCommerce products
+		 */
+		return apply_filters( 'gla_get_sync_ready_products_post_filter', $results );
 	}
 
 	/**

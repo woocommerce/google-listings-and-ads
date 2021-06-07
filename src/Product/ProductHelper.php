@@ -290,6 +290,27 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	}
 
 	/**
+	 * Whether the sync has failed repeatedly for the product within the given timeframe.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return bool
+	 *
+	 * @see ProductSyncer::FAILURE_THRESHOLD        The number of failed attempts allowed per timeframe
+	 * @see ProductSyncer::FAILURE_THRESHOLD_WINDOW The specified timeframe
+	 */
+	public function is_sync_failed_recently( WC_Product $product ): bool {
+		$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product );
+		$failed_at       = $this->meta_handler->get_sync_failed_at( $product );
+
+		// if it has failed more times than the specified threshold AND if syncing it has failed within the specified window
+		return ! empty( $failed_attempts ) &&
+			   ! empty( $failed_at ) &&
+			   $failed_attempts > ProductSyncer::FAILURE_THRESHOLD &&
+			   $failed_at > strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) );
+	}
+
+	/**
 	 * @param WC_Product $wc_product
 	 *
 	 * @return string

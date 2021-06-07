@@ -86,7 +86,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 
 		// filter unsupported bundle products
 		add_filter(
-			'gla_get_sync_ready_products',
+			'gla_get_sync_ready_products_pre_filter',
 			function ( array $products ) {
 				return $this->get_sync_ready_bundle_products( $products );
 			}
