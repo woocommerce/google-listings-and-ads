@@ -33,4 +33,21 @@ class ExtensionRequirementException extends RuntimeException implements GoogleLi
 			)
 		);
 	}
+
+	/**
+	 * Create a new instance of the exception when an incompatible plugin/extension is activated.
+	 *
+	 * @param string $plugin_name The name of the incompatible plugin.
+	 *
+	 * @return static
+	 */
+	public static function incompatible_plugin( string $plugin_name ): ExtensionRequirementException {
+		return new static(
+			sprintf(
+				/* translators: 1 the incompatible plugin name */
+				__( 'Google Listings and Ads is incompatible with %1$s.', 'google-listings-and-ads' ),
+				$plugin_name
+			)
+		);
+	}
 }
