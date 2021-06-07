@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { useMemo } from '@wordpress/element';
 import { format as formatDate } from '@wordpress/date';
 import { Flex, FlexItem } from '@wordpress/components';
 import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
@@ -106,9 +105,7 @@ function FeedStatus() {
 
 function SyncStatus() {
 	const { data } = useAppSelectDispatch( 'getMCProductStatistics' );
-	const { Icon, highlight, status } = useMemo( () => {
-		return getSyncResult( data );
-	}, [ data ] );
+	const { Icon, highlight, status } = getSyncResult( data );
 
 	return (
 		<Flex justify="normal" gap={ 1 }>
