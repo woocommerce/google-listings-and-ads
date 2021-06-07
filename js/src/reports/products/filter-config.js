@@ -31,6 +31,7 @@ const productsFilterConfig = {
 		'paged',
 		'per_page',
 		'selectedMetric',
+		'reportKey',
 	],
 	param: 'filter',
 	showFilters: () => true,
@@ -109,6 +110,7 @@ const variationsConfig = {
 		'paged',
 		'per_page',
 		'selectedMetric',
+		'reportKey',
 	],
 	param: 'filter-variations',
 	filters: [
@@ -183,6 +185,7 @@ const reportSourceConfig = {
 		'order',
 		'chartType',
 		'selectedMetric',
+		'reportKey',
 	],
 	defaultValue: REPORT_SOURCE_DEFAULT,
 	filters: [
