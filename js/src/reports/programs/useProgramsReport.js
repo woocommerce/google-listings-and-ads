@@ -15,7 +15,11 @@ import {
 	addBaseToPerformance,
 } from '../utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
-import { FREE_LISTINGS_PROGRAM_ID, REPORT_PROGRAM_PARAM } from '.~/constants';
+import {
+	FREE_LISTINGS_PROGRAM_ID,
+	REPORT_PROGRAM_PARAM,
+	glaData,
+} from '.~/constants';
 
 const category = 'programs';
 const emptyData = {
@@ -167,16 +171,22 @@ function getReports( getReport, query, dateReference ) {
 		queriedPrograms.length === 0 ||
 		queriedPrograms.some( ( id ) => id !== FREE_LISTINGS_PROGRAM_ID );
 
+	// TODO: ideally adsSetupComplete should be retrieved from API endpoint
+	// and then put into wp-data.
+	// With that in place, then we don't need to depend on glaData
+	// which requires force reload using window.location.href.
+	const shouldFetchPaid = containsPaid && glaData.adsSetupComplete;
+
 	const result = {
 		free:
 			( containsFree &&
 				getReport( category, 'free', query, dateReference ) ) ||
 			emptyReport,
 		paid:
-			( containsPaid &&
+			( shouldFetchPaid &&
 				getReport( category, 'paid', query, dateReference ) ) ||
 			emptyReport,
-		expectBoth: containsFree && containsFree,
+		expectBoth: shouldFetchPaid && containsFree,
 	};
 	return result;
 }
