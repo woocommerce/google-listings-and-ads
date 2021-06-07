@@ -22,7 +22,7 @@ class WCBookingsValidator extends RequirementValidator {
 	 */
 	public function validate(): bool {
 		try {
-			$this->validate_wc_admin_active();
+			$this->validate_wc_bookings_active();
 			return true;
 		} catch ( ExtensionRequirementException $e ) {
 			$this->add_admin_notice( $e );
@@ -35,7 +35,7 @@ class WCBookingsValidator extends RequirementValidator {
 	 *
 	 * @throws ExtensionRequirementException When WooCommerce Bookings is active.
 	 */
-	protected function validate_wc_admin_active() {
+	protected function validate_wc_bookings_active() {
 		if ( class_exists( WC_Bookings::class ) ) {
 			throw ExtensionRequirementException::incompatible_plugin( 'WooCommerce Bookings' );
 		}
