@@ -304,9 +304,7 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 		$failed_at       = $this->meta_handler->get_sync_failed_at( $product );
 
 		// if it has failed more times than the specified threshold AND if syncing it has failed within the specified window
-		return ! empty( $failed_attempts ) &&
-			   ! empty( $failed_at ) &&
-			   $failed_attempts > ProductSyncer::FAILURE_THRESHOLD &&
+		return $failed_attempts > ProductSyncer::FAILURE_THRESHOLD &&
 			   $failed_at > strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) );
 	}
 
