@@ -11,10 +11,9 @@ export const subpaths = {
 	createCampaign: '/campaigns/create',
 };
 
-export const EditFreeListingsUrl = getNewPath(
-	{ subpath: subpaths.editFreeListings },
-	dashboardPath
-);
+export const getEditFreeListingsUrl = () => {
+	return getNewPath( { subpath: subpaths.editFreeListings }, dashboardPath );
+};
 
 export const getEditCampaignUrl = ( programId ) => {
 	return getNewPath(
@@ -23,7 +22,6 @@ export const getEditCampaignUrl = ( programId ) => {
 	);
 };
 
-export const createCampaignUrl = getNewPath(
-	{ subpath: subpaths.createCampaign },
-	dashboardPath
-);
+export const getCreateCampaignUrl = () => {
+	return getNewPath( { subpath: subpaths.createCampaign }, dashboardPath );
+};

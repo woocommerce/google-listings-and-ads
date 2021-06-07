@@ -10,7 +10,7 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
 import AppButton from '.~/components/app-button';
 import { glaData } from '.~/constants';
 import recordEvent from '.~/utils/recordEvent';
-import { createCampaignUrl } from '.~/utils/urls';
+import { getCreateCampaignUrl } from '.~/utils/urls';
 
 /**
  * Renders an AppButton with the text "Add Paid Campaign".
@@ -44,7 +44,7 @@ const AddPaidCampaignButton = ( props ) => {
 	const { adsSetupComplete } = glaData;
 	const url = ! adsSetupComplete
 		? getNewPath( {}, '/google/setup-ads', {} )
-		: createCampaignUrl;
+		: getCreateCampaignUrl();
 	const defaultEventProps = { context: '', href: url };
 
 	const handleClick = ( ...args ) => {

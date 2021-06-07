@@ -12,7 +12,7 @@ import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AppModal from '.~/components/app-modal';
 import recordEvent from '.~/utils/recordEvent';
 import './index.scss';
-import { EditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
+import { getEditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
 
 const EditProgramPromptModal = ( props ) => {
 	const { programId, onRequestClose } = props;
@@ -24,7 +24,7 @@ const EditProgramPromptModal = ( props ) => {
 	const handleContinueEditClick = () => {
 		const url =
 			programId === FREE_LISTINGS_PROGRAM_ID
-				? EditFreeListingsUrl
+				? getEditFreeListingsUrl()
 				: getEditCampaignUrl( programId );
 
 		getHistory().push( url );
