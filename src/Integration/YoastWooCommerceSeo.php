@@ -123,9 +123,9 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 */
 	protected function get_identifier_value( string $key, WC_Product $product ) {
 		if ( ! isset( $this->yoast_global_identifiers ) ) {
-			$product_id = $product instanceof WC_Product_Variation ? $product->get_parent_id() : $product->get_id();
+			$product = $product instanceof WC_Product_Variation ? wc_get_product( $product->get_parent_id() ) : $product;
 
-			$this->yoast_global_identifiers = get_post_meta( $product_id, 'wpseo_global_identifier_values', true );
+			$this->yoast_global_identifiers = $product->get_meta( 'wpseo_global_identifier_values', true );
 		}
 
 		return ! empty( $this->yoast_global_identifiers[ $key ] ) ? $this->yoast_global_identifiers[ $key ] : null;
