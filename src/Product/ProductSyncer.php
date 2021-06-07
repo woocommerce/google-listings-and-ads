@@ -104,6 +104,8 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 				array_walk( $updated_products, [ $this->batch_helper, 'mark_as_synced' ] );
 				array_walk( $invalid_products, [ $this->batch_helper, 'mark_as_invalid' ] );
 			} catch ( Exception $exception ) {
+				do_action( 'gla_exception', $exception, __METHOD__ );
+
 				throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
@@ -114,6 +116,18 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 			'gla_batch_updated_products',
 			$updated_products,
 			$invalid_products
+		);
+
+		do_action(
+			'gla_debug_message',
+			sprintf(
+				"Submitted %s products:\n%s\n%s Failed:\n%s",
+				count( $updated_products ),
+				json_encode( $updated_products ),
+				count( $invalid_products ),
+				json_encode( $invalid_products )
+			),
+			__METHOD__
 		);
 
 		return new BatchProductResponse( $updated_products, $invalid_products );
@@ -167,6 +181,8 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 				array_walk( $deleted_products, [ $this->batch_helper, 'mark_as_unsynced' ] );
 			} catch ( Exception $exception ) {
+				do_action( 'gla_exception', $exception, __METHOD__ );
+
 				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
@@ -177,6 +193,18 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 			'gla_batch_deleted_products',
 			$deleted_products,
 			$invalid_products
+		);
+
+		do_action(
+			'gla_debug_message',
+			sprintf(
+				"Deleted %s products:\n%s\n%s Failed:\n%s",
+				count( $deleted_products ),
+				json_encode( $deleted_products ),
+				count( $invalid_products ),
+				json_encode( $invalid_products )
+			),
+			__METHOD__
 		);
 
 		return new BatchProductResponse( $deleted_products, $invalid_products );
@@ -198,6 +226,12 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 		$error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
 		if ( ! empty( $error_products ) && apply_filters( 'gla_products_update_retry_on_failure', true, $invalid_products ) ) {
 			do_action( 'gla_batch_retry_update_products', $error_products );
+
+			do_action(
+				'gla_error',
+				sprintf( 'Internal API errors while submitting the following products: %s', join( ', ', $error_products ) ),
+				__METHOD__
+			);
 		}
 	}
 
@@ -216,6 +250,16 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 			// not found
 			if ( $invalid_product->has_error( GoogleProductService::NOT_FOUND_ERROR_REASON ) ) {
+				do_action(
+					'gla_error',
+					sprintf(
+						'Attempted to delete product "%s" (WooCommerce Product ID: %s) but it did not exist in Google Merchant Center, removing the synced product ID from database.',
+						$google_product_id,
+						$wc_product_id
+					),
+					__METHOD__
+				);
+
 				$this->product_helper->remove_google_id( $wc_product, $google_product_id );
 			}
 
@@ -228,6 +272,13 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 		// call an action to retry if any products with internal errors exist
 		if ( ! empty( $internal_error_ids ) && apply_filters( 'gla_products_delete_retry_on_failure', true, $invalid_products ) ) {
 			do_action( 'gla_batch_retry_delete_products', $internal_error_ids );
+
+			do_action(
+				'gla_error',
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+				sprintf( 'Internal API errors while deleting the following products: %s', print_r( $internal_error_ids, true ) ),
+				__METHOD__
+			);
 		}
 	}
 
@@ -238,6 +289,8 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 	 */
 	protected function validate_merchant_center_setup(): void {
 		if ( ! $this->merchant_center->is_setup_complete() ) {
+			do_action( 'gla_error', 'Can not sync any products before setting up Google Merchant Center.', __METHOD__ );
+
 			throw new ProductSyncerException( __( 'Google Merchant Center has not been set up correctly. Please review your configuration.', 'google-listings-and-ads' ) );
 		}
 	}

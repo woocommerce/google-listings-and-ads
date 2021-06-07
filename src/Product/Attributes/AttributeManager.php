@@ -206,6 +206,12 @@ class AttributeManager implements Service {
 	protected function validate( WC_Product $product, string $attribute_id ) {
 		$attribute_types = $this->get_attribute_types_for_product( $product );
 		if ( ! isset( $attribute_types[ $attribute_id ] ) ) {
+			do_action(
+				'gla_error',
+				sprintf( 'Attribute "%s" is not supported for a "%s" product (ID: %s).', $attribute_id, $product->get_type(), $product->get_id() ),
+				__METHOD__
+			);
+
 			throw InvalidValue::not_in_allowed_list( 'attribute_id', array_keys( $attribute_types ) );
 		}
 	}

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
+use JsonSerializable;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -12,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-class BatchInvalidProductEntry {
+class BatchInvalidProductEntry implements JsonSerializable {
 
 	/**
 	 * @var int WooCommerce product ID.
@@ -86,5 +87,23 @@ class BatchInvalidProductEntry {
 		$this->errors = $validation_errors;
 
 		return $this;
+	}
+
+	/**
+	 * @return array
+	 *
+	 * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	 */
+	public function jsonSerialize(): array {
+		$data = [
+			'woocommerce_id' => $this->get_wc_product_id(),
+			'errors'         => $this->get_errors(),
+		];
+
+		if ( null !== $this->get_google_product_id() ) {
+			$data['google_id'] = $this->get_google_product_id();
+		}
+
+		return $data;
 	}
 }
