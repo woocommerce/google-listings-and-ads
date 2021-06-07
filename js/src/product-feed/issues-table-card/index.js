@@ -29,6 +29,7 @@ import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import { ISSUE_TABLE_PER_PAGE } from '../constants';
 import './index.scss';
 
 const headers = [
@@ -59,8 +60,6 @@ const headers = [
 	{ key: 'action', label: '', required: true },
 ];
 
-const PER_PAGE = 5;
-
 const actions = (
 	<HelpPopover id="issues-to-resolve">
 		{ createInterpolateElement(
@@ -87,7 +86,7 @@ const IssuesTableCard = () => {
 		'getMCIssues',
 		{
 			page,
-			per_page: PER_PAGE,
+			per_page: ISSUE_TABLE_PER_PAGE,
 		}
 	);
 
@@ -171,7 +170,7 @@ const IssuesTableCard = () => {
 				<CardFooter justify="center">
 					<Pagination
 						page={ page }
-						perPage={ PER_PAGE }
+						perPage={ ISSUE_TABLE_PER_PAGE }
 						total={ data?.total }
 						showPagePicker={ false }
 						showPerPagePicker={ false }
