@@ -52,7 +52,7 @@ const emptyReport = {
  */
 export default function useProgramsReport() {
 	const query = useUrlQuery();
-	const { paid, free, expectBoth } = useSelect(
+	const { paid, free } = useSelect(
 		( select ) => {
 			const { getReport } = select( STORE_KEY );
 			return getReports( getReport, query, 'primary' );
@@ -62,6 +62,7 @@ export default function useProgramsReport() {
 	const loaded = paid.loaded && free.loaded;
 	// Assume paid being a superset.
 	const reportQuery = paid.reportQuery || free.reportQuery;
+	const expectedFreeFields = free.reportQuery?.fields;
 
 	// Memoize expensive aggregation of intervals, and merging of
 	const data = useMemo( () => {
@@ -84,10 +85,10 @@ export default function useProgramsReport() {
 			totals: sumToPerformance(
 				paidData.totals,
 				freeData.totals,
-				expectBoth
+				expectedFreeFields
 			),
 		};
-	}, [ loaded, paid.data, free.data, expectBoth ] );
+	}, [ loaded, paid.data, free.data, expectedFreeFields ] );
 
 	return {
 		loaded,
@@ -104,7 +105,7 @@ export default function useProgramsReport() {
  * @return {{loaded: boolean, data: PerformanceData}} Loaded flag, and eventually the fetched data.
  */
 function usePreviousTotals( query ) {
-	const { paid, free, expectBoth } = useSelect(
+	const { paid, free } = useSelect(
 		( select ) => {
 			const { getReport } = select( STORE_KEY );
 			return getReports( getReport, query, 'secondary' );
@@ -112,6 +113,7 @@ function usePreviousTotals( query ) {
 		[ query ]
 	);
 	const loaded = paid.loaded && free.loaded;
+	const expectedFreeFields = free.reportQuery?.fields;
 
 	const data = useMemo( () => {
 		const freeData = free.data;
@@ -123,8 +125,12 @@ function usePreviousTotals( query ) {
 			return emptyData.totals;
 		}
 
-		return sumToPerformance( paidData.totals, freeData.totals, expectBoth );
-	}, [ loaded, paid.data, free.data, expectBoth ] );
+		return sumToPerformance(
+			paidData.totals,
+			freeData.totals,
+			expectedFreeFields
+		);
+	}, [ loaded, paid.data, free.data, expectedFreeFields ] );
 
 	return {
 		loaded,
@@ -159,7 +165,7 @@ export function usePerformanceReport( totals ) {
  * @param  {Object} query Query parameters in the URL.
  * @param  {string} dateReference Which date range to use, 'primary' or 'secondary'.
  *
- * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema, expectBoth: boolean}} The fetched programs reports, and a flag whether both were expected..
+ * @return {{free: ProgramsReportSchema, paid: ProgramsReportSchema}} The fetched programs reports, and a flag whether both were expected..
  */
 function getReports( getReport, query, dateReference ) {
 	const queriedPrograms = getIdsFromQuery( query[ REPORT_PROGRAM_PARAM ] );
@@ -186,7 +192,6 @@ function getReports( getReport, query, dateReference ) {
 			( shouldFetchPaid &&
 				getReport( category, 'paid', query, dateReference ) ) ||
 			emptyReport,
-		expectBoth: shouldFetchPaid && containsFree,
 	};
 	return result;
 }

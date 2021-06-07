@@ -14,6 +14,7 @@ import AppTooltip from '.~/components/app-tooltip';
 import TrackableLink from '.~/components/trackable-link';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
 import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
+import { MISSING_FREE_LISTINGS_DATA } from '.~/data/utils';
 
 const numberFormatSetting = { precision: 0 };
 
@@ -52,7 +53,7 @@ const MetricNumber = ( {
 		const formatFn = isCurrency ? formatAmount : formatNumber;
 
 		return {
-			value: value === null ? unavalable : formatFn( value ),
+			value: value === undefined ? unavalable : formatFn( value ),
 			prevValue: formatFn( prevValue ),
 		};
 	}, [ isCurrency, value, prevValue, formatNumber, formatAmount ] );
@@ -62,7 +63,14 @@ const MetricNumber = ( {
 
 	// Until ~Q4 2021, metrics for all programs, may lack data for free listings.
 	// And Free Listings API may not respond with data.
-	if ( value === null ) {
+	if ( missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_METRIC ) {
+		infoText = __(
+			'This data is currently available for paid campaigns only.',
+			'google-listings-and-ads'
+		);
+	} else if (
+		missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_REQUEST
+	) {
 		infoText = (
 			<>
 				{ createInterpolateElement(
@@ -87,11 +95,6 @@ const MetricNumber = ( {
 					}
 				) }
 			</>
-		);
-	} else if ( missingFreeListingsData ) {
-		infoText = __(
-			'This data is currently available for paid campaigns only.',
-			'google-listings-and-ads'
 		);
 	}
 

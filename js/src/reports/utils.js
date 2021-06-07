@@ -1,8 +1,11 @@
 /**
  * Internal dependencies
  */
-
-import { paidFields, fieldsToPerformance } from '.~/data/utils';
+import {
+	paidFields,
+	fieldsToPerformance,
+	MISSING_FREE_LISTINGS_DATA,
+} from '.~/data/utils';
 
 /**
  * Get an array of unique IDs from a comma-separated query parameter.
@@ -90,24 +93,45 @@ export function aggregateIntervals( intervals1, intervals2 ) {
  *
  * @param {TotalsData} [paidTotals]
  * @param {TotalsData} [freeTotals]
- * @param {boolean} [expectBoth]
+ * @param {Array<string>} [expectedFreeFields]
  *
  * @return {PerformanceData} New performance object with sum of totals.
  */
-export function sumToPerformance( paidTotals, freeTotals = {}, expectBoth ) {
-	const metrics = Object.keys( paidTotals || freeTotals );
+export function sumToPerformance(
+	paidTotals,
+	freeTotals = {},
+	expectedFreeFields
+) {
+	const metrics = paidTotals ? Object.keys( paidTotals ) : expectedFreeFields;
 	paidTotals = paidTotals || {};
-	return metrics.reduce(
-		( acc, key ) => ( {
+
+	return metrics.reduce( ( acc, key ) => {
+		let missingFreeListingsData = MISSING_FREE_LISTINGS_DATA.NONE;
+		let value = paidTotals[ key ];
+
+		if ( expectedFreeFields ) {
+			if ( ! expectedFreeFields.includes( key ) ) {
+				// We do not expect free to come.
+				missingFreeListingsData = MISSING_FREE_LISTINGS_DATA.FOR_METRIC;
+			} else if ( freeTotals[ key ] === undefined ) {
+				// We expected free data to come, but there is none.
+				missingFreeListingsData =
+					MISSING_FREE_LISTINGS_DATA.FOR_REQUEST;
+			} else {
+				// There is free listings data, sum with paid one.
+				value = ( paidTotals[ key ] || 0 ) + ( freeTotals[ key ] || 0 );
+			}
+		}
+
+		return {
 			...acc,
 			[ key ]: fieldsToPerformance(
-				( paidTotals[ key ] || 0 ) + ( freeTotals[ key ] || 0 ),
+				value,
 				undefined,
-				expectBoth && freeTotals[ key ] === undefined
+				missingFreeListingsData
 			),
-		} ),
-		{}
-	);
+		};
+	}, {} );
 }
 
 /**
