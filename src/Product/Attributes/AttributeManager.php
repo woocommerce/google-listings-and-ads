@@ -64,7 +64,8 @@ class AttributeManager implements Service {
 			$value = wc_bool_to_string( $value );
 		}
 
-		update_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute::get_id() ), $value );
+		$product->update_meta_data( $this->prefix_meta_key( $attribute::get_id() ), $value );
+		$product->save_meta_data();
 	}
 
 	/**
@@ -78,13 +79,16 @@ class AttributeManager implements Service {
 	public function get( WC_Product $product, string $attribute_id ): ?AttributeInterface {
 		$this->validate( $product, $attribute_id );
 
-		$attribute_class = $this->get_attribute_types_for_product( $product )[ $attribute_id ];
-		$value           = get_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute_id ), true );
+		$value = null;
+		if ( $product->meta_exists( $this->prefix_meta_key( $attribute_id ) ) ) {
+			$value = $product->get_meta( $this->prefix_meta_key( $attribute_id ), true );
+		}
 
 		if ( null === $value || '' === $value ) {
 			return null;
 		}
 
+		$attribute_class = $this->get_attribute_types_for_product( $product )[ $attribute_id ];
 		return new $attribute_class( $value );
 	}
 
@@ -149,7 +153,8 @@ class AttributeManager implements Service {
 	public function delete( WC_Product $product, string $attribute_id ) {
 		$this->validate( $product, $attribute_id );
 
-		delete_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute_id ) );
+		$product->delete_meta_data( $this->prefix_meta_key( $attribute_id ) );
+		$product->save_meta_data();
 	}
 
 	/**
