@@ -83,11 +83,6 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
-			// Skip unpublished products.
-			if ( 'publish' !== $product->get_status() ) {
-				continue;
-			}
-
 			$id     = $product->get_id();
 			$errors = $product_helper->get_validation_errors( $product );
 
@@ -138,6 +133,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
 		$args = [
 			'type'    => $product_types,
+			'status'  => 'publish',
 			'orderby' => [ 'title' => 'ASC' ],
 		];
 
