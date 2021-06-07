@@ -117,7 +117,8 @@ class ProductMetaHandler implements Service, Registerable {
 			}
 		}
 
-		update_post_meta( $product->get_id(), $this->prefix_meta_key( $key ), $value );
+		$product->update_meta_data( $this->prefix_meta_key( $key ), $value );
+		$product->save_meta_data();
 	}
 
 	/**
@@ -129,7 +130,8 @@ class ProductMetaHandler implements Service, Registerable {
 	public function delete( WC_Product $product, string $key ) {
 		self::validate_meta_key( $key );
 
-		delete_post_meta( $product->get_id(), $this->prefix_meta_key( $key ) );
+		$product->delete_meta_data( $this->prefix_meta_key( $key ) );
+		$product->save_meta_data();
 	}
 
 	/**
@@ -143,10 +145,13 @@ class ProductMetaHandler implements Service, Registerable {
 	public function get( WC_Product $product, string $key ) {
 		self::validate_meta_key( $key );
 
-		$value = get_post_meta( $product->get_id(), $this->prefix_meta_key( $key ), true );
+		$value = null;
+		if ( $product->meta_exists( $this->prefix_meta_key( $key ) ) ) {
+			$value = $product->get_meta( $this->prefix_meta_key( $key ), true );
 
-		if ( isset( self::TYPES[ $key ] ) && in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
-			$value = wc_string_to_bool( $value );
+			if ( isset( self::TYPES[ $key ] ) && in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
+				$value = wc_string_to_bool( $value );
+			}
 		}
 
 		return $value;
