@@ -3,7 +3,7 @@
  */
 import { Link } from '@woocommerce/components';
 import { Button } from '@wordpress/components';
-import { getNewPath } from '@woocommerce/navigation';
+import { getNewPath, getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -15,14 +15,28 @@ import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
 import { glaData } from '.~/constants';
 import './index.scss';
+import { subpaths } from '.~/utils/urls';
+import EditFreeCampaign from '.~/edit-free-campaign';
+import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
+import CreatePaidAdsCampaign from '.~/pages/create-paid-ads-campaign';
 
 const Dashboard = () => {
+	const query = getQuery();
+	switch ( query.subpath ) {
+		case subpaths.editFreeListings:
+			return <EditFreeCampaign />;
+		case subpaths.editCampaign:
+			return <EditPaidAdsCampaign />;
+		case subpaths.createCampaign:
+			return <CreatePaidAdsCampaign />;
+	}
+
 	const trackEventReportId = 'dashboard';
 	const { enableReports } = glaData;
 
 	const ReportsLink = () => {
 		return (
-			<Link href={ getNewPath( null, '/google/reports/programs' ) }>
+			<Link href={ getNewPath( null, '/google/reports' ) }>
 				<Button isPrimary>View Reports</Button>
 			</Link>
 		);

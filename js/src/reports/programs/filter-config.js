@@ -95,6 +95,7 @@ export const createProgramsFilterConfig = () => {
 			'paged',
 			'per_page',
 			'selectedMetric',
+			'reportKey',
 			'orderby',
 			'order',
 		],

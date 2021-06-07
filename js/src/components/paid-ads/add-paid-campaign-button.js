@@ -10,6 +10,7 @@ import { getHistory, getNewPath } from '@woocommerce/navigation';
 import AppButton from '.~/components/app-button';
 import { glaData } from '.~/constants';
 import recordEvent from '.~/utils/recordEvent';
+import { getCreateCampaignUrl } from '.~/utils/urls';
 
 /**
  * Renders an AppButton with the text "Add Paid Campaign".
@@ -29,7 +30,7 @@ import recordEvent from '.~/utils/recordEvent';
  * @param {string} [props.eventProps.context=''] Context to be used when calling `recordEvent`.
  * @param {string} [props.eventProps.href] Destination path. This would default to a path with
  * `'/google/setup-ads'` when users have not completed ads setup, or
- * `'/google/campaigns/create'` when users have completed ads setup.
+ * `'/google/dashboard'` (with `subpath=/campaigns/create`) when users have completed ads setup.
  * @return {AppButton} AppButton
  */
 const AddPaidCampaignButton = ( props ) => {
@@ -41,18 +42,17 @@ const AddPaidCampaignButton = ( props ) => {
 		...rest
 	} = props;
 	const { adsSetupComplete } = glaData;
-	const path = ! adsSetupComplete
-		? '/google/setup-ads'
-		: '/google/campaigns/create';
-	const newPath = getNewPath( {}, path, {} );
-	const defaultEventProps = { context: '', href: newPath };
+	const url = ! adsSetupComplete
+		? getNewPath( {}, '/google/setup-ads', {} )
+		: getCreateCampaignUrl();
+	const defaultEventProps = { context: '', href: url };
 
 	const handleClick = ( ...args ) => {
 		recordEvent( eventName, {
 			...defaultEventProps,
 			...eventProps,
 		} );
-		getHistory().push( newPath );
+		getHistory().push( url );
 		onClick( ...args );
 	};
 

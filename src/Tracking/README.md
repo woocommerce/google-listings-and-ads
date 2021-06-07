@@ -21,7 +21,7 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `add_paid_campaign_clicked` - "Add paid campaign" button is clicked.
   * `context`: indicate the place where the button is located.
-  * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'` or `'/google/campaigns/create'`.
+  * `href`: indicate the destination where the users is directed to, e.g. `'/google/setup-ads'`.
 
 * `ads_account_connect_button_click` - Clicking on the button to connect an existing Google Ads account.
 

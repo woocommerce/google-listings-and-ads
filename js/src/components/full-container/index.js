@@ -7,6 +7,7 @@ import { useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import './index.scss';
+import useWPBodyMarginOffsetEffect from './useWPBodyMarginOffsetEffect';
 
 /**
  * Make the wrapped component display in full container.
@@ -36,6 +37,8 @@ export default function FullContainer( props ) {
 			document.body.classList.remove( 'gla-full-container' );
 		};
 	}, [] );
+
+	useWPBodyMarginOffsetEffect();
 
 	return children;
 }
