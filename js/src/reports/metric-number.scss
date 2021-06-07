@@ -4,7 +4,9 @@
 	gap: 8px;
 
 	.components-tooltip .components-popover__content {
-		text-align: left;
+		min-width: 27em;
+		max-width: 40em;
+		white-space: normal;
 	}
 }
 
