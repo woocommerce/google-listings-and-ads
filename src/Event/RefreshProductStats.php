@@ -40,6 +40,12 @@ class RefreshProductStats implements Registerable, Service {
 				$this->refresh_stats();
 			}
 		);
+		add_action(
+			'gla_batch_deleted_products',
+			function() {
+				$this->refresh_stats();
+			}
+		);
 	}
 
 	/**
