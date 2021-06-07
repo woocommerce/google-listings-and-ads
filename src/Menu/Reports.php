@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 /**
  * Class Reports
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Menu
  */
 class Reports implements Service, Registerable {
 
