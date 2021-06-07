@@ -14,8 +14,8 @@ import GridiconSync from 'gridicons/dist/sync';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import { ISSUE_TABLE_PER_PAGE } from '../constants';
 
-function getUnsolvedStatusText( totalUnsolvedIssues = NaN ) {
-	if ( Number.isNaN( totalUnsolvedIssues ) ) {
+function getUnsolvedStatusText( totalUnsolvedIssues ) {
+	if ( ! Number.isInteger( totalUnsolvedIssues ) ) {
 		return '';
 	}
 
