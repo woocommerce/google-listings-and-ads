@@ -192,7 +192,7 @@ class ProductRepository implements Service {
 		 *
 		 * @param WC_Product[] $results Sync-ready WooCommerce products
 		 */
-		return apply_filters( 'gla_get_sync_ready_products_post_filter', $results );
+		return apply_filters( 'gla_get_sync_ready_products_filter', $results );
 	}
 
 	/**
