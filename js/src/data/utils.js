@@ -128,14 +128,32 @@ export function mapReportFieldsToPerformance(
 }
 
 /**
- * Calculate performance data by each metric.
+ * Calculate deltas and map indidual ReportField metrics to PerformanceData field.
  *
- * @param {number} [value] The primary report fields fetched from report API.
- * @param {number} [base] The secondary report fields fetched from report API.
+ * @param {number} [value] The primary report field fetched from report API.
+ * @param {number} [base] The secondary report field fetched from report API.
  * @param {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
  * @return {PerformanceData} The calculated performance data of each metric.
  */
-export function fieldsToPerformance( value, base, missingFreeListingsData ) {
+export const fieldsToPerformance = (
+	value,
+	base,
+	missingFreeListingsData
+) => ( {
+	value,
+	delta: calculateDelta( value, base ),
+	prevValue: base,
+	missingFreeListingsData,
+} );
+
+/**
+ * Calculate delta.
+ *
+ * @param {number} [value] The primary report field fetched from report API.
+ * @param {number} [base] The secondary report field fetched from report API.
+ * @return {number | null} The calculated performance data of each metric. `null` if any number is missing, or the result is not finite.
+ */
+function calculateDelta( value, base ) {
 	let delta = null;
 	if ( typeof value === 'number' && typeof base === 'number' ) {
 		delta = 0;
@@ -145,7 +163,7 @@ export function fieldsToPerformance( value, base, missingFreeListingsData ) {
 		}
 	}
 
-	return { value, delta, prevValue: base, missingFreeListingsData };
+	return delta;
 }
 
 /**
