@@ -92,12 +92,13 @@ class ProductRepository implements Service {
 	/**
 	 * Find and return an array of WooCommerce product objects already submitted to Google Merchant Center.
 	 *
+	 * @param array $args   Array of WooCommerce args (except 'return' and 'meta_query').
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
-	public function find_synced_products( int $limit = -1, int $offset = 0 ): array {
+	public function find_synced_products( array $args = [], int $limit = -1, int $offset = 0 ): array {
 		$args['meta_query'] = $this->get_synced_products_meta_query();
 
 		return $this->find( $args, $limit, $offset );
@@ -108,12 +109,13 @@ class ProductRepository implements Service {
 	 *
 	 * Note: Includes product variations.
 	 *
+	 * @param array $args  Array of WooCommerce args (except 'return' and 'meta_query').
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
+	public function find_synced_product_ids( array $args = [], int $limit = -1, int $offset = 0 ): array {
 		$args['meta_query'] = $this->get_synced_products_meta_query();
 
 		return $this->find_ids( $args, $limit, $offset );
