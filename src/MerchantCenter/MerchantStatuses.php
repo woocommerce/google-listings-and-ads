@@ -493,21 +493,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			try {
-				$wc_parent_id = $product_helper->maybe_swap_for_parent_id( $wc_product_id );
-				if ( $wc_parent_id === $wc_product_id ) {
-					continue;
-				}
-				$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
-			} catch ( InvalidValue $e ) {
-
-				// Don't include invalid products (or their parents).
-				do_action(
-					'woocommerce_gla_debug_message',
-					sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $wc_product_id ),
-					__METHOD__,
-				);
+			$wc_parent_id = $this->product_data_lookup[$wc_product_id]['maybe_parent_id'];
+			if ( $wc_parent_id === $wc_product_id ) {
+				continue;
 			}
+			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
 		}
 	}
 
