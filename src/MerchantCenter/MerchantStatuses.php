@@ -285,11 +285,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	protected function filter_valid_statuses( array $mc_statuses ): array {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
+		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
 		return array_values(
 			array_filter(
 				$mc_statuses,
-				function( $product ) use ( $product_helper ) {
+				function( $product ) use ( $product_helper, $visibility_meta_key) {
 					$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 					// Skip products not synced by this extension.
 					if ( ! $wc_product_id ) {
@@ -301,9 +302,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 						return true;
 					}
 
-					$wc_product = wc_get_product( $wc_product_id );
-					// Skip products that are no longer in WooCommerce.
-					if ( ! $wc_product ) {
+					$wc_product = get_post( $wc_product_id );
+					// Skip no products and products that are no longer in WooCommerce.
+					// Should never happen since the products IDS are retrieved from postmeta.
+					if ( null === $wc_product || 'product' !== substr( $wc_product->post_type, 0, 7) ) {
 						do_action(
 							'woocommerce_gla_debug_message',
 							sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
@@ -313,9 +315,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					}
 
 					$this->product_data_lookup[ $wc_product_id ] = [
-						'name'       => $wc_product->get_name(),
-						'visibility' => $wc_product->get_meta( $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ) ),
+						'name'            => $wc_product->title,
+						'visibility'      => get_post_meta( $wc_product_id, $visibility_meta_key ),
+						'maybe_parent_id' => 'product_variation' === $wc_product->post_type ? $wc_product->post_parent : $wc_product_id,
 					];
+
 					return true;
 				}
 			)
