@@ -166,17 +166,31 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-		// Update MC product stats and issues page by page.
+		/** @var ProductRepository $product_repository */
+		$product_repository  = $this->container->get( ProductRepository::class );
+		$synced_product_ids  = $product_repository->find_synced_product_ids();
+		$synced_google_ids   = [];
+		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
+
+		foreach ( $synced_product_ids as $product_id ) {
+			$meta_records = get_post_meta( $product_id, $google_ids_meta_key );
+			foreach ( $meta_records as $google_ids ) {
+				$synced_google_ids = array_merge( $synced_google_ids, array_values( $google_ids ) );
+			}
+		}
+
 		$this->mc_statuses = [];
-		$page_token        = null;
-		do {
-			$response = $this->container->get( Merchant::class )->get_productstatuses( $page_token );
-			$statuses = $this->filter_valid_statuses( $response->getResources() );
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
+
+		// Update MC product stats and issues page by page.
+		$chunk_size = 250;
+		foreach ( array_chunk( $synced_google_ids, $chunk_size ) as $google_ids ) {
+			$mc_product_statuses = $merchant->get_productstatuses_batch( $google_ids );
+			$statuses            = $this->filter_valid_statuses( $mc_product_statuses );
 			$this->refresh_product_issues( $statuses );
 			$this->sum_status_counts( $statuses );
-
-			$page_token = $response->getNextPageToken();
-		} while ( $page_token );
+		}
 
 		$this->update_mc_statuses();
 		$this->update_product_mc_statuses();
@@ -337,7 +351,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( $account_issues );
 	}
-
 
 	/**
 	 * Retrieve all product-level issues and store them in the database.
