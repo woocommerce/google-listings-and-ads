@@ -93,8 +93,8 @@ class ProductRepository implements Service {
 	 * Find and return an array of WooCommerce product objects already submitted to Google Merchant Center.
 	 *
 	 * @param array $args   Array of WooCommerce args (except 'return' and 'meta_query').
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
@@ -110,8 +110,8 @@ class ProductRepository implements Service {
 	 * Note: Includes product variations.
 	 *
 	 * @param array $args  Array of WooCommerce args (except 'return' and 'meta_query').
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */

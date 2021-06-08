@@ -167,7 +167,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-
 		$this->mc_statuses = [];
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
@@ -483,7 +482,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = $this->product_data_lookup[ $wc_product_id ]['maybe_parent_id'];
+			$wc_parent_id = intval( $this->product_data_lookup[ $wc_product_id ]['maybe_parent_id'] );
 			if ( $wc_parent_id === $wc_product_id ) {
 				continue;
 			}
@@ -552,8 +551,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 		ksort( $all_product_statuses );
 
-		/** @var ProductMetaHandler $product_meta */
-		$product_meta = $this->container->get( ProductMetaHandler::class );
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
 		$mc_status_key      = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
