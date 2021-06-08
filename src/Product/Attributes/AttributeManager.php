@@ -180,6 +180,10 @@ class AttributeManager implements Service {
 		// re-index the attributes map array to avoid string ($product_type) array keys
 		$match_attributes = array_values( $match_attributes );
 
+		if ( empty( $match_attributes ) ) {
+			return [];
+		}
+
 		// merge all of the attribute arrays from the map (there might be duplicates) and return the results
 		return array_merge( ...$match_attributes );
 	}
