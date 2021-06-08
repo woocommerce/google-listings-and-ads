@@ -412,7 +412,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$issue_action       = __( 'Update this attribute in your product data', 'google-listings-and-ads' );
 		$errors_meta_key    = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
 
-		$update_chunk_limit  = 1000;
+		$update_chunk_limit  = 5000;
 		$update_chunk_offset = 0;
 		do {
 			$product_issues = [];
