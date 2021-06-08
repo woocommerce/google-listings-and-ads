@@ -232,8 +232,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return string
 	 */
 	public function get_wc_product_title( string $mc_product_id ): string {
-		$product = $this->get_wc_product( $this->get_wc_product_id( $mc_product_id ) );
-		if ( ! $product ) {
+		try {
+			$product = $this->get_wc_product( $this->get_wc_product_id( $mc_product_id ) );
+		} catch ( InvalidValue $e ) {
 			return $mc_product_id;
 		}
 
