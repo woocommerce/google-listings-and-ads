@@ -299,18 +299,16 @@ class ProductRepository implements Service {
 		return $this->find_ids( $args, $limit, $offset );
 	}
 
-
-
 	/**
-	 * Find and return an array of WooCommerce product objects that are pending synchronization,
-	 * but have failed pre-sync validation.
+	 * Find and return an array of WooCommerce product IDs that are pending synchronization,
+	 * but have failed pre-sync validation. Excludes variable parent products.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
-	public function find_presync_error_products( int $limit = -1, int $offset = 0 ): array {
+	public function find_presync_error_product_ids( int $limit = -1, int $offset = 0 ): array {
 		$args['meta_query'] = [
 			'relation' => 'AND',
 			$this->get_sync_ready_products_meta_query(),
@@ -322,8 +320,10 @@ class ProductRepository implements Service {
 				],
 			],
 		];
+		$product_types = ProductSyncer::get_supported_product_types();
+		$args['type']  = array_diff( $product_types, [ 'variable' ] );
 
-		return $this->find( $args, $limit, $offset );
+		return $this->find_ids( $args, $limit, $offset );
 	}
 
 	/**
