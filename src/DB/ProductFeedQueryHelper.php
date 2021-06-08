@@ -133,6 +133,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
 		$args = [
 			'type'    => $product_types,
+			'status'  => 'publish',
 			'orderby' => [ 'title' => 'ASC' ],
 		];
 
