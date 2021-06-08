@@ -18,7 +18,6 @@ import { MISSING_FREE_LISTINGS_DATA } from '.~/data/utils';
 
 const numberFormatSetting = { precision: 0 };
 
-const unavalable = __( 'Unavailable', 'google-listings-and-ads' );
 const googleMCURL = 'https://merchants.google.com/mc/reporting/dashboard';
 
 /**
@@ -53,7 +52,10 @@ const MetricNumber = ( {
 		const formatFn = isCurrency ? formatAmount : formatNumber;
 
 		return {
-			value: value === undefined ? unavalable : formatFn( value ),
+			value:
+				value === undefined
+					? __( 'Unavailable', 'google-listings-and-ads' )
+					: formatFn( value ),
 			prevValue: formatFn( prevValue ),
 		};
 	}, [ isCurrency, value, prevValue, formatNumber, formatAmount ] );
