@@ -167,20 +167,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			throw new Exception( __( 'No Merchant Center account connected.', 'google-listings-and-ads' ) );
 		}
 
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-
-		// Don't include variable parent products as they aren't actually synced to Merchant Center.
-		$args['type']        = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
-		$synced_product_ids  = $product_repository->find_synced_product_ids( $args );
-		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
-		$synced_google_ids   = [];
-		foreach ( $synced_product_ids as $product_id ) {
-			$meta_records = get_post_meta( $product_id, $google_ids_meta_key );
-			foreach ( $meta_records as $google_ids ) {
-				$synced_google_ids = array_merge( $synced_google_ids, array_values( $google_ids ) );
-			}
-		}
 
 		$this->mc_statuses = [];
 		/** @var Merchant $merchant */
@@ -188,7 +174,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		// Update MC product stats and issues page by page.
 		$chunk_size = 5000;
-		foreach ( array_chunk( $synced_google_ids, $chunk_size ) as $google_ids ) {
+		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $merchant->get_productstatuses_batch( $google_ids );
 			$mc_product_statuses = $this->filter_valid_statuses( $mc_product_statuses );
 			$this->refresh_product_issues( $mc_product_statuses );
@@ -671,5 +657,30 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		);
 
 		return $is_warning ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
+	}
+
+	/**
+	 * Returns an array of Google Product IDs associated with all synced WooCommerce products.
+	 * Note: excludes variable parent products as only the child variation products are actually synced
+	 * to Merchant Center
+	 *
+	 * @return array Google Product IDS
+	 */
+	protected function get_synced_google_ids(): array {
+		/** @var ProductRepository $product_repository */
+		$product_repository = $this->container->get( ProductRepository::class );
+
+		// Don't include variable parent products as they aren't actually synced to Merchant Center.
+		$args['type']        = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
+		$synced_product_ids  = $product_repository->find_synced_product_ids( $args );
+		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
+		$synced_google_ids   = [];
+		foreach ( $synced_product_ids as $product_id ) {
+			$meta_records = get_post_meta( $product_id, $google_ids_meta_key );
+			foreach ( $meta_records as $google_ids ) {
+				$synced_google_ids = array_merge( $synced_google_ids, array_values( $google_ids ) );
+			}
+		}
+		return $synced_google_ids;
 	}
 }
