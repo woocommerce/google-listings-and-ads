@@ -546,9 +546,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$product_meta = $this->container->get( ProductMetaHandler::class );
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
+		$mc_status_key      = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
 
-		foreach ( $product_repository->find() as $product ) {
-			$product_meta->update_mc_status( $product, $all_product_statuses[ $product->get_id() ] ?? MCStatus::NOT_SYNCED );
+		foreach ( $product_repository->find_ids() as $product_id ) {
+			update_post_meta(
+				$product_id,
+				$mc_status_key,
+				$all_product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED
+			);
 		}
 	}
 
