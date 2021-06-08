@@ -184,7 +184,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$merchant = $this->container->get( Merchant::class );
 
 		// Update MC product stats and issues page by page.
-		$chunk_size = 250;
+		$chunk_size = 5000;
 		foreach ( array_chunk( $synced_google_ids, $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $merchant->get_productstatuses_batch( $google_ids );
 			$statuses            = $this->filter_valid_statuses( $mc_product_statuses );
