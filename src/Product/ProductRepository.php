@@ -306,7 +306,7 @@ class ProductRepository implements Service {
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
-	 * @return WC_Product[] Array of WooCommerce product objects
+	 * @return int[] Array of WooCommerce product IDs
 	 */
 	public function find_presync_error_product_ids( int $limit = -1, int $offset = 0 ): array {
 		$product_types = ProductSyncer::get_supported_product_types();
