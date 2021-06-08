@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useMemo, createInterpolateElement } from '@wordpress/element';
+import { useMemo } from '@wordpress/element';
 import { SummaryNumber } from '@woocommerce/components';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
 
@@ -58,42 +58,41 @@ const MetricNumber = ( {
 	}, [ isCurrency, value, prevValue, formatNumber, formatAmount ] );
 
 	let markedLabel = label;
-	let infoText;
+	const infos = [];
 
 	// Until ~Q4 2021, metrics for all programs, may lack data for free listings.
 	// And Free Listings API may not respond with data.
-	if ( missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_METRIC ) {
-		infoText = __(
-			'This data is currently available for paid campaigns only.',
-			'google-listings-and-ads'
+	if ( missingFreeListingsData !== MISSING_FREE_LISTINGS_DATA.NONE ) {
+		infos.push(
+			__(
+				'This data is currently available for paid campaigns only.',
+				'google-listings-and-ads'
+			)
 		);
-	} else if (
-		missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_REQUEST
-	) {
-		infoText = (
-			<>
-				{ createInterpolateElement(
-					__(
-						'This data is currently available for paid campaigns only.<br/><br/>Please try again later, or go to merchants.google.com to track your performance for Google Free Listings.',
-						'google-listings-and-ads'
-					),
-					{
-						br: <br />,
-					}
-				) }
-			</>
+	}
+	if ( missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_REQUEST ) {
+		infos.push(
+			__(
+				'Please try again later, or go to merchants.google.com to track your performance for Google Free Listings.',
+				'google-listings-and-ads'
+			)
 		);
 	}
 
-	if ( infoText ) {
+	if ( infos.length > 0 ) {
+		const infoElements = infos.map( ( info, index ) => (
+			<div className="gla-reports__metric-info" key={ index }>
+				{ info }
+			</div>
+		) );
 		markedLabel = (
 			<div className="gla-reports__metric-label">
 				{ label }
-				<AppTooltip text={ infoText }>
+				<AppTooltip text={ infoElements }>
 					<GridiconInfoOutline
 						className="gla-reports__metric-infoicon"
 						role="img"
-						aria-label={ infoText }
+						aria-label={ infos.join( ' ' ) }
 						size={ 16 }
 					/>
 				</AppTooltip>

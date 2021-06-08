@@ -22,3 +22,13 @@ $icon-color: #949494;
 		fill: darken($color: $icon-color, $amount: 20%);
 	}
 }
+// Provide gutters for tooltip infos.
+// We could have use `gap` on a tooltip, but `<Tooltip>` does not expose it,
+// so let's avoid reliying on its undocumented implementation details.
+.gla-reports__metric-info {
+	margin-bottom: 1em;
+}
+
+.gla-reports__metric-info:last-child {
+	margin-bottom: 0;
+}
