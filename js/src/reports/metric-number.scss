@@ -7,18 +7,6 @@
 		min-width: 27em;
 		max-width: 40em;
 		white-space: normal;
-
-		$link-color:  #9ec2e6;
-
-		a {
-			color: $link-color;
-		}
-		a:hover {
-			color: darken($color: $link-color, $amount: 20%);
-		}
-		a:active {
-			color: darken($color: $link-color, $amount: 25%);
-		}
 	}
 }
 
