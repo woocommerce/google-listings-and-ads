@@ -9,6 +9,8 @@ use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_Account as MC_Account;
 use Google_Service_ShoppingContent_AccountAdsLink as MC_Account_Ads_Link;
 use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
+use Google_Service_ShoppingContent_ProductStatus as MC_Product_Status;
+use Google_Service_ShoppingContent_ProductstatusesCustomBatchRequest as MC_Product_Status_Batch_Request;
 use Google_Service_ShoppingContent_ProductstatusesListResponse as MC_Product_Status_List_Response;
 use Google_Service_ShoppingContent_Product as Product;
 use Google\Exception as GoogleException;
@@ -146,6 +148,39 @@ class Merchant implements OptionsAwareInterface {
 			$opt_params['pageToken'] = $page_token;
 		}
 		return $this->service->productstatuses->listProductstatuses( $merchant_id, $opt_params );
+	}
+
+	/**
+	 * Retrieve a batch of Merchant Center Product Statuses using the provided Merchant Center product IDs.
+	 *
+	 * @param string[] $mc_product_ids
+	 *
+	 * @return MC_Product_Status[]
+	 */
+	public function get_productstatuses_batch( array $mc_product_ids ): array {
+		$merchant_id = $this->options->get_merchant_id();
+		$entries     = [];
+		foreach ( $mc_product_ids as $index => $id ) {
+			$entries[] = [
+				'batchId'    => $index + 1,
+				'productId'  => $id,
+				'method'     => 'GET',
+				'merchantId' => $merchant_id,
+			];
+		}
+
+		// Retrieve batch.
+		$request = new MC_Product_Status_Batch_Request();
+		$request->setEntries( $entries );
+		$response = $this->service->productstatuses->custombatch( $request );
+
+		// Collect Product Statuses.
+		$resources = [];
+		foreach ( $response->getEntries() as $response_entry ) {
+			$resources[] = $response_entry->getProductStatus();
+		}
+
+		return $resources;
 	}
 
 	/**
