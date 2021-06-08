@@ -18,7 +18,8 @@ import { MISSING_FREE_LISTINGS_DATA } from '.~/data/utils';
 
 const numberFormatSetting = { precision: 0 };
 
-const googleMCURL = 'https://merchants.google.com/mc/reporting/dashboard';
+const googleMCReportingDashboardURL =
+	'https://merchants.google.com/mc/reporting/dashboard';
 
 /**
  * SummeryNumber annotated about missing data.
@@ -87,11 +88,11 @@ const MetricNumber = ( {
 								eventName="gla_google_mc_link_click"
 								eventProps={ {
 									context: 'reports',
-									href: googleMCURL,
+									href: googleMCReportingDashboardURL,
 								} }
 								type="external"
 								target="_blank"
-								href={ googleMCURL }
+								href={ googleMCReportingDashboardURL }
 							/>
 						),
 					}
