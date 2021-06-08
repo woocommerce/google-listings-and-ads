@@ -120,7 +120,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				$fields = array_intersect_key( $request->get_json_params(), $this->get_schema_properties() );
 
 				// Set the default value of campaign name.
-				if ( $fields['name'] === null ) {
+				if ( empty( $fields['name'] ) ) {
 					$current_date_time = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d H:i:s' );
 					$fields['name']    = sprintf(
 					/* translators: %s: current date time. */
