@@ -309,19 +309,21 @@ class ProductRepository implements Service {
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
 	public function find_presync_error_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$args['meta_query'] = [
-			'relation' => 'AND',
-			$this->get_sync_ready_products_meta_query(),
-			[
+		$product_types = ProductSyncer::get_supported_product_types();
+		$args          = [
+			'type'       => array_diff( $product_types, [ 'variable' ] ),
+			'meta_query' => [
+				'relation' => 'AND',
+				$this->get_sync_ready_products_meta_query(),
 				[
-					'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-					'compare' => '=',
-					'value'   => SyncStatus::HAS_ERRORS,
+					[
+						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
+						'compare' => '=',
+						'value'   => SyncStatus::HAS_ERRORS,
+					],
 				],
 			],
 		];
-		$product_types = ProductSyncer::get_supported_product_types();
-		$args['type']  = array_diff( $product_types, [ 'variable' ] );
 
 		return $this->find_ids( $args, $limit, $offset );
 	}
