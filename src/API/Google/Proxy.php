@@ -67,7 +67,7 @@ class Proxy implements OptionsAwareInterface {
 
 			return $ids;
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving accounts', 'google-listings-and-ads' ) ) );
 		}
@@ -114,12 +114,12 @@ class Proxy implements OptionsAwareInterface {
 				return $id;
 			}
 
-			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
 			$error = $response['message'] ?? __( 'Invalid response when creating account', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ) );
 		}
@@ -165,12 +165,12 @@ class Proxy implements OptionsAwareInterface {
 				return true;
 			}
 
-			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
 			$error = $response['message'] ?? __( 'Invalid response when linking merchant to MCA', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ) );
 		}
@@ -202,18 +202,18 @@ class Proxy implements OptionsAwareInterface {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() && isset( $response['status'] ) && 'success' === $response['status'] ) {
-				do_action( 'gla_site_claim_success', [ 'details' => 'google_manager' ] );
+				do_action( 'woocommerce_gla_site_claim_success', [ 'details' => 'google_manager' ] );
 				return true;
 			}
 
-			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
-			do_action( 'gla_site_claim_failure', [ 'details' => 'google_manager' ] );
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
 
 			$error = $response['message'] ?? __( 'Invalid response when claiming website', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
-			do_action( 'gla_site_claim_failure', [ 'details' => 'google_manager' ] );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ) );
 		}
@@ -240,7 +240,7 @@ class Proxy implements OptionsAwareInterface {
 
 			return $ids;
 		} catch ( ApiException $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			// Return an empty list if the user has not signed up to ads yet.
 			if ( $this->has_api_exception_error( $e, 'NOT_ADS_USER' ) ) {
@@ -302,12 +302,12 @@ class Proxy implements OptionsAwareInterface {
 				];
 			}
 
-			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
 			$error = $response['message'] ?? __( 'Invalid response when creating account', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ) );
 		}
@@ -344,12 +344,12 @@ class Proxy implements OptionsAwareInterface {
 				return [ 'id' => $id ];
 			}
 
-			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
 			$error = $response['message'] ?? __( 'Invalid response when linking account', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error linking account', 'google-listings-and-ads' ) ) );
 		}
@@ -402,7 +402,7 @@ class Proxy implements OptionsAwareInterface {
 
 			return new TosAccepted( 200 === $result->getStatusCode(), $result->getBody()->getContents() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			return new TosAccepted( false, $e->getMessage() );
 		}
@@ -437,7 +437,7 @@ class Proxy implements OptionsAwareInterface {
 				$result->getBody()->getContents() ?? $result->getReasonPhrase()
 			);
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			return new TosAccepted( false, $e->getMessage() );
 		}

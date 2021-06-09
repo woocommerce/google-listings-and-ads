@@ -160,7 +160,7 @@ class ProductMetaHandler implements Service, Registerable {
 	protected static function validate_meta_key( string $key ) {
 		if ( ! self::is_meta_key_valid( $key ) ) {
 			do_action(
-				'gla_error',
+				'woocommerce_gla_error',
 				sprintf( 'Product meta key is invalid: %s', $key ),
 				__METHOD__
 			);

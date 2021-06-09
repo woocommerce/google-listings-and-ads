@@ -80,10 +80,10 @@ class Merchant implements OptionsAwareInterface {
 			$id     = $this->options->get_merchant_id();
 			$params = $overwrite ? [ 'overwrite' => true ] : [];
 			$this->service->accounts->claimwebsite( $id, $id, $params );
-			do_action( 'gla_site_claim_success', [ 'details' => 'google_proxy' ] );
+			do_action( 'woocommerce_gla_site_claim_success', [ 'details' => 'google_proxy' ] );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
-			do_action( 'gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
 
 			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
 			if ( 403 === $e->getCode() ) {
@@ -107,7 +107,7 @@ class Merchant implements OptionsAwareInterface {
 		try {
 			$mc_account = $this->service->accounts->get( $id, $id );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;
@@ -126,7 +126,7 @@ class Merchant implements OptionsAwareInterface {
 		try {
 			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
@@ -160,7 +160,7 @@ class Merchant implements OptionsAwareInterface {
 		try {
 			$mc_account = $this->service->accounts->update( $mc_account->getId(), $mc_account->getId(), $mc_account );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to update merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;

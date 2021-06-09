@@ -51,13 +51,13 @@ class WooCommerceBrands implements IntegrationInterface {
 	 */
 	public function init(): void {
 		add_filter(
-			'gla_product_attribute_value_options_brand',
+			'woocommerce_gla_product_attribute_value_options_brand',
 			function ( array $value_options ) {
 				return $this->add_value_option( $value_options );
 			}
 		);
 		add_filter(
-			'gla_product_attribute_value_brand',
+			'woocommerce_gla_product_attribute_value_brand',
 			function ( $value, WC_Product $product ) {
 				return $this->get_brand( $value, $product );
 			},

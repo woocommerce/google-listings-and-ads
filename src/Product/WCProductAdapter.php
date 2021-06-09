@@ -429,7 +429,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			 * @param WC_Product $product WooCommerce product
 			 * @param bool       $tax_excluded Whether tax is excluded from product price
 			 */
-			$price = apply_filters( 'gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
 
 			$this->setPrice(
 				new Google_Service_ShoppingContent_Price(
@@ -479,7 +479,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			 * @param WC_Product $product      WooCommerce product
 			 * @param bool       $tax_excluded Whether tax is excluded from product price
 			 */
-			$sale_price = apply_filters( 'gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
+			$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
 
 			// If the sale price dates no longer apply, make sure we don't include a sale price.
 			$now                 = new WC_DateTime();
@@ -653,7 +653,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$gla_attributes = [];
 		foreach ( $attributes as $attribute_id => $attribute_value ) {
 			if ( property_exists( $this, $attribute_id ) ) {
-				$gla_attributes[ $attribute_id ] = apply_filters( "gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
+				$gla_attributes[ $attribute_id ] = apply_filters( "woocommerce_gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
 			}
 		}
 

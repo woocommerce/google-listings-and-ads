@@ -70,12 +70,12 @@ class AttributesForm extends Form {
 			 *
 			 * @see AttributeManager::map_attribute_types
 			 */
-			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
+			$applicable_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
 			/**
 			 * Filters the list of product types to hide the attribute for.
 			 */
-			$hidden_types = apply_filters( "gla_attribute_hidden_product_types_{$attribute_id}", [] );
+			$hidden_types = apply_filters( "woocommerce_gla_attribute_hidden_product_types_{$attribute_id}", [] );
 
 			$visible_types = array_diff( $applicable_types, $hidden_types );
 
@@ -111,7 +111,7 @@ class AttributesForm extends Form {
 		if ( $attribute instanceof WithValueOptionsInterface ) {
 			$value_options = $attribute::get_value_options();
 		}
-		$value_options = apply_filters( "gla_product_attribute_value_options_{$attribute::get_id()}", $value_options );
+		$value_options = apply_filters( "woocommerce_gla_product_attribute_value_options_{$attribute::get_id()}", $value_options );
 
 		if ( ! empty( $value_options ) ) {
 			if ( ! $input instanceof Select && ! $input instanceof SelectWithTextInput ) {

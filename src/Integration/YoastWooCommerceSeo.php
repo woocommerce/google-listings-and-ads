@@ -38,19 +38,19 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 	 */
 	public function init(): void {
 		add_filter(
-			'gla_product_attribute_value_options_mpn',
+			'woocommerce_gla_product_attribute_value_options_mpn',
 			function ( array $value_options ) {
 				return $this->add_value_option( $value_options );
 			}
 		);
 		add_filter(
-			'gla_product_attribute_value_options_gtin',
+			'woocommerce_gla_product_attribute_value_options_gtin',
 			function ( array $value_options ) {
 				return $this->add_value_option( $value_options );
 			}
 		);
 		add_filter(
-			'gla_product_attribute_value_mpn',
+			'woocommerce_gla_product_attribute_value_mpn',
 			function ( $value, WC_Product $product ) {
 				return $this->get_mpn( $value, $product );
 			},
@@ -58,7 +58,7 @@ class YoastWooCommerceSeo implements IntegrationInterface {
 			2
 		);
 		add_filter(
-			'gla_product_attribute_value_gtin',
+			'woocommerce_gla_product_attribute_value_gtin',
 			function ( $value, WC_Product $product ) {
 				return $this->get_gtin( $value, $product );
 			},

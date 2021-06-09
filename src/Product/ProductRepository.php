@@ -175,7 +175,7 @@ class ProductRepository implements Service {
 		 *
 		 * @param WC_Product[] $products Sync-ready WooCommerce products
 		 */
-		$products = apply_filters( 'gla_get_sync_ready_products_pre_filter', $products );
+		$products = apply_filters( 'woocommerce_gla_get_sync_ready_products_pre_filter', $products );
 
 		$results = [];
 		foreach ( $products as $product ) {
@@ -192,7 +192,7 @@ class ProductRepository implements Service {
 		 *
 		 * @param WC_Product[] $results Sync-ready WooCommerce products
 		 */
-		return apply_filters( 'gla_get_sync_ready_products_filter', $results );
+		return apply_filters( 'woocommerce_gla_get_sync_ready_products_filter', $results );
 	}
 
 	/**
