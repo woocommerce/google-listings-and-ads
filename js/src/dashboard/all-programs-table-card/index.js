@@ -121,7 +121,10 @@ const AllProgramsTableCard = ( props ) => {
 							<div className="program-actions">
 								<EditProgramButton programId={ el.id } />
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
-									<RemoveProgramButton programId={ el.id } />
+									<RemoveProgramButton
+										key={ el.id }
+										programId={ el.id }
+									/>
 								) }
 							</div>
 						),
