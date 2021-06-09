@@ -113,7 +113,7 @@ const AllProgramsTableCard = ( props ) => {
 							el.id === FREE_LISTINGS_PROGRAM_ID ? (
 								<FreeListingsDisabledToggle />
 							) : (
-								<ProgramToggle program={ el } />
+								<ProgramToggle key={ el.id } program={ el } />
 							),
 					},
 					{
