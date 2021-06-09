@@ -19,6 +19,6 @@ _Replace this with a good description of your changes & reasoning._
 3. 
 
 
-### Changelog Note:
+### Changelog entry
 
 > (Optional) Enter a summary of all changes in this Pull Request to appear in the changelog if it's accepted. 
