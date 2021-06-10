@@ -104,6 +104,10 @@ const AllProgramsTableCard = ( props ) => {
 			}
 			headers={ headers }
 			rows={ data.map( ( el ) => {
+				// Since the <Table> component uses array index as key to render rows,
+				// it might cause incorrect state control if a column has an internal state.
+				// So we have to specific `key` prop on some components of the `display` to work around it.
+				// Ref: https://github.com/woocommerce/woocommerce-admin/blob/v2.1.2/packages/components/src/table/table.js#L288-L289
 				return [
 					{ display: el.title },
 					{ display: el.country },
@@ -118,13 +122,10 @@ const AllProgramsTableCard = ( props ) => {
 					},
 					{
 						display: (
-							<div className="program-actions">
+							<div className="program-actions" key={ el.id }>
 								<EditProgramButton programId={ el.id } />
 								{ el.id !== FREE_LISTINGS_PROGRAM_ID && (
-									<RemoveProgramButton
-										key={ el.id }
-										programId={ el.id }
-									/>
+									<RemoveProgramButton programId={ el.id } />
 								) }
 							</div>
 						),
