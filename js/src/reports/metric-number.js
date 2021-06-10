@@ -2,7 +2,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useMemo } from '@wordpress/element';
+import {
+	useMemo,
+	createInterpolateElement,
+	renderToString,
+} from '@wordpress/element';
 import { SummaryNumber } from '@woocommerce/components';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
 
@@ -11,11 +15,15 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
  */
 import './metric-number.scss';
 import AppTooltip from '.~/components/app-tooltip';
+import TrackableLink from '.~/components/trackable-link';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
 import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import { MISSING_FREE_LISTINGS_DATA } from '.~/data/utils';
 
 const numberFormatSetting = { precision: 0 };
+
+const googleMCReportingDashboardURL =
+	'https://merchants.google.com/mc/reporting/dashboard';
 
 /**
  * SummeryNumber annotated about missing data.
@@ -59,24 +67,51 @@ const MetricNumber = ( {
 
 	let markedLabel = label;
 	const infos = [];
+	const ariaInfos = [];
 
 	// Until ~Q4 2021, metrics for all programs, may lack data for free listings.
 	// And Free Listings API may not respond with data.
 	if ( missingFreeListingsData !== MISSING_FREE_LISTINGS_DATA.NONE ) {
-		infos.push(
-			__(
-				'This data is currently available for paid campaigns only.',
-				'google-listings-and-ads'
-			)
+		const text = __(
+			'This data is currently available for paid campaigns only.',
+			'google-listings-and-ads'
 		);
+		infos.push( text );
+		ariaInfos.push( text );
 	}
 	if ( missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_REQUEST ) {
-		infos.push(
-			__(
-				'Please try again later, or go to merchants.google.com to track your performance for Google Free Listings.',
-				'google-listings-and-ads'
-			)
+		const text = __(
+			'Please try again later, or go to <linkOfGoogleMerchantCenter /> to track your performance for Google Free Listings.',
+			'google-listings-and-ads'
 		);
+
+		infos.push(
+			createInterpolateElement( text, {
+				linkOfGoogleMerchantCenter: (
+					<TrackableLink
+						eventName="gla_google_mc_link_click"
+						eventProps={ {
+							context: 'reports',
+							href: googleMCReportingDashboardURL,
+						} }
+						type="external"
+						target="_blank"
+						href={ googleMCReportingDashboardURL }
+					>
+						{ __(
+							'Google Merchant Center',
+							'google-listings-and-ads'
+						) }
+					</TrackableLink>
+				),
+			} )
+		);
+
+		// `aria-label` prop only accepts a pure text.
+		const textElement = createInterpolateElement( text, {
+			linkOfGoogleMerchantCenter: <>{ googleMCReportingDashboardURL }</>,
+		} );
+		ariaInfos.push( renderToString( textElement ) );
 	}
 
 	if ( infos.length > 0 ) {
@@ -92,7 +127,7 @@ const MetricNumber = ( {
 					<GridiconInfoOutline
 						className="gla-reports__metric-infoicon"
 						role="img"
-						aria-label={ infos.join( ' ' ) }
+						aria-label={ ariaInfos.join( ' ' ) }
 						size={ 16 }
 					/>
 				</AppTooltip>
