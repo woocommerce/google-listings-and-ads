@@ -97,6 +97,9 @@ const MetricNumber = ( {
 						type="external"
 						target="_blank"
 						href={ googleMCReportingDashboardURL }
+						// Stop propagation to avoid triggering the <SummaryNumber> `href` prop
+						// that redirects the browser to incorrect pages.
+						onClick={ ( e ) => e.stopPropagation() }
 					>
 						{ __(
 							'Google Merchant Center',
