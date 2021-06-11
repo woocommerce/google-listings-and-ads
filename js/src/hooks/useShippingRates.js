@@ -19,7 +19,7 @@ const useShippingRates = () => {
 			loading,
 			data,
 		};
-	} );
+	}, [] );
 };
 
 export default useShippingRates;

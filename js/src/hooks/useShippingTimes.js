@@ -19,7 +19,7 @@ const useShippingTimes = () => {
 			loading,
 			data,
 		};
-	} );
+	}, [] );
 };
 
 export default useShippingTimes;
