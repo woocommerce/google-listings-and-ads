@@ -28,13 +28,12 @@ use Exception;
  *
  * ContainerAware used to retrieve
  * - Merchant
+ * - MerchantCenterService
  * - MerchantIssueQuery
  * - MerchantIssueTable
- * - MerchantCenterService
  * - ProductHelper
- * - ProductMetaHandler
  * - ProductRepository
- * - TransientInterface
+ * - TransientsInterface
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
