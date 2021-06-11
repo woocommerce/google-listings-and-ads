@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	useMemo,
 	createInterpolateElement,
@@ -112,7 +112,18 @@ const MetricNumber = ( {
 
 		// `aria-label` prop only accepts a pure text.
 		const textElement = createInterpolateElement( text, {
-			linkOfGoogleMerchantCenter: <>{ googleMCReportingDashboardURL }</>,
+			linkOfGoogleMerchantCenter: (
+				<>
+					{ sprintf(
+						// translators: %s: link to Google Merchant Center.
+						__(
+							'Google Merchant Center (%s)',
+							'google-listings-and-ads'
+						),
+						googleMCReportingDashboardURL
+					) }
+				</>
+			),
 		} );
 		ariaInfos.push( renderToString( textElement ) );
 	}
