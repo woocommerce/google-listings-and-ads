@@ -81,13 +81,13 @@ const MetricNumber = ( {
 	}
 	if ( missingFreeListingsData === MISSING_FREE_LISTINGS_DATA.FOR_REQUEST ) {
 		const text = __(
-			'Please try again later, or go to <linkOfGoogleMerchantCenter /> to track your performance for Google Free Listings.',
+			'Please try again later, or go to <googleMerchantCenterLink /> to track your performance for Google Free Listings.',
 			'google-listings-and-ads'
 		);
 
 		infos.push(
 			createInterpolateElement( text, {
-				linkOfGoogleMerchantCenter: (
+				googleMerchantCenterLink: (
 					<TrackableLink
 						eventName="gla_google_mc_link_click"
 						eventProps={ {
@@ -112,7 +112,7 @@ const MetricNumber = ( {
 
 		// `aria-label` prop only accepts a pure text.
 		const textElement = createInterpolateElement( text, {
-			linkOfGoogleMerchantCenter: (
+			googleMerchantCenterLink: (
 				<>
 					{ sprintf(
 						// translators: %s: link to Google Merchant Center.
