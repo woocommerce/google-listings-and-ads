@@ -21,25 +21,28 @@ const useGoogleAdsAccount = () => {
 		dispatcher.invalidateResolution( googleAdsAccountSelector, [] );
 	}, [ dispatcher ] );
 
-	return useSelect( ( select ) => {
-		if ( ! google || google.active === 'no' ) {
+	return useSelect(
+		( select ) => {
+			if ( ! google || google.active === 'no' ) {
+				return {
+					googleAdsAccount: undefined,
+					isResolving,
+				};
+			}
+
+			const acc = select( STORE_KEY )[ googleAdsAccountSelector ]();
+			const isResolvingGoogleAdsAccount = select( STORE_KEY ).isResolving(
+				googleAdsAccountSelector
+			);
+
 			return {
-				googleAdsAccount: undefined,
-				isResolving,
+				googleAdsAccount: acc,
+				isResolving: isResolvingGoogleAdsAccount,
+				refetchGoogleAdsAccount,
 			};
-		}
-
-		const acc = select( STORE_KEY )[ googleAdsAccountSelector ]();
-		const isResolvingGoogleAdsAccount = select( STORE_KEY ).isResolving(
-			googleAdsAccountSelector
-		);
-
-		return {
-			googleAdsAccount: acc,
-			isResolving: isResolvingGoogleAdsAccount,
-			refetchGoogleAdsAccount,
-		};
-	} );
+		},
+		[ google, isResolving, refetchGoogleAdsAccount ]
+	);
 };
 
 export default useGoogleAdsAccount;
