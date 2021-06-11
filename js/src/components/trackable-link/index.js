@@ -18,12 +18,12 @@ import recordEvent from '.~/utils/recordEvent';
 const TrackableLink = ( props ) => {
 	const { eventName, eventProps, onClick = () => {}, ...rest } = props;
 
-	const handleClick = () => {
+	const handleClick = ( e ) => {
 		if ( eventName ) {
 			recordEvent( eventName, eventProps );
 		}
 
-		onClick();
+		onClick( e );
 	};
 
 	return <Link { ...rest } onClick={ handleClick }></Link>;
