@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -11,9 +10,9 @@ import { useSelect } from '@wordpress/data';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddRateButton from './add-rate-button';
-import { STORE_KEY } from '.~/data';
 import CountriesPriceInputForm from './countries-price-input-form';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
+import useShippingRates from '.~/hooks/useShippingRates';
 import getCountriesPriceArray from './getCountriesPriceArray';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
@@ -23,9 +22,7 @@ const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
 	} = props;
-	const shippingRates = useSelect( ( select ) =>
-		select( STORE_KEY ).getShippingRates()
-	);
+	const { data: shippingRates } = useShippingRates();
 	const { code: currencyCode } = useStoreCurrency();
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 

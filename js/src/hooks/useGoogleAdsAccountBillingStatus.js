@@ -17,7 +17,7 @@ const useGoogleAdsAccountBillingStatus = () => {
 		return {
 			billingStatus,
 		};
-	} );
+	}, [] );
 };
 
 export default useGoogleAdsAccountBillingStatus;

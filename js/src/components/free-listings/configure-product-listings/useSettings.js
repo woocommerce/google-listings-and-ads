@@ -20,7 +20,7 @@ const useSettings = () => {
 		return {
 			settings,
 		};
-	} );
+	}, [] );
 };
 
 export default useSettings;

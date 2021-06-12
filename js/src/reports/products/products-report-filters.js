@@ -85,26 +85,30 @@ const ProductsReportFilters = ( props ) => {
 	 * TODO: Check why it's so disjoint with fetching product data (label) in filter config.
 	 * https://github.com/woocommerce/woocommerce-admin/commit/c7de3559d9180cf6ecf9a20b72fc20f0a6658518#diff-28cbd3395bb82ac11cadfbf5c5432ef382c9759b297ddd64ef1b93313bef9e52R129-R156
 	 */
-	const isVariable = useSelect( ( select ) => {
-		const isSingleProductView =
-			! query.search &&
-			query.products &&
-			query.products.split( ',' ).length === 1;
-		if ( ! isSingleProductView ) {
-			return false;
-		}
-		const productId = parseInt( query.products, 10 );
-		const includeArgs = { include: productId };
+	const isVariable = useSelect(
+		( select ) => {
+			const isSingleProductView =
+				! query.search &&
+				query.products &&
+				query.products.split( ',' ).length === 1;
+			if ( ! isSingleProductView ) {
+				return false;
+			}
+			const productId = parseInt( query.products, 10 );
+			const includeArgs = { include: productId };
 
-		const { getItems } = select( ITEMS_STORE_NAME );
-		// TODO Look at similar usage to populate tags in the Search component.
-		const products = getItems( 'products', includeArgs );
-		return (
-			products &&
-			products.get( productId ) &&
-			products.get( productId ).type === 'variable'
-		);
-	} );
+			const { getItems } = select( ITEMS_STORE_NAME );
+			// TODO Look at similar usage to populate tags in the Search component.
+			const products = getItems( 'products', includeArgs );
+			return (
+				products &&
+				products.get( productId ) &&
+				products.get( productId ).type === 'variable'
+			);
+		},
+		[ query.search, query.products ]
+	);
+
 	const updatedQuery = {
 		...query,
 		'is-variable': isVariable,
