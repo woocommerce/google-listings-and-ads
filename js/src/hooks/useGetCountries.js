@@ -35,7 +35,7 @@ const useGetCountries = () => {
 			loading,
 			data,
 		};
-	} );
+	}, [] );
 };
 
 export default useGetCountries;

@@ -506,7 +506,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		/** @var ProductRepository $product_repository */
 		$product_repository                         = $this->container->get( ProductRepository::class );
-		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_sync_pending_product_ids() );
+		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_not_synced_product_ids() );
 
 		$this->mc_statuses = [
 			'timestamp'  => $this->current_time->getTimestamp(),

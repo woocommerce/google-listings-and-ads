@@ -18,7 +18,7 @@ const useExistingGoogleAdsAccounts = () => {
 		);
 
 		return { existingAccounts, isResolving };
-	} );
+	}, [] );
 };
 
 export default useExistingGoogleAdsAccounts;

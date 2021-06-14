@@ -2,6 +2,24 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
+
+	.components-tooltip .components-popover__content {
+		min-width: 32em;
+		max-width: 40em;
+		white-space: normal;
+
+		$link-color:  #9ec2e6;
+
+		a {
+			color: $link-color;
+		}
+		a:hover {
+			color: darken($color: $link-color, $amount: 20%);
+		}
+		a:active {
+			color: darken($color: $link-color, $amount: 25%);
+		}
+	}
 }
 
 $icon-color: #949494;
@@ -15,4 +33,14 @@ $icon-color: #949494;
 	&:hover {
 		fill: darken($color: $icon-color, $amount: 20%);
 	}
+}
+// Provide gutters for tooltip infos.
+// We could have use `gap` on a tooltip, but `<Tooltip>` does not expose it,
+// so let's avoid reliying on its undocumented implementation details.
+.gla-reports__metric-info {
+	margin-bottom: 1em;
+}
+
+.gla-reports__metric-info:last-child {
+	margin-bottom: 0;
 }

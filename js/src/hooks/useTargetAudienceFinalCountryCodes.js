@@ -77,7 +77,7 @@ const useTargetAudienceFinalCountryCodes = () => {
 			targetAudience: storedTargetAudience,
 			getFinalCountries,
 		};
-	} );
+	}, [] );
 };
 
 export default useTargetAudienceFinalCountryCodes;

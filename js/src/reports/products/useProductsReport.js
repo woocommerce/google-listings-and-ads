@@ -43,7 +43,8 @@ export default function useProductsReport( type ) {
 					intervals: primary.data.intervals || emptyData.intervals,
 					totals: mapReportFieldsToPerformance(
 						primary.data.totals,
-						secondary.data.totals
+						secondary.data.totals,
+						primary.reportQuery.fields
 					),
 				};
 			}
