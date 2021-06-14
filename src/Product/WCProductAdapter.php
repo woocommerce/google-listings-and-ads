@@ -157,7 +157,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$description
 		);
 
-		return wp_strip_all_tags( $description );
+		return strip_shortcodes( wp_strip_all_tags( $description ) );
 	}
 
 	/**
