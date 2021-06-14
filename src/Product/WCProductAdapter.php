@@ -140,12 +140,16 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 * @return string
 	 */
 	protected function get_wc_product_description(): string {
-		$description = $this->wc_product->get_description() ?? $this->wc_product->get_short_description();
+		$description = ! empty( $this->wc_product->get_description() ) ?
+			$this->wc_product->get_description() :
+			$this->wc_product->get_short_description();
 
 		// prepend the parent product description to the variation product
 		if ( $this->is_variation() && ! empty( $this->wc_product->get_parent_id() ) ) {
 			$parent_product     = wc_get_product( $this->wc_product->get_parent_id() );
-			$parent_description = $parent_product->get_description() ?? $parent_product->get_short_description();
+			$parent_description = ! empty( $parent_product->get_description() ) ?
+				$parent_product->get_description() :
+				$parent_product->get_short_description();
 			$new_line           = ! empty( $description ) && ! empty( $parent_description ) ? PHP_EOL : '';
 			$description        = $parent_description . $new_line . $description;
 		}
