@@ -7,6 +7,7 @@ declare( strict_types=1 );
 $replacements  = [
 	'League\\Container' => 'league/container',
 	'League\\ISO3166'   => 'league/iso3166',
+	'GuzzleHttp'        => 'guzzlehttp/guzzle',
 ];
 $vendor_dir    = dirname( __DIR__ ) . '/vendor';
 $new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';

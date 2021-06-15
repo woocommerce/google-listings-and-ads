@@ -32,7 +32,8 @@
     "psr-4": {
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/",
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\League\\Container\\": "vendor/league/container/src/",
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\League\\ISO3166\\": "vendor/league/iso3166/src/"
+      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\League\\ISO3166\\": "vendor/league/iso3166/src/",
+      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\GuzzleHttp\\": "vendor/guzzlehttp/guzzle/src/"
     }
   },
   "autoload-dev": {
