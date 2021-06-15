@@ -17,6 +17,7 @@ $new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 $dependencies = [
 	'google/auth' => [
 		'google/apiclient',
+		'google/gax',
 	],
 	'guzzlehttp'  => [
 		'google/apiclient',
