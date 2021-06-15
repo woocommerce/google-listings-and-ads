@@ -12,8 +12,26 @@ $replacements  = [
 $vendor_dir    = dirname( __DIR__ ) . '/vendor';
 $new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 
+// Vendor libraries which are dependent on a library we are prefixing.
+$dependencies = [
+	'guzzlehttp' => [
+		'google/apiclient',
+	],
+];
+
+// Namespaces which are used directly within the code.
+$direct_replacements = [
+	'guzzlehttp' => [
+		'GuzzleHttp\Psr7\stream_for',
+		'GuzzleHttp\Psr7\Message::bodySummary',
+		'GuzzleHttp\ClientInterface::MAJOR_VERSION',
+		'GuzzleHttp\ClientInterface::VERSION',
+		'GuzzleHttp\Message\ResponseInterface)',
+	],
+];
+
 foreach ( $replacements as $namespace => $path ) {
-	$files = find_files( $vendor_dir, $path );
+	$files = find_files( $path );
 
 	$quoted = preg_quote( $namespace, '#' );
 	foreach ( $files as $file ) {
@@ -24,18 +42,32 @@ foreach ( $replacements as $namespace => $path ) {
 			continue 2;
 		}
 
-		file_put_contents(
-			$file,
-			preg_replace(
-				"#^(\s*)(use|namespace)\s*({$quoted})#m",
-				"\$1\$2 {$new_namespace}\\\\\$3",
-				$contents
-			)
+		$contents =	preg_replace(
+			"#^(\s*)(use|namespace)\s*({$quoted})#m",
+			"\$1\$2 {$new_namespace}\\\\\$3",
+			$contents
 		);
+
+		if ( ! empty( $direct_replacements[ $path ] ) ) {
+			foreach( $direct_replacements[ $path ] as $replace ) {
+				$replace = preg_quote( $replace, '#' );
+				$contents =	preg_replace(
+					"#({$replace})#m",
+					"{$new_namespace}\\\\\$1",
+					$contents
+				);
+			}
+		}
+
+		file_put_contents( $file, $contents );
 	}
 
 	// Update the namespace in the composer.json file.
-	$composer_file     = "{$vendor_dir}/{$path}/composer.json";
+	$composer_file = "{$vendor_dir}/{$path}/composer.json";
+	if ( ! file_exists( $composer_file ) ) {
+		continue;
+	}
+
 	$composer_contents = file_get_contents( $composer_file );
 	file_put_contents(
 		$composer_file,
@@ -47,12 +79,8 @@ foreach ( $replacements as $namespace => $path ) {
 	);
 }
 
-function find_files( string $vendor_dir, string $path ): array {
-	static $dependencies = [
-		'guzzlehttp' => [
-			'google/apiclient',
-		],
-	];
+function find_files( string $path ): array {
+	global $vendor_dir, $dependencies;
 
 	$files = array_filter(
 		explode(
