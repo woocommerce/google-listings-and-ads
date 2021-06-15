@@ -31,8 +31,10 @@ $direct_replacements = [
 	'guzzlehttp' => [
 		'GuzzleHttp\Psr7\stream_for',
 		'GuzzleHttp\Psr7\Message::bodySummary',
+		'GuzzleHttp\Client(',
 		'GuzzleHttp\ClientInterface::MAJOR_VERSION',
 		'GuzzleHttp\ClientInterface::VERSION',
+		'GuzzleHttp\HandlerStack::create',
 		'GuzzleHttp\Message\ResponseInterface)',
 	],
 ];
