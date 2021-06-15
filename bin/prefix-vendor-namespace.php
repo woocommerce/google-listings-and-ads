@@ -56,7 +56,7 @@ foreach ( $replacements as $namespace => $path ) {
 		);
 
 		$contents =	preg_replace(
-			"#^(\s*)(use)\s*({$quoted})#m",
+			"#^(\s*)(use)\s*({$quoted}\\\\)#m",
 			"\$1\$2 {$new_namespace}\\\\\$3",
 			$contents
 		);
