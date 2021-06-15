@@ -13,12 +13,7 @@ $vendor_dir    = dirname( __DIR__ ) . '/vendor';
 $new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 
 foreach ( $replacements as $namespace => $path ) {
-	$files = array_filter(
-		explode(
-			"\n",
-			`find {$vendor_dir}/{$path} -iname '*.php'`
-		)
-	);
+	$files = find_files( $vendor_dir, $path );
 
 	$quoted = preg_quote( $namespace, '#' );
 	foreach ( $files as $file ) {
@@ -50,4 +45,33 @@ foreach ( $replacements as $namespace => $path ) {
 			$composer_contents
 		)
 	);
+}
+
+function find_files( string $vendor_dir, string $path ): array {
+	static $dependencies = [
+		'guzzlehttp/guzzle' => [
+			'google/apiclient',
+		],
+	];
+
+	$files = array_filter(
+		explode(
+			"\n",
+			`find {$vendor_dir}/{$path} -iname '*.php'`
+		)
+	);
+
+	if ( ! empty( $dependencies[ $path ] ) ) {
+		foreach( $dependencies[ $path ] as $dependency ) {
+			$dependent_files = array_filter(
+				explode(
+					"\n",
+					`find {$vendor_dir}/{$dependency} -iname '*.php'`
+				)
+			);
+			$files = array_merge( $files, $dependent_files );
+		}
+	}
+
+	return $files;
 }
