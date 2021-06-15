@@ -51,6 +51,8 @@
 		"@woocommerce/currency": "^3.1.0",
 		"@woocommerce/data": ">=1.1.1 <1.2.0",
 		"@woocommerce/date": "^2.1.0",
+		"@woocommerce/e2e-environment": "^0.2.2",
+		"@woocommerce/e2e-utils": "^0.1.5",
 		"@woocommerce/navigation": "^5.2.0",
 		"@woocommerce/number": "^2.1.0",
 		"@woocommerce/tracks": "^1.0.0",
