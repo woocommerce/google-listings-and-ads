@@ -43,6 +43,10 @@ foreach ( $replacements as $namespace => $path ) {
 	$composer_contents = file_get_contents( $composer_file );
 	file_put_contents(
 		$composer_file,
-		str_replace( "\"{$namespace}", "\"{$new_namespace}\\{$namespace}", $composer_contents )
+		str_replace(
+			addslashes( "{$namespace}\\" ),
+			addslashes( "{$new_namespace}\\{$namespace}\\" ),
+			$composer_contents
+		)
 	);
 }
