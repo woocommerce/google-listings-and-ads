@@ -33,6 +33,7 @@
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/",
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\League\\Container\\": "vendor/league/container/src/",
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\League\\ISO3166\\": "vendor/league/iso3166/src/",
+      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\Google\\Auth\\": "vendor/google/auth/src/",
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\GuzzleHttp\\": "vendor/guzzlehttp/guzzle/src/",
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\GuzzleHttp\\Promise\\": "vendor/guzzlehttp/promises/src/",
       "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\GuzzleHttp\\Psr7\\": "vendor/guzzlehttp/psr7/src/"

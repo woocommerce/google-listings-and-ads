@@ -7,6 +7,7 @@ declare( strict_types=1 );
 $replacements  = [
 	'League\\Container' => 'league/container',
 	'League\\ISO3166'   => 'league/iso3166',
+	'Google\\Auth'      => 'google/auth',
 	'GuzzleHttp'        => 'guzzlehttp',
 ];
 $vendor_dir    = dirname( __DIR__ ) . '/vendor';
@@ -14,7 +15,10 @@ $new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
 
 // Vendor libraries which are dependent on a library we are prefixing.
 $dependencies = [
-	'guzzlehttp' => [
+	'google/auth' => [
+		'google/apiclient',
+	],
+	'guzzlehttp'  => [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
@@ -39,8 +43,8 @@ foreach ( $replacements as $namespace => $path ) {
 	foreach ( $files as $file ) {
 		$contents = file_get_contents( $file );
 
-		// Check to see whether a replacement has already run. Just in case.
-		if ( false !== strpos( $contents, $new_namespace ) ) {
+		// Check to see whether a replacement has already run for this namespace. Just in case.
+		if ( false !== strpos( $contents, "{$new_namespace}\\{$namespace}" ) ) {
 			continue 2;
 		}
 
