@@ -7,7 +7,7 @@ declare( strict_types=1 );
 $replacements  = [
 	'League\\Container' => 'league/container',
 	'League\\ISO3166'   => 'league/iso3166',
-	'GuzzleHttp'        => 'guzzlehttp/guzzle',
+	'GuzzleHttp'        => 'guzzlehttp',
 ];
 $vendor_dir    = dirname( __DIR__ ) . '/vendor';
 $new_namespace = 'Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor';
@@ -49,7 +49,7 @@ foreach ( $replacements as $namespace => $path ) {
 
 function find_files( string $vendor_dir, string $path ): array {
 	static $dependencies = [
-		'guzzlehttp/guzzle' => [
+		'guzzlehttp' => [
 			'google/apiclient',
 		],
 	];
