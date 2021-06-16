@@ -18,6 +18,7 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
 import useAutoClearShippingEffect from './useAutoClearShippingEffect';
+import useAutoSetLocationCountriesEffect from './useAutoSetLocationCountriesEffect';
 import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
@@ -32,6 +33,7 @@ const FormContent = ( props ) => {
 	const { values, isValidForm, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
 
+	useAutoSetLocationCountriesEffect( formProps );
 	useAutoSaveTargetAudienceEffect( values );
 	useAutoClearShippingEffect( values.location, values.countries );
 
@@ -94,21 +96,6 @@ const FormContent = ( props ) => {
 							<VerticalGapLayout>
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }
-									label={ __(
-										'All countries',
-										'google-listings-and-ads'
-									) }
-									value="all"
-								>
-									<RadioHelperText>
-										{ __(
-											'Your listings will be shown in all supported countries.',
-											'google-listings-and-ads'
-										) }
-									</RadioHelperText>
-								</AppRadioContentControl>
-								<AppRadioContentControl
-									{ ...getInputProps( 'location' ) }
 									collapsible={ true }
 									label={ __(
 										'Selected countries only',
@@ -125,6 +112,21 @@ const FormContent = ( props ) => {
 									<RadioHelperText>
 										{ __(
 											'Can’t find a country? Only supported countries can be selected.',
+											'google-listings-and-ads'
+										) }
+									</RadioHelperText>
+								</AppRadioContentControl>
+								<AppRadioContentControl
+									{ ...getInputProps( 'location' ) }
+									label={ __(
+										'All countries',
+										'google-listings-and-ads'
+									) }
+									value="all"
+								>
+									<RadioHelperText>
+										{ __(
+											'Your listings will be shown in all supported countries.',
 											'google-listings-and-ads'
 										) }
 									</RadioHelperText>
