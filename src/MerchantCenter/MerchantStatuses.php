@@ -515,7 +515,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		/** @var ProductRepository $product_repository */
 		$product_repository                         = $this->container->get( ProductRepository::class );
-		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_not_synced_product_ids() );
+		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_mc_not_synced_product_ids() );
 
 		$this->mc_statuses = [
 			'timestamp'  => $this->current_time->getTimestamp(),
@@ -555,16 +555,23 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 		ksort( $all_product_statuses );
 
+		/** @var ProductHelper $product_helper */
+		$product_helper = $this->container->get( ProductHelper::class );
+		/** @var ProductMetaHandler $meta_handler */
+		$meta_handler = $this->container->get( ProductMetaHandler::class );
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
-		$mc_status_key      = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
+		$mc_synced          = array_flip( $product_repository->find_mc_synced_product_ids() );
 
-		foreach ( $product_repository->find_ids() as $product_id ) {
-			update_post_meta(
-				$product_id,
-				$mc_status_key,
-				$all_product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED
-			);
+		// Update products in Merchant Center.
+		foreach ( $all_product_statuses as $product_id => $new_status ) {
+			$meta_handler->update_mc_status( $product_helper->get_wc_product( $product_id ), $new_status );
+			unset( $mc_synced[ $product_id ] );
+		}
+
+		// Unsync products no longer in Merchant Center.
+		foreach ( $mc_synced as $product_id => $old_index ) {
+			$meta_handler->update_mc_status( $product_helper->get_wc_product( $product_id ), MCStatus::NOT_SYNCED );
 		}
 	}
 
