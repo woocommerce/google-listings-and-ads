@@ -181,8 +181,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		// Update statistics cache and each product's mc_status.
-		$this->update_mc_statuses();
 		$this->update_product_mc_statuses();
+		$this->update_mc_statuses();
 
 		// Update account issues.
 		$this->refresh_account_issues();
