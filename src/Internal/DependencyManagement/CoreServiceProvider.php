@@ -221,8 +221,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ProductMetaHandler::class,
 			ProductHelper::class,
 			ValidatorInterface::class,
-			ProductFactory::class,
-			WC::class
+			ProductFactory::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,

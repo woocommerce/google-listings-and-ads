@@ -115,6 +115,19 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
+	 * Return the main target country (default Store country).
+	 * If the store country is not included then use the first target country.
+	 *
+	 * @return string
+	 */
+	public function get_main_target_country(): string {
+		$target_countries = $this->get_target_countries();
+		$shop_country     = $this->container->get( WC::class )->get_base_country();
+
+		return in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
+	}
+
+	/**
 	 * Get the connected merchant account.
 	 *
 	 * @return array
