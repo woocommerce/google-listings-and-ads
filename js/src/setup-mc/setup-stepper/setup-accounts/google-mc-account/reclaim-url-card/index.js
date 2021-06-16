@@ -9,6 +9,7 @@ import { CheckboxControl } from '@wordpress/components';
  * Internal dependencies
  */
 import toAccountText from '.~/utils/toAccountText';
+import recordEvent from '.~/utils/recordEvent';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
@@ -60,6 +61,9 @@ const ReclaimUrlCard = ( props ) => {
 	}
 
 	const handleCheckboxChange = ( v ) => {
+		recordEvent( 'gla_mc_account_reclaim_url_agreement_check', {
+			checked: v,
+		} );
 		setChecked( v );
 	};
 
@@ -106,6 +110,7 @@ const ReclaimUrlCard = ( props ) => {
 						isDestructive
 						disabled={ ! checked }
 						loading={ loading }
+						eventName="gla_mc_account_reclaim_url_button_click"
 						onClick={ handleReclaimClick }
 					>
 						{ __( 'Reclaim my URL', 'google-listings-and-ads' ) }
