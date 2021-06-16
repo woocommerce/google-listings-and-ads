@@ -32,8 +32,9 @@ const useAutoSetLocationCountriesEffect = ( formProps ) => {
 			return;
 		}
 
-		const countriesValue =
-			data && data[ storeCountryCode ] ? [ storeCountryCode ] : [];
+		const countriesValue = data[ storeCountryCode ]
+			? [ storeCountryCode ]
+			: [];
 
 		getInputProps( 'location' ).onChange( 'selected' );
 		getInputProps( 'countries' ).onChange( countriesValue );
