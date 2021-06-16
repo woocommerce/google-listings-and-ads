@@ -2,7 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
+import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -17,9 +18,11 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ReclaimUrlFailCard from './reclaim-url-fail-card';
+import './index.scss';
 
 const ReclaimUrlCard = ( props ) => {
 	const { id, websiteUrl } = props;
+	const [ checked, setChecked ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
@@ -56,12 +59,14 @@ const ReclaimUrlCard = ( props ) => {
 		return <ReclaimUrlFailCard onRetry={ handleRetry } />;
 	}
 
+	const handleCheckboxChange = ( v ) => {
+		setChecked( v );
+	};
+
 	return (
-		<Section.Card>
+		<Section.Card className="gla-reclaim-url-card">
 			<Section.Card.Body>
-				<ContentButtonLayout>
-					<Subsection.Title>{ toAccountText( id ) }</Subsection.Title>
-				</ContentButtonLayout>
+				<Subsection.Title>{ toAccountText( id ) }</Subsection.Title>
 				<ContentButtonLayout>
 					<div>
 						<Subsection.Title>
@@ -75,15 +80,31 @@ const ReclaimUrlCard = ( props ) => {
 								}
 							) }
 						</Subsection.Title>
-						<Subsection.HelperText>
-							{ __(
-								'If you reclaim this URL, it will cause any existing product listings or ads to stop running, and the other verified account will be notified that they have lost their claim.',
-								'google-listings-and-ads'
+						<Subsection.HelperText className="gla-reclaim-url-card__warning">
+							{ createInterpolateElement(
+								__(
+									'<strong>Warning:</strong> If you reclaim this URL, it will cause any existing product listings or ads to stop running, and any existing shipping or tax configurations will be lost. The other verified account will be notified that they have lost their claim.',
+									'google-listings-and-ads'
+								),
+								{
+									strong: <strong />,
+								}
 							) }
 						</Subsection.HelperText>
+						<CheckboxControl
+							label={ __(
+								'Yes, I understand the implications of reclaiming my URL.',
+								'google-listings-and-ads'
+							) }
+							checked={ checked }
+							disabled={ loading }
+							onChange={ handleCheckboxChange }
+						></CheckboxControl>
 					</div>
 					<AppButton
 						isSecondary
+						isDestructive
+						disabled={ ! checked }
 						loading={ loading }
 						onClick={ handleReclaimClick }
 					>
