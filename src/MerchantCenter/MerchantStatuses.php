@@ -171,14 +171,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		}
 
 		$this->mc_statuses = [];
-		/** @var Merchant $merchant */
-		$merchant = $this->container->get( Merchant::class );
 
 		// Update MC product stats and issues page by page.
 		$chunk_size = 5000;
 		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
-			$batch_response      = $merchant->get_productstatuses_batch( $google_ids );
-			$mc_product_statuses = $this->filter_valid_statuses( $batch_response );
+			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
 			$this->refresh_product_issues( $mc_product_statuses );
 			$this->sum_status_counts( $mc_product_statuses );
 		}
@@ -266,16 +263,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
-	 * Return only the valid statuses from a provided array. Invalid statuses:
+	 * Return only the valid statuses from a provided array of Google IDs. Invalid statuses:
 	 * - Aren't synced by this extension (invalid ID format), or
 	 * - Map to products no longer in WooCommerce (deleted or uploaded by a previous connection).
-	 * Also populates the $product_name_lookup used in refresh_product_issues()
+	 * Also populates the product_data_lookup used in refresh_product_issues()
 	 *
-	 * @param MC_Product_Status_Batch_Response $batch_response
+	 * @param string[] $google_ids
 	 *
 	 * @return Shopping_Product_Status[] Statuses found to be valid.
 	 */
-	protected function filter_valid_statuses( MC_Product_Status_Batch_Response $batch_response ): array {
+	protected function filter_valid_statuses( array $google_ids ): array {
+		/** @var Merchant $merchant */
+		$merchant = $this->container->get( Merchant::class );
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 		/** @var WC $wc_proxy */
@@ -283,7 +282,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
 		$valid_statuses = [];
-		foreach ( $batch_response->getEntries() as $response_entry ) {
+		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
 			$mc_product_id = $response_entry->getProductStatus()->getProductId();
 			$wc_product_id = $product_helper->get_wc_product_id( $mc_product_id );
 			// Skip products not synced by this extension.
