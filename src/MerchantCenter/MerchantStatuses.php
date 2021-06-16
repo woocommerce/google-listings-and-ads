@@ -21,6 +21,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
+use Google_Service_ShoppingContent_ProductstatusesCustomBatchResponse as MC_Product_Status_Batch_Response;
+use Google_Service_ShoppingContent_ProductstatusesCustomBatchResponseEntry as MC_Product_Status_Batch_Response_Entry;
 use DateTime;
 use Exception;
 
@@ -175,8 +177,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		// Update MC product stats and issues page by page.
 		$chunk_size = 5000;
 		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
-			$mc_product_statuses = $merchant->get_productstatuses_batch( $google_ids );
-			$mc_product_statuses = $this->filter_valid_statuses( $mc_product_statuses );
+			$batch_response      = $merchant->get_productstatuses_batch( $google_ids );
+			$mc_product_statuses = $this->filter_valid_statuses( $batch_response );
 			$this->refresh_product_issues( $mc_product_statuses );
 			$this->sum_status_counts( $mc_product_statuses );
 		}
@@ -269,54 +271,54 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * - Map to products no longer in WooCommerce (deleted or uploaded by a previous connection).
 	 * Also populates the $product_name_lookup used in refresh_product_issues()
 	 *
-	 * @param Shopping_Product_Status[] $mc_statuses
+	 * @param MC_Product_Status_Batch_Response $batch_response
+	 *
 	 * @return Shopping_Product_Status[] Statuses found to be valid.
 	 */
-	protected function filter_valid_statuses( array $mc_statuses ): array {
+	protected function filter_valid_statuses( MC_Product_Status_Batch_Response $batch_response ): array {
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
 		/** @var WC $wc_proxy */
 		$wc_proxy            = $this->container->get( WC::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
-		return array_values(
-			array_filter(
-				$mc_statuses,
-				function( $product ) use ( $wc_proxy, $product_helper, $visibility_meta_key ) {
-					$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
-					// Skip products not synced by this extension.
-					if ( ! $wc_product_id ) {
-						return false;
-					}
+		$valid_statuses = [];
+		foreach ( $batch_response->getEntries() as $response_entry ) {
+			$mc_product_id = $response_entry->getProductStatus()->getProductId();
+			$wc_product_id = $product_helper->get_wc_product_id( $mc_product_id );
+			// Skip products not synced by this extension.
+			if ( ! $wc_product_id ) {
+				continue;
+			}
 
-					// Product previously found/validated.
-					if ( ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
-						return true;
-					}
+			// Product previously found/validated.
+			if ( ! empty( $this->product_data_lookup[ $wc_product_id ] ) ) {
+				$valid_statuses[] = $response_entry->getProductStatus();
+				continue;
+			}
 
-					try {
-						$wc_product = $wc_proxy->get_product( $wc_product_id );
-					} catch ( InvalidValue $e ) {
-						// Should never reach here since the products IDS are retrieved from postmeta.
-						do_action(
-							'woocommerce_gla_debug_message',
-							sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
-							__METHOD__ . ' in remove_invalid_statuses()',
-						);
-						return false;
-					}
+			try {
+				$wc_product = $wc_proxy->get_product( $wc_product_id );
+			} catch ( InvalidValue $e ) {
+				// Should never reach here since the products IDS are retrieved from postmeta.
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $mc_product_id ),
+					__METHOD__ . ' in remove_invalid_statuses()',
+				);
+				continue;
+			}
 
-					$this->product_data_lookup[ $wc_product_id ] = [
-						'name'            => $wc_product->get_name(),
-						'visibility'      => $wc_product->get_meta( $visibility_meta_key ),
-						'maybe_parent_id' => $product_helper->maybe_swap_for_parent_id( $wc_product ),
-					];
+			$this->product_data_lookup[ $wc_product_id ] = [
+				'name'            => $wc_product->get_name(),
+				'visibility'      => $wc_product->get_meta( $visibility_meta_key ),
+				'maybe_parent_id' => $product_helper->maybe_swap_for_parent_id( $wc_product ),
+			];
 
-					return true;
-				}
-			)
-		);
+			$valid_statuses[] = $response_entry->getProductStatus();
+		}
 
+		return $valid_statuses;
 	}
 
 	/**
