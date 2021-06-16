@@ -93,8 +93,11 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 * Run on every plugin update.
 	 */
 	protected function install(): void {
+		$old_version = $this->get_db_version();
+		$new_version = $this->get_version();
+
 		foreach ( $this->installables as $installable ) {
-			$installable->install();
+			$installable->install( $old_version, $new_version );
 		}
 	}
 

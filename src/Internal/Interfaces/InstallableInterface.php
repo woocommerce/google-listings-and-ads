@@ -14,6 +14,9 @@ interface InstallableInterface {
 
 	/**
 	 * Run installation logic for this class.
+	 *
+	 * @param string $old_version Previous version before updating.
+	 * @param string $new_version Current version after updating.
 	 */
-	public function install(): void;
+	public function install( string $old_version, string $new_version ): void;
 }
