@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
@@ -127,6 +128,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductFactory::class         => true,
 		AttributesTab::class          => true,
 		VariationsAttributes::class   => true,
+		DeprecatedFilters::class      => true,
 	];
 
 	/**
@@ -254,5 +256,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 				return new DBInstaller( ...$arguments );
 			}
 		);
+
+		$this->share_with_tags( DeprecatedFilters::class );
 	}
 }
