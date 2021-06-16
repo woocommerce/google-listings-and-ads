@@ -346,17 +346,19 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * If the provided product has a parent, return its ID. Otherwise, return the
 	 * given (valid product) ID.
 	 *
-	 * @param int $product_id
+	 * @param int|WC_Product $product A WC product, or a WC product ID.
 	 *
 	 * @return int The parent ID or product ID of it doesn't have a parent.
-	 * @throws InvalidValue If the given ID doesn't reference a valid product.
+	 * @throws InvalidValue If a given ID doesn't reference a valid product.
 	 */
-	public function maybe_swap_for_parent_id( int $product_id ): int {
-		$product = $this->get_wc_product( $product_id );
+	public function maybe_swap_for_parent_id( $product ): int {
+		if ( is_integer( $product ) ) {
+			$product = $this->get_wc_product( $product );
+		}
 		if ( $product instanceof WC_Product_Variation ) {
 			return $product->get_parent_id();
 		}
-		return $product_id;
+		return $product->get_id();
 	}
 
 	/**
