@@ -368,12 +368,18 @@ class ProductRepository implements Service {
 			'type'       => $types,
 			'meta_query' => [
 				'relation' => 'OR',
-				$this->get_presync_error_products_meta_query(),
 				[
 					[
 						'key'     => ProductMetaHandler::KEY_VISIBILITY,
 						'compare' => '=',
 						'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+					],
+				],
+				[
+					[
+						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
+						'compare' => '=',
+						'value'   => SyncStatus::HAS_ERRORS,
 					],
 				],
 			],
