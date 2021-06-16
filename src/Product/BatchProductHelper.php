@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -53,18 +54,31 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $product_factory;
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductHelper      $product_helper
 	 * @param ValidatorInterface $validator
 	 * @param ProductFactory     $product_factory
+	 * @param WC                 $wc
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper, ValidatorInterface $validator, ProductFactory $product_factory ) {
+	public function __construct(
+		ProductMetaHandler $meta_handler,
+		ProductHelper $product_helper,
+		ValidatorInterface $validator,
+		ProductFactory $product_factory,
+		WC $wc
+	) {
 		$this->meta_handler    = $meta_handler;
 		$this->product_helper  = $product_helper;
 		$this->validator       = $validator;
 		$this->product_factory = $product_factory;
+		$this->wc              = $wc;
 	}
 
 	/**
@@ -152,8 +166,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return BatchProductRequestEntry[]
 	 */
 	public function validate_and_generate_update_request_entries( array $products ): array {
-		$request_entries  = [];
-		$target_countries = $this->merchant_center->get_target_countries();
+		$request_entries = [];
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
@@ -173,8 +186,13 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 				continue;
 			}
 
-			// check if the product validates for just one of its target countries
-			$adapted_product   = $this->product_factory->create( $product, $target_countries[0] );
+			$target_countries = $this->merchant_center->get_target_countries();
+			$shop_country     = $this->wc->get_base_country();
+
+			$main_target_country = in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
+
+			// validate the product
+			$adapted_product   = $this->product_factory->create( $product, $main_target_country );
 			$validation_result = $this->validate_product( $adapted_product );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation_result );
@@ -188,20 +206,13 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 				continue;
 			}
 
-			// return batch request entries for each target country
-			$product_entries = array_map(
-				function ( $target_country ) use ( $product, $adapted_product ) {
-					$target_product = clone $adapted_product;
-					$target_product->setTargetCountry( $target_country );
+			// add shipping for all selected target countries
+			array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
 
-					return new BatchProductRequestEntry(
-						$product->get_id(),
-						$target_product
-					);
-				},
-				$target_countries
+			$request_entries[] = new BatchProductRequestEntry(
+				$product->get_id(),
+				$adapted_product
 			);
-			$request_entries = array_merge( $request_entries, $product_entries );
 		}
 
 		return $request_entries;
