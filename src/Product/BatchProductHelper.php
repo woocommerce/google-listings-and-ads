@@ -268,4 +268,30 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 
 		return $request_entries;
 	}
+
+	/**
+	 * Returns an array of request entries for Google products that should no
+	 * longer be submitted for every target country.
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return BatchProductIDRequestEntry[]
+	 */
+	public function generate_stale_countries_request_entries( array $products ): array {
+		$main_target_country = $this->merchant_center->get_main_target_country();
+
+		$request_entries = [];
+		foreach ( $products as $product ) {
+			$google_ids = $this->meta_handler->get_google_ids( $product );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_target_country ] ) );
+			foreach ( $stale_ids as $stale_id ) {
+				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
+					$product->get_id(),
+					$stale_id
+				);
+			}
+		}
+
+		return $request_entries;
+	}
 }
