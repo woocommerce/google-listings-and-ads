@@ -105,6 +105,11 @@ All event names are prefixed by `wcadmin_gla_`.
 
 * `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 
+* `mc_account_reclaim_url_agreement_check` - Clicking on the checkbox to agree with and understand the implications of reclaiming URL.
+  * `checked`: indicate whether the checkbox is checked or unchecked.
+
+* `mc_account_reclaim_url_button_click` - Clicking on the button to reclaim URL for a Google Merchant Center account.
+
 * `mc_url_switch`
   * `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
   * `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
@@ -145,7 +150,7 @@ All event names are prefixed by `wcadmin_gla_`.
 * `gla_site_claim` event
   * `action` property is `overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required
   * `action` property is `success`: URL has been successfully set or overwritten.
-  * `action` property is `failure`: 
+  * `action` property is `failure`:
     *  `details` property is `independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA
     * `details` property is `google_proxy`: claim failed using the user creds (in the `Merchant` class)
     * `details` property is `google_manager`: claimed failed using MCA creds (paradoxically in the `Proxy` class)
