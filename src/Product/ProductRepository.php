@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Product;
 
@@ -350,9 +351,7 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs that are published and not synced:
-	 * - Visible with presync errors, or
-	 * - Set to not sync.
+	 * Find and return an array of WooCommerce product IDs that are marked as MC not_synced.
 	 * Excludes variations and variable products without variations.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
@@ -360,7 +359,7 @@ class ProductRepository implements Service {
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
+	public function find_mc_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
 		$types = ProductSyncer::get_supported_product_types();
 		$types = array_diff( $types, [ 'variation' ] );
 		$args  = [
@@ -369,18 +368,40 @@ class ProductRepository implements Service {
 			'meta_query' => [
 				'relation' => 'OR',
 				[
-					[
-						'key'     => ProductMetaHandler::KEY_VISIBILITY,
-						'compare' => '=',
-						'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
-					],
+					'key'     => ProductMetaHandler::KEY_MC_STATUS,
+					'compare' => '=',
+					'value'   => MCStatus::NOT_SYNCED,
 				],
 				[
-					[
-						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-						'compare' => '=',
-						'value'   => SyncStatus::HAS_ERRORS,
-					],
+					'key'     => ProductMetaHandler::KEY_MC_STATUS,
+					'compare' => 'NOT EXISTS',
+				],
+			],
+		];
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs that are NOT marked as MC not_synced.
+	 * Excludes variations and variable products without variations.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_mc_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$types = ProductSyncer::get_supported_product_types();
+		$types = array_diff( $types, [ 'variation' ] );
+		$args  = [
+			'status'     => 'publish',
+			'type'       => $types,
+			'meta_query' => [
+				[
+					'key'     => ProductMetaHandler::KEY_MC_STATUS,
+					'compare' => '!=',
+					'value'   => MCStatus::NOT_SYNCED,
 				],
 			],
 		];
