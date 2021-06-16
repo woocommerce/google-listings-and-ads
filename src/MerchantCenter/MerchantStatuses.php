@@ -21,8 +21,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
-use Google_Service_ShoppingContent_ProductstatusesCustomBatchResponse as MC_Product_Status_Batch_Response;
-use Google_Service_ShoppingContent_ProductstatusesCustomBatchResponseEntry as MC_Product_Status_Batch_Response_Entry;
 use DateTime;
 use Exception;
 
@@ -535,44 +533,35 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	protected function update_product_mc_statuses() {
 		// Generate a product_id=>mc_status array.
-		$all_product_statuses = [];
+		$new_product_statuses = [];
 		foreach ( $this->product_statuses as $types ) {
 			foreach ( $types as $product_id => $statuses ) {
 				if ( isset( $statuses[ MCStatus::PENDING ] ) ) {
-					$all_product_statuses[ $product_id ] = MCStatus::PENDING;
+					$new_product_statuses[ $product_id ] = MCStatus::PENDING;
 				} elseif ( isset( $statuses[ MCStatus::EXPIRING ] ) ) {
-					$all_product_statuses[ $product_id ] = MCStatus::EXPIRING;
+					$new_product_statuses[ $product_id ] = MCStatus::EXPIRING;
 				} elseif ( isset( $statuses[ MCStatus::APPROVED ] ) ) {
 					if ( count( $statuses ) > 1 ) {
-						$all_product_statuses[ $product_id ] = MCStatus::PARTIALLY_APPROVED;
+						$new_product_statuses[ $product_id ] = MCStatus::PARTIALLY_APPROVED;
 					} else {
-						$all_product_statuses[ $product_id ] = MCStatus::APPROVED;
+						$new_product_statuses[ $product_id ] = MCStatus::APPROVED;
 					}
 				} else {
-					$all_product_statuses[ $product_id ] = array_key_first( $statuses );
+					$new_product_statuses[ $product_id ] = array_key_first( $statuses );
 				}
 			}
 		}
-		ksort( $all_product_statuses );
+		ksort( $new_product_statuses );
 
-		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
-		/** @var ProductMetaHandler $meta_handler */
-		$meta_handler = $this->container->get( ProductMetaHandler::class );
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
-		$mc_synced          = array_flip( $product_repository->find_mc_synced_product_ids() );
-
-		// Update products in Merchant Center.
-		foreach ( $all_product_statuses as $product_id => $new_status ) {
-			$meta_handler->update_mc_status( $product_helper->get_wc_product( $product_id ), $new_status );
-			unset( $mc_synced[ $product_id ] );
+		$meta_key           = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
+		foreach ( $product_repository->find_ids() as $product_id ) {
+			// Default to NOT_SYNCED to update any missing values.
+			$new_status = $new_product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED;
+			update_post_meta( $product_id, $meta_key, $new_status );
 		}
 
-		// Unsync products no longer in Merchant Center.
-		foreach ( $mc_synced as $product_id => $old_index ) {
-			$meta_handler->update_mc_status( $product_helper->get_wc_product( $product_id ), MCStatus::NOT_SYNCED );
-		}
 	}
 
 	/**
