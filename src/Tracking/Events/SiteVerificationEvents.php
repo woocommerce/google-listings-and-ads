@@ -14,8 +14,8 @@ class SiteVerificationEvents extends BaseEvent {
 	 * Register the tracking class.
 	 */
 	public function register(): void {
-		add_action( $this->get_slug() . '_site_verify_success', [ $this, 'track_site_verify_success' ] );
-		add_action( $this->get_slug() . '_site_verify_failure', [ $this, 'track_site_verify_failure' ] );
+		add_action( 'woocommerce_gla_site_verify_success', [ $this, 'track_site_verify_success' ] );
+		add_action( 'woocommerce_gla_site_verify_failure', [ $this, 'track_site_verify_failure' ] );
 	}
 
 	/**

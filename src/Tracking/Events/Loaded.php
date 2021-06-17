@@ -16,7 +16,7 @@ class Loaded extends BaseEvent {
 	 * Register the tracking class.
 	 */
 	public function register(): void {
-		add_action( $this->get_slug() . '_extension_loaded', [ $this, 'track_loaded' ] );
+		add_action( 'woocommerce_gla_extension_loaded', [ $this, 'track_loaded' ] );
 	}
 
 	/**

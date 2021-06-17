@@ -18,11 +18,11 @@ class SiteClaimEvents extends BaseEvent {
 	 * Register the tracking class.
 	 */
 	public function register(): void {
-		add_action( 'gla_site_claim_overwrite_required', [ $this, 'track_site_claim_overwrite_required' ] );
-		add_action( 'gla_site_claim_success', [ $this, 'track_site_claim_success' ] );
-		add_action( 'gla_site_claim_failure', [ $this, 'track_site_claim_failure' ] );
-		add_action( 'gla_url_switch_required', [ $this, 'track_url_switch_required' ] );
-		add_action( 'gla_url_switch_success', [ $this, 'track_url_switch_success' ] );
+		add_action( 'woocommerce_gla_site_claim_overwrite_required', [ $this, 'track_site_claim_overwrite_required' ] );
+		add_action( 'woocommerce_gla_site_claim_success', [ $this, 'track_site_claim_success' ] );
+		add_action( 'woocommerce_gla_site_claim_failure', [ $this, 'track_site_claim_failure' ] );
+		add_action( 'woocommerce_gla_url_switch_required', [ $this, 'track_url_switch_required' ] );
+		add_action( 'woocommerce_gla_url_switch_success', [ $this, 'track_url_switch_success' ] );
 	}
 
 	/**

@@ -81,7 +81,7 @@ class SiteVerificationController extends BaseOptionsController {
 			try {
 				$meta_tag = $this->site_verification->get_token( $site_url );
 			} catch ( Exception $e ) {
-				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'token' ] );
+				do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'token' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
@@ -101,18 +101,18 @@ class SiteVerificationController extends BaseOptionsController {
 				if ( $this->site_verification->insert( $site_url ) ) {
 					$site_verification_options['verified'] = 'yes';
 					$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-					do_action( "{$this->get_slug()}_site_verify_success", [] );
+					do_action( 'woocommerce_gla_site_verify_success', [] );
 
 					return $this->get_success_status( __( 'Site successfully verified.', 'google-listings-and-ads' ) );
 				}
 			} catch ( Exception $e ) {
-				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'meta-tag' ] );
+				do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
 
 			// Should never reach this point.
-			do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'unknown' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
 
 			return $this->get_failure_status();
 		};

@@ -160,7 +160,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 
 			if ( ! $this->product_helper->is_sync_ready( $product ) ) {
 				do_action(
-					'gla_debug_message',
+					'woocommerce_gla_debug_message',
 					sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
 					__METHOD__
 				);
@@ -180,7 +180,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 				$this->mark_as_invalid( $validation_result );
 
 				do_action(
-					'gla_debug_message',
+					'woocommerce_gla_debug_message',
 					sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), json_encode( $validation_result ) ),
 					__METHOD__
 				);

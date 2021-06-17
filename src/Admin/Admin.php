@@ -226,6 +226,6 @@ class Admin implements Service, Registerable, Conditional {
 	 * @return bool Whether reports should be enabled .
 	 */
 	protected function enableReports(): bool {
-		return apply_filters( 'gla_enable_reports', true );
+		return apply_filters( 'woocommerce_gla_enable_reports', true );
 	}
 }

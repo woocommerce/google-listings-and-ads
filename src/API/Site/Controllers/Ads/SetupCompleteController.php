@@ -43,7 +43,7 @@ class SetupCompleteController extends BaseController {
 	 */
 	protected function get_setup_complete_callback(): callable {
 		return function( Request $request ) {
-			do_action( 'gla_ads_setup_completed' );
+			do_action( 'woocommerce_gla_ads_setup_completed' );
 
 			return new Response(
 				[

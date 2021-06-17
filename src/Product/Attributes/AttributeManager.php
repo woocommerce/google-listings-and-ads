@@ -211,7 +211,7 @@ class AttributeManager implements Service {
 		$attribute_types = $this->get_attribute_types_for_product( $product );
 		if ( ! isset( $attribute_types[ $attribute_id ] ) ) {
 			do_action(
-				'gla_error',
+				'woocommerce_gla_error',
 				sprintf( 'Attribute "%s" is not supported for a "%s" product (ID: %s).', $attribute_id, $product->get_type(), $product->get_id() ),
 				__METHOD__
 			);
@@ -224,7 +224,7 @@ class AttributeManager implements Service {
 	 * @throws InvalidClass If any of the given attribute classes do not implement the AttributeInterface.
 	 */
 	protected function map_attribute_types(): void {
-		$available_attributes = apply_filters( 'gla_product_attribute_types', self::ATTRIBUTES );
+		$available_attributes = apply_filters( 'woocommerce_gla_product_attribute_types', self::ATTRIBUTES );
 
 		$this->attribute_types_map = [];
 		foreach ( $available_attributes as $attribute_type ) {
@@ -239,7 +239,7 @@ class AttributeManager implements Service {
 			 * @param string[] $applicable_types Array of WooCommerce product types
 			 * @param string   $attribute_type   Attribute class name (FQN)
 			 */
-			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
+			$applicable_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
 			foreach ( $applicable_types as $product_type ) {
 				$this->attribute_types_map[ $product_type ]                  = $this->attribute_types_map[ $product_type ] ?? [];

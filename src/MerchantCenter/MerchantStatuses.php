@@ -282,7 +282,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					// Skip products that are no longer in WooCommerce.
 					if ( ! $wc_product ) {
 						do_action(
-							'gla_debug_message',
+							'woocommerce_gla_debug_message',
 							sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
 							__METHOD__ . ' in remove_invalid_statuses()',
 						);
@@ -477,7 +477,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 				// Don't include invalid products (or their parents).
 				do_action(
-					'gla_debug_message',
+					'woocommerce_gla_debug_message',
 					sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $wc_product_id ),
 					__METHOD__,
 				);

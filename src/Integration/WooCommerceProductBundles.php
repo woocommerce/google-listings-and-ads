@@ -68,7 +68,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 
 		// recalculate the product price for bundles
 		add_filter(
-			'gla_product_attribute_value_price',
+			'woocommerce_gla_product_attribute_value_price',
 			function ( float $price, WC_Product $product, bool $tax_excluded ) {
 				return $this->calculate_price( $price, $product, $tax_excluded );
 			},
@@ -76,7 +76,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 			3
 		);
 		add_filter(
-			'gla_product_attribute_value_sale_price',
+			'woocommerce_gla_product_attribute_value_sale_price',
 			function ( float $sale_price, WC_Product $product, bool $tax_excluded ) {
 				return $this->calculate_sale_price( $sale_price, $product, $tax_excluded );
 			},
@@ -86,7 +86,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 
 		// filter unsupported bundle products
 		add_filter(
-			'gla_get_sync_ready_products_pre_filter',
+			'woocommerce_gla_get_sync_ready_products_pre_filter',
 			function ( array $products ) {
 				return $this->get_sync_ready_bundle_products( $products );
 			}
@@ -109,7 +109,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 			}
 
 			add_filter(
-				"gla_attribute_applicable_product_types_{$attribute_id}",
+				"woocommerce_gla_attribute_applicable_product_types_{$attribute_id}",
 				function ( array $applicable_types ) {
 					return $this->add_bundle_type( $applicable_types );
 				}
@@ -118,7 +118,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 
 		// hide the isBundle attribute on 'bundle' products (we set it automatically to true)
 		add_filter(
-			'gla_attribute_hidden_product_types_isBundle',
+			'woocommerce_gla_attribute_hidden_product_types_isBundle',
 			function ( array $applicable_types ) {
 				return $this->add_bundle_type( $applicable_types );
 			}

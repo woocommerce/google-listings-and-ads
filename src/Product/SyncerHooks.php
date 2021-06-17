@@ -177,7 +177,7 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 			$this->set_already_scheduled( $product_id );
 
 			do_action(
-				'gla_debug_message',
+				'woocommerce_gla_debug_message',
 				sprintf( 'Deleting product (ID: %s) from Google Merchant Center because it is not ready to be synced.', $product->get_id() ),
 				__METHOD__
 			);

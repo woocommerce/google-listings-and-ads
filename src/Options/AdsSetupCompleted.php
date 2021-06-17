@@ -22,12 +22,12 @@ class AdsSetupCompleted implements OptionsAwareInterface, Registerable, Service 
 	/**
 	 * Register a service.
 	 *
-	 * TODO: call `do_action( 'gla_ads_settings_sync' );` when the initial Google Ads account,
+	 * TODO: call `do_action( 'woocommerce_gla_ads_settings_sync' );` when the initial Google Ads account,
 	 *       paid campaign, and billing setup is completed.
 	 */
 	public function register(): void {
 		add_action(
-			'gla_ads_setup_completed',
+			'woocommerce_gla_ads_setup_completed',
 			function() {
 				$this->set_completed_timestamp();
 			}
