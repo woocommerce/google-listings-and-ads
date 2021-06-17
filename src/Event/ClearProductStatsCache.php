@@ -37,13 +37,13 @@ class ClearProductStatsCache implements Registerable, Service {
 	 */
 	public function register(): void {
 		add_action(
-			'gla_batch_updated_products',
+			'woocommerce_gla_batch_updated_products',
 			function() {
 				$this->clear_stats_cache();
 			}
 		);
 		add_action(
-			'gla_batch_deleted_products',
+			'woocommerce_gla_batch_deleted_products',
 			function() {
 				$this->clear_stats_cache();
 			}
@@ -58,7 +58,7 @@ class ClearProductStatsCache implements Registerable, Service {
 			$this->merchant_statuses->clear_cache();
 		} catch ( Exception $exception ) {
 			// log and fail silently
-			do_action( 'gla_exception', $exception, __METHOD__ );
+			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 		}
 	}
 }

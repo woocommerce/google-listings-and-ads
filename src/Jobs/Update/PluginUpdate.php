@@ -69,7 +69,7 @@ class PluginUpdate implements Service, InstallableInterface {
 			try {
 				$this->job_repository->get( $job )->start();
 			} catch ( JobException $e ) {
-				do_action( 'gla_exception', $e, __METHOD__ );
+				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			}
 		}
 	}
