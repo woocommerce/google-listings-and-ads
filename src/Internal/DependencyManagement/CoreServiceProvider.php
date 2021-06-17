@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
+use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ActivationRedirect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
@@ -248,6 +249,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
 		$this->conditionally_share_with_tags( SiteClaimEvents::class );
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
+		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );
 
 		// The DB Controller has some extra setup required.
 		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );

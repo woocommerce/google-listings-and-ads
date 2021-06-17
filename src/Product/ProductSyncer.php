@@ -106,7 +106,7 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 			} catch ( Exception $exception ) {
 				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 
-				throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
+				throw new ProductSyncerException( sprintf( 'Error updating Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
 

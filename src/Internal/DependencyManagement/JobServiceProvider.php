@@ -31,7 +31,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\StartProductSync;
+use Automattic\WooCommerce\GoogleListingsAndAds\Event\StartProductSync;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\SyncerHooks;
 
 defined( 'ABSPATH' ) || exit;

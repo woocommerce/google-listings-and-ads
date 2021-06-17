@@ -139,6 +139,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	}
 
 	/**
+	 * Clears the status cache data.
+	 *
+	 * @since x.x.x
+	 */
+	public function clear_cache(): void {
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+	}
+
+	/**
 	 * Update stale status-related data - account issues, product issues, products status stats.
 	 *
 	 * @param bool $force_refresh Force refresh of all status-related data.
