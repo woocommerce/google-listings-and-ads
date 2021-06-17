@@ -1,17 +1,17 @@
 /**
  * Internal dependencies
  */
-import './index.scss';
+import useShadowStyles from '.~/hooks/useShadowStyles';
 
-const ContentButtonLayout = ( props ) => {
-	const { className, ...rest } = props;
+const styles = /* css */ `:host {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: calc(var(--main-gap) / 2);
+}`;
 
-	return (
-		<div
-			className={ `gla-content-button-layout ${ className }` }
-			{ ...rest }
-		/>
-	);
-};
+const ContentButtonLayout = ( props ) => (
+	<div ref={ useShadowStyles( styles ) } { ...props } />
+);
 
 export default ContentButtonLayout;
