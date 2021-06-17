@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,6 +40,7 @@ class PluginUpdate implements Service, InstallableInterface {
 	private $updates = [
 		'1.0.1' => [
 			CleanupProductTargetCountriesJob::class,
+			UpdateAllProducts::class,
 		],
 	];
 
