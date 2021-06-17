@@ -20,10 +20,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -842,7 +842,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'clear-mc-status-cache' === $_GET['action'] && check_admin_referer( 'clear-mc-status-cache' ) ) {
-			$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
+			$this->container->get( MerchantStatuses::class )->clear_cache();
 			$this->response .= 'Merchant Center statuses transient successfully deleted.';
 		}
 

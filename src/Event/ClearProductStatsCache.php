@@ -11,18 +11,20 @@ use Exception;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class RefreshProductStats
+ * Class ClearProductStatsCache
+ *
+ * @since x.x.x
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class RefreshProductStats implements Registerable, Service {
+class ClearProductStatsCache implements Registerable, Service {
 	/**
 	 * @var MerchantStatuses
 	 */
 	protected $merchant_statuses;
 
 	/**
-	 * RefreshProductStats constructor.
+	 * ClearProductStatsCache constructor.
 	 *
 	 * @param MerchantStatuses $merchant_statuses
 	 */
@@ -37,23 +39,23 @@ class RefreshProductStats implements Registerable, Service {
 		add_action(
 			'gla_batch_updated_products',
 			function() {
-				$this->refresh_stats();
+				$this->clear_stats_cache();
 			}
 		);
 		add_action(
 			'gla_batch_deleted_products',
 			function() {
-				$this->refresh_stats();
+				$this->clear_stats_cache();
 			}
 		);
 	}
 
 	/**
-	 * Refresh the product statistics cache
+	 * Clears the product statistics cache
 	 */
-	protected function refresh_stats() {
+	protected function clear_stats_cache() {
 		try {
-			$this->merchant_statuses->maybe_refresh_status_data( true );
+			$this->merchant_statuses->clear_cache();
 		} catch ( Exception $exception ) {
 			// log and fail silently
 			do_action( 'gla_exception', $exception, __METHOD__ );
