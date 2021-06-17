@@ -1,13 +1,8 @@
 /**
- * External dependencies
- */
-import { useSelect } from '@wordpress/data';
-
-/**
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
-import { STORE_KEY } from '.~/data';
+import useShippingTimes from '.~/hooks/useShippingTimes';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddTimeButton from './add-time-button';
@@ -16,9 +11,7 @@ import CountriesTimeInputForm from './countries-time-input-form';
 import './index.scss';
 
 const ShippingTimeSetup = () => {
-	const shippingTimes = useSelect( ( select ) =>
-		select( STORE_KEY ).getShippingTimes()
-	);
+	const { data: shippingTimes } = useShippingTimes();
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
 	if ( ! selectedCountryCodes ) {

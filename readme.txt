@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.3
 Tested up to: 5.7
 Requires PHP: 7.3
-Stable tag: 0.6.0
+Stable tag: 1.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -114,6 +114,58 @@ Smart Shopping campaigns are pay-per-click, meaning you only pay when someone cl
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
 
 == Changelog ==
+
+= 1.0.0 - 2021-06-08 =
+* Fix - Add Tracks events for site claim and URL switching.
+* Fix - Add debugging logs for product syncer.
+* Fix - Add event tracking when clicking on the chart tabs in the report pages.
+* Fix - Add event trackings when the "Launch paid campaign" buttons are clicked.
+* Fix - Add status box in the Product Feed page.
+* Fix - Add table's pagination tracking events to the product feed page.
+* Fix - Add track events for account connections.
+* Fix - Add validations to fix that the free listings setup/edit forms could be submitted with a negative shipping rate/time.
+* Fix - Bump TravisCI's OS and node version to match the one used for the release.
+* Fix - Change "disconnect all accounts" modal text.
+* Fix - Change error message and add Open Google MC button to the Dashboard.
+* Fix - Change to use batch upsert actions for saving shipping data on the Edit Free Listings page.
+* Fix - Check product exists with helper function.
+* Fix - Cleanup synced product IDs on settings change.
+* Fix - Do not request ads reports when the setup is incomplete.
+* Fix - Double check product's sync ready status returned by repository.
+* Fix - Expose pre-sync errors.
+* Fix - Fall back to 'SurfacesAcrossGoogle' status if 'Shopping' isn't available for Product Feed.
+* Fix - Fix compatibility issue that lacks required class of new WC Navigation in supported WC versions.
+* Fix - Fix fatal error when duplicating and trashing synced variable products.
+* Fix - Fix the alignment of label and helper next to radio and checkbox.
+* Fix - Fix the problem of the "Create another campaign" button not working.
+* Fix - Hide the ChannelVisibilityMetaBox for unsupported products.
+* Fix - Hide unpublished products from the product feed.
+* Fix - Include pre-sync product errors in the issues API.
+* Fix - Make the free shipping threshold be able to set up with $0.
+* Fix - Modify `path` in URL to make additional pages work with WooCommerce Navigation.
+* Fix - Only submit 'Published' products.
+* Fix - Optimize presync error to issue collation process.
+* Fix - Override values for enhanced free listings issue.
+* Fix - Prevent render breaking when getting errors from report API in the programs report page.
+* Fix - Product titles for Free Listing reports.
+* Fix - Refactor product meta to use product object instead of ID.
+* Fix - Remove Checkbox.
+* Fix - Reports mocked responses.
+* Fix - Resolve getLabels immediately, if free listings are requested. ….
+* Fix - Retrieve product IDs and use update_post_meta.
+* Fix - Return empty if no matching attributes found.
+* Fix - Scheduled sync count.
+* Fix - Shipping rates and shipping times: Add and edit modals - validation logic.
+* Fix - Show selected program label in the filter on program report page load.
+* Fix - Small ProductQueryFeedHelper Fix.
+* Fix - Sort list of supported countries.
+* Fix - Throw an error if no ID is provided.
+* Fix - Tracking doc tweaks.
+* Fix - Tracking settings.
+* Fix - Use empty check for campaign name.
+* Fix - Use product name or title in products report.
+* Fix - Validate required and incompatible plugins.
+* Fix - Workaround `woocommerce/data` dependency issues, reset `package-lock.json`.
 
 = 0.6.0 - 2021-05-27 =
 * Fix - Add FAQs to step 1 of the MC setup flow.

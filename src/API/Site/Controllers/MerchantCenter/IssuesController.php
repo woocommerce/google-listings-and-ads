@@ -94,7 +94,7 @@ class IssuesController extends BaseOptionsController {
 				} catch ( InvalidValue $e ) {
 					// Don't include valid products
 					do_action(
-						'gla_debug_message',
+						'woocommerce_gla_debug_message',
 						sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $issue['product_id'] ),
 						__METHOD__,
 					);

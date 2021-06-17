@@ -83,7 +83,7 @@ class AdsCampaign implements OptionsAwareInterface {
 
 			return $return;
 		} catch ( ApiException $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
@@ -132,7 +132,7 @@ class AdsCampaign implements OptionsAwareInterface {
 				'status' => CampaignStatus::ENABLED,
 			] + $params;
 		} catch ( ApiException $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
 				throw new Exception( __( 'A campaign with this name already exists', 'google-listings-and-ads' ) );
@@ -164,7 +164,7 @@ class AdsCampaign implements OptionsAwareInterface {
 
 			return [];
 		} catch ( ApiException $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error retrieving campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
@@ -206,7 +206,7 @@ class AdsCampaign implements OptionsAwareInterface {
 
 			return $campaign_id;
 		} catch ( ApiException $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
@@ -235,7 +235,7 @@ class AdsCampaign implements OptionsAwareInterface {
 
 			return $this->parse_campaign_id( $deleted_campaign->getResourceName() );
 		} catch ( ApiException $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			if ( $this->has_api_exception_error( $e, 'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' ) ) {
 				throw new Exception( __( 'This campaign has already been deleted', 'google-listings-and-ads' ) );

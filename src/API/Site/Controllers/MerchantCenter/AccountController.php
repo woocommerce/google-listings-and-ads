@@ -440,12 +440,12 @@ class AccountController extends BaseOptionsController {
 
 					// Sub-account: request overwrite confirmation.
 					if ( $state['set_id']['data']['from_mca'] ?? true ) {
-						do_action( 'gla_site_claim_overwrite_required', [] );
+						do_action( 'woocommerce_gla_site_claim_overwrite_required', [] );
 
 						$step['data']['overwrite_required'] = true;
 						$e                                  = new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), null, $data );
 					} else {
-						do_action( 'gla_site_claim_failure', [ 'details' => 'independent_account' ] );
+						do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'independent_account' ] );
 
 						// Independent account: overwrite not possible.
 						throw new ExceptionWithResponseData(
@@ -481,7 +481,7 @@ class AccountController extends BaseOptionsController {
 	private function verify_site(): void {
 		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
 		if ( ! wc_is_valid_url( $site_url ) ) {
-			do_action( 'gla_site_verify_failure', [ 'step' => 'site-url' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'site-url' ] );
 			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
 		}
 
@@ -496,7 +496,7 @@ class AccountController extends BaseOptionsController {
 		try {
 			$meta_tag = $site_verification->get_token( $site_url );
 		} catch ( Exception $e ) {
-			do_action( 'gla_site_verify_failure', [ 'step' => 'token' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'token' ] );
 			throw $e;
 		}
 
@@ -515,18 +515,18 @@ class AccountController extends BaseOptionsController {
 			if ( $site_verification->insert( $site_url ) ) {
 				$site_verification_options['verified'] = $site_verification::VERIFICATION_STATUS_VERIFIED;
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-				do_action( 'gla_site_verify_success', [] );
+				do_action( 'woocommerce_gla_site_verify_success', [] );
 
 				return;
 			}
 		} catch ( Exception $e ) {
-			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
 
 			throw $e;
 		}
 
 		// Should never reach this point.
-		do_action( 'gla_site_verify_failure', [ 'step' => 'unknown' ] );
+		do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
 
 		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
 	}
@@ -602,7 +602,7 @@ class AccountController extends BaseOptionsController {
 				$clean_account_website_url = $this->strip_url_protocol( $account_website_url );
 				$clean_site_website_url    = $this->strip_url_protocol( $site_website_url );
 
-				do_action( 'gla_url_switch_required', [] );
+				do_action( 'woocommerce_gla_url_switch_required', [] );
 
 				throw new ExceptionWithResponseData(
 					sprintf(
@@ -623,7 +623,7 @@ class AccountController extends BaseOptionsController {
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
 
-			do_action( 'gla_url_switch_success', [] );
+			do_action( 'woocommerce_gla_url_switch_success', [] );
 		}
 	}
 

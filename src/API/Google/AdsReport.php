@@ -86,7 +86,7 @@ class AdsReport implements OptionsAwareInterface {
 
 			return $this->report_data;
 		} catch ( ApiException $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			/* translators: %s Error message */
 			throw new Exception( sprintf( __( 'Unable to retrieve campaign report data: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );

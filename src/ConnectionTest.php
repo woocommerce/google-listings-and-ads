@@ -83,7 +83,7 @@ class ConnectionTest implements Service, Registerable {
 	 * Add menu entries
 	 */
 	protected function register_admin_menu() {
-		if ( apply_filters( 'gla_enable_connection_test', false ) ) {
+		if ( apply_filters( 'woocommerce_gla_enable_connection_test', false ) ) {
 			add_menu_page(
 				'Connection Test',
 				'Connection Test',

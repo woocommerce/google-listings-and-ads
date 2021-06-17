@@ -15,7 +15,7 @@ const useAdminUrl = () => {
 			'wc_admin',
 			'adminUrl'
 		);
-	} );
+	}, [] );
 };
 
 export default useAdminUrl;

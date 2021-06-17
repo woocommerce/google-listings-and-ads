@@ -11,6 +11,19 @@ import round from '.~/utils/round';
 
 export const freeFields = [ 'clicks', 'impressions' ];
 export const paidFields = [ 'sales', 'conversions', 'spend', ...freeFields ];
+/**
+ * Reasons why the free listings data may be missing.
+ *
+ * @enum {number}
+ */
+export const MISSING_FREE_LISTINGS_DATA = Object.freeze( {
+	/** 0 - No anticipated data is missing. */
+	NONE: 0,
+	/** 1 - The data for this metric is not (yet) available in the API and was not even requested. */
+	FOR_METRIC: 1,
+	/** 2 - The data was requested but Google API failed to return it. */
+	FOR_REQUEST: 2,
+} );
 
 /**
  * Get report query for fetching performance data from API.
@@ -91,35 +104,66 @@ export function getReportKey( category, type, reportQuery ) {
  *
  * @param {ReportFieldsSchema} primary The primary report fields fetched from report API.
  * @param {ReportFieldsSchema} secondary The secondary report fields fetched from report API.
+ * @param {Array<string>} [fields] Array of expected metrics.
  * @return {PerformanceData} The calculated performance data of each metric.
  */
-export function mapReportFieldsToPerformance( primary, secondary ) {
-	return Object.keys( primary ).reduce(
+export function mapReportFieldsToPerformance(
+	primary = {},
+	secondary = {},
+	fields
+) {
+	return ( fields || Object.keys( primary ) ).reduce(
 		( acc, key ) => ( {
 			...acc,
-			[ key ]: fieldsToPerformance( primary[ key ], secondary[ key ] ),
+			[ key ]: fieldsToPerformance(
+				primary[ key ],
+				secondary[ key ],
+				! primary[ key ] || ! secondary[ key ]
+					? MISSING_FREE_LISTINGS_DATA.FOR_REQUEST
+					: MISSING_FREE_LISTINGS_DATA.NONE
+			),
 		} ),
 		{}
 	);
 }
 
 /**
- * Calculate performance data by each metric.
+ * Calculate deltas and map indidual ReportField metrics to PerformanceData field.
  *
- * @param {ReportFieldsSchema} value The primary report fields fetched from report API.
- * @param {ReportFieldsSchema} base The secondary report fields fetched from report API.
- * @param {boolean} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
+ * @param {number} [value] The primary report field fetched from report API.
+ * @param {number} [base] The secondary report field fetched from report API.
+ * @param {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
  * @return {PerformanceData} The calculated performance data of each metric.
  */
-export function fieldsToPerformance( value, base, missingFreeListingsData ) {
-	let delta = 0;
+export const fieldsToPerformance = (
+	value,
+	base,
+	missingFreeListingsData
+) => ( {
+	value,
+	delta: calculateDelta( value, base ),
+	prevValue: base,
+	missingFreeListingsData,
+} );
 
-	if ( value !== base ) {
-		const percent = ( ( value - base ) / base ) * 100;
-		delta = Number.isFinite( percent ) ? round( percent ) : null;
+/**
+ * Calculate delta.
+ *
+ * @param {number} [value] The primary report field fetched from report API.
+ * @param {number} [base] The secondary report field fetched from report API.
+ * @return {number | null} The calculated performance data of each metric. `null` if any number is missing, or the result is not finite.
+ */
+function calculateDelta( value, base ) {
+	let delta = null;
+	if ( typeof value === 'number' && typeof base === 'number' ) {
+		delta = 0;
+		if ( value !== base ) {
+			const percent = ( ( value - base ) / base ) * 100;
+			delta = Number.isFinite( percent ) ? round( percent ) : null;
+		}
 	}
 
-	return { value, delta, prevValue: base, missingFreeListingsData };
+	return delta;
 }
 
 /**
@@ -151,5 +195,5 @@ export function fieldsToPerformance( value, base, missingFreeListingsData ) {
  * @property {number} value Value of the current period.
  * @property {number} prevValue Value of the previous period.
  * @property {number} delta The delta of the current value compared to the previous value.
- * @property {boolean} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
+ * @property {MISSING_FREE_LISTINGS_DATA} [missingFreeListingsData] Flag indicating whether the data miss entries from Free Listings.
  */

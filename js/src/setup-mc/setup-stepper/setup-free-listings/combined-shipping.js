@@ -12,22 +12,17 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import ShippingRateSetup from '../shipping-rate/shipping-rate-setup';
-import ShippingTimeSetup from '../shipping-time/shipping-time-setup';
-import './index.scss';
-
-/**
- * @typedef {import('.~/data/actions').CountryCode} CountryCode
- */
+import ShippingRateSetup from './shipping-rate/shipping-rate-setup';
+import ShippingTimeSetup from './shipping-time/shipping-time-setup';
 
 /**
  * Form section to set shipping rate and time per country.
+ * Copied from {@link .~/components/free-listings/configure-product-listings/combined-shipping/index.js}
  *
  * @param {Object} props
  * @param {Object} props.formProps
- * @param {Array<CountryCode>} props.countries List of supported countries.
  */
-const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
+export default function CombinedShipping( { formProps } ) {
 	const { getInputProps, values } = formProps;
 
 	// Note: since we only use `shipping_rate` to determine how to syncboth shipping rates and times,
@@ -122,12 +117,7 @@ const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
 										'google-listings-and-ads'
 									) }
 								</h3>
-								<ShippingRateSetup
-									selectedCountryCodes={
-										selectedCountryCodes
-									}
-									formProps={ formProps }
-								/>
+								<ShippingRateSetup formProps={ formProps } />
 							</Section.Card.Body>
 						</Section.Card>
 
@@ -142,12 +132,7 @@ const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
 										'google-listings-and-ads'
 									) }
 								</h3>
-								<ShippingTimeSetup
-									selectedCountryCodes={
-										selectedCountryCodes
-									}
-									formProps={ formProps }
-								/>
+								<ShippingTimeSetup formProps={ formProps } />
 							</Section.Card.Body>
 						</Section.Card>
 					</>
@@ -155,6 +140,4 @@ const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
 			</VerticalGapLayout>
 		</Section>
 	);
-};
-
-export default CombinedShipping;
+}

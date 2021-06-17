@@ -25,6 +25,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -53,6 +55,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		ActionSchedulerInterface::class  => true,
 		AsyncActionRunner::class         => true,
 		ActionSchedulerJobMonitor::class => true,
+		PluginUpdateJobs::class          => true,
 		ProductSyncStats::class          => true,
 		SyncerHooks::class               => true,
 		Service::class                   => true,
@@ -102,6 +105,10 @@ class JobServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share_with_tags( StartProductSync::class, JobRepository::class );
+		$this->share_with_tags( PluginUpdate::class, JobRepository::class );
+
+		// Share plugin update jobs
+		$this->share_product_syncer_job( CleanupProductTargetCountriesJob::class );
 	}
 
 	/**

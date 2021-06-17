@@ -92,7 +92,7 @@ class MerchantReport implements OptionsAwareInterface {
 
 			return $this->report_data;
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve report data.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 	}

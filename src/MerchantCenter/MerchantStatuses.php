@@ -282,7 +282,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 					// Skip products that are no longer in WooCommerce.
 					if ( ! $wc_product ) {
 						do_action(
-							'gla_debug_message',
+							'woocommerce_gla_debug_message',
 							sprintf( 'Merchant Center product %s not found in this WooCommerce store.', $product->getProductId() ),
 							__METHOD__ . ' in remove_invalid_statuses()',
 						);
@@ -404,44 +404,48 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Include local presync product validation issues in the merchant issues table.
 	 */
 	protected function refresh_presync_product_issues(): void {
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-		$products           = $product_repository->find_presync_error_products();
-		$product_issues     = [];
-		$created_at         = $this->current_time->format( 'Y-m-d H:i:s' );
-
-		foreach ( $products as $p ) {
-			// Skip parent products (so product titles clearly indicate which variation needs fixing).
-			if ( 'variable' === $p->get_type() ) {
-				continue;
-			}
-
-			$presync_errors = $p->get_meta( $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS ) );
-			// Skip products without error descriptions.
-			if ( empty( $presync_errors ) ) {
-				continue;
-			}
-
-			foreach ( $presync_errors as $text ) {
-				$issue_parts      = $this->parse_presync_issue_text( $text );
-				$product_issues[] = [
-					'product'              => $p->get_name(),
-					'product_id'           => $p->get_id(),
-					'code'                 => $issue_parts['code'],
-					'severity'             => self::SEVERITY_ERROR,
-					'issue'                => $issue_parts['issue'],
-					'action'               => __( 'Update this attribute in your product data', 'google-listings-and-ads' ),
-					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
-					'applicable_countries' => '["all"]',
-					'source'               => 'pre-sync',
-					'created_at'           => $created_at,
-				];
-			}
-		}
-
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
-		$issue_query->update_or_insert( $product_issues );
+		/** @var ProductRepository $product_repository */
+		$product_repository = $this->container->get( ProductRepository::class );
+		$created_at         = $this->current_time->format( 'Y-m-d H:i:s' );
+		$issue_action       = __( 'Update this attribute in your product data', 'google-listings-and-ads' );
+		$errors_meta_key    = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
+
+		$update_chunk_limit  = 5000;
+		$update_chunk_offset = 0;
+		do {
+			$product_issues = [];
+			$product_ids    = $product_repository->find_presync_error_product_ids( $update_chunk_limit, $update_chunk_offset );
+			foreach ( $product_ids as $product_id ) {
+				$presync_errors = get_post_meta( $product_id, $errors_meta_key );
+				// Don't create issues with empty descriptions.
+				if ( empty( $presync_errors ) ) {
+					continue;
+				}
+
+				$product_name = get_the_title( $product_id );
+				foreach ( array_pop( $presync_errors ) as $text ) {
+					$issue_parts      = $this->parse_presync_issue_text( $text );
+					$product_issues[] = [
+						'product'              => $product_name,
+						'product_id'           => $product_id,
+						'code'                 => $issue_parts['code'],
+						'severity'             => self::SEVERITY_ERROR,
+						'issue'                => $issue_parts['issue'],
+						'action'               => $issue_action,
+						'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+						'applicable_countries' => '["all"]',
+						'source'               => 'pre-sync',
+						'created_at'           => $created_at,
+					];
+				}
+			}
+
+			$issue_query->update_or_insert( $product_issues );
+			$update_chunk_offset += $update_chunk_limit;
+			$product_count        = count( $product_ids );
+		} while ( $product_count >= $update_chunk_limit );
 	}
 
 	/**
@@ -473,7 +477,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 				// Don't include invalid products (or their parents).
 				do_action(
-					'gla_debug_message',
+					'woocommerce_gla_debug_message',
 					sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $wc_product_id ),
 					__METHOD__,
 				);
@@ -502,7 +506,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		/** @var ProductRepository $product_repository */
 		$product_repository                         = $this->container->get( ProductRepository::class );
-		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_sync_pending_product_ids() );
+		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_not_synced_product_ids() );
 
 		$this->mc_statuses = [
 			'timestamp'  => $this->current_time->getTimestamp(),
@@ -546,9 +550,14 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$product_meta = $this->container->get( ProductMetaHandler::class );
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
+		$mc_status_key      = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
 
-		foreach ( $product_repository->find() as $product ) {
-			$product_meta->update_mc_status( $product, $all_product_statuses[ $product->get_id() ] ?? MCStatus::NOT_SYNCED );
+		foreach ( $product_repository->find_ids() as $product_id ) {
+			update_post_meta(
+				$product_id,
+				$mc_status_key,
+				$all_product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED
+			);
 		}
 	}
 

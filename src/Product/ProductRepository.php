@@ -175,7 +175,7 @@ class ProductRepository implements Service {
 		 *
 		 * @param WC_Product[] $products Sync-ready WooCommerce products
 		 */
-		$products = apply_filters( 'gla_get_sync_ready_products_pre_filter', $products );
+		$products = apply_filters( 'woocommerce_gla_get_sync_ready_products_pre_filter', $products );
 
 		$results = [];
 		foreach ( $products as $product ) {
@@ -192,7 +192,7 @@ class ProductRepository implements Service {
 		 *
 		 * @param WC_Product[] $results Sync-ready WooCommerce products
 		 */
-		return apply_filters( 'gla_get_sync_ready_products_filter', $results );
+		return apply_filters( 'woocommerce_gla_get_sync_ready_products_filter', $results );
 	}
 
 	/**
@@ -299,31 +299,85 @@ class ProductRepository implements Service {
 		return $this->find_ids( $args, $limit, $offset );
 	}
 
-
-
 	/**
-	 * Find and return an array of WooCommerce product objects that are pending synchronization,
-	 * but have failed pre-sync validation.
+	 * Find and return an array of WooCommerce product IDs that are pending synchronization,
+	 * but have failed pre-sync validation. Excludes variable parent products.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *
-	 * @return WC_Product[] Array of WooCommerce product objects
+	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_presync_error_products( int $limit = -1, int $offset = 0 ): array {
-		$args['meta_query'] = [
-			'relation' => 'AND',
-			$this->get_sync_ready_products_meta_query(),
-			[
+	public function find_presync_error_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$product_types = ProductSyncer::get_supported_product_types();
+		$args          = [
+			'type'       => array_diff( $product_types, [ 'variable' ] ),
+			'meta_query' => [
+				'relation' => 'AND',
+				$this->get_sync_ready_products_meta_query(),
 				[
-					'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-					'compare' => '=',
-					'value'   => SyncStatus::HAS_ERRORS,
+					[
+						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
+						'compare' => '=',
+						'value'   => SyncStatus::HAS_ERRORS,
+					],
 				],
 			],
 		];
 
-		return $this->find( $args, $limit, $offset );
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function get_presync_error_products_meta_query() {
+		return [
+			'relation' => 'AND',
+			$this->get_sync_ready_products_meta_query(),
+			[
+				[
+					[
+						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
+						'compare' => '=',
+						'value'   => SyncStatus::HAS_ERRORS,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs that are published and not synced:
+	 * - Visible with presync errors, or
+	 * - Set to not sync.
+	 * Excludes variations and variable products without variations.
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$types = ProductSyncer::get_supported_product_types();
+		$types = array_diff( $types, [ 'variation' ] );
+		$args  = [
+			'status'     => 'publish',
+			'type'       => $types,
+			'meta_query' => [
+				'relation' => 'OR',
+				$this->get_presync_error_products_meta_query(),
+				[
+					[
+						'key'     => ProductMetaHandler::KEY_VISIBILITY,
+						'compare' => '=',
+						'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
+					],
+				],
+			],
+		];
+
+		return $this->find_ids( $args, $limit, $offset );
 	}
 
 	/**

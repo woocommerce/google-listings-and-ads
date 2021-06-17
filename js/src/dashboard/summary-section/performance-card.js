@@ -13,7 +13,8 @@ import SummaryCard from './summary-card';
  * @typedef {import('@woocommerce/components').SummaryNumber} SummaryNumber
  */
 
-const googleMCURL = 'https://merchants.google.com/mc/reporting/dashboard';
+const googleMCReportingDashboardURL =
+	'https://merchants.google.com/mc/reporting/dashboard';
 
 /**
  * Returns a Card with performance matrics according to the given data.
@@ -47,8 +48,11 @@ const PerformanceCard = ( {
 				</p>
 				<AppButton
 					eventName="gla_google_mc_link_click"
-					eventProps={ { context: 'dashboard', href: googleMCURL } }
-					href={ googleMCURL }
+					eventProps={ {
+						context: 'dashboard',
+						href: googleMCReportingDashboardURL,
+					} }
+					href={ googleMCReportingDashboardURL }
 					target="_blank"
 					isSmall
 					isSecondary

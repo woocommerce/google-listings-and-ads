@@ -90,7 +90,7 @@ final class Options implements OptionsInterface, Service {
 
 		$result = add_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 
-		do_action( "gla_options_updated_{$name}", $value );
+		do_action( "woocommerce_gla_options_updated_{$name}", $value );
 
 		return $result;
 	}
@@ -110,7 +110,7 @@ final class Options implements OptionsInterface, Service {
 
 		$result = update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 
-		do_action( "gla_options_updated_{$name}", $value );
+		do_action( "woocommerce_gla_options_updated_{$name}", $value );
 
 		return $result;
 	}
@@ -128,7 +128,7 @@ final class Options implements OptionsInterface, Service {
 
 		$result = delete_option( $this->prefix_name( $name ) );
 
-		do_action( "gla_options_deleted_{$name}" );
+		do_action( "woocommerce_gla_options_deleted_{$name}" );
 
 		return $result;
 	}
