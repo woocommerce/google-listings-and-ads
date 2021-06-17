@@ -1,0 +1,10 @@
+.gla-reclaim-url-card {
+	.gla-content-button-layout {
+		align-items: flex-start;
+	}
+
+	&__warning {
+		color: $alert-red;
+		margin-bottom: 8px;
+	}
+}
