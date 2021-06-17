@@ -17,7 +17,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
@@ -25,7 +24,8 @@ use DateTime;
 use Exception;
 
 /**
- * Class MerchantStatuses
+ * Class MerchantStatuses.
+ * Note: this class uses vanilla WP methods get_post, get_post_meta, update_post_meta
  *
  * ContainerAware used to retrieve
  * - Merchant
@@ -35,7 +35,6 @@ use Exception;
  * - ProductHelper
  * - ProductRepository
  * - TransientsInterface
- * - WC
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -274,14 +273,21 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		/** @var Merchant $merchant */
 		$merchant = $this->container->get( Merchant::class );
 		/** @var ProductHelper $product_helper */
-		$product_helper = $this->container->get( ProductHelper::class );
-		/** @var WC $wc_proxy */
-		$wc_proxy            = $this->container->get( WC::class );
+		$product_helper      = $this->container->get( ProductHelper::class );
 		$visibility_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY );
 
 		$valid_statuses = [];
 		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
-			$mc_product_id = $response_entry->getProductStatus()->getProductId();
+			$mc_product_status = $response_entry->getProductStatus();
+			if ( ! $mc_product_status ) {
+				do_action(
+					'gla_debug_message',
+					sprintf( 'A Google ID was not found in Merchant Center.' ),
+					__METHOD__
+				);
+				continue;
+			}
+			$mc_product_id = $mc_product_status->getProductId();
 			$wc_product_id = $product_helper->get_wc_product_id( $mc_product_id );
 			// Skip products not synced by this extension.
 			if ( ! $wc_product_id ) {
@@ -294,9 +300,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
-			try {
-				$wc_product = $wc_proxy->get_product( $wc_product_id );
-			} catch ( InvalidValue $e ) {
+			$wc_product = get_post( $wc_product_id );
+			if ( ! $wc_product || 'product' !== substr( $wc_product->post_type, 0, 7 ) ) {
 				// Should never reach here since the products IDS are retrieved from postmeta.
 				do_action(
 					'woocommerce_gla_debug_message',
@@ -307,9 +312,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			$this->product_data_lookup[ $wc_product_id ] = [
-				'name'            => $wc_product->get_name(),
-				'visibility'      => $wc_product->get_meta( $visibility_meta_key ),
-				'maybe_parent_id' => $product_helper->maybe_swap_for_parent_id( $wc_product ),
+				'name'            => get_the_title( $wc_product ),
+				'visibility'      => get_post_meta( $wc_product_id, $visibility_meta_key ),
+				'maybe_parent_id' => $wc_product->post_parent ?: $wc_product_id,
 			];
 
 			$valid_statuses[] = $response_entry->getProductStatus();
