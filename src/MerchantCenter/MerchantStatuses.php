@@ -169,7 +169,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		$this->mc_statuses = [];
 
-		// Update MC product stats and issues page by page.
+		// Update account-level issues.
+		$this->refresh_account_issues();
+
+		// Update MC product issues and tabulate statistics in batches.
 		$chunk_size = 5000;
 		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
@@ -177,12 +180,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->sum_status_counts( $mc_product_statuses );
 		}
 
-		// Update statistics cache and each product's mc_status.
+		// Update each product's mc_status and then update the global statistics.
 		$this->update_product_mc_statuses();
 		$this->update_mc_statuses();
-
-		// Update account issues.
-		$this->refresh_account_issues();
 
 		// Update pre-sync product validation issues.
 		$this->refresh_presync_product_issues();
