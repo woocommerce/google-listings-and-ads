@@ -82,6 +82,9 @@
 		"use-debounce": "^5.2.0"
 	},
 	"config": {
-		"wp_org_slug": "google-listings-and-ads"
+		"wp_org_slug": "google-listings-and-ads",
+    "version_replace_paths": [
+      "src"
+    ]
 	}
 }

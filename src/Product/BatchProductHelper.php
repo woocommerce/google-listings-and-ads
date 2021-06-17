@@ -12,7 +12,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google_Service_ShoppingContent_Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -54,31 +53,23 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $product_factory;
 
 	/**
-	 * @var WC
-	 */
-	protected $wc;
-
-	/**
 	 * BatchProductHelper constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
 	 * @param ProductHelper      $product_helper
 	 * @param ValidatorInterface $validator
 	 * @param ProductFactory     $product_factory
-	 * @param WC                 $wc
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
 		ProductHelper $product_helper,
 		ValidatorInterface $validator,
-		ProductFactory $product_factory,
-		WC $wc
+		ProductFactory $product_factory
 	) {
 		$this->meta_handler    = $meta_handler;
 		$this->product_helper  = $product_helper;
 		$this->validator       = $validator;
 		$this->product_factory = $product_factory;
-		$this->wc              = $wc;
 	}
 
 	/**
@@ -186,10 +177,8 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 				continue;
 			}
 
-			$target_countries = $this->merchant_center->get_target_countries();
-			$shop_country     = $this->wc->get_base_country();
-
-			$main_target_country = in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
+			$target_countries    = $this->merchant_center->get_target_countries();
+			$main_target_country = $this->merchant_center->get_main_target_country();
 
 			// validate the product
 			$adapted_product   = $this->product_factory->create( $product, $main_target_country );
@@ -269,6 +258,34 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product );
 			$stale_ids  = array_diff_key( $google_ids, array_flip( $target_audience ) );
+			foreach ( $stale_ids as $stale_id ) {
+				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
+					$product->get_id(),
+					$stale_id
+				);
+			}
+		}
+
+		return $request_entries;
+	}
+
+	/**
+	 * Returns an array of request entries for Google products that should no
+	 * longer be submitted for every target country.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return BatchProductIDRequestEntry[]
+	 */
+	public function generate_stale_countries_request_entries( array $products ): array {
+		$main_target_country = $this->merchant_center->get_main_target_country();
+
+		$request_entries = [];
+		foreach ( $products as $product ) {
+			$google_ids = $this->meta_handler->get_google_ids( $product );
+			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_target_country ] ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),
