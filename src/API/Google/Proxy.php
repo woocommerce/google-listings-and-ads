@@ -293,7 +293,7 @@ class Proxy implements OptionsAwareInterface {
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
 				$id = $this->parse_ads_id( $response['resourceName'] );
 				$this->update_ads_id( $id );
-				$this->update_ads_currency( true );
+				$this->use_store_currency();
 
 				$billing_url = $response['invitationLink'] ?? '';
 				$this->update_billing_url( $billing_url );
@@ -343,7 +343,7 @@ class Proxy implements OptionsAwareInterface {
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
 				$this->update_ads_id( $id );
-				$this->update_ads_currency( false );
+				$this->request_ads_currency();
 				return [ 'id' => $id ];
 			}
 
@@ -368,7 +368,7 @@ class Proxy implements OptionsAwareInterface {
 
 		// Retrieve account currency if we haven't done so previously.
 		if ( $id && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
-			$this->update_ads_currency( false );
+			$this->request_ads_currency();
 		}
 
 		$status = [
@@ -520,15 +520,24 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Update the ads account currency.
+	 * Save the Ads account currency to the same value as the Store currency.
 	 *
 	 * @since x.x.x
 	 *
-	 * @param boolean $use_store_currency Use the store currency or request the account currency.
+	 * @return boolean
+	 */
+	protected function use_store_currency(): bool {
+		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, get_woocommerce_currency() );
+	}
+
+	/**
+	 * Request the Ads Account currency, and cache it as an option.
+	 *
+	 * @since x.x.x
 	 *
 	 * @return boolean
 	 */
-	protected function update_ads_currency( bool $use_store_currency ): bool {
+	protected function request_ads_currency(): bool {
 		if ( $use_store_currency ) {
 			$currency = get_woocommerce_currency();
 		} else {
