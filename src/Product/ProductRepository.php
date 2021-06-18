@@ -412,6 +412,36 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Returns an array of Google Product IDs associated with all synced WooCommerce products.
+	 * Note: excludes variable parent products as only the child variation products are actually synced
+	 * to Merchant Center
+	 *
+	 * @since x.x.x
+	 *
+	 * @return array Google Product IDS
+	 */
+	public function find_all_synced_google_ids(): array {
+		// Don't include variable parent products as they aren't actually synced to Merchant Center.
+		$args['type']        = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
+		$synced_product_ids  = $this->find_synced_product_ids( $args );
+		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
+		$synced_google_ids   = [];
+		foreach ( $synced_product_ids as $product_id ) {
+			$meta_google_ids = get_post_meta( $product_id, $google_ids_meta_key, true );
+			if ( ! is_array( $meta_google_ids ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Invalid Google IDs retrieve for product %d', $product_id ),
+					__METHOD__
+				);
+				continue;
+			}
+			$synced_google_ids = array_merge( $synced_google_ids, array_values( $meta_google_ids ) );
+		}
+		return $synced_google_ids;
+	}
+
+	/**
 	 * Find and return an array of WooCommerce products based on the provided arguments.
 	 *
 	 * @param array $args   Array of WooCommerce args (see below), and product metadata.

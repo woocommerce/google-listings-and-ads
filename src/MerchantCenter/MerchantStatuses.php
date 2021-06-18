@@ -174,7 +174,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		// Update MC product issues and tabulate statistics in batches.
 		$chunk_size = 5000;
-		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
+		foreach ( array_chunk( $this->container->get( ProductRepository::class )->find_all_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
 			$this->refresh_product_issues( $mc_product_statuses );
 			$this->sum_status_counts( $mc_product_statuses );
@@ -659,38 +659,5 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		);
 
 		return $is_warning ? self::SEVERITY_WARNING : self::SEVERITY_ERROR;
-	}
-
-	/**
-	 * Returns an array of Google Product IDs associated with all synced WooCommerce products.
-	 * Note: excludes variable parent products as only the child variation products are actually synced
-	 * to Merchant Center
-	 *
-	 * @since x.x.x
-	 *
-	 * @return array Google Product IDS
-	 */
-	protected function get_synced_google_ids(): array {
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-
-		// Don't include variable parent products as they aren't actually synced to Merchant Center.
-		$args['type']        = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
-		$synced_product_ids  = $product_repository->find_synced_product_ids( $args );
-		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
-		$synced_google_ids   = [];
-		foreach ( $synced_product_ids as $product_id ) {
-			$meta_google_ids = get_post_meta( $product_id, $google_ids_meta_key, true );
-			if ( ! is_array( $meta_google_ids ) ) {
-				do_action(
-					'woocommerce_gla_debug_message',
-					sprintf( 'Invalid Google IDs retrieve for product %d', $product_id ),
-					__METHOD__
-				);
-				continue;
-			}
-			$synced_google_ids = array_merge( $synced_google_ids, array_values( $meta_google_ids ) );
-		}
-		return $synced_google_ids;
 	}
 }
