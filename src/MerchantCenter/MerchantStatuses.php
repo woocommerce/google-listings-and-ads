@@ -678,7 +678,15 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
 		$synced_google_ids   = [];
 		foreach ( $synced_product_ids as $product_id ) {
-			$meta_google_ids   = get_post_meta( $product_id, $google_ids_meta_key, true );
+			$meta_google_ids = get_post_meta( $product_id, $google_ids_meta_key, true );
+			if ( ! is_array( $meta_google_ids ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Invalid Google IDs retrieve for product %d', $product_id ),
+					__METHOD__
+				);
+				continue;
+			}
 			$synced_google_ids = array_merge( $synced_google_ids, array_values( $meta_google_ids ) );
 		}
 		return $synced_google_ids;
