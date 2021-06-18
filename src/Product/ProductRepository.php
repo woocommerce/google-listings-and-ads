@@ -386,6 +386,8 @@ class ProductRepository implements Service {
 	 * Find and return an array of WooCommerce product IDs that are NOT marked as MC not_synced.
 	 * Excludes variations and variable products without variations.
 	 *
+	 * @since x.x.x
+	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
 	 *

@@ -666,6 +666,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Note: excludes variable parent products as only the child variation products are actually synced
 	 * to Merchant Center
 	 *
+	 * @since x.x.x
+	 *
 	 * @return array Google Product IDS
 	 */
 	protected function get_synced_google_ids(): array {

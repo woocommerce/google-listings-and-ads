@@ -153,6 +153,8 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Retrieve a batch of Merchant Center Product Statuses using the provided Merchant Center product IDs.
 	 *
+	 * @since x.x.x
+	 *
 	 * @param string[] $mc_product_ids
 	 *
 	 * @return MC_Product_Status_Batch_Response;
