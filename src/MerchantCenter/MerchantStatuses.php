@@ -312,9 +312,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			$this->product_data_lookup[ $wc_product_id ] = [
-				'name'            => get_the_title( $wc_product ),
-				'visibility'      => get_post_meta( $wc_product_id, $visibility_meta_key ),
-				'maybe_parent_id' => $wc_product->post_parent ?: $wc_product_id,
+				'name'       => get_the_title( $wc_product ),
+				'visibility' => get_post_meta( $wc_product_id, $visibility_meta_key ),
+				'parent_id'  => $wc_product->post_parent,
 			];
 
 			$valid_statuses[] = $response_entry->getProductStatus();
@@ -489,8 +489,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$this->product_statuses['products'][ $wc_product_id ][ $status ] = 1 + ( $this->product_statuses['products'][ $wc_product_id ][ $status ] ?? 0 );
 
 			// Aggregate parent statuses for mc_status postmeta.
-			$wc_parent_id = intval( $this->product_data_lookup[ $wc_product_id ]['maybe_parent_id'] );
-			if ( $wc_parent_id === $wc_product_id ) {
+			$wc_parent_id = intval( $this->product_data_lookup[ $wc_product_id ]['parent_id'] );
+			if ( ! $wc_parent_id ) {
 				continue;
 			}
 			$this->product_statuses['parents'][ $wc_parent_id ][ $status ] = 1 + ( $this->product_statuses['parents'][ $wc_parent_id ][ $status ] ?? 0 );
