@@ -678,10 +678,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
 		$synced_google_ids   = [];
 		foreach ( $synced_product_ids as $product_id ) {
-			$meta_records = get_post_meta( $product_id, $google_ids_meta_key );
-			foreach ( $meta_records as $google_ids ) {
-				$synced_google_ids = array_merge( $synced_google_ids, array_values( $google_ids ) );
-			}
+			$meta_google_ids   = get_post_meta( $product_id, $google_ids_meta_key, true );
+			$synced_google_ids = array_merge( $synced_google_ids, array_values( $meta_google_ids ) );
 		}
 		return $synced_google_ids;
 	}
