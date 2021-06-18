@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptions
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 
@@ -21,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
 class SiteVerificationController extends BaseOptionsController {
 
 	use EmptySchemaPropertiesTrait;
+	use PluginHelper;
 
 	/**
 	 * @var SiteVerification
@@ -66,7 +68,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 */
 	protected function get_verify_endpoint_create_callback(): callable {
 		return function() {
-			$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+			$site_url = esc_url_raw( $this->get_site_url() );
 
 			if ( ! wc_is_valid_url( $site_url ) ) {
 				return $this->get_failure_status( __( 'Invalid site URL.', 'google-listings-and-ads' ) );

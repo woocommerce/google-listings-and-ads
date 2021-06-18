@@ -4,11 +4,12 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use DateTime;
 use DateTimeZone;
@@ -28,9 +29,10 @@ defined( 'ABSPATH' ) || exit;
  */
 class Proxy implements OptionsAwareInterface {
 
-	use OptionsAwareTrait;
 	use ApiExceptionTrait;
 	use GoogleHelper;
+	use OptionsAwareTrait;
+	use PluginHelper;
 
 	/**
 	 * @var ContainerInterface
@@ -88,7 +90,7 @@ class Proxy implements OptionsAwareInterface {
 				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
 			}
 
-			$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+			$site_url = esc_url_raw( $this->get_site_url() );
 			if ( ! wc_is_valid_url( $site_url ) ) {
 				throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
 			}
