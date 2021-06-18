@@ -281,8 +281,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			$mc_product_status = $response_entry->getProductStatus();
 			if ( ! $mc_product_status ) {
 				do_action(
-					'gla_debug_message',
-					sprintf( 'A Google ID was not found in Merchant Center.' ),
+					'woocommerce_gla_debug_message',
+					'A Google ID was not found in Merchant Center.',
 					__METHOD__
 				);
 				continue;
