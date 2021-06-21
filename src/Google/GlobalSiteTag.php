@@ -154,7 +154,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
 		$order->save_meta_data();
 
-		echo sprintf(
+		printf(
 			'<script>gtag("event", "conversion", {"send_to": "%s","value": "%s","currency": "%s","transaction_id": "%s"});</script>',
 			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
 			esc_js( $order->get_total() ),
