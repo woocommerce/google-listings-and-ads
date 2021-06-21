@@ -15,9 +15,6 @@ wp plugin install woocommerce --activate
 # Install and activate WC-admin for GLA.
 wp plugin install woocommerce-admin --activate
 
-# Use WC official storefront theme.
-wp theme install storefront --activate
-
 # GLA is automatically mapped to the docker container's plugins folder,
 # we just need to activate it here.
 wp plugin activate google-listings-and-ads
