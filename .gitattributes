@@ -18,7 +18,6 @@ wordpress_org_assets export-ignore
 .editorconfig export-ignore
 .travis.yml export-ignore
 .stylelintrc export-ignore
-.wp-env.json export-ignore
 .prettierrc export-ignore
 .eslintignore export-ignore
 .stylelintignore export-ignore
