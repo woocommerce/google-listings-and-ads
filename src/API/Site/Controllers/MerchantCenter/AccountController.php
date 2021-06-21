@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Google_Service_ShoppingContent_Account as MC_Account;
@@ -27,6 +28,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class AccountController extends BaseOptionsController {
+
+	use PluginHelper;
 
 	/**
 	 * @var ContainerInterface
@@ -434,7 +437,7 @@ class AccountController extends BaseOptionsController {
 					$data = [
 						'id'          => $merchant_id,
 						'website_url' => $this->strip_url_protocol(
-							esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) )
+							esc_url_raw( $this->get_site_url() )
 						),
 					];
 
@@ -479,7 +482,7 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If any step of the site verification process fails.
 	 */
 	private function verify_site(): void {
-		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+		$site_url = esc_url_raw( $this->get_site_url() );
 		if ( ! wc_is_valid_url( $site_url ) ) {
 			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'site-url' ] );
 			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
@@ -551,7 +554,7 @@ class AccountController extends BaseOptionsController {
 		}
 
 		// Make sure the existing account has the correct website URL (or fail).
-		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+		$site_url = esc_url_raw( $this->get_site_url() );
 		$this->maybe_add_merchant_center_website_url( $account_id, $site_url );
 
 		// Maybe the existing account is sub-account!
