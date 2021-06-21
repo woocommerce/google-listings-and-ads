@@ -75,6 +75,22 @@ After running `composer install` to install PHP dependencies you can use the fol
 
 (Installation process TBC)
 
+## E2E Testing
+
+E2E testing uses [@woocommerce/e2e-environment](https://www.npmjs.com/package/@woocommerce/e2e-environment) which requires [Docker](https://www.docker.com/).
+
+Make sure Docker is running in your machine, and run the following:
+
+`npm run docker:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8084 (Username: admin, Password: password).
+
+Run E2E testing:
+
+- `npm run test:e2e` to run the test in headless mode.
+- `npm run test:e2e-dev` to run the tests in Chromium browser.
+
+To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
+
+`npm run docker:down`
 ## Docs
 
 * [Usage Tracking](./src/Tracking/README.md)
