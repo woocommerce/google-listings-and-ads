@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use WC_Product;
 use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
@@ -127,34 +128,43 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_action( 'woocommerce_process_product_meta', [ $this, 'handle_submission' ] );
+		add_action( 'woocommerce_new_product', [ $this, 'handle_submission' ], 10, 2 );
+		add_action( 'woocommerce_update_product', [ $this, 'handle_submission' ], 10, 2 );
 	}
 
 	/**
-	 * @param int $product_id
+	 * @param int        $product_id
+	 * @param WC_Product $product
 	 */
-	public function handle_submission( int $product_id ) {
+	public function handle_submission( int $product_id, WC_Product $product ) {
+		/**
+		 * Array of `true` values for each product IDs already handled by this method. Used to prevent double submission.
+		 *
+		 * @var bool[] $already_updated
+		 */
+		static $already_updated = [];
+
 		$field_id = $this->get_visibility_field_id();
 		// phpcs:disable WordPress.Security.NonceVerification
 		// nonce is verified by self::verify_nonce
-		if ( ! $this->verify_nonce() || ! isset( $_POST[ $field_id ] ) ) {
+		if ( ! $this->verify_nonce() || ! isset( $_POST[ $field_id ] ) || ! empty( $already_updated[ $product_id ] ) ) {
+			return;
+		}
+
+		// only update the value for supported product types
+		if ( ! in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) {
 			return;
 		}
 
 		try {
-			$product = $this->product_helper->get_wc_product( $product_id );
-
-			// only update the value for supported product types
-			if ( ! in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) {
-				return;
-			}
-
 			$visibility = empty( $_POST[ $field_id ] ) ?
 				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
 				ChannelVisibility::cast( sanitize_key( $_POST[ $field_id ] ) );
 			// phpcs:enable WordPress.Security.NonceVerification
 
 			$this->meta_handler->update_visibility( $product, $visibility );
+
+			$already_updated[ $product_id ] = true;
 		} catch ( InvalidValue $exception ) {
 			// silently log the exception and do not set the product's visibility if an invalid visibility value is sent.
 			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
