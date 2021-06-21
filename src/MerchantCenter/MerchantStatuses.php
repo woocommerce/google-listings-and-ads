@@ -588,10 +588,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			} elseif ( $current_product_statuses[ $product_id ] !== $new_status ) {
 				// MC status not same as WC, update.
 				$to_update[ $new_status ][] = intval( $product_id );
-			} else {
-				// MC status same as WC, unset from all IDs array.
-				unset( $all_product_ids[ $product_id ] );
 			}
+			// Unset all found statuses from WC products array.
+			unset( $all_product_ids[ $product_id ] );
 		}
 
 		// Set products NOT FOUND in MC to NOT_SYNCED.
