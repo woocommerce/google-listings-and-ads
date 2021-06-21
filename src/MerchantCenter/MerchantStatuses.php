@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
@@ -16,7 +17,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
@@ -185,7 +185,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->update_mc_statuses();
 
 		// Update pre-sync product validation issues.
-		$this->refresh_presync_product_issues();
+		 $this->refresh_presync_product_issues();
 
 		// Delete stale issues.
 		$delete_before = clone $this->current_time;
@@ -427,47 +427,54 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	protected function refresh_presync_product_issues(): void {
 		/** @var MerchantIssueQuery $issue_query */
-		$issue_query = $this->container->get( MerchantIssueQuery::class );
-		/** @var ProductRepository $product_repository */
-		$product_repository = $this->container->get( ProductRepository::class );
-		$created_at         = $this->current_time->format( 'Y-m-d H:i:s' );
-		$issue_action       = __( 'Update this attribute in your product data', 'google-listings-and-ads' );
-		$errors_meta_key    = $this->prefix_meta_key( ProductMetaHandler::KEY_ERRORS );
+		$issue_query  = $this->container->get( MerchantIssueQuery::class );
+		$created_at   = $this->current_time->format( 'Y-m-d H:i:s' );
+		$issue_action = __( 'Update this attribute in your product data', 'google-listings-and-ads' );
 
-		$update_chunk_limit  = 5000;
-		$update_chunk_offset = 0;
-		do {
-			$product_issues = [];
-			$product_ids    = $product_repository->find_presync_error_product_ids( $update_chunk_limit, $update_chunk_offset );
-			foreach ( $product_ids as $product_id ) {
-				$presync_errors = get_post_meta( $product_id, $errors_meta_key );
-				// Don't create issues with empty descriptions.
-				if ( empty( $presync_errors ) ) {
-					continue;
-				}
+		/** @var ProductMetaQueryHelper $product_meta_query_helper */
+		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+		// Get all MC statuses.
+		$all_errors = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_ERRORS );
 
-				$product_name = get_the_title( $product_id );
-				foreach ( array_pop( $presync_errors ) as $text ) {
-					$issue_parts      = $this->parse_presync_issue_text( $text );
-					$product_issues[] = [
-						'product'              => $product_name,
-						'product_id'           => $product_id,
-						'code'                 => $issue_parts['code'],
-						'severity'             => self::SEVERITY_ERROR,
-						'issue'                => $issue_parts['issue'],
-						'action'               => $issue_action,
-						'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
-						'applicable_countries' => '["all"]',
-						'source'               => 'pre-sync',
-						'created_at'           => $created_at,
-					];
-				}
+		$chunk_size     = 500;
+		$product_issues = [];
+		foreach ( $all_errors as $product_id => $presync_errors ) {
+			// Don't create issues with empty descriptions.
+			if ( empty( $presync_errors ) ) {
+				continue;
+			}
+			$presync_errors = maybe_unserialize( $presync_errors );
+			// Don't create issues for variable parents (they contain issues of all children).
+			if ( ! isset( $presync_errors[0] ) ) {
+				continue;
 			}
 
-			$issue_query->update_or_insert( $product_issues );
-			$update_chunk_offset += $update_chunk_limit;
-			$product_count        = count( $product_ids );
-		} while ( $product_count >= $update_chunk_limit );
+			$product_name = get_the_title( $product_id );
+			foreach ( $presync_errors as $text ) {
+				$issue_parts      = $this->parse_presync_issue_text( $text );
+				$product_issues[] = [
+					'product'              => $product_name,
+					'product_id'           => $product_id,
+					'code'                 => $issue_parts['code'],
+					'severity'             => self::SEVERITY_ERROR,
+					'issue'                => $issue_parts['issue'],
+					'action'               => $issue_action,
+					'action_url'           => 'https://support.google.com/merchants/answer/10538362?hl=en&ref_topic=6098333',
+					'applicable_countries' => '["all"]',
+					'source'               => 'pre-sync',
+					'created_at'           => $created_at,
+				];
+			}
+
+			// Do update-or-insert in chunks.
+			if ( count( $product_issues ) >= $chunk_size ) {
+				$issue_query->update_or_insert( $product_issues );
+				$product_issues = [];
+			}
+		}
+
+		// Handle any leftover issues.
+		$issue_query->update_or_insert( $product_issues );
 	}
 
 	/**
@@ -560,13 +567,49 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		/** @var ProductRepository $product_repository */
 		$product_repository = $this->container->get( ProductRepository::class );
-		$meta_key           = $this->prefix_meta_key( ProductMetaHandler::KEY_MC_STATUS );
-		foreach ( $product_repository->find_ids() as $product_id ) {
-			// Default to NOT_SYNCED to update any missing values.
-			$new_status = $new_product_statuses[ $product_id ] ?? MCStatus::NOT_SYNCED;
-			update_post_meta( $product_id, $meta_key, $new_status );
+
+		/** @var ProductMetaQueryHelper $product_meta_query_helper */
+		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+
+		// Get all MC statuses.
+		$current_product_statuses = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_MC_STATUS );
+		// Get all product IDs.
+		$all_product_ids = array_flip( $product_repository->find_ids() );
+
+		// Format: product_id=>status.
+		$to_insert = [];
+		// Format: status=>[product_ids].
+		$to_update = [];
+
+		foreach ( $new_product_statuses as $product_id => $new_status ) {
+			if ( ! isset( $current_product_statuses[ $product_id ] ) ) {
+				// MC status not in WC, insert.
+				$to_insert[ $product_id ] = $new_status;
+			} elseif ( $current_product_statuses[ $product_id ] !== $new_status ) {
+				// MC status not same as WC, update.
+				$to_update[ $new_status ][] = intval( $product_id );
+			} else {
+				// MC status same as WC, unset from all IDs array.
+				unset( $all_product_ids[ $product_id ] );
+			}
 		}
 
+		// Set products NOT FOUND in MC to NOT_SYNCED.
+		foreach ( array_keys( $all_product_ids ) as $product_id ) {
+			if ( empty( $current_product_statuses[ $product_id ] ) ) {
+				$to_insert[ $product_id ] = MCStatus::NOT_SYNCED;
+			} elseif ( $current_product_statuses[ $product_id ] !== MCStatus::NOT_SYNCED ) {
+				$to_update[ MCStatus::NOT_SYNCED ][] = $product_id;
+			}
+		}
+
+		unset( $all_product_ids, $current_product_statuses, $new_product_statuses );
+
+		// Insert and update changed MC Status postmeta.
+		$product_meta_query_helper->batch_insert_values( ProductMetaHandler::KEY_MC_STATUS, $to_insert );
+		foreach ( $to_update as $status => $product_ids ) {
+			$product_meta_query_helper->batch_update_values( ProductMetaHandler::KEY_MC_STATUS, $status, $product_ids );
+		}
 	}
 
 	/**
