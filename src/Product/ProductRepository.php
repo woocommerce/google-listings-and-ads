@@ -366,15 +366,10 @@ class ProductRepository implements Service {
 			'status'     => 'publish',
 			'type'       => $types,
 			'meta_query' => [
-				'relation' => 'OR',
 				[
 					'key'     => ProductMetaHandler::KEY_MC_STATUS,
 					'compare' => '=',
 					'value'   => MCStatus::NOT_SYNCED,
-				],
-				[
-					'key'     => ProductMetaHandler::KEY_MC_STATUS,
-					'compare' => 'NOT EXISTS',
 				],
 			],
 		];
