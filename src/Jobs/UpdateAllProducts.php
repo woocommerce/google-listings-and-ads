@@ -26,17 +26,6 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	}
 
 	/**
-	 * Calculate and return batch size considering target audiences per product.
-	 *
-	 * @return int
-	 */
-	protected function get_batch_size(): int {
-		$batch_size = (int) floor( 200 / count( $this->merchant_center->get_target_countries() ) );
-		// between 2 and 50 products per batch
-		return min( max( $batch_size, 2 ), 50 );
-	}
-
-	/**
 	 * Get a single batch of items.
 	 *
 	 * If no items are returned the job will stop.
