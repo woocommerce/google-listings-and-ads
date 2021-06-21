@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
@@ -43,6 +44,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 		MerchantIssueTable::class        => true,
 		MerchantIssueQuery::class        => true,
 		ProductFeedQueryHelper::class    => true,
+		ProductMetaQueryHelper::class    => true,
 	];
 
 	/**
@@ -75,6 +77,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->add_query_class( MerchantIssueQuery::class, MerchantIssueTable::class );
 
 		$this->share_with_tags( ProductFeedQueryHelper::class, wpdb::class, ProductRepository::class );
+		$this->share_with_tags( ProductMetaQueryHelper::class, wpdb::class );
 	}
 
 	/**
