@@ -127,9 +127,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_action( 'woocommerce_new_product', [ $this, 'handle_submission' ] );
-		add_action( 'woocommerce_update_product', [ $this, 'handle_submission' ] );
-		add_action( 'woocommerce_process_product_meta', [ $this, 'handle_submission' ], 10, 2 );
+		add_action( 'woocommerce_process_product_meta', [ $this, 'handle_submission' ] );
 	}
 
 	/**
