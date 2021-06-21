@@ -147,7 +147,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 		$field_id = $this->get_visibility_field_id();
 		// phpcs:disable WordPress.Security.NonceVerification
 		// nonce is verified by self::verify_nonce
-		if ( ! $this->verify_nonce() || ! isset( $_POST[ $field_id ] ) || ! empty( $already_updated[ $product_id ] ) ) {
+		if ( ! $this->verify_nonce() || ! isset( $_POST[ $field_id ] ) || isset( $already_updated[ $product_id ] ) ) {
 			return;
 		}
 
