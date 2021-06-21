@@ -141,8 +141,14 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			return;
 		}
 
-		$product = $this->product_helper->get_wc_product( $product_id );
 		try {
+			$product = $this->product_helper->get_wc_product( $product_id );
+
+			// only update the value for supported product types
+			if ( ! in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) {
+				return;
+			}
+
 			$visibility = empty( $_POST[ $field_id ] ) ?
 				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
 				ChannelVisibility::cast( sanitize_key( $_POST[ $field_id ] ) );
