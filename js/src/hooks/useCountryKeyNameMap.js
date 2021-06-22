@@ -22,7 +22,7 @@ const useCountryKeyNameMap = () => {
 			'wc_admin',
 			'countries'
 		);
-	} );
+	}, [] );
 };
 
 export default useCountryKeyNameMap;

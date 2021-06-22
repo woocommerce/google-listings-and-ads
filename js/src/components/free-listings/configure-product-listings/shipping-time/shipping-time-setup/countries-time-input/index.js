@@ -7,7 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import AppInputControl from '.~/components/app-input-control';
+import AppInputNumberControl from '.~/components/app-input-number-control';
 import AppSpinner from '.~/components/app-spinner';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
@@ -38,26 +38,20 @@ const CountriesTimeInput = ( {
 		return <AppSpinner />;
 	}
 
-	const handleBlur = ( e ) => {
-		const { value: nextTime } = e.target;
-
-		if ( nextTime === time ) {
+	const handleBlur = ( e, numberValue ) => {
+		if ( time === numberValue ) {
 			return;
 		}
 
-		if ( nextTime === '' ) {
-			onDelete( countries );
-		} else {
-			onChange( {
-				countries,
-				time: nextTime,
-			} );
-		}
+		onChange( {
+			countries,
+			time: numberValue,
+		} );
 	};
 
 	return (
 		<div className="gla-countries-time-input">
-			<AppInputControl
+			<AppInputNumberControl
 				label={
 					<div className="label">
 						<div>

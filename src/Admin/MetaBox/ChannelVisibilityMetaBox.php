@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Product;
 use WP_Post;
@@ -85,6 +87,22 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	}
 
 	/**
+	 * Returns an array of CSS classes to apply to the box.
+	 *
+	 * @return array
+	 */
+	public function get_classes(): array {
+		$supported_types = ProductSyncer::get_supported_product_types();
+
+		return array_map(
+			function ( string $product_type ) {
+				return "show_if_{$product_type}";
+			},
+			$supported_types
+		);
+	}
+
+	/**
 	 * Returns an array of variables to be used in the view.
 	 *
 	 * @param WP_Post $post The WordPress post object the box is loaded for.
@@ -94,13 +112,15 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 */
 	protected function get_view_context( WP_Post $post, array $args ): array {
 		$product_id = $post->ID;
-		$product    = wc_get_product( $product_id );
+		$product    = $this->product_helper->get_wc_product( $product_id );
+
 		return [
-			'product_id' => $product_id,
-			'product'    => $product,
-			'visibility' => $this->product_helper->get_visibility( $product ),
-			'synced_at'  => $this->meta_handler->get_synced_at( $product_id ),
-			'issues'     => [], // todo: replace this with the list of issues retrieved from Google's Product Statuses API
+			'field_id'    => $this->get_visibility_field_id(),
+			'product_id'  => $product_id,
+			'product'     => $product,
+			'visibility'  => $this->product_helper->get_visibility( $product ),
+			'sync_status' => $this->meta_handler->get_sync_status( $product ),
+			'issues'      => $this->product_helper->get_validation_errors( $product ),
 		];
 	}
 
@@ -108,28 +128,55 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * Register a service.
 	 */
 	public function register(): void {
-		add_action( 'woocommerce_new_product', [ $this, 'handle_submission' ] );
-		add_action( 'woocommerce_update_product', [ $this, 'handle_submission' ] );
-		add_action( 'woocommerce_process_product_meta', [ $this, 'handle_submission' ], 10, 2 );
+		add_action( 'woocommerce_new_product', [ $this, 'handle_submission' ], 10, 2 );
+		add_action( 'woocommerce_update_product', [ $this, 'handle_submission' ], 10, 2 );
 	}
 
 	/**
-	 * @param int $product_id
+	 * @param int        $product_id
+	 * @param WC_Product $product
 	 */
-	public function handle_submission( int $product_id ) {
+	public function handle_submission( int $product_id, WC_Product $product ) {
+		/**
+		 * Array of `true` values for each product IDs already handled by this method. Used to prevent double submission.
+		 *
+		 * @var bool[] $already_updated
+		 */
+		static $already_updated = [];
+
+		$field_id = $this->get_visibility_field_id();
 		// phpcs:disable WordPress.Security.NonceVerification
 		// nonce is verified by self::verify_nonce
-		if ( ! $this->verify_nonce() || ! isset( $_POST['visibility'] ) ) {
+		if ( ! $this->verify_nonce() || ! isset( $_POST[ $field_id ] ) || isset( $already_updated[ $product_id ] ) ) {
 			return;
 		}
 
-		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product ) {
-			$visibility = empty( $_POST['visibility'] ) ?
-				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
-				ChannelVisibility::cast( sanitize_key( $_POST['visibility'] ) );
-			$this->meta_handler->update_visibility( $product_id, $visibility );
+		// only update the value for supported product types
+		if ( ! in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) {
+			return;
 		}
-		// phpcs:enable WordPress.Security.NonceVerification
+
+		try {
+			$visibility = empty( $_POST[ $field_id ] ) ?
+				ChannelVisibility::cast( ChannelVisibility::SYNC_AND_SHOW ) :
+				ChannelVisibility::cast( sanitize_key( $_POST[ $field_id ] ) );
+			// phpcs:enable WordPress.Security.NonceVerification
+
+			$this->meta_handler->update_visibility( $product, $visibility );
+
+			$already_updated[ $product_id ] = true;
+		} catch ( InvalidValue $exception ) {
+			// silently log the exception and do not set the product's visibility if an invalid visibility value is sent.
+			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+		}
+	}
+
+	/**
+	 * @return string
+	 *
+	 * @since x.x.x
+	 */
+	protected function get_visibility_field_id(): string {
+		return $this->prefix_field_id( 'visibility' );
 	}
 }

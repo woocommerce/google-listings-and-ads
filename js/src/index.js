@@ -12,10 +12,7 @@ import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
-import EditFreeCampaign from './edit-free-campaign';
-import EditPaidAdsCampaign from './pages/edit-paid-ads-campaign';
-import CreatePaidAdsCampaign from './pages/create-paid-ads-campaign';
-import { ProgramsReport, ProductsReport } from './reports';
+import Reports from './pages/reports';
 import ProductFeed from './product-feed';
 import Settings from './settings';
 import './data';
@@ -88,55 +85,13 @@ addFilter(
 			{
 				breadcrumbs: [
 					...initialBreadcrumbs,
-					__( 'Edit Free Listings', 'google-listings-and-ads' ),
-				],
-				container: EditFreeCampaign,
-				path: '/google/edit-free-campaign',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Edit Paid Ads Campaign', 'google-listings-and-ads' ),
-				],
-				container: EditPaidAdsCampaign,
-				path: '/google/campaigns/edit',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__(
-						'Create your paid campaign',
-						'google-listings-and-ads'
-					),
-				],
-				container: CreatePaidAdsCampaign,
-				path: '/google/campaigns/create',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
 					__( 'Reports', 'google-listings-and-ads' ),
 				],
-				container: ProgramsReport,
-				path: '/google/reports/programs',
+				container: Reports,
+				path: '/google/reports',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 				navArgs: {
 					id: 'google-reports',
-				},
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Reports', 'google-listings-and-ads' ),
-				],
-				container: ProductsReport,
-				path: '/google/reports/products',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-				navArgs: {
-					id: 'google-reports-products',
 				},
 			},
 			{

@@ -3,6 +3,10 @@
  */
 import { recordEvent } from '@woocommerce/tracks';
 
+/**
+ * @typedef { import(".~/data/actions").CountryCode } CountryCode
+ */
+
 export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 	recordEvent( 'gla_table_header_toggle', {
 		report,
@@ -14,6 +18,30 @@ export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 export const recordTableSortEvent = ( report, column, direction ) => {
 	recordEvent( 'gla_table_sort', { report, column, direction } );
 };
+
+/**
+ * Records table's page tracking event.
+ * When the `direction` is 'goto', then the event name would be 'gla_table_go_to_page'.
+ * Otherwise, the event name would be 'gla_table_page_click'.
+ *
+ * @param {string} context Name of the table.
+ * @param {number} page Page number of the table. Start from 1.
+ * @param {string} direction Direction of page to be changed. 'next', 'previous', or 'goto'.
+ */
+export const recordTablePageEvent = ( context, page, direction ) => {
+	const properties = { context };
+	let eventName;
+
+	if ( direction === 'goto' ) {
+		eventName = 'gla_table_go_to_page';
+		properties.page = page;
+	} else {
+		eventName = 'gla_table_page_click';
+		properties.direction = direction;
+	}
+	recordEvent( eventName, properties );
+};
+
 /**
  * Records `gla_datepicker_update` tracking event, with data that comes from
  * `DateRangeFilterPicker`'s `onRangeSelect` callback.
@@ -41,6 +69,17 @@ export const recordFilterEvent = ( data ) => {
 	recordEvent( 'gla_filter', data );
 };
 
+/**
+ * Records `gla_chart_tab_click` tracking event.
+ *
+ * @param {Object} data
+ * @param {string} data.report Name of the report.
+ * @param {string} data.context Metric key of the clicked tab.
+ */
+export const recordChartTabClickEvent = ( data ) => {
+	recordEvent( 'gla_chart_tab_click', data );
+};
+
 export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_mc', {
 		target,
@@ -56,6 +95,19 @@ export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_ads', {
 		target,
 		trigger,
+	} );
+};
+
+/**
+ * Records `gla_launch_paid_campaign_button_click` tracking event.
+ *
+ * @param {number} budget Daily average cost of the paid campaign.
+ * @param {CountryCode} audience Country code of the paid campaign audience country.
+ */
+export const recordLaunchPaidCampaignClickEvent = ( budget, audience ) => {
+	recordEvent( 'gla_launch_paid_campaign_button_click', {
+		audience,
+		budget,
 	} );
 };
 

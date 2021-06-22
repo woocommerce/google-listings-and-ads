@@ -23,7 +23,7 @@ const useGetRemainingCountryCodes = () => {
 		return select( STORE_KEY )
 			.getShippingRates()
 			.map( ( el ) => el.countryCode );
-	} );
+	}, [] );
 
 	if ( ! selectedCountryCodes ) {
 		return [];

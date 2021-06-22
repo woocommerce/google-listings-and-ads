@@ -24,7 +24,7 @@ class MerchantSetupCompleted implements OptionsAwareInterface, Registerable, Ser
 	 */
 	public function register(): void {
 		add_action(
-			'gla_mc_settings_sync',
+			'woocommerce_gla_mc_settings_sync',
 			function() {
 				$this->set_completed_timestamp();
 			}

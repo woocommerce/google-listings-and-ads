@@ -83,6 +83,9 @@ class PHPView implements View {
 			while ( ob_get_level() > $buffer_level ) {
 				ob_end_clean();
 			}
+
+			do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+
 			throw ViewException::invalid_view_exception(
 				$this->path,
 				$exception
@@ -130,6 +133,8 @@ class PHPView implements View {
 			return $this->context[ $property ];
 		}
 
+		do_action( 'woocommerce_gla_error', sprintf( 'View property "%s" is missing or undefined.', $property ), __METHOD__ );
+
 		/*
 		 * We only throw an exception here if we are in debugging mode, as we
 		 * don't want to take the server down when trying to render a missing
@@ -156,6 +161,8 @@ class PHPView implements View {
 		$path = path_join( $this->get_views_base_path(), $path );
 
 		if ( ! is_readable( $path ) ) {
+			do_action( 'woocommerce_gla_error', sprintf( 'View not found in path "%s".', $path ), __METHOD__ );
+
 			throw ViewException::invalid_path( $path );
 		}
 
@@ -197,6 +204,8 @@ class PHPView implements View {
 		if ( array_key_exists( $property, $this->context ) ) {
 			return $this->sanitize_context_variable( $this->context[ $property ] );
 		}
+
+		do_action( 'woocommerce_gla_error', sprintf( 'View property "%s" is missing or undefined.', $property ), __METHOD__ );
 
 		/*
 		 * We only throw an exception here if we are in debugging mode, as we

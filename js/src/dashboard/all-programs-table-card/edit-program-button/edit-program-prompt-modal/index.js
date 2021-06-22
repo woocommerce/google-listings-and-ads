@@ -3,7 +3,7 @@
  */
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,6 +12,7 @@ import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AppModal from '.~/components/app-modal';
 import recordEvent from '.~/utils/recordEvent';
 import './index.scss';
+import { getEditFreeListingsUrl, getEditCampaignUrl } from '.~/utils/urls';
 
 const EditProgramPromptModal = ( props ) => {
 	const { programId, onRequestClose } = props;
@@ -23,8 +24,8 @@ const EditProgramPromptModal = ( props ) => {
 	const handleContinueEditClick = () => {
 		const url =
 			programId === FREE_LISTINGS_PROGRAM_ID
-				? getNewPath( { programId }, '/google/edit-free-campaign' )
-				: getNewPath( { programId }, '/google/campaigns/edit' );
+				? getEditFreeListingsUrl()
+				: getEditCampaignUrl( programId );
 
 		getHistory().push( url );
 

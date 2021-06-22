@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
+use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ActivationRedirect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
@@ -23,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
@@ -31,12 +33,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\GetStarted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Dashboard;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditFreeCampaign;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\EditPaidAdsCampaign;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\CreatePaidAdsCampaign;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Reports;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Programs;
-use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports\Products;
+use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\ProductFeed;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
@@ -61,10 +58,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\EventTracking;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
@@ -90,15 +90,10 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ActivationRedirect::class     => true,
 		Admin::class                  => true,
 		Reports::class                => true,
-		Programs::class               => true,
-		Products::class               => true,
 		AssetsHandlerInterface::class => true,
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
-		EditFreeCampaign::class       => true,
-		EditPaidAdsCampaign::class    => true,
-		CreatePaidAdsCampaign::class  => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
 		GlobalSiteTag::class          => true,
@@ -136,6 +131,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductFactory::class         => true,
 		AttributesTab::class          => true,
 		VariationsAttributes::class   => true,
+		DeprecatedFilters::class      => true,
 	];
 
 	/**
@@ -195,12 +191,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
 		$this->conditionally_share_with_tags( Dashboard::class );
-		$this->conditionally_share_with_tags( EditFreeCampaign::class );
-		$this->conditionally_share_with_tags( EditPaidAdsCampaign::class );
-		$this->conditionally_share_with_tags( CreatePaidAdsCampaign::class );
 		$this->conditionally_share_with_tags( Reports::class );
-		$this->conditionally_share_with_tags( Programs::class );
-		$this->conditionally_share_with_tags( Products::class );
 		$this->conditionally_share_with_tags( ProductFeed::class );
 		$this->conditionally_share_with_tags( Settings::class );
 		$this->conditionally_share_with_tags( TrackerSnapshot::class );
@@ -208,7 +199,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( CompleteSetup::class, AssetsHandlerInterface::class );
-		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( GlobalSiteTag::class, GoogleGtagJs::class, WP::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
@@ -227,9 +218,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class );
-		$this->share_with_tags( ProductFactory::class, AttributeManager::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class );
+		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductHelper::class );
+		$this->share_with_tags( ProductFactory::class, AttributeManager::class );
 		$this->share_with_tags(
 			BatchProductHelper::class,
 			ProductMetaHandler::class,
@@ -240,7 +231,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags(
 			ProductSyncer::class,
 			GoogleProductService::class,
-			BatchProductHelper::class
+			BatchProductHelper::class,
+			ProductHelper::class
 		);
 
 		// Set up inflector for tracks classes.
@@ -257,7 +249,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Share other classes.
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
+		$this->conditionally_share_with_tags( SiteClaimEvents::class );
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
+		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );
 
 		// The DB Controller has some extra setup required.
 		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );
@@ -266,5 +260,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 				return new DBInstaller( ...$arguments );
 			}
 		);
+
+		$this->share_with_tags( DeprecatedFilters::class );
 	}
 }

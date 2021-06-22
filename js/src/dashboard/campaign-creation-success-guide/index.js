@@ -10,6 +10,7 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
+import { getCreateCampaignUrl } from '.~/utils/urls';
 import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
@@ -20,8 +21,6 @@ import './index.scss';
 const GUIDE_NAME = 'campaign-creation-success';
 const CTA_CREATE_ANOTHER_CAMPAIGN = 'create-another-campaign';
 
-// TODO: The current close method is temporarily for demo.
-//       Need to reconsider how this guide modal would be triggered later.
 const handleCloseWithAction = ( e, specifiedAction ) => {
 	const action = specifiedAction || e.currentTarget.dataset.action;
 	const nextQuery = {
@@ -31,8 +30,7 @@ const handleCloseWithAction = ( e, specifiedAction ) => {
 	getHistory().replace( getNewPath( nextQuery ) );
 
 	if ( action === CTA_CREATE_ANOTHER_CAMPAIGN ) {
-		// TODO: Mutate nextQuery to direct user to campaign creation path after that page ready.
-		getHistory().push( getNewPath( nextQuery ) );
+		getHistory().push( getCreateCampaignUrl() );
 	}
 
 	recordEvent( 'gla_modal_closed', {
@@ -107,9 +105,6 @@ const GuideImplementation = () => {
  *
  * Show this guide modal by visiting the path with a specific query `guide=campaign-creation-success`.
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success`.
- *
- * TODO: The current open method is temporarily for demo.
- *       Need to reconsider how this guide modal would be triggered later.
  */
 export default function CampaignCreationSuccessGuide() {
 	const isOpen = getQuery().guide === GUIDE_NAME;

@@ -3,7 +3,7 @@
  */
 import { useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { getPath } from '@woocommerce/navigation';
+import { getNewPath, getPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -15,22 +15,22 @@ let tabs = [
 	{
 		key: 'dashboard',
 		title: __( 'Dashboard', 'google-listings-and-ads' ),
-		path: '/google/dashboard',
+		href: getNewPath( {}, '/google/dashboard', {} ),
 	},
 	{
 		key: 'reports',
 		title: __( 'Reports', 'google-listings-and-ads' ),
-		path: '/google/reports/programs',
+		href: getNewPath( {}, '/google/reports', {} ),
 	},
 	{
 		key: 'product-feed',
 		title: __( 'Product Feed', 'google-listings-and-ads' ),
-		path: '/google/product-feed',
+		href: getNewPath( {}, '/google/product-feed', {} ),
 	},
 	{
 		key: 'settings',
 		title: __( 'Settings', 'google-listings-and-ads' ),
-		path: '/google/settings',
+		href: getNewPath( {}, '/google/settings', {} ),
 	},
 ];
 
@@ -42,12 +42,7 @@ if ( ! glaData.enableReports ) {
 const getSelectedTabKey = () => {
 	const path = getPath();
 
-	// This is to cater for both Programs Report and Products Report.
-	if ( path.startsWith( '/google/reports' ) ) {
-		return 'reports';
-	}
-
-	return tabs.find( ( el ) => el.path === path )?.key;
+	return tabs.find( ( el ) => path.includes( el.key ) )?.key;
 };
 
 const MainTabNav = () => {

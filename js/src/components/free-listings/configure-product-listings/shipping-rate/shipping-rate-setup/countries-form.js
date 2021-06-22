@@ -41,7 +41,7 @@ export default function ShippingCountriesForm( {
 	if ( countriesPriceArray.length === 0 ) {
 		countriesPriceArray.push( {
 			countries: audienceCountries,
-			price: '',
+			price: null,
 			currency: currencyCode,
 		} );
 	}

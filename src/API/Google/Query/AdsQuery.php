@@ -46,8 +46,13 @@ abstract class AdsQuery extends Query {
 	 * @param int             $id     Account ID.
 	 *
 	 * @return QueryInterface
+	 * @throws InvalidProperty If the ID is empty.
 	 */
 	public function set_client( GoogleAdsClient $client, int $id ): QueryInterface {
+		if ( empty( $id ) ) {
+			throw InvalidProperty::not_null( get_class( $this ), 'id' );
+		}
+
 		$this->client = $client;
 		$this->id     = $id;
 

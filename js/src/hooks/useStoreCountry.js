@@ -17,5 +17,5 @@ export default function useStoreCountry() {
 		const [ code ] = general.woocommerce_default_country.split( ':' );
 
 		return { code, name: countryNames[ code ] };
-	} );
+	}, [] );
 }

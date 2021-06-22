@@ -189,6 +189,13 @@ class Admin implements Service, Registerable, Conditional {
 	 * @param MetaBoxInterface $meta_box
 	 */
 	public function add_meta_box( MetaBoxInterface $meta_box ) {
+		add_filter(
+			"postbox_classes_{$meta_box->get_screen()}_{$meta_box->get_id()}",
+			function ( array $classes ) use ( $meta_box ) {
+				return array_merge( $classes, $meta_box->get_classes() );
+			}
+		);
+
 		add_meta_box(
 			$meta_box->get_id(),
 			$meta_box->get_title(),
@@ -219,6 +226,6 @@ class Admin implements Service, Registerable, Conditional {
 	 * @return bool Whether reports should be enabled .
 	 */
 	protected function enableReports(): bool {
-		return apply_filters( 'gla_enable_reports', true );
+		return apply_filters( 'woocommerce_gla_enable_reports', true );
 	}
 }

@@ -68,7 +68,7 @@ class Ads implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			// Do not act upon error as we might not have permission to access this account yet.
 			if ( 'PERMISSION_DENIED' !== $e->getStatus() ) {
-				do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+				do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			}
 		} catch ( ValidationException $e ) {
 			// If no billing setups are found, just return UNKNOWN

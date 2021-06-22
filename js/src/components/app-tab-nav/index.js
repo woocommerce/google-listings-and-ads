@@ -10,14 +10,14 @@ import classnames from 'classnames';
  */
 import './index.scss';
 
-const TabLink = ( { tabId, path, children, selected, ...rest } ) => {
+const TabLink = ( { tabId, href, children, selected, ...rest } ) => {
 	return (
 		<Link
 			role="tab"
 			tabIndex={ selected ? null : -1 }
 			aria-selected={ selected }
 			id={ tabId }
-			href={ 'admin.php?page=wc-admin&path=' + path }
+			href={ href }
 			{ ...rest }
 		>
 			{ children }
@@ -48,7 +48,7 @@ const AppTabNav = ( props ) => {
 						aria-controls={ `${ tab.key }-view` }
 						selected={ tab.key === selectedKey }
 						key={ tab.key }
-						path={ tab.path }
+						href={ tab.href }
 					>
 						{ tab.title }
 					</TabLink>

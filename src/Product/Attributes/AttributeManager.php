@@ -64,7 +64,8 @@ class AttributeManager implements Service {
 			$value = wc_bool_to_string( $value );
 		}
 
-		update_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute::get_id() ), $value );
+		$product->update_meta_data( $this->prefix_meta_key( $attribute::get_id() ), $value );
+		$product->save_meta_data();
 	}
 
 	/**
@@ -78,13 +79,16 @@ class AttributeManager implements Service {
 	public function get( WC_Product $product, string $attribute_id ): ?AttributeInterface {
 		$this->validate( $product, $attribute_id );
 
-		$attribute_class = $this->get_attribute_types_for_product( $product )[ $attribute_id ];
-		$value           = get_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute_id ), true );
+		$value = null;
+		if ( $product->meta_exists( $this->prefix_meta_key( $attribute_id ) ) ) {
+			$value = $product->get_meta( $this->prefix_meta_key( $attribute_id ), true );
+		}
 
 		if ( null === $value || '' === $value ) {
 			return null;
 		}
 
+		$attribute_class = $this->get_attribute_types_for_product( $product )[ $attribute_id ];
 		return new $attribute_class( $value );
 	}
 
@@ -149,7 +153,8 @@ class AttributeManager implements Service {
 	public function delete( WC_Product $product, string $attribute_id ) {
 		$this->validate( $product, $attribute_id );
 
-		delete_post_meta( $product->get_id(), $this->prefix_meta_key( $attribute_id ) );
+		$product->delete_meta_data( $this->prefix_meta_key( $attribute_id ) );
+		$product->save_meta_data();
 	}
 
 	/**
@@ -180,6 +185,10 @@ class AttributeManager implements Service {
 		// re-index the attributes map array to avoid string ($product_type) array keys
 		$match_attributes = array_values( $match_attributes );
 
+		if ( empty( $match_attributes ) ) {
+			return [];
+		}
+
 		// merge all of the attribute arrays from the map (there might be duplicates) and return the results
 		return array_merge( ...$match_attributes );
 	}
@@ -206,6 +215,12 @@ class AttributeManager implements Service {
 	protected function validate( WC_Product $product, string $attribute_id ) {
 		$attribute_types = $this->get_attribute_types_for_product( $product );
 		if ( ! isset( $attribute_types[ $attribute_id ] ) ) {
+			do_action(
+				'woocommerce_gla_error',
+				sprintf( 'Attribute "%s" is not supported for a "%s" product (ID: %s).', $attribute_id, $product->get_type(), $product->get_id() ),
+				__METHOD__
+			);
+
 			throw InvalidValue::not_in_allowed_list( 'attribute_id', array_keys( $attribute_types ) );
 		}
 	}
@@ -214,7 +229,7 @@ class AttributeManager implements Service {
 	 * @throws InvalidClass If any of the given attribute classes do not implement the AttributeInterface.
 	 */
 	protected function map_attribute_types(): void {
-		$available_attributes = apply_filters( 'gla_product_attribute_types', self::ATTRIBUTES );
+		$available_attributes = apply_filters( 'woocommerce_gla_product_attribute_types', self::ATTRIBUTES );
 
 		$this->attribute_types_map = [];
 		foreach ( $available_attributes as $attribute_type ) {
@@ -229,7 +244,7 @@ class AttributeManager implements Service {
 			 * @param string[] $applicable_types Array of WooCommerce product types
 			 * @param string   $attribute_type   Attribute class name (FQN)
 			 */
-			$applicable_types = apply_filters( "gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
+			$applicable_types = apply_filters( "woocommerce_gla_attribute_applicable_product_types_{$attribute_id}", $applicable_types, $attribute_type );
 
 			foreach ( $applicable_types as $product_type ) {
 				$this->attribute_types_map[ $product_type ]                  = $this->attribute_types_map[ $product_type ] ?? [];

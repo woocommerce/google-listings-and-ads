@@ -99,6 +99,7 @@ const ProgramsReport = () => {
 				metrics={ availableMetrics }
 				expectedLength={ performanceMetrics.length }
 				totals={ availablePerformance }
+				trackEventId={ trackEventId }
 			/>
 			<ChartSection
 				metrics={ availableMetrics }

@@ -29,10 +29,13 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     `product_id` bigint(20) NOT NULL,
     `issue` varchar(200) NOT NULL,
     `code` varchar(100) NOT NULL,
+    `severity` varchar(20) NOT NULL DEFAULT 'warning',
     `product` varchar(100) NOT NULL,
     `action` varchar(100) NOT NULL,
     `action_url` varchar(100) NOT NULL,
     `applicable_countries` text NOT NULL,
+    `source` varchar(10) NOT NULL DEFAULT 'mc',
+    `type` varchar(10) NOT NULL DEFAULT 'product',
     `created_at` datetime NOT NULL,
     PRIMARY KEY `id` (`id`),
     UNIQUE KEY `product_issue` (`product_id`, `issue`)
@@ -69,11 +72,14 @@ SQL;
 			'id'                   => true,
 			'product_id'           => true,
 			'code'                 => true,
+			'severity'             => true,
 			'issue'                => true,
 			'product'              => true,
 			'action'               => true,
 			'action_url'           => true,
 			'applicable_countries' => true,
+			'source'               => true,
+			'type'                 => true,
 			'created_at'           => true,
 		];
 	}

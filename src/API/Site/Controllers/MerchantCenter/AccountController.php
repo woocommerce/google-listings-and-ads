@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Google_Service_ShoppingContent_Account as MC_Account;
@@ -27,6 +28,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class AccountController extends BaseOptionsController {
+
+	use PluginHelper;
 
 	/**
 	 * @var ContainerInterface
@@ -434,15 +437,19 @@ class AccountController extends BaseOptionsController {
 					$data = [
 						'id'          => $merchant_id,
 						'website_url' => $this->strip_url_protocol(
-							esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) )
+							esc_url_raw( $this->get_site_url() )
 						),
 					];
 
 					// Sub-account: request overwrite confirmation.
 					if ( $state['set_id']['data']['from_mca'] ?? true ) {
+						do_action( 'woocommerce_gla_site_claim_overwrite_required', [] );
+
 						$step['data']['overwrite_required'] = true;
 						$e                                  = new ExceptionWithResponseData( $e->getMessage(), $e->getCode(), null, $data );
 					} else {
+						do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'independent_account' ] );
+
 						// Independent account: overwrite not possible.
 						throw new ExceptionWithResponseData(
 							__( 'Unable to claim website URL with this Merchant Center Account.', 'google-listings-and-ads' ),
@@ -475,9 +482,9 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception If any step of the site verification process fails.
 	 */
 	private function verify_site(): void {
-		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+		$site_url = esc_url_raw( $this->get_site_url() );
 		if ( ! wc_is_valid_url( $site_url ) ) {
-			do_action( 'gla_site_verify_failure', [ 'step' => 'site-url' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'site-url' ] );
 			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
 		}
 
@@ -492,7 +499,7 @@ class AccountController extends BaseOptionsController {
 		try {
 			$meta_tag = $site_verification->get_token( $site_url );
 		} catch ( Exception $e ) {
-			do_action( 'gla_site_verify_failure', [ 'step' => 'token' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'token' ] );
 			throw $e;
 		}
 
@@ -511,18 +518,18 @@ class AccountController extends BaseOptionsController {
 			if ( $site_verification->insert( $site_url ) ) {
 				$site_verification_options['verified'] = $site_verification::VERIFICATION_STATUS_VERIFIED;
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-				do_action( 'gla_site_verify_success', [] );
+				do_action( 'woocommerce_gla_site_verify_success', [] );
 
 				return;
 			}
 		} catch ( Exception $e ) {
-			do_action( 'gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
 
 			throw $e;
 		}
 
 		// Should never reach this point.
-		do_action( 'gla_site_verify_failure', [ 'step' => 'unknown' ] );
+		do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
 
 		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
 	}
@@ -547,7 +554,7 @@ class AccountController extends BaseOptionsController {
 		}
 
 		// Make sure the existing account has the correct website URL (or fail).
-		$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+		$site_url = esc_url_raw( $this->get_site_url() );
 		$this->maybe_add_merchant_center_website_url( $account_id, $site_url );
 
 		// Maybe the existing account is sub-account!
@@ -598,6 +605,8 @@ class AccountController extends BaseOptionsController {
 				$clean_account_website_url = $this->strip_url_protocol( $account_website_url );
 				$clean_site_website_url    = $this->strip_url_protocol( $site_website_url );
 
+				do_action( 'woocommerce_gla_url_switch_required', [] );
+
 				throw new ExceptionWithResponseData(
 					sprintf(
 					/* translators: 1: is a website URL (without the protocol) */
@@ -616,6 +625,8 @@ class AccountController extends BaseOptionsController {
 
 			$mc_account->setWebsiteUrl( $site_website_url );
 			$this->merchant->update_account( $mc_account );
+
+			do_action( 'woocommerce_gla_url_switch_success', [] );
 		}
 	}
 

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useState, useEffect } from '@wordpress/element';
-import { useDebouncedCallback } from 'use-debounce';
 
 /**
  * Internal dependencies
@@ -19,22 +18,27 @@ const CountriesPriceInputForm = ( props ) => {
 		setValue( savedValue );
 	}, [ savedValue ] );
 
-	const debouncedUpsertShippingRate = useDebouncedCallback( ( v ) => {
-		const { countries, currency, price } = v;
+	const handleBlur = ( event, numberValue ) => {
+		const { countries, currency, price } = value;
+
+		if ( price === numberValue ) {
+			return;
+		}
+
+		setValue( {
+			countries,
+			currency,
+			price: numberValue,
+		} );
 
 		upsertShippingRates( {
 			countryCodes: countries,
 			currency,
-			rate: price,
+			rate: numberValue,
 		} );
-	}, 500 );
-
-	const handleChange = ( v ) => {
-		setValue( v );
-		debouncedUpsertShippingRate.callback( v );
 	};
 
-	return <CountriesPriceInput value={ value } onChange={ handleChange } />;
+	return <CountriesPriceInput value={ value } onBlur={ handleBlur } />;
 };
 
 export default CountriesPriceInputForm;

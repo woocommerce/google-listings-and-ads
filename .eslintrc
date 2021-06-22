@@ -7,6 +7,12 @@
     "import/resolver": "webpack"
   },
   "rules": {
-    "@wordpress/no-unsafe-wp-apis" : 1
+    "@wordpress/no-unsafe-wp-apis" : 1,
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "useSelect"
+      }
+    ]
   }
 }

@@ -61,7 +61,7 @@ class AdminScriptWithBuiltDependenciesAsset extends AdminScriptAsset {
 
 			return new DependencyArray( include $build_dependency_path );
 		} catch ( Throwable $e ) {
-			do_action( 'gla_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			return $fallback;
 		}
 	}

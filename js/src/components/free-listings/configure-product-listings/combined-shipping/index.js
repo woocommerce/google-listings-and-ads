@@ -21,8 +21,7 @@ import './index.scss';
  */
 
 /**
- * Form section to set shipping rate and price per country.
- * Copied from {@link .~/setup-mc/setup-stepper/setup-free-listings/shipping-rate/index.js},
+ * Form section to set shipping rate and time per country.
  *
  * @param {Object} props
  * @param {Object} props.formProps
@@ -56,8 +55,8 @@ const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
 					</p>
 					<p>
 						<AppDocumentationLink
-							context="setup-mc-shipping-rate"
-							linkId="shipping-rate-read-more"
+							context="setup-mc-shipping"
+							linkId="shipping-read-more"
 							href="https://support.google.com/merchants/answer/7050921"
 						>
 							{ __( 'Read more', 'google-listings-and-ads' ) }
@@ -97,8 +96,8 @@ const CombinedShipping = ( { formProps, countries: selectedCountryCodes } ) => {
 										{
 											link: (
 												<AppDocumentationLink
-													context="setup-mc-shipping-rate"
-													linkId="shipping-rate-manual"
+													context="setup-mc-shipping"
+													linkId="shipping-manual"
 													href="https://www.google.com/retail/solutions/merchant-center/"
 												/>
 											),

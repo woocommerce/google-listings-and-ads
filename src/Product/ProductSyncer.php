@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
@@ -38,14 +39,21 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 	protected $batch_helper;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * ProductSyncer constructor.
 	 *
 	 * @param GoogleProductService $google_service
 	 * @param BatchProductHelper   $batch_helper
+	 * @param ProductHelper        $product_helper
 	 */
-	public function __construct( GoogleProductService $google_service, BatchProductHelper $batch_helper ) {
+	public function __construct( GoogleProductService $google_service, BatchProductHelper $batch_helper, ProductHelper $product_helper ) {
 		$this->google_service = $google_service;
 		$this->batch_helper   = $batch_helper;
+		$this->product_helper = $product_helper;
 	}
 
 	/**
@@ -85,9 +93,9 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 		$updated_products = [];
 		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_product_entries ) {
+		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_entries ) {
 			try {
-				$response = $this->google_service->insert_batch( $batch_product_entries );
+				$response = $this->google_service->insert_batch( $batch_entries );
 
 				$updated_products = array_merge( $updated_products, $response->get_products() );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
@@ -96,19 +104,30 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 				array_walk( $updated_products, [ $this->batch_helper, 'mark_as_synced' ] );
 				array_walk( $invalid_products, [ $this->batch_helper, 'mark_as_invalid' ] );
 			} catch ( Exception $exception ) {
-				throw new ProductSyncerException( sprintf( 'Error updating Google product: %s', $exception->getMessage() ), 0, $exception );
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+
+				throw new ProductSyncerException( sprintf( 'Error updating Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
 
-		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
-		if ( ! empty( $internal_error_products ) && apply_filters( 'gla_products_update_retry_on_failure', true, $invalid_products ) ) {
-			do_action( 'gla_batch_retry_update_products', $internal_error_products );
-		}
+		$this->handle_update_errors( $invalid_products );
 
 		do_action(
-			'gla_batch_updated_products',
+			'woocommerce_gla_batch_updated_products',
 			$updated_products,
 			$invalid_products
+		);
+
+		do_action(
+			'woocommerce_gla_debug_message',
+			sprintf(
+				"Submitted %s products:\n%s\n%s Failed:\n%s",
+				count( $updated_products ),
+				json_encode( $updated_products ),
+				count( $invalid_products ),
+				json_encode( $invalid_products )
+			),
+			__METHOD__
 		);
 
 		return new BatchProductResponse( $updated_products, $invalid_products );
@@ -153,34 +172,114 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 
 		$deleted_products = [];
 		$invalid_products = [];
-		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_product_entries ) {
+		foreach ( array_chunk( $product_entries, GoogleProductService::BATCH_SIZE ) as $batch_entries ) {
 			try {
-				$response = $this->google_service->delete_batch( $batch_product_entries );
+				$response = $this->google_service->delete_batch( $batch_entries );
 
 				$deleted_products = array_merge( $deleted_products, $response->get_products() );
 				$invalid_products = array_merge( $invalid_products, $response->get_errors() );
 
 				array_walk( $deleted_products, [ $this->batch_helper, 'mark_as_unsynced' ] );
 			} catch ( Exception $exception ) {
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+
 				throw new ProductSyncerException( sprintf( 'Error deleting Google products: %s', $exception->getMessage() ), 0, $exception );
 			}
 		}
 
-		$internal_error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
-		if ( ! empty( $internal_error_products ) && apply_filters( 'gla_products_delete_retry_on_failure', true, $invalid_products ) ) {
-			$id_map     = BatchProductIDRequestEntry::convert_to_id_map( $product_entries );
-			$failed_ids = array_intersect( $id_map->get(), $internal_error_products );
-
-			do_action( 'gla_batch_retry_delete_products', $failed_ids );
-		}
+		$this->handle_delete_errors( $invalid_products );
 
 		do_action(
-			'gla_batch_deleted_products',
+			'woocommerce_gla_batch_deleted_products',
 			$deleted_products,
 			$invalid_products
 		);
 
+		do_action(
+			'woocommerce_gla_debug_message',
+			sprintf(
+				"Deleted %s products:\n%s\n%s Failed:\n%s",
+				count( $deleted_products ),
+				json_encode( $deleted_products ),
+				count( $invalid_products ),
+				json_encode( $invalid_products )
+			),
+			__METHOD__
+		);
+
 		return new BatchProductResponse( $deleted_products, $invalid_products );
+	}
+
+	/**
+	 * Return the list of supported product types.
+	 *
+	 * @return array
+	 */
+	public static function get_supported_product_types(): array {
+		return (array) apply_filters( 'woocommerce_gla_supported_product_types', [ 'simple', 'variable', 'variation' ] );
+	}
+
+	/**
+	 * @param BatchInvalidProductEntry[] $invalid_products
+	 */
+	protected function handle_update_errors( array $invalid_products ) {
+		$error_products = $this->batch_helper->get_internal_error_products( $invalid_products );
+		if ( ! empty( $error_products ) && apply_filters( 'woocommerce_gla_products_update_retry_on_failure', true, $invalid_products ) ) {
+			do_action( 'woocommerce_gla_batch_retry_update_products', $error_products );
+
+			do_action(
+				'woocommerce_gla_error',
+				sprintf( 'Internal API errors while submitting the following products: %s', join( ', ', $error_products ) ),
+				__METHOD__
+			);
+		}
+	}
+
+	/**
+	 * @param BatchInvalidProductEntry[] $invalid_products
+	 */
+	protected function handle_delete_errors( array $invalid_products ) {
+		$internal_error_ids = [];
+		foreach ( $invalid_products as $invalid_product ) {
+			$google_product_id = $invalid_product->get_google_product_id();
+			$wc_product_id     = $invalid_product->get_wc_product_id();
+			$wc_product        = wc_get_product( $wc_product_id );
+			if ( ! $wc_product instanceof WC_Product || empty( $google_product_id ) ) {
+				continue;
+			}
+
+			// not found
+			if ( $invalid_product->has_error( GoogleProductService::NOT_FOUND_ERROR_REASON ) ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf(
+						'Attempted to delete product "%s" (WooCommerce Product ID: %s) but it did not exist in Google Merchant Center, removing the synced product ID from database.',
+						$google_product_id,
+						$wc_product_id
+					),
+					__METHOD__
+				);
+
+				$this->product_helper->remove_google_id( $wc_product, $google_product_id );
+			}
+
+			// internal error
+			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
+				$internal_error_ids[ $google_product_id ] = $wc_product_id;
+			}
+		}
+
+		// call an action to retry if any products with internal errors exist
+		if ( ! empty( $internal_error_ids ) && apply_filters( 'woocommerce_gla_products_delete_retry_on_failure', true, $invalid_products ) ) {
+			do_action( 'woocommerce_gla_batch_retry_delete_products', $internal_error_ids );
+
+			do_action(
+				'woocommerce_gla_error',
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+				sprintf( 'Internal API errors while deleting the following products: %s', print_r( $internal_error_ids, true ) ),
+				__METHOD__
+			);
+		}
 	}
 
 	/**
@@ -190,6 +289,8 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 	 */
 	protected function validate_merchant_center_setup(): void {
 		if ( ! $this->merchant_center->is_setup_complete() ) {
+			do_action( 'woocommerce_gla_error', 'Can not sync any products before setting up Google Merchant Center.', __METHOD__ );
+
 			throw new ProductSyncerException( __( 'Google Merchant Center has not been set up correctly. Please review your configuration.', 'google-listings-and-ads' ) );
 		}
 	}

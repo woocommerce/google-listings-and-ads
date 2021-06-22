@@ -10,10 +10,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Auth\Credentials\InsecureCredentials;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\Google\Auth\HttpHandler\HttpHandlerFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Google\Ads\GoogleAds\Util\V6\GoogleAdsFailures;
-use Google\Auth\Credentials\InsecureCredentials;
-use Google\Auth\HttpHandler\HttpHandlerFactory;
-use GuzzleHttp\Client;
 
 /**
  * A Google Ads API client for handling common configuration and OAuth2 settings.

@@ -21,6 +21,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
+import { recordTablePageEvent } from '.~/utils/recordEvent';
 import AppTableCardDiv from '.~/components/app-table-card-div';
 import EditProductLink from '.~/components/edit-product-link';
 import HelpPopover from '.~/components/help-popover';
@@ -28,6 +29,7 @@ import ErrorIcon from '.~/components/error-icon';
 import WarningIcon from '.~/components/warning-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import { ISSUE_TABLE_PER_PAGE } from '../constants';
 import './index.scss';
 
 const headers = [
@@ -58,8 +60,6 @@ const headers = [
 	{ key: 'action', label: '', required: true },
 ];
 
-const PER_PAGE = 5;
-
 const actions = (
 	<HelpPopover id="issues-to-resolve">
 		{ createInterpolateElement(
@@ -86,12 +86,13 @@ const IssuesTableCard = () => {
 		'getMCIssues',
 		{
 			page,
-			per_page: PER_PAGE,
+			per_page: ISSUE_TABLE_PER_PAGE,
 		}
 	);
 
-	const handlePageChange = ( newPage ) => {
+	const handlePageChange = ( newPage, direction ) => {
 		setPage( newPage );
+		recordTablePageEvent( 'issues-to-resolve', newPage, direction );
 	};
 
 	return (
@@ -130,10 +131,10 @@ const IssuesTableCard = () => {
 								return [
 									{
 										display:
-											el.type === 'account' ? (
-												<ErrorIcon />
-											) : (
+											el.severity === 'warning' ? (
 												<WarningIcon />
+											) : (
+												<ErrorIcon />
 											),
 									},
 									{ display: el.product },
@@ -153,6 +154,11 @@ const IssuesTableCard = () => {
 										display: el.type === 'product' && (
 											<EditProductLink
 												productId={ el.product_id }
+												eventName="gla_edit_product_issue_click"
+												eventProps={ {
+													code: el.code,
+													issue: el.issue,
+												} }
 											/>
 										),
 									},
@@ -164,7 +170,7 @@ const IssuesTableCard = () => {
 				<CardFooter justify="center">
 					<Pagination
 						page={ page }
-						perPage={ PER_PAGE }
+						perPage={ ISSUE_TABLE_PER_PAGE }
 						total={ data?.total }
 						showPagePicker={ false }
 						showPerPagePicker={ false }

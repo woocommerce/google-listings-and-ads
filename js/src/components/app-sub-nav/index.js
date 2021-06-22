@@ -17,7 +17,7 @@ import './index.scss';
  *
  * @param {Object} props
  * @param {string} props.selectedKey Key of the selected tab.
- * @param {Array<Object>} props.tabs Array of tabs; each tab is an object `{ key, title, path }`.
+ * @param {Array<Object>} props.tabs Array of tabs; each tab is an object `{ key, title, href }`.
  */
 const AppSubNav = ( props ) => {
 	const { selectedKey, tabs } = props;
@@ -39,7 +39,7 @@ const AppSubNav = ( props ) => {
 							className={ classnames( { current: isCurrent } ) }
 							tabIndex={ isCurrent ? null : -1 }
 							id={ `${ tab.key }` }
-							href={ 'admin.php?page=wc-admin&path=' + tab.path }
+							href={ tab.href }
 							role="tab"
 							aria-selected={ isCurrent }
 							aria-controls={ `${ tab.key }-view` }

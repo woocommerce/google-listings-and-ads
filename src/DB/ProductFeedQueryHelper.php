@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WP_Query;
 use WP_REST_Request;
@@ -25,7 +26,6 @@ defined( 'ABSPATH' ) || exit;
  * ContainerAware used to access:
  * - MerchantStatuses
  * - ProductHelper
- * - ProductMetaHandler
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
@@ -79,20 +79,12 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 
 		/** @var ProductHelper $product_helper */
 		$product_helper = $this->container->get( ProductHelper::class );
-		/** @var ProductMetaHandler $meta_handler */
-		$meta_handler = $this->container->get( ProductMetaHandler::class );
 
 		add_filter( 'posts_where', [ $this, 'title_filter' ], 10, 2 );
 
 		foreach ( $this->product_repository->find( $args, $limit, $offset ) as $product ) {
 			$id     = $product->get_id();
-			$errors = $meta_handler->get_errors( $id ) ?: [];
-
-			// Combine errors for variable products, which have a variation-indexed array of errors.
-			$first_key = array_key_first( $errors );
-			if ( ! empty( $errors ) && is_numeric( $first_key ) && 0 !== $first_key ) {
-				$errors = array_unique( array_merge( ...$errors ) );
-			}
+			$errors = $product_helper->get_validation_errors( $product );
 
 			$products[ $id ] = [
 				'id'      => $id,
@@ -136,11 +128,12 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	 * @throws InvalidValue If the orderby value isn't valid.
 	 */
 	protected function prepare_query_args(): array {
-		$product_types = $this->product_repository->get_supported_product_types();
+		$product_types = ProductSyncer::get_supported_product_types();
 		$product_types = array_diff( $product_types, [ 'variation' ] );
 
 		$args = [
 			'type'    => $product_types,
+			'status'  => 'publish',
 			'orderby' => [ 'title' => 'ASC' ],
 		];
 

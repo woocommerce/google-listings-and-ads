@@ -71,6 +71,15 @@ abstract class AbstractMetaBox implements MetaBoxInterface {
 	}
 
 	/**
+	 * Returns an array of CSS classes to apply to the box.
+	 *
+	 * @return array
+	 */
+	public function get_classes(): array {
+		return [];
+	}
+
+	/**
 	 * Function that fills the box with the desired content.
 	 *
 	 * The function should echo its output.
@@ -119,6 +128,21 @@ abstract class AbstractMetaBox implements MetaBoxInterface {
 		$view_path = path_join( self::VIEW_PATH, $this->get_id() );
 
 		return $this->admin->get_view( $view_path, $context );
+	}
+
+	/**
+	 * Appends a prefix to the given field ID and returns it.
+	 *
+	 * @param string $field_id
+	 *
+	 * @return string
+	 *
+	 * @since x.x.x
+	 */
+	protected function prefix_field_id( string $field_id ): string {
+		$box_id = $this->prefix_id( $this->get_id() );
+
+		return "{$box_id}_{$field_id}";
 	}
 
 	/**

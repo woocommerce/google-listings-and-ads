@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getPath } from '@woocommerce/navigation';
+import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -10,29 +10,29 @@ import { getPath } from '@woocommerce/navigation';
 import AppTabNav from '.~/components/app-tab-nav';
 import isWCNavigationEnabled from '.~/utils/isWCNavigationEnabled';
 import AppSubNav from '.~/components/app-sub-nav';
+import getSelectedReportKey from '.~/utils/getSelectedReportKey';
 
 const tabs = [
 	{
 		key: 'programs',
 		title: __( 'Programs', 'google-listings-and-ads' ),
-		path: '/google/reports/programs',
+		href: getNewPath( { reportKey: 'programs' }, '/google/reports', {} ),
 	},
 	{
 		key: 'products',
 		title: __( 'Products', 'google-listings-and-ads' ),
-		path: '/google/reports/products',
+		href: getNewPath( { reportKey: 'products' }, '/google/reports', {} ),
 	},
 ];
 
 const ReportsNavigation = () => {
 	const navigationEnabled = isWCNavigationEnabled();
-	const path = getPath();
-	const selectedKey = tabs.find( ( el ) => el.path === path )?.key;
+	const reportKey = getSelectedReportKey();
 
 	return navigationEnabled ? (
-		<AppTabNav tabs={ tabs } selectedKey={ selectedKey } />
+		<AppTabNav tabs={ tabs } selectedKey={ reportKey } />
 	) : (
-		<AppSubNav tabs={ tabs } selectedKey={ selectedKey } />
+		<AppSubNav tabs={ tabs } selectedKey={ reportKey } />
 	);
 };
 

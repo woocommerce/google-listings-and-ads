@@ -15,7 +15,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
-use Psr\Container\ContainerInterface;
 
 /**
  * Main class for Global Site Tag.
@@ -31,17 +30,24 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected const ORDER_CONVERSION_META_KEY = '_gla_tracked';
 
 	/**
-	 * @var ContainerInterface
+	 * @var GoogleGtagJs
 	 */
-	protected $container;
+	protected $gtag_js;
+
+	/**
+	 * @var WP
+	 */
+	protected $wp;
 
 	/**
 	 * Global Site Tag constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param GoogleGtagJs $gtag_js
+	 * @param WP           $wp
 	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->container = $container;
+	public function __construct( GoogleGtagJs $gtag_js, WP $wp ) {
+		$this->gtag_js = $gtag_js;
+		$this->wp      = $wp;
 	}
 
 	/**
@@ -82,7 +88,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	public function activate_global_site_tag( string $ads_conversion_id ) {
-		if ( $this->container->get( GoogleGtagJs::class )->is_adding_framework() ) {
+		if ( $this->gtag_js->is_adding_framework() ) {
 			add_filter(
 				'woocommerce_gtag_snippet',
 				function( $gtag_snippet ) use ( $ads_conversion_id ) {
@@ -133,29 +139,28 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			return;
 		}
 
-		$order_id = $this->container->get( WP::class )->get_query_vars( 'order-received', 0 );
-		if ( 0 < $order_id && 1 !== get_post_meta( $order_id, self::ORDER_CONVERSION_META_KEY, true ) ) {
-			$order = wc_get_order( $order_id );
-
-			// Make sure there is a valid order object.
-			if ( ! $order ) {
-				return;
-			}
-
-			// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
-			update_post_meta( $order_id, self::ORDER_CONVERSION_META_KEY, 1 );
-
-			?>
-	<script>
-		gtag('event', 'conversion', {
-			'send_to': '<?php echo esc_js( $ads_conversion_id ); ?>/<?php echo esc_js( $ads_conversion_label ); ?>',
-			'value': '<?php echo esc_js( $order->get_total() ); ?>',
-			'currency': '<?php echo esc_js( $order->get_currency() ); ?>',
-			'transaction_id': '<?php echo esc_js( $order->get_id() ); ?>'
-		});
-	</script>
-			<?php
+		$order_id = $this->wp->get_query_vars( 'order-received', 0 );
+		if ( empty( $order_id ) ) {
+			return;
 		}
+
+		$order = wc_get_order( $order_id );
+		// Make sure there is a valid order object and it is not already marked as tracked
+		if ( ! $order || 1 === $order->get_meta( self::ORDER_CONVERSION_META_KEY, true ) ) {
+			return;
+		}
+
+		// Mark the order as tracked, to avoid double-reporting if the confirmation page is reloaded.
+		$order->update_meta_data( self::ORDER_CONVERSION_META_KEY, 1 );
+		$order->save_meta_data();
+
+		printf(
+			'<script>gtag("event", "conversion", {"send_to": "%s","value": "%s","currency": "%s","transaction_id": "%s"});</script>',
+			esc_js( "{$ads_conversion_id}/{$ads_conversion_label}" ),
+			esc_js( $order->get_total() ),
+			esc_js( $order->get_currency() ),
+			esc_js( $order->get_id() ),
+		);
 	}
 
 	/**

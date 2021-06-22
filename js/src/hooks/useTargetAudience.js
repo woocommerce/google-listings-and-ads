@@ -19,7 +19,7 @@ const useTargetAudience = () => {
 			loading,
 			data,
 		};
-	} );
+	}, [] );
 };
 
 export default useTargetAudience;

@@ -19,8 +19,8 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 ## Prerequisites
 
- - WordPress 5.3+
- - WooCommerce 4.5+
+ - WordPress 5.5+
+ - WooCommerce 5.2+
  - PHP 7.3+
 
 ## Browsers supported

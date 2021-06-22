@@ -18,7 +18,7 @@ const useExistingGoogleMCAccounts = () => {
 		);
 
 		return { existingAccounts, isResolving };
-	} );
+	}, [] );
 };
 
 export default useExistingGoogleMCAccounts;

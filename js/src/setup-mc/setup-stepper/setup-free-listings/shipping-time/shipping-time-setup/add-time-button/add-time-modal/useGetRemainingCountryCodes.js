@@ -23,7 +23,7 @@ const useGetRemainingCountryCodes = () => {
 		return select( STORE_KEY )
 			.getShippingTimes()
 			.map( ( el ) => el.countryCode );
-	} );
+	}, [] );
 
 	if ( ! selectedCountryCodes ) {
 		return [];
