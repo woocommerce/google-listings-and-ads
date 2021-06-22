@@ -201,9 +201,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @return string[] An array of Google product IDs stored for each WooCommerce product
+	 * @return string[]|null An array of Google product IDs stored for each WooCommerce product
 	 */
-	public function get_synced_google_product_ids( WC_Product $product ): array {
+	public function get_synced_google_product_ids( WC_Product $product ): ?array {
 		return $this->meta_handler->get_google_ids( $product );
 	}
 
@@ -305,9 +305,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_visibility( WC_Product $wc_product ): string {
+	public function get_visibility( WC_Product $wc_product ): ?string {
 		$visibility = $this->meta_handler->get_visibility( $wc_product );
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			// todo: we might need to define visibility per variation later.
@@ -322,9 +322,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_sync_status( WC_Product $wc_product ): string {
+	public function get_sync_status( WC_Product $wc_product ): ?string {
 		return $this->meta_handler->get_sync_status( $wc_product );
 	}
 
@@ -333,9 +333,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_mc_status( WC_Product $wc_product ): string {
+	public function get_mc_status( WC_Product $wc_product ): ?string {
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			return $this->meta_handler->get_mc_status( $this->get_wc_product( $wc_product->get_parent_id() ) );
 		}
@@ -346,17 +346,19 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 * If the provided product has a parent, return its ID. Otherwise, return the
 	 * given (valid product) ID.
 	 *
-	 * @param int $product_id
+	 * @param int|WC_Product $product A WC product, or a WC product ID.
 	 *
 	 * @return int The parent ID or product ID of it doesn't have a parent.
-	 * @throws InvalidValue If the given ID doesn't reference a valid product.
+	 * @throws InvalidValue If a given ID doesn't reference a valid product.
 	 */
-	public function maybe_swap_for_parent_id( int $product_id ): int {
-		$product = $this->get_wc_product( $product_id );
+	public function maybe_swap_for_parent_id( $product ): int {
+		if ( is_integer( $product ) ) {
+			$product = $this->get_wc_product( $product );
+		}
 		if ( $product instanceof WC_Product_Variation ) {
 			return $product->get_parent_id();
 		}
-		return $product_id;
+		return $product->get_id();
 	}
 
 	/**

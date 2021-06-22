@@ -9,6 +9,8 @@ use Google_Service_ShoppingContent as ShoppingService;
 use Google_Service_ShoppingContent_Account as MC_Account;
 use Google_Service_ShoppingContent_AccountAdsLink as MC_Account_Ads_Link;
 use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
+use Google_Service_ShoppingContent_ProductstatusesCustomBatchResponse as MC_Product_Status_Batch_Response;
+use Google_Service_ShoppingContent_ProductstatusesCustomBatchRequest as MC_Product_Status_Batch_Request;
 use Google_Service_ShoppingContent_ProductstatusesListResponse as MC_Product_Status_List_Response;
 use Google_Service_ShoppingContent_Product as Product;
 use Google\Exception as GoogleException;
@@ -80,10 +82,10 @@ class Merchant implements OptionsAwareInterface {
 			$id     = $this->options->get_merchant_id();
 			$params = $overwrite ? [ 'overwrite' => true ] : [];
 			$this->service->accounts->claimwebsite( $id, $id, $params );
-			do_action( 'gla_site_claim_success', [ 'details' => 'google_proxy' ] );
+			do_action( 'woocommerce_gla_site_claim_success', [ 'details' => 'google_proxy' ] );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
-			do_action( 'gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_proxy' ] );
 
 			$error_message = __( 'Unable to claim website.', 'google-listings-and-ads' );
 			if ( 403 === $e->getCode() ) {
@@ -107,7 +109,7 @@ class Merchant implements OptionsAwareInterface {
 		try {
 			$mc_account = $this->service->accounts->get( $id, $id );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;
@@ -126,7 +128,7 @@ class Merchant implements OptionsAwareInterface {
 		try {
 			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve merchant center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
@@ -149,6 +151,33 @@ class Merchant implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Retrieve a batch of Merchant Center Product Statuses using the provided Merchant Center product IDs.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string[] $mc_product_ids
+	 *
+	 * @return MC_Product_Status_Batch_Response;
+	 */
+	public function get_productstatuses_batch( array $mc_product_ids ): MC_Product_Status_Batch_Response {
+		$merchant_id = $this->options->get_merchant_id();
+		$entries     = [];
+		foreach ( $mc_product_ids as $index => $id ) {
+			$entries[] = [
+				'batchId'    => $index + 1,
+				'productId'  => $id,
+				'method'     => 'GET',
+				'merchantId' => $merchant_id,
+			];
+		}
+
+		// Retrieve batch.
+		$request = new MC_Product_Status_Batch_Request();
+		$request->setEntries( $entries );
+		return $this->service->productstatuses->custombatch( $request );
+	}
+
+	/**
 	 * Update the provided Merchant Center account information.
 	 *
 	 * @param MC_Account $mc_account The Account data to update.
@@ -160,7 +189,7 @@ class Merchant implements OptionsAwareInterface {
 		try {
 			$mc_account = $this->service->accounts->update( $mc_account->getId(), $mc_account->getId(), $mc_account );
 		} catch ( GoogleException $e ) {
-			do_action( 'gla_mc_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to update merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;

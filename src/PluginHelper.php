@@ -65,7 +65,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_version(): string {
-		return GLA_VERSION;
+		return WC_GLA_VERSION;
 	}
 
 	/**
@@ -156,5 +156,16 @@ trait PluginHelper {
 
 		// TODO: Change to api.woocommerce.com when we are no longer in test phase.
 		return apply_filters( 'woocommerce_gla_wcs_url', 'https://api-vipgo.woocommerce.com' );
+	}
+
+	/**
+	 * Gets the main site URL which is used for the home page.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return string
+	 */
+	protected function get_site_url(): string {
+		return apply_filters( 'woocommerce_gla_site_url', get_home_url() );
 	}
 }

@@ -30,7 +30,7 @@ class DebugLogger implements Service, Registerable, Conditional {
 	 * @return bool Whether the service is needed.
 	 */
 	public static function is_needed(): bool {
-		return apply_filters( 'gla_enable_debug_logging', true );
+		return apply_filters( 'woocommerce_gla_enable_debug_logging', true );
 	}
 
 	/**
@@ -40,14 +40,14 @@ class DebugLogger implements Service, Registerable, Conditional {
 		if ( function_exists( 'wc_get_logger' ) ) {
 			$this->logger = wc_get_logger();
 
-			add_action( 'gla_debug_message', [ $this, 'log_message' ], 10, 2 );
-			add_action( 'gla_exception', [ $this, 'log_exception' ], 10, 2 );
-			add_action( 'gla_error', [ $this, 'log_error' ], 10, 2 );
-			add_action( 'gla_mc_client_exception', [ $this, 'log_exception' ], 10, 2 );
-			add_action( 'gla_ads_client_exception', [ $this, 'log_exception' ], 10, 2 );
-			add_action( 'gla_sv_client_exception', [ $this, 'log_exception' ], 10, 2 );
-			add_action( 'gla_guzzle_client_exception', [ $this, 'log_exception' ], 10, 2 );
-			add_action( 'gla_guzzle_invalid_response', [ $this, 'log_response' ], 10, 2 );
+			add_action( 'woocommerce_gla_debug_message', [ $this, 'log_message' ], 10, 2 );
+			add_action( 'woocommerce_gla_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'woocommerce_gla_error', [ $this, 'log_error' ], 10, 2 );
+			add_action( 'woocommerce_gla_mc_client_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'woocommerce_gla_ads_client_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'woocommerce_gla_sv_client_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'woocommerce_gla_guzzle_client_exception', [ $this, 'log_exception' ], 10, 2 );
+			add_action( 'woocommerce_gla_guzzle_invalid_response', [ $this, 'log_response' ], 10, 2 );
 		}
 	}
 

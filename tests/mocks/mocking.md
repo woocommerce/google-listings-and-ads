@@ -2,11 +2,11 @@ Mocking responses for development & testing
 ---
 
 This folder contains set of sample data, that could be used to mock server-side API responses for development end testing.
-You can use them by using `gla_prepared_response_{route}` filter, like the following snippet
+You can use them by using `woocommerce_gla_prepared_response_{route}` filter, like the following snippet
 
 ```php
 add_filter(
-	'gla_prepared_response_mc-reports-products',
+	'woocommerce_gla_prepared_response_mc-reports-products',
 	function( $response ) {
 		return json_decode( file_get_contents( __DIR__ . '/google-listings-and-ads/tests/mocks/mc/reports/products.json' ), true ) ?: [];
 	},

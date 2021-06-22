@@ -60,7 +60,12 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @param ValidatorInterface $validator
 	 * @param ProductFactory     $product_factory
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper, ValidatorInterface $validator, ProductFactory $product_factory ) {
+	public function __construct(
+		ProductMetaHandler $meta_handler,
+		ProductHelper $product_helper,
+		ValidatorInterface $validator,
+		ProductFactory $product_factory
+	) {
 		$this->meta_handler    = $meta_handler;
 		$this->product_helper  = $product_helper;
 		$this->validator       = $validator;
@@ -152,15 +157,14 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	 * @return BatchProductRequestEntry[]
 	 */
 	public function validate_and_generate_update_request_entries( array $products ): array {
-		$request_entries  = [];
-		$target_countries = $this->merchant_center->get_target_countries();
+		$request_entries = [];
 
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
 
 			if ( ! $this->product_helper->is_sync_ready( $product ) ) {
 				do_action(
-					'gla_debug_message',
+					'woocommerce_gla_debug_message',
 					sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
 					__METHOD__
 				);
@@ -173,14 +177,17 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 				continue;
 			}
 
-			// check if the product validates for just one of its target countries
-			$adapted_product   = $this->product_factory->create( $product, $target_countries[0] );
+			$target_countries    = $this->merchant_center->get_target_countries();
+			$main_target_country = $this->merchant_center->get_main_target_country();
+
+			// validate the product
+			$adapted_product   = $this->product_factory->create( $product, $main_target_country );
 			$validation_result = $this->validate_product( $adapted_product );
 			if ( $validation_result instanceof BatchInvalidProductEntry ) {
 				$this->mark_as_invalid( $validation_result );
 
 				do_action(
-					'gla_debug_message',
+					'woocommerce_gla_debug_message',
 					sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), json_encode( $validation_result ) ),
 					__METHOD__
 				);
@@ -188,20 +195,13 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 				continue;
 			}
 
-			// return batch request entries for each target country
-			$product_entries = array_map(
-				function ( $target_country ) use ( $product, $adapted_product ) {
-					$target_product = clone $adapted_product;
-					$target_product->setTargetCountry( $target_country );
+			// add shipping for all selected target countries
+			array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
 
-					return new BatchProductRequestEntry(
-						$product->get_id(),
-						$target_product
-					);
-				},
-				$target_countries
+			$request_entries[] = new BatchProductRequestEntry(
+				$product->get_id(),
+				$adapted_product
 			);
-			$request_entries = array_merge( $request_entries, $product_entries );
 		}
 
 		return $request_entries;
@@ -256,8 +256,36 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 		$target_audience = $this->merchant_center->get_target_countries();
 		$request_entries = [];
 		foreach ( $products as $product ) {
-			$google_ids = $this->meta_handler->get_google_ids( $product );
+			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
 			$stale_ids  = array_diff_key( $google_ids, array_flip( $target_audience ) );
+			foreach ( $stale_ids as $stale_id ) {
+				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
+					$product->get_id(),
+					$stale_id
+				);
+			}
+		}
+
+		return $request_entries;
+	}
+
+	/**
+	 * Returns an array of request entries for Google products that should no
+	 * longer be submitted for every target country.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product[] $products
+	 *
+	 * @return BatchProductIDRequestEntry[]
+	 */
+	public function generate_stale_countries_request_entries( array $products ): array {
+		$main_target_country = $this->merchant_center->get_main_target_country();
+
+		$request_entries = [];
+		foreach ( $products as $product ) {
+			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
+			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_target_country ] ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
 					$product->get_id(),

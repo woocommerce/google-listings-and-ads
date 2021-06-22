@@ -6,8 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Exception;
-use GuzzleHttp\Client;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 
@@ -63,11 +63,11 @@ class Connection implements OptionsAwareInterface {
 				return $response['oauthUrl'];
 			}
 
-			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
 			throw new Exception( __( 'Unable to connect Google account', 'google-listings-and-ads' ) );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( __( 'Unable to connect Google account', 'google-listings-and-ads' ) );
 		}
@@ -88,11 +88,11 @@ class Connection implements OptionsAwareInterface {
 
 			return $result->getBody()->getContents();
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			return $e->getMessage();
 		} catch ( Exception $e ) {
-			do_action( 'gla_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 
 			return $e->getMessage();
 		}
@@ -118,12 +118,12 @@ class Connection implements OptionsAwareInterface {
 				return $response;
 			}
 
-			do_action( 'gla_guzzle_invalid_response', $response, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_invalid_response', $response, __METHOD__ );
 
 			$message = $response['message'] ?? __( 'Invalid response when retrieving status', 'google-listings-and-ads' );
 			throw new Exception( $message, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'gla_guzzle_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ) );
 		}

@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
+use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ActivationRedirect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
@@ -23,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\ViewFactory;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DeprecatedFilters;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\InstallTimestamp;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
@@ -56,8 +58,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
@@ -127,6 +131,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ProductFactory::class         => true,
 		AttributesTab::class          => true,
 		VariationsAttributes::class   => true,
+		DeprecatedFilters::class      => true,
 	];
 
 	/**
@@ -194,7 +199,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( RESTControllers::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( ConnectionTest::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( CompleteSetup::class, AssetsHandlerInterface::class );
-		$this->conditionally_share_with_tags( GlobalSiteTag::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( GlobalSiteTag::class, GoogleGtagJs::class, WP::class );
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
@@ -246,6 +251,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
 		$this->conditionally_share_with_tags( SiteClaimEvents::class );
 		$this->conditionally_share_with_tags( InstallTimestamp::class );
+		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );
 
 		// The DB Controller has some extra setup required.
 		$db_definition = $this->share_with_tags( DBInstaller::class, 'db_table', OptionsInterface::class );
@@ -254,5 +260,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 				return new DBInstaller( ...$arguments );
 			}
 		);
+
+		$this->share_with_tags( DeprecatedFilters::class );
 	}
 }

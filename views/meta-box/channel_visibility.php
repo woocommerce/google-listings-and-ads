@@ -23,11 +23,16 @@ $product = $this->product;
 $visibility = $this->visibility;
 
 /**
+ * @var string
+ */
+$field_id = $this->field_id;
+
+/**
  * @var string $sync_status
  */
 if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
 	$sync_status = __( 'Issues detected', 'google-listings-and-ads' );
-} else {
+} elseif ( ! is_null( $this->sync_status ) ) {
 	$sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
 }
 $show_status = $visibility === ChannelVisibility::SYNC_AND_SHOW && $this->sync_status !== SyncStatus::SYNCED;
@@ -43,7 +48,7 @@ $has_issues = ! empty( $issues );
 	<?php
 	woocommerce_wp_select(
 		[
-			'id'      => 'visibility',
+			'id'      => $field_id,
 			'value'   => $visibility,
 			'label'   => __( 'Google Listing & Ads', 'google-listings-and-ads' ),
 			'options' => [

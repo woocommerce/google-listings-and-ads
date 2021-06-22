@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\BadResponseException;
 use Google\ApiCore\ApiException;
-use GuzzleHttp\Exception\BadResponseException;
 use Psr\Http\Client\ClientExceptionInterface;
 
 /**

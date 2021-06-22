@@ -92,7 +92,7 @@ class AdsConversionAction implements OptionsAwareInterface {
 			return $this->get_conversion_action( $added_conversion_action->getResourceName() );
 
 		} catch ( Exception $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			$message = $e->getMessage();
 			if ( $e instanceof ApiException ) {
 
@@ -128,7 +128,7 @@ class AdsConversionAction implements OptionsAwareInterface {
 
 			return $this->convert_conversion_action( $conversion_action );
 		} catch ( Exception $e ) {
-			do_action( 'gla_ads_client_exception', $e, __METHOD__ );
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			$message = $e->getMessage();
 			if ( $e instanceof ApiException ) {
 				$message = $e->getBasicMessage();

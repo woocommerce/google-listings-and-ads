@@ -19,28 +19,28 @@ defined( 'ABSPATH' ) || exit;
  *
  * @method update_synced_at( WC_Product $product, $value )
  * @method delete_synced_at( WC_Product $product )
- * @method get_synced_at( WC_Product $product ): int
+ * @method get_synced_at( WC_Product $product ): int|null
  * @method update_google_ids( WC_Product $product, array $value )
  * @method delete_google_ids( WC_Product $product )
- * @method get_google_ids( WC_Product $product ): array
+ * @method get_google_ids( WC_Product $product ): array|null
  * @method update_visibility( WC_Product $product, $value )
  * @method delete_visibility( WC_Product $product )
- * @method get_visibility( WC_Product $product ): string
+ * @method get_visibility( WC_Product $product ): string|null
  * @method update_errors( WC_Product $product, array $value )
  * @method delete_errors( WC_Product $product )
- * @method get_errors( WC_Product $product ): array
+ * @method get_errors( WC_Product $product ): array|null
  * @method update_failed_sync_attempts( WC_Product $product, int $value )
  * @method delete_failed_sync_attempts( WC_Product $product )
- * @method get_failed_sync_attempts( WC_Product $product ): int
+ * @method get_failed_sync_attempts( WC_Product $product ): int|null
  * @method update_sync_failed_at( WC_Product $product, int $value )
  * @method delete_sync_failed_at( WC_Product $product )
- * @method get_sync_failed_at( WC_Product $product ): int
+ * @method get_sync_failed_at( WC_Product $product ): int|null
  * @method update_sync_status( WC_Product $product, string $value )
  * @method delete_sync_status( WC_Product $product )
- * @method get_sync_status( WC_Product $product ): string
+ * @method get_sync_status( WC_Product $product ): string|null
  * @method update_mc_status( WC_Product $product, string $value )
  * @method delete_mc_status( WC_Product $product )
- * @method get_mc_status( WC_Product $product ): string
+ * @method get_mc_status( WC_Product $product ): string|null
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -117,7 +117,8 @@ class ProductMetaHandler implements Service, Registerable {
 			}
 		}
 
-		update_post_meta( $product->get_id(), $this->prefix_meta_key( $key ), $value );
+		$product->update_meta_data( $this->prefix_meta_key( $key ), $value );
+		$product->save_meta_data();
 	}
 
 	/**
@@ -129,24 +130,28 @@ class ProductMetaHandler implements Service, Registerable {
 	public function delete( WC_Product $product, string $key ) {
 		self::validate_meta_key( $key );
 
-		delete_post_meta( $product->get_id(), $this->prefix_meta_key( $key ) );
+		$product->delete_meta_data( $this->prefix_meta_key( $key ) );
+		$product->save_meta_data();
 	}
 
 	/**
 	 * @param WC_Product $product
 	 * @param string     $key
 	 *
-	 * @return mixed The value
+	 * @return mixed The value, or null if the meta key doesn't exist.
 	 *
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
 	public function get( WC_Product $product, string $key ) {
 		self::validate_meta_key( $key );
 
-		$value = get_post_meta( $product->get_id(), $this->prefix_meta_key( $key ), true );
+		$value = null;
+		if ( $product->meta_exists( $this->prefix_meta_key( $key ) ) ) {
+			$value = $product->get_meta( $this->prefix_meta_key( $key ), true );
 
-		if ( isset( self::TYPES[ $key ] ) && in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
-			$value = wc_string_to_bool( $value );
+			if ( isset( self::TYPES[ $key ] ) && in_array( self::TYPES[ $key ], [ 'bool', 'boolean' ], true ) ) {
+				$value = wc_string_to_bool( $value );
+			}
 		}
 
 		return $value;
@@ -160,7 +165,7 @@ class ProductMetaHandler implements Service, Registerable {
 	protected static function validate_meta_key( string $key ) {
 		if ( ! self::is_meta_key_valid( $key ) ) {
 			do_action(
-				'gla_error',
+				'woocommerce_gla_error',
 				sprintf( 'Product meta key is invalid: %s', $key ),
 				__METHOD__
 			);

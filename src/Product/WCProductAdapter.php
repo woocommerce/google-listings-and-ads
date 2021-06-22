@@ -161,7 +161,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$description
 		);
 
-		return wp_strip_all_tags( $description );
+		return strip_shortcodes( wp_strip_all_tags( $description ) );
 	}
 
 	/**
@@ -227,23 +227,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 * @return $this
 	 */
 	protected function map_wc_product_shipping(): WCProductAdapter {
-		$product_shipping = [
-			'country' => $this->getTargetCountry(),
-		];
-
-		// Virtual products should override any country shipping cost.
-		if ( $this->is_virtual() ) {
-			$product_shipping['price'] = [
-				'currency' => get_woocommerce_currency(),
-				'value'    => 0,
-			];
-		}
-
-		$this->setShipping(
-			new Google_Service_ShoppingContent_ProductShipping(
-				$product_shipping
-			)
-		);
+		$this->add_shipping_country( $this->getTargetCountry() );
 
 		if ( ! $this->is_virtual() ) {
 			$dimension_unit = apply_filters( 'woocommerce_gla_dimension_unit', get_option( 'woocommerce_dimension_unit' ) );
@@ -257,13 +241,58 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
+	 * Add a shipping country for the product.
+	 *
+	 * @param string $country
+	 */
+	public function add_shipping_country( string $country ): void {
+		$product_shipping = [
+			'country' => $country,
+		];
+
+		// Virtual products should override any country shipping cost.
+		if ( $this->is_virtual() ) {
+			$product_shipping['price'] = [
+				'currency' => get_woocommerce_currency(),
+				'value'    => 0,
+			];
+		}
+
+		$new_shipping = [
+			new Google_Service_ShoppingContent_ProductShipping( $product_shipping ),
+		];
+
+		if ( ! $this->shipping_country_exists( $country ) ) {
+			$current_shipping = $this->getShipping() ?? [];
+			$this->setShipping( array_merge( $current_shipping, $new_shipping ) );
+		}
+	}
+
+	/**
+	 * @param string $country
+	 *
+	 * @return bool
+	 */
+	protected function shipping_country_exists( string $country ): bool {
+		$current_shipping = $this->getShipping() ?? [];
+
+		foreach ( $current_shipping as $shipping ) {
+			if ( $country === $shipping->getCountry() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Map the measurements for the WooCommerce product.
 	 *
 	 * @param string $unit
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_shipping_dimensions( $unit = 'cm' ) {
+	protected function map_wc_shipping_dimensions( string $unit = 'cm' ): WCProductAdapter {
 		$length = $this->wc_product->get_length();
 		$width  = $this->wc_product->get_width();
 		$height = $this->wc_product->get_height();
@@ -313,7 +342,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_shipping_weight( $unit = 'g' ) {
+	protected function map_wc_shipping_weight( string $unit = 'g' ): WCProductAdapter {
 		// Use g if the unit isn't supported.
 		if ( ! in_array( $unit, [ 'g', 'lbs', 'oz' ], true ) ) {
 			$unit = 'g';
@@ -334,11 +363,15 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 	/**
 	 * Sets whether tax is excluded from product price.
+	 *
+	 * @return $this
 	 */
-	protected function map_tax_excluded() {
+	protected function map_tax_excluded(): WCProductAdapter {
 		// tax is excluded from price in US and CA
 		$this->tax_excluded = in_array( $this->getTargetCountry(), [ 'US', 'CA' ], true );
 		$this->tax_excluded = boolval( apply_filters( 'woocommerce_gla_tax_excluded', $this->tax_excluded ) );
+
+		return $this;
 	}
 
 	/**
@@ -346,7 +379,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_prices() {
+	protected function map_wc_prices(): WCProductAdapter {
 		$this->map_tax_excluded();
 		$this->map_wc_product_price( $this->wc_product );
 
@@ -363,7 +396,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function maybe_map_wc_children_prices() {
+	protected function maybe_map_wc_children_prices(): WCProductAdapter {
 		if ( ! $this->wc_product->has_child() ) {
 			return $this;
 		}
@@ -418,7 +451,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_product_price( WC_Product $product ) {
+	protected function map_wc_product_price( WC_Product $product ): WCProductAdapter {
 		// set regular price
 		$regular_price = $product->get_regular_price();
 		if ( '' !== $regular_price ) {
@@ -433,7 +466,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			 * @param WC_Product $product WooCommerce product
 			 * @param bool       $tax_excluded Whether tax is excluded from product price
 			 */
-			$price = apply_filters( 'gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
+			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
 
 			$this->setPrice(
 				new Google_Service_ShoppingContent_Price(
@@ -457,7 +490,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 *
 	 * @return $this
 	 */
-	protected function map_wc_product_sale_price( WC_Product $product ) {
+	protected function map_wc_product_sale_price( WC_Product $product ): WCProductAdapter {
 		// Grab the sale price of the base product. Some plugins (Dynamic
 		// pricing as an example) filter the active price, but not the sale
 		// price. If the active price < the regular price treat it as a sale
@@ -483,7 +516,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			 * @param WC_Product $product      WooCommerce product
 			 * @param bool       $tax_excluded Whether tax is excluded from product price
 			 */
-			$sale_price = apply_filters( 'gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
+			$sale_price = apply_filters( 'woocommerce_gla_product_attribute_value_sale_price', $sale_price, $product, $this->tax_excluded );
 
 			// If the sale price dates no longer apply, make sure we don't include a sale price.
 			$now                 = new WC_DateTime();
@@ -657,7 +690,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$gla_attributes = [];
 		foreach ( $attributes as $attribute_id => $attribute_value ) {
 			if ( property_exists( $this, $attribute_id ) ) {
-				$gla_attributes[ $attribute_id ] = apply_filters( "gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
+				$gla_attributes[ $attribute_id ] = apply_filters( "woocommerce_gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
 			}
 		}
 

@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Product;
 
@@ -92,12 +93,13 @@ class ProductRepository implements Service {
 	/**
 	 * Find and return an array of WooCommerce product objects already submitted to Google Merchant Center.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param array $args   Array of WooCommerce args (except 'return' and 'meta_query').
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return WC_Product[] Array of WooCommerce product objects
 	 */
-	public function find_synced_products( int $limit = -1, int $offset = 0 ): array {
+	public function find_synced_products( array $args = [], int $limit = -1, int $offset = 0 ): array {
 		$args['meta_query'] = $this->get_synced_products_meta_query();
 
 		return $this->find( $args, $limit, $offset );
@@ -108,12 +110,13 @@ class ProductRepository implements Service {
 	 *
 	 * Note: Includes product variations.
 	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
+	 * @param array $args  Array of WooCommerce args (except 'return' and 'meta_query').
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
+	public function find_synced_product_ids( array $args = [], int $limit = -1, int $offset = 0 ): array {
 		$args['meta_query'] = $this->get_synced_products_meta_query();
 
 		return $this->find_ids( $args, $limit, $offset );
@@ -175,7 +178,7 @@ class ProductRepository implements Service {
 		 *
 		 * @param WC_Product[] $products Sync-ready WooCommerce products
 		 */
-		$products = apply_filters( 'gla_get_sync_ready_products_pre_filter', $products );
+		$products = apply_filters( 'woocommerce_gla_get_sync_ready_products_pre_filter', $products );
 
 		$results = [];
 		foreach ( $products as $product ) {
@@ -192,7 +195,7 @@ class ProductRepository implements Service {
 		 *
 		 * @param WC_Product[] $results Sync-ready WooCommerce products
 		 */
-		return apply_filters( 'gla_get_sync_ready_products_filter', $results );
+		return apply_filters( 'woocommerce_gla_get_sync_ready_products_filter', $results );
 	}
 
 	/**
@@ -348,9 +351,7 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs that are published and not synced:
-	 * - Visible with presync errors, or
-	 * - Set to not sync.
+	 * Find and return an array of WooCommerce product IDs that are marked as MC not_synced.
 	 * Excludes variations and variable products without variations.
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
@@ -358,26 +359,81 @@ class ProductRepository implements Service {
 	 *
 	 * @return int[] Array of WooCommerce product IDs
 	 */
-	public function find_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
+	public function find_mc_not_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
 		$types = ProductSyncer::get_supported_product_types();
 		$types = array_diff( $types, [ 'variation' ] );
 		$args  = [
 			'status'     => 'publish',
 			'type'       => $types,
 			'meta_query' => [
-				'relation' => 'OR',
-				$this->get_presync_error_products_meta_query(),
 				[
-					[
-						'key'     => ProductMetaHandler::KEY_VISIBILITY,
-						'compare' => '=',
-						'value'   => ChannelVisibility::DONT_SYNC_AND_SHOW,
-					],
+					'key'     => ProductMetaHandler::KEY_MC_STATUS,
+					'compare' => '=',
+					'value'   => MCStatus::NOT_SYNCED,
 				],
 			],
 		];
 
 		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * Find and return an array of WooCommerce product IDs that are NOT marked as MC not_synced.
+	 * Excludes variations and variable products without variations.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int $offset Amount to offset product results.
+	 *
+	 * @return int[] Array of WooCommerce product IDs
+	 */
+	public function find_mc_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
+		$types = ProductSyncer::get_supported_product_types();
+		$types = array_diff( $types, [ 'variation' ] );
+		$args  = [
+			'status'     => 'publish',
+			'type'       => $types,
+			'meta_query' => [
+				[
+					'key'     => ProductMetaHandler::KEY_MC_STATUS,
+					'compare' => '!=',
+					'value'   => MCStatus::NOT_SYNCED,
+				],
+			],
+		];
+
+		return $this->find_ids( $args, $limit, $offset );
+	}
+
+	/**
+	 * Returns an array of Google Product IDs associated with all synced WooCommerce products.
+	 * Note: excludes variable parent products as only the child variation products are actually synced
+	 * to Merchant Center
+	 *
+	 * @since x.x.x
+	 *
+	 * @return array Google Product IDS
+	 */
+	public function find_all_synced_google_ids(): array {
+		// Don't include variable parent products as they aren't actually synced to Merchant Center.
+		$args['type']        = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
+		$synced_product_ids  = $this->find_synced_product_ids( $args );
+		$google_ids_meta_key = $this->prefix_meta_key( ProductMetaHandler::KEY_GOOGLE_IDS );
+		$synced_google_ids   = [];
+		foreach ( $synced_product_ids as $product_id ) {
+			$meta_google_ids = get_post_meta( $product_id, $google_ids_meta_key, true );
+			if ( ! is_array( $meta_google_ids ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Invalid Google IDs retrieve for product %d', $product_id ),
+					__METHOD__
+				);
+				continue;
+			}
+			$synced_google_ids = array_merge( $synced_google_ids, array_values( $meta_google_ids ) );
+		}
+		return $synced_google_ids;
 	}
 
 	/**

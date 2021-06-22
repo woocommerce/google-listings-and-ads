@@ -24,16 +24,16 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as GuzzleClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
 use Google\Client;
 use Google_Service_ShoppingContent;
 use Google_Service_SiteVerification;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\HandlerStack;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
@@ -208,7 +208,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 				try {
 					$request = $request->withHeader( 'Authorization', $this->generate_auth_header() );
 				} catch ( WPError $error ) {
-					do_action( 'gla_guzzle_client_exception', $error, __METHOD__ . ' in add_auth_header()' );
+					do_action( 'woocommerce_gla_guzzle_client_exception', $error, __METHOD__ . ' in add_auth_header()' );
 					throw new Exception( __( 'Jetpack authorization header error.', 'google-listings-and-ads' ), $error->getCode() );
 				}
 

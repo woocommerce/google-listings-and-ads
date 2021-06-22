@@ -1,20 +1,23 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\AbstractProductSyncerBatchedJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncerException;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class DeleteAllProducts
+ * Class CleanupProductTargetCountriesJob
  *
- * Deletes all WooCommerce products from Google Merchant Center.
+ * Deletes the previous list of target countries which was in use before the
+ * Global Offers option became available.
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
+ * @since x.x.x
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update
  */
-class DeleteAllProducts extends AbstractProductSyncerBatchedJob {
+class CleanupProductTargetCountriesJob extends AbstractProductSyncerBatchedJob {
 
 	/**
 	 * Get the name of the job.
@@ -22,7 +25,7 @@ class DeleteAllProducts extends AbstractProductSyncerBatchedJob {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return 'delete_all_products';
+		return 'cleanup_product_target_countries';
 	}
 
 	/**
@@ -32,9 +35,9 @@ class DeleteAllProducts extends AbstractProductSyncerBatchedJob {
 	 *
 	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
 	 *
-	 * @return int[]
+	 * @return array
 	 */
-	protected function get_batch( int $batch_number ): array {
+	public function get_batch( int $batch_number ): array {
 		return $this->product_repository->find_synced_product_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
@@ -46,8 +49,8 @@ class DeleteAllProducts extends AbstractProductSyncerBatchedJob {
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	protected function process_items( array $items ) {
-		$products        = $this->product_repository->find_by_ids( $items );
-		$product_entries = $this->batch_product_helper->generate_delete_request_entries( $products );
-		$this->product_syncer->delete_by_batch_requests( $product_entries );
+		$products      = $this->product_repository->find_by_ids( $items );
+		$stale_entries = $this->batch_product_helper->generate_stale_countries_request_entries( $products );
+		$this->product_syncer->delete_by_batch_requests( $stale_entries );
 	}
 }

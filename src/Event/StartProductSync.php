@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Event;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -36,7 +36,7 @@ class StartProductSync implements Registerable, Service {
 	 */
 	public function register(): void {
 		add_action(
-			'gla_mc_settings_sync',
+			'woocommerce_gla_mc_settings_sync',
 			function() {
 				$this->on_settings_sync();
 			}

@@ -23,6 +23,7 @@ final class Options implements OptionsInterface, Service {
 	use PluginHelper;
 
 	private const VALID_OPTIONS = [
+		self::ADS_ACCOUNT_CURRENCY   => true,
 		self::ADS_ACCOUNT_STATE      => true,
 		self::ADS_BILLING_URL        => true,
 		self::ADS_ID                 => true,
@@ -90,7 +91,7 @@ final class Options implements OptionsInterface, Service {
 
 		$result = add_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 
-		do_action( "gla_options_updated_{$name}", $value );
+		do_action( "woocommerce_gla_options_updated_{$name}", $value );
 
 		return $result;
 	}
@@ -110,7 +111,7 @@ final class Options implements OptionsInterface, Service {
 
 		$result = update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
 
-		do_action( "gla_options_updated_{$name}", $value );
+		do_action( "woocommerce_gla_options_updated_{$name}", $value );
 
 		return $result;
 	}
@@ -128,7 +129,7 @@ final class Options implements OptionsInterface, Service {
 
 		$result = delete_option( $this->prefix_name( $name ) );
 
-		do_action( "gla_options_deleted_{$name}" );
+		do_action( "woocommerce_gla_options_deleted_{$name}" );
 
 		return $result;
 	}

@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptions
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 
@@ -21,6 +22,7 @@ defined( 'ABSPATH' ) || exit;
 class SiteVerificationController extends BaseOptionsController {
 
 	use EmptySchemaPropertiesTrait;
+	use PluginHelper;
 
 	/**
 	 * @var SiteVerification
@@ -66,7 +68,7 @@ class SiteVerificationController extends BaseOptionsController {
 	 */
 	protected function get_verify_endpoint_create_callback(): callable {
 		return function() {
-			$site_url = esc_url_raw( apply_filters( 'woocommerce_gla_site_url', site_url() ) );
+			$site_url = esc_url_raw( $this->get_site_url() );
 
 			if ( ! wc_is_valid_url( $site_url ) ) {
 				return $this->get_failure_status( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
@@ -81,7 +83,7 @@ class SiteVerificationController extends BaseOptionsController {
 			try {
 				$meta_tag = $this->site_verification->get_token( $site_url );
 			} catch ( Exception $e ) {
-				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'token' ] );
+				do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'token' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
@@ -101,18 +103,18 @@ class SiteVerificationController extends BaseOptionsController {
 				if ( $this->site_verification->insert( $site_url ) ) {
 					$site_verification_options['verified'] = 'yes';
 					$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-					do_action( "{$this->get_slug()}_site_verify_success", [] );
+					do_action( 'woocommerce_gla_site_verify_success', [] );
 
 					return $this->get_success_status( __( 'Site successfully verified.', 'google-listings-and-ads' ) );
 				}
 			} catch ( Exception $e ) {
-				do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'meta-tag' ] );
+				do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
 
 				return $this->get_failure_status( $e->getMessage() );
 			}
 
 			// Should never reach this point.
-			do_action( "{$this->get_slug()}_site_verify_failure", [ 'step' => 'unknown' ] );
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
 
 			return $this->get_failure_status();
 		};

@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import classnames from 'classnames';
+
+/**
  * Internal dependencies
  */
 import './index.scss';
@@ -8,7 +13,7 @@ const ContentButtonLayout = ( props ) => {
 
 	return (
 		<div
-			className={ `gla-content-button-layout ${ className }` }
+			className={ classnames( 'gla-content-button-layout', className ) }
 			{ ...rest }
 		/>
 	);

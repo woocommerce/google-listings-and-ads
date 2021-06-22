@@ -66,7 +66,7 @@ class SettingsSyncController extends BaseController {
 				$this->settings->sync_taxes();
 				$this->settings->sync_shipping();
 
-				do_action( 'gla_mc_settings_sync' );
+				do_action( 'woocommerce_gla_mc_settings_sync' );
 
 				return new Response(
 					[
@@ -76,7 +76,7 @@ class SettingsSyncController extends BaseController {
 					201
 				);
 			} catch ( Exception $e ) {
-				do_action( 'gla_exception', $e, __METHOD__ );
+				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 
 				try {
 					$decoded = $this->json_decode_message( $e->getMessage() );
