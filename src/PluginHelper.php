@@ -65,7 +65,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_version(): string {
-		return GLA_VERSION;
+		return WC_GLA_VERSION;
 	}
 
 	/**

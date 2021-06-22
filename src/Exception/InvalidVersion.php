@@ -18,18 +18,20 @@ defined( 'ABSPATH' ) || exit;
 class InvalidVersion extends RuntimeException implements GoogleListingsAndAdsException {
 
 	/**
-	 * Create a new instance of the exception when an invalid PHP version is detected.
+	 * Create a new instance of the exception when an invalid version is detected.
 	 *
+	 * @param string $requirement
 	 * @param string $found_version
 	 * @param string $minimum_version
 	 *
 	 * @return static
 	 */
-	public static function from_php_version( string $found_version, string $minimum_version ): InvalidVersion {
+	public static function from_requirement( string $requirement, string $found_version, string $minimum_version ): InvalidVersion {
 		return new static(
 			sprintf(
-				/* translators: 1 is the minimum required PHP version, 2 is the version in use on the site */
-				__( 'Google Listings and Ads requires PHP version %1$s or higher. You are using version %2$s.', 'google-listings-and-ads' ),
+				/* translators: 1 is the required component, 2 is the minimum required version, 3 is the version in use on the site */
+				__( 'Google Listings and Ads requires %1$s version %2$s or higher. You are using version %3$s.', 'google-listings-and-ads' ),
+				$requirement,
 				$minimum_version,
 				$found_version
 			)

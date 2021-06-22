@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\WCAdminValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\WCValidator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,6 +19,7 @@ class PluginValidator {
 
 	private const PLUGINS = [
 		WCAdminValidator::class,
+		WCValidator::class,
 	];
 
 	/**
