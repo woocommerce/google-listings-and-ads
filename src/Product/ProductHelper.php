@@ -305,9 +305,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_visibility( WC_Product $wc_product ): string {
+	public function get_visibility( WC_Product $wc_product ): ?string {
 		$visibility = $this->meta_handler->get_visibility( $wc_product );
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			// todo: we might need to define visibility per variation later.
