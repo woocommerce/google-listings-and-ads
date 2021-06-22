@@ -205,6 +205,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Get the associated Google offer IDs for all synced simple products and product variations.
 	 *
+	 * @since x.x.x
+	 *
 	 * @return array Google offer IDs.
 	 */
 	protected function get_synced_google_ids(): array {
