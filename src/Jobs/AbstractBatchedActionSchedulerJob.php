@@ -88,7 +88,12 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @return int
 	 */
 	protected function get_batch_size(): int {
-		return 100;
+		/**
+		 * Filters the batch size for the job.
+		 *
+		 * @param string Job's name
+		 */
+		return apply_filters( 'woocommerce_gla_batched_job_size', 100, $this->get_name() );
 	}
 
 	/**

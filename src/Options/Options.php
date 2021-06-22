@@ -23,6 +23,7 @@ final class Options implements OptionsInterface, Service {
 	use PluginHelper;
 
 	private const VALID_OPTIONS = [
+		self::ADS_ACCOUNT_CURRENCY   => true,
 		self::ADS_ACCOUNT_STATE      => true,
 		self::ADS_BILLING_URL        => true,
 		self::ADS_ID                 => true,

@@ -297,7 +297,7 @@ class ConnectionTest implements Service, Registerable {
 							<td>
 								<p>
 									<label title="Use a live site!">
-										Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo esc_url( ! empty( $_GET['site_url'] ) ? $_GET['site_url'] : apply_filters( 'woocommerce_gla_site_url', site_url() ) ); ?>" />
+										Site URL <input name="site_url" type="text" style="width:14em; font-size:.9em" value="<?php echo esc_url( ! empty( $_GET['site_url'] ) ? $_GET['site_url'] : $this->get_site_url() ); ?>" />
 									</label>
 									<label title="To simulate linking with an external site">
 										MC ID <input name="account_id" type="text" style="width:8em; font-size:.9em" value="<?php echo ! empty( $_GET['account_id'] ) ? intval( $_GET['account_id'] ) : ''; ?>" />
@@ -375,7 +375,7 @@ class ConnectionTest implements Service, Registerable {
 											add_query_arg(
 												[
 													'action' => 'wcs-google-mc-switch-url',
-													'site_url' => $_GET['site_url'] ?? apply_filters( 'woocommerce_gla_site_url', site_url(), $url ),
+													'site_url' => $_GET['site_url'] ?? $this->get_site_url(),
 													'account_id' => ($_GET['account_id'] ?? false) ?: $merchant_id,
 												]
 											),

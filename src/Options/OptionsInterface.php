@@ -10,6 +10,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface OptionsInterface {
 
+	public const ADS_ACCOUNT_CURRENCY   = 'ads_account_currency';
 	public const ADS_ACCOUNT_STATE      = 'ads_account_state';
 	public const ADS_BILLING_URL        = 'ads_billing_url';
 	public const ADS_ID                 = 'ads_id';

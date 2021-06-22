@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -11,6 +13,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits
  */
 trait ViewHelperTrait {
+
+	use PluginHelper;
 
 	/**
 	 * Returns the list of allowed HTML tags used for view sanitization.
@@ -46,5 +50,18 @@ trait ViewHelperTrait {
 				'option' => $allowed_attributes,
 			]
 		);
+	}
+
+	/**
+	 * Appends a prefix to the given ID and returns it.
+	 *
+	 * @param string $id
+	 *
+	 * @return string
+	 *
+	 * @since x.x.x
+	 */
+	protected function prefix_id( string $id ): string {
+		return "{$this->get_slug()}_$id";
 	}
 }

@@ -109,7 +109,7 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 		add_action( 'woocommerce_update_product_variation', $update, 90 );
 
 		// if we don't attach to these we miss product gallery updates.
-		add_action( 'woocommerce_process_product_meta', $update, 90, 2 );
+		add_action( 'woocommerce_process_product_meta', $update, 90 );
 
 		// when a product is trashed or removed, schedule a delete job.
 		add_action( 'wp_trash_post', $pre_delete, 90 );
