@@ -54,7 +54,7 @@ Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaig
 = The eligibility criteria: =
 - The account has no other promotions applied.
 - The account is billed to a country where Google Partners promotions are offered.
-- The account served its first ad impression within the last 14 days. 
+- The account served its first ad impression within the last 14 days.
 
 *Review the static terms [here](http://www.google.com/ads/coupons/terms.html).*
 
@@ -62,8 +62,8 @@ Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaig
 
 = Minimum Requirements =
 
-* WordPress 5.3 or greater
-* WooCommerce 4.5 or greater
+* WordPress 5.5 or greater
+* WooCommerce 5.2 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
 
