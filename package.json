@@ -87,8 +87,8 @@
 	},
 	"config": {
 		"wp_org_slug": "google-listings-and-ads",
-    "version_replace_paths": [
-      "src"
-    ]
+		"version_replace_paths": [
+			"src"
+		]
 	}
 }
