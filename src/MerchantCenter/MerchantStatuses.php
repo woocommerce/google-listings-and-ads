@@ -436,16 +436,12 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		// Get all MC statuses.
 		$all_errors = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_ERRORS );
 
-		$chunk_size     = 500;
+		$chunk_size     = apply_filters( 'woocommerce_gla_merchant_status_presync_issues_chunk', 500 );
 		$product_issues = [];
 		foreach ( $all_errors as $product_id => $presync_errors ) {
-			// Don't create issues with empty descriptions.
-			if ( empty( $presync_errors ) ) {
-				continue;
-			}
-			$presync_errors = maybe_unserialize( $presync_errors );
-			// Don't create issues for variable parents (they contain issues of all children).
-			if ( ! isset( $presync_errors[0] ) ) {
+			// Don't create issues with empty descriptions
+			// or for variable parents (they contain issues of all children).
+			if ( empty( $presync_errors[0] ) ) {
 				continue;
 			}
 

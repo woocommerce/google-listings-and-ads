@@ -52,7 +52,7 @@ class ProductMetaQueryHelper implements Service {
 		$results = $this->wpdb->get_results( $this->wpdb->prepare( $query, $this->prefix_meta_key( $meta_key ) ) );
 		$return  = [];
 		foreach ( $results as $r ) {
-			$return[ $r->post_id ] = $r->meta_value;
+			$return[ $r->post_id ] = maybe_unserialize( $r->meta_value );
 		}
 		return $return;
 	}
