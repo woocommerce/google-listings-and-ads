@@ -85,7 +85,13 @@ class ProductMetaQueryHelper implements Service {
 			$query  = "INSERT INTO {$this->wpdb->postmeta} (`meta_key`, `post_id`, `meta_value` ) VALUES ";
 			$query .= implode( ', ', $place_holders );
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$this->wpdb->query( $this->wpdb->prepare( $query, $values ) );
+			if ( false === $this->wpdb->query( $this->wpdb->prepare( $query, $values ) ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Error batch inserting "%s" meta values.', $meta_key ),
+					__METHOD__
+				);
+			}
 		}
 	}
 
@@ -110,7 +116,13 @@ class ProductMetaQueryHelper implements Service {
 			$query = "UPDATE {$this->wpdb->postmeta} SET `meta_value` = %s WHERE `meta_key` = %s AND `post_id` IN (%d" . str_repeat( ', %d', count( $post_ids_chunk ) - 1 ) . ')';
 			array_unshift( $post_ids_chunk, $meta_value, $meta_key );
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$this->wpdb->query( $this->wpdb->prepare( $query, $post_ids_chunk ) );
+			if ( false === $this->wpdb->query( $this->wpdb->prepare( $query, $post_ids_chunk ) ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Error batch updating "%s" meta values.', $meta_key ),
+					__METHOD__
+				);
+			}
 		}
 	}
 
