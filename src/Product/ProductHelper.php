@@ -201,9 +201,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @return string[] An array of Google product IDs stored for each WooCommerce product
+	 * @return string[]|null An array of Google product IDs stored for each WooCommerce product
 	 */
-	public function get_synced_google_product_ids( WC_Product $product ): array {
+	public function get_synced_google_product_ids( WC_Product $product ): ?array {
 		return $this->meta_handler->get_google_ids( $product );
 	}
 
