@@ -19,28 +19,28 @@ defined( 'ABSPATH' ) || exit;
  *
  * @method update_synced_at( WC_Product $product, $value )
  * @method delete_synced_at( WC_Product $product )
- * @method get_synced_at( WC_Product $product ): int
+ * @method get_synced_at( WC_Product $product ): int|null
  * @method update_google_ids( WC_Product $product, array $value )
  * @method delete_google_ids( WC_Product $product )
- * @method get_google_ids( WC_Product $product ): array
+ * @method get_google_ids( WC_Product $product ): array|null
  * @method update_visibility( WC_Product $product, $value )
  * @method delete_visibility( WC_Product $product )
- * @method get_visibility( WC_Product $product ): string
+ * @method get_visibility( WC_Product $product ): string|null
  * @method update_errors( WC_Product $product, array $value )
  * @method delete_errors( WC_Product $product )
- * @method get_errors( WC_Product $product ): array
+ * @method get_errors( WC_Product $product ): array|null
  * @method update_failed_sync_attempts( WC_Product $product, int $value )
  * @method delete_failed_sync_attempts( WC_Product $product )
- * @method get_failed_sync_attempts( WC_Product $product ): int
+ * @method get_failed_sync_attempts( WC_Product $product ): int|null
  * @method update_sync_failed_at( WC_Product $product, int $value )
  * @method delete_sync_failed_at( WC_Product $product )
- * @method get_sync_failed_at( WC_Product $product ): int
+ * @method get_sync_failed_at( WC_Product $product ): int|null
  * @method update_sync_status( WC_Product $product, string $value )
  * @method delete_sync_status( WC_Product $product )
- * @method get_sync_status( WC_Product $product ): string
+ * @method get_sync_status( WC_Product $product ): string|null
  * @method update_mc_status( WC_Product $product, string $value )
  * @method delete_mc_status( WC_Product $product )
- * @method get_mc_status( WC_Product $product ): string
+ * @method get_mc_status( WC_Product $product ): string|null
  */
 class ProductMetaHandler implements Service, Registerable {
 
@@ -138,7 +138,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @param WC_Product $product
 	 * @param string     $key
 	 *
-	 * @return mixed The value
+	 * @return mixed The value, or null if the meta key doesn't exist.
 	 *
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */

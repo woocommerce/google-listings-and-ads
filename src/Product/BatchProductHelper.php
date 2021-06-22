@@ -256,7 +256,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 		$target_audience = $this->merchant_center->get_target_countries();
 		$request_entries = [];
 		foreach ( $products as $product ) {
-			$google_ids = $this->meta_handler->get_google_ids( $product );
+			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
 			$stale_ids  = array_diff_key( $google_ids, array_flip( $target_audience ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(
@@ -284,7 +284,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 
 		$request_entries = [];
 		foreach ( $products as $product ) {
-			$google_ids = $this->meta_handler->get_google_ids( $product );
+			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
 			$stale_ids  = array_diff_key( $google_ids, array_flip( [ $main_target_country ] ) );
 			foreach ( $stale_ids as $stale_id ) {
 				$request_entries[ $stale_id ] = new BatchProductIDRequestEntry(

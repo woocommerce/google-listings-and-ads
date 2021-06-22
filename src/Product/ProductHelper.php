@@ -201,9 +201,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @return string[] An array of Google product IDs stored for each WooCommerce product
+	 * @return string[]|null An array of Google product IDs stored for each WooCommerce product
 	 */
-	public function get_synced_google_product_ids( WC_Product $product ): array {
+	public function get_synced_google_product_ids( WC_Product $product ): ?array {
 		return $this->meta_handler->get_google_ids( $product );
 	}
 
@@ -305,9 +305,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	/**
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_visibility( WC_Product $wc_product ): string {
+	public function get_visibility( WC_Product $wc_product ): ?string {
 		$visibility = $this->meta_handler->get_visibility( $wc_product );
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			// todo: we might need to define visibility per variation later.
@@ -322,9 +322,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_sync_status( WC_Product $wc_product ): string {
+	public function get_sync_status( WC_Product $wc_product ): ?string {
 		return $this->meta_handler->get_sync_status( $wc_product );
 	}
 
@@ -333,9 +333,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_mc_status( WC_Product $wc_product ): string {
+	public function get_mc_status( WC_Product $wc_product ): ?string {
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			return $this->meta_handler->get_mc_status( $this->get_wc_product( $wc_product->get_parent_id() ) );
 		}
