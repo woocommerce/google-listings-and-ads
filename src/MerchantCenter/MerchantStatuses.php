@@ -17,6 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
 use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
@@ -170,11 +171,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->mc_statuses = [];
 
 		// Update account-level issues.
-		$this->refresh_account_issues();
+		 $this->refresh_account_issues();
 
 		// Update MC product issues and tabulate statistics in batches.
 		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 5000 );
-		foreach ( array_chunk( $this->container->get( ProductRepository::class )->find_all_synced_google_ids(), $chunk_size ) as $google_ids ) {
+		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
 			$this->refresh_product_issues( $mc_product_statuses );
 			$this->sum_status_counts( $mc_product_statuses );
@@ -199,6 +200,28 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public function delete(): void {
 		$this->container->get( TransientsInterface::class )->delete( Transients::MC_STATUSES );
 		$this->container->get( MerchantIssueTable::class )->truncate();
+	}
+
+	/**
+	 * Get the associated Google offer IDs for all synced simple products and product variations.
+	 *
+	 * @return array Google offer IDs.
+	 */
+	protected function get_synced_google_ids(): array {
+		/** @var ProductRepository $product_repository */
+		$product_repository = $this->container->get( ProductRepository::class );
+		/** @var ProductMetaQueryHelper $product_meta_query_helper */
+		$product_meta_query_helper = $this->container->get( ProductMetaQueryHelper::class );
+
+		// Get only synced simple and variations
+		$args['type']         = array_diff( ProductSyncer::get_supported_product_types(), [ 'variable' ] );
+		$filtered_product_ids = array_flip( $product_repository->find_synced_product_ids( $args ) );
+		$all_google_ids       = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_GOOGLE_IDS );
+		$filtered_google_ids  = [];
+		foreach ( array_intersect_key( $all_google_ids, $filtered_product_ids ) as $product_ids ) {
+			$filtered_google_ids = array_merge( $filtered_google_ids, array_values( $product_ids ) );
+		}
+		return $filtered_google_ids;
 	}
 
 	/**
