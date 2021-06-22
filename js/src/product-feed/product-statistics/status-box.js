@@ -71,7 +71,7 @@ function getSyncResult( {
 				totalSynced,
 				'google-listings-and-ads'
 			),
-			formatDate( 'n F Y, h:ia', new Date( timestamp * 1000 ) ),
+			formatDate( 'j F Y, h:ia', new Date( timestamp * 1000 ) ),
 			totalSynced
 		),
 	};
