@@ -5,7 +5,7 @@ describe( 'Merchant who is getting started', () => {
 		await merchant.login();
 	} );
 
-	it( 'Goes to GLA page, click on the call-to-action button and navigate to the Setup MC page', async () => {
+	it( 'Clicks on the Marketing > GLA link, clicks on the call-to-action setup button to go to the Setup MC page', async () => {
 		// hover at the marketing link to open popup submenu.
 		const marketingLink = (
 			await page.$x( "//a[contains(., 'Marketing')]" )
