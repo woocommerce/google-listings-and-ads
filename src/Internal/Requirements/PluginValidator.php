@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\WCAdminValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\WCBookingsValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\WCValidator;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,6 +21,7 @@ class PluginValidator {
 	private const PLUGINS = [
 		WCAdminValidator::class,
 		WCBookingsValidator::class,
+		WCValidator::class,
 	];
 
 	/**
