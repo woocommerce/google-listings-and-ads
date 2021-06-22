@@ -35,8 +35,8 @@ class WCValidator extends RequirementValidator {
 	 * @throws InvalidVersion When the WooCommerce version does not meet the minimum version.
 	 */
 	protected function validate_wc_version() {
-		if ( ! version_compare( WC_VERSION, '5.2', '>=' ) ) {
-			throw InvalidVersion::from_requirement( 'WooCommerce', WC_VERSION, '5.2' );
+		if ( ! version_compare( WC_VERSION, WC_GLA_MIN_WC_VER, '>=' ) ) {
+			throw InvalidVersion::from_requirement( 'WooCommerce', WC_VERSION, WC_GLA_MIN_WC_VER );
 		}
 	}
 }

@@ -35,8 +35,8 @@ class VersionValidator extends RequirementValidator {
 	 * @throws InvalidVersion When the PHP version does not meet the minimum version.
 	 */
 	protected function validate_php_version() {
-		if ( ! version_compare( PHP_VERSION, '7.3', '>=' ) ) {
-			throw InvalidVersion::from_requirement( 'PHP', PHP_VERSION, '7.3' );
+		if ( ! version_compare( PHP_VERSION, WC_GLA_MIN_PHP_VER, '>=' ) ) {
+			throw InvalidVersion::from_requirement( 'PHP', PHP_VERSION, WC_GLA_MIN_PHP_VER );
 		}
 	}
 }
