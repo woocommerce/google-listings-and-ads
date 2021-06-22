@@ -7,7 +7,7 @@
  * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: google-listings-and-ads
- * Requires at least: 5.3
+ * Requires at least: 5.5
  * Requires PHP: 7.3
  *
  * WC requires at least: 4.5

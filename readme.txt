@@ -1,7 +1,7 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
-Requires at least: 5.3
+Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.3
 Stable tag: 1.0.0
