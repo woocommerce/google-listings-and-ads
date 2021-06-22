@@ -10,7 +10,7 @@
  * Requires at least: 5.5
  * Requires PHP: 7.3
  *
- * WC requires at least: 4.5
+ * WC requires at least: 5.2
  * WC tested up to: 5.4
  * Woo:
  *
