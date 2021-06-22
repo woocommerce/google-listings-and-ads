@@ -138,7 +138,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 * @param WC_Product $product
 	 * @param string     $key
 	 *
-	 * @return mixed The value
+	 * @return mixed|null The value, or null if the meta key doesn't exist.
 	 *
 	 * @throws InvalidMeta If the meta key is invalid.
 	 */
