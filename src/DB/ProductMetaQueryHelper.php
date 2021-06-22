@@ -61,26 +61,26 @@ class ProductMetaQueryHelper implements Service {
 	 * Insert a meta value for multiple posts.
 	 *
 	 * @param string $meta_key The meta value to insert.
-	 * @param array  $statuses Array of [post_id=>status,…].
+	 * @param array  $meta_values Array of [post_id=>meta_value,…].
 	 *
 	 * @throws InvalidMeta If the meta key isn't valid.
 	 */
-	public function batch_insert_values( string $meta_key, array $statuses ) {
-		if ( empty( $statuses ) ) {
+	public function batch_insert_values( string $meta_key, array $meta_values ) {
+		if ( empty( $meta_values ) ) {
 			return;
 		}
 
 		self::validate_meta_key( $meta_key );
 		$meta_key = $this->prefix_meta_key( $meta_key );
 
-		foreach ( array_chunk( $statuses, self::BATCH_SIZE, true ) as $statuses_chunk ) {
+		foreach ( array_chunk( $meta_values, self::BATCH_SIZE, true ) as $meta_values_chunk ) {
 			$values        = [];
 			$place_holders = [];
-			foreach ( $statuses_chunk as $post_id => $status ) {
+			foreach ( $meta_values_chunk as $post_id => $meta_value ) {
 				$place_holders[] = '(%s, %s, %s)';
 				$values[]        = $meta_key;
 				$values[]        = $post_id;
-				$values[]        = $status;
+				$values[]        = $meta_value;
 			}
 			$query  = "INSERT INTO {$this->wpdb->postmeta} (`meta_key`, `post_id`, `meta_value` ) VALUES ";
 			$query .= implode( ', ', $place_holders );
