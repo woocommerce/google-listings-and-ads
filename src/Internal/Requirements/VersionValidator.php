@@ -22,7 +22,6 @@ class VersionValidator extends RequirementValidator {
 	public function validate(): bool {
 		try {
 			$this->validate_php_version();
-			$this->validate_wp_version();
 			return true;
 		} catch ( InvalidVersion $e ) {
 			$this->add_admin_notice( $e );
@@ -38,18 +37,6 @@ class VersionValidator extends RequirementValidator {
 	protected function validate_php_version() {
 		if ( ! version_compare( PHP_VERSION, '7.3', '>=' ) ) {
 			throw InvalidVersion::from_requirement( 'PHP', PHP_VERSION, '7.3' );
-		}
-	}
-
-	/**
-	 * Validate WordPress version being used.
-	 *
-	 * @throws InvalidVersion When the WordPress version does not meet the minimum version.
-	 */
-	protected function validate_wp_version() {
-		$wp_version = get_bloginfo( 'version' );
-		if ( ! version_compare( $wp_version, '5.5', '>=' ) ) {
-			throw InvalidVersion::from_requirement( 'WordPress', $wp_version, '5.5' );
 		}
 	}
 }
