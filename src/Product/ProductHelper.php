@@ -322,9 +322,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_sync_status( WC_Product $wc_product ): string {
+	public function get_sync_status( WC_Product $wc_product ): ?string {
 		return $this->meta_handler->get_sync_status( $wc_product );
 	}
 
@@ -333,9 +333,9 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	 *
 	 * @param WC_Product $wc_product
 	 *
-	 * @return string
+	 * @return string|null
 	 */
-	public function get_mc_status( WC_Product $wc_product ): string {
+	public function get_mc_status( WC_Product $wc_product ): ?string {
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			return $this->meta_handler->get_mc_status( $this->get_wc_product( $wc_product->get_parent_id() ) );
 		}
