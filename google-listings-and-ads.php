@@ -26,7 +26,7 @@ use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GLA_VERSION', '1.0.0' ); // WRCS: DEFINED_VERSION.
+define( 'WC_GLA_VERSION', '1.0.0' ); // WRCS: DEFINED_VERSION.
 define( 'WC_GLA_MIN_PHP_VER', '7.3' );
 define( 'WC_GLA_MIN_WC_VER', '5.2' );
 
