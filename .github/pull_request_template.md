@@ -21,7 +21,15 @@ _Replace this with a good description of your changes & reasoning._
 
 ### Changelog entry
 
-> _(Optional)_  
-> Enter a summary of all changes in this Pull Request, which will be added to the changelog if accepted. Each line should start with `(Fix|Add|Tweak|Update) - `.  
-> Or leave the "Changelog entry" header in place without any summary if no changelog entry is needed.  
-> Otherwise, the title of Pull Request will be used as the changelog entry.  
+> Fix - I took care of something that wasn't working.
+> Add - I added something new that's pretty cool.
+> Update - I made big changes to something that wasn't broken.
+> Tweak - I made a small change.
+
+<!--
+Optional
+Enter a summary of all changes in this Pull Request, which will be added to the changelog if accepted. 
+Each line should start with `(Fix|Add|Tweak|Update) - `.  
+Or leave the "Changelog entry" header in place without any summary if no changelog entry is needed.  
+Otherwise, the title of Pull Request will be used as the changelog entry.  
+-->
