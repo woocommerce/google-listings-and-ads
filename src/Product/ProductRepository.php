@@ -476,6 +476,11 @@ class ProductRepository implements Service {
 			$args['type'] = ProductSyncer::get_supported_product_types();
 		}
 
+		// use no ordering unless specified in arguments. overrides the default WooCommerce query args
+		if ( empty( $args['orderby'] ) ) {
+			$args['orderby'] = 'none';
+		}
+
 		return $args;
 	}
 
