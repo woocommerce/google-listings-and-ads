@@ -72,6 +72,6 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * @return StartHook
 	 */
 	public function get_start_hook(): StartHook {
-		return new StartHook( 'gla_batch_retry_update_products', 1 );
+		return new StartHook( 'woocommerce_gla_batch_retry_update_products', 1 );
 	}
 }
