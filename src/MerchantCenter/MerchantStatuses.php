@@ -143,7 +143,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Clears the status cache data.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 */
 	public function clear_cache(): void {
 		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_STATUSES );
@@ -205,7 +205,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Get the associated Google offer IDs for all synced simple products and product variations.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @return array Google offer IDs.
 	 */

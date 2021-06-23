@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ProductMetaQueryHelper.
  *
- * @since x.x.x
+ * @since 1.1.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */

@@ -161,7 +161,7 @@ trait PluginHelper {
 	/**
 	 * Gets the main site URL which is used for the home page.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @return string
 	 */

@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Runs update jobs when the plugin is updated.
  *
- * @since x.x.x
+ * @since 1.1.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update
  */
 class PluginUpdate implements Service, InstallableInterface {

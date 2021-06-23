@@ -273,7 +273,7 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	 * Returns an array of request entries for Google products that should no
 	 * longer be submitted for every target country.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @param WC_Product[] $products
 	 *

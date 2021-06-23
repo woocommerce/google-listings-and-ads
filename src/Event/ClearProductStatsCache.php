@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ClearProductStatsCache
  *
- * @since x.x.x
+ * @since 1.1.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */

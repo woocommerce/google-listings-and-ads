@@ -137,7 +137,7 @@ abstract class AbstractMetaBox implements MetaBoxInterface {
 	 *
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 */
 	protected function prefix_field_id( string $field_id ): string {
 		$box_id = $this->prefix_id( $this->get_id() );

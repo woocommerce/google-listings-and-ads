@@ -118,7 +118,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * Return the main target country (default Store country).
 	 * If the store country is not included then use the first target country.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @return string
 	 */

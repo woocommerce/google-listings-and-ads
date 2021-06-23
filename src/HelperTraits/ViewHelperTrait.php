@@ -59,7 +59,7 @@ trait ViewHelperTrait {
 	 *
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 */
 	protected function prefix_id( string $id ): string {
 		return "{$this->get_slug()}_$id";

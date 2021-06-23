@@ -524,7 +524,7 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Save the Ads account currency to the same value as the Store currency.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @return boolean
 	 */
@@ -535,7 +535,7 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Request the Ads Account currency, and cache it as an option.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @return boolean
 	 */

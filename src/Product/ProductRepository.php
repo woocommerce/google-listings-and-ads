@@ -381,7 +381,7 @@ class ProductRepository implements Service {
 	 * Find and return an array of WooCommerce product IDs that are NOT marked as MC not_synced.
 	 * Excludes variations and variable products without variations.
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int $offset Amount to offset product results.
@@ -411,7 +411,7 @@ class ProductRepository implements Service {
 	 * Note: excludes variable parent products as only the child variation products are actually synced
 	 * to Merchant Center
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 *
 	 * @return array Google Product IDS
 	 */

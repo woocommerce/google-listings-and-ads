@@ -174,7 +174,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	/**
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.1.0
 	 */
 	protected function get_visibility_field_id(): string {
 		return $this->prefix_field_id( 'visibility' );

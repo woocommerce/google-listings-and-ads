@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  * Deletes the previous list of target countries which was in use before the
  * Global Offers option became available.
  *
- * @since x.x.x
+ * @since 1.1.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update
  */
 class CleanupProductTargetCountriesJob extends AbstractProductSyncerBatchedJob {
