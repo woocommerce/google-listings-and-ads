@@ -174,7 +174,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		 $this->refresh_account_issues();
 
 		// Update MC product issues and tabulate statistics in batches.
-		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 5000 );
+		$chunk_size = apply_filters( 'woocommerce_gla_merchant_status_google_ids_chunk', 1000 );
 		foreach ( array_chunk( $this->get_synced_google_ids(), $chunk_size ) as $google_ids ) {
 			$mc_product_statuses = $this->filter_valid_statuses( $google_ids );
 			$this->refresh_product_issues( $mc_product_statuses );
