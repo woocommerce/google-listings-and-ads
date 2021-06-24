@@ -134,6 +134,10 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$status = $this->get_status();
 		$email  = $status['email'] ?: '';
 
+		if ( ! isset( $response['status'] ) || 'connected' !== $response['status'] ) {
+			return $status;
+		}
+
 		$merchant_id = $this->options->get_merchant_id();
 		if ( $merchant_id ) {
 			/** @var Merchant $merchant */
