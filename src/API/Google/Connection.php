@@ -130,6 +130,36 @@ class Connection implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get the reconnect status which checks:
+	 * - The Google account is connected
+	 * - We have access to the connected MC account
+	 * - We have access to the connected Ads account
+	 *
+	 * @return array
+	 * @throws Exception When a ClientException is caught or the response contains an error.
+	 */
+	public function get_reconnect_status(): array {
+		$status = $this->get_status();
+		$email  = $status['email'] ?: '';
+
+		$merchant_id = $this->options->get_merchant_id();
+		if ( $merchant_id ) {
+			/** @var Merchant $merchant */
+			$merchant = $this->container->get( Merchant::class );
+
+			$status['merchant_account'] = $merchant_id;
+			$status['merchant_access']  = $merchant->has_access( $email ) ? 'yes' : 'no';
+		}
+
+		$ads_id = $this->options->get_ads_id();
+		if ( $ads_id ) {
+			$status['ads_account'] = $ads_id;
+		}
+
+		return $status;
+	}
+
+	/**
 	 * Get the Google connection URL.
 	 *
 	 * @return string
