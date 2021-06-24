@@ -14,6 +14,7 @@ branches:
 
 cache:
   directories:
+    - vendor
     - $HOME/.composer/cache
 
 # Test supported versions of PHP, WP and WC and the WC master branch.
