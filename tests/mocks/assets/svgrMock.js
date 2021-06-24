@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { forwardRef } from 'react';
+import { forwardRef } from '@wordpress/element';
 
 export const ReactComponent = forwardRef( ( props, ref ) => (
 	<span ref={ ref } { ...props } />
