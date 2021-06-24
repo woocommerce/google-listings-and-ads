@@ -85,8 +85,11 @@ class AdsCampaign implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -135,11 +138,17 @@ class AdsCampaign implements OptionsAwareInterface {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
-				throw new Exception( __( 'A campaign with this name already exists', 'google-listings-and-ads' ) );
+				throw new Exception(
+					__( 'A campaign with this name already exists', 'google-listings-and-ads' ),
+					$e->getCode()
+				);
 			}
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -166,8 +175,11 @@ class AdsCampaign implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -208,8 +220,11 @@ class AdsCampaign implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -238,11 +253,17 @@ class AdsCampaign implements OptionsAwareInterface {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
 			if ( $this->has_api_exception_error( $e, 'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' ) ) {
-				throw new Exception( __( 'This campaign has already been deleted', 'google-listings-and-ads' ) );
+				throw new Exception(
+					__( 'This campaign has already been deleted', 'google-listings-and-ads' ),
+					$e->getCode()
+				);
 			}
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error deleting campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error deleting campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$e->getCode()
+			);
 		}
 	}
 

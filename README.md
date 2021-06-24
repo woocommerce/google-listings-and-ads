@@ -60,8 +60,6 @@ There are a number of helper scripts exposed via our package.json (below list is
  - `npm run lint:css` : Run stylelint over the javascript files
  - `npm run test-unit` : Run the JS test suite
  - `npm run test-unit:watch` : Run the JS test suite, watch for changes
- - `npm run test-e2e` : Run the end-to-end test suite.
- - `npm run test-e2e:watch` : Run the end-to-end test suite, watch for changes
 
 ## WordPress Code Standards
 
@@ -79,30 +77,20 @@ After running `composer install` to install PHP dependencies you can use the fol
 
 ## E2E Testing
 
-E2E testing uses [@wordpress/env](https://www.npmjs.com/package/@wordpress/env) which requires [Docker](https://www.docker.com/).
+E2E testing uses [@woocommerce/e2e-environment](https://www.npmjs.com/package/@woocommerce/e2e-environment) which requires [Docker](https://www.docker.com/).
 
 Make sure Docker is running in your machine, and run the following:
 
-`npm run wp-env start` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8888 (development environment) and http://localhost:8888 (test environment) (Username: admin, Password: password).
-
-`npm run test-e2e:initialize` - This will run the [initialize.sh](/tests/e2e/initialize.sh) script to initialize the WooCommerce store for the test environment.
+`npm run docker:up` - This will automatically download and run WordPress in a Docker container. You can access it at http://localhost:8084 (Username: admin, Password: password).
 
 Run E2E testing:
 
-- `npm run test-e2e` to just run the tests one time, quick and headless.
-- `npm run test-e2e:watch` to run the tests and watch for changes.
-- `npm run test-e2e:watch -- --puppeteer-interactive` to run the tests, watch for changes, in interactive mode (with visible browser UI).
+- `npm run test:e2e` to run the test in headless mode.
+- `npm run test:e2e-dev` to run the tests in Chromium browser.
 
-More info on `test-e2e` is available in [wp-scripts readme](https://github.com/WordPress/gutenberg/blob/master/packages/scripts/README.md#test-e2e) and in [Gutenberg's Testing Overview](https://github.com/WordPress/gutenberg/blob/master/docs/contributors/testing-overview.md#end-to-end-testing).
+To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
 
-To stop the Docker container:
-
-`npm run wp-env stop`
-
-To delete the Docker container (this will **delete everything** in the WordPress Docker container):
-
-`npm run wp-env destroy`
-
+`npm run docker:down`
 ## Docs
 
 * [Usage Tracking](./src/Tracking/README.md)

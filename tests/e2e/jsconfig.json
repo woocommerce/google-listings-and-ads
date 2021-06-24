@@ -1,0 +1,3 @@
+// this is to make VS Code pickup the globalTypes.d.ts.
+// See: https://stackoverflow.com/a/60817409/379641
+{}

@@ -78,7 +78,10 @@ class SiteVerification {
 			$response = $service->webResource->getToken( $post_body );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ) );
+			throw new Exception(
+				__( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
 		}
 
 		return $response->getToken();
@@ -111,7 +114,10 @@ class SiteVerification {
 			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to insert site verification.', 'google-listings-and-ads' ) );
+			throw new Exception(
+				__( 'Unable to insert site verification.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
 		}
 
 		return true;

@@ -31,8 +31,9 @@ env:
     - WP_CORE_DIR="${WP_DIR}/src"
     - WP_TESTS_DIR="${WP_DIR}/tests/phpunit"
     - WP_LATEST=5.7
+    - WC_LATEST=trunk
   matrix:
-    - WP_VERSION="${WP_LATEST}" WC_VERSION=trunk
+    - WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}"
     - WP_VERSION="${WP_LATEST}" WC_VERSION=5.2
     - WP_VERSION=5.6 WC_VERSION=5.2
     - WP_VERSION=5.5 WC_VERSION=5.2
@@ -43,18 +44,18 @@ matrix:
   include:
     - name: "JS unit tests"
       language: node_js # Takes version from `.nvmrc`, runs `npm ci` automatically.
-      env: WP_VERSION="${WP_LATEST}" WC_VERSION=trunk WP_TRAVISCI=jest WP_MULTISITE=0
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=jest WP_MULTISITE=0
       script: npm run test-unit
     - name: "Coding standard check"
       php: 7.4
-      env: WP_VERSION="${WP_LATEST}" WC_VERSION=trunk WP_TRAVISCI=cs WP_MULTISITE=0
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=cs WP_MULTISITE=0
       script: npm ci && npm run lint
 
 before_install:
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer self-update --1; fi
 
 install:
-  - nvm install 10
+  - nvm install
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer update; fi
   - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
   - npm ci

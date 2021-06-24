@@ -104,7 +104,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					$this->ads_campaign->get_campaigns()
 				);
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
@@ -133,7 +133,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
@@ -161,7 +161,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 
 				return $this->prepare_item_for_response( $campaign, $request );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
@@ -193,7 +193,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'id'      => $campaign_id,
 				];
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
@@ -214,7 +214,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'id'      => $deleted_id,
 				];
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
