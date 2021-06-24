@@ -48,7 +48,7 @@
 		"@woocommerce/e2e-utils": "^0.1.5",
 		"@woocommerce/eslint-plugin": "^1.2.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
-		"@wordpress/scripts": "^12.5.0",
+		"@wordpress/scripts": "^14.1.1",
 		"@wordpress/stylelint-config": "^19.0.5",
 		"eslint-import-resolver-webpack": "^0.13.1",
 		"h2o2": "^8.2.0",
