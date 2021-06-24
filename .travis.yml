@@ -11,6 +11,7 @@ branches:
   only:
     - trunk
     - develop
+    - feature/add-unit-test-configurations
 
 cache:
   directories:
@@ -59,7 +60,7 @@ before_script:
     fi
   - nvm install 10
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer install; fi
-  - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+#  - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
 
 script:
   - composer test-unit
