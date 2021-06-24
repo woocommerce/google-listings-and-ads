@@ -103,8 +103,11 @@ class AdsConversionAction implements OptionsAwareInterface {
 				}
 			}
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error creating conversion action: %s', 'google-listings-and-ads' ), $message ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error creating conversion action: %s', 'google-listings-and-ads' ), $message ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -134,8 +137,11 @@ class AdsConversionAction implements OptionsAwareInterface {
 				$message = $e->getBasicMessage();
 			}
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving conversion action: %s', 'google-listings-and-ads' ), $message ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving conversion action: %s', 'google-listings-and-ads' ), $message ),
+				$e->getCode()
+			);
 		}
 	}
 
