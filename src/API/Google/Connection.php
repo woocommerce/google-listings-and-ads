@@ -18,6 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * Class Connection
  *
  * ContainerAware used to access:
+ * - Ads
  * - Client
  * - Merchant
  *
