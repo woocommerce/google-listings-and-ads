@@ -145,7 +145,11 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 		$ads_id = $this->options->get_ads_id();
 		if ( $ads_id ) {
+			/** @var Ads $ads */
+			$ads = $this->container->get( Ads::class );
+
 			$status['ads_account'] = $ads_id;
+			$status['ads_access']  = $ads->has_access( $email ) ? 'yes' : 'no';
 		}
 
 		return $status;
