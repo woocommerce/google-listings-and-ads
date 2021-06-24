@@ -6,22 +6,33 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests;
 use WC_Install;
 use WP_Roles;
 
+global $gla_dir;
+global $wp_plugins_dir;
+global $wc_dir;
+
 if ( PHP_MAJOR_VERSION >= 8 ) {
 	echo "The scaffolded tests cannot currently be run on PHP 8.0+. See https://github.com/wp-cli/scaffold-command/issues/285" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	exit( 1 );
 }
 
-$wp_tests_dir = getenv( 'WP_TESTS_DIR' ) ?? rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
-if ( ! file_exists( "{$wp_tests_dir}/includes/functions.php" ) ) {
-	echo "Could not find {$wp_tests_dir}/includes/functions.php, have you run bin/install-wp-tests.sh ?" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	exit( 1 );
+$wp_tests_dir = getenv( 'WP_TESTS_DIR' ) ?: path_join( sys_get_temp_dir(), '/wordpress-tests-lib' );
+validate_file_exits( "{$wp_tests_dir}/includes/functions.php" );
+
+$wp_core_dir    = getenv( 'WP_CORE_DIR' ) ?: path_join( sys_get_temp_dir(), '/wordpress' );
+$wp_plugins_dir = path_join( $wp_core_dir, '/wp-content/plugins' );
+
+$gla_dir = dirname( __FILE__, 2 ); // ../../
+
+$wc_dir = getenv( 'WC_DIR' );
+if ( ! $wc_dir ) {
+	// Check if WooCommerce exists in the core plugin folder. The `bin/install-wp-tests.sh` script clones a copy there.
+	$wc_dir = path_join( $wp_plugins_dir, '/woocommerce' );
+	if ( ! file_exists( "{$wc_dir}/woocommerce.php" ) ) {
+		// Check if WooCommerce exists in parent directory of the plugin (in case the plugin is located in a WordPress installation's `wp-content/plugins` folder)
+		$wc_dir = path_join( dirname( $gla_dir ), '/woocommerce' );
+	}
 }
-
-global $gla_dir;
-global $wp_plugins_dir;
-
-$gla_dir        = dirname( __FILE__, 2 ); // ../../
-$wp_plugins_dir = dirname( $gla_dir ); // ../
+validate_file_exits( "{$wc_dir}/woocommerce.php" );
 
 // Require the composer autoloader.
 require_once dirname( __DIR__ ) . '/vendor/autoload.php';
@@ -41,16 +52,16 @@ install_woocommerce();
 /**
  * Load WooCommerce for testing
  *
- * @global $wp_plugins_dir
+ * @global $wc_dir
  */
 function install_woocommerce() {
-	global $wp_plugins_dir;
+	global $wc_dir;
 
 	echo "Installing WooCommerce..." . PHP_EOL;
 
 	define( 'WP_UNINSTALL_PLUGIN', true );
 
-	include $wp_plugins_dir . '/woocommerce/uninstall.php';
+	include $wc_dir . '/uninstall.php';
 
 	global $wpdb;
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woocommerce_attribute_taxonomies" );
@@ -64,8 +75,8 @@ function install_woocommerce() {
 	WC()->init();
 
 	// Include WooCommerce test helpers
-	$wc_tests_dir = $wp_plugins_dir . '/woocommerce/tests';
-	if ( file_exists( $wp_plugins_dir . '/woocommerce/tests/legacy/bootstrap.php' ) ) {
+	$wc_tests_dir = $wc_dir . '/tests';
+	if ( file_exists( $wc_dir . '/tests/legacy/bootstrap.php' ) ) {
 		$wc_tests_dir .= '/legacy';
 	}
 	require_once $wc_tests_dir . '/includes/wp-http-testcase.php';
@@ -80,14 +91,36 @@ function install_woocommerce() {
  * Manually load plugins
  *
  * @global $gla_dir
- * @global $wp_plugins_dir
+ * @global $wc_dir
  */
 function load_plugins() {
 	global $gla_dir;
-	global $wp_plugins_dir;
+	global $wc_dir;
 
-	require_once( $wp_plugins_dir . '/woocommerce/woocommerce.php' );
+	require_once( $wc_dir . '/woocommerce.php' );
 	update_option( 'woocommerce_db_version', WC()->version );
 
 	require $gla_dir . '/google-listings-and-ads.php';
+}
+
+/**
+ * Checks whether a file exists and throws an error if it doesn't.
+ *
+ * @param string $file_name
+ */
+function validate_file_exits( string $file_name ) {
+	if ( ! file_exists( $file_name ) ) {
+		echo "Could not find {$file_name}, have you run bin/install-wp-tests.sh ?" . PHP_EOL; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit( 1 );
+	}
+}
+
+/**
+ * @param string $base
+ * @param string $path
+ *
+ * @return string
+ */
+function path_join( string $base, string $path ) {
+	return rtrim( $base, '/\\' ) . '/' . ltrim( $path, '/\\' );
 }
