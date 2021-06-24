@@ -60,7 +60,7 @@ before_script:
     fi
   - nvm install
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer install; fi
-#  - bash tests/install/install-wp-tests.sh
+  - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
 
 script:
-#  - WP_MULTISITE=1 tests/run_tests.sh
+  - composer test-unit
