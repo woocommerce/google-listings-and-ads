@@ -49,6 +49,7 @@ class SiteVerificationMeta implements Service, Registerable {
 		if ( empty( $this->settings['meta_tag'] ) ) {
 			return;
 		}
+		echo '<!-- Google site verification - Google Listings & Ads -->' . PHP_EOL;
 		echo wp_kses(
 			$this->settings['meta_tag'],
 			[
