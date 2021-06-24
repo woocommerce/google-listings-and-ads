@@ -11,6 +11,7 @@ branches:
   only:
     - trunk
     - develop
+    - feature/add-unit-test-configurations
 
 cache:
   directories:
