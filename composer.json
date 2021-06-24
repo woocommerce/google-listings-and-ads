@@ -20,7 +20,7 @@
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
-    "phpunit/phpunit": "^6.5 || ^7",
+    "phpunit/phpunit": "^7.5",
     "wp-cli/i18n-command": "^2.2",
     "wp-coding-standards/wpcs": "^2.3"
   },
@@ -58,7 +58,8 @@
       "bash ./bin/cleanup-vendor-files.sh"
     ],
     "post-install-cmd": [ "@install-scripts" ],
-    "post-update-cmd": [ "@install-scripts" ]
+    "post-update-cmd": [ "@install-scripts" ],
+    "test-unit": "vendor/bin/phpunit"
   },
   "archive": {
     "exclude": [
