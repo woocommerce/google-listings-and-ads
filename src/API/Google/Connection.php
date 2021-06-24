@@ -3,12 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Exception;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,26 +17,17 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Connection
  *
+ * ContainerAware used to access:
+ * - Client
+ * - Merchant
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Connection implements OptionsAwareInterface {
+class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ApiExceptionTrait;
+	use ContainerAwareTrait;
 	use OptionsAwareTrait;
-
-	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
-
-	/**
-	 * Connection constructor.
-	 *
-	 * @param ContainerInterface $container
-	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->container = $container;
-	}
 
 	/**
 	 * Get the connection URL for performing a connection redirect.
