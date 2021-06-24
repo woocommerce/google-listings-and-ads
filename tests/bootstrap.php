@@ -36,9 +36,6 @@ tests_add_filter( 'muplugins_loaded', function () {
 // Start up the WP testing environment.
 require "{$wp_tests_dir}/includes/bootstrap.php";
 
-// Require our function stubs.
-require_once __DIR__ . '/wp-function-stubs.php';
-
 install_woocommerce();
 
 /**
