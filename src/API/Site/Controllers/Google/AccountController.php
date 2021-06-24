@@ -65,6 +65,16 @@ class AccountController extends BaseController {
 				],
 			]
 		);
+		$this->register_route(
+			'google/reconnected',
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_reconnected_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+				],
+			]
+		);
 	}
 
 	/**
@@ -115,6 +125,25 @@ class AccountController extends BaseController {
 					'active' => array_key_exists( 'status', $status ) && ( 'connected' === $status['status'] ) ? 'yes' : 'no',
 					'email'  => array_key_exists( 'email', $status ) ? $status['email'] : '',
 				];
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+		};
+	}
+
+	/**
+	 * Get the callback function to determine if we have access to the dependent services.
+	 *
+	 * @return callable
+	 */
+	protected function get_reconnected_callback(): callable {
+		return function() {
+			try {
+				$status           = $this->connection->get_reconnect_status();
+				$status['active'] = array_key_exists( 'status', $status ) && ( 'connected' === $status['status'] ) ? 'yes' : 'no';
+				unset( $status['status'] );
+
+				return $status;
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
