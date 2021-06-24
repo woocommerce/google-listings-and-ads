@@ -561,19 +561,15 @@ class Proxy implements OptionsAwareInterface {
 	 * @return boolean
 	 */
 	protected function request_ads_currency(): bool {
-		if ( $use_store_currency ) {
-			$currency = get_woocommerce_currency();
-		} else {
-			try {
-				/** @var GoogleAdsClient $client */
-				$client   = $this->container->get( GoogleAdsClient::class );
-				$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
-				$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
-				$currency = $customer->getCurrencyCode();
-			} catch ( ApiException $e ) {
-				do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-				$currency = null;
-			}
+		try {
+			/** @var GoogleAdsClient $client */
+			$client   = $this->container->get( GoogleAdsClient::class );
+			$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
+			$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
+			$currency = $customer->getCurrencyCode();
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			$currency = null;
 		}
 
 		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, $currency );
