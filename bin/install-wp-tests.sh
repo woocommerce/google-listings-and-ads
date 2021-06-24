@@ -185,7 +185,7 @@ install_wc() {
     mkdir -p $WC_DIR
     echo "Installing WooCommerce ($WC_VERSION)."
     # Grab the necessary plugins.
-    git clone --quiet --depth=1 --branch="${WC_VERSION}" git@github.com:woocommerce/woocommerce.git "${WC_DIR}"
+    git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${WC_DIR}"
 
     # Install composer for WooCommerce
     cd "${WC_DIR}"
