@@ -47,5 +47,6 @@ class AdsService implements OptionsAwareInterface, Service {
 		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
 		$this->options->delete( OptionsInterface::ADS_ID );
 		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
+		$this->options->delete( OptionsInterface::ADS_ACCOUNT_CURRENCY );
 	}
 }
