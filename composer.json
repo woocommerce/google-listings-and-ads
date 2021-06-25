@@ -59,7 +59,7 @@
     ],
     "post-install-cmd": [ "@install-scripts" ],
     "post-update-cmd": [ "@install-scripts" ],
-    "test-unit": "vendor/bin/phpunit"
+    "test-unit": "./vendor/bin/phpunit"
   },
   "archive": {
     "exclude": [
