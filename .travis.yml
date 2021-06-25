@@ -15,7 +15,6 @@ branches:
 
 cache:
   directories:
-    - vendor
     - $HOME/.composer/cache
   npm: true
 
