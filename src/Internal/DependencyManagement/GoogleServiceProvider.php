@@ -33,7 +33,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definiti
 use Exception;
 use Google\Client;
 use Google\Service\ShoppingContent;
-use Google\Service\SiteVerification as GoogleSiteVerification;
+use Google\Service\SiteVerification as SiteVerificationService;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
@@ -163,7 +163,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google/google-mc' )
 		);
 		$this->add(
-			GoogleSiteVerification::class,
+			SiteVerificationService::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
