@@ -135,7 +135,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 		$status = $this->get_status();
 		$email  = $status['email'] ?: '';
 
-		if ( ! isset( $response['status'] ) || 'connected' !== $response['status'] ) {
+		if ( ! isset( $status['status'] ) || 'connected' !== $status['status'] ) {
 			return $status;
 		}
 
