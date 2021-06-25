@@ -1,4 +1,4 @@
-# Google Listings & Ads
+# Google Listings & Ads [![Build Status](https://travis-ci.com/woocommerce/google-listings-and-ads.svg?branch=trunk)](https://travis-ci.com/woocommerce/google-listings-and-ads)
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
