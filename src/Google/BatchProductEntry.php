@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Google_Service_ShoppingContent_Product as GoogleProduct;
+use Google\Service\ShoppingContent\Product as GoogleProduct;
 use JsonSerializable;
 
 defined( 'ABSPATH' ) || exit;
