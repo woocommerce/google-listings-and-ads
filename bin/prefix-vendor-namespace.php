@@ -29,7 +29,8 @@ $dependencies = [
 // Namespaces which are used directly within the code.
 $direct_replacements = [
 	'guzzlehttp' => [
-		'GuzzleHttp\Psr7\stream_for',
+		'GuzzleHttp\Psr7\Utils::streamFor',
+		'GuzzleHttp\Psr7\Utils::tryFopen',
 		'GuzzleHttp\Psr7\Message::bodySummary',
 		'GuzzleHttp\Client(',
 		'GuzzleHttp\ClientInterface::MAJOR_VERSION',
