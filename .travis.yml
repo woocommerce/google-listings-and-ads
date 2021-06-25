@@ -1,6 +1,4 @@
 language: php
-sudo: false
-# We use Focal locally, but it does not support PHP 7.3 on Travis
 dist: bionic
 
 services:
