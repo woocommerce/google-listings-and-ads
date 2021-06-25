@@ -9,7 +9,7 @@
     "automattic/jetpack-autoloader": "^2.4",
     "automattic/jetpack-config": "^1.4",
     "automattic/jetpack-connection": "^1.20",
-    "google/apiclient": "^2.7",
+    "google/apiclient": "^2.10",
     "googleads/google-ads-php": "^8.0",
     "league/container": "^3.3",
     "league/iso3166": "^3.0",
