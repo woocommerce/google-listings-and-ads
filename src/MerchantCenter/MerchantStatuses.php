@@ -20,7 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
-use Google_Service_ShoppingContent_ProductStatus as Shopping_Product_Status;
+use Google\Service\ShoppingContent\ProductStatus as GoogleProductStatus;
 use DateTime;
 use Exception;
 
@@ -292,7 +292,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 *
 	 * @param string[] $google_ids
 	 *
-	 * @return Shopping_Product_Status[] Statuses found to be valid.
+	 * @return GoogleProductStatus[] Statuses found to be valid.
 	 */
 	protected function filter_valid_statuses( array $google_ids ): array {
 		/** @var Merchant $merchant */
@@ -380,7 +380,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Retrieve all product-level issues and store them in the database.
 	 *
-	 * @param Shopping_Product_Status[] $validated_mc_statuses Product statuses of validated products.
+	 * @param GoogleProductStatus[] $validated_mc_statuses Product statuses of validated products.
 	 */
 	protected function refresh_product_issues( array $validated_mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
@@ -501,7 +501,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Add the provided status counts to the overall totals.
 	 *
-	 * @param Shopping_Product_Status[] $validated_mc_statuses Product statuses of validated products.
+	 * @param GoogleProductStatus[] $validated_mc_statuses Product statuses of validated products.
 	 */
 	protected function sum_status_counts( array $validated_mc_statuses ): void {
 		/** @var ProductHelper $product_helper */
@@ -636,11 +636,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * Return the product's shopping status in the Google Merchant Center.
 	 * Active, Pending, Disapproved, Expiring.
 	 *
-	 * @param Shopping_Product_Status $product_status
+	 * @param GoogleProductStatus $product_status
 	 *
 	 * @return string|null
 	 */
-	protected function get_product_shopping_status( Shopping_Product_Status $product_status ): ?string {
+	protected function get_product_shopping_status( GoogleProductStatus $product_status ): ?string {
 		$status = null;
 		foreach ( $product_status->getDestinationStatuses() as $d ) {
 			if ( 'SurfacesAcrossGoogle' === $d->getDestination() ) {

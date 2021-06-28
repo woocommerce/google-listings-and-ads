@@ -4,10 +4,10 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidProperty;
-use Google_Service_ShoppingContent as ShoppingService;
-use Google_Service_ShoppingContent_SearchRequest as SearchRequest;
-use Google_Service_ShoppingContent_SearchResponse as SearchResponse;
 use Google\Exception as GoogleException;
+use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\SearchRequest;
+use Google\Service\ShoppingContent\SearchResponse;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,7 +21,7 @@ abstract class MerchantQuery extends Query {
 	/**
 	 * Client which handles the query.
 	 *
-	 * @var ShoppingService
+	 * @var ShoppingContent
 	 */
 	protected $client = null;
 
@@ -42,12 +42,12 @@ abstract class MerchantQuery extends Query {
 	/**
 	 * Set the client which will handle the query.
 	 *
-	 * @param ShoppingService $client Client instance.
+	 * @param ShoppingContent $client Client instance.
 	 * @param int             $id     Account ID.
 	 *
 	 * @return QueryInterface
 	 */
-	public function set_client( ShoppingService $client, int $id ): QueryInterface {
+	public function set_client( ShoppingContent $client, int $id ): QueryInterface {
 		$this->client = $client;
 		$this->id     = $id;
 

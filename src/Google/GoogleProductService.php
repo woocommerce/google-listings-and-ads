@@ -9,12 +9,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Exception as GoogleException;
-use Google_Service_ShoppingContent as GoogleShoppingService;
-use Google_Service_ShoppingContent_Product as GoogleProduct;
-use Google_Service_ShoppingContent_ProductsCustomBatchRequest as GoogleBatchRequest;
-use Google_Service_ShoppingContent_ProductsCustomBatchRequestEntry as GoogleBatchRequestEntry;
-use Google_Service_ShoppingContent_ProductsCustomBatchResponse as GoogleBatchResponse;
-use Google_Service_ShoppingContent_ProductsCustomBatchResponseEntry as GoogleBatchResponseEntry;
+use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\Product as GoogleProduct;
+use Google\Service\ShoppingContent\ProductsCustomBatchRequest as GoogleBatchRequest;
+use Google\Service\ShoppingContent\ProductsCustomBatchRequestEntry as GoogleBatchRequestEntry;
+use Google\Service\ShoppingContent\ProductsCustomBatchResponse as GoogleBatchResponse;
+use Google\Service\ShoppingContent\ProductsCustomBatchResponseEntry as GoogleBatchResponseEntry;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -43,16 +43,16 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	protected const METHOD_INSERT = 'insert';
 
 	/**
-	 * @var GoogleShoppingService
+	 * @var ShoppingContent
 	 */
 	protected $shopping_service;
 
 	/**
 	 * GoogleProductService constructor.
 	 *
-	 * @param GoogleShoppingService $shopping_service
+	 * @param ShoppingContent $shopping_service
 	 */
-	public function __construct( GoogleShoppingService $shopping_service ) {
+	public function __construct( ShoppingContent $shopping_service ) {
 		$this->shopping_service = $shopping_service;
 	}
 

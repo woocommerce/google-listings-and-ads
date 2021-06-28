@@ -7,15 +7,15 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as Ra
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use Google_Service_ShoppingContent as ShoppingService;
-use Google_Service_ShoppingContent_AccountTax as AccountTax;
-use Google_Service_ShoppingContent_AccountTaxTaxRule as TaxRule;
-use Google_Service_ShoppingContent_DeliveryTime as DeliveryTime;
-use Google_Service_ShoppingContent_Price as Price;
-use Google_Service_ShoppingContent_RateGroup as RateGroup;
-use Google_Service_ShoppingContent_Service as Service;
-use Google_Service_ShoppingContent_ShippingSettings as ShippingSettings;
-use Google_Service_ShoppingContent_Value as Value;
+use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\AccountTax;
+use Google\Service\ShoppingContent\AccountTaxTaxRule as TaxRule;
+use Google\Service\ShoppingContent\DeliveryTime;
+use Google\Service\ShoppingContent\Price;
+use Google\Service\ShoppingContent\RateGroup;
+use Google\Service\ShoppingContent\Service;
+use Google\Service\ShoppingContent\ShippingSettings;
+use Google\Service\ShoppingContent\Value;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -319,10 +319,10 @@ class Settings {
 	/**
 	 * Get the Shopping Service object.
 	 *
-	 * @return ShoppingService
+	 * @return ShoppingContent
 	 */
-	protected function get_shopping_service(): ShoppingService {
-		return $this->container->get( ShoppingService::class );
+	protected function get_shopping_service(): ShoppingContent {
+		return $this->container->get( ShoppingContent::class );
 	}
 
 	/**
