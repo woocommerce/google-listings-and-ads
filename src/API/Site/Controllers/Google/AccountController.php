@@ -91,10 +91,10 @@ class AccountController extends BaseController {
 				$path = $next === 'setup-mc' ? '/google/setup-mc' : '/google/settings&subpath=/reconnect-accounts';
 
 				return [
-					'url' => $this->connection->connect( admin_url( "admin.php?page=wc-admin&path=$path" ) ),
+					'url' => $this->connection->connect( admin_url( "admin.php?page=wc-admin&path={$path}" ) ),
 				];
 			} catch ( Exception $e ) {
-				return new WP_REST_Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
 	}
