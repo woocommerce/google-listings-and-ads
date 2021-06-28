@@ -470,6 +470,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				continue;
 			}
 
+			// Don't store pre-sync errors for unpublished (draft, trashed) products.
+			if ( 'publish' !== get_post_status( $product_id ) ) {
+				continue;
+			}
+
 			$product_name = get_the_title( $product_id );
 			foreach ( $presync_errors as $text ) {
 				$issue_parts      = $this->parse_presync_issue_text( $text );
