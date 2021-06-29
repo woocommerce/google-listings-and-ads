@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Google\Ads\GoogleAds\V6\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
+use Google\Ads\GoogleAds\V8\Enums\BillingSetupStatusEnum\BillingSetupStatus as AdsBillingSetupStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
 
 /**
