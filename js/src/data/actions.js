@@ -336,6 +336,13 @@ export function* fetchGoogleAccount() {
 	}
 }
 
+export function receiveGoogleAccountAccess( data ) {
+	return {
+		type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS,
+		data,
+	};
+}
+
 export function* fetchGoogleMCAccount() {
 	try {
 		const response = yield apiFetch( {
