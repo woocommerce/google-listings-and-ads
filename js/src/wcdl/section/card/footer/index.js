@@ -9,10 +9,10 @@ import { CardFooter } from '@wordpress/components';
 import './index.scss';
 
 const Footer = ( props ) => {
-	const { children } = props;
+	const { children, ...restProps } = props;
 
 	return (
-		<CardFooter className="wcdl-section-card-footer">
+		<CardFooter className="wcdl-section-card-footer" { ...restProps }>
 			{ children }
 		</CardFooter>
 	);
