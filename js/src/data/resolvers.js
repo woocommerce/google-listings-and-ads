@@ -56,6 +56,10 @@ export function* getGoogleAccount() {
 	yield fetchGoogleAccount();
 }
 
+getGoogleAccount.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE;
+};
+
 export function* getGoogleAccountAccess() {
 	try {
 		const data = yield apiFetch( {
@@ -73,6 +77,10 @@ export function* getGoogleAccountAccess() {
 		);
 	}
 }
+
+getGoogleAccountAccess.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE;
+};
 
 export function* getGoogleMCAccount() {
 	yield fetchGoogleMCAccount();

@@ -406,6 +406,28 @@ export function* fetchGoogleAdsAccount() {
 	}
 }
 
+export function* disconnectGoogleAccount() {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/connect`,
+			method: 'DELETE',
+		} );
+
+		return {
+			type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to disconnect your Google account. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
 export function* disconnectGoogleAdsAccount() {
 	try {
 		yield apiFetch( {
