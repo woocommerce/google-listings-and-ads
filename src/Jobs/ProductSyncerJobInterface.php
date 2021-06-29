@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -12,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-interface ProductSyncerJobInterface extends MerchantCenterAwareInterface {
+interface ProductSyncerJobInterface {
 
 	/**
 	 * Get whether Merchant Center setup is connected.
