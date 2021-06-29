@@ -1,0 +1,17 @@
+.gla-account-card {
+	.components-notice.is-error {
+		margin: 0;
+		background-color: #f8ebea;
+	}
+
+	@media (max-width: $break-small) {
+		.components-card__body > .components-flex {
+			flex-direction: column;
+			align-items: flex-start;
+			> .components-flex__block,
+			> .components-flex__item {
+				margin: $grid-unit-10;
+			}
+		}
+	}
+}
