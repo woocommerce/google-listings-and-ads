@@ -173,7 +173,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	 */
 	protected function map_wc_product_image( string $image_size ) {
 		$image_id          = $this->wc_product->get_image_id();
-		$gallery_image_ids = $this->wc_product->get_gallery_image_ids();
+		$gallery_image_ids = $this->wc_product->get_gallery_image_ids() ?: [];
 
 		// check if we can use the parent product image if it's a variation
 		if ( $this->is_variation() ) {
