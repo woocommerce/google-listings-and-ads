@@ -54,11 +54,14 @@
     "install-scripts": [
       "Google\\Task\\Composer::cleanup",
       "php ./bin/prefix-vendor-namespace.php",
-      "bash ./bin/googleads-remove-older-versions.sh",
+      "composer run-script remove-google-ads-api-version-support -- 6 7",
       "bash ./bin/cleanup-vendor-files.sh"
     ],
     "post-install-cmd": [ "@install-scripts" ],
-    "post-update-cmd": [ "@install-scripts" ]
+    "post-update-cmd": [ "@install-scripts" ],
+    "remove-google-ads-api-version-support": [
+      "Google\\Ads\\GoogleAds\\Util\\ApiVersionSupport::remove"
+    ]
   },
   "archive": {
     "exclude": [
