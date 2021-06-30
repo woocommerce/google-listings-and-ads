@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests;
 
 use WC_Install;
-use WP_Roles;
 
 global $gla_dir;
 global $wp_plugins_dir;
@@ -44,10 +43,22 @@ tests_add_filter( 'muplugins_loaded', function () {
 	load_plugins();
 } );
 
+tests_add_filter( 'setup_theme', function () {
+	install_woocommerce();
+} );
+
 // Start up the WP testing environment.
 require "{$wp_tests_dir}/includes/bootstrap.php";
 
-install_woocommerce();
+// Include WooCommerce test helpers
+$wc_tests_dir = $wc_dir . '/tests';
+if ( file_exists( $wc_dir . '/tests/legacy/bootstrap.php' ) ) {
+	$wc_tests_dir .= '/legacy';
+}
+require_once $wc_tests_dir . '/includes/wp-http-testcase.php';
+require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-product.php';
+require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-shipping.php';
+require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-customer.php';
 
 /**
  * Load WooCommerce for testing
@@ -57,34 +68,22 @@ install_woocommerce();
 function install_woocommerce() {
 	global $wc_dir;
 
-	echo "Installing WooCommerce..." . PHP_EOL;
-
 	define( 'WP_UNINSTALL_PLUGIN', true );
+	define( 'WC_REMOVE_ALL_DATA', true );
 
 	include $wc_dir . '/uninstall.php';
 
-	global $wpdb;
-	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woocommerce_attribute_taxonomies" );
-	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woocommerce_order_items" );
-	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}woocommerce_order_itemmeta" );
-
 	WC_Install::install();
 
-	new WP_Roles();
+	// Initialize the WC API extensions.
+	\Automattic\WooCommerce\Admin\Install::create_tables();
+	\Automattic\WooCommerce\Admin\Install::create_events();
 
-	WC()->init();
+	// Reload capabilities after install, see https://core.trac.wordpress.org/ticket/28374.
+	$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+	wp_roles();
 
-	// Include WooCommerce test helpers
-	$wc_tests_dir = $wc_dir . '/tests';
-	if ( file_exists( $wc_dir . '/tests/legacy/bootstrap.php' ) ) {
-		$wc_tests_dir .= '/legacy';
-	}
-	require_once $wc_tests_dir . '/includes/wp-http-testcase.php';
-	require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-product.php';
-	require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-shipping.php';
-	require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-customer.php';
-
-	echo "WooCommerce installed!" . PHP_EOL;
+	echo "Installing WooCommerce..." . PHP_EOL;
 }
 
 /**
