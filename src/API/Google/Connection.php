@@ -3,12 +3,13 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use Exception;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,26 +17,18 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Connection
  *
+ * ContainerAware used to access:
+ * - Ads
+ * - Client
+ * - Merchant
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Connection implements OptionsAwareInterface {
+class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ApiExceptionTrait;
+	use ContainerAwareTrait;
 	use OptionsAwareTrait;
-
-	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
-
-	/**
-	 * Connection constructor.
-	 *
-	 * @param ContainerInterface $container
-	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->container = $container;
-	}
 
 	/**
 	 * Get the connection URL for performing a connection redirect.
@@ -127,6 +120,44 @@ class Connection implements OptionsAwareInterface {
 
 			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving status', 'google-listings-and-ads' ) ) );
 		}
+	}
+
+	/**
+	 * Get the reconnect status which checks:
+	 * - The Google account is connected
+	 * - We have access to the connected MC account
+	 * - We have access to the connected Ads account
+	 *
+	 * @return array
+	 * @throws Exception When a ClientException is caught or the response contains an error.
+	 */
+	public function get_reconnect_status(): array {
+		$status = $this->get_status();
+		$email  = $status['email'] ?: '';
+
+		if ( ! isset( $status['status'] ) || 'connected' !== $status['status'] ) {
+			return $status;
+		}
+
+		$merchant_id = $this->options->get_merchant_id();
+		if ( $merchant_id ) {
+			/** @var Merchant $merchant */
+			$merchant = $this->container->get( Merchant::class );
+
+			$status['merchant_account'] = $merchant_id;
+			$status['merchant_access']  = $merchant->has_access( $email ) ? 'yes' : 'no';
+		}
+
+		$ads_id = $this->options->get_ads_id();
+		if ( $ads_id ) {
+			/** @var Ads $ads */
+			$ads = $this->container->get( Ads::class );
+
+			$status['ads_account'] = $ads_id;
+			$status['ads_access']  = $ads->has_access( $email ) ? 'yes' : 'no';
+		}
+
+		return $status;
 	}
 
 	/**
