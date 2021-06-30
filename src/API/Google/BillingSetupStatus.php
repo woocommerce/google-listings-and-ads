@@ -8,7 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
 
 /**
  * Mapping between Google and internal BillingSetupStatus
- * https://developers.google.com/google-ads/api/reference/rpc/v6/BillingSetupStatusEnum.BillingSetupStatus
+ * https://developers.google.com/google-ads/api/reference/rpc/v8/BillingSetupStatusEnum.BillingSetupStatus
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
