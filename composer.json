@@ -10,7 +10,7 @@
     "automattic/jetpack-config": "^1.4",
     "automattic/jetpack-connection": "^1.20",
     "google/apiclient": "^2.10",
-    "googleads/google-ads-php": "^8.0",
+    "googleads/google-ads-php": "^10.0",
     "league/container": "^3.3",
     "league/iso3166": "^3.0",
     "phpseclib/bcmath_compat": "^2.0",
@@ -54,11 +54,14 @@
     "install-scripts": [
       "Google\\Task\\Composer::cleanup",
       "php ./bin/prefix-vendor-namespace.php",
-      "bash ./bin/googleads-remove-older-versions.sh",
+      "composer run-script remove-google-ads-api-version-support -- 6 7",
       "bash ./bin/cleanup-vendor-files.sh"
     ],
     "post-install-cmd": [ "@install-scripts" ],
-    "post-update-cmd": [ "@install-scripts" ]
+    "post-update-cmd": [ "@install-scripts" ],
+    "remove-google-ads-api-version-support": [
+      "Google\\Ads\\GoogleAds\\Util\\ApiVersionSupport::remove"
+    ]
   },
   "archive": {
     "exclude": [

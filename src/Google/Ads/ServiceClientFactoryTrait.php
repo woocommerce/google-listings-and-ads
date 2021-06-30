@@ -2,7 +2,7 @@
 declare( strict_types=1 );
 
 /**
- * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V6/ServiceClientFactoryTrait.php
+ * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V8/ServiceClientFactoryTrait.php
  *
  * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  * phpcs:disable WordPress.NamingConventions.ValidVariableName
@@ -12,120 +12,139 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
 use Google\Ads\GoogleAds\Lib\ConfigurationTrait;
-use Google\Ads\GoogleAds\V6\Services\AccountBudgetProposalServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AccountBudgetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AccountLinkServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupAdLabelServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupAdServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupAudienceViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupBidModifierServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupCriterionLabelServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupCriterionServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupCriterionSimulationServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupExtensionSettingServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupFeedServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupLabelServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdGroupSimulationServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdParameterServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdScheduleViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AdServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AgeRangeViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\AssetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\BatchJobServiceClient;
-use Google\Ads\GoogleAds\V6\Services\BiddingStrategyServiceClient;
-use Google\Ads\GoogleAds\V6\Services\BillingSetupServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignAssetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignAudienceViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignBidModifierServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignBudgetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignCriterionServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignCriterionSimulationServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignDraftServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignExperimentServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignExtensionSettingServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignFeedServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignLabelServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CampaignSharedSetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CarrierConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ChangeStatusServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ClickViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CombinedAudienceServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ConversionAdjustmentUploadServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ConversionUploadServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CurrencyConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerClientLinkServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerClientServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerExtensionSettingServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerFeedServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerLabelServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerManagerLinkServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerNegativeCriterionServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomerUserAccessServiceClient;
-use Google\Ads\GoogleAds\V6\Services\CustomInterestServiceClient;
-use Google\Ads\GoogleAds\V6\Services\DetailPlacementViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\DisplayKeywordViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\DomainCategoryServiceClient;
-use Google\Ads\GoogleAds\V6\Services\DynamicSearchAdsSearchTermViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ExpandedLandingPageViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ExtensionFeedItemServiceClient;
-use Google\Ads\GoogleAds\V6\Services\FeedItemServiceClient;
-use Google\Ads\GoogleAds\V6\Services\FeedItemSetLinkServiceClient;
-use Google\Ads\GoogleAds\V6\Services\FeedItemSetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\FeedItemTargetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\FeedMappingServiceClient;
-use Google\Ads\GoogleAds\V6\Services\FeedPlaceholderViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\FeedServiceClient;
-use Google\Ads\GoogleAds\V6\Services\GenderViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\GeographicViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\GeoTargetConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\GoogleAdsFieldServiceClient;
-use Google\Ads\GoogleAds\V6\Services\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V6\Services\GroupPlacementViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\HotelGroupViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\HotelPerformanceViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\IncomeRangeViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\InvoiceServiceClient;
-use Google\Ads\GoogleAds\V6\Services\KeywordPlanAdGroupKeywordServiceClient;
-use Google\Ads\GoogleAds\V6\Services\KeywordPlanAdGroupServiceClient;
-use Google\Ads\GoogleAds\V6\Services\KeywordPlanCampaignKeywordServiceClient;
-use Google\Ads\GoogleAds\V6\Services\KeywordPlanCampaignServiceClient;
-use Google\Ads\GoogleAds\V6\Services\KeywordPlanIdeaServiceClient;
-use Google\Ads\GoogleAds\V6\Services\KeywordPlanServiceClient;
-use Google\Ads\GoogleAds\V6\Services\KeywordViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\LabelServiceClient;
-use Google\Ads\GoogleAds\V6\Services\LandingPageViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\LanguageConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\LocationViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ManagedPlacementViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\MediaFileServiceClient;
-use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkServiceClient;
-use Google\Ads\GoogleAds\V6\Services\MobileAppCategoryConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\MobileDeviceConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\OfflineUserDataJobServiceClient;
-use Google\Ads\GoogleAds\V6\Services\OperatingSystemVersionConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\PaidOrganicSearchTermViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ParentalStatusViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\PaymentsAccountServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ProductBiddingCategoryConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ProductGroupViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ReachPlanServiceClient;
-use Google\Ads\GoogleAds\V6\Services\RecommendationServiceClient;
-use Google\Ads\GoogleAds\V6\Services\RemarketingActionServiceClient;
-use Google\Ads\GoogleAds\V6\Services\SearchTermViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\SharedCriterionServiceClient;
-use Google\Ads\GoogleAds\V6\Services\SharedSetServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ShoppingPerformanceViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\ThirdPartyAppAnalyticsLinkServiceClient;
-use Google\Ads\GoogleAds\V6\Services\TopicConstantServiceClient;
-use Google\Ads\GoogleAds\V6\Services\TopicViewServiceClient;
-use Google\Ads\GoogleAds\V6\Services\UserDataServiceClient;
-use Google\Ads\GoogleAds\V6\Services\UserInterestServiceClient;
-use Google\Ads\GoogleAds\V6\Services\UserListServiceClient;
-use Google\Ads\GoogleAds\V6\Services\VideoServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AccessibleBiddingStrategyServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AccountBudgetProposalServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AccountBudgetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AccountLinkServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupAdAssetViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupAdLabelServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupAdServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupAssetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupAudienceViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupBidModifierServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupCriterionLabelServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupCriterionServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupCriterionSimulationServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupExtensionSettingServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupFeedServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupLabelServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdGroupSimulationServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdParameterServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdScheduleViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AdServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AgeRangeViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AssetFieldTypeViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\AssetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\BatchJobServiceClient;
+use Google\Ads\GoogleAds\V8\Services\BiddingStrategyServiceClient;
+use Google\Ads\GoogleAds\V8\Services\BiddingStrategySimulationServiceClient;
+use Google\Ads\GoogleAds\V8\Services\BillingSetupServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignAssetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignAudienceViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignBidModifierServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignBudgetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignCriterionServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignCriterionSimulationServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignDraftServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignExperimentServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignExtensionSettingServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignFeedServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignLabelServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignSharedSetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CampaignSimulationServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CarrierConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ChangeStatusServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ClickViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CombinedAudienceServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ConversionAdjustmentUploadServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ConversionCustomVariableServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ConversionUploadServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CurrencyConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomAudienceServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerAssetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerClientLinkServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerClientServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerExtensionSettingServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerFeedServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerLabelServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerManagerLinkServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerNegativeCriterionServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerUserAccessInvitationServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomerUserAccessServiceClient;
+use Google\Ads\GoogleAds\V8\Services\CustomInterestServiceClient;
+use Google\Ads\GoogleAds\V8\Services\DetailedDemographicServiceClient;
+use Google\Ads\GoogleAds\V8\Services\DetailPlacementViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\DisplayKeywordViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\DistanceViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\DomainCategoryServiceClient;
+use Google\Ads\GoogleAds\V8\Services\DynamicSearchAdsSearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ExpandedLandingPageViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ExtensionFeedItemServiceClient;
+use Google\Ads\GoogleAds\V8\Services\FeedItemServiceClient;
+use Google\Ads\GoogleAds\V8\Services\FeedItemSetLinkServiceClient;
+use Google\Ads\GoogleAds\V8\Services\FeedItemSetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\FeedItemTargetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\FeedMappingServiceClient;
+use Google\Ads\GoogleAds\V8\Services\FeedPlaceholderViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\FeedServiceClient;
+use Google\Ads\GoogleAds\V8\Services\GenderViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\GeographicViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\GeoTargetConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\GoogleAdsFieldServiceClient;
+use Google\Ads\GoogleAds\V8\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V8\Services\GroupPlacementViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\HotelGroupViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\HotelPerformanceViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\IncomeRangeViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\InvoiceServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordPlanAdGroupKeywordServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordPlanAdGroupServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordPlanCampaignKeywordServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordPlanCampaignServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordPlanIdeaServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordPlanServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordThemeConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\KeywordViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\LabelServiceClient;
+use Google\Ads\GoogleAds\V8\Services\LandingPageViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\LanguageConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\LifeEventServiceClient;
+use Google\Ads\GoogleAds\V8\Services\LocationViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ManagedPlacementViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\MediaFileServiceClient;
+use Google\Ads\GoogleAds\V8\Services\MerchantCenterLinkServiceClient;
+use Google\Ads\GoogleAds\V8\Services\MobileAppCategoryConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\MobileDeviceConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\OfflineUserDataJobServiceClient;
+use Google\Ads\GoogleAds\V8\Services\OperatingSystemVersionConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\PaidOrganicSearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ParentalStatusViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\PaymentsAccountServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ProductBiddingCategoryConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ProductGroupViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ReachPlanServiceClient;
+use Google\Ads\GoogleAds\V8\Services\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V8\Services\RemarketingActionServiceClient;
+use Google\Ads\GoogleAds\V8\Services\SearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\SharedCriterionServiceClient;
+use Google\Ads\GoogleAds\V8\Services\SharedSetServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ShoppingPerformanceViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\SmartCampaignSearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\SmartCampaignSettingServiceClient;
+use Google\Ads\GoogleAds\V8\Services\SmartCampaignSuggestServiceClient;
+use Google\Ads\GoogleAds\V8\Services\ThirdPartyAppAnalyticsLinkServiceClient;
+use Google\Ads\GoogleAds\V8\Services\TopicConstantServiceClient;
+use Google\Ads\GoogleAds\V8\Services\TopicViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\UserDataServiceClient;
+use Google\Ads\GoogleAds\V8\Services\UserInterestServiceClient;
+use Google\Ads\GoogleAds\V8\Services\UserListServiceClient;
+use Google\Ads\GoogleAds\V8\Services\UserLocationViewServiceClient;
+use Google\Ads\GoogleAds\V8\Services\VideoServiceClient;
+use Google\Ads\GoogleAds\V8\Services\WebpageViewServiceClient;
 
 /**
  * Contains service client factory methods.
@@ -146,7 +165,7 @@ trait ServiceClientFactoryTrait {
 	 *
 	 * @return array the client options
 	 */
-	public function getGoogleAdsClientOptions() {
+	public function getGoogleAdsClientOptions(): array {
 		$clientOptions = [
 			self::$CREDENTIALS_LOADER_KEY => $this->getOAuth2Credential(),
 			self::$DEVELOPER_TOKEN_KEY    => '',
@@ -169,800 +188,933 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return AccessibleBiddingStrategyServiceClient
+	 */
+	public function getAccessibleBiddingStrategyServiceClient(): AccessibleBiddingStrategyServiceClient {
+		return new AccessibleBiddingStrategyServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return AccountBudgetProposalServiceClient
 	 */
-	public function getAccountBudgetProposalServiceClient() {
+	public function getAccountBudgetProposalServiceClient(): AccountBudgetProposalServiceClient {
 		return new AccountBudgetProposalServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AccountBudgetServiceClient
 	 */
-	public function getAccountBudgetServiceClient() {
+	public function getAccountBudgetServiceClient(): AccountBudgetServiceClient {
 		return new AccountBudgetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AccountLinkServiceClient
 	 */
-	public function getAccountLinkServiceClient() {
+	public function getAccountLinkServiceClient(): AccountLinkServiceClient {
 		return new AccountLinkServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
-	 * @return AdGroupAdServiceClient
+	 * @return AdGroupAdAssetViewServiceClient
 	 */
-	public function getAdGroupAdServiceClient() {
-		return new AdGroupAdServiceClient( $this->getGoogleAdsClientOptions() );
+	public function getAdGroupAdAssetViewServiceClient(): AdGroupAdAssetViewServiceClient {
+		return new AdGroupAdAssetViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupAdLabelServiceClient
 	 */
-	public function getAdGroupAdLabelServiceClient() {
+	public function getAdGroupAdLabelServiceClient(): AdGroupAdLabelServiceClient {
 		return new AdGroupAdLabelServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AdGroupAdServiceClient
+	 */
+	public function getAdGroupAdServiceClient(): AdGroupAdServiceClient {
+		return new AdGroupAdServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AdGroupAssetServiceClient
+	 */
+	public function getAdGroupAssetServiceClient(): AdGroupAssetServiceClient {
+		return new AdGroupAssetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupAudienceViewServiceClient
 	 */
-	public function getAdGroupAudienceViewServiceClient() {
+	public function getAdGroupAudienceViewServiceClient(): AdGroupAudienceViewServiceClient {
 		return new AdGroupAudienceViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupBidModifierServiceClient
 	 */
-	public function getAdGroupBidModifierServiceClient() {
+	public function getAdGroupBidModifierServiceClient(): AdGroupBidModifierServiceClient {
 		return new AdGroupBidModifierServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupCriterionLabelServiceClient
 	 */
-	public function getAdGroupCriterionLabelServiceClient() {
+	public function getAdGroupCriterionLabelServiceClient(): AdGroupCriterionLabelServiceClient {
 		return new AdGroupCriterionLabelServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupCriterionServiceClient
 	 */
-	public function getAdGroupCriterionServiceClient() {
+	public function getAdGroupCriterionServiceClient(): AdGroupCriterionServiceClient {
 		return new AdGroupCriterionServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupCriterionSimulationServiceClient
 	 */
-	public function getAdGroupCriterionSimulationServiceClient() {
+	public function getAdGroupCriterionSimulationServiceClient(): AdGroupCriterionSimulationServiceClient {
 		return new AdGroupCriterionSimulationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupExtensionSettingServiceClient
 	 */
-	public function getAdGroupExtensionSettingServiceClient() {
+	public function getAdGroupExtensionSettingServiceClient(): AdGroupExtensionSettingServiceClient {
 		return new AdGroupExtensionSettingServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupFeedServiceClient
 	 */
-	public function getAdGroupFeedServiceClient() {
+	public function getAdGroupFeedServiceClient(): AdGroupFeedServiceClient {
 		return new AdGroupFeedServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupLabelServiceClient
 	 */
-	public function getAdGroupLabelServiceClient() {
+	public function getAdGroupLabelServiceClient(): AdGroupLabelServiceClient {
 		return new AdGroupLabelServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupServiceClient
 	 */
-	public function getAdGroupServiceClient() {
+	public function getAdGroupServiceClient(): AdGroupServiceClient {
 		return new AdGroupServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdGroupSimulationServiceClient
 	 */
-	public function getAdGroupSimulationServiceClient() {
+	public function getAdGroupSimulationServiceClient(): AdGroupSimulationServiceClient {
 		return new AdGroupSimulationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdParameterServiceClient
 	 */
-	public function getAdParameterServiceClient() {
+	public function getAdParameterServiceClient(): AdParameterServiceClient {
 		return new AdParameterServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdScheduleViewServiceClient
 	 */
-	public function getAdScheduleViewServiceClient() {
+	public function getAdScheduleViewServiceClient(): AdScheduleViewServiceClient {
 		return new AdScheduleViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AdServiceClient
 	 */
-	public function getAdServiceClient() {
+	public function getAdServiceClient(): AdServiceClient {
 		return new AdServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AgeRangeViewServiceClient
 	 */
-	public function getAgeRangeViewServiceClient() {
+	public function getAgeRangeViewServiceClient(): AgeRangeViewServiceClient {
 		return new AgeRangeViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AssetFieldTypeViewServiceClient
+	 */
+	public function getAssetFieldTypeViewServiceClient(): AssetFieldTypeViewServiceClient {
+		return new AssetFieldTypeViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return AssetServiceClient
 	 */
-	public function getAssetServiceClient() {
+	public function getAssetServiceClient(): AssetServiceClient {
 		return new AssetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return BatchJobServiceClient
 	 */
-	public function getBatchJobServiceClient() {
+	public function getBatchJobServiceClient(): BatchJobServiceClient {
 		return new BatchJobServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return BiddingStrategyServiceClient
 	 */
-	public function getBiddingStrategyServiceClient() {
+	public function getBiddingStrategyServiceClient(): BiddingStrategyServiceClient {
 		return new BiddingStrategyServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return BiddingStrategySimulationServiceClient
+	 */
+	public function getBiddingStrategySimulationServiceClient(): BiddingStrategySimulationServiceClient {
+		return new BiddingStrategySimulationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return BillingSetupServiceClient
 	 */
-	public function getBillingSetupServiceClient() {
+	public function getBillingSetupServiceClient(): BillingSetupServiceClient {
 		return new BillingSetupServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return CampaignAudienceViewServiceClient
-	 */
-	public function getCampaignAudienceViewServiceClient() {
-		return new CampaignAudienceViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignAssetServiceClient
 	 */
-	public function getCampaignAssetServiceClient() {
+	public function getCampaignAssetServiceClient(): CampaignAssetServiceClient {
 		return new CampaignAssetServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CampaignAudienceViewServiceClient
+	 */
+	public function getCampaignAudienceViewServiceClient(): CampaignAudienceViewServiceClient {
+		return new CampaignAudienceViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignBidModifierServiceClient
 	 */
-	public function getCampaignBidModifierServiceClient() {
+	public function getCampaignBidModifierServiceClient(): CampaignBidModifierServiceClient {
 		return new CampaignBidModifierServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignBudgetServiceClient
 	 */
-	public function getCampaignBudgetServiceClient() {
+	public function getCampaignBudgetServiceClient(): CampaignBudgetServiceClient {
 		return new CampaignBudgetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignCriterionServiceClient
 	 */
-	public function getCampaignCriterionServiceClient() {
+	public function getCampaignCriterionServiceClient(): CampaignCriterionServiceClient {
 		return new CampaignCriterionServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignCriterionSimulationServiceClient
 	 */
-	public function getCampaignCriterionSimulationServiceClient() {
+	public function getCampaignCriterionSimulationServiceClient(): CampaignCriterionSimulationServiceClient {
 		return new CampaignCriterionSimulationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignDraftServiceClient
 	 */
-	public function getCampaignDraftServiceClient() {
+	public function getCampaignDraftServiceClient(): CampaignDraftServiceClient {
 		return new CampaignDraftServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignExperimentServiceClient
 	 */
-	public function getCampaignExperimentServiceClient() {
+	public function getCampaignExperimentServiceClient(): CampaignExperimentServiceClient {
 		return new CampaignExperimentServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignExtensionSettingServiceClient
 	 */
-	public function getCampaignExtensionSettingServiceClient() {
+	public function getCampaignExtensionSettingServiceClient(): CampaignExtensionSettingServiceClient {
 		return new CampaignExtensionSettingServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignFeedServiceClient
 	 */
-	public function getCampaignFeedServiceClient() {
+	public function getCampaignFeedServiceClient(): CampaignFeedServiceClient {
 		return new CampaignFeedServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignLabelServiceClient
 	 */
-	public function getCampaignLabelServiceClient() {
+	public function getCampaignLabelServiceClient(): CampaignLabelServiceClient {
 		return new CampaignLabelServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignServiceClient
 	 */
-	public function getCampaignServiceClient() {
+	public function getCampaignServiceClient(): CampaignServiceClient {
 		return new CampaignServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CampaignSharedSetServiceClient
 	 */
-	public function getCampaignSharedSetServiceClient() {
+	public function getCampaignSharedSetServiceClient(): CampaignSharedSetServiceClient {
 		return new CampaignSharedSetServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CampaignSimulationServiceClient
+	 */
+	public function getCampaignSimulationServiceClient(): CampaignSimulationServiceClient {
+		return new CampaignSimulationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CarrierConstantServiceClient
 	 */
-	public function getCarrierConstantServiceClient() {
+	public function getCarrierConstantServiceClient(): CarrierConstantServiceClient {
 		return new CarrierConstantServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ChangeStatusServiceClient
 	 */
-	public function getChangeStatusServiceClient() {
+	public function getChangeStatusServiceClient(): ChangeStatusServiceClient {
 		return new ChangeStatusServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ClickViewServiceClient
 	 */
-	public function getClickViewServiceClient() {
+	public function getClickViewServiceClient(): ClickViewServiceClient {
 		return new ClickViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CombinedAudienceServiceClient
 	 */
-	public function getCombinedAudienceServiceClient() {
+	public function getCombinedAudienceServiceClient(): CombinedAudienceServiceClient {
 		return new CombinedAudienceServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ConversionActionServiceClient
 	 */
-	public function getConversionActionServiceClient() {
+	public function getConversionActionServiceClient(): ConversionActionServiceClient {
 		return new ConversionActionServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ConversionAdjustmentUploadServiceClient
 	 */
-	public function getConversionAdjustmentUploadServiceClient() {
+	public function getConversionAdjustmentUploadServiceClient(): ConversionAdjustmentUploadServiceClient {
 		return new ConversionAdjustmentUploadServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return ConversionCustomVariableServiceClient
+	 */
+	public function getConversionCustomVariableServiceClient(): ConversionCustomVariableServiceClient {
+		return new ConversionCustomVariableServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ConversionUploadServiceClient
 	 */
-	public function getConversionUploadServiceClient() {
+	public function getConversionUploadServiceClient(): ConversionUploadServiceClient {
 		return new ConversionUploadServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CurrencyConstantServiceClient
 	 */
-	public function getCurrencyConstantServiceClient() {
+	public function getCurrencyConstantServiceClient(): CurrencyConstantServiceClient {
 		return new CurrencyConstantServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomAudienceServiceClient
+	 */
+	public function getCustomAudienceServiceClient(): CustomAudienceServiceClient {
+		return new CustomAudienceServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomerAssetServiceClient
+	 */
+	public function getCustomerAssetServiceClient(): CustomerAssetServiceClient {
+		return new CustomerAssetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerClientLinkServiceClient
 	 */
-	public function getCustomerClientLinkServiceClient() {
+	public function getCustomerClientLinkServiceClient(): CustomerClientLinkServiceClient {
 		return new CustomerClientLinkServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerClientServiceClient
 	 */
-	public function getCustomerClientServiceClient() {
+	public function getCustomerClientServiceClient(): CustomerClientServiceClient {
 		return new CustomerClientServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerExtensionSettingServiceClient
 	 */
-	public function getCustomerExtensionSettingServiceClient() {
+	public function getCustomerExtensionSettingServiceClient(): CustomerExtensionSettingServiceClient {
 		return new CustomerExtensionSettingServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerFeedServiceClient
 	 */
-	public function getCustomerFeedServiceClient() {
+	public function getCustomerFeedServiceClient(): CustomerFeedServiceClient {
 		return new CustomerFeedServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerLabelServiceClient
 	 */
-	public function getCustomerLabelServiceClient() {
+	public function getCustomerLabelServiceClient(): CustomerLabelServiceClient {
 		return new CustomerLabelServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerManagerLinkServiceClient
 	 */
-	public function getCustomerManagerLinkServiceClient() {
+	public function getCustomerManagerLinkServiceClient(): CustomerManagerLinkServiceClient {
 		return new CustomerManagerLinkServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerNegativeCriterionServiceClient
 	 */
-	public function getCustomerNegativeCriterionServiceClient() {
+	public function getCustomerNegativeCriterionServiceClient(): CustomerNegativeCriterionServiceClient {
 		return new CustomerNegativeCriterionServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerServiceClient
 	 */
-	public function getCustomerServiceClient() {
+	public function getCustomerServiceClient(): CustomerServiceClient {
 		return new CustomerServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
-	 * @return CustomInterestServiceClient
+	 * @return CustomerUserAccessInvitationServiceClient
 	 */
-	public function getCustomInterestServiceClient() {
-		return new CustomInterestServiceClient( $this->getGoogleAdsClientOptions() );
+	public function getCustomerUserAccessInvitationServiceClient(): CustomerUserAccessInvitationServiceClient {
+		return new CustomerUserAccessInvitationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return CustomerUserAccessServiceClient
 	 */
-	public function getCustomerUserAccessServiceClient() {
+	public function getCustomerUserAccessServiceClient(): CustomerUserAccessServiceClient {
 		return new CustomerUserAccessServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
-	 * @return DisplayKeywordViewServiceClient
+	 * @return CustomInterestServiceClient
 	 */
-	public function getDisplayKeywordViewServiceClient() {
-		return new DisplayKeywordViewServiceClient( $this->getGoogleAdsClientOptions() );
+	public function getCustomInterestServiceClient(): CustomInterestServiceClient {
+		return new CustomInterestServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return DetailedDemographicServiceClient
+	 */
+	public function getDetailedDemographicServiceClient(): DetailedDemographicServiceClient {
+		return new DetailedDemographicServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return DetailPlacementViewServiceClient
 	 */
-	public function getDetailPlacementViewServiceClient() {
+	public function getDetailPlacementViewServiceClient(): DetailPlacementViewServiceClient {
 		return new DetailPlacementViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return DisplayKeywordViewServiceClient
+	 */
+	public function getDisplayKeywordViewServiceClient(): DisplayKeywordViewServiceClient {
+		return new DisplayKeywordViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return DistanceViewServiceClient
+	 */
+	public function getDistanceViewServiceClient(): DistanceViewServiceClient {
+		return new DistanceViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return DomainCategoryServiceClient
 	 */
-	public function getDomainCategoryServiceClient() {
+	public function getDomainCategoryServiceClient(): DomainCategoryServiceClient {
 		return new DomainCategoryServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return DynamicSearchAdsSearchTermViewServiceClient
 	 */
-	public function getDynamicSearchAdsSearchTermViewServiceClient() {
+	public function getDynamicSearchAdsSearchTermViewServiceClient(): DynamicSearchAdsSearchTermViewServiceClient {
 		return new DynamicSearchAdsSearchTermViewServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return ExtensionFeedItemServiceClient
-	 */
-	public function getExtensionFeedItemServiceClient() {
-		return new ExtensionFeedItemServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ExpandedLandingPageViewServiceClient
 	 */
-	public function getExpandedLandingPageViewServiceClient() {
+	public function getExpandedLandingPageViewServiceClient(): ExpandedLandingPageViewServiceClient {
 		return new ExpandedLandingPageViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return ExtensionFeedItemServiceClient
+	 */
+	public function getExtensionFeedItemServiceClient(): ExtensionFeedItemServiceClient {
+		return new ExtensionFeedItemServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return FeedItemServiceClient
 	 */
-	public function getFeedItemServiceClient() {
+	public function getFeedItemServiceClient(): FeedItemServiceClient {
 		return new FeedItemServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return FeedItemSetLinkServiceClient
 	 */
-	public function getFeedItemSetLinkServiceClient() {
+	public function getFeedItemSetLinkServiceClient(): FeedItemSetLinkServiceClient {
 		return new FeedItemSetLinkServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return FeedItemSetServiceClient
 	 */
-	public function getFeedItemSetServiceClient() {
+	public function getFeedItemSetServiceClient(): FeedItemSetServiceClient {
 		return new FeedItemSetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return FeedItemTargetServiceClient
 	 */
-	public function getFeedItemTargetServiceClient() {
+	public function getFeedItemTargetServiceClient(): FeedItemTargetServiceClient {
 		return new FeedItemTargetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return FeedMappingServiceClient
 	 */
-	public function getFeedMappingServiceClient() {
+	public function getFeedMappingServiceClient(): FeedMappingServiceClient {
 		return new FeedMappingServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return FeedPlaceholderViewServiceClient
 	 */
-	public function getFeedPlaceholderViewServiceClient() {
+	public function getFeedPlaceholderViewServiceClient(): FeedPlaceholderViewServiceClient {
 		return new FeedPlaceholderViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return FeedServiceClient
 	 */
-	public function getFeedServiceClient() {
+	public function getFeedServiceClient(): FeedServiceClient {
 		return new FeedServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return GenderViewServiceClient
 	 */
-	public function getGenderViewServiceClient() {
+	public function getGenderViewServiceClient(): GenderViewServiceClient {
 		return new GenderViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return GeographicViewServiceClient
 	 */
-	public function getGeographicViewServiceClient() {
+	public function getGeographicViewServiceClient(): GeographicViewServiceClient {
 		return new GeographicViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return GeoTargetConstantServiceClient
 	 */
-	public function getGeoTargetConstantServiceClient() {
+	public function getGeoTargetConstantServiceClient(): GeoTargetConstantServiceClient {
 		return new GeoTargetConstantServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return GoogleAdsFieldServiceClient
 	 */
-	public function getGoogleAdsFieldServiceClient() {
+	public function getGoogleAdsFieldServiceClient(): GoogleAdsFieldServiceClient {
 		return new GoogleAdsFieldServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return GoogleAdsServiceClient
 	 */
-	public function getGoogleAdsServiceClient() {
+	public function getGoogleAdsServiceClient(): GoogleAdsServiceClient {
 		return new GoogleAdsServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return HotelPerformanceViewServiceClient
-	 */
-	public function getHotelPerformanceViewServiceClient() {
-		return new HotelPerformanceViewServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return IncomeRangeViewServiceClient
-	 */
-	public function getIncomeRangeViewServiceClient() {
-		return new IncomeRangeViewServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return InvoiceServiceClient
-	 */
-	public function getInvoiceServiceClient() {
-		return new InvoiceServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return GroupPlacementViewServiceClient
 	 */
-	public function getGroupPlacementViewServiceClient() {
+	public function getGroupPlacementViewServiceClient(): GroupPlacementViewServiceClient {
 		return new GroupPlacementViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return HotelGroupViewServiceClient
 	 */
-	public function getHotelGroupViewServiceClient() {
+	public function getHotelGroupViewServiceClient(): HotelGroupViewServiceClient {
 		return new HotelGroupViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
-	 * @return KeywordPlanAdGroupServiceClient
+	 * @return HotelPerformanceViewServiceClient
 	 */
-	public function getKeywordPlanAdGroupServiceClient() {
-		return new KeywordPlanAdGroupServiceClient( $this->getGoogleAdsClientOptions() );
+	public function getHotelPerformanceViewServiceClient(): HotelPerformanceViewServiceClient {
+		return new HotelPerformanceViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return IncomeRangeViewServiceClient
+	 */
+	public function getIncomeRangeViewServiceClient(): IncomeRangeViewServiceClient {
+		return new IncomeRangeViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return InvoiceServiceClient
+	 */
+	public function getInvoiceServiceClient(): InvoiceServiceClient {
+		return new InvoiceServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return KeywordPlanAdGroupKeywordServiceClient
 	 */
-	public function getKeywordPlanAdGroupKeywordServiceClient() {
+	public function getKeywordPlanAdGroupKeywordServiceClient(): KeywordPlanAdGroupKeywordServiceClient {
 		return new KeywordPlanAdGroupKeywordServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
-	 * @return KeywordPlanCampaignServiceClient
+	 * @return KeywordPlanAdGroupServiceClient
 	 */
-	public function getKeywordPlanCampaignServiceClient() {
-		return new KeywordPlanCampaignServiceClient( $this->getGoogleAdsClientOptions() );
+	public function getKeywordPlanAdGroupServiceClient(): KeywordPlanAdGroupServiceClient {
+		return new KeywordPlanAdGroupServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return KeywordPlanCampaignKeywordServiceClient
 	 */
-	public function getKeywordPlanCampaignKeywordServiceClient() {
+	public function getKeywordPlanCampaignKeywordServiceClient(): KeywordPlanCampaignKeywordServiceClient {
 		return new KeywordPlanCampaignKeywordServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return KeywordPlanCampaignServiceClient
+	 */
+	public function getKeywordPlanCampaignServiceClient(): KeywordPlanCampaignServiceClient {
+		return new KeywordPlanCampaignServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return KeywordPlanIdeaServiceClient
 	 */
-	public function getKeywordPlanIdeaServiceClient() {
+	public function getKeywordPlanIdeaServiceClient(): KeywordPlanIdeaServiceClient {
 		return new KeywordPlanIdeaServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return KeywordPlanServiceClient
 	 */
-	public function getKeywordPlanServiceClient() {
+	public function getKeywordPlanServiceClient(): KeywordPlanServiceClient {
 		return new KeywordPlanServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return KeywordThemeConstantServiceClient
+	 */
+	public function getKeywordThemeConstantServiceClient(): KeywordThemeConstantServiceClient {
+		return new KeywordThemeConstantServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return KeywordViewServiceClient
 	 */
-	public function getKeywordViewServiceClient() {
+	public function getKeywordViewServiceClient(): KeywordViewServiceClient {
 		return new KeywordViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return LabelServiceClient
 	 */
-	public function getLabelServiceClient() {
+	public function getLabelServiceClient(): LabelServiceClient {
 		return new LabelServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return LandingPageViewServiceClient
 	 */
-	public function getLandingPageViewServiceClient() {
+	public function getLandingPageViewServiceClient(): LandingPageViewServiceClient {
 		return new LandingPageViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return LanguageConstantServiceClient
 	 */
-	public function getLanguageConstantServiceClient() {
+	public function getLanguageConstantServiceClient(): LanguageConstantServiceClient {
 		return new LanguageConstantServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return LifeEventServiceClient
+	 */
+	public function getLifeEventServiceClient(): LifeEventServiceClient {
+		return new LifeEventServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return LocationViewServiceClient
 	 */
-	public function getLocationViewServiceClient() {
+	public function getLocationViewServiceClient(): LocationViewServiceClient {
 		return new LocationViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ManagedPlacementViewServiceClient
 	 */
-	public function getManagedPlacementViewServiceClient() {
+	public function getManagedPlacementViewServiceClient(): ManagedPlacementViewServiceClient {
 		return new ManagedPlacementViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return MediaFileServiceClient
 	 */
-	public function getMediaFileServiceClient() {
+	public function getMediaFileServiceClient(): MediaFileServiceClient {
 		return new MediaFileServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return MerchantCenterLinkServiceClient
 	 */
-	public function getMerchantCenterLinkServiceClient() {
+	public function getMerchantCenterLinkServiceClient(): MerchantCenterLinkServiceClient {
 		return new MerchantCenterLinkServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return MobileAppCategoryConstantServiceClient
 	 */
-	public function getMobileAppCategoryConstantServiceClient() {
+	public function getMobileAppCategoryConstantServiceClient(): MobileAppCategoryConstantServiceClient {
 		return new MobileAppCategoryConstantServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return MobileDeviceConstantServiceClient
 	 */
-	public function getMobileDeviceConstantServiceClient() {
+	public function getMobileDeviceConstantServiceClient(): MobileDeviceConstantServiceClient {
 		return new MobileDeviceConstantServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return OfflineUserDataJobServiceClient
 	 */
-	public function getOfflineUserDataJobServiceClient() {
+	public function getOfflineUserDataJobServiceClient(): OfflineUserDataJobServiceClient {
 		return new OfflineUserDataJobServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return OperatingSystemVersionConstantServiceClient
 	 */
-	public function getOperatingSystemVersionConstantServiceClient() {
+	public function getOperatingSystemVersionConstantServiceClient(): OperatingSystemVersionConstantServiceClient {
 		return new OperatingSystemVersionConstantServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return PaidOrganicSearchTermViewServiceClient
+	 */
+	public function getPaidOrganicSearchTermViewServiceClient(): PaidOrganicSearchTermViewServiceClient {
+		return new PaidOrganicSearchTermViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ParentalStatusViewServiceClient
 	 */
-	public function getParentalStatusViewServiceClient() {
+	public function getParentalStatusViewServiceClient(): ParentalStatusViewServiceClient {
 		return new ParentalStatusViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return PaymentsAccountServiceClient
 	 */
-	public function getPaymentsAccountServiceClient() {
+	public function getPaymentsAccountServiceClient(): PaymentsAccountServiceClient {
 		return new PaymentsAccountServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ProductBiddingCategoryConstantServiceClient
 	 */
-	public function getProductBiddingCategoryConstantServiceClient() {
+	public function getProductBiddingCategoryConstantServiceClient(): ProductBiddingCategoryConstantServiceClient {
 		return new ProductBiddingCategoryConstantServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return PaidOrganicSearchTermViewServiceClient
-	 */
-	public function getPaidOrganicSearchTermViewServiceClient() {
-		return new PaidOrganicSearchTermViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ProductGroupViewServiceClient
 	 */
-	public function getProductGroupViewServiceClient() {
+	public function getProductGroupViewServiceClient(): ProductGroupViewServiceClient {
 		return new ProductGroupViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ReachPlanServiceClient
 	 */
-	public function getReachPlanServiceClient() {
+	public function getReachPlanServiceClient(): ReachPlanServiceClient {
 		return new ReachPlanServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return RecommendationServiceClient
 	 */
-	public function getRecommendationServiceClient() {
+	public function getRecommendationServiceClient(): RecommendationServiceClient {
 		return new RecommendationServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return RemarketingActionServiceClient
 	 */
-	public function getRemarketingActionServiceClient() {
+	public function getRemarketingActionServiceClient(): RemarketingActionServiceClient {
 		return new RemarketingActionServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return SearchTermViewServiceClient
 	 */
-	public function getSearchTermViewServiceClient() {
+	public function getSearchTermViewServiceClient(): SearchTermViewServiceClient {
 		return new SearchTermViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return SharedCriterionServiceClient
 	 */
-	public function getSharedCriterionServiceClient() {
+	public function getSharedCriterionServiceClient(): SharedCriterionServiceClient {
 		return new SharedCriterionServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return SharedSetServiceClient
 	 */
-	public function getSharedSetServiceClient() {
+	public function getSharedSetServiceClient(): SharedSetServiceClient {
 		return new SharedSetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ShoppingPerformanceViewServiceClient
 	 */
-	public function getShoppingPerformanceViewServiceClient() {
+	public function getShoppingPerformanceViewServiceClient(): ShoppingPerformanceViewServiceClient {
 		return new ShoppingPerformanceViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return SmartCampaignSearchTermViewServiceClient
+	 */
+	public function getSmartCampaignSearchTermViewServiceClient(): SmartCampaignSearchTermViewServiceClient {
+		return new SmartCampaignSearchTermViewServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return SmartCampaignSettingServiceClient
+	 */
+	public function getSmartCampaignSettingServiceClient(): SmartCampaignSettingServiceClient {
+		return new SmartCampaignSettingServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return SmartCampaignSuggestServiceClient
+	 */
+	public function getSmartCampaignSuggestServiceClient(): SmartCampaignSuggestServiceClient {
+		return new SmartCampaignSuggestServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return ThirdPartyAppAnalyticsLinkServiceClient
 	 */
-	public function getThirdPartyAppAnalyticsLinkServiceClient() {
+	public function getThirdPartyAppAnalyticsLinkServiceClient(): ThirdPartyAppAnalyticsLinkServiceClient {
 		return new ThirdPartyAppAnalyticsLinkServiceClient( $this->getGoogleAdsClientOptions() );
-	}
-
-	/**
-	 * @return TopicViewServiceClient
-	 */
-	public function getTopicViewServiceClient() {
-		return new TopicViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return TopicConstantServiceClient
 	 */
-	public function getTopicConstantServiceClient() {
+	public function getTopicConstantServiceClient(): TopicConstantServiceClient {
 		return new TopicConstantServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return TopicViewServiceClient
+	 */
+	public function getTopicViewServiceClient(): TopicViewServiceClient {
+		return new TopicViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return UserDataServiceClient
 	 */
-	public function getUserDataServiceClient() {
+	public function getUserDataServiceClient(): UserDataServiceClient {
 		return new UserDataServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return UserInterestServiceClient
 	 */
-	public function getUserInterestServiceClient() {
+	public function getUserInterestServiceClient(): UserInterestServiceClient {
 		return new UserInterestServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return UserListServiceClient
 	 */
-	public function getUserListServiceClient() {
+	public function getUserListServiceClient(): UserListServiceClient {
 		return new UserListServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return UserLocationViewServiceClient
+	 */
+	public function getUserLocationViewServiceClient(): UserLocationViewServiceClient {
+		return new UserLocationViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
 	 * @return VideoServiceClient
 	 */
-	public function getVideoServiceClient() {
+	public function getVideoServiceClient(): VideoServiceClient {
 		return new VideoServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return WebpageViewServiceClient
+	 */
+	public function getWebpageViewServiceClient(): WebpageViewServiceClient {
+		return new WebpageViewServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 }
