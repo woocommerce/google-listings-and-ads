@@ -50,6 +50,11 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	protected $wc_product;
 
 	/**
+	 * @var WC_Product WooCommerce parent product object if $wc_product is a variation
+	 */
+	protected $parent_wc_product;
+
+	/**
 	 * @var bool Whether tax is excluded from product price
 	 */
 	protected $tax_excluded;
@@ -68,11 +73,21 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			throw InvalidValue::not_instance_of( WC_Product::class, 'wc_product' );
 		}
 
-		$this->wc_product = $array['wc_product'];
+		// throw an exception if the parent product isn't provided and this is a variation
+		if ( $array['wc_product'] instanceof WC_Product_Variation &&
+			 ( empty( $array['parent_wc_product'] ) || ! $array['parent_wc_product'] instanceof WC_Product_Variable )
+		) {
+			throw InvalidValue::not_instance_of( WC_Product_Variable::class, 'parent_wc_product' );
+		}
+
+		$this->wc_product        = $array['wc_product'];
+		$this->parent_wc_product = $array['parent_wc_product'] ?? null;
+
 		$this->map_gla_attributes( $array['gla_attributes'] ?? [] );
 
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_product'] );
+		unset( $array['parent_wc_product'] );
 		unset( $array['gla_attributes'] );
 
 		parent::mapTypes( $array );
@@ -111,12 +126,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$this->setDescription( $this->get_wc_product_description() );
 		$this->setLink( $this->wc_product->get_permalink() );
 
-		// set item group id for variations and variable products
+		// set item group id for variations
 		if ( $this->is_variation() ) {
-			$parent_product = wc_get_product( $this->wc_product->get_parent_id() );
-			$this->setItemGroupId( $parent_product->get_id() );
-		} elseif ( $this->is_variable() ) {
-			$this->setItemGroupId( $this->wc_product->get_id() );
+			$this->setItemGroupId( $this->parent_wc_product->get_id() );
 		}
 
 		return $this;
@@ -145,11 +157,10 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$this->wc_product->get_short_description();
 
 		// prepend the parent product description to the variation product
-		if ( $this->is_variation() && ! empty( $this->wc_product->get_parent_id() ) ) {
-			$parent_product     = wc_get_product( $this->wc_product->get_parent_id() );
-			$parent_description = ! empty( $parent_product->get_description() ) ?
-				$parent_product->get_description() :
-				$parent_product->get_short_description();
+		if ( $this->is_variation() ) {
+			$parent_description = ! empty( $this->parent_wc_product->get_description() ) ?
+				$this->parent_wc_product->get_description() :
+				$this->parent_wc_product->get_short_description();
 			$new_line           = ! empty( $description ) && ! empty( $parent_description ) ? PHP_EOL : '';
 			$description        = $parent_description . $new_line . $description;
 		}
@@ -177,9 +188,9 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		// check if we can use the parent product image if it's a variation
 		if ( $this->is_variation() ) {
-			$parent_product    = wc_get_product( $this->wc_product->get_parent_id() );
-			$image_id          = $image_id ?? $this->wc_product->get_image_id();
-			$gallery_image_ids = ! empty( $gallery_image_ids ) ? $gallery_image_ids : $parent_product->get_gallery_image_ids();
+			$image_id              = $image_id ?? $this->parent_wc_product->get_image_id();
+			$parent_gallery_images = $this->parent_wc_product->get_gallery_image_ids() ?: [];
+			$gallery_image_ids     = ! empty( $gallery_image_ids ) ? $gallery_image_ids : $parent_gallery_images;
 		}
 
 		// use a gallery image as the main product image if no main image is available
@@ -383,65 +394,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		$this->map_tax_excluded();
 		$this->map_wc_product_price( $this->wc_product );
 
-		if ( $this->is_variable() ) {
-			// use the cheapest child price for the main product
-			$this->maybe_map_wc_children_prices();
-		}
-
 		return $this;
-	}
-
-	/**
-	 * Map the prices of the item according to its child products.
-	 *
-	 * @return $this
-	 */
-	protected function maybe_map_wc_children_prices(): WCProductAdapter {
-		if ( ! $this->wc_product->has_child() ) {
-			return $this;
-		}
-
-		$current_price = '' === $this->wc_product->get_regular_price() ?
-			null :
-			wc_get_price_including_tax( $this->wc_product, [ 'price' => $this->wc_product->get_regular_price() ] );
-
-		$children = $this->wc_product->get_children();
-		foreach ( $children as $child ) {
-			$child_product = wc_get_product( $child );
-			if ( ! $child_product ) {
-				continue;
-			}
-			if ( ! self::is_wc_product_visible( $child_product ) ) {
-				continue;
-			}
-
-			$child_price = '' === $child_product->get_regular_price() ?
-				null :
-				wc_get_price_including_tax( $child_product, [ 'price' => $child_product->get_regular_price() ] );
-
-			if ( ( 0 === (int) $current_price ) && ( (int) $child_price > 0 ) ) {
-				$this->map_wc_product_price( $child_product );
-			} elseif ( ( $child_price > 0 ) && ( $child_price < $current_price ) ) {
-				$this->map_wc_product_price( $child_product );
-			}
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Whether the given WooCommerce product is visible in store.
-	 *
-	 * @param WC_Product $wc_product
-	 *
-	 * @return bool
-	 */
-	protected static function is_wc_product_visible( WC_Product $wc_product ): bool {
-		if ( $wc_product instanceof WC_Product_Variation ) {
-			return $wc_product->variation_is_visible();
-		}
-
-		return $wc_product->is_visible();
 	}
 
 	/**
@@ -590,15 +543,6 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
-	 * Return whether the WooCommerce product is a variable.
-	 *
-	 * @return bool
-	 */
-	public function is_variable(): bool {
-		return $this->wc_product instanceof WC_Product_Variable;
-	}
-
-	/**
 	 * Return whether the WooCommerce product is virtual.
 	 *
 	 * @return bool
@@ -662,12 +606,12 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 	}
 
 	/**
-	 * Used by the validator to check if the variable/variation product has an itemGroupId
+	 * Used by the validator to check if the variation product has an itemGroupId
 	 *
 	 * @param ExecutionContextInterface $context
 	 */
 	public function validate_item_group_id( ExecutionContextInterface $context ) {
-		if ( ( $this->is_variable() || $this->is_variation() ) && empty( $this->getItemGroupId() ) ) {
+		if ( $this->is_variation() && empty( $this->getItemGroupId() ) ) {
 			$context->buildViolation( 'ItemGroupId needs to be set for variable products.' )
 					->atPath( 'itemGroupId' )
 					->addViolation();
