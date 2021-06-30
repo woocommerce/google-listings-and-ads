@@ -222,4 +222,29 @@ class Merchant implements OptionsAwareInterface {
 
 		return true;
 	}
+
+	/**
+	 * Check if we have access to the merchant account.
+	 *
+	 * @param string $email Email address of the connected account.
+	 *
+	 * @return bool
+	 */
+	public function has_access( string $email ): bool {
+		$id = $this->options->get_merchant_id();
+
+		try {
+			$account = $this->service->accounts->get( $id, $id );
+
+			foreach ( $account->getUsers() as $user ) {
+				if ( $email === $user->getEmailAddress() && $user->getAdmin() ) {
+					return true;
+				}
+			}
+		} catch ( GoogleException $e ) {
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+		}
+
+		return false;
+	}
 }
