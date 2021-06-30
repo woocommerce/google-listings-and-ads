@@ -56,7 +56,7 @@ class ProductFactory {
 
 		$parent_product = null;
 		// merge with parent's attributes if it's a variation product
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
+		if ( $product instanceof WC_Product_Variation ) {
 			$parent_product    = $this->wc->get_product( $product->get_parent_id() );
 			$parent_attributes = $this->attribute_manager->get_all_values( $parent_product );
 			$attributes        = array_merge( $parent_attributes, $attributes );
