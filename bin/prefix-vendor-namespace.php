@@ -81,20 +81,19 @@ foreach ( $replacements as $namespace => $path ) {
 		file_put_contents( $file, $contents );
 	}
 
-	// Update the namespace in the composer.json file.
-	$composer_file = "{$vendor_dir}/{$path}/composer.json";
-	if ( ! file_exists( $composer_file ) ) {
-		continue;
-	}
-
-	$composer_contents = file_get_contents( $composer_file );
-	file_put_contents(
-		$composer_file,
-		str_replace(
-			addslashes( "{$namespace}\\" ),
-			addslashes( "{$new_namespace}\\{$namespace}\\" ),
-			$composer_contents
+	// Update the namespace in the composer.json files.
+	$composer_files = array_filter(
+		explode(
+			"\n",
+			`find {$vendor_dir}/{$path} -iname 'composer.json'`
 		)
+	);
+
+	array_map(
+		function( $file ) use ( $namespace, $new_namespace ) {
+			return replace_in_json_file( $file, $namespace, $new_namespace );
+		},
+		$composer_files
 	);
 }
 
@@ -121,4 +120,20 @@ function find_files( string $path ): array {
 	}
 
 	return $files;
+}
+
+function replace_in_json_file( string $file, string $namespace, string $new_namespace ) {
+	if ( ! file_exists( $file ) ) {
+		return;
+	}
+
+	$contents = file_get_contents( $file );
+	file_put_contents(
+		$file,
+		str_replace(
+			addslashes( "{$namespace}\\" ),
+			addslashes( "{$new_namespace}\\{$namespace}\\" ),
+			$contents
+		)
+	);
 }
