@@ -12,11 +12,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
-use Google_Service_ShoppingContent_Price;
-use Google_Service_ShoppingContent_Product;
-use Google_Service_ShoppingContent_ProductShipping;
-use Google_Service_ShoppingContent_ProductShippingDimension;
-use Google_Service_ShoppingContent_ProductShippingWeight;
+use Google\Service\ShoppingContent\Price as GooglePrice;
+use Google\Service\ShoppingContent\Product as GoogleProduct;
+use Google\Service\ShoppingContent\ProductShipping as GoogleProductShipping;
+use Google\Service\ShoppingContent\ProductShippingDimension as GoogleProductShippingDimension;
+use Google\Service\ShoppingContent\ProductShippingWeight as GoogleProductShippingWeight;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class WCProductAdapter extends Google_Service_ShoppingContent_Product implements Validatable {
+class WCProductAdapter extends GoogleProduct implements Validatable {
 	use PluginHelper;
 
 	public const AVAILABILITY_IN_STOCK     = 'in stock';
@@ -270,7 +270,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 		}
 
 		$new_shipping = [
-			new Google_Service_ShoppingContent_ProductShipping( $product_shipping ),
+			new GoogleProductShipping( $product_shipping ),
 		];
 
 		if ( ! $this->shipping_country_exists( $country ) ) {
@@ -318,7 +318,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		if ( $length > 0 && $width > 0 && $height > 0 ) {
 			$this->setShippingLength(
-				new Google_Service_ShoppingContent_ProductShippingDimension(
+				new GoogleProductShippingDimension(
 					[
 						'unit'  => $unit,
 						'value' => $length,
@@ -326,7 +326,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 				)
 			);
 			$this->setShippingWidth(
-				new Google_Service_ShoppingContent_ProductShippingDimension(
+				new GoogleProductShippingDimension(
 					[
 						'unit'  => $unit,
 						'value' => $width,
@@ -334,7 +334,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 				)
 			);
 			$this->setShippingHeight(
-				new Google_Service_ShoppingContent_ProductShippingDimension(
+				new GoogleProductShippingDimension(
 					[
 						'unit'  => $unit,
 						'value' => $height,
@@ -361,7 +361,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 
 		$weight = wc_get_weight( $this->wc_product->get_weight(), $unit );
 		$this->setShippingWeight(
-			new Google_Service_ShoppingContent_ProductShippingWeight(
+			new GoogleProductShippingWeight(
 				[
 					'unit'  => $unit,
 					'value' => $weight,
@@ -422,7 +422,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
 
 			$this->setPrice(
-				new Google_Service_ShoppingContent_Price(
+				new GooglePrice(
 					[
 						'currency' => get_woocommerce_currency(),
 						'value'    => $price,
@@ -476,7 +476,7 @@ class WCProductAdapter extends Google_Service_ShoppingContent_Product implements
 			$sale_price_end_date = $product->get_date_on_sale_to();
 			if ( empty( $sale_price_end_date ) || $sale_price_end_date >= $now ) {
 				$this->setSalePrice(
-					new Google_Service_ShoppingContent_Price(
+					new GooglePrice(
 						[
 							'currency' => get_woocommerce_currency(),
 							'value'    => $sale_price,

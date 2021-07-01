@@ -5,15 +5,15 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google_Service_ShoppingContent as ShoppingService;
-use Google_Service_ShoppingContent_Account as MC_Account;
-use Google_Service_ShoppingContent_AccountAdsLink as MC_Account_Ads_Link;
-use Google_Service_ShoppingContent_AccountStatus as MC_Account_Status;
-use Google_Service_ShoppingContent_ProductstatusesCustomBatchResponse as MC_Product_Status_Batch_Response;
-use Google_Service_ShoppingContent_ProductstatusesCustomBatchRequest as MC_Product_Status_Batch_Request;
-use Google_Service_ShoppingContent_ProductstatusesListResponse as MC_Product_Status_List_Response;
-use Google_Service_ShoppingContent_Product as Product;
 use Google\Exception as GoogleException;
+use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\Account;
+use Google\Service\ShoppingContent\AccountAdsLink;
+use Google\Service\ShoppingContent\AccountStatus;
+use Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
+use Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
+use Google\Service\ShoppingContent\ProductstatusesListResponse;
+use Google\Service\ShoppingContent\Product;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -30,16 +30,16 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * The shopping service.
 	 *
-	 * @var ShoppingService
+	 * @var ShoppingContent
 	 */
 	protected $service;
 
 	/**
 	 * Merchant constructor.
 	 *
-	 * @param ShoppingService $service
+	 * @param ShoppingContent $service
 	 */
-	public function __construct( ShoppingService $service ) {
+	public function __construct( ShoppingContent $service ) {
 		$this->service = $service;
 	}
 
@@ -100,10 +100,10 @@ class Merchant implements OptionsAwareInterface {
 	 * Retrieve the user's Merchant Center account information.
 	 *
 	 * @param int $id Optional - the Merchant Center account to retrieve
-	 * @return MC_Account The user's Merchant Center account.
+	 * @return Account The user's Merchant Center account.
 	 * @throws Exception If the account can't be retrieved.
 	 */
-	public function get_account( int $id = 0 ): MC_Account {
+	public function get_account( int $id = 0 ): Account {
 		$id = $id ?: $this->options->get_merchant_id();
 
 		try {
@@ -119,10 +119,10 @@ class Merchant implements OptionsAwareInterface {
 	 * Retrieve the user's Merchant Center account information.
 	 *
 	 * @param int $id Optional - the Merchant Center account to retrieve
-	 * @return MC_Account_Status The user's Merchant Center account.
+	 * @return AccountStatus The user's Merchant Center account status.
 	 * @throws Exception If the account can't be retrieved.
 	 */
-	public function get_accountstatus( int $id = 0 ): MC_Account_Status {
+	public function get_accountstatus( int $id = 0 ): AccountStatus {
 		$id = $id ?: $this->options->get_merchant_id();
 
 		try {
@@ -139,9 +139,9 @@ class Merchant implements OptionsAwareInterface {
 	 *
 	 * @param string|null $page_token
 	 *
-	 * @return MC_Product_Status_List_Response A page of the Merchant Center product statuses.
+	 * @return ProductstatusesListResponse A page of the Merchant Center product statuses.
 	 */
-	public function get_productstatuses( ?string $page_token ): MC_Product_Status_List_Response {
+	public function get_productstatuses( ?string $page_token ): ProductstatusesListResponse {
 		$merchant_id = $this->options->get_merchant_id();
 		$opt_params  = [ 'maxResults' => 250 ];
 		if ( ! empty( $page_token ) ) {
@@ -157,9 +157,9 @@ class Merchant implements OptionsAwareInterface {
 	 *
 	 * @param string[] $mc_product_ids
 	 *
-	 * @return MC_Product_Status_Batch_Response;
+	 * @return ProductstatusesCustomBatchResponse;
 	 */
-	public function get_productstatuses_batch( array $mc_product_ids ): MC_Product_Status_Batch_Response {
+	public function get_productstatuses_batch( array $mc_product_ids ): ProductstatusesCustomBatchResponse {
 		$merchant_id = $this->options->get_merchant_id();
 		$entries     = [];
 		foreach ( $mc_product_ids as $index => $id ) {
@@ -172,7 +172,7 @@ class Merchant implements OptionsAwareInterface {
 		}
 
 		// Retrieve batch.
-		$request = new MC_Product_Status_Batch_Request();
+		$request = new ProductstatusesCustomBatchRequest();
 		$request->setEntries( $entries );
 		return $this->service->productstatuses->custombatch( $request );
 	}
@@ -180,19 +180,19 @@ class Merchant implements OptionsAwareInterface {
 	/**
 	 * Update the provided Merchant Center account information.
 	 *
-	 * @param MC_Account $mc_account The Account data to update.
+	 * @param Account $account The Account data to update.
 	 *
-	 * @return MC_Account The user's Merchant Center account.
+	 * @return Account The user's Merchant Center account.
 	 * @throws Exception If the account can't be retrieved.
 	 */
-	public function update_account( MC_Account $mc_account ): MC_Account {
+	public function update_account( Account $account ): Account {
 		try {
-			$mc_account = $this->service->accounts->update( $mc_account->getId(), $mc_account->getId(), $mc_account );
+			$account = $this->service->accounts->update( $account->getId(), $account->getId(), $account );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to update merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
-		return $mc_account;
+		return $account;
 	}
 
 	/**
@@ -214,12 +214,37 @@ class Merchant implements OptionsAwareInterface {
 			}
 		}
 
-		$link = new MC_Account_Ads_Link();
+		$link = new AccountAdsLink();
 		$link->setAdsId( $ads_id );
 		$link->setStatus( 'active' );
 		$account->setAdsLinks( array_merge( $ads_links, [ $link ] ) );
 		$this->update_account( $account );
 
 		return true;
+	}
+
+	/**
+	 * Check if we have access to the merchant account.
+	 *
+	 * @param string $email Email address of the connected account.
+	 *
+	 * @return bool
+	 */
+	public function has_access( string $email ): bool {
+		$id = $this->options->get_merchant_id();
+
+		try {
+			$account = $this->service->accounts->get( $id, $id );
+
+			foreach ( $account->getUsers() as $user ) {
+				if ( $email === $user->getEmailAddress() && $user->getAdmin() ) {
+					return true;
+				}
+			}
+		} catch ( GoogleException $e ) {
+			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
+		}
+
+		return false;
 	}
 }

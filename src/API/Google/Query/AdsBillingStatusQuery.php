@@ -17,6 +17,12 @@ class AdsBillingStatusQuery extends AdsQuery {
 	 */
 	public function __construct() {
 		parent::__construct( 'billing_setup' );
-		$this->columns( [ 'billing_setup.status' ] );
+		$this->columns(
+			[
+				'status'          => 'billing_setup.status',
+				'start_date_time' => 'billing_setup.start_date_time',
+			]
+		);
+		$this->set_order( 'start_date_time', 'DESC' );
 	}
 }
