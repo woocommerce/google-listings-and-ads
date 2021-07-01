@@ -95,6 +95,10 @@ foreach ( $replacements as $namespace => $path ) {
 		},
 		$composer_files
 	);
+
+	// Update the namespace in vendor/composer/installed.json
+	// This file is used to generate the classmaps.
+	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $new_namespace );
 }
 
 function find_files( string $path ): array {
