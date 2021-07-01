@@ -3,15 +3,17 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsBillingStatusQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Exception;
 use Google\Ads\GoogleAds\Util\FieldMasks;
-use Google\Ads\GoogleAds\V6\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
-use Google\Ads\GoogleAds\V6\Resources\MerchantCenterLink;
-use Google\Ads\GoogleAds\V6\Services\MerchantCenterLinkOperation;
+use Google\Ads\GoogleAds\V8\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V8\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
+use Google\Ads\GoogleAds\V8\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V8\Services\MerchantCenterLinkOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 
@@ -101,6 +103,35 @@ class Ads implements OptionsAwareInterface {
 			$this->options->get_ads_id(),
 			$operation
 		);
+	}
+
+	/**
+	 * Check if we have access to the merchant account.
+	 *
+	 * @param string $email Email address of the connected account.
+	 *
+	 * @return bool
+	 */
+	public function has_access( string $email ): bool {
+		$ads_id = $this->options->get_ads_id();
+
+		try {
+			$results = ( new AdsAccountQuery() )
+			->set_client( $this->client, $ads_id )
+			->where( 'customer_user_access.email_address', $email )
+			->get_results();
+
+			foreach ( $results->iterateAllElements() as $row ) {
+				$access = $row->getCustomerUserAccess();
+				if ( AccessRole::ADMIN === $access->getAccessRole() ) {
+					return true;
+				}
+			}
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+		}
+
+		return false;
 	}
 
 	/**

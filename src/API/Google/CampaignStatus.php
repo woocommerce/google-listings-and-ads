@@ -3,12 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Google\Ads\GoogleAds\V6\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
+use Google\Ads\GoogleAds\V8\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
 
 /**
  * Mapping between Google and internal CampaignStatus
- * https://developers.google.com/google-ads/api/reference/rpc/v6/CampaignStatusEnum.CampaignStatus
+ * https://developers.google.com/google-ads/api/reference/rpc/v8/CampaignStatusEnum.CampaignStatus
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */

@@ -32,8 +32,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
 use Exception;
 use Google\Client;
-use Google_Service_ShoppingContent;
-use Google_Service_SiteVerification;
+use Google\Service\ShoppingContent;
+use Google\Service\SiteVerification as SiteVerificationService;
 use Jetpack_Options;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
@@ -59,23 +59,23 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Client::class                         => true,
-		Google_Service_ShoppingContent::class => true,
-		GoogleAdsClient::class                => true,
-		GuzzleClient::class                   => true,
-		Proxy::class                          => true,
-		Merchant::class                       => true,
-		Ads::class                            => true,
-		AdsCampaign::class                    => true,
-		AdsCampaignBudget::class              => true,
-		AdsConversionAction::class            => true,
-		AdsGroup::class                       => true,
-		AdsReport::class                      => true,
-		'connect_server_root'                 => true,
-		Connection::class                     => true,
-		GoogleProductService::class           => true,
-		SiteVerification::class               => true,
-		Settings::class                       => true,
+		Client::class               => true,
+		ShoppingContent::class      => true,
+		GoogleAdsClient::class      => true,
+		GuzzleClient::class         => true,
+		Proxy::class                => true,
+		Merchant::class             => true,
+		Ads::class                  => true,
+		AdsCampaign::class          => true,
+		AdsCampaignBudget::class    => true,
+		AdsConversionAction::class  => true,
+		AdsGroup::class             => true,
+		AdsReport::class            => true,
+		'connect_server_root'       => true,
+		Connection::class           => true,
+		GoogleProductService::class => true,
+		SiteVerification::class     => true,
+		Settings::class             => true,
 	];
 
 	/**
@@ -90,7 +90,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_ads_client();
 		$this->register_google_classes();
 		$this->add( Proxy::class, ContainerInterface::class );
-		$this->add( Connection::class, ContainerInterface::class );
+		$this->add( Connection::class );
 		$this->add( Settings::class, ContainerInterface::class );
 
 		$this->share( Ads::class, GoogleAdsClient::class );
@@ -105,8 +105,8 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			AdsGroup::class
 		);
 
-		$this->share( Merchant::class, Google_Service_ShoppingContent::class );
-		$this->share( MerchantReport::class, Google_Service_ShoppingContent::class, ProductHelper::class );
+		$this->share( Merchant::class, ShoppingContent::class );
+		$this->share( MerchantReport::class, ShoppingContent::class, ProductHelper::class );
 
 		$this->add(
 			SiteVerification::class,
@@ -158,19 +158,16 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function register_google_classes() {
 		$this->add( Client::class )->addMethodCall( 'setHttpClient', [ ClientInterface::class ] );
 		$this->add(
-			Google_Service_ShoppingContent::class,
+			ShoppingContent::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google/google-mc' )
 		);
 		$this->add(
-			Google_Service_SiteVerification::class,
+			SiteVerificationService::class,
 			Client::class,
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
-		$this->share(
-			GoogleProductService::class,
-			Google_Service_ShoppingContent::class
-		);
+		$this->share( GoogleProductService::class, ShoppingContent::class );
 	}
 
 	/**
