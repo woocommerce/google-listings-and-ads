@@ -20,7 +20,7 @@
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
-    "phpunit/phpunit": "^6.5 || ^7",
+    "phpunit/phpunit": "^7.5",
     "wp-cli/i18n-command": "^2.2",
     "wp-coding-standards/wpcs": "^2.3"
   },
@@ -61,7 +61,8 @@
     "post-update-cmd": [ "@install-scripts" ],
     "remove-google-ads-api-version-support": [
       "Google\\Ads\\GoogleAds\\Util\\ApiVersionSupport::remove"
-    ]
+    ],
+    "test-unit": "./vendor/bin/phpunit"
   },
   "archive": {
     "exclude": [

@@ -7,8 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidAsset;
 use PHPUnit\Framework\TestCase;
 
-use function Automattic\WooCommerce\GoogleListingsAndAds\plugins_url;
-
 class AdminScriptAssetTest extends TestCase {
 
 	public function test_invalid_path() {

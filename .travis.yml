@@ -1,7 +1,8 @@
 language: php
-sudo: false
-# We use Focal locally, but it does not support PHP 7.3 on Travis
 dist: bionic
+
+services:
+  - mysql
 
 notifications:
   email: false
@@ -15,6 +16,7 @@ branches:
 cache:
   directories:
     - $HOME/.composer/cache
+  npm: true
 
 # Test supported versions of PHP, WP and WC and the WC master branch.
 php:
@@ -50,6 +52,9 @@ matrix:
 before_install:
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer self-update --1; fi
 
+install:
+  - nvm install
+
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - |
@@ -58,9 +63,10 @@ before_script:
     else
       echo "xdebug.ini does not exist"
     fi
-  - nvm install
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer install; fi
-#  - bash tests/install/install-wp-tests.sh
+  - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+  - npm ci
+  - npm run dev
 
 script:
-#  - WP_MULTISITE=1 tests/run_tests.sh
+  - composer test-unit
