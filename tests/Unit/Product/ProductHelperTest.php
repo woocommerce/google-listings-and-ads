@@ -8,7 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductMetaTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\SettingsTrait;
@@ -18,7 +19,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 use WC_Product;
-use WP_UnitTestCase;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -28,11 +28,11 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
  * @property ProductMetaHandler               $product_meta
- * @property WCProxy                          $wc
+ * @property WC                               $wc
  * @property MockObject|MerchantCenterService $merchant_center
- * @property MockObject|ProductHelper         $product_helper
+ * @property ProductHelper                    $product_helper
  */
-class ProductHelperTest extends WP_UnitTestCase {
+class ProductHelperTest extends ContainerAwareUnitTest {
 
 	use ProductMetaTrait;
 	use ProductTrait;
@@ -676,8 +676,8 @@ class ProductHelperTest extends WP_UnitTestCase {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->product_meta    = new ProductMetaHandler();
-		$this->wc              = new WCProxy( WC()->countries );
+		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
+		$this->wc              = $this->container->get( WC::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->merchant_center );
 	}
