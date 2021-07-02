@@ -10,33 +10,35 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductMetaTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
-use Google_Service_ShoppingContent_Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use WC_Helper_Product;
 use WC_Product;
 use WC_Product_Variable;
 use WP_UnitTestCase;
-
-defined( 'ABSPATH' ) || exit;
 
 /**
  * Class BatchProductHelperTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
- * @property MockObject|ProductMetaHandler    $product_meta
- * @property MockObject|ProductHelper         $product_helper
+ * @property WCProxy                          $wc
+ * @property ProductMetaHandler               $product_meta
+ * @property ProductHelper                    $product_helper
  * @property MockObject|ValidatorInterface    $validator
- * @property MockObject|ProductFactory        $product_factory
+ * @property ProductFactory                   $product_factory
  * @property MockObject|MerchantCenterService $merchant_center
  * @property BatchProductHelper               $batch_product_helper
  */
@@ -45,114 +47,66 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 	use ProductMetaTrait;
 	use ProductTrait;
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_filter_synced_products_all_synced( array $products ) {
-		$this->product_helper->expects( $this->exactly( \count( $products ) ) )
-							 ->method( 'is_product_synced' )
-							 ->willReturn( true );
-		$results = $this->batch_product_helper->filter_synced_products( $products );
-		$this->assertCount( \count( $products ), $results );
-		$this->assertEqualSets( $products, $results );
-	}
+	public function test_filter_synced_products_all_synced() {
+		$synced_product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $synced_product, $this->generate_google_product_mock() );
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_filter_synced_products_none_synced( array $products ) {
-		$this->product_helper->expects( $this->exactly( \count( $products ) ) )
-							 ->method( 'is_product_synced' )
-							 ->willReturn( false );
+		$products = [
+			$synced_product,
+			WC_Helper_Product::create_simple_product(),
+		];
+
 		$results = $this->batch_product_helper->filter_synced_products( $products );
-		$this->assertEmpty( $results );
+		$this->assertCount( 1, $results );
+		$this->assertEquals( [ $synced_product ], $results );
 	}
 
 	public function test_mark_as_synced() {
-		$wc_product     = new WC_Product();
-		$google_product = new GoogleProduct();
-
-		$this->product_helper->expects( $this->once() )
-							 ->method( 'get_wc_product' )
-							 ->willReturn( $wc_product );
-
-		$this->product_helper->expects( $this->once() )
-							 ->method( 'mark_as_synced' )
-							 ->with(
-								 $this->equalTo( $wc_product ),
-								 $this->equalTo( $google_product ),
-							 );
-
-		$batch_entry = new BatchProductEntry( 1, $google_product );
-
+		$product     = WC_Helper_Product::create_simple_product();
+		$batch_entry = new BatchProductEntry( $product->get_id(), $this->generate_google_product_mock() );
 		$this->batch_product_helper->mark_as_synced( $batch_entry );
+		$this->assertTrue( $this->product_helper->is_product_synced( $product ) );
 	}
 
 	public function test_mark_as_synced_error_if_no_google_product_provided() {
-		$wc_product = new WC_Product();
-
-		$this->product_helper->expects( $this->once() )
-							 ->method( 'get_wc_product' )
-							 ->willReturn( $wc_product );
-
-		$batch_entry = new BatchProductEntry( 1, null );
-
+		$product     = WC_Helper_Product::create_simple_product();
+		$batch_entry = new BatchProductEntry( $product->get_id(), null );
 		$this->expectException( InvalidClass::class );
-
 		$this->batch_product_helper->mark_as_synced( $batch_entry );
 	}
 
 	public function test_mark_as_unsynced() {
-		$wc_product = new WC_Product();
+		$synced_product = WC_Helper_Product::create_simple_product();
+		$this->product_helper->mark_as_synced( $synced_product, $this->generate_google_product_mock() );
 
-		$this->product_helper->expects( $this->once() )
-							 ->method( 'get_wc_product' )
-							 ->willReturn( $wc_product );
-
-		$this->product_helper->expects( $this->once() )
-							 ->method( 'mark_as_unsynced' )
-							 ->with( $this->equalTo( $wc_product ) );
-
-		$batch_entry = new BatchProductEntry( 1, null );
-
+		$batch_entry = new BatchProductEntry( $synced_product->get_id() );
 		$this->batch_product_helper->mark_as_unsynced( $batch_entry );
+
+		$product = $this->wc->get_product( $synced_product->get_id() );
+		$this->assertFalse( $this->product_helper->is_product_synced( $product ) );
 	}
 
 	public function test_mark_as_invalid() {
-		$wc_product = new WC_Product();
-		$errors     = [
+		$product = WC_Helper_Product::create_simple_product();
+		$errors  = [
 			'Error 1',
 			'Error 2',
 		];
 
-		$this->product_helper->expects( $this->once() )
-							 ->method( 'get_wc_product' )
-							 ->willReturn( $wc_product );
-
-		$this->product_helper->expects( $this->once() )
-							 ->method( 'mark_as_invalid' )
-							 ->with(
-								 $this->equalTo( $wc_product ),
-								 $this->equalTo( $errors ),
-							 );
-
-		$batch_entry = new BatchInvalidProductEntry( 1, 'online:en:US:gla_1', $errors );
-
+		$batch_entry = new BatchInvalidProductEntry( $product->get_id(), 'online:en:US:gla_1', $errors );
 		$this->batch_product_helper->mark_as_invalid( $batch_entry );
+		$this->assertEqualSets( $errors, $this->product_meta->get_errors( $product ) );
 	}
 
 	/**
 	 * @dataProvider return_blank_test_products
 	 */
 	public function test_generate_delete_request_entries( array $products ) {
-		$this->product_helper->expects( $this->any() )
-							 ->method( 'get_synced_google_product_ids' )
-							 ->willReturnCallback( [ $this, 'generate_google_ids' ] );
+		foreach ( $products as $product ) {
+			$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_' . $product->get_id() ) );
+		}
 
 		$results = $this->batch_product_helper->generate_delete_request_entries( $products );
-
-		// the number of results can be bigger because of variable products
-		$this->assertGreaterThanOrEqual( \count( $products ), \count( $results ) );
 
 		$this->assertContainsOnlyInstancesOf( BatchProductIDRequestEntry::class, $results );
 
@@ -160,22 +114,22 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 			$this->assertEquals( $google_id, $request_entry->get_product_id() );
 
 			// check that the assigned Google ID is correctly mapped to the WooCommerce product ID
-			$this->assertEquals( $this->generate_google_ids( $request_entry->get_wc_product_id() )[0], $request_entry->get_product_id() );
+			$this->assertEquals( 'online:en:US:gla_' . $request_entry->get_wc_product_id(), $request_entry->get_product_id() );
 		}
 	}
 
 	public function test_generate_delete_request_entries_variable_product() {
-		$products = [
-			$this->generate_variable_product_mock( 3 ),
-		];
+		$variable   = WC_Helper_Product::create_variation_product();
+		$variations = [];
+		foreach ( $variable->get_children() as $variation_id ) {
+			$variation = $this->wc->get_product( $variation_id );
+			$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+			$variations[] = $variation;
+		}
 
-		$this->product_helper->expects( $this->any() )
-							 ->method( 'get_synced_google_product_ids' )
-							 ->willReturnCallback( [ $this, 'generate_google_ids' ] );
+		$results = $this->batch_product_helper->generate_delete_request_entries( [ $variable ] );
 
-		$results = $this->batch_product_helper->generate_delete_request_entries( $products );
-
-		$this->assertCount( 3, $results );
+		$this->assertCount( \count( $variations ), $results );
 	}
 
 	public function test_generate_delete_request_entries_including_invalid_product() {
@@ -191,33 +145,24 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 	 * @dataProvider return_blank_test_products
 	 */
 	public function test_generate_delete_request_entries_skips_if_no_synced_google_id_exists( array $products ) {
-		// skip one product from the list
-		$skipped_product = $products[0];
-		$this->product_helper->expects( $this->any() )
-							 ->method( 'get_synced_google_product_ids' )
-							 ->willReturnCallback(
-								 function ( WC_Product $product ) use ( $skipped_product ) {
-									 if ( $product === $skipped_product ) {
-										 return null;
-									 }
+		// mark all products as synced
+		foreach ( $products as $product ) {
+			$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_' . $product->get_id() ) );
+		}
 
-									 return $this->generate_google_ids( $product );
-								 }
-							 );
+		// skip one product from the list and delete its google id
+		$skipped_product = $products[0];
+		$this->product_meta->delete_google_ids( $skipped_product );
 
 		$results = $this->batch_product_helper->generate_delete_request_entries( $products );
 
-		$skipped_product_google_id = $this->generate_google_ids( $skipped_product )[0];
-		$this->assertArrayNotHasKey( $skipped_product_google_id, $results );
+		$this->assertArrayNotHasKey( 'online:en:US:gla_' . $skipped_product->get_id(), $results );
 	}
 
 	/**
 	 * @dataProvider return_blank_test_products
 	 */
 	public function test_validate_and_generate_update_request_entries( array $products ) {
-		$this->product_helper->expects( $this->any() )
-							 ->method( 'is_sync_ready' )
-							 ->willReturn( true );
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
 						->willReturn( [] );
@@ -253,31 +198,14 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 	 * @dataProvider return_blank_test_products
 	 */
 	public function test_validate_and_generate_update_request_entries_skips_invalid_product( array $products ) {
-		$this->product_helper->expects( $this->any() )
-							 ->method( 'is_sync_ready' )
-							 ->willReturn( true );
-
 		// skip one product from the list
-		$invalid_product         = $products[0];
-		$invalid_product_adapted = $this->generate_adapted_product( $invalid_product );
-
-		$this->product_factory->expects( $this->any() )
-							  ->method( 'create' )
-							  ->willReturnCallback(
-								  function ( WC_Product $product, string $target_country ) use ( $invalid_product, $invalid_product_adapted ) {
-									  if ( $product === $invalid_product ) {
-										  return $invalid_product_adapted;
-									  }
-
-									  return $this->generate_adapted_product( $product );
-								  }
-							  );
+		$invalid_product = $products[0];
 
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
 						->willReturnCallback(
-							function ( WCProductAdapter $product ) use ( $invalid_product_adapted ) {
-								if ( $product === $invalid_product_adapted ) {
+							function ( WCProductAdapter $product ) use ( $invalid_product ) {
+								if ( $product->get_wc_product()->get_id() === $invalid_product->get_id() ) {
 									$violation_example = $this->createMock( ConstraintViolation::class );
 									$violations        = new ConstraintViolationList();
 									$violations->add( $violation_example );
@@ -307,22 +235,11 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 	public function test_validate_and_generate_update_request_entries_skips_not_sync_ready( array $products ) {
 		// skip one product from the list
 		$skipped_product = $products[0];
+		$this->product_meta->update_visibility($skipped_product, ChannelVisibility::DONT_SYNC_AND_SHOW);
 
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
 						->willReturn( [] );
-
-		$this->product_helper->expects( $this->any() )
-							 ->method( 'is_sync_ready' )
-							 ->willReturnCallback(
-								 function ( WC_Product $product ) use ( $skipped_product ) {
-									 if ( $product === $skipped_product ) {
-										 return false;
-									 }
-
-									 return true;
-								 }
-							 );
 
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 
@@ -383,9 +300,7 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 			'DK' => "online:en:DK:gla_{$stale_product_id}",
 			'US' => "online:en:US:gla_{$stale_product_id}",
 		];
-		$this->product_meta->expects( $this->any() )
-						   ->method( 'get_google_ids' )
-						   ->willReturnMap( [ [ $stale_product, $stale_google_ids ] ] );
+		$this->product_meta->update_google_ids($stale_product, $stale_google_ids);
 
 		$results = $this->batch_product_helper->generate_stale_products_request_entries( $products );
 
@@ -415,9 +330,7 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 			'DK' => "online:en:DK:gla_{$stale_product_id}",
 			'US' => "online:en:US:gla_{$stale_product_id}",
 		];
-		$this->product_meta->expects( $this->any() )
-						   ->method( 'get_google_ids' )
-						   ->willReturnMap( [ [ $stale_product, $stale_google_ids ] ] );
+		$this->product_meta->update_google_ids($stale_product, $stale_google_ids);
 
 		$results = $this->batch_product_helper->generate_stale_countries_request_entries( $products );
 
@@ -435,18 +348,14 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 	 * @return WC_Product[][]
 	 */
 	public function return_blank_test_products(): array {
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $variable->get_children()[0] );
+
 		return [
 			[
 				[
-					$this->generate_simple_product_mock(),
-					$this->generate_variation_product_mock(),
-				],
-			],
-			[
-				[
-					$this->generate_simple_product_mock(),
-					$this->generate_variation_product_mock(),
-					$this->generate_variable_product_mock(),
+					WC_Helper_Product::create_simple_product(),
+					$variation,
 				],
 			],
 		];
@@ -457,11 +366,12 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->product_meta         = $this->get_product_meta_handler_mock();
-		$this->product_helper       = $this->createMock( ProductHelper::class );
-		$this->validator            = $this->createMock( ValidatorInterface::class );
-		$this->product_factory      = $this->createMock( ProductFactory::class );
 		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->validator            = $this->createMock( ValidatorInterface::class );
+		$this->product_meta         = new ProductMetaHandler();
+		$this->wc                   = new WCProxy( WC()->countries );
+		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->merchant_center );
+		$this->product_factory      = new ProductFactory( new AttributeManager(), $this->wc );
 		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->merchant_center );
 	}
 }
