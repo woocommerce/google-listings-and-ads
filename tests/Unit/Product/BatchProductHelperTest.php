@@ -10,13 +10,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntr
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductMetaTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -27,14 +27,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Helper_Product;
 use WC_Product;
 use WC_Product_Variable;
-use WP_UnitTestCase;
 
 /**
  * Class BatchProductHelperTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
- * @property WCProxy                          $wc
+ * @property WC                               $wc
  * @property ProductMetaHandler               $product_meta
  * @property ProductHelper                    $product_helper
  * @property MockObject|ValidatorInterface    $validator
@@ -42,7 +41,7 @@ use WP_UnitTestCase;
  * @property MockObject|MerchantCenterService $merchant_center
  * @property BatchProductHelper               $batch_product_helper
  */
-class BatchProductHelperTest extends WP_UnitTestCase {
+class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 	use ProductMetaTrait;
 	use ProductTrait;
@@ -368,10 +367,10 @@ class BatchProductHelperTest extends WP_UnitTestCase {
 		parent::setUp();
 		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
-		$this->product_meta         = new ProductMetaHandler();
-		$this->wc                   = new WCProxy( WC()->countries );
+		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
+		$this->product_factory      = $this->container->get( ProductFactory::class );
+		$this->wc                   = $this->container->get( WC::class );
 		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->merchant_center );
-		$this->product_factory      = new ProductFactory( new AttributeManager(), $this->wc );
 		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->merchant_center );
 	}
 }
