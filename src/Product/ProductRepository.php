@@ -217,26 +217,6 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs already awaiting sync to Google Merchant Center.
-	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
-	 *
-	 * @return int[] Array of WooCommerce product IDs
-	 */
-	public function find_sync_pending_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$args['meta_query'] = [
-			[
-				'key'     => ProductMetaHandler::KEY_GOOGLE_IDS,
-				'compare' => 'NOT EXISTS',
-			],
-			$this->get_sync_ready_products_meta_query(),
-		];
-
-		return $this->find_ids( $args, $limit, $offset );
-	}
-
-	/**
 	 * @param array $args Array of WooCommerce args (except 'return'), and product metadata.
 	 *
 	 * @return array
@@ -299,54 +279,6 @@ class ProductRepository implements Service {
 	}
 
 	/**
-	 * Find and return an array of WooCommerce product IDs that are pending synchronization,
-	 * but have failed pre-sync validation. Excludes variable parent products.
-	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
-	 *
-	 * @return int[] Array of WooCommerce product IDs
-	 */
-	public function find_presync_error_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$product_types = ProductSyncer::get_supported_product_types();
-		$args          = [
-			'type'       => array_diff( $product_types, [ 'variable' ] ),
-			'meta_query' => [
-				'relation' => 'AND',
-				$this->get_sync_ready_products_meta_query(),
-				[
-					[
-						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-						'compare' => '=',
-						'value'   => SyncStatus::HAS_ERRORS,
-					],
-				],
-			],
-		];
-
-		return $this->find_ids( $args, $limit, $offset );
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function get_presync_error_products_meta_query() {
-		return [
-			'relation' => 'AND',
-			$this->get_sync_ready_products_meta_query(),
-			[
-				[
-					[
-						'key'     => ProductMetaHandler::KEY_SYNC_STATUS,
-						'compare' => '=',
-						'value'   => SyncStatus::HAS_ERRORS,
-					],
-				],
-			],
-		];
-	}
-
-	/**
 	 * Find and return an array of WooCommerce product IDs that are marked as MC not_synced.
 	 * Excludes variations and variable products without variations.
 	 *
@@ -365,35 +297,6 @@ class ProductRepository implements Service {
 				[
 					'key'     => ProductMetaHandler::KEY_MC_STATUS,
 					'compare' => '=',
-					'value'   => MCStatus::NOT_SYNCED,
-				],
-			],
-		];
-
-		return $this->find_ids( $args, $limit, $offset );
-	}
-
-	/**
-	 * Find and return an array of WooCommerce product IDs that are NOT marked as MC not_synced.
-	 * Excludes variations and variable products without variations.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @param int $limit  Maximum number of results to retrieve or -1 for unlimited.
-	 * @param int $offset Amount to offset product results.
-	 *
-	 * @return int[] Array of WooCommerce product IDs
-	 */
-	public function find_mc_synced_product_ids( int $limit = -1, int $offset = 0 ): array {
-		$types = ProductSyncer::get_supported_product_types();
-		$types = array_diff( $types, [ 'variation' ] );
-		$args  = [
-			'status'     => 'publish',
-			'type'       => $types,
-			'meta_query' => [
-				[
-					'key'     => ProductMetaHandler::KEY_MC_STATUS,
-					'compare' => '!=',
 					'value'   => MCStatus::NOT_SYNCED,
 				],
 			],
