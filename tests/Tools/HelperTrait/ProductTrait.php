@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
+use Google\Service\ShoppingContent\Product as GoogleProduct;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Product;
 use WC_Product_Variable;
@@ -17,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait
  */
 trait ProductTrait {
+	use SettingsTrait;
+
 	/**
 	 * Generates and returns a mock of a WC_Product_Variable object containing a number of mock variations/children.
 	 *
@@ -35,10 +38,12 @@ trait ProductTrait {
 			$child->expects( $this->any() )
 				  ->method( 'get_id' )
 				  ->willReturn( rand() );
-
 			$child->expects( $this->any() )
 				  ->method( 'get_parent_id' )
 				  ->willReturn( $id );
+			$child->expects( $this->any() )
+					->method( 'get_type' )
+					->willReturn( 'variation' );
 
 			$children[] = $child;
 		}
@@ -46,14 +51,39 @@ trait ProductTrait {
 		$product->expects( $this->any() )
 				->method( 'get_id' )
 				->willReturn( $id );
-
 		$product->expects( $this->any() )
 				->method( 'get_children' )
 				->willReturn( $children );
-
 		$product->expects( $this->any() )
 				->method( 'get_available_variations' )
 				->willReturn( $children );
+		$product->expects( $this->any() )
+				->method( 'get_type' )
+				->willReturn( 'variable' );
+
+		return $product;
+	}
+
+	/**
+	 * Generates and returns a mock of a Google Product object
+	 *
+	 * @param string|null $id
+	 * @param string|null $target_country
+	 *
+	 * @return MockObject|GoogleProduct
+	 */
+	public function generate_google_product_mock( $id = null, $target_country = null ) {
+		$product = $this->createMock( GoogleProduct::class );
+
+		$id             = $id ?: "online:en:{$this->get_sample_target_country()}:gla_" . rand();
+		$target_country = $target_country ?: $this->get_sample_target_country();
+
+		$product->expects( $this->any() )
+				->method( 'getId' )
+				->willReturn( $id );
+		$product->expects( $this->any() )
+				->method( 'getTargetCountry' )
+				->willReturn( $target_country );
 
 		return $product;
 	}
@@ -70,6 +100,10 @@ trait ProductTrait {
 				->method( 'get_id' )
 				->willReturn( rand() );
 
+		$product->expects( $this->any() )
+				->method( 'get_type' )
+				->willReturn( 'simple' );
+
 		return $product;
 	}
 
@@ -84,10 +118,12 @@ trait ProductTrait {
 		$product->expects( $this->any() )
 				->method( 'get_id' )
 				->willReturn( rand() );
-
 		$product->expects( $this->any() )
 				->method( 'get_parent_id' )
 				->willReturn( rand() );
+		$product->expects( $this->any() )
+				->method( 'get_type' )
+				->willReturn( 'variation' );
 
 		return $product;
 	}
@@ -125,21 +161,21 @@ trait ProductTrait {
 	 */
 	public function get_sample_attributes(): array {
 		return [
-			'gtin'  => '3234567890126',
-			'mpn'   => 'GO12345OOGLE',
-			'brand' => 'Google',
-			'condition' => 'new',
-			'gender' => 'female',
-			'size' => 'L',
+			'gtin'       => '3234567890126',
+			'mpn'        => 'GO12345OOGLE',
+			'brand'      => 'Google',
+			'condition'  => 'new',
+			'gender'     => 'female',
+			'size'       => 'L',
 			'sizeSystem' => 'US',
-			'sizeType' => 'regular',
-			'color' => 'white',
-			'material' => 'cotton',
-			'pattern' => 'polka dot',
-			'ageGroup' => 'newborn',
-			'multipack' => 0,
-			'isBundle' => false,
-			'adult' => false,
+			'sizeType'   => 'regular',
+			'color'      => 'white',
+			'material'   => 'cotton',
+			'pattern'    => 'polka dot',
+			'ageGroup'   => 'newborn',
+			'multipack'  => 0,
+			'isBundle'   => false,
+			'adult'      => false,
 		];
 	}
 }
