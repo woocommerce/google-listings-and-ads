@@ -7,13 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use PHPUnit\Framework\MockObject\MockObject;
+use WC_Helper_Product;
 use WC_Product;
 use WP_UnitTestCase;
-
-defined( 'ABSPATH' ) || exit;
 
 /**
  * Class ProductFactoryTest
@@ -21,39 +20,20 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
  * @property MockObject|AttributeManager $attribute_manager
- * @property MockObject|WC               $wc
+ * @property WCProxy                     $wc
  * @property ProductFactory              $product_factory
  */
 class ProductFactoryTest extends WP_UnitTestCase {
 
 	use ProductTrait;
 
-	/**
-	 * @param MockObject|WC_Product $product
-	 *
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_create( $product ) {
-		if ( $product instanceof \WC_Product_Variation ) {
-			$this->wc->expects( $this->any() )
-					 ->method( 'get_product' )
-					 ->willReturnMap(
-						 [
-							 [ $product->get_parent_id(), $this->generate_variable_product_mock() ],
-						 ]
-					 );
-		}
+	public function test_create() {
+		$product = WC_Helper_Product::create_simple_product();
 
 		$attributes = $this->get_sample_attributes();
 		$this->attribute_manager->expects( $this->any() )
 								->method( 'get_all_values' )
 								->willReturn( $attributes );
-
-		// the value of `is_virtual` doesn't matter but it should return a
-		// boolean (and not `null` as the mock would return) for this test to work
-		$product->expects( $this->any() )
-				->method( 'is_virtual' )
-				->willReturn( false );
 
 		$adapted_product = $this->product_factory->create( $product, 'US' );
 
@@ -81,16 +61,8 @@ class ProductFactoryTest extends WP_UnitTestCase {
 	}
 
 	public function test_created_variation_inherits_attributes_from_parent() {
-		$parent    = $this->generate_variable_product_mock( 1 );
-		$variation = $parent->get_children()[0];
-
-		$this->wc->expects( $this->any() )
-				 ->method( 'get_product' )
-				 ->willReturnMap(
-					 [
-						 [ $parent->get_id(), $parent ],
-					 ]
-				 );
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = wc_get_product( $parent->get_children()[0] );
 
 		$parent_attributes = [
 			'color'   => 'black',
@@ -102,19 +74,18 @@ class ProductFactoryTest extends WP_UnitTestCase {
 
 		$this->attribute_manager->expects( $this->any() )
 								->method( 'get_all_values' )
-								->willReturnMap(
-									[
-										[ $parent, $parent_attributes ],
-										[ $variation, $child_attributes ],
-									]
+								->willReturnCallback(
+									function ( WC_Product $product ) use ( $parent, $variation, $parent_attributes, $child_attributes ) {
+										if ( $parent->get_id() === $product->get_id() ) {
+											return $parent_attributes;
+										}
+										if ( $variation->get_id() === $product->get_id() ) {
+											return $child_attributes;
+										}
+
+										return [];
+									}
 								);
-
-
-		// the value of `is_virtual` doesn't matter but it should return a
-		// boolean (and not `null` as the mock would return) for this test to work
-		$variation->expects( $this->any() )
-				  ->method( 'is_virtual' )
-				  ->willReturn( false );
 
 		$adapted_product = $this->product_factory->create( $variation, 'US' );
 
@@ -128,20 +99,9 @@ class ProductFactoryTest extends WP_UnitTestCase {
 	}
 
 	public function test_create_variable_product_fails() {
-		$variable = $this->generate_variable_product_mock();
-
+		$variable = WC_Helper_Product::create_variation_product();
 		$this->expectException( InvalidClass::class );
 		$this->product_factory->create( $variable, 'US' );
-	}
-
-	/**
-	 * @return WC_Product[]
-	 */
-	public function return_blank_test_products(): array {
-		return [
-			[ $this->generate_simple_product_mock() ],
-			[ $this->generate_variation_product_mock() ],
-		];
 	}
 
 	/**
@@ -150,7 +110,7 @@ class ProductFactoryTest extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->attribute_manager = $this->createMock( AttributeManager::class );
-		$this->wc                = $this->createMock( WC::class );
+		$this->wc                = new WCProxy( WC()->countries );
 		$this->product_factory   = new ProductFactory( $this->attribute_manager, $this->wc );
 	}
 }
