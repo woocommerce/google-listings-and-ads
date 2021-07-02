@@ -225,7 +225,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 *
 	 * @return array Sanitized array of meta query clauses.
 	 */
-	protected function sanitize_meta_query( array $queries ): array {
+	protected function sanitize_meta_query( $queries ): array {
 		$prefixed_valid_keys = array_map( [ $this, 'prefix_meta_key' ], array_keys( self::TYPES ) );
 		$clean_queries       = [];
 
@@ -265,7 +265,7 @@ class ProductMetaHandler implements Service, Registerable {
 	 *
 	 * @return array
 	 */
-	public function prefix_meta_query_keys( array $meta_queries ): array {
+	public function prefix_meta_query_keys( $meta_queries ): array {
 		$updated_queries = [];
 		if ( ! is_array( $meta_queries ) ) {
 			return $updated_queries;
@@ -277,8 +277,10 @@ class ProductMetaHandler implements Service, Registerable {
 				$updated_queries[ $key ] = $meta_query;
 
 				// First-order clause.
-			} elseif ( ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) && self::is_meta_key_valid( $meta_query['key'] ) ) {
-				$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
+			} elseif ( isset( $meta_query['key'] ) || isset( $meta_query['value'] ) ) {
+				if ( self::is_meta_key_valid( $meta_query['key'] ) ) {
+					$meta_query['key'] = $this->prefix_meta_key( $meta_query['key'] );
+				}
 			} else {
 				// Otherwise, it's a nested meta_query, so we recurse.
 				$meta_query = $this->prefix_meta_query_keys( $meta_query );
