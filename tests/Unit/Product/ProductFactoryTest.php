@@ -7,12 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC as WCProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 use WC_Product;
-use WP_UnitTestCase;
 
 /**
  * Class ProductFactoryTest
@@ -20,10 +20,10 @@ use WP_UnitTestCase;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
  * @property MockObject|AttributeManager $attribute_manager
- * @property WCProxy                     $wc
+ * @property WC                          $wc
  * @property ProductFactory              $product_factory
  */
-class ProductFactoryTest extends WP_UnitTestCase {
+class ProductFactoryTest extends ContainerAwareUnitTest {
 
 	use ProductTrait;
 
@@ -110,7 +110,7 @@ class ProductFactoryTest extends WP_UnitTestCase {
 	public function setUp() {
 		parent::setUp();
 		$this->attribute_manager = $this->createMock( AttributeManager::class );
-		$this->wc                = new WCProxy( WC()->countries );
+		$this->wc                = $this->container->get( WC::class );
 		$this->product_factory   = new ProductFactory( $this->attribute_manager, $this->wc );
 	}
 }
