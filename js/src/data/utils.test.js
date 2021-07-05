@@ -65,4 +65,44 @@ describe( 'getReportQuery', () => {
 			).toHaveProperty( 'orderby', freeFields[ 0 ] );
 		} );
 	} );
+
+	it( 'should have no `ids` field if the query does not contain `programs` or `products`', () => {
+		forAnyCategoryAndDateReference( ( category, dateReference ) => {
+			const query = {};
+
+			expect(
+				getReportQuery( category, 'free', query, dateReference ).ids
+			).toBeUndefined();
+		} );
+	} );
+
+	it( 'should have `ids` field if the programs report query contains `programs`', () => {
+		const query = {
+			programs: '123,456',
+		};
+
+		expect(
+			getReportQuery( 'programs', 'free', query, 'primary' ).ids
+		).toBe( query.programs );
+	} );
+
+	it( 'should have transformed `ids` field if the products report query contains `products`', () => {
+		// Search single product.
+		const oneProductQuery = {
+			products: '2468',
+		};
+
+		expect(
+			getReportQuery( 'products', 'free', oneProductQuery, 'primary' ).ids
+		).toBe( 'gla_2468' );
+
+		// Search multiple products.
+		const productsQuery = {
+			products: '123,456,7890',
+		};
+
+		expect(
+			getReportQuery( 'products', 'free', productsQuery, 'primary' ).ids
+		).toBe( 'gla_123,gla_456,gla_7890' );
+	} );
 } );
