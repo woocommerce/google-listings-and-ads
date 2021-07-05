@@ -372,6 +372,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			];
 		}
 
+		/**
+		 * Account-level issues can be added the merchant issues table.
+		 *
+		 * @since x.x.x
+		 */
+		$account_issues = apply_filters( 'woocommerce_gla_account_issues', $account_issues );
+
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( $account_issues );
