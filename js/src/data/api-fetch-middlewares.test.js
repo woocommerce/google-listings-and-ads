@@ -80,21 +80,21 @@ describe( 'createErrorResponseCatcher', () => {
 		} );
 
 		it( 'should resolve response instance when indicating `parse: false` in a successful response', async () => {
-			const handler = createFetchHandler( 200, { data: 'hi' } );
-			const result = await middleware( optionsDontParse, handler );
+			// The response instance should be passed through directly without any parse process of this middleware.
+			const responseInstance = {};
+			const next = () => Promise.resolve( responseInstance );
+			const promise = middleware( optionsDontParse, next );
 
-			expect( result.status ).toEqual( 200 );
-			expect( result.json ).toBeInstanceOf( Function );
+			await expect( promise ).resolves.toBe( responseInstance );
 		} );
 
 		it( 'should reject response instance when indicating `parse: false` in a failed response', async () => {
-			const handler = createFetchHandler( 418, { message: 'oops' } );
-			const promise = middleware( optionsDontParse, handler );
+			// The response instance should be passed through directly without any parse process of this middleware.
+			const responseInstance = {};
+			const next = () => Promise.reject( responseInstance );
+			const promise = middleware( optionsDontParse, next );
 
-			await expect( promise ).rejects.toMatchObject( {
-				status: 418,
-				json: expect.any( Function ),
-			} );
+			await expect( promise ).rejects.toBe( responseInstance );
 		} );
 	} );
 
