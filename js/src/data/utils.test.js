@@ -5,8 +5,10 @@ import {
 	getReportQuery,
 	getReportKey,
 	calculateDelta,
+	mapReportFieldsToPerformance,
 	freeFields,
 	paidFields,
+	MISSING_FREE_LISTINGS_DATA,
 } from './utils';
 
 /**
@@ -192,5 +194,59 @@ describe( 'calculateDelta', () => {
 
 		expect( calculateDelta( 4, 3 ) ).toBe( 33.33 );
 		expect( calculateDelta( 5, 3 ) ).toBe( 66.67 );
+	} );
+} );
+
+describe( 'mapReportFieldsToPerformance', () => {
+	it( 'should take keys of `primary` as metric field keys', () => {
+		const primary = { hello: 0, howdy: 1 };
+		const primaryKeys = Object.keys( primary );
+		const performance = mapReportFieldsToPerformance( primary, { hi: 2 } );
+		const keys = Object.keys( performance );
+
+		expect( keys ).toHaveLength( primaryKeys.length );
+		expect( keys ).toEqual( expect.arrayContaining( primaryKeys ) );
+	} );
+
+	it( "should take specified `fields` as metric field keys if it's given", () => {
+		const primary = { hello: 0, howdy: 1 };
+		const performance = mapReportFieldsToPerformance(
+			primary,
+			{},
+			freeFields
+		);
+		const keys = Object.keys( performance );
+
+		expect( keys ).toHaveLength( freeFields.length );
+		expect( keys ).toEqual( expect.arrayContaining( freeFields ) );
+	} );
+
+	it( 'should flag no anticipated data is missing if the same field exists in both `primary` and `secondary`', () => {
+		const performance = mapReportFieldsToPerformance( { a: 1 }, { a: 2 } );
+
+		expect( performance ).toMatchObject( {
+			a: {
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.NONE,
+			},
+		} );
+	} );
+
+	it( "should flag anticipated data is not returned from API if the field doesn't exists in one of `primary` and `secondary`", () => {
+		// "a" does not exist in `secondary`
+		let performance = mapReportFieldsToPerformance( { a: 1 }, { b: 2 } );
+		expect( performance ).toMatchObject( {
+			a: {
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
+			},
+		} );
+
+		// "a" does not exist in `primary`
+		const keys = [ 'a' ];
+		performance = mapReportFieldsToPerformance( { b: 2 }, { a: 1 }, keys );
+		expect( performance ).toMatchObject( {
+			a: {
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
+			},
+		} );
 	} );
 } );
