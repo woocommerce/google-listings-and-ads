@@ -28,10 +28,34 @@ describe( 'createErrorResponseCatcher', () => {
 
 	let optionsDefaultParse;
 	let optionsDontParse;
+	let optionsOtherNamespace;
 
 	beforeEach( () => {
 		optionsDefaultParse = { path: `${ API_NAMESPACE }/hi` };
 		optionsDontParse = { path: `${ API_NAMESPACE }/hi`, parse: false };
+		optionsOtherNamespace = { path: '' };
+	} );
+
+	describe( `don't watch requests if the path doesn't belong to this plugin's namespace`, () => {
+		it( 'should call next middleware with the original options', async () => {
+			const mockNext = jest.fn();
+			const middleware = createErrorResponseCatcher();
+			await middleware( optionsOtherNamespace, mockNext );
+
+			expect( mockNext ).toHaveBeenCalledTimes( 1 );
+			expect( mockNext ).toHaveBeenCalledWith( optionsOtherNamespace );
+		} );
+
+		it( `should not invoke this middleware's callback`, async () => {
+			const errorMessage = {};
+			const next = () => Promise.reject( errorMessage );
+			const mockCallback = jest.fn().mockImplementation( passReject );
+			const middleware = createErrorResponseCatcher( mockCallback );
+			const promise = middleware( optionsOtherNamespace, next );
+
+			await expect( promise ).rejects.toBe( errorMessage );
+			expect( mockCallback ).toHaveBeenCalledTimes( 0 );
+		} );
 	} );
 
 	describe( 'force overwrite `parse` option to `false` and return the same result', () => {
@@ -39,23 +63,6 @@ describe( 'createErrorResponseCatcher', () => {
 
 		beforeEach( () => {
 			middleware = createErrorResponseCatcher( passReject );
-		} );
-
-		it( 'should only handle requests where the path belongs to this plugin', async () => {
-			const data = {};
-			const optionsOtherNamespace = { path: '' };
-			const mockCallback = jest.fn().mockImplementation( ( options ) => {
-				expect( options ).toBe( optionsOtherNamespace );
-				return data;
-			} );
-
-			const result = await middleware(
-				optionsOtherNamespace,
-				mockCallback
-			);
-
-			expect( mockCallback ).toHaveBeenCalledTimes( 1 );
-			expect( result ).toBe( data );
 		} );
 
 		it( 'should resolve parsed response body by default in a successful response', async () => {

@@ -20,7 +20,7 @@ export function createErrorResponseCatcher( onErrorResponse ) {
 	const regexApiNamespace = new RegExp( `^${ API_NAMESPACE }\/` );
 
 	return function errorResponseCatcher( options, next ) {
-		// Requests issued from other places go to the original middlewares
+		// Requests issued from other places return and call the next middlewares with original options directly.
 		if ( ! regexApiNamespace.test( options.path ) ) {
 			return next( options );
 		}
