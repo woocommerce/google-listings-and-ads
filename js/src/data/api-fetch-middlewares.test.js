@@ -66,21 +66,32 @@ describe( 'createErrorResponseCatcher', () => {
 			optionsDontParse = { path: `${ API_NAMESPACE }/hi`, parse: false };
 		} );
 
-		describe( 'should overwrite default value of `parse` option to `false` and return the same result', () => {
+		it( 'should force the value of `parse` option to `false` for the next middleware', async () => {
+			const middleware = createErrorResponseCatcher( passReject );
+			const next = jest
+				.fn()
+				.mockImplementation( createFetchHandler( 200, {} ) )
+				.mockName( 'next middleware' );
+			await middleware( optionsDefaultParse, next );
+
+			expect( next ).toHaveBeenCalledWith( optionsDontParse );
+		} );
+
+		describe( 'should parse final result according to the given `parse` option', () => {
 			let middleware;
 
 			beforeEach( () => {
 				middleware = createErrorResponseCatcher( passReject );
 			} );
 
-			it( 'For a successful response, should resolve parsed response body by default', async () => {
+			it( 'For a successful response, by default, should resolve with parsed response body', async () => {
 				const handler = createFetchHandler( 200, { data: 'hi' } );
 				const result = await middleware( optionsDefaultParse, handler );
 
 				expect( result ).toEqual( { data: 'hi' } );
 			} );
 
-			it( 'For a failed response, should reject parsed response body by default', async () => {
+			it( 'For a failed response, by default, should reject with parsed response body', async () => {
 				const handler = createFetchHandler( 418, { message: 'oops' } );
 				const promise = middleware( optionsDefaultParse, handler );
 
