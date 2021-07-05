@@ -53,6 +53,7 @@ describe( 'createErrorResponseCatcher', () => {
 				optionsOtherNamespace,
 				mockCallback
 			);
+
 			expect( mockCallback ).toHaveBeenCalledTimes( 1 );
 			expect( result ).toBe( data );
 		} );
@@ -60,18 +61,21 @@ describe( 'createErrorResponseCatcher', () => {
 		it( 'should resolve parsed response body by default in a successful response', async () => {
 			const handler = createFetchHandler( 200, { data: 'hi' } );
 			const result = await middleware( optionsDefaultParse, handler );
+
 			expect( result ).toEqual( { data: 'hi' } );
 		} );
 
 		it( 'should reject parsed response body by default in a failed response', async () => {
 			const handler = createFetchHandler( 418, { message: 'oops' } );
 			const promise = middleware( optionsDefaultParse, handler );
+
 			await expect( promise ).rejects.toEqual( { message: 'oops' } );
 		} );
 
 		it( 'should resolve response instance when indicating `parse: false` in a successful response', async () => {
 			const handler = createFetchHandler( 200, { data: 'hi' } );
 			const result = await middleware( optionsDontParse, handler );
+
 			expect( result.status ).toEqual( 200 );
 			expect( result.json ).toBeInstanceOf( Function );
 		} );
@@ -79,6 +83,7 @@ describe( 'createErrorResponseCatcher', () => {
 		it( 'should reject response instance when indicating `parse: false` in a failed response', async () => {
 			const handler = createFetchHandler( 418, { message: 'oops' } );
 			const promise = middleware( optionsDontParse, handler );
+
 			await expect( promise ).rejects.toMatchObject( {
 				status: 418,
 				json: expect.any( Function ),
@@ -93,6 +98,7 @@ describe( 'createErrorResponseCatcher', () => {
 
 			let handler = createFetchHandler( 418, { message: 'oops' } );
 			let promise = middleware( optionsDefaultParse, handler );
+
 			await expect( promise ).rejects.toMatchObject( expect.anything() );
 			expect( mockCallback ).toHaveBeenCalledTimes( 1 );
 			expect( mockCallback ).toHaveBeenCalledWith( {
@@ -102,6 +108,7 @@ describe( 'createErrorResponseCatcher', () => {
 
 			handler = createFetchHandler( 500, { message: 'ouch' } );
 			promise = middleware( optionsDontParse, handler );
+
 			await expect( promise ).rejects.toMatchObject( expect.anything() );
 			expect( mockCallback ).toHaveBeenCalledTimes( 2 );
 			expect( mockCallback ).toHaveBeenCalledWith( {
