@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getReportQuery, freeFields, paidFields } from './utils';
+import { getReportQuery, getReportKey, freeFields, paidFields } from './utils';
 
 /**
  * Calls given function with all combinations of possible categories and dataReferences.
@@ -104,5 +104,51 @@ describe( 'getReportQuery', () => {
 		expect(
 			getReportQuery( 'products', 'free', productsQuery, 'primary' ).ids
 		).toBe( 'gla_123,gla_456,gla_7890' );
+	} );
+} );
+
+describe( 'getReportKey', () => {
+	it( 'should get a key with given `category`, `type` and `reportQuery`', () => {
+		const reportQuery = {
+			foo: 'bar',
+		};
+
+		expect( getReportKey( 'programs', 'free', reportQuery ) ).toBe(
+			'programs:free:{"foo":"bar"}'
+		);
+		expect( getReportKey( 'products', 'paid', reportQuery ) ).toBe(
+			'products:paid:{"foo":"bar"}'
+		);
+	} );
+
+	it( 'should get the same key regardless of the property order within the `reportQuery` object', () => {
+		const sameKey = '::{"apple":"","banana":"","cat":"","dog":""}';
+
+		let reportQuery = {
+			apple: '',
+			banana: '',
+			cat: '',
+			dog: '',
+		};
+
+		expect( getReportKey( '', '', reportQuery ) ).toBe( sameKey );
+
+		reportQuery = {
+			dog: '',
+			cat: '',
+			banana: '',
+			apple: '',
+		};
+
+		expect( getReportKey( '', '', reportQuery ) ).toBe( sameKey );
+
+		reportQuery = {
+			banana: '',
+			dog: '',
+			apple: '',
+			cat: '',
+		};
+
+		expect( getReportKey( '', '', reportQuery ) ).toBe( sameKey );
 	} );
 } );
