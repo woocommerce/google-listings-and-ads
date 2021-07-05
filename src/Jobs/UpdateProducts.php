@@ -61,7 +61,7 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 			throw JobException::item_not_provided( 'Array of WooCommerce Product IDs' );
 		}
 
-		if ( $this->can_start( [ $ids ] ) ) {
+		if ( $this->can_schedule( [ $ids ] ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $ids ] );
 		}
 	}

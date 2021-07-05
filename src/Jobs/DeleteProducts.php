@@ -56,7 +56,7 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 			throw JobException::item_not_provided( 'Array of WooCommerce product IDs' );
 		}
 
-		if ( $this->can_start( [ $id_map ] ) ) {
+		if ( $this->can_schedule( [ $id_map ] ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $id_map ] );
 		}
 	}
