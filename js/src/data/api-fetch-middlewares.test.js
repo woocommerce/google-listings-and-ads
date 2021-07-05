@@ -26,101 +26,117 @@ describe( 'createErrorResponseCatcher', () => {
 
 	const passReject = ( response ) => Promise.reject( response );
 
-	let optionsDefaultParse;
-	let optionsDontParse;
-	let optionsOtherNamespace;
-
-	beforeEach( () => {
-		optionsDefaultParse = { path: `${ API_NAMESPACE }/hi` };
-		optionsDontParse = { path: `${ API_NAMESPACE }/hi`, parse: false };
-		optionsOtherNamespace = { path: '' };
-	} );
-
-	describe( `don't watch requests if the path doesn't belong to this plugin's namespace`, () => {
-		it( 'should call next middleware with the original options', async () => {
-			const mockNext = jest.fn();
-			const middleware = createErrorResponseCatcher();
-			await middleware( optionsOtherNamespace, mockNext );
-
-			expect( mockNext ).toHaveBeenCalledTimes( 1 );
-			expect( mockNext ).toHaveBeenCalledWith( optionsOtherNamespace );
+	describe( `When the path doesn't belong to this plugin's namespace, shouldn't watch requests`, () => {
+		let optionsOtherNamespace;
+		beforeEach( () => {
+			optionsOtherNamespace = { path: '' };
 		} );
 
 		it( `should not invoke this middleware's callback`, async () => {
 			const errorMessage = {};
 			const next = () => Promise.reject( errorMessage );
-			const mockCallback = jest.fn().mockImplementation( passReject );
-			const middleware = createErrorResponseCatcher( mockCallback );
+			const callback = jest
+				.fn()
+				.mockImplementation( passReject )
+				.mockName( "middleware's callback" );
+			const middleware = createErrorResponseCatcher( callback );
+
 			const promise = middleware( optionsOtherNamespace, next );
 
 			await expect( promise ).rejects.toBe( errorMessage );
-			expect( mockCallback ).toHaveBeenCalledTimes( 0 );
+			expect( callback ).toHaveBeenCalledTimes( 0 );
+		} );
+
+		it( 'should call next middleware with the original options', async () => {
+			const next = jest.fn().mockName( 'next middleware' );
+			const middleware = createErrorResponseCatcher();
+			await middleware( optionsOtherNamespace, next );
+
+			expect( next ).toHaveBeenCalledTimes( 1 );
+			expect( next ).toHaveBeenCalledWith( optionsOtherNamespace );
 		} );
 	} );
 
-	describe( 'force overwrite `parse` option to `false` and return the same result', () => {
-		let middleware;
+	describe( `When the path belongs to this plugin's namespace`, () => {
+		let optionsDefaultParse;
+		let optionsDontParse;
 
 		beforeEach( () => {
-			middleware = createErrorResponseCatcher( passReject );
+			optionsDefaultParse = { path: `${ API_NAMESPACE }/hi` };
+			optionsDontParse = { path: `${ API_NAMESPACE }/hi`, parse: false };
 		} );
 
-		it( 'should resolve parsed response body by default in a successful response', async () => {
-			const handler = createFetchHandler( 200, { data: 'hi' } );
-			const result = await middleware( optionsDefaultParse, handler );
+		describe( 'should overwrite default value of `parse` option to `false` and return the same result', () => {
+			let middleware;
 
-			expect( result ).toEqual( { data: 'hi' } );
-		} );
-
-		it( 'should reject parsed response body by default in a failed response', async () => {
-			const handler = createFetchHandler( 418, { message: 'oops' } );
-			const promise = middleware( optionsDefaultParse, handler );
-
-			await expect( promise ).rejects.toEqual( { message: 'oops' } );
-		} );
-
-		it( 'should resolve response instance when indicating `parse: false` in a successful response', async () => {
-			// The response instance should be passed through directly without any parse process of this middleware.
-			const responseInstance = {};
-			const next = () => Promise.resolve( responseInstance );
-			const promise = middleware( optionsDontParse, next );
-
-			await expect( promise ).resolves.toBe( responseInstance );
-		} );
-
-		it( 'should reject response instance when indicating `parse: false` in a failed response', async () => {
-			// The response instance should be passed through directly without any parse process of this middleware.
-			const responseInstance = {};
-			const next = () => Promise.reject( responseInstance );
-			const promise = middleware( optionsDontParse, next );
-
-			await expect( promise ).rejects.toBe( responseInstance );
-		} );
-	} );
-
-	describe( 'Catch error response', () => {
-		it( 'should invoke callback function with response instance regardless of the original `parse` option', async () => {
-			const mockCallback = jest.fn().mockImplementation( passReject );
-			const middleware = createErrorResponseCatcher( mockCallback );
-
-			let handler = createFetchHandler( 418, { message: 'oops' } );
-			let promise = middleware( optionsDefaultParse, handler );
-
-			await expect( promise ).rejects.toMatchObject( expect.anything() );
-			expect( mockCallback ).toHaveBeenCalledTimes( 1 );
-			expect( mockCallback ).toHaveBeenCalledWith( {
-				status: 418,
-				json: expect.any( Function ),
+			beforeEach( () => {
+				middleware = createErrorResponseCatcher( passReject );
 			} );
 
-			handler = createFetchHandler( 500, { message: 'ouch' } );
-			promise = middleware( optionsDontParse, handler );
+			it( 'For a successful response, should resolve parsed response body by default', async () => {
+				const handler = createFetchHandler( 200, { data: 'hi' } );
+				const result = await middleware( optionsDefaultParse, handler );
 
-			await expect( promise ).rejects.toMatchObject( expect.anything() );
-			expect( mockCallback ).toHaveBeenCalledTimes( 2 );
-			expect( mockCallback ).toHaveBeenCalledWith( {
-				status: 500,
-				json: expect.any( Function ),
+				expect( result ).toEqual( { data: 'hi' } );
+			} );
+
+			it( 'For a failed response, should reject parsed response body by default', async () => {
+				const handler = createFetchHandler( 418, { message: 'oops' } );
+				const promise = middleware( optionsDefaultParse, handler );
+
+				await expect( promise ).rejects.toEqual( { message: 'oops' } );
+			} );
+
+			it( 'When given `parse: false` option, for a successful response, should resolve with the response instance', async () => {
+				// The response instance should be passed through directly without any parse process of this middleware.
+				const responseInstance = {};
+				const next = () => Promise.resolve( responseInstance );
+				const promise = middleware( optionsDontParse, next );
+
+				await expect( promise ).resolves.toBe( responseInstance );
+			} );
+
+			it( 'when given `parse: false` option, for a failed response, should reject with the response instance', async () => {
+				// The response instance should be passed through directly without any parse process of this middleware.
+				const responseInstance = {};
+				const next = () => Promise.reject( responseInstance );
+				const promise = middleware( optionsDontParse, next );
+
+				await expect( promise ).rejects.toBe( responseInstance );
+			} );
+		} );
+
+		describe( 'should catch error response', () => {
+			it( 'Regardless of the original `parse` option, should invoke callback function with response instance', async () => {
+				const callback = jest
+					.fn()
+					.mockImplementation( passReject )
+					.mockName( "middleware's callback" );
+				const middleware = createErrorResponseCatcher( callback );
+
+				let handler = createFetchHandler( 418, { message: 'oops' } );
+				let promise = middleware( optionsDefaultParse, handler );
+
+				await expect( promise ).rejects.toMatchObject(
+					expect.anything()
+				);
+				expect( callback ).toHaveBeenCalledTimes( 1 );
+				expect( callback ).toHaveBeenCalledWith( {
+					status: 418,
+					json: expect.any( Function ),
+				} );
+
+				handler = createFetchHandler( 500, { message: 'ouch' } );
+				promise = middleware( optionsDontParse, handler );
+
+				await expect( promise ).rejects.toMatchObject(
+					expect.anything()
+				);
+				expect( callback ).toHaveBeenCalledTimes( 2 );
+				expect( callback ).toHaveBeenCalledWith( {
+					status: 500,
+					json: expect.any( Function ),
+				} );
 			} );
 		} );
 	} );
