@@ -1,7 +1,13 @@
 /**
  * Internal dependencies
  */
-import { getReportQuery, getReportKey, freeFields, paidFields } from './utils';
+import {
+	getReportQuery,
+	getReportKey,
+	calculateDelta,
+	freeFields,
+	paidFields,
+} from './utils';
 
 /**
  * Calls given function with all combinations of possible categories and dataReferences.
@@ -150,5 +156,41 @@ describe( 'getReportKey', () => {
 		};
 
 		expect( getReportKey( '', '', reportQuery ) ).toBe( sameKey );
+	} );
+} );
+
+describe( 'calculateDelta', () => {
+	it( 'should return null if any parameter to be calculated is not a number', () => {
+		expect( calculateDelta() ).toBeNull();
+		expect( calculateDelta( 1 ) ).toBeNull();
+
+		expect( calculateDelta( 1, null ) ).toBeNull();
+		expect( calculateDelta( undefined, 1 ) ).toBeNull();
+
+		expect( calculateDelta( 1, '' ) ).toBeNull();
+		expect( calculateDelta( '1', 1 ) ).toBeNull();
+
+		expect( calculateDelta( true, 1 ) ).toBeNull();
+		expect( calculateDelta( 1, {} ) ).toBeNull();
+	} );
+
+	it( 'should return null if the result is not finite', () => {
+		expect( calculateDelta( 1, 0 ) ).toBeNull();
+		expect( calculateDelta( NaN, 1 ) ).toBeNull();
+	} );
+
+	it( 'should return 0 if both base and value are 0', () => {
+		expect( calculateDelta( 0, 0 ) ).toBe( 0 );
+	} );
+
+	it( 'should return delta percentage rounded to second decimal', () => {
+		expect( calculateDelta( 20, 10 ) ).toBe( 100 );
+		expect( calculateDelta( 25, 10 ) ).toBe( 150 );
+
+		expect( calculateDelta( 0, 10 ) ).toBe( -100 );
+		expect( calculateDelta( 5, 10 ) ).toBe( -50 );
+
+		expect( calculateDelta( 4, 3 ) ).toBe( 33.33 );
+		expect( calculateDelta( 5, 3 ) ).toBe( 66.67 );
 	} );
 } );

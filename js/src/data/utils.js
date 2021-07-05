@@ -151,9 +151,10 @@ export const fieldsToPerformance = (
  *
  * @param {number} [value] The primary report field fetched from report API.
  * @param {number} [base] The secondary report field fetched from report API.
- * @return {number | null} The calculated performance data of each metric. `null` if any number is missing, or the result is not finite.
+ * @return {number | null} The delta percentage calculated by the `value` compared to the `base` and then rounded to second decimal.
+ *                         `null` if any number is not number type, or the result is not finite.
  */
-function calculateDelta( value, base ) {
+export function calculateDelta( value, base ) {
 	let delta = null;
 	if ( typeof value === 'number' && typeof base === 'number' ) {
 		delta = 0;
