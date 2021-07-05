@@ -47,7 +47,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * @param array $args
 	 */
-	public function start( array $args = [] ) {
+	public function schedule( array $args = [] ) {
 		$this->schedule_create_batch_action( 1 );
 	}
 

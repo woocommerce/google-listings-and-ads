@@ -31,10 +31,10 @@ interface ActionSchedulerJobInterface extends JobInterface {
 	public function can_schedule( $args = [] ): bool;
 
 	/**
-	 * Start the job.
+	 * Schedule the job.
 	 *
 	 * @param array $args
 	 */
-	public function start( array $args = [] );
+	public function schedule( array $args = [] );
 
 }

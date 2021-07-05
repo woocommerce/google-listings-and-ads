@@ -51,7 +51,7 @@ class JobInitializer implements Registerable, Conditional {
 				add_action(
 					$job->get_start_hook()->get_hook(),
 					function ( ...$args ) use ( $job ) {
-						$job->start( $args );
+						$job->schedule( $args );
 					},
 					10,
 					$job->get_start_hook()->get_argument_count()
