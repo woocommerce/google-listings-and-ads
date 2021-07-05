@@ -44,13 +44,16 @@ describe( 'createErrorResponseCatcher', () => {
 		it( 'should only handle requests where the path belongs to this plugin', async () => {
 			const data = {};
 			const optionsOtherNamespace = { path: '' };
-			const callback = jest.fn().mockImplementation( ( options ) => {
+			const mockCallback = jest.fn().mockImplementation( ( options ) => {
 				expect( options ).toBe( optionsOtherNamespace );
 				return data;
 			} );
 
-			const result = await middleware( optionsOtherNamespace, callback );
-			expect( callback ).toHaveBeenCalledTimes( 1 );
+			const result = await middleware(
+				optionsOtherNamespace,
+				mockCallback
+			);
+			expect( mockCallback ).toHaveBeenCalledTimes( 1 );
 			expect( result ).toBe( data );
 		} );
 
@@ -85,14 +88,14 @@ describe( 'createErrorResponseCatcher', () => {
 
 	describe( 'Catch error response', () => {
 		it( 'should invoke callback function with response instance regardless of the original `parse` option', async () => {
-			const callback = jest.fn().mockImplementation( passReject );
-			const middleware = createErrorResponseCatcher( callback );
+			const mockCallback = jest.fn().mockImplementation( passReject );
+			const middleware = createErrorResponseCatcher( mockCallback );
 
 			let handler = createFetchHandler( 418, { message: 'oops' } );
 			let promise = middleware( optionsDefaultParse, handler );
 			await expect( promise ).rejects.toMatchObject( expect.anything() );
-			expect( callback ).toHaveBeenCalledTimes( 1 );
-			expect( callback ).toHaveBeenCalledWith( {
+			expect( mockCallback ).toHaveBeenCalledTimes( 1 );
+			expect( mockCallback ).toHaveBeenCalledWith( {
 				status: 418,
 				json: expect.any( Function ),
 			} );
@@ -100,8 +103,8 @@ describe( 'createErrorResponseCatcher', () => {
 			handler = createFetchHandler( 500, { message: 'ouch' } );
 			promise = middleware( optionsDontParse, handler );
 			await expect( promise ).rejects.toMatchObject( expect.anything() );
-			expect( callback ).toHaveBeenCalledTimes( 2 );
-			expect( callback ).toHaveBeenCalledWith( {
+			expect( mockCallback ).toHaveBeenCalledTimes( 2 );
+			expect( mockCallback ).toHaveBeenCalledWith( {
 				status: 500,
 				json: expect.any( Function ),
 			} );
