@@ -4,8 +4,23 @@
 import { API_NAMESPACE } from './constants';
 
 /**
+ * Parse the response to JSON if needed.
+ *
+ * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/api-fetch%405.1.1/packages/api-fetch/src/utils/response.js#L20
+ * @param {Response} response Response to be optionally parsed.
+ * @param {boolean} shouldParseResponse `true` - if we should try to parse response to JSON.
+ * @return {Response|Promise} Non-parsed `response`, or promise for parsed JSON. Rejects with `response`, if parsing fails.
+ */
+async function responseOrJSON( response, shouldParseResponse ) {
+	if ( shouldParseResponse ) {
+		return response.json ? response.json() : Promise.reject( response );
+	}
+	return response;
+}
+
+/**
  * @callback onErrorResponseCallback
- * @param {Object} response The error response instance.
+ * @param {Response} response The error response instance.
  * @return {Promise<any>|any} Reject or throw the response error if want to continue original error handling process.
  *                            Otherwise, resolve recovery result if the error could be processed here.
  */
@@ -27,30 +42,24 @@ export function createErrorResponseCatcher( onErrorResponse ) {
 
 		const { parse: shouldParseResponse = true } = options;
 
+		// Call onErrorResponse callback, then parse its fullfilment value to JSON if needed (and possible).
 		return next( { ...options, parse: false } )
 			.catch( onErrorResponse )
-			.catch( ( response ) => {
-				if ( shouldParseResponse && response.json ) {
-					return response
-						.json()
-						.then( ( errMessage ) => Promise.reject( errMessage ) );
-				}
-
-				throw response;
+			.catch( async ( response ) => {
+				// Try parsing the rejection reason.
+				// Reject with the response, parsed to JSON if required and possible.
+				return Promise.reject(
+					await responseOrJSON( response, shouldParseResponse )
+				);
 			} )
 			.then( ( response ) => {
+				// Parse the "recovered" value.
 				// Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/api-fetch%405.1.1/packages/api-fetch/src/utils/response.js#L14-L24
-				if ( shouldParseResponse ) {
-					if ( response.status === 204 ) {
-						return null;
-					}
-
-					return response.json
-						? response.json()
-						: Promise.reject( response );
+				if ( shouldParseResponse && response.status === 204 ) {
+					return null;
 				}
 
-				return response;
+				return responseOrJSON( response, shouldParseResponse );
 			} );
 	};
 }
