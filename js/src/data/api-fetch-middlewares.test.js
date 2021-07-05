@@ -26,8 +26,13 @@ describe( 'createErrorResponseCatcher', () => {
 
 	const passReject = ( response ) => Promise.reject( response );
 
-	const optionsDefaultParse = { path: `${ API_NAMESPACE }/hi` };
-	const optionsDontParse = { path: `${ API_NAMESPACE }/hi`, parse: false };
+	let optionsDefaultParse;
+	let optionsDontParse;
+
+	beforeEach( () => {
+		optionsDefaultParse = { path: `${ API_NAMESPACE }/hi` };
+		optionsDontParse = { path: `${ API_NAMESPACE }/hi`, parse: false };
+	} );
 
 	describe( 'force overwrite `parse` option to `false` and return the same result', () => {
 		let middleware;
