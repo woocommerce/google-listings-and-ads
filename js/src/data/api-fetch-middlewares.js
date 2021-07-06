@@ -11,7 +11,7 @@ import { API_NAMESPACE } from './constants';
  * @param {boolean} shouldParseResponse `true` - if we should try to parse response to JSON.
  * @return {Response|Promise} Non-parsed `response`, or promise for parsed JSON. Rejects with `response`, if parsing fails.
  */
-async function responseOrJSON( response, shouldParseResponse ) {
+function responseOrJSON( response, shouldParseResponse ) {
 	if ( shouldParseResponse ) {
 		return response.json ? response.json() : Promise.reject( response );
 	}
