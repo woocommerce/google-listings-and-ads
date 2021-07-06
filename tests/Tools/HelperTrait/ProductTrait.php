@@ -184,6 +184,71 @@ trait ProductTrait {
 	}
 
 	/**
+	 * Create a dummy variation product or configure an existing product object with dummy data.
+	 *
+	 * @param WC_Product_Variable|null $product Product object to configure, or null to create a new one.
+	 *
+	 * @return WC_Product_Variable
+	 */
+	protected function create_variation_product( $product = null, $props = [] ) {
+		$is_new_product = is_null( $product );
+		if ( $is_new_product ) {
+			$product = new WC_Product_Variable();
+		}
+
+		$default_props = [
+			'name' => 'Dummy Variable Product',
+			'sku'  => 'DUMMY VARIABLE SKU',
+		];
+
+		$product->set_props( array_merge( $default_props, $props ) );
+
+		$attributes = [
+			WC_Helper_Product::create_product_attribute_object( 'size', [ 'small', 'large', 'huge' ] ),
+		];
+
+		$product->set_attributes( $attributes );
+		$product->save();
+
+		$variations = [];
+
+		$variations[] = WC_Helper_Product::create_product_variation_object(
+			$product->get_id(),
+			'DUMMY SKU VARIABLE SMALL',
+			10,
+			[ 'pa_size' => 'small' ]
+		);
+
+		$variations[] = WC_Helper_Product::create_product_variation_object(
+			$product->get_id(),
+			'DUMMY SKU VARIABLE LARGE',
+			15,
+			[ 'pa_size' => 'large' ]
+		);
+
+		$variations[] = WC_Helper_Product::create_product_variation_object(
+			$product->get_id(),
+			'DUMMY SKU VARIABLE HUGE',
+			15,
+			[ 'pa_size' => 'huge' ]
+		);
+
+		if ( $is_new_product ) {
+			return wc_get_product( $product->get_id() );
+		}
+
+		$variation_ids = array_map(
+			function ( $variation ) {
+				return $variation->get_id();
+			},
+			$variations
+		);
+		$product->set_children( $variation_ids );
+
+		return $product;
+	}
+
+	/**
 	 * @return array
 	 */
 	public function get_sample_attributes(): array {
