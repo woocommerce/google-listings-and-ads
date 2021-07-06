@@ -45,7 +45,7 @@ class GoogleProductFeedValidator extends RequirementValidator {
 				'deactivated_plugin',
 				function( $plugin ) {
 					if ( 'woocommerce-product-feeds/woocommerce-gpf.php' === $plugin ) {
-						delete_transient( $this->get_slug() . '_' . TransientsInterface::MC_STATUSES );
+						woogle_get_container()->get( MerchantStatuses::class )->clear_cache();
 					}
 				}
 			);
