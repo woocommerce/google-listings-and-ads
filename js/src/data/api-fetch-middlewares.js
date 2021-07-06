@@ -40,6 +40,9 @@ export function createErrorResponseCatcher( onErrorResponse ) {
 			return next( options );
 		}
 
+		// To align with the original interface, set the default value of `parse` to `true`. Ref:
+		// - https://github.com/WordPress/gutenberg/tree/%40wordpress/api-fetch%405.1.1/packages/api-fetch#parse-boolean-default-true
+		// - https://github.com/WordPress/gutenberg/blob/%40wordpress/api-fetch%405.1.1/packages/api-fetch/src/index.js#L89
 		const { parse: shouldParseResponse = true } = options;
 
 		// Call onErrorResponse callback when receiving error response,
