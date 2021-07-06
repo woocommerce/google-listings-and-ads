@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -13,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use WC_Product;
 use WC_Product_Variable;
 
 defined( 'ABSPATH' ) || exit;
@@ -105,8 +105,15 @@ class SyncerHooks implements Service, Registerable {
 			return;
 		}
 
-		$update = function ( int $product_id ) {
-			$this->handle_update_product( $product_id );
+		$update_by_object = function ( int $product_id, WC_Product $product ) {
+			$this->handle_update_products( [ $product ] );
+		};
+
+		$update_by_id = function ( int $product_id ) {
+			$product = $this->wc->maybe_get_product( $product_id );
+			if ( $product instanceof WC_Product ) {
+				$this->handle_update_products( [ $product ] );
+			}
 		};
 
 		$pre_delete = function ( int $product_id ) {
@@ -118,13 +125,13 @@ class SyncerHooks implements Service, Registerable {
 		};
 
 		// when a product is added / updated, schedule a update job.
-		add_action( 'woocommerce_new_product', $update, 90 );
-		add_action( 'woocommerce_update_product', $update, 90 );
-		add_action( 'woocommerce_new_product_variation', $update, 90 );
-		add_action( 'woocommerce_update_product_variation', $update, 90 );
+		add_action( 'woocommerce_new_product', $update_by_object, 90, 2 );
+		add_action( 'woocommerce_update_product', $update_by_object, 90, 2 );
+		add_action( 'woocommerce_new_product_variation', $update_by_object, 90, 2 );
+		add_action( 'woocommerce_update_product_variation', $update_by_object, 90, 2 );
 
 		// if we don't attach to these we miss product gallery updates.
-		add_action( 'woocommerce_process_product_meta', $update, 90 );
+		add_action( 'woocommerce_process_product_meta', $update_by_id, 90 );
 
 		// when a product is trashed or removed, schedule a delete job.
 		add_action( 'wp_trash_post', $pre_delete, 90 );
@@ -136,7 +143,7 @@ class SyncerHooks implements Service, Registerable {
 		add_action( 'woocommerce_trash_product_variation', $delete, 90 );
 
 		// when a product is restored from the trash, schedule a update job.
-		add_action( 'untrashed_post', $update, 90 );
+		add_action( 'untrashed_post', $update_by_id, 90 );
 
 		// exclude the sync meta data when duplicating the product
 		add_action(
@@ -151,49 +158,55 @@ class SyncerHooks implements Service, Registerable {
 	/**
 	 * Handle updating of a product.
 	 *
-	 * @param int $product_id The product ID of the product being saved.
+	 * @param WC_Product[] $products The products being saved.
 	 *
 	 * @return void
 	 */
-	protected function handle_update_product( int $product_id ) {
-		try {
-			$product = $this->wc->get_product( $product_id );
-		} catch ( InvalidValue $exception ) {
-			return;
-		}
+	protected function handle_update_products( array $products ) {
+		$products_to_update = [];
+		$products_to_delete = [];
+		foreach ( $products as $product ) {
+			$product_id = $product->get_id();
 
-		// Bail if an event is already scheduled for this product in the current request
-		if ( $this->already_scheduled( $product_id ) ) {
-			return;
-		}
-
-		// If it's a variable product we handle each variation separately
-		if ( $product instanceof WC_Product_Variable ) {
-			foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
-				$this->handle_update_product( $variation->get_id() );
+			// Bail if an event is already scheduled for this product in the current request
+			if ( $this->already_scheduled( $product_id ) ) {
+				continue;
 			}
 
-			return;
+			// If it's a variable product we handle each variation separately
+			if ( $product instanceof WC_Product_Variable ) {
+				$this->handle_update_products( $product->get_available_variations( 'objects' ) );
+
+				continue;
+			}
+
+			// Schedule an update job if product sync is enabled.
+			if ( $this->product_helper->is_sync_ready( $product ) ) {
+				$this->product_helper->mark_as_pending( $product );
+				$products_to_update[] = $product->get_id();
+				$this->set_already_scheduled( $product_id );
+			} elseif ( $this->product_helper->is_product_synced( $product ) ) {
+				// Delete the product from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
+				$products_to_delete[] = $product;
+				$this->set_already_scheduled( $product_id );
+
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Deleting product (ID: %s) from Google Merchant Center because it is not ready to be synced.', $product->get_id() ),
+					__METHOD__
+				);
+			} else {
+				$this->product_helper->mark_as_unsynced( $product );
+			}
 		}
 
-		// Schedule an update job if product sync is enabled.
-		if ( $this->product_helper->is_sync_ready( $product ) ) {
-			$this->product_helper->mark_as_pending( $product );
-			$this->update_products_job->start( [ [ $product->get_id() ] ] );
-			$this->set_already_scheduled( $product_id );
-		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
-			// Delete the product from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
-			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
-			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
-			$this->set_already_scheduled( $product_id );
+		if ( ! empty( $products_to_update ) ) {
+			$this->update_products_job->start( [ $products_to_update ] );
+		}
 
-			do_action(
-				'woocommerce_gla_debug_message',
-				sprintf( 'Deleting product (ID: %s) from Google Merchant Center because it is not ready to be synced.', $product->get_id() ),
-				__METHOD__
-			);
-		} else {
-			$this->product_helper->mark_as_unsynced( $product );
+		if ( ! empty( $products_to_delete ) ) {
+			$request_entries = $this->batch_helper->generate_delete_request_entries( $products_to_delete );
+			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 		}
 	}
 
@@ -219,14 +232,10 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-		try {
-			$product = $this->wc->get_product( $product_id );
-		} catch ( InvalidValue $exception ) {
-			return;
-		}
+		$product = $this->wc->maybe_get_product( $product_id );
 
 		// each variation is passed to this method separately so we don't need to delete the variable product
-		if ( ! $product instanceof WC_Product_Variable && $this->product_helper->is_product_synced( $product ) ) {
+		if ( $product instanceof WC_Product && ! $product instanceof WC_Product_Variable && $this->product_helper->is_product_synced( $product ) ) {
 			$this->delete_requests_map[ $product_id ] = $this->batch_helper->generate_delete_request_entries( [ $product ] );
 		}
 	}
