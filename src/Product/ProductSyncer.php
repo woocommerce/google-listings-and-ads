@@ -261,16 +261,9 @@ class ProductSyncer implements Service {
 		$internal_error_ids = [];
 		foreach ( $invalid_products as $invalid_product ) {
 			$google_product_id = $invalid_product->get_google_product_id();
-			if ( empty( $google_product_id ) ) {
-				continue;
-			}
-
-			$wc_product_id = $invalid_product->get_wc_product_id();
-			try {
-				$wc_product = $this->wc->get_product( $wc_product_id );
-			} catch ( InvalidValue $exception ) {
-				// log and ignore if the WooCommerce product can't be found
-				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+			$wc_product_id     = $invalid_product->get_wc_product_id();
+			$wc_product        = $this->wc->maybe_get_product( $wc_product_id );
+			if ( ! $wc_product instanceof WC_Product || empty( $google_product_id ) ) {
 				continue;
 			}
 
