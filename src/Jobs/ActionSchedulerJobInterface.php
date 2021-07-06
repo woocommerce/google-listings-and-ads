@@ -22,19 +22,19 @@ interface ActionSchedulerJobInterface extends JobInterface {
 	public function get_process_item_hook(): string;
 
 	/**
-	 * Can the job start.
+	 * Can the job be scheduled.
 	 *
 	 * @param array|null $args
 	 *
-	 * @return bool Returns true if the job can start.
+	 * @return bool Returns true if the job can be scheduled.
 	 */
-	public function can_start( $args = [] ): bool;
+	public function can_schedule( $args = [] ): bool;
 
 	/**
-	 * Start the job.
+	 * Schedule the job.
 	 *
 	 * @param array $args
 	 */
-	public function start( array $args = [] );
+	public function schedule( array $args = [] );
 
 }

@@ -1027,7 +1027,7 @@ class ConnectionTest implements Service, Registerable {
 					// schedule a job
 					/** @var UpdateProducts $update_job */
 					$update_job = $this->container->get( UpdateProducts::class );
-					$update_job->start( [ [ $product->get_id() ] ] );
+					$update_job->schedule( [ [ $product->get_id() ] ] );
 					$this->response = 'Successfully scheduled a job to sync the product ' . $product->get_id();
 				}
 			} else {
@@ -1061,7 +1061,7 @@ class ConnectionTest implements Service, Registerable {
 				// schedule a job
 				/** @var UpdateAllProducts $update_job */
 				$update_job = $this->container->get( UpdateAllProducts::class );
-				$update_job->start();
+				$update_job->schedule();
 				$this->response = 'Successfully scheduled a job to sync all products!';
 			}
 		}
@@ -1092,7 +1092,7 @@ class ConnectionTest implements Service, Registerable {
 				// schedule a job
 				/** @var DeleteAllProducts $delete_job */
 				$delete_job = $this->container->get( DeleteAllProducts::class );
-				$delete_job->start();
+				$delete_job->schedule();
 				$this->response = 'Successfully scheduled a job to delete all synced products!';
 			}
 		}
@@ -1126,7 +1126,7 @@ class ConnectionTest implements Service, Registerable {
 				// schedule a job
 				/** @var CleanupProductsJob $delete_job */
 				$delete_job = $this->container->get( CleanupProductsJob::class );
-				$delete_job->start();
+				$delete_job->schedule();
 				$this->response = 'Successfully scheduled a job to cleanup all products!';
 			}
 		}

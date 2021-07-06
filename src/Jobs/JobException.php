@@ -52,7 +52,7 @@ class JobException extends RuntimeException implements GoogleListingsAndAdsExcep
 		return new static(
 			sprintf(
 				/* translators: %s: the job name */
-				__( 'The "%s" job was stopped because it\'s failure rate is above the allowed threshold.', 'google-listings-and-ads' ),
+				__( 'The "%s" job was stopped because its failure rate is above the allowed threshold.', 'google-listings-and-ads' ),
 				$job_name
 			)
 		);
