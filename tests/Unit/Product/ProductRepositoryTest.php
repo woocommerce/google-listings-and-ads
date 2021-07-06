@@ -37,16 +37,16 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 
 		$results = $this->product_repository->find();
 
-		$variations = array_map( 'wc_get_product', $variable_product->get_children() );
-		$this->assertCount( count( $variations ) + 2, $results );
+		$expected = array_merge(
+			[
+				wc_get_product( $simple_product->get_id() ),
+				wc_get_product( $variable_product->get_id() ),
+			],
+			array_map( 'wc_get_product', $variable_product->get_children() )
+		);
+		$this->assertCount( count( $expected ), $results );
 		$this->assertEqualSets(
-			array_merge(
-				[
-					wc_get_product( $simple_product->get_id() ),
-					wc_get_product( $variable_product->get_id() ),
-				],
-				$variations
-			),
+			$expected,
 			$results
 		);
 	}
