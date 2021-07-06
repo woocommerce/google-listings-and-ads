@@ -88,7 +88,7 @@ class WC {
 	}
 
 	/**
-	 * Get a WooCommerce product if it exits or return null if it doesn't
+	 * Get a WooCommerce product if it exists or return null if it doesn't
 	 *
 	 * @param int $product_id
 	 *
