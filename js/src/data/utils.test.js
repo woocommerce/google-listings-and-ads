@@ -74,7 +74,7 @@ describe( 'getReportQuery', () => {
 		} );
 	} );
 
-	it( 'should have no `ids` field if the query does not contain `programs` or `products`', () => {
+	it( 'When the query does not contain `programs` or `products`, should have no `ids` field', () => {
 		forAnyCategoryAndDateReference( ( category, dateReference ) => {
 			const query = {};
 
@@ -84,7 +84,7 @@ describe( 'getReportQuery', () => {
 		} );
 	} );
 
-	it( 'should have `ids` field if the programs report query contains `programs`', () => {
+	it( 'When the programs report query contains `programs`, should have `ids` field', () => {
 		const query = {
 			programs: '123,456',
 		};
@@ -94,7 +94,7 @@ describe( 'getReportQuery', () => {
 		).toBe( query.programs );
 	} );
 
-	it( 'should have transformed `ids` field if the products report query contains `products`', () => {
+	it( 'When the products report query contains `products`, should have transformed `ids` field', () => {
 		// Search single product.
 		const oneProductQuery = {
 			products: '2468',
@@ -129,7 +129,7 @@ describe( 'getReportKey', () => {
 		);
 	} );
 
-	it( 'should get the same key regardless of the property order within the `reportQuery` object', () => {
+	it( 'Regardless of the property order within the `reportQuery` object, should get the same key', () => {
 		const sameKey = '::{"apple":"","banana":"","cat":"","dog":""}';
 
 		let reportQuery = {
@@ -162,7 +162,7 @@ describe( 'getReportKey', () => {
 } );
 
 describe( 'calculateDelta', () => {
-	it( 'should return null if any parameter to be calculated is not a number', () => {
+	it( 'When any given parameter is not a number, should return null', () => {
 		expect( calculateDelta() ).toBeNull();
 		expect( calculateDelta( 1 ) ).toBeNull();
 
@@ -176,12 +176,12 @@ describe( 'calculateDelta', () => {
 		expect( calculateDelta( 1, {} ) ).toBeNull();
 	} );
 
-	it( 'should return null if the result is not finite', () => {
+	it( 'When the result is not finite, should return null', () => {
 		expect( calculateDelta( 1, 0 ) ).toBeNull();
 		expect( calculateDelta( NaN, 1 ) ).toBeNull();
 	} );
 
-	it( 'should return 0 if both base and value are 0', () => {
+	it( 'When both `base` and `value` are 0, should return 0', () => {
 		expect( calculateDelta( 0, 0 ) ).toBe( 0 );
 	} );
 
@@ -208,7 +208,7 @@ describe( 'mapReportFieldsToPerformance', () => {
 		expect( keys ).toEqual( expect.arrayContaining( primaryKeys ) );
 	} );
 
-	it( "should take specified `fields` as metric field keys if it's given", () => {
+	it( 'When the specified `fields` is given, should take it as metric field keys', () => {
 		const primary = { hello: 0, howdy: 1 };
 		const performance = mapReportFieldsToPerformance(
 			primary,
@@ -221,7 +221,7 @@ describe( 'mapReportFieldsToPerformance', () => {
 		expect( keys ).toEqual( expect.arrayContaining( freeFields ) );
 	} );
 
-	it( 'should flag no anticipated data is missing if the same field exists in both `primary` and `secondary`', () => {
+	it( 'When the metric field exists in both `primary` and `secondary`, should flag no anticipated data is missing', () => {
 		const performance = mapReportFieldsToPerformance( { a: 1 }, { a: 2 } );
 
 		expect( performance ).toMatchObject( {
@@ -231,7 +231,7 @@ describe( 'mapReportFieldsToPerformance', () => {
 		} );
 	} );
 
-	it( "should flag anticipated data is not returned from API if the field doesn't exists in one of `primary` and `secondary`", () => {
+	it( "When the metric field doesn't exists in one of `primary` and `secondary`, should flag anticipated data is not returned from API", () => {
 		// "a" does not exist in `secondary`
 		let performance = mapReportFieldsToPerformance( { a: 1 }, { b: 2 } );
 		expect( performance ).toMatchObject( {
