@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
@@ -10,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Exception;
 use WC_Product;
 
@@ -46,23 +48,31 @@ class ProductSyncer implements Service {
 	protected $merchant_center;
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
 	 * ProductSyncer constructor.
 	 *
 	 * @param GoogleProductService  $google_service
 	 * @param BatchProductHelper    $batch_helper
 	 * @param ProductHelper         $product_helper
 	 * @param MerchantCenterService $merchant_center
+	 * @param WC                    $wc
 	 */
 	public function __construct(
 		GoogleProductService $google_service,
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
-		MerchantCenterService $merchant_center
+		MerchantCenterService $merchant_center,
+		WC $wc
 	) {
 		$this->google_service  = $google_service;
 		$this->batch_helper    = $batch_helper;
 		$this->product_helper  = $product_helper;
 		$this->merchant_center = $merchant_center;
+		$this->wc              = $wc;
 	}
 
 	/**
@@ -251,9 +261,16 @@ class ProductSyncer implements Service {
 		$internal_error_ids = [];
 		foreach ( $invalid_products as $invalid_product ) {
 			$google_product_id = $invalid_product->get_google_product_id();
-			$wc_product_id     = $invalid_product->get_wc_product_id();
-			$wc_product        = wc_get_product( $wc_product_id );
-			if ( ! $wc_product instanceof WC_Product || empty( $google_product_id ) ) {
+			if ( empty( $google_product_id ) ) {
+				continue;
+			}
+
+			$wc_product_id = $invalid_product->get_wc_product_id();
+			try {
+				$wc_product = $this->wc->get_product( $wc_product_id );
+			} catch ( InvalidValue $exception ) {
+				// log and ignore if the WooCommerce product can't be found
+				do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 				continue;
 			}
 
