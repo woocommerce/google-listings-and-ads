@@ -189,9 +189,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->refresh_presync_product_issues();
 
 		// Delete stale issues.
-		$delete_before = clone $this->current_time;
-		$delete_before->modify( '-' . $this->get_status_lifetime() . ' seconds' );
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $delete_before );
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->current_time );
 	}
 
 	/**
