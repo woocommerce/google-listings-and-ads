@@ -13,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use WC_Product;
 use WC_Product_Variable;
 
 defined( 'ABSPATH' ) || exit;
@@ -179,15 +178,8 @@ class SyncerHooks implements Service, Registerable {
 
 		// Schedule an update job if product sync is enabled.
 		if ( $this->product_helper->is_sync_ready( $product ) ) {
-			$product_ids = $this->get_product_ids_for_sync( $product );
-
-			// Bail if we have no product IDs.
-			if ( empty( $product_ids ) ) {
-				return;
-			}
-
 			$this->product_helper->mark_as_pending( $product );
-			$this->update_products_job->start( [ $product_ids ] );
+			$this->update_products_job->start( [ [ $product->get_id() ] ] );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
 			// Delete the product from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
@@ -221,7 +213,8 @@ class SyncerHooks implements Service, Registerable {
 	}
 
 	/**
-	 * Create request entries for the product (containing its Google ID) so that we can schedule a delete job when the product is actually trashed / deleted.
+	 * Create request entries for the product (containing its Google ID) so that we can schedule a delete job when the
+	 * product is actually trashed / deleted.
 	 *
 	 * @param int $product_id
 	 */
@@ -273,25 +266,5 @@ class SyncerHooks implements Service, Registerable {
 	 */
 	protected function set_already_scheduled( int $product_id ): void {
 		$this->already_scheduled[ $product_id ] = true;
-	}
-
-	/**
-	 * Given a product, get an array of IDs that need to be synced.
-	 *
-	 * @param WC_Product $product
-	 *
-	 * @return int[]
-	 */
-	protected function get_product_ids_for_sync( WC_Product $product ): array {
-		if ( ! $product instanceof WC_Product_Variable ) {
-			return [ $product->get_id() ];
-		}
-
-		return array_map(
-			function ( WC_Product $product ) {
-				return $product->get_id();
-			},
-			$product->get_available_variations( 'objects' )
-		);
 	}
 }
