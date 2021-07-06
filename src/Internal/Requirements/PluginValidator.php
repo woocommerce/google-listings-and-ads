@@ -20,6 +20,7 @@ class PluginValidator {
 	private const PLUGINS = [
 		WCAdminValidator::class,
 		WCValidator::class,
+		GoogleProductFeedValidator::class,
 	];
 
 	/**
