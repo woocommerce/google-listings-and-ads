@@ -102,9 +102,6 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function get_batch( array $products ): BatchProductResponse {
-		if ( empty( $products ) ) {
-			return new BatchProductResponse( [], [] );
-		}
 		return $this->custom_batch( $products, self::METHOD_GET );
 	}
 
@@ -117,9 +114,6 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function insert_batch( array $products ): BatchProductResponse {
-		if ( empty( $products ) ) {
-			return new BatchProductResponse( [], [] );
-		}
 		return $this->custom_batch( $products, self::METHOD_INSERT );
 	}
 
@@ -132,9 +126,6 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	public function delete_batch( array $products ): BatchProductResponse {
-		if ( empty( $products ) ) {
-			return new BatchProductResponse( [], [] );
-		}
 		return $this->custom_batch( $products, self::METHOD_DELETE );
 	}
 
@@ -148,6 +139,10 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 	 * @throws GoogleException If there are any Google API errors.
 	 */
 	protected function custom_batch( array $products, string $method ): BatchProductResponse {
+		if ( empty( $products ) ) {
+			return new BatchProductResponse( [], [] );
+		}
+
 		$merchant_id     = $this->options->get_merchant_id();
 		$request_entries = [];
 
@@ -197,9 +192,8 @@ class GoogleProductService implements OptionsAwareInterface, Service {
 		 * @var GoogleBatchResponseEntry $response
 		 */
 		foreach ( $responses as $response ) {
-			// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			// Product entry is mapped to batchId when sending the request
-			$product_entry = $batch_id_product_map[ $response->batchId ];
+			$product_entry = $batch_id_product_map[ $response->batchId ]; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$wc_product_id = $product_entry->get_wc_product_id();
 			if ( $product_entry instanceof BatchProductRequestEntry ) {
 				$google_product_id = $product_entry->get_product()->getId();
