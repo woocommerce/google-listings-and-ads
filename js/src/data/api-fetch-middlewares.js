@@ -42,7 +42,8 @@ export function createErrorResponseCatcher( onErrorResponse ) {
 
 		const { parse: shouldParseResponse = true } = options;
 
-		// Call onErrorResponse callback, then parse its fullfilment value to JSON if needed (and possible).
+		// Call onErrorResponse callback when receiving error response,
+		// then parse its fulfillment value to JSON if needed (and possible).
 		return next( { ...options, parse: false } )
 			.catch( onErrorResponse )
 			.catch( async ( response ) => {
@@ -53,12 +54,13 @@ export function createErrorResponseCatcher( onErrorResponse ) {
 				);
 			} )
 			.then( ( response ) => {
-				// Parse the "recovered" value.
+				// Handle the successful response or the "recovered" value resolved from onErrorResponse callback.
 				// Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/api-fetch%405.1.1/packages/api-fetch/src/utils/response.js#L14-L24
 				if ( shouldParseResponse && response.status === 204 ) {
 					return null;
 				}
 
+				// Resolve with the response, parsed to JSON if required and possible.
 				return responseOrJSON( response, shouldParseResponse );
 			} );
 	};
