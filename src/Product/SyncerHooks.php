@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -11,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use WC_Product;
 use WC_Product_Variable;
 
@@ -67,24 +69,32 @@ class SyncerHooks implements Service, Registerable {
 	protected $merchant_center;
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
 	 * SyncerHooks constructor.
 	 *
 	 * @param BatchProductHelper    $batch_helper
 	 * @param ProductHelper         $product_helper
 	 * @param JobRepository         $job_repository
 	 * @param MerchantCenterService $merchant_center
+	 * @param WC                    $wc
 	 */
 	public function __construct(
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
 		JobRepository $job_repository,
-		MerchantCenterService $merchant_center
+		MerchantCenterService $merchant_center,
+		WC $wc
 	) {
 		$this->batch_helper        = $batch_helper;
 		$this->product_helper      = $product_helper;
 		$this->update_products_job = $job_repository->get( UpdateProducts::class );
 		$this->delete_products_job = $job_repository->get( DeleteProducts::class );
 		$this->merchant_center     = $merchant_center;
+		$this->wc                  = $wc;
 	}
 
 	/**
@@ -96,15 +106,15 @@ class SyncerHooks implements Service, Registerable {
 			return;
 		}
 
-		$update = function( int $product_id ) {
+		$update = function ( int $product_id ) {
 			$this->handle_update_product( $product_id );
 		};
 
-		$pre_delete = function( int $product_id ) {
+		$pre_delete = function ( int $product_id ) {
 			$this->handle_pre_delete_product( $product_id );
 		};
 
-		$delete = function( int $product_id ) {
+		$delete = function ( int $product_id ) {
 			$this->handle_delete_product( $product_id );
 		};
 
@@ -147,12 +157,14 @@ class SyncerHooks implements Service, Registerable {
 	 * @return void
 	 */
 	protected function handle_update_product( int $product_id ) {
-		$product = wc_get_product( $product_id );
+		try {
+			$product = $this->wc->get_product( $product_id );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
 
-		// Bail if:
-		// - It's not a WooCommerce product.
-		// - An event is already scheduled for this product in the current request
-		if ( ! $product instanceof WC_Product || $this->already_scheduled( $product_id ) ) {
+		// Bail if an event is already scheduled for this product in the current request
+		if ( $this->already_scheduled( $product_id ) ) {
 			return;
 		}
 
@@ -161,6 +173,7 @@ class SyncerHooks implements Service, Registerable {
 			foreach ( $product->get_available_variations( 'objects' ) as $variation ) {
 				$this->handle_update_product( $variation->get_id() );
 			}
+
 			return;
 		}
 
@@ -213,8 +226,14 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $product_id
 	 */
 	protected function handle_pre_delete_product( int $product_id ) {
-		$product = wc_get_product( $product_id );
-		if ( $product instanceof WC_Product && ! $product instanceof WC_Product_Variable && $this->product_helper->is_product_synced( $product ) ) {
+		try {
+			$product = $this->wc->get_product( $product_id );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
+
+		// each variation is passed to this method separately so we don't need to delete the variable product
+		if ( ! $product instanceof WC_Product_Variable && $this->product_helper->is_product_synced( $product ) ) {
 			$this->delete_requests_map[ $product_id ] = $this->batch_helper->generate_delete_request_entries( [ $product ] );
 		}
 	}
