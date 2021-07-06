@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
 use PHPUnit\Framework\MockObject\MockObject;
+use WC_Helper_Product;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
@@ -42,8 +43,8 @@ trait ProductTrait {
 				  ->method( 'get_parent_id' )
 				  ->willReturn( $id );
 			$child->expects( $this->any() )
-					->method( 'get_type' )
-					->willReturn( 'variation' );
+				  ->method( 'get_type' )
+				  ->willReturn( 'variation' );
 
 			$children[] = $child;
 		}
@@ -131,15 +132,15 @@ trait ProductTrait {
 	/**
 	 * @param WC_Product|int $product Product object or ID
 	 *
-	 * @return string[]
+	 * @return string
 	 */
-	public function generate_google_ids( $product ): array {
+	public function generate_google_id( $product ): string {
 		$product_id = $product;
 		if ( $product instanceof WC_Product ) {
 			$product_id = $product->get_id() ?: rand();
 		}
 
-		return [ 'online:en:US:gla_' . $product_id ];
+		return 'online:en:' . $this->get_sample_target_country() . ':gla_' . $product_id;
 	}
 
 	/**
@@ -154,6 +155,32 @@ trait ProductTrait {
 				->willReturn( $product );
 
 		return $adapted;
+	}
+
+	/**
+	 * @param int ...$product_count One or many integers each representing the number of products in each set
+	 *
+	 * @return array A multidimensional array of products based on the number of arguments provided and $set_count
+	 *
+	 * @example
+	 * ```
+	 * // Create 2 sub-arrays where the first set includes 2 products and the second set includes 4 products:
+	 * $this->create_multiple_simple_product_sets( 2, 4 ); // [ [ *, * ], [ *, *, *, * ] ]
+	 * ```
+	 *
+	 */
+	public function create_multiple_simple_product_sets( ...$product_count ): array {
+		$results = [];
+		foreach ( $product_count as $count ) {
+			$set = [];
+			for ( $i = 1; $i <= $count; $i ++ ) {
+				$product                   = WC_Helper_Product::create_simple_product();
+				$set[ $product->get_id() ] = $product;
+			}
+			$results[] = $set;
+		}
+
+		return $results;
 	}
 
 	/**
