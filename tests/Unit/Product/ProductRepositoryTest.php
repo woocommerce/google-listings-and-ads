@@ -113,6 +113,8 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 	public function test_find_by_ids() {
 		$product_1 = WC_Helper_Product::create_simple_product();
 		$product_2 = WC_Helper_Product::create_simple_product();
+		WC_Helper_Product::create_simple_product();
+		WC_Helper_Product::create_variation_product();
 
 		$ids = [
 			$product_1->get_id(),
