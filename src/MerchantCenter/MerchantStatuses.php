@@ -375,7 +375,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		 *
 		 * @since x.x.x
 		 */
-		$account_issues = apply_filters( 'woocommerce_gla_account_issues', $account_issues );
+		$account_issues = apply_filters( 'woocommerce_gla_account_issues', $account_issues, $this->current_time );
 
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
