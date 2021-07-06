@@ -5,15 +5,21 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExtensionRequirementException;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * Class GoogleProductFeedValidator
  *
+ * @since x.x.x
+ *
  * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
 class GoogleProductFeedValidator extends RequirementValidator {
+
+	use PluginHelper;
 
 	/**
 	 * Validate all requirements for the plugin to function properly.
@@ -24,33 +30,20 @@ class GoogleProductFeedValidator extends RequirementValidator {
 		try {
 			$this->validate_google_product_feed_inactive();
 		} catch ( ExtensionRequirementException $e ) {
+
 			add_filter(
 				'woocommerce_gla_account_issues',
-				function( $arr ) {
-					foreach ( $arr as &$issue ) {
-						// Make sure all issues have the source attribute to avoid erros.
-						if ( ! empty( $issue['source'] ) ) {
-							continue;
-						}
-						$issue['source'] = 'mc';
-					}
+				function( $issues ) {
+					return $this->add_conflict_issue( $issues );
+				}
+			);
 
-					array_push(
-						$arr,
-						[
-							'product_id' => '0',
-							'product'    => 'All products',
-							'code'       => 'incompatible_google_product_feed',
-							'issue'      => 'The Google Product Feed plugin may cause conflicts or unexpected results.',
-							'action'     => 'Delete or deactivate the Google Product Feed plugin from your store',
-							'action_url' => 'https://developers.google.com/shopping-content/guides/best-practices#do-not-use-api-and-feeds',
-							'created_at' => date_format( date_create(), 'Y-m-d H:i:s' ),
-							'type'       => MerchantStatuses::TYPE_ACCOUNT,
-							'severity'   => 'error',
-							'source'     => 'filter',
-						]
-					);
-					return $arr;
+			add_filter(
+				'deactivated_plugin',
+				function( $plugin ) {
+					if ( 'woocommerce-product-feeds/woocommerce-gpf.php' === $plugin ) {
+						delete_transient( $this->get_slug() . '_' . TransientsInterface::MC_STATUSES );
+					}
 				}
 			);
 		}
@@ -66,5 +59,38 @@ class GoogleProductFeedValidator extends RequirementValidator {
 		if ( defined( 'WOOCOMMERCE_GPF_VERSION' ) ) {
 			throw ExtensionRequirementException::incompatible_plugin( 'Google Product Feed' );
 		}
+	}
+
+	/**
+	 * Add an account-level issue regarding the plugin conflict
+	 * to the array of issues to be saved in the database.
+	 *
+	 * @param array $issues The current array of account-level issues
+	 *
+	 * @return array The issues with the new conflict issue included
+	 */
+	protected function add_conflict_issue( array $issues ): array {
+		foreach ( $issues as &$issue ) {
+			// Make sure all issues have the source attribute to avoid errors.
+			if ( ! empty( $issue['source'] ) ) {
+				continue;
+			}
+			$issue['source'] = 'mc';
+		}
+
+		$issues[] = [
+			'product_id' => '0',
+			'product'    => 'All products',
+			'code'       => 'incompatible_google_product_feed',
+			'issue'      => 'The Google Product Feed plugin may cause conflicts or unexpected results.',
+			'action'     => 'Delete or deactivate the Google Product Feed plugin from your store',
+			'action_url' => 'https://developers.google.com/shopping-content/guides/best-practices#do-not-use-api-and-feeds',
+			'created_at' => date_format( date_create(), 'Y-m-d H:i:s' ),
+			'type'       => MerchantStatuses::TYPE_ACCOUNT,
+			'severity'   => 'error',
+			'source'     => 'filter',
+		];
+
+		return $issues;
 	}
 }
