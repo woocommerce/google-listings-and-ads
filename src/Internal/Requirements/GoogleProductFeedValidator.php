@@ -68,11 +68,11 @@ class GoogleProductFeedValidator extends RequirementValidator {
 	 * to the array of issues to be saved in the database.
 	 *
 	 * @param array    $issues The current array of account-level issues
-	 * @param DateTime $current_time The time of the cache/issues generation.
+	 * @param DateTime $cache_created_time The time of the cache/issues generation.
 	 *
 	 * @return array The issues with the new conflict issue included
 	 */
-	protected function add_conflict_issue( array $issues, DateTime $current_time ): array {
+	protected function add_conflict_issue( array $issues, DateTime $cache_created_time ): array {
 		foreach ( $issues as &$issue ) {
 			// Make sure all issues have the source attribute to avoid errors.
 			if ( ! empty( $issue['source'] ) ) {
@@ -88,7 +88,7 @@ class GoogleProductFeedValidator extends RequirementValidator {
 			'issue'      => __( 'The Google Product Feed plugin may cause conflicts or unexpected results.', 'google-listings-and-ads' ),
 			'action'     => __( 'Deactivate the Google Product Feed plugin from your store', 'google-listings-and-ads' ),
 			'action_url' => 'https://developers.google.com/shopping-content/guides/best-practices#do-not-use-api-and-feeds',
-			'created_at' => $current_time->format( 'Y-m-d H:i:s' ),
+			'created_at' => $cache_created_time->format( 'Y-m-d H:i:s' ),
 			'type'       => MerchantStatuses::TYPE_ACCOUNT,
 			'severity'   => 'error',
 			'source'     => 'filter',

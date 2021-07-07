@@ -62,9 +62,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	public const SEVERITY_ERROR   = 'error';
 
 	/**
-	 * @var DateTime $current_time For cache age operations.
+	 * @var DateTime $cache_created_time For cache age operations.
 	 */
-	protected $current_time;
+	protected $cache_created_time;
 
 	/**
 	 * @var array Reference array of countries associated to each product+issue combo.
@@ -93,7 +93,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * MerchantStatuses constructor.
 	 */
 	public function __construct() {
-		$this->current_time = new DateTime();
+		$this->cache_created_time = new DateTime();
 	}
 
 	/**
@@ -189,7 +189,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$this->refresh_presync_product_issues();
 
 		// Delete stale issues.
-		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->current_time );
+		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
 	}
 
 	/**
@@ -355,7 +355,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		/** @var Merchant $merchant */
 		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
-		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
+		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
 		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
 			$account_issues[] = [
 				'product_id' => 0,
@@ -375,7 +375,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		 *
 		 * @since x.x.x
 		 */
-		$account_issues = apply_filters( 'woocommerce_gla_account_issues', $account_issues, $this->current_time );
+		$account_issues = apply_filters( 'woocommerce_gla_account_issues', $account_issues, $this->cache_created_time );
 
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
@@ -392,7 +392,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$product_helper = $this->container->get( ProductHelper::class );
 
 		$product_issues = [];
-		$created_at     = $this->current_time->format( 'Y-m-d H:i:s' );
+		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
 		foreach ( $validated_mc_statuses as $product ) {
 			$wc_product_id = $product_helper->get_wc_product_id( $product->getProductId() );
 
@@ -458,7 +458,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	protected function refresh_presync_product_issues(): void {
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query  = $this->container->get( MerchantIssueQuery::class );
-		$created_at   = $this->current_time->format( 'Y-m-d H:i:s' );
+		$created_at   = $this->cache_created_time->format( 'Y-m-d H:i:s' );
 		$issue_action = __( 'Update this attribute in your product data', 'google-listings-and-ads' );
 
 		/** @var ProductMetaQueryHelper $product_meta_query_helper */
@@ -559,7 +559,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$product_statistics[ MCStatus::NOT_SYNCED ] = count( $product_repository->find_mc_not_synced_product_ids() );
 
 		$this->mc_statuses = [
-			'timestamp'  => $this->current_time->getTimestamp(),
+			'timestamp'  => $this->cache_created_time->getTimestamp(),
 			'statistics' => $product_statistics,
 		];
 
