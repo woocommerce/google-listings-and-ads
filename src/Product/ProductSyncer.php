@@ -9,8 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Exception;
 use WC_Product;
 
@@ -21,12 +20,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductSyncer implements Service, MerchantCenterAwareInterface {
+class ProductSyncer implements Service {
 
 	public const FAILURE_THRESHOLD        = 5;         // Number of failed attempts allowed per FAILURE_THRESHOLD_WINDOW
 	public const FAILURE_THRESHOLD_WINDOW = '3 hours'; // PHP supported Date and Time format: https://www.php.net/manual/en/datetime.formats.php
-
-	use MerchantCenterAwareTrait;
 
 	/**
 	 * @var GoogleProductService
@@ -44,16 +41,28 @@ class ProductSyncer implements Service, MerchantCenterAwareInterface {
 	protected $product_helper;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * ProductSyncer constructor.
 	 *
-	 * @param GoogleProductService $google_service
-	 * @param BatchProductHelper   $batch_helper
-	 * @param ProductHelper        $product_helper
+	 * @param GoogleProductService  $google_service
+	 * @param BatchProductHelper    $batch_helper
+	 * @param ProductHelper         $product_helper
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( GoogleProductService $google_service, BatchProductHelper $batch_helper, ProductHelper $product_helper ) {
-		$this->google_service = $google_service;
-		$this->batch_helper   = $batch_helper;
-		$this->product_helper = $product_helper;
+	public function __construct(
+		GoogleProductService $google_service,
+		BatchProductHelper $batch_helper,
+		ProductHelper $product_helper,
+		MerchantCenterService $merchant_center
+	) {
+		$this->google_service  = $google_service;
+		$this->batch_helper    = $batch_helper;
+		$this->product_helper  = $product_helper;
+		$this->merchant_center = $merchant_center;
 	}
 
 	/**

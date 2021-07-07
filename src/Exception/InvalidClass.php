@@ -31,6 +31,24 @@ class InvalidClass extends LogicException implements GoogleListingsAndAdsExcepti
 	}
 
 	/**
+	 * Create a new instance of the exception when a class should NOT implement an interface but it does.
+	 *
+	 * @param string $class     The class name.
+	 * @param string $interface The interface name.
+	 *
+	 * @return static
+	 */
+	public static function should_not_implement( string $class, string $interface ): InvalidClass {
+		return new static(
+			sprintf(
+				'The class "%s" must NOT implement the "%s" interface.',
+				$class,
+				$interface
+			)
+		);
+	}
+
+	/**
 	 * Create a new instance of the exception when a class should override a method but does not.
 	 *
 	 * @param string $class  The class name.

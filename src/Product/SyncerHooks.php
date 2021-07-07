@@ -9,8 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WC_Product;
 use WC_Product_Variable;
@@ -24,9 +23,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface {
+class SyncerHooks implements Service, Registerable {
 
-	use MerchantCenterAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -64,21 +62,29 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	protected $delete_products_job;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * SyncerHooks constructor.
 	 *
-	 * @param BatchProductHelper $batch_helper
-	 * @param ProductHelper      $product_helper
-	 * @param JobRepository      $job_repository
+	 * @param BatchProductHelper    $batch_helper
+	 * @param ProductHelper         $product_helper
+	 * @param JobRepository         $job_repository
+	 * @param MerchantCenterService $merchant_center
 	 */
 	public function __construct(
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
-		JobRepository $job_repository
+		JobRepository $job_repository,
+		MerchantCenterService $merchant_center
 	) {
 		$this->batch_helper        = $batch_helper;
 		$this->product_helper      = $product_helper;
 		$this->update_products_job = $job_repository->get( UpdateProducts::class );
 		$this->delete_products_job = $job_repository->get( DeleteProducts::class );
+		$this->merchant_center     = $merchant_center;
 	}
 
 	/**

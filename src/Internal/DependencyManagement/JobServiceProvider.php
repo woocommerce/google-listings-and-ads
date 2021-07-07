@@ -27,6 +27,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -101,7 +102,8 @@ class JobServiceProvider extends AbstractServiceProvider {
 			SyncerHooks::class,
 			BatchProductHelper::class,
 			ProductHelper::class,
-			JobRepository::class
+			JobRepository::class,
+			MerchantCenterService::class
 		);
 
 		$this->share_with_tags( StartProductSync::class, JobRepository::class );
@@ -145,6 +147,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 				ProductSyncer::class,
 				ProductRepository::class,
 				BatchProductHelper::class,
+				MerchantCenterService::class,
 				...$arguments
 			);
 		} else {
@@ -152,6 +155,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 				$class,
 				ProductSyncer::class,
 				ProductRepository::class,
+				MerchantCenterService::class,
 				...$arguments
 			);
 		}
