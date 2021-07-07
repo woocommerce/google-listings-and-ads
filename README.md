@@ -1,4 +1,4 @@
-# Google Listings & Ads
+# Google Listings & Ads [![Build Status](https://travis-ci.com/woocommerce/google-listings-and-ads.svg?branch=trunk)](https://travis-ci.com/woocommerce/google-listings-and-ads)
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
@@ -69,11 +69,50 @@ After running `composer install` to install PHP dependencies you can use the fol
 
 ## PHPUnit
 
-After running `composer install` to install PHP dependencies you can use the following command run php unit tests:
+### Prerequisites
 
- - `./vendor/bin/phpunit`
+Install [`composer`](https://getcomposer.org/), `git`, `svn`, and either `wget` or `curl`.
 
-(Installation process TBC)
+Change to the plugin root directory and type:
+
+```bash
+$ composer install
+```
+
+### Install Test Dependencies
+
+To run the unit tests you need WordPress, [WooCommerce](https://github.com/woocommerce/woocommerce), and the WordPress Unit Test lib (included in the [core development repository](https://make.wordpress.org/core/handbook/testing/automated-testing/phpunit/)).
+
+Install them using the `install-wp-tests.sh` script:
+
+```bash
+$ ./bin/install-wp-tests.sh <db-name> <db-user> <db-pass> <db-host>
+```
+
+Example:
+```bash
+$ ./bin/install-wp-tests.sh wordpress_tests root root localhost
+```
+    
+This script installs the test dependencies into your system's temporary directory and also creates a test database.
+        
+You can also specify the path to their directories by setting the following environment variables:
+
+- `WP_TESTS_DIR`: WordPress Unit Test lib directory
+- `WP_CORE_DIR`: WordPress core directory
+- `WC_DIR`: WooCommerce directory
+
+### Running Tests
+Change to the plugin root directory and type:
+```bash
+$ vendor/bin/phpunit
+```
+
+The tests will execute and you'll be presented with a summary.
+
+### Unit Tests and PHP 8
+
+We currently do not support running unit tests on PHP 8..
 
 ## E2E Testing
 

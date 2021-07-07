@@ -13,8 +13,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\V6\Common\Segments;
-use Google\Ads\GoogleAds\V6\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V8\Common\Segments;
+use Google\Ads\GoogleAds\V8\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
 
 /**
@@ -88,8 +88,11 @@ class AdsReport implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Unable to retrieve campaign report data: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Unable to retrieve campaign report data: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$e->getCode()
+			);
 		}
 	}
 

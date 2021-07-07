@@ -8,8 +8,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
-use WP_REST_Request as Request;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -79,8 +81,12 @@ class IssuesController extends BaseOptionsController {
 			$per_page    = intval( $request['per_page'] );
 			$page        = max( 1, intval( $request['page'] ) );
 
-			$results         = $this->merchant_statuses->get_issues( $type_filter, $per_page, $page );
-			$results['page'] = $page;
+			try {
+				$results         = $this->merchant_statuses->get_issues( $type_filter, $per_page, $page );
+				$results['page'] = $page;
+			} catch ( Exception $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
 
 			// Replace variation IDs with parent ID (for Edit links).
 			foreach ( $results['issues'] as &$issue ) {
@@ -92,7 +98,7 @@ class IssuesController extends BaseOptionsController {
 				try {
 					$issue['product_id'] = $this->product_helper->maybe_swap_for_parent_id( $issue['product_id'] );
 				} catch ( InvalidValue $e ) {
-					// Don't include valid products
+					// Don't include invalid products
 					do_action(
 						'woocommerce_gla_debug_message',
 						sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $issue['product_id'] ),

@@ -13,9 +13,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use DateTime;
 use Exception;
 use Google\Exception as GoogleException;
-use Google_Service_ShoppingContent as ShoppingService;
-use Google_Service_ShoppingContent_ReportRow as ReportRow;
-use Google_Service_ShoppingContent_Segments as Segments;
+use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\ReportRow;
+use Google\Service\ShoppingContent\Segments;
 
 /**
  * Trait MerchantReportTrait
@@ -30,7 +30,7 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * The shopping service.
 	 *
-	 * @var ShoppingService
+	 * @var ShoppingContent
 	 */
 	protected $service;
 
@@ -44,10 +44,10 @@ class MerchantReport implements OptionsAwareInterface {
 	/**
 	 * Merchant Report constructor.
 	 *
-	 * @param ShoppingService $service
+	 * @param ShoppingContent $service
 	 * @param ProductHelper   $product_helper
 	 */
-	public function __construct( ShoppingService $service, ProductHelper $product_helper ) {
+	public function __construct( ShoppingContent $service, ProductHelper $product_helper ) {
 		$this->service        = $service;
 		$this->product_helper = $product_helper;
 	}

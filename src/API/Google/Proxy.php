@@ -15,7 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use Google\Ads\GoogleAds\Util\V6\ResourceNames;
+use Google\Ads\GoogleAds\Util\V8\ResourceNames;
 use Google\ApiCore\ApiException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -72,7 +72,10 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( $this->client_exception_message( $e, __( 'Error retrieving accounts', 'google-listings-and-ads' ) ) );
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error retrieving accounts', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -124,7 +127,10 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ) );
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -175,7 +181,10 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( $this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ) );
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error linking merchant to MCA', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -218,7 +227,10 @@ class Proxy implements OptionsAwareInterface {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 			do_action( 'woocommerce_gla_site_claim_failure', [ 'details' => 'google_manager' ] );
 
-			throw new Exception( $this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ) );
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error claiming website', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -250,8 +262,11 @@ class Proxy implements OptionsAwareInterface {
 				return [];
 			}
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -313,7 +328,10 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ) );
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -356,7 +374,10 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
-			throw new Exception( $this->client_exception_message( $e, __( 'Error linking account', 'google-listings-and-ads' ) ) );
+			throw new Exception(
+				$this->client_exception_message( $e, __( 'Error linking account', 'google-listings-and-ads' ) ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -540,19 +561,15 @@ class Proxy implements OptionsAwareInterface {
 	 * @return boolean
 	 */
 	protected function request_ads_currency(): bool {
-		if ( $use_store_currency ) {
-			$currency = get_woocommerce_currency();
-		} else {
-			try {
-				/** @var GoogleAdsClient $client */
-				$client   = $this->container->get( GoogleAdsClient::class );
-				$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
-				$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
-				$currency = $customer->getCurrencyCode();
-			} catch ( ApiException $e ) {
-				do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-				$currency = null;
-			}
+		try {
+			/** @var GoogleAdsClient $client */
+			$client   = $this->container->get( GoogleAdsClient::class );
+			$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
+			$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
+			$currency = $customer->getCurrencyCode();
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			$currency = null;
 		}
 
 		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, $currency );

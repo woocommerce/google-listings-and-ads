@@ -10,9 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
-use Google_Service_ShoppingContent_Product as GoogleProduct;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Google\Service\ShoppingContent\Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
 use WC_Product_Variable;
@@ -26,9 +25,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class BatchProductHelper implements Service, MerchantCenterAwareInterface {
-
-	use MerchantCenterAwareTrait;
+class BatchProductHelper implements Service {
 
 	use ValidateInterface;
 
@@ -53,23 +50,31 @@ class BatchProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $product_factory;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * BatchProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler $meta_handler
-	 * @param ProductHelper      $product_helper
-	 * @param ValidatorInterface $validator
-	 * @param ProductFactory     $product_factory
+	 * @param ProductMetaHandler    $meta_handler
+	 * @param ProductHelper         $product_helper
+	 * @param ValidatorInterface    $validator
+	 * @param ProductFactory        $product_factory
+	 * @param MerchantCenterService $merchant_center
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
 		ProductHelper $product_helper,
 		ValidatorInterface $validator,
-		ProductFactory $product_factory
+		ProductFactory $product_factory,
+		MerchantCenterService $merchant_center
 	) {
 		$this->meta_handler    = $meta_handler;
 		$this->product_helper  = $product_helper;
 		$this->validator       = $validator;
 		$this->product_factory = $product_factory;
+		$this->merchant_center = $merchant_center;
 	}
 
 	/**

@@ -6,18 +6,18 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Google\Ads\GoogleAds\V6\Resources\ConversionAction as ConversionAction;
-use Google\Ads\GoogleAds\V6\Common\TagSnippet;
-use Google\Ads\GoogleAds\V6\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
-use Google\Ads\GoogleAds\V6\Enums\ConversionActionStatusEnum\ConversionActionStatus;
-use Google\Ads\GoogleAds\V6\Enums\ConversionActionTypeEnum\ConversionActionType;
-use Google\Ads\GoogleAds\V6\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V6\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V6\Resources\ConversionAction\ValueSettings;
-use Google\Ads\GoogleAds\V6\Services\ConversionActionOperation;
-use Google\Ads\GoogleAds\V6\Services\ConversionActionServiceClient;
 use Exception;
-use Google\Ads\GoogleAds\V6\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V8\Resources\ConversionAction as ConversionAction;
+use Google\Ads\GoogleAds\V8\Common\TagSnippet;
+use Google\Ads\GoogleAds\V8\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
+use Google\Ads\GoogleAds\V8\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V8\Enums\ConversionActionTypeEnum\ConversionActionType;
+use Google\Ads\GoogleAds\V8\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V8\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V8\Resources\ConversionAction\ValueSettings;
+use Google\Ads\GoogleAds\V8\Services\ConversionActionOperation;
+use Google\Ads\GoogleAds\V8\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V8\Services\MutateConversionActionResult;
 use Google\ApiCore\ApiException;
 
 /**
@@ -103,8 +103,11 @@ class AdsConversionAction implements OptionsAwareInterface {
 				}
 			}
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error creating conversion action: %s', 'google-listings-and-ads' ), $message ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error creating conversion action: %s', 'google-listings-and-ads' ), $message ),
+				$e->getCode()
+			);
 		}
 	}
 
@@ -134,8 +137,11 @@ class AdsConversionAction implements OptionsAwareInterface {
 				$message = $e->getBasicMessage();
 			}
 
-			/* translators: %s Error message */
-			throw new Exception( sprintf( __( 'Error retrieving conversion action: %s', 'google-listings-and-ads' ), $message ) );
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving conversion action: %s', 'google-listings-and-ads' ), $message ),
+				$e->getCode()
+			);
 		}
 	}
 

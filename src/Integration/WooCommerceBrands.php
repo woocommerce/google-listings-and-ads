@@ -88,7 +88,7 @@ class WooCommerceBrands implements IntegrationInterface {
 			$product_id = $product instanceof WC_Product_Variation ? $product->get_parent_id() : $product->get_id();
 
 			$terms = $this->wp->get_the_terms( $product_id, 'product_brand' );
-			if ( ! $this->wp->is_wp_error( $terms ) ) {
+			if ( is_array( $terms ) ) {
 				return $this->get_brand_from_terms( $terms );
 			}
 		}

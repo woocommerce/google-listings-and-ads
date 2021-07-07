@@ -1,7 +1,8 @@
 language: php
-sudo: false
-# We use Focal locally, but it does not support PHP 7.3 on Travis
 dist: bionic
+
+services:
+  - mysql
 
 notifications:
   email: false
@@ -15,6 +16,7 @@ branches:
 cache:
   directories:
     - $HOME/.composer/cache
+  npm: true
 
 # Test supported versions of PHP, WP and WC and the WC master branch.
 php:
@@ -26,12 +28,13 @@ env:
     - WP_DIR=/tmp/wordpress
     - WP_CORE_DIR="${WP_DIR}/src"
     - WP_TESTS_DIR="${WP_DIR}/tests/phpunit"
-    - WP_LATEST=5.5
+    - WP_LATEST=5.7
+    - WC_LATEST=trunk
   matrix:
-    - WP_VERSION="${WP_LATEST}" WC_VERSION=master
-    - WP_VERSION="${WP_LATEST}" WC_VERSION=4.7.0-rc.1
-    - WP_VERSION=5.4 WC_VERSION=4.7.0-rc.1
-    - WP_VERSION=5.3 WC_VERSION=4.7.0-rc.1
+    - WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}"
+    - WP_VERSION="${WP_LATEST}" WC_VERSION=5.2
+    - WP_VERSION=5.6 WC_VERSION=5.2
+    - WP_VERSION=5.5 WC_VERSION=5.2
 
 # Additional tests
 matrix:
@@ -39,15 +42,18 @@ matrix:
   include:
     - name: "JS unit tests"
       language: node_js # Takes version from `.nvmrc`, runs `npm ci` automatically.
-      env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=jest WP_MULTISITE=0
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=jest WP_MULTISITE=0
       script: npm run test-unit
     - name: "Coding standard check"
       php: 7.4
-      env: WP_VERSION="${WP_LATEST}" WC_VERSION=master WP_TRAVISCI=cs WP_MULTISITE=0
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=cs WP_MULTISITE=0
       script: npm ci && npm run lint
 
 before_install:
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer self-update --1; fi
+
+install:
+  - nvm install
 
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
@@ -57,9 +63,10 @@ before_script:
     else
       echo "xdebug.ini does not exist"
     fi
-  - nvm install
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer install; fi
-#  - bash tests/install/install-wp-tests.sh
+  - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
+  - npm ci
+  - npm run dev
 
 script:
-#  - WP_MULTISITE=1 tests/run_tests.sh
+  - composer test-unit

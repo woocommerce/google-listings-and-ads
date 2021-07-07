@@ -9,8 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use WC_Product;
 use WC_Product_Variable;
@@ -24,9 +23,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface {
+class SyncerHooks implements Service, Registerable {
 
-	use MerchantCenterAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -64,21 +62,29 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 	protected $delete_products_job;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * SyncerHooks constructor.
 	 *
-	 * @param BatchProductHelper $batch_helper
-	 * @param ProductHelper      $product_helper
-	 * @param JobRepository      $job_repository
+	 * @param BatchProductHelper    $batch_helper
+	 * @param ProductHelper         $product_helper
+	 * @param JobRepository         $job_repository
+	 * @param MerchantCenterService $merchant_center
 	 */
 	public function __construct(
 		BatchProductHelper $batch_helper,
 		ProductHelper $product_helper,
-		JobRepository $job_repository
+		JobRepository $job_repository,
+		MerchantCenterService $merchant_center
 	) {
 		$this->batch_helper        = $batch_helper;
 		$this->product_helper      = $product_helper;
 		$this->update_products_job = $job_repository->get( UpdateProducts::class );
 		$this->delete_products_job = $job_repository->get( DeleteProducts::class );
+		$this->merchant_center     = $merchant_center;
 	}
 
 	/**
@@ -168,12 +174,12 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 			}
 
 			$this->product_helper->mark_as_pending( $product );
-			$this->update_products_job->start( [ $product_ids ] );
+			$this->update_products_job->schedule( [ $product_ids ] );
 			$this->set_already_scheduled( $product_id );
 		} elseif ( $this->product_helper->is_product_synced( $product ) ) {
 			// Delete the product from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
 			$request_entries = $this->batch_helper->generate_delete_request_entries( [ $product ] );
-			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
+			$this->delete_products_job->schedule( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 			$this->set_already_scheduled( $product_id );
 
 			do_action(
@@ -195,7 +201,7 @@ class SyncerHooks implements Service, Registerable, MerchantCenterAwareInterface
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
 			if ( ! empty( $product_id_map ) ) {
-				$this->delete_products_job->start( [ $product_id_map ] );
+				$this->delete_products_job->schedule( [ $product_id_map ] );
 				$this->set_already_scheduled( $product_id );
 			}
 		}

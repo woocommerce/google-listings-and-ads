@@ -12,7 +12,7 @@ import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import WarningIcon from '.~/components/warning-icon';
 import { useAppDispatch } from '.~/data';
-import { ALL_ACCOUNTS, ADS_ACCOUNT } from '../constants';
+import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
 
 const textDict = {
 	[ ALL_ACCOUNTS ]: {

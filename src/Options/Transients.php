@@ -72,7 +72,7 @@ final class Transients implements TransientsInterface, Service {
 
 		$this->validate_transient_key( $name );
 		$this->transients[ $name ] = $value;
-		return set_transient( $this->prefix_name( $name ), $value, $expiration );
+		return boolval( set_transient( $this->prefix_name( $name ), $value, $expiration ) );
 	}
 
 	/**
@@ -86,7 +86,7 @@ final class Transients implements TransientsInterface, Service {
 		$this->validate_transient_key( $name );
 		unset( $this->transients[ $name ] );
 
-		return delete_transient( $this->prefix_name( $name ) );
+		return boolval( delete_transient( $this->prefix_name( $name ) ) );
 	}
 
 	/**

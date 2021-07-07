@@ -9,8 +9,8 @@
     "automattic/jetpack-autoloader": "^2.4",
     "automattic/jetpack-config": "^1.4",
     "automattic/jetpack-connection": "^1.20",
-    "google/apiclient": "^2.7",
-    "googleads/google-ads-php": "^8.0",
+    "google/apiclient": "^2.10",
+    "googleads/google-ads-php": "^10.0",
     "league/container": "^3.3",
     "league/iso3166": "^3.0",
     "phpseclib/bcmath_compat": "^2.0",
@@ -20,7 +20,7 @@
   },
   "require-dev": {
     "dealerdirect/phpcodesniffer-composer-installer": "^v0.7",
-    "phpunit/phpunit": "^6.5 || ^7",
+    "phpunit/phpunit": "^7.5",
     "wp-cli/i18n-command": "^2.2",
     "wp-coding-standards/wpcs": "^2.3"
   },
@@ -30,13 +30,7 @@
   "license": "GPL-3.0",
   "autoload": {
     "psr-4": {
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/",
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\League\\Container\\": "vendor/league/container/src/",
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\League\\ISO3166\\": "vendor/league/iso3166/src/",
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\Google\\Auth\\": "vendor/google/auth/src/",
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\GuzzleHttp\\": "vendor/guzzlehttp/guzzle/src/",
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\GuzzleHttp\\Promise\\": "vendor/guzzlehttp/promises/src/",
-      "Automattic\\WooCommerce\\GoogleListingsAndAds\\Vendor\\GuzzleHttp\\Psr7\\": "vendor/guzzlehttp/psr7/src/"
+      "Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/"
     }
   },
   "autoload-dev": {
@@ -54,11 +48,16 @@
     "install-scripts": [
       "Google\\Task\\Composer::cleanup",
       "php ./bin/prefix-vendor-namespace.php",
-      "bash ./bin/googleads-remove-older-versions.sh",
-      "bash ./bin/cleanup-vendor-files.sh"
+      "composer run-script remove-google-ads-api-version-support -- 6 7",
+      "bash ./bin/cleanup-vendor-files.sh",
+      "composer dump-autoload"
     ],
     "post-install-cmd": [ "@install-scripts" ],
-    "post-update-cmd": [ "@install-scripts" ]
+    "post-update-cmd": [ "@install-scripts" ],
+    "remove-google-ads-api-version-support": [
+      "Google\\Ads\\GoogleAds\\Util\\ApiVersionSupport::remove"
+    ],
+    "test-unit": "./vendor/bin/phpunit"
   },
   "archive": {
     "exclude": [

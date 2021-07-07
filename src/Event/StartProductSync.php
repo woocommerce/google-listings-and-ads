@@ -48,9 +48,9 @@ class StartProductSync implements Registerable, Service {
 	 */
 	protected function on_settings_sync() {
 		$cleanup = $this->job_repository->get( CleanupProductsJob::class );
-		$cleanup->start();
+		$cleanup->schedule();
 
 		$update = $this->job_repository->get( UpdateAllProducts::class );
-		$update->start();
+		$update->schedule();
 	}
 }

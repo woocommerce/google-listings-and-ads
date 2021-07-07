@@ -47,7 +47,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * @param array $args
 	 */
-	public function start( array $args = [] ) {
+	public function schedule( array $args = [] ) {
 		$this->schedule_create_batch_action( 1 );
 	}
 
@@ -113,7 +113,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @param int $batch_number The batch number for the new batch.
 	 */
 	protected function schedule_create_batch_action( int $batch_number ) {
-		if ( $this->can_start( [ $batch_number ] ) ) {
+		if ( $this->can_schedule( [ $batch_number ] ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_create_batch_hook(), [ $batch_number ] );
 		}
 	}

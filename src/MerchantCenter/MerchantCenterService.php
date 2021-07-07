@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
@@ -53,8 +54,16 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @return bool
 	 */
 	public function is_connected(): bool {
-		$google_connected = boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
-		return $google_connected && $this->is_setup_complete();
+		return $this->is_google_connected() && $this->is_setup_complete();
+	}
+
+	/**
+	 * Get whether the dependent Google account is connected.
+	 *
+	 * @return bool
+	 */
+	public function is_google_connected(): bool {
+		return boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
 	}
 
 	/**
@@ -188,6 +197,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		$this->container->get( MerchantStatuses::class )->delete();
 
+		$this->container->get( MerchantIssueTable::class )->truncate();
 		$this->container->get( ShippingRateTable::class )->truncate();
 		$this->container->get( ShippingTimeTable::class )->truncate();
 	}

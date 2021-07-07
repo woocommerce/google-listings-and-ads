@@ -6,11 +6,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google\Service\Exception as GoogleException;
 use Exception;
-use Google_Service_SiteVerification as SiteVerificationService;
-use Google_Service_SiteVerification_SiteVerificationWebResourceResource as WebResource;
-use Google_Service_SiteVerification_SiteVerificationWebResourceResourceSite as WebResourceSite;
-use Google_Service_SiteVerification_SiteVerificationWebResourceGettokenRequest as GetTokenRequest;
-use Google_Service_SiteVerification_SiteVerificationWebResourceGettokenRequestSite as GetTokenRequestSite;
+use Google\Service\SiteVerification as SiteVerificationService;
+use Google\Service\SiteVerification\SiteVerificationWebResourceResource as WebResource;
+use Google\Service\SiteVerification\SiteVerificationWebResourceResourceSite as WebResourceSite;
+use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequest as GetTokenRequest;
+use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequestSite as GetTokenRequestSite;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -78,7 +78,10 @@ class SiteVerification {
 			$response = $service->webResource->getToken( $post_body );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ) );
+			throw new Exception(
+				__( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
 		}
 
 		return $response->getToken();
@@ -111,7 +114,10 @@ class SiteVerification {
 			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to insert site verification.', 'google-listings-and-ads' ) );
+			throw new Exception(
+				__( 'Unable to insert site verification.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
 		}
 
 		return true;

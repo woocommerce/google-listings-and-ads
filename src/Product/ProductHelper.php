@@ -6,13 +6,12 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
-use Google_Service_ShoppingContent_Product as GoogleProduct;
+use Google\Service\ShoppingContent\Product as GoogleProduct;
 use WC_Product;
 use WC_Product_Variation;
 
@@ -23,9 +22,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class ProductHelper implements Service, MerchantCenterAwareInterface {
+class ProductHelper implements Service {
 
-	use MerchantCenterAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -39,14 +37,21 @@ class ProductHelper implements Service, MerchantCenterAwareInterface {
 	protected $wc;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * ProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler $meta_handler
-	 * @param WC                 $wc
+	 * @param ProductMetaHandler    $meta_handler
+	 * @param WC                    $wc
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc ) {
-		$this->meta_handler = $meta_handler;
-		$this->wc           = $wc;
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc, MerchantCenterService $merchant_center ) {
+		$this->meta_handler    = $meta_handler;
+		$this->wc              = $wc;
+		$this->merchant_center = $merchant_center;
 	}
 
 	/**

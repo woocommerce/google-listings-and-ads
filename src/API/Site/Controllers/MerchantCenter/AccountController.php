@@ -14,7 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
-use Google_Service_ShoppingContent_Account as MC_Account;
+use Google\Service\ShoppingContent\Account as MC_Account;
 use Exception;
 use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
@@ -587,10 +587,10 @@ class AccountController extends BaseOptionsController {
 			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
 		}
 
-		/** @var MC_Account $mc_account */
-		$mc_account = $this->merchant->get_account( $merchant_id );
+		/** @var Account $account */
+		$account = $this->merchant->get_account( $merchant_id );
 
-		$account_website_url = $mc_account->getWebsiteUrl();
+		$account_website_url = $account->getWebsiteUrl();
 
 		if ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) ) {
 
@@ -623,8 +623,8 @@ class AccountController extends BaseOptionsController {
 				);
 			}
 
-			$mc_account->setWebsiteUrl( $site_website_url );
-			$this->merchant->update_account( $mc_account );
+			$account->setWebsiteUrl( $site_website_url );
+			$this->merchant->update_account( $account );
 
 			do_action( 'woocommerce_gla_url_switch_success', [] );
 		}
