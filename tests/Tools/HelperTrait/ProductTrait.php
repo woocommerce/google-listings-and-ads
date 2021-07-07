@@ -156,6 +156,10 @@ trait ProductTrait {
 		return $adapted;
 	}
 
+	protected static function get_product_id( WC_Product $product ) {
+		return $product->get_id();
+	}
+
 	/**
 	 * @return array
 	 */
