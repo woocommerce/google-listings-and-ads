@@ -41,7 +41,7 @@ class GoogleProductFeedValidator extends RequirementValidator {
 				2
 			);
 
-			add_filter(
+			add_action(
 				'deactivated_plugin',
 				function( $plugin ) {
 					if ( 'woocommerce-product-feeds/woocommerce-gpf.php' === $plugin ) {
