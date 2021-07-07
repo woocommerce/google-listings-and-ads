@@ -1,8 +1,12 @@
 /**
  * Internal dependencies
  */
-import { paidFields } from '.~/data/utils';
-import { getIdsFromQuery, aggregateIntervals } from './utils';
+import {
+	freeFields,
+	paidFields,
+	MISSING_FREE_LISTINGS_DATA,
+} from '.~/data/utils';
+import { getIdsFromQuery, aggregateIntervals, sumToPerformance } from './utils';
 
 // Copied from https://github.com/woocommerce/woocommerce-admin/blob/b35156dcf17b44b3a81ea4b4528445b432917fd5/packages/navigation/src/test/index.js#L184-L221
 describe( 'getIdsFromQuery', () => {
@@ -152,6 +156,91 @@ describe( 'aggregateIntervals', () => {
 			expectedIntervals.forEach( ( item, i ) => {
 				expect( result[ i ] ).toMatchObject( item );
 			} );
+		} );
+	} );
+} );
+
+describe( 'sumToPerformance', () => {
+	function toTotals( fields, ...values ) {
+		return values.reduce(
+			( acc, value, i ) => ( {
+				...acc,
+				[ fields[ i ] ]: value,
+			} ),
+			{}
+		);
+	}
+
+	const toFreeTotals = toTotals.bind( null, freeFields );
+	const toPaidTotals = toTotals.bind( null, paidFields );
+
+	it( 'should be able to sum paid `totals` to performance only', () => {
+		const paid = toPaidTotals( 123 );
+		const free = undefined;
+		const performance = sumToPerformance( paid, free );
+
+		expect( performance ).toMatchObject( {
+			[ paidFields[ 0 ] ]: {
+				value: 123,
+				delta: null,
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.NONE,
+			},
+		} );
+	} );
+
+	it( 'should be able to sum free `totals` to performance only', () => {
+		const paid = undefined;
+		const free = toFreeTotals( 456 );
+		const performance = sumToPerformance( paid, free, freeFields );
+
+		expect( performance ).toMatchObject( {
+			[ freeFields[ 0 ] ]: {
+				value: 456,
+				delta: null,
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.NONE,
+			},
+		} );
+	} );
+
+	it( 'should sum the same field from paid `totals` and free `totals` to performance', () => {
+		const sameFields = [ 'ranks' ];
+		const paid = toTotals( sameFields, 123 );
+		const free = toTotals( sameFields, 456 );
+		const performance = sumToPerformance( paid, free, sameFields );
+
+		expect( performance ).toMatchObject( {
+			[ sameFields[ 0 ] ]: {
+				value: 579,
+				delta: null,
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.NONE,
+			},
+		} );
+	} );
+
+	it( 'When a paid field is not (yet) available in API, should flag the data is not available', () => {
+		const paidOnlyFields = [ 'ranks' ];
+		const expectedFreeFields = [ 'views' ];
+		const paid = toTotals( paidOnlyFields, 1 );
+		const free = toTotals( expectedFreeFields, 1 );
+		const performance = sumToPerformance( paid, free, expectedFreeFields );
+
+		expect( performance ).toMatchObject( {
+			[ paidOnlyFields[ 0 ] ]: {
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_METRIC,
+			},
+		} );
+	} );
+
+	it( `When an expected free field doesn't exist, should flag anticipated data is not returned from API`, () => {
+		const expectedFields = [ 'ranks' ];
+		const paid = toTotals( expectedFields, 1 );
+		const free = toTotals( expectedFields );
+		const performance = sumToPerformance( paid, free, expectedFields );
+
+		expect( performance ).toMatchObject( {
+			[ expectedFields[ 0 ] ]: {
+				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
+			},
 		} );
 	} );
 } );
