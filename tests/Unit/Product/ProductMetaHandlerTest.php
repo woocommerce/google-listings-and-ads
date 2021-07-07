@@ -142,11 +142,6 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 			[
 				'relation' => 'AND',
 				[
-					'key'     => 'some_other_meta_key_we_dont_support',
-					'compare' => '=',
-					'value'   => 1,
-				],
-				[
 					'key'     => ProductMetaHandler::KEY_VISIBILITY,
 					'compare' => '!=',
 					'value'   => 'dont-sync-and-show',
