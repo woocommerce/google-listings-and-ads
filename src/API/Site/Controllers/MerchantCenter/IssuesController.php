@@ -98,7 +98,7 @@ class IssuesController extends BaseOptionsController {
 				try {
 					$issue['product_id'] = $this->product_helper->maybe_swap_for_parent_id( $issue['product_id'] );
 				} catch ( InvalidValue $e ) {
-					// Don't include valid products
+					// Don't include invalid products
 					do_action(
 						'woocommerce_gla_debug_message',
 						sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $issue['product_id'] ),
