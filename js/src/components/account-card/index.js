@@ -12,10 +12,17 @@ import Subsection from '.~/wcdl/subsection';
 import { ReactComponent as GoogleLogo } from './gogole-g-logo.svg';
 import './index.scss';
 
-export const GOOGLE = 'google';
+/**
+ * Enum of account card appearances.
+ *
+ * @enum {string}
+ */
+export const APPEARANCE = {
+	GOOGLE: 'google',
+};
 
 const appearanceDict = {
-	[ GOOGLE ]: {
+	[ APPEARANCE.GOOGLE ]: {
 		Logo: GoogleLogo,
 		title: __( 'Google account', 'google-listings-and-ads' ),
 	},
@@ -25,7 +32,7 @@ const appearanceDict = {
  * Renders a Card component with account info and status.
  *
  * @param {Object} props React props.
- * @param {string} props.appearance Predefined account enum to indicate the card appearance.
+ * @param {APPEARANCE} props.appearance Kind of account to indicate the card appearance.
  * @param {JSX.Element} props.description Content below the card title.
  * @param {JSX.Element} [props.indicator] Indicator of actions or status on the right side of the card.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.

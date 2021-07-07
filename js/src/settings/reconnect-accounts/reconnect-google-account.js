@@ -14,7 +14,7 @@ import { API_NAMESPACE } from '.~/data/constants';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import AppButton from '.~/components/app-button';
-import AccountCard, { GOOGLE } from '.~/components/account-card';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import Section from '.~/wcdl/section';
 import DisconnectModal, { ALL_ACCOUNTS } from '../disconnect-modal';
 
@@ -139,7 +139,7 @@ export default function ReconnectGoogleAccount( { active, email } ) {
 	return (
 		<Section title={ __( 'Connect account', 'google-listings-and-ads' ) }>
 			<AccountCard
-				appearance={ GOOGLE }
+				appearance={ APPEARANCE.GOOGLE }
 				description={ description }
 				indicator={ button }
 			>
