@@ -188,6 +188,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		// Update pre-sync product validation issues.
 		$this->refresh_presync_product_issues();
 
+		// Include any custom merchant issues.
+		$this->refresh_custom_merchant_issues();
+
 		// Delete stale issues.
 		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
 	}
@@ -370,16 +373,26 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			];
 		}
 
-		/**
-		 * Account-level issues can be added the merchant issues table.
-		 *
-		 * @since x.x.x
-		 */
-		$account_issues = apply_filters( 'woocommerce_gla_account_issues', $account_issues, $this->cache_created_time );
-
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );
 		$issue_query->update_or_insert( $account_issues );
+	}
+
+	/**
+	 * Custom issues can be added to the merchant issues table.
+	 *
+	 * @since x.x.x
+	 */
+	protected function refresh_custom_merchant_issues() {
+		$custom_issues = apply_filters( 'woocommerce_gla_custom_merchant_issues', [], $this->cache_created_time );
+
+		if ( empty( $custom_issues ) ) {
+			return;
+		}
+
+		/** @var MerchantIssueQuery $issue_query */
+		$issue_query = $this->container->get( MerchantIssueQuery::class );
+		$issue_query->update_or_insert( $custom_issues );
 	}
 
 	/**

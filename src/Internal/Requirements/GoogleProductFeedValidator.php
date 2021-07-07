@@ -32,7 +32,7 @@ class GoogleProductFeedValidator extends RequirementValidator {
 		} catch ( ExtensionRequirementException $e ) {
 
 			add_filter(
-				'woocommerce_gla_account_issues',
+				'woocommerce_gla_custom_merchant_issues',
 				function( $issues, $current_time ) {
 					return $this->add_conflict_issue( $issues, $current_time );
 				},
