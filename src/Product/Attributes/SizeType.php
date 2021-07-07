@@ -19,7 +19,7 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 	 *
 	 * @return string
 	 *
-	 * @see Google\Service\ShoppingContent\Product for the list of properties.
+	 * @see \Google\Service\ShoppingContent\Product for the list of properties.
 	 */
 	public static function get_id(): string {
 		return 'sizeType';
