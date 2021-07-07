@@ -75,8 +75,8 @@ trait ProductTrait {
 	public function generate_google_product_mock( $id = null, $target_country = null ) {
 		$product = $this->createMock( GoogleProduct::class );
 
-		$id             = $id ?: "online:en:{$this->get_sample_target_country()}:gla_" . rand();
 		$target_country = $target_country ?: $this->get_sample_target_country();
+		$id             = $id ?: "online:en:{$target_country}:gla_" . rand();
 
 		$product->expects( $this->any() )
 				->method( 'getId' )
