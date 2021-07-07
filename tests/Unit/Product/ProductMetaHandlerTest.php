@@ -176,11 +176,6 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 			[
 				'relation' => 'AND',
 				[
-					'key'     => 'some_other_meta_key_we_dont_support',
-					'compare' => '=',
-					'value'   => 1,
-				],
-				[
 					'key'     => '_wc_gla_visibility',
 					'compare' => '!=',
 					'value'   => 'dont-sync-and-show',
@@ -198,6 +193,46 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 					],
 				]
 			]
+		];
+		$this->assertEqualSets($expected, $result);
+	}
+
+	public function test_prefix_meta_query_keys_returns_unsupported_meta_keys_intact() {
+		$meta_query = [
+			'relation' => 'OR',
+			[
+				'key'     => ProductMetaHandler::KEY_VISIBILITY,
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => 'a_meta_key_we_dont_support',
+				'compare' => '!=',
+				'value'   => null,
+			],
+			[
+				'key'     => 'some_other_meta_key_we_dont_support',
+				'compare' => '=',
+				'value'   => 1,
+			],
+		];
+		$result = $this->product_meta_handler->prefix_meta_query_keys( $meta_query );
+
+		$expected = [
+			'relation' => 'OR',
+			[
+				'key'     => '_wc_gla_visibility',
+				'compare' => 'NOT EXISTS',
+			],
+			[
+				'key'     => 'a_meta_key_we_dont_support',
+				'compare' => '!=',
+				'value'   => null,
+			],
+			[
+				'key'     => 'some_other_meta_key_we_dont_support',
+				'compare' => '=',
+				'value'   => 1,
+			],
 		];
 		$this->assertEqualSets($expected, $result);
 	}
