@@ -95,11 +95,11 @@
 		"files": [
 			{
 				"path": "./js/build/*.js",
-				"maxSize": "2 kB"
+				"maxSize": "3 kB"
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "1 mB"
+				"maxSize": "3 mB"
 			},
 			{
 				"path": "./js/build/*.css",
@@ -107,13 +107,16 @@
 			},
 			{
 				"path": "./js/build/index.css",
-				"maxSize": "8 kB"
+				"maxSize": "10 kB"
 			},
 			{
 				"path": "./google-listings-and-ads.zip",
 				"maxSize": "12 mB",
 				"compression": "none"
 			}
-		]
+		],
+        "ci": {
+            "trackBranches": ["trunk", "develop"]
+        }
 	}
 }
