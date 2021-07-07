@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExtensionRequirementException;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use DateTime;
 
@@ -83,11 +82,11 @@ class GoogleProductFeedValidator extends RequirementValidator {
 		}
 
 		$issues[] = [
-			'product_id' => '0',
+			'product_id' => 0,
 			'product'    => 'All products',
 			'code'       => 'incompatible_google_product_feed',
-			'issue'      => 'The Google Product Feed plugin may cause conflicts or unexpected results.',
-			'action'     => 'Delete or deactivate the Google Product Feed plugin from your store',
+			'issue'      => __( 'The Google Product Feed plugin may cause conflicts or unexpected results.', 'google-listings-and-ads' ),
+			'action'     => __( 'Deactivate the Google Product Feed plugin from your store', 'google-listings-and-ads' ),
 			'action_url' => 'https://developers.google.com/shopping-content/guides/best-practices#do-not-use-api-and-feeds',
 			'created_at' => $current_time->format( 'Y-m-d H:i:s' ),
 			'type'       => MerchantStatuses::TYPE_ACCOUNT,
