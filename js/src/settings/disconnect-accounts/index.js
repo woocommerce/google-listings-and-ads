@@ -19,8 +19,10 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
 import AccountSubsection from './account-subsection';
-import DisconnectModal from './disconnect-modal';
-import { ALL_ACCOUNTS, ADS_ACCOUNT } from './constants';
+import DisconnectModal, {
+	ALL_ACCOUNTS,
+	ADS_ACCOUNT,
+} from '../disconnect-modal';
 
 export default function DisconnectAccounts() {
 	const adminUrl = useAdminUrl();

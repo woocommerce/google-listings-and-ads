@@ -29,14 +29,17 @@ $dependencies = [
 // Namespaces which are used directly within the code.
 $direct_replacements = [
 	'guzzlehttp' => [
-		'GuzzleHttp\Psr7\Utils::streamFor',
-		'GuzzleHttp\Psr7\Utils::tryFopen',
-		'GuzzleHttp\Psr7\Message::bodySummary',
 		'GuzzleHttp\Client(',
 		'GuzzleHttp\ClientInterface::MAJOR_VERSION',
 		'GuzzleHttp\ClientInterface::VERSION',
+		'GuzzleHttp\describe_type',
 		'GuzzleHttp\HandlerStack::create',
 		'GuzzleHttp\Message\ResponseInterface)',
+		'GuzzleHttp\Promise\promise_for',
+		'GuzzleHttp\Psr7\Message::bodySummary',
+		'GuzzleHttp\Psr7\str',
+		'GuzzleHttp\Psr7\Utils::streamFor',
+		'GuzzleHttp\Psr7\Utils::tryFopen',
 	],
 ];
 
@@ -78,21 +81,24 @@ foreach ( $replacements as $namespace => $path ) {
 		file_put_contents( $file, $contents );
 	}
 
-	// Update the namespace in the composer.json file.
-	$composer_file = "{$vendor_dir}/{$path}/composer.json";
-	if ( ! file_exists( $composer_file ) ) {
-		continue;
-	}
-
-	$composer_contents = file_get_contents( $composer_file );
-	file_put_contents(
-		$composer_file,
-		str_replace(
-			addslashes( "{$namespace}\\" ),
-			addslashes( "{$new_namespace}\\{$namespace}\\" ),
-			$composer_contents
+	// Update the namespace in the composer.json files.
+	$composer_files = array_filter(
+		explode(
+			"\n",
+			`find {$vendor_dir}/{$path} -iname 'composer.json'`
 		)
 	);
+
+	array_map(
+		function( $file ) use ( $namespace, $new_namespace ) {
+			return replace_in_json_file( $file, $namespace, $new_namespace );
+		},
+		$composer_files
+	);
+
+	// Update the namespace in vendor/composer/installed.json
+	// This file is used to generate the classmaps.
+	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $new_namespace );
 }
 
 function find_files( string $path ): array {
@@ -118,4 +124,20 @@ function find_files( string $path ): array {
 	}
 
 	return $files;
+}
+
+function replace_in_json_file( string $file, string $namespace, string $new_namespace ) {
+	if ( ! file_exists( $file ) ) {
+		return;
+	}
+
+	$contents = file_get_contents( $file );
+	file_put_contents(
+		$file,
+		str_replace(
+			addslashes( "{$namespace}\\" ),
+			addslashes( "{$new_namespace}\\{$namespace}\\" ),
+			$contents
+		)
+	);
 }

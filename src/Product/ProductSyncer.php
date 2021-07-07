@@ -297,8 +297,8 @@ class ProductSyncer implements Service {
 	 * @throws ProductSyncerException If Google Merchant Center is not set up and connected.
 	 */
 	protected function validate_merchant_center_setup(): void {
-		if ( ! $this->merchant_center->is_setup_complete() ) {
-			do_action( 'woocommerce_gla_error', 'Can not sync any products before setting up Google Merchant Center.', __METHOD__ );
+		if ( ! $this->merchant_center->is_connected() ) {
+			do_action( 'woocommerce_gla_error', 'Cannot sync any products before setting up Google Merchant Center.', __METHOD__ );
 
 			throw new ProductSyncerException( __( 'Google Merchant Center has not been set up correctly. Please review your configuration.', 'google-listings-and-ads' ) );
 		}
