@@ -132,7 +132,7 @@ class ProductMetaHandlerTest extends WP_UnitTestCase {
 		$this->assertTrue( ProductMetaHandler::is_meta_key_valid( ProductMetaHandler::KEY_SYNCED_AT ) );
 	}
 
-	public function test_prefix_meta_query_keys_return_if_not_array() {
+	public function test_prefix_meta_query_keys() {
 		$meta_query = [
 			'relation' => 'OR',
 			[
