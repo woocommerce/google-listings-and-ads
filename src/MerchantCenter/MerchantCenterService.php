@@ -54,8 +54,16 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @return bool
 	 */
 	public function is_connected(): bool {
-		$google_connected = boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
-		return $google_connected && $this->is_setup_complete();
+		return $this->is_google_connected() && $this->is_setup_complete();
+	}
+
+	/**
+	 * Get whether the dependent Google account is connected.
+	 *
+	 * @return bool
+	 */
+	public function is_google_connected(): bool {
+		return boolval( $this->options->get( OptionsInterface::GOOGLE_CONNECTED, false ) );
 	}
 
 	/**

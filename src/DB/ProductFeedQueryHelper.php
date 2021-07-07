@@ -68,6 +68,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 	 * @return array
 	 *
 	 * @throws InvalidValue If the orderby value isn't valid.
+	 * @throws Exception If the status data can't be retrieved from Google.
 	 */
 	public function get( WP_REST_Request $request ): array {
 		$this->request          = $request;
