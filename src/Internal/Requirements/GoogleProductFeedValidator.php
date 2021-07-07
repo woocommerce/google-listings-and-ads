@@ -44,7 +44,11 @@ class GoogleProductFeedValidator extends RequirementValidator {
 				'deactivated_plugin',
 				function( $plugin ) {
 					if ( 'woocommerce-product-feeds/woocommerce-gpf.php' === $plugin ) {
-						woogle_get_container()->get( MerchantStatuses::class )->clear_cache();
+						/** @var MerchantStatuses $merchant_statuses */
+						$merchant_statuses = woogle_get_container()->get( MerchantStatuses::class );
+						if ( $merchant_statuses instanceof MerchantStatuses ) {
+							$merchant_statuses->clear_cache();
+						}
 					}
 				}
 			);
