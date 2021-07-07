@@ -6,7 +6,12 @@ import {
 	paidFields,
 	MISSING_FREE_LISTINGS_DATA,
 } from '.~/data/utils';
-import { getIdsFromQuery, aggregateIntervals, sumToPerformance } from './utils';
+import {
+	getIdsFromQuery,
+	aggregateIntervals,
+	sumToPerformance,
+	addBaseToPerformance,
+} from './utils';
 
 // Copied from https://github.com/woocommerce/woocommerce-admin/blob/b35156dcf17b44b3a81ea4b4528445b432917fd5/packages/navigation/src/test/index.js#L184-L221
 describe( 'getIdsFromQuery', () => {
@@ -240,6 +245,51 @@ describe( 'sumToPerformance', () => {
 		expect( performance ).toMatchObject( {
 			[ expectedFields[ 0 ] ]: {
 				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
+			},
+		} );
+	} );
+} );
+
+describe( 'addBaseToPerformance', () => {
+	it( 'Should iterate fields according to the data properties of `performance`', () => {
+		// Still in loading
+		const base = { clicks: {}, sales: {} };
+		let performance = {};
+		let result = addBaseToPerformance( performance, base );
+
+		expect( result ).toEqual( {} );
+
+		// Loaded
+		performance = { clicks: {}, sales: {} };
+		result = addBaseToPerformance( performance, base );
+
+		expect( result ).toHaveProperty( 'clicks' );
+		expect( result ).toHaveProperty( 'sales' );
+	} );
+
+	it( 'should calculate the final performance data', () => {
+		const performance = {
+			clicks: { value: 13, missingFreeListingsData: 0 },
+			sales: { value: 5, missingFreeListingsData: 2 },
+		};
+		const base = {
+			clicks: { value: 10 },
+			sales: { value: 10 },
+		};
+		const result = addBaseToPerformance( performance, base );
+
+		expect( result ).toEqual( {
+			clicks: {
+				value: 13,
+				prevValue: 10,
+				delta: 30,
+				missingFreeListingsData: 0,
+			},
+			sales: {
+				value: 5,
+				prevValue: 10,
+				delta: -50,
+				missingFreeListingsData: 2,
 			},
 		} );
 	} );
