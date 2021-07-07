@@ -54,12 +54,12 @@ function sumProperies( metrics, totals1 = {}, totals2 = {} ) {
  *
  * @param {Array<IntervalsData>} [intervals1]
  * @param {Array<IntervalsData>} [intervals2]
- * @return {Array<IntervalsData>} Aggregated intervals.
+ * @return {Array<IntervalsData>|null} Aggregated intervals. `null` if both intervals are not provided.
  */
 export function aggregateIntervals( intervals1, intervals2 ) {
 	// Return early if there is nothing to merge.
 	if ( ! intervals2 ) {
-		return intervals1;
+		return intervals1 || null;
 	} else if ( ! intervals1 ) {
 		return intervals2;
 	}
