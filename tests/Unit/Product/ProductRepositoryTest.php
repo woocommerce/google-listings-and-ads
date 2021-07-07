@@ -37,17 +37,23 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 
 		$results = $this->product_repository->find();
 
+		$this->assertContainsOnlyInstancesOf( WC_Product::class, $results );
+
 		$expected = array_merge(
 			[
-				wc_get_product( $simple_product->get_id() ),
-				wc_get_product( $variable_product->get_id() ),
+				$simple_product->get_id(),
+				$variable_product->get_id(),
 			],
-			array_map( 'wc_get_product', $variable_product->get_children() )
+			$variable_product->get_children()
 		);
+
 		$this->assertCount( count( $expected ), $results );
-		$this->assertEqualSets(
+
+		// compare the IDs because the objects might not be identical
+		$result_ids = array_map( [ __CLASS__, 'get_product_id' ], $results );
+		$this->assertEquals(
 			$expected,
-			$results
+			$result_ids
 		);
 	}
 
@@ -64,8 +70,12 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		$results_unlimited = $this->product_repository->find();
 
 		$results = $this->product_repository->find( [], 1, 1 );
+
 		$this->assertCount( 1, $results );
-		$this->assertEquals( [ wc_get_product( $results_unlimited[1]->get_id() ) ], $results );
+
+		// compare the IDs because the objects might not be identical
+		$result_ids = array_map( [ __CLASS__, 'get_product_id' ], $results );
+		$this->assertEquals( [ $results_unlimited[1]->get_id() ], $result_ids );
 	}
 
 	public function test_find_ids_always_returns_integer_ids() {
@@ -107,7 +117,10 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 			],
 		];
 		$this->assertEquals( [ $product_1->get_id() ], $this->product_repository->find_ids( $query_args ) );
-		$this->assertEquals( [ wc_get_product( $product_1 ) ], $this->product_repository->find( $query_args ) );
+
+		// compare the IDs because the objects might not be identical
+		$result_ids = array_map( [ __CLASS__, 'get_product_id' ], $this->product_repository->find( $query_args ) );
+		$this->assertEquals( [ $product_1->get_id() ], $result_ids );
 	}
 
 	public function test_find_by_ids() {
@@ -133,9 +146,11 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 
 		WC_Helper_Product::create_simple_product();
 
+		// compare the IDs because the objects might not be identical
+		$result_ids = array_map( [ __CLASS__, 'get_product_id' ], $this->product_repository->find_synced_products() );
 		$this->assertEquals(
-			[ wc_get_product( $product_1->get_id() ) ],
-			$this->product_repository->find_synced_products()
+			[ $product_1->get_id() ],
+			$result_ids
 		);
 
 		$this->assertEquals(
