@@ -80,7 +80,7 @@ class AttributeManager implements Service {
 		$this->validate( $product, $attribute_id );
 
 		$value = null;
-		if ( $product->meta_exists( $this->prefix_meta_key( $attribute_id ) ) ) {
+		if ( $this->exists( $product, $attribute_id ) ) {
 			$value = $product->get_meta( $this->prefix_meta_key( $attribute_id ), true );
 		}
 
@@ -155,6 +155,18 @@ class AttributeManager implements Service {
 
 		$product->delete_meta_data( $this->prefix_meta_key( $attribute_id ) );
 		$product->save_meta_data();
+	}
+
+	/**
+	 * Whether the attribute exists and has been set for the product.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $attribute_id
+	 *
+	 * @return bool
+	 */
+	public function exists( WC_Product $product, string $attribute_id ): bool {
+		return $product->meta_exists( $this->prefix_meta_key( $attribute_id ) );
 	}
 
 	/**
