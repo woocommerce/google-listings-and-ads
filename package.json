@@ -115,8 +115,8 @@
 				"compression": "none"
 			}
 		],
-        "ci": {
-            "trackBranches": ["trunk", "develop"]
-        }
+		"ci": {
+			"trackBranches": ["trunk", "develop"]
+		}
 	}
 }
