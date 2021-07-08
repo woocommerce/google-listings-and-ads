@@ -92,14 +92,21 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @return array
 	 */
 	public function get_classes(): array {
-		$supported_types = ProductSyncer::get_supported_product_types();
-
-		return array_map(
+		$shown_types = array_map(
 			function ( string $product_type ) {
-				return "show_if_{$product_type}";
+				return "show_if_${product_type}";
 			},
-			$supported_types
+			ProductSyncer::get_supported_product_types()
 		);
+
+		$hidden_types = array_map(
+			function ( string $product_type ) {
+				return "hide_if_${product_type}";
+			},
+			ProductSyncer::get_hidden_product_types()
+		);
+
+		return array_merge( $shown_types, $hidden_types );
 	}
 
 	/**
