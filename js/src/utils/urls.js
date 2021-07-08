@@ -28,6 +28,10 @@ export const getCreateCampaignUrl = () => {
 	return getNewPath( { subpath: subpaths.createCampaign }, dashboardPath );
 };
 
+export const getDashboardUrl = () => {
+	return getNewPath( null, dashboardPath, null );
+};
+
 export const getReconnectAccountsUrl = () => {
 	return getNewPath(
 		{ subpath: subpaths.reconnectAccounts },

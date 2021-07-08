@@ -29,6 +29,7 @@ import {
 	fetchTargetAudience,
 	fetchAdsCampaigns,
 	fetchMCSetup,
+	receiveGoogleAccountAccess,
 	receiveReport,
 	receiveMCProductStatistics,
 	receiveMCIssues,
@@ -54,6 +55,32 @@ export function* getJetpackAccount() {
 export function* getGoogleAccount() {
 	yield fetchGoogleAccount();
 }
+
+getGoogleAccount.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE;
+};
+
+export function* getGoogleAccountAccess() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/google/reconnected`,
+		} );
+
+		yield receiveGoogleAccountAccess( data );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google account access info.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+getGoogleAccountAccess.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.DISCONNECT_ACCOUNTS_GOOGLE;
+};
 
 export function* getGoogleMCAccount() {
 	yield fetchGoogleMCAccount();
