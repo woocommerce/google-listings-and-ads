@@ -209,11 +209,11 @@ class Form implements FormInterface {
 	 * @return array
 	 */
 	public function get_view_data(): array {
-		$view_data = [];
-
-		$view_data['name'] = $this->get_view_name();
-
-		$view_data['is_root'] = $this->is_root();
+		$view_data = [
+			'name'     => $this->get_view_name(),
+			'is_root'  => $this->is_root(),
+			'children' => [],
+		];
 
 		foreach ( $this->get_children() as $index => $form ) {
 			$view_data['children'][ $index ] = $form->get_view_data();
