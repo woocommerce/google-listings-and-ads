@@ -210,7 +210,7 @@ class AttributeManager implements Service {
 	 *
 	 * @return string[][] of attribute classes mapped to product types
 	 */
-	public function get_attribute_types_map(): array {
+	protected function get_attribute_types_map(): array {
 		if ( ! isset( $this->attribute_types_map ) ) {
 			$this->map_attribute_types();
 		}
