@@ -30,6 +30,10 @@ export const getGoogleAccount = ( state ) => {
 	return state.mc.accounts.google;
 };
 
+export const getGoogleAccountAccess = ( state ) => {
+	return state.mc.accounts.google_access;
+};
+
 export const getGoogleMCAccount = ( state ) => {
 	return state.mc.accounts.mc;
 };

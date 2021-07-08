@@ -27,6 +27,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Helper_Product;
 use WC_Product;
 use WC_Product_Variable;
+use WC_Product_Variation;
 
 /**
  * Class BatchProductHelperTest
@@ -97,10 +98,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEqualSets( $errors, $this->product_meta->get_errors( $product ) );
 	}
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_generate_delete_request_entries( array $products ) {
+	public function test_generate_delete_request_entries() {
+		$products = $this->create_and_return_supported_test_products();
+
 		foreach ( $products as $product ) {
 			$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_' . $product->get_id() ) );
 		}
@@ -140,10 +140,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->batch_product_helper->generate_delete_request_entries( $products );
 	}
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_generate_delete_request_entries_skips_if_no_synced_google_id_exists( array $products ) {
+	public function test_generate_delete_request_entries_skips_if_no_synced_google_id_exists() {
+		$products = $this->create_and_return_supported_test_products();
+
 		// mark all products as synced
 		foreach ( $products as $product ) {
 			$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock( 'online:en:US:gla_' . $product->get_id() ) );
@@ -158,10 +157,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertArrayNotHasKey( 'online:en:US:gla_' . $skipped_product->get_id(), $results );
 	}
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_validate_and_generate_update_request_entries( array $products ) {
+	public function test_validate_and_generate_update_request_entries() {
+		$products = $this->create_and_return_supported_test_products();
+
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
 						->willReturn( [] );
@@ -193,10 +191,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEqualSets( $param_product_ids, $results_product_ids );
 	}
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_validate_and_generate_update_request_entries_skips_invalid_product( array $products ) {
+	public function test_validate_and_generate_update_request_entries_skips_invalid_product() {
+		$products = $this->create_and_return_supported_test_products();
+
 		// skip one product from the list
 		$invalid_product = $products[0];
 
@@ -228,13 +225,16 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertNotContains( $invalid_product->get_id(), $results_product_ids );
 	}
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_validate_and_generate_update_request_entries_skips_not_sync_ready( array $products ) {
+	public function test_validate_and_generate_update_request_entries_skips_not_sync_ready() {
+		$products = $this->create_and_return_supported_test_products();
+
 		// skip one product from the list
 		$skipped_product = $products[0];
-		$this->product_meta->update_visibility($skipped_product, ChannelVisibility::DONT_SYNC_AND_SHOW);
+		if ( $skipped_product instanceof WC_Product_Variation ) {
+			$this->product_meta->update_visibility( wc_get_product( $skipped_product->get_parent_id() ), ChannelVisibility::DONT_SYNC_AND_SHOW );
+		} else {
+			$this->product_meta->update_visibility( $skipped_product, ChannelVisibility::DONT_SYNC_AND_SHOW );
+		}
 
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
@@ -283,10 +283,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEqualSets( [ 1 ], $results );
 	}
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_generate_stale_products_request_entries( array $products ) {
+	public function test_generate_stale_products_request_entries() {
+		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
@@ -299,7 +297,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			'DK' => "online:en:DK:gla_{$stale_product_id}",
 			'US' => "online:en:US:gla_{$stale_product_id}",
 		];
-		$this->product_meta->update_google_ids($stale_product, $stale_google_ids);
+		$this->product_meta->update_google_ids( $stale_product, $stale_google_ids );
 
 		$results = $this->batch_product_helper->generate_stale_products_request_entries( $products );
 
@@ -313,10 +311,8 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
-	/**
-	 * @dataProvider return_blank_test_products
-	 */
-	public function test_generate_stale_countries_request_entries( array $products ) {
+	public function test_generate_stale_countries_request_entries() {
+		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
@@ -329,7 +325,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			'DK' => "online:en:DK:gla_{$stale_product_id}",
 			'US' => "online:en:US:gla_{$stale_product_id}",
 		];
-		$this->product_meta->update_google_ids($stale_product, $stale_google_ids);
+		$this->product_meta->update_google_ids( $stale_product, $stale_google_ids );
 
 		$results = $this->batch_product_helper->generate_stale_countries_request_entries( $products );
 
@@ -344,20 +340,14 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @return WC_Product[][]
+	 * @return WC_Product[]
 	 */
-	public function return_blank_test_products(): array {
-		$variable  = WC_Helper_Product::create_variation_product();
-		$variation = wc_get_product( $variable->get_children()[0] );
+	public function create_and_return_supported_test_products(): array {
+		$variable        = WC_Helper_Product::create_variation_product();
+		$test_products   = array_map( 'wc_get_product', $variable->get_children() );
+		$test_products[] = WC_Helper_Product::create_simple_product();
 
-		return [
-			[
-				[
-					WC_Helper_Product::create_simple_product(),
-					$variation,
-				],
-			],
-		];
+		return $test_products;
 	}
 
 	/**

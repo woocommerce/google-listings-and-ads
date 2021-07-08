@@ -25,6 +25,7 @@ const DEFAULT_STATE = {
 			existing_mc: null,
 			existing_ads: null,
 			ads_billing_status: null,
+			google_access: null,
 		},
 	},
 	ads_campaigns: null,
@@ -159,6 +160,19 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const newState = cloneDeep( state );
 			newState.mc.accounts.google = account;
 			return newState;
+		}
+
+		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS: {
+			return {
+				...state,
+				mc: {
+					...state.mc,
+					accounts: {
+						...state.mc.accounts,
+						google_access: action.data,
+					},
+				},
+			};
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC: {
