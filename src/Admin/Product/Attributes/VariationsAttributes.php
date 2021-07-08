@@ -78,8 +78,15 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		 */
 		$product = wc_get_product( $variation->ID );
 
+		$data = $this->get_form( $product, $variation_index )->get_view_data();
+
+		// Do not render the form if it doesn't contain any child attributes.
+		if ( empty( $data['children'] ) || empty( $data['children'][0]['children'] ) ) {
+			return;
+		}
+
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo $this->admin->get_view( 'attributes/variations-form', $this->get_form( $product, $variation_index )->get_view_data() );
+		echo $this->admin->get_view( 'attributes/variations-form', $data );
 	}
 
 	/**
