@@ -244,17 +244,21 @@ describe( 'sumToPerformance', () => {
 } );
 
 describe( 'addBaseToPerformance', () => {
-	it( 'Should iterate fields according to the data properties of `performance`', () => {
-		// Still in loading
+	it( 'When `performance` is still in loading, should return an empty object', () => {
+		// In our use cases, the passed-in `performance` in loading status would be an empty object.
+		const performance = {};
 		const base = { clicks: {}, sales: {} };
-		let performance = {};
-		let result = addBaseToPerformance( performance, base );
+
+		const result = addBaseToPerformance( performance, base );
 
 		expect( result ).toEqual( {} );
+	} );
 
-		// Loaded
-		performance = { clicks: {}, sales: {} };
-		result = addBaseToPerformance( performance, base );
+	it( 'When `performance` is loaded, should iterate fields according to its data properties', () => {
+		const performance = { clicks: {}, sales: {} };
+		const base = {};
+
+		const result = addBaseToPerformance( performance, base );
 
 		expect( result ).toHaveProperty( 'clicks' );
 		expect( result ).toHaveProperty( 'sales' );
