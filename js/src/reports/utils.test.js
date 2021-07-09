@@ -105,62 +105,53 @@ describe( 'aggregateIntervals', () => {
 		} );
 	} );
 
-	describe( 'aggregate intervals', () => {
-		it( "should merge two given intervals' items by the same `interval`, and the `subtotals` from the same `interval` items should be aggregated by summation of each its metric", () => {
-			const intervals1 = toIntervals(
-				[ '2021-01', 12, 34 ],
-				[ '2021-02', 34, 56 ]
-			);
-			const intervals2 = toIntervals(
-				[ '2021-01', 56, 78 ],
-				[ '2021-02', 78, 90 ]
-			);
-			const expectedIntervals = toIntervals(
-				[ '2021-01', 68, 112 ],
-				[ '2021-02', 112, 146 ]
-			);
+	it( "should merge two given intervals' items by the same `interval`, and the `subtotals` from the same `interval` items should be aggregated by summation of each its metric", () => {
+		const intervals1 = toIntervals(
+			[ '2021-01', 12, 34 ],
+			[ '2021-02', 34, 56 ]
+		);
+		const intervals2 = toIntervals(
+			[ '2021-01', 56, 78 ],
+			[ '2021-02', 78, 90 ]
+		);
+		const expectedIntervals = toIntervals(
+			[ '2021-01', 68, 112 ],
+			[ '2021-02', 112, 146 ]
+		);
 
-			const result = aggregateIntervals( intervals1, intervals2 );
+		const result = aggregateIntervals( intervals1, intervals2 );
 
-			expect( result ).toHaveLength( expectedIntervals.length );
-			expectedIntervals.forEach( ( item, i ) => {
-				expect( result[ i ] ).toMatchObject( item );
-			} );
+		expect( result ).toHaveLength( expectedIntervals.length );
+		expectedIntervals.forEach( ( item, i ) => {
+			expect( result[ i ] ).toMatchObject( item );
 		} );
+	} );
 
-		it( "should merge two given intervals' items to a union result by `interval`", () => {
-			const intervals1 = toIntervals( [ '2021-01', 12 ] );
-			const intervals2 = toIntervals( [ '2021-02', 34 ] );
-			const expectedIntervals = toIntervals(
-				[ '2021-01', 12 ],
-				[ '2021-02', 34 ]
-			);
+	it( "should merge two given intervals' items to a union result by `interval`", () => {
+		const intervals1 = toIntervals( [ '2021-01', 12 ] );
+		const intervals2 = toIntervals( [ '2021-02', 34 ] );
+		const expectedIntervals = toIntervals(
+			[ '2021-01', 12 ],
+			[ '2021-02', 34 ]
+		);
 
-			const result = aggregateIntervals( intervals1, intervals2 );
+		const result = aggregateIntervals( intervals1, intervals2 );
 
-			expect( result ).toHaveLength( expectedIntervals.length );
-			expectedIntervals.forEach( ( item, i ) => {
-				expect( result[ i ] ).toMatchObject( item );
-			} );
+		expect( result ).toHaveLength( expectedIntervals.length );
+		expectedIntervals.forEach( ( item, i ) => {
+			expect( result[ i ] ).toMatchObject( item );
 		} );
+	} );
 
-		it( 'When any metric in `paidFields` does not exist in `subtotals`, should fill its value with 0', () => {
-			const intervals1 = toIntervals( [ '2021-01', , 1, , 3 ] );
-			const intervals2 = toIntervals( [ '2021-01', , , 2, , 4 ] );
-			const expectedIntervals = toIntervals( [
-				'2021-01',
-				0,
-				1,
-				2,
-				3,
-				4,
-			] );
+	it( 'When any metric in `paidFields` does not exist in `subtotals`, should fill its value with 0', () => {
+		const intervals1 = toIntervals( [ '2021-01', , 1, , 3 ] );
+		const intervals2 = toIntervals( [ '2021-01', , , 2, , 4 ] );
+		const expectedIntervals = toIntervals( [ '2021-01', 0, 1, 2, 3, 4 ] );
 
-			const result = aggregateIntervals( intervals1, intervals2 );
+		const result = aggregateIntervals( intervals1, intervals2 );
 
-			expectedIntervals.forEach( ( item, i ) => {
-				expect( result[ i ] ).toMatchObject( item );
-			} );
+		expectedIntervals.forEach( ( item, i ) => {
+			expect( result[ i ] ).toMatchObject( item );
 		} );
 	} );
 } );
