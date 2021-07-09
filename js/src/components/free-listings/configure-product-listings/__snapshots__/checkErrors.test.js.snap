@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is not set, should not pass 1`] = `"Please specify tax rate option."`;
+
+exports[`checkErrors Requirements When there are any requirements are not true, should not pass 1`] = `"Please check the requirement."`;
+
+exports[`checkErrors Requirements When there are any requirements are not true, should not pass 2`] = `"Please check the requirement."`;
+
+exports[`checkErrors Requirements When there are any requirements are not true, should not pass 3`] = `"Please check the requirement."`;
+
+exports[`checkErrors Requirements When there are any requirements are not true, should not pass 4`] = `"Please check the requirement."`;
+
+exports[`checkErrors Requirements When there are any requirements are not true, should not pass 5`] = `"Please check the requirement."`;
+
+exports[`checkErrors Shipping rates For flat type When the free shipping threshold is < 0, should not pass 1`] = `"Please specify a valid minimum order price for free shipping"`;
+
+exports[`checkErrors Shipping rates For flat type When there are any selected countries' shipping rates is not set, should not pass 1`] = `"Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0."`;
+
+exports[`checkErrors Shipping rates For flat type When there are any shipping rates is < 0, should not pass 1`] = `"Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0."`;
+
+exports[`checkErrors Shipping rates When the type of shipping rate is not set, should not pass 1`] = `"Please select a shipping rate option."`;
+
+exports[`checkErrors Shipping times For flat type When there are any selected countries' shipping times is not set, should not pass 1`] = `"Please specify shipping times for all the countries. And the estimated shipping time cannot be less than 0."`;
+
+exports[`checkErrors Shipping times For flat type When there are any shipping times is < 0, should not pass 1`] = `"Please specify shipping times for all the countries. And the estimated shipping time cannot be less than 0."`;
+
+exports[`checkErrors Shipping times When the type of shipping time is not set, should not pass 1`] = `"Please select a shipping time option."`;
