@@ -94,7 +94,7 @@ describe( 'getReportQuery', () => {
 		).toBe( query.programs );
 	} );
 
-	it( 'When the products report query contains `products`, should have transformed `ids` field', () => {
+	it( 'When the products report query contains `products`, should have `ids` field, with values prepended with `gla_`', () => {
 		// Search single product.
 		const oneProductQuery = {
 			products: '2468',
