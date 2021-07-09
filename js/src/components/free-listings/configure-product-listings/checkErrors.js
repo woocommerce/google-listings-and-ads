@@ -3,6 +3,9 @@
  */
 import { __ } from '@wordpress/i18n';
 
+const validShippingSet = new Set( [ 'flat', 'manual' ] );
+const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
+
 const checkErrors = (
 	values,
 	shippingRates,
@@ -14,7 +17,7 @@ const checkErrors = (
 	/**
 	 * Check shipping rates.
 	 */
-	if ( ! values.shipping_rate ) {
+	if ( ! validShippingSet.has( values.shipping_rate ) ) {
 		errors.shipping_rate = __(
 			'Please select a shipping rate option.',
 			'google-listings-and-ads'
@@ -32,10 +35,12 @@ const checkErrors = (
 		);
 	}
 
+	// When set up from scratch, the initial value of `free_shipping_threshold` is null.
+	const threshold = values.free_shipping_threshold;
 	if (
 		values.shipping_rate === 'flat' &&
 		values.offers_free_shipping &&
-		values.free_shipping_threshold < 0
+		( ! Number.isFinite( threshold ) || threshold < 0 )
 	) {
 		errors.free_shipping_threshold = __(
 			'Please specify a valid minimum order price for free shipping',
@@ -46,7 +51,7 @@ const checkErrors = (
 	/**
 	 * Check shipping times.
 	 */
-	if ( ! values.shipping_time ) {
+	if ( ! validShippingSet.has( values.shipping_time ) ) {
 		errors.shipping_time = __(
 			'Please select a shipping time option.',
 			'google-listings-and-ads'
@@ -67,7 +72,10 @@ const checkErrors = (
 	/**
 	 * Check tax rate (required for U.S. only).
 	 */
-	if ( finalCountryCodes.includes( 'US' ) && ! values.tax_rate ) {
+	if (
+		finalCountryCodes.includes( 'US' ) &&
+		! validTaxRateSet.has( values.tax_rate )
+	) {
 		errors.tax_rate = __(
 			'Please specify tax rate option.',
 			'google-listings-and-ads'
@@ -77,35 +85,35 @@ const checkErrors = (
 	/**
 	 * Pre-launch checklist.
 	 */
-	if ( ! values.website_live ) {
+	if ( values.website_live !== true ) {
 		errors.website_live = __(
 			'Please check the requirement.',
 			'google-listings-and-ads'
 		);
 	}
 
-	if ( ! values.checkout_process_secure ) {
+	if ( values.checkout_process_secure !== true ) {
 		errors.checkout_process_secure = __(
 			'Please check the requirement.',
 			'google-listings-and-ads'
 		);
 	}
 
-	if ( ! values.payment_methods_visible ) {
+	if ( values.payment_methods_visible !== true ) {
 		errors.payment_methods_visible = __(
 			'Please check the requirement.',
 			'google-listings-and-ads'
 		);
 	}
 
-	if ( ! values.refund_tos_visible ) {
+	if ( values.refund_tos_visible !== true ) {
 		errors.refund_tos_visible = __(
 			'Please check the requirement.',
 			'google-listings-and-ads'
 		);
 	}
 
-	if ( ! values.contact_info_visible ) {
+	if ( values.contact_info_visible !== true ) {
 		errors.contact_info_visible = __(
 			'Please check the requirement.',
 			'google-listings-and-ads'

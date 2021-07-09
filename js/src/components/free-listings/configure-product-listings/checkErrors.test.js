@@ -27,14 +27,27 @@ describe( 'checkErrors', () => {
 			manualShipping = { shipping_rate: 'manual' };
 		} );
 
-		it( 'When the type of shipping rate is not set, should not pass', () => {
-			const errors = checkErrors( {}, [], [], [] );
+		it( 'When the type of shipping rate is an invalid value, should not pass', () => {
+			// Not set yet
+			let errors = checkErrors( {}, [], [], [] );
+
+			expect( errors ).toHaveProperty( 'shipping_rate' );
+			expect( errors.shipping_rate ).toMatchSnapshot();
+
+			// Invalid value
+			errors = checkErrors( { shipping_rate: true }, [], [], [] );
+
+			expect( errors ).toHaveProperty( 'shipping_rate' );
+			expect( errors.shipping_rate ).toMatchSnapshot();
+
+			// Invalid value
+			errors = checkErrors( { shipping_rate: 'automatic' }, [], [], [] );
 
 			expect( errors ).toHaveProperty( 'shipping_rate' );
 			expect( errors.shipping_rate ).toMatchSnapshot();
 		} );
 
-		it( 'When the type of shipping rate is set, should pass', () => {
+		it( 'When the type of shipping rate is a valid value, should pass', () => {
 			// Selected flat
 			let errors = checkErrors( flatShipping, [], [], [] );
 
@@ -47,6 +60,14 @@ describe( 'checkErrors', () => {
 		} );
 
 		describe( 'For flat type', () => {
+			function createFreeShipping( threshold ) {
+				return {
+					...flatShipping,
+					offers_free_shipping: true,
+					free_shipping_threshold: threshold,
+				};
+			}
+
 			it( `When there are any selected countries' shipping rates is not set, should not pass`, () => {
 				const rates = toRates( [ 'US', 10.5 ], [ 'FR', 12.8 ] );
 				const codes = [ 'US', 'JP', 'FR' ];
@@ -85,16 +106,29 @@ describe( 'checkErrors', () => {
 				expect( errors ).not.toHaveProperty( 'shipping_rate' );
 			} );
 
-			it( 'When the free shipping threshold is < 0, should not pass', () => {
-				const freeShipping = {
-					...flatShipping,
-					offers_free_shipping: true,
-					free_shipping_threshold: -0.01,
-				};
+			it( 'When the free shipping threshold is an invalid value, should not pass', () => {
+				// Not set yet
+				let freeShipping = createFreeShipping( null );
 				const rates = toRates( [ 'JP', 2 ] );
 				const codes = [ 'JP' ];
 
-				const errors = checkErrors( freeShipping, rates, [], codes );
+				let errors = checkErrors( freeShipping, rates, [], codes );
+
+				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
+				expect( errors.free_shipping_threshold ).toMatchSnapshot();
+
+				// Invalid value
+				freeShipping = createFreeShipping( true );
+
+				errors = checkErrors( freeShipping, rates, [], codes );
+
+				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
+				expect( errors.free_shipping_threshold ).toMatchSnapshot();
+
+				// Invalid range
+				freeShipping = createFreeShipping( -0.01 );
+
+				errors = checkErrors( freeShipping, rates, [], codes );
 
 				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
 				expect( errors.free_shipping_threshold ).toMatchSnapshot();
@@ -102,11 +136,7 @@ describe( 'checkErrors', () => {
 
 			it( 'When the free shipping threshold ≥ 0, should pass', () => {
 				// Free threshold is 0
-				let freeShipping = {
-					...flatShipping,
-					offers_free_shipping: true,
-					free_shipping_threshold: 0,
-				};
+				let freeShipping = createFreeShipping( 0 );
 				const rates = toRates( [ 'JP', 2 ] );
 				const codes = [ 'JP' ];
 
@@ -117,11 +147,7 @@ describe( 'checkErrors', () => {
 				);
 
 				// Free threshold is a positive number
-				freeShipping = {
-					...flatShipping,
-					offers_free_shipping: true,
-					free_shipping_threshold: 0.01,
-				};
+				freeShipping = createFreeShipping( 0.01 );
 
 				errors = checkErrors( freeShipping, rates, [], codes );
 
@@ -141,14 +167,27 @@ describe( 'checkErrors', () => {
 			manualShipping = { shipping_time: 'manual' };
 		} );
 
-		it( 'When the type of shipping time is not set, should not pass', () => {
-			const errors = checkErrors( {}, [], [], [] );
+		it( 'When the type of shipping time is an invalid value, should not pass', () => {
+			// Not set yet
+			let errors = checkErrors( {}, [], [], [] );
+
+			expect( errors ).toHaveProperty( 'shipping_time' );
+			expect( errors.shipping_time ).toMatchSnapshot();
+
+			// Invalid value
+			errors = checkErrors( { shipping_time: true }, [], [], [] );
+
+			expect( errors ).toHaveProperty( 'shipping_time' );
+			expect( errors.shipping_time ).toMatchSnapshot();
+
+			// Invalid value
+			errors = checkErrors( { shipping_time: 'automatic' }, [], [], [] );
 
 			expect( errors ).toHaveProperty( 'shipping_time' );
 			expect( errors.shipping_time ).toMatchSnapshot();
 		} );
 
-		it( 'When the type of shipping time is set, should pass', () => {
+		it( 'When the type of shipping time is a valid value, should pass', () => {
 			// Selected flat
 			let errors = checkErrors( flatShipping, [], [], [] );
 
@@ -208,14 +247,27 @@ describe( 'checkErrors', () => {
 			codes = [ 'US' ];
 		} );
 
-		it( `When the tax rate option is not set, should not pass`, () => {
-			const errors = checkErrors( {}, [], [], codes );
+		it( `When the tax rate option is an invalid value, should not pass`, () => {
+			// Not set yet
+			let errors = checkErrors( {}, [], [], codes );
+
+			expect( errors ).toHaveProperty( 'tax_rate' );
+			expect( errors.tax_rate ).toMatchSnapshot();
+
+			// Invalid value
+			errors = checkErrors( { tax_rate: true }, [], [], codes );
+
+			expect( errors ).toHaveProperty( 'tax_rate' );
+			expect( errors.tax_rate ).toMatchSnapshot();
+
+			// Invalid value
+			errors = checkErrors( { tax_rate: 'automatic' }, [], [], codes );
 
 			expect( errors ).toHaveProperty( 'tax_rate' );
 			expect( errors.tax_rate ).toMatchSnapshot();
 		} );
 
-		it( 'When the tax rate option is set, should pass', () => {
+		it( 'When the tax rate option is a valid value, should pass', () => {
 			// Selected destination
 			const destinationTaxRate = { tax_rate: 'destination' };
 
@@ -234,7 +286,34 @@ describe( 'checkErrors', () => {
 
 	describe( 'Requirements', () => {
 		it( 'When there are any requirements are not true, should not pass', () => {
-			const errors = checkErrors( {}, [], [], [] );
+			// Not set yet
+			let errors = checkErrors( {}, [], [], [] );
+
+			expect( errors ).toHaveProperty( 'website_live' );
+			expect( errors.website_live ).toMatchSnapshot();
+
+			expect( errors ).toHaveProperty( 'checkout_process_secure' );
+			expect( errors.checkout_process_secure ).toMatchSnapshot();
+
+			expect( errors ).toHaveProperty( 'payment_methods_visible' );
+			expect( errors.payment_methods_visible ).toMatchSnapshot();
+
+			expect( errors ).toHaveProperty( 'refund_tos_visible' );
+			expect( errors.refund_tos_visible ).toMatchSnapshot();
+
+			expect( errors ).toHaveProperty( 'contact_info_visible' );
+			expect( errors.contact_info_visible ).toMatchSnapshot();
+
+			// Invalid value
+			const values = {
+				website_live: false,
+				checkout_process_secure: 1,
+				payment_methods_visible: 'true',
+				refund_tos_visible: [],
+				contact_info_visible: {},
+			};
+
+			errors = checkErrors( values, [], [], [] );
 
 			expect( errors ).toHaveProperty( 'website_live' );
 			expect( errors.website_live ).toMatchSnapshot();
