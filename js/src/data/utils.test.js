@@ -198,6 +198,19 @@ describe( 'calculateDelta', () => {
 } );
 
 describe( 'mapReportFieldsToPerformance', () => {
+	it( 'should apply default values for `primary` and `secondary`', () => {
+		const primary = { hello: 0 };
+		const secondary = { howdy: 1 };
+
+		expect( mapReportFieldsToPerformance() ).toEqual( {} );
+		expect( mapReportFieldsToPerformance( undefined, secondary ) ).toEqual(
+			{}
+		);
+		expect( mapReportFieldsToPerformance( primary ) ).toHaveProperty(
+			'hello'
+		);
+	} );
+
 	it( 'should take keys of `primary` as metric field keys', () => {
 		const primary = { hello: 0, howdy: 1 };
 		const primaryKeys = Object.keys( primary );
