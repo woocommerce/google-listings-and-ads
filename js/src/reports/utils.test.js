@@ -67,11 +67,18 @@ describe( 'aggregateIntervals', () => {
 		} ) );
 	}
 
-	it( 'if both `intervals` parameters are not provided, should return null', () => {
+	it( 'If both `intervals` parameters are not given, should return null', () => {
 		expect( aggregateIntervals() ).toBeNull();
 		expect( aggregateIntervals( null ) ).toBeNull();
 		expect( aggregateIntervals( null, null ) ).toBeNull();
 		expect( aggregateIntervals( undefined, null ) ).toBeNull();
+	} );
+
+	it( 'If one of `intervals` parameters is not given, should return another early', () => {
+		const intervals = toIntervals();
+
+		expect( aggregateIntervals( intervals ) ).toBe( intervals );
+		expect( aggregateIntervals( null, intervals ) ).toBe( intervals );
 	} );
 
 	it( 'should sort aggregated intervals in ascending order of string code by `interval`', () => {
