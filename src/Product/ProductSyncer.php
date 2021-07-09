@@ -229,6 +229,17 @@ class ProductSyncer implements Service {
 	}
 
 	/**
+	 * Return the list of product types we will hide functionality for (default none).
+	 *
+	 * @since x.x.x
+	 *
+	 * @return array
+	 */
+	public static function get_hidden_product_types(): array {
+		return (array) apply_filters( 'woocommerce_gla_hidden_product_types', [] );
+	}
+
+	/**
 	 * @param BatchInvalidProductEntry[] $invalid_products
 	 */
 	protected function handle_update_errors( array $invalid_products ) {
