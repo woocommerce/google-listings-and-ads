@@ -231,6 +231,8 @@ class ProductSyncer implements Service {
 	/**
 	 * Return the list of product types we will hide functionality for (default none).
 	 *
+	 * @since x.x.x
+	 *
 	 * @return array
 	 */
 	public static function get_hidden_product_types(): array {

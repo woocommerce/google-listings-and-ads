@@ -8,6 +8,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class WooCommerceSubscriptions
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Integration
  */
 class WooCommerceSubscriptions implements IntegrationInterface {
