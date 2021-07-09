@@ -13,7 +13,11 @@ import { API_NAMESPACE } from './constants';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
-	createNotice( 'error', message );
+
+	// Only show errors that are not authorization issues.
+	if ( error.statusCode !== 401 ) {
+		createNotice( 'error', message );
+	}
 
 	// eslint-disable-next-line no-console
 	console.log( error );

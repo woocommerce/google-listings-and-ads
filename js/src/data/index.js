@@ -29,6 +29,22 @@ apiFetch.use(
 	createErrorResponseCatcher( ( response ) => {
 		if ( response.status === 401 ) {
 			getHistory().replace( getReconnectAccountsUrl() );
+
+			// Inject the status code to let the subsequent handlers can identify the 401 response error.
+			return ( response.json || response.text )
+				.call( response )
+				.then( ( errorInfo ) => {
+					if ( typeof errorInfo === 'string' ) {
+						return { message: errorInfo };
+					}
+					return errorInfo;
+				} )
+				.then( ( errorInfo ) => {
+					return Promise.reject( {
+						...errorInfo,
+						statusCode: response.status,
+					} );
+				} );
 		}
 
 		// Throws error response to subsequent middlewares
