@@ -87,6 +87,8 @@ describe( 'aggregateIntervals', () => {
 			[ '2021-06' ],
 			[ '2021-08' ]
 		);
+
+		const result = aggregateIntervals( intervals1, intervals2 );
 		const expectedIntervals = toIntervals(
 			[ '2021-01' ],
 			[ '2021-02' ],
@@ -97,8 +99,6 @@ describe( 'aggregateIntervals', () => {
 			[ '2021-07' ],
 			[ '2021-08' ]
 		);
-
-		const result = aggregateIntervals( intervals1, intervals2 );
 
 		expectedIntervals.forEach( ( item, i ) => {
 			expect( result[ i ] ).toMatchObject( item );
@@ -114,12 +114,12 @@ describe( 'aggregateIntervals', () => {
 			[ '2021-01', 56, 78 ],
 			[ '2021-02', 78, 90 ]
 		);
+
+		const result = aggregateIntervals( intervals1, intervals2 );
 		const expectedIntervals = toIntervals(
 			[ '2021-01', 68, 112 ],
 			[ '2021-02', 112, 146 ]
 		);
-
-		const result = aggregateIntervals( intervals1, intervals2 );
 
 		expect( result ).toHaveLength( expectedIntervals.length );
 		expectedIntervals.forEach( ( item, i ) => {
@@ -130,12 +130,12 @@ describe( 'aggregateIntervals', () => {
 	it( "should merge two given intervals' items to a union result by `interval`", () => {
 		const intervals1 = toIntervals( [ '2021-01', 12 ] );
 		const intervals2 = toIntervals( [ '2021-02', 34 ] );
+
+		const result = aggregateIntervals( intervals1, intervals2 );
 		const expectedIntervals = toIntervals(
 			[ '2021-01', 12 ],
 			[ '2021-02', 34 ]
 		);
-
-		const result = aggregateIntervals( intervals1, intervals2 );
 
 		expect( result ).toHaveLength( expectedIntervals.length );
 		expectedIntervals.forEach( ( item, i ) => {
@@ -146,9 +146,9 @@ describe( 'aggregateIntervals', () => {
 	it( 'When any metric in `paidFields` does not exist in `subtotals`, should fill its value with 0', () => {
 		const intervals1 = toIntervals( [ '2021-01', , 1, , 3 ] );
 		const intervals2 = toIntervals( [ '2021-01', , , 2, , 4 ] );
-		const expectedIntervals = toIntervals( [ '2021-01', 0, 1, 2, 3, 4 ] );
 
 		const result = aggregateIntervals( intervals1, intervals2 );
+		const expectedIntervals = toIntervals( [ '2021-01', 0, 1, 2, 3, 4 ] );
 
 		expectedIntervals.forEach( ( item, i ) => {
 			expect( result[ i ] ).toMatchObject( item );
@@ -173,6 +173,7 @@ describe( 'sumToPerformance', () => {
 	it( 'should be able to sum paid `totals` to performance only', () => {
 		const paid = toPaidTotals( 123 );
 		const free = undefined;
+
 		const performance = sumToPerformance( paid, free );
 
 		expect( performance ).toMatchObject( {
@@ -187,6 +188,7 @@ describe( 'sumToPerformance', () => {
 	it( 'should be able to sum free `totals` to performance only', () => {
 		const paid = undefined;
 		const free = toFreeTotals( 456 );
+
 		const performance = sumToPerformance( paid, free, freeFields );
 
 		expect( performance ).toMatchObject( {
@@ -202,6 +204,7 @@ describe( 'sumToPerformance', () => {
 		const sameFields = [ 'ranks' ];
 		const paid = toTotals( sameFields, 123 );
 		const free = toTotals( sameFields, 456 );
+
 		const performance = sumToPerformance( paid, free, sameFields );
 
 		expect( performance ).toMatchObject( {
@@ -218,6 +221,7 @@ describe( 'sumToPerformance', () => {
 		const expectedFreeFields = [ 'views' ];
 		const paid = toTotals( paidOnlyFields, 1 );
 		const free = toTotals( expectedFreeFields, 1 );
+
 		const performance = sumToPerformance( paid, free, expectedFreeFields );
 
 		expect( performance ).toMatchObject( {
@@ -231,6 +235,7 @@ describe( 'sumToPerformance', () => {
 		const expectedFields = [ 'ranks' ];
 		const paid = toTotals( expectedFields, 1 );
 		const free = toTotals( expectedFields );
+
 		const performance = sumToPerformance( paid, free, expectedFields );
 
 		expect( performance ).toMatchObject( {
@@ -267,6 +272,7 @@ describe( 'addBaseToPerformance', () => {
 			clicks: { value: 10 },
 			sales: { value: 10 },
 		};
+
 		const result = addBaseToPerformance( performance, base );
 
 		expect( result ).toEqual( {
