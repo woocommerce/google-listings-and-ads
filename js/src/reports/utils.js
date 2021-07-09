@@ -119,7 +119,7 @@ export function sumToPerformance(
 					MISSING_FREE_LISTINGS_DATA.FOR_REQUEST;
 			} else {
 				// There is free listings data, sum with paid one.
-				value = ( paidTotals[ key ] || 0 ) + freeTotals[ key ];
+				value = ( paidTotals[ key ] || 0 ) + ( freeTotals[ key ] || 0 );
 			}
 		}
 
