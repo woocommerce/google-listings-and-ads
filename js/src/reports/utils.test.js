@@ -167,7 +167,7 @@ describe( 'sumToPerformance', () => {
 		);
 	}
 
-	it( 'should be able to sum paid `totals` to performance only', () => {
+	it( 'When only paid `totals` is given, should still map it to performance data', () => {
 		const paid = toTotals( paidFields, 123 );
 		const free = undefined;
 
@@ -182,7 +182,7 @@ describe( 'sumToPerformance', () => {
 		} );
 	} );
 
-	it( 'should be able to sum free `totals` to performance only', () => {
+	it( 'When paid `totals` is not given, should still be able to calculate performance data', () => {
 		const paid = undefined;
 		const free = toTotals( freeFields, 456 );
 
@@ -197,48 +197,56 @@ describe( 'sumToPerformance', () => {
 		} );
 	} );
 
-	it( 'should sum the same field from paid `totals` and free `totals` to performance', () => {
-		const sameFields = [ 'ranks' ];
-		const paid = toTotals( sameFields, 123 );
-		const free = toTotals( sameFields, 456 );
+	describe( 'When paid and free `totals` are given', () => {
+		it( 'should sum the same fields from paid and free `totals` to performance', () => {
+			const sameFields = [ 'ranks' ];
+			const paid = toTotals( sameFields, 123 );
+			const free = toTotals( sameFields, 456 );
 
-		const performance = sumToPerformance( paid, free, sameFields );
+			const performance = sumToPerformance( paid, free, sameFields );
 
-		expect( performance ).toMatchObject( {
-			[ sameFields[ 0 ] ]: {
-				value: 579,
-				delta: null,
-				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.NONE,
-			},
+			expect( performance ).toMatchObject( {
+				[ sameFields[ 0 ] ]: {
+					value: 579,
+					delta: null,
+					missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.NONE,
+				},
+			} );
 		} );
-	} );
 
-	it( 'When a paid field is not (yet) available in API, should flag the data is not available', () => {
-		const paidOnlyFields = [ 'ranks' ];
-		const expectedFreeFields = [ 'views' ];
-		const paid = toTotals( paidOnlyFields, 1 );
-		const free = toTotals( expectedFreeFields, 1 );
+		it( 'When a paid field is not (yet) available in API, should flag the data is not available', () => {
+			const paidOnlyFields = [ 'ranks' ];
+			const expectedFreeFields = [ 'views' ];
+			const paid = toTotals( paidOnlyFields, 1 );
+			const free = toTotals( expectedFreeFields, 1 );
 
-		const performance = sumToPerformance( paid, free, expectedFreeFields );
+			const performance = sumToPerformance(
+				paid,
+				free,
+				expectedFreeFields
+			);
 
-		expect( performance ).toMatchObject( {
-			[ paidOnlyFields[ 0 ] ]: {
-				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_METRIC,
-			},
+			expect( performance ).toMatchObject( {
+				[ paidOnlyFields[ 0 ] ]: {
+					missingFreeListingsData:
+						MISSING_FREE_LISTINGS_DATA.FOR_METRIC,
+				},
+			} );
 		} );
-	} );
 
-	it( `When an expected free field doesn't exist, should flag anticipated data is not returned from API`, () => {
-		const expectedFields = [ 'ranks' ];
-		const paid = toTotals( expectedFields, 1 );
-		const free = toTotals( expectedFields );
+		it( `When an expected free field doesn't exist, should flag anticipated data is not returned from API`, () => {
+			const expectedFields = [ 'ranks' ];
+			const paid = toTotals( expectedFields, 1 );
+			const free = toTotals( expectedFields );
 
-		const performance = sumToPerformance( paid, free, expectedFields );
+			const performance = sumToPerformance( paid, free, expectedFields );
 
-		expect( performance ).toMatchObject( {
-			[ expectedFields[ 0 ] ]: {
-				missingFreeListingsData: MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
-			},
+			expect( performance ).toMatchObject( {
+				[ expectedFields[ 0 ] ]: {
+					missingFreeListingsData:
+						MISSING_FREE_LISTINGS_DATA.FOR_REQUEST,
+				},
+			} );
 		} );
 	} );
 } );
