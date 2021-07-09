@@ -231,7 +231,7 @@ describe( 'mapReportFieldsToPerformance', () => {
 		} );
 	} );
 
-	it( "When the metric field doesn't exists in one of `primary` and `secondary`, should flag anticipated data is not returned from API", () => {
+	it( "When the metric field doesn't exist in one of `primary` and `secondary`, should flag anticipated data is not returned from API", () => {
 		// "a" does not exist in `secondary`
 		let performance = mapReportFieldsToPerformance( { a: 1 }, { b: 2 } );
 		expect( performance ).toMatchObject( {
