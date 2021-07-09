@@ -79,8 +79,8 @@ describe( 'getReportQuery', () => {
 			const query = {};
 
 			expect(
-				getReportQuery( category, 'free', query, dateReference ).ids
-			).toBeUndefined();
+				getReportQuery( category, 'free', query, dateReference )
+			).not.toHaveProperty( 'ids' );
 		} );
 	} );
 
@@ -90,8 +90,8 @@ describe( 'getReportQuery', () => {
 		};
 
 		expect(
-			getReportQuery( 'programs', 'free', query, 'primary' ).ids
-		).toBe( query.programs );
+			getReportQuery( 'programs', 'free', query, 'primary' )
+		).toHaveProperty( 'ids', query.programs );
 	} );
 
 	it( 'When the products report query contains `products`, should have `ids` field, with values prepended with `gla_`', () => {
@@ -101,8 +101,8 @@ describe( 'getReportQuery', () => {
 		};
 
 		expect(
-			getReportQuery( 'products', 'free', oneProductQuery, 'primary' ).ids
-		).toBe( 'gla_2468' );
+			getReportQuery( 'products', 'free', oneProductQuery, 'primary' )
+		).toHaveProperty( 'ids', 'gla_2468' );
 
 		// Search multiple products.
 		const productsQuery = {
@@ -110,8 +110,8 @@ describe( 'getReportQuery', () => {
 		};
 
 		expect(
-			getReportQuery( 'products', 'free', productsQuery, 'primary' ).ids
-		).toBe( 'gla_123,gla_456,gla_7890' );
+			getReportQuery( 'products', 'free', productsQuery, 'primary' )
+		).toHaveProperty( 'ids', 'gla_123,gla_456,gla_7890' );
 	} );
 } );
 
