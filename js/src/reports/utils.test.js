@@ -167,11 +167,8 @@ describe( 'sumToPerformance', () => {
 		);
 	}
 
-	const toFreeTotals = toTotals.bind( null, freeFields );
-	const toPaidTotals = toTotals.bind( null, paidFields );
-
 	it( 'should be able to sum paid `totals` to performance only', () => {
-		const paid = toPaidTotals( 123 );
+		const paid = toTotals( paidFields, 123 );
 		const free = undefined;
 
 		const performance = sumToPerformance( paid, free );
@@ -187,7 +184,7 @@ describe( 'sumToPerformance', () => {
 
 	it( 'should be able to sum free `totals` to performance only', () => {
 		const paid = undefined;
-		const free = toFreeTotals( 456 );
+		const free = toTotals( freeFields, 456 );
 
 		const performance = sumToPerformance( paid, free, freeFields );
 
