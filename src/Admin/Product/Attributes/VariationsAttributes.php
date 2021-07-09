@@ -81,7 +81,8 @@ class VariationsAttributes implements Service, Registerable, Conditional {
 		$data = $this->get_form( $product, $variation_index )->get_view_data();
 
 		// Do not render the form if it doesn't contain any child attributes.
-		if ( empty( $data['children'] ) || empty( $data['children'][0]['children'] ) ) {
+		$attributes = reset( $data['children'] );
+		if ( empty( $data['children'] ) || empty( $attributes['children'] ) ) {
 			return;
 		}
 
