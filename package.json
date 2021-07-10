@@ -48,6 +48,7 @@
 		"@woocommerce/e2e-utils": "^0.1.5",
 		"@woocommerce/eslint-plugin": "^1.2.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
+		"@wordpress/prettier-config": "^1.0.5",
 		"@wordpress/scripts": "^12.5.0",
 		"@wordpress/stylelint-config": "^19.0.5",
 		"bundlewatch": "^0.3.2",
@@ -116,7 +117,10 @@
 			}
 		],
 		"ci": {
-			"trackBranches": ["trunk", "develop"]
+			"trackBranches": [
+				"trunk",
+				"develop"
+			]
 		}
 	}
 }
