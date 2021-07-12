@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
 class WCProductAdapter extends GoogleProduct implements Validatable {
 	use PluginHelper;
 
-	public const AVAILABILITY_IN_STOCK     = 'in stock';
+	public const AVAILABILITY_IN_STOCK = 'in stock';
 	public const AVAILABILITY_OUT_OF_STOCK = 'out of stock';
 
 	public const IMAGE_SIZE_FULL = 'full';
@@ -285,6 +285,25 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
+	 * Add a shipping country for the product.
+	 *
+	 * @param string $country
+	 *
+	 * @since x.x.x
+	 */
+	public function remove_shipping_country( string $country ): void {
+		$product_shippings = $this->getShipping() ?? [];
+
+		foreach ( $product_shippings as $index => $shipping ) {
+			if ( $country === $shipping->getCountry() ) {
+				unset( $product_shippings[ $index ] );
+			}
+		}
+
+		$this->setShipping( $product_shippings );
+	}
+
+	/**
 	 * @param string $country
 	 *
 	 * @return bool
@@ -420,8 +439,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			/**
 			 * Filters the calculated product price.
 			 *
-			 * @param float      $price   Calculated price of the product
-			 * @param WC_Product $product WooCommerce product
+			 * @param float      $price        Calculated price of the product
+			 * @param WC_Product $product      WooCommerce product
 			 * @param bool       $tax_excluded Whether tax is excluded from product price
 			 */
 			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
@@ -457,7 +476,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$sale_price    = $product->get_sale_price();
 		$active_price  = $product->get_price();
 		if ( ( empty( $sale_price ) && $active_price < $regular_price ) ||
-			( ! empty( $sale_price ) && $active_price < $sale_price ) ) {
+			 ( ! empty( $sale_price ) && $active_price < $sale_price ) ) {
 			$sale_price = $active_price;
 		}
 
@@ -510,22 +529,22 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$now = new WC_DateTime();
 		// if we have a sale end date in the future, but no start date, set the start date to now()
 		if ( ! empty( $end_date ) &&
-			$end_date > $now &&
-			empty( $start_date )
+			 $end_date > $now &&
+			 empty( $start_date )
 		) {
 			$start_date = $now;
 		}
 		// if we have a sale start date in the past, but no end date, do not include the start date.
 		if ( ! empty( $start_date ) &&
-			$start_date < $now &&
-			empty( $end_date )
+			 $start_date < $now &&
+			 empty( $end_date )
 		) {
 			$start_date = null;
 		}
 		// if we have a start date in the future, but no end date, assume a one-day sale.
 		if ( ! empty( $start_date ) &&
-			$start_date > $now &&
-			empty( $end_date )
+			 $start_date > $now &&
+			 empty( $end_date )
 		) {
 			$end_date = clone $start_date;
 			$end_date->add( new DateInterval( 'P1D' ) );
@@ -659,6 +678,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	 */
 	public function setTargetCountry( $targetCountry ) {
+		// remove shipping for current target country
+		$this->remove_shipping_country( $this->getTargetCountry() );
+
+		// set the new target country
 		parent::setTargetCountry( $targetCountry );
 
 		// we need to reset the prices because tax is based on the country
