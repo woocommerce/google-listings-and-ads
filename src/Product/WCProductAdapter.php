@@ -80,6 +80,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			throw InvalidValue::not_instance_of( WC_Product_Variable::class, 'parent_wc_product' );
 		}
 
+		if ( empty( $array['targetCountry'] ) ) {
+			throw InvalidValue::is_empty( 'targetCountry' );
+		}
+
 		$this->wc_product        = $array['wc_product'];
 		$this->parent_wc_product = $array['parent_wc_product'] ?? null;
 
