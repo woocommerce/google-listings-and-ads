@@ -64,13 +64,13 @@ abstract class AbstractProductSyncerJob extends AbstractActionSchedulerJob imple
 	}
 
 	/**
-	 * Can the job start.
+	 * Can the job be scheduled.
 	 *
 	 * @param array|null $args
 	 *
-	 * @return bool Returns true if the job can start.
+	 * @return bool Returns true if the job can be scheduled.
 	 */
-	public function can_start( $args = [] ): bool {
+	public function can_schedule( $args = [] ): bool {
 		return ! $this->is_running( $args ) && $this->is_mc_connected();
 	}
 }

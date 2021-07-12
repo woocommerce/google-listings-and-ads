@@ -204,12 +204,12 @@ class SyncerHooks implements Service, Registerable {
 		}
 
 		if ( ! empty( $products_to_update ) ) {
-			$this->update_products_job->start( [ $products_to_update ] );
+			$this->update_products_job->schedule( [ $products_to_update ] );
 		}
 
 		if ( ! empty( $products_to_delete ) ) {
 			$request_entries = $this->batch_helper->generate_delete_request_entries( $products_to_delete );
-			$this->delete_products_job->start( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
+			$this->delete_products_job->schedule( [ BatchProductIDRequestEntry::convert_to_id_map( $request_entries )->get() ] );
 		}
 	}
 
@@ -222,7 +222,7 @@ class SyncerHooks implements Service, Registerable {
 		if ( isset( $this->delete_requests_map[ $product_id ] ) ) {
 			$product_id_map = BatchProductIDRequestEntry::convert_to_id_map( $this->delete_requests_map[ $product_id ] )->get();
 			if ( ! empty( $product_id_map ) && ! $this->is_already_scheduled_to_delete( $product_id ) ) {
-				$this->delete_products_job->start( [ $product_id_map ] );
+				$this->delete_products_job->schedule( [ $product_id_map ] );
 				$this->set_already_scheduled_to_delete( $product_id );
 			}
 		}

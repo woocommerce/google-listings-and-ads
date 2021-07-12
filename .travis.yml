@@ -47,7 +47,12 @@ matrix:
     - name: "Coding standard check"
       php: 7.4
       env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=cs WP_MULTISITE=0
-      script: npm ci && npm run lint
+      script: npm run lint
+    - name: "Bundle size"
+      php: 7.4
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=cs WP_MULTISITE=0 CI_BRANCH_BASE="${TRAVIS_BRANCH}"
+      # We run the production build, to watch also .zip size.
+      script: npm run build && npx bundlewatch
 
 before_install:
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer self-update --1; fi

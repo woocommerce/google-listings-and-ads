@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -86,12 +87,25 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @return array An array with product tabs with the Yoast SEO tab added.
 	 */
 	private function add_tab( array $tabs ): array {
-		$product_types   = $this->get_applicable_product_types();
-		$show_if_classes = ! empty( $product_types ) ? ' show_if_' . join( ' show_if_', $product_types ) : '';
+		$shown_types = array_map(
+			function ( string $product_type ) {
+				return "show_if_${product_type}";
+			},
+			$this->get_applicable_product_types()
+		);
+
+		$hidden_types = array_map(
+			function ( string $product_type ) {
+				return "hide_if_${product_type}";
+			},
+			ProductSyncer::get_hidden_product_types()
+		);
+
+		$classes = array_merge( [ 'gla' ], $shown_types, $hidden_types );
 
 		$tabs['gla_attributes'] = [
 			'label'  => 'Google Listings and Ads',
-			'class'  => 'gla' . $show_if_classes,
+			'class'  => join( ' ', $classes ),
 			'target' => 'gla_attributes',
 		];
 

@@ -54,20 +54,20 @@ class PluginUpdate implements Service, InstallableInterface {
 	public function install( string $old_version, string $new_version ): void {
 		foreach ( $this->updates as $version => $jobs ) {
 			if ( version_compare( $old_version, $version, '<' ) ) {
-				$this->start_jobs( $jobs );
+				$this->schedule_jobs( $jobs );
 			}
 		}
 	}
 
 	/**
-	 * Start a list of jobs.
+	 * Schedules a list of jobs.
 	 *
 	 * @param array $jobs List of jobs
 	 */
-	protected function start_jobs( array $jobs ): void {
+	protected function schedule_jobs( array $jobs ): void {
 		foreach ( $jobs as $job ) {
 			try {
-				$this->job_repository->get( $job )->start();
+				$this->job_repository->get( $job )->schedule();
 			} catch ( JobException $e ) {
 				do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 			}
