@@ -635,7 +635,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 *
 	 * @return $this
 	 */
-	public function map_gla_attributes( array $attributes ): WCProductAdapter {
+	protected function map_gla_attributes( array $attributes ): WCProductAdapter {
 		$gla_attributes = [];
 		foreach ( $attributes as $attribute_id => $attribute_value ) {
 			if ( property_exists( $this, $attribute_id ) ) {
