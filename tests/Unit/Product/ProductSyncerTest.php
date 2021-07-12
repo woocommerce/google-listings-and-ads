@@ -248,7 +248,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-						->method( 'is_setup_complete' )
+						->method( 'is_connected' )
 						->willReturn( false );
 		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
 
@@ -261,7 +261,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-						->method( 'is_setup_complete' )
+						->method( 'is_connected' )
 						->willReturn( false );
 		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
 
@@ -274,7 +274,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-						->method( 'is_setup_complete' )
+						->method( 'is_connected' )
 						->willReturn( false );
 		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
 
@@ -287,7 +287,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 
 		$merchant_center = $this->createMock( MerchantCenterService::class );
 		$merchant_center->expects( $this->any() )
-						->method( 'is_setup_complete' )
+						->method( 'is_connected' )
 						->willReturn( false );
 		$this->product_syncer = new ProductSyncer( $this->google_service, $this->batch_helper, $this->product_helper, $merchant_center, $this->wc );
 
@@ -356,7 +356,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
-							  ->method( 'is_setup_complete' )
+							  ->method( 'is_connected' )
 							  ->willReturn( true );
 
 		$this->google_service = $this->createMock( GoogleProductService::class );
