@@ -238,7 +238,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 		foreach ( $results->get_errors() as $error_entry ) {
 			$wc_product = wc_get_product( $error_entry->get_wc_product_id() );
 			$this->assertNotEmpty( $error_entry->get_errors() );
-			// product is not longer synced if Google API returns Not Found error for it
+			// product is no longer synced if Google API returns Not Found error for it
 			$this->assertFalse( $this->product_helper->is_product_synced( $wc_product ) );
 		}
 	}
