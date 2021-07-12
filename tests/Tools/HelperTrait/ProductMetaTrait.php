@@ -6,8 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use PHPUnit\Framework\MockObject\MockObject;
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * Trait ProductMeta
  *
