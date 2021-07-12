@@ -5,6 +5,9 @@
 # ignore .yml file and use the .editorconfig instead.
 *.yml
 
+# ignore composer.lock file and let it use space indentation like WC Admin and Gutenberg.
+composer.lock
+
 # from .eslintignore file.
 build
 build-module
