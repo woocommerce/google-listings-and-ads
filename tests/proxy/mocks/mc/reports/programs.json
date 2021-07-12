@@ -1,68 +1,68 @@
 {
-  "results": [
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 1 }
-      },
-      "metrics": {
-        "clicks": 12,
-        "impressions": 123
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 2 }
-      },
-      "metrics": {
-        "clicks": 89,
-        "impressions": 400
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 3 }
-      },
-      "metrics": {
-        "clicks": 2,
-        "impressions": 130
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 4 }
-      },
-      "metrics": {
-        "clicks": 123,
-        "impressions": 589
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 5 }
-      },
-      "metrics": {
-        "clicks": 98,
-        "impressions": 100
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 6 }
-      },
-      "metrics": {
-        "clicks": 9,
-        "impressions": 12
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 7 }
-      },
-      "metrics": {
-        "clicks": 18,
-        "impressions": 251
-      }
-    }
-  ],
-  "nextPageToken": "pagetwo"
+	"results": [
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 1 }
+			},
+			"metrics": {
+				"clicks": 12,
+				"impressions": 123
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 2 }
+			},
+			"metrics": {
+				"clicks": 89,
+				"impressions": 400
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 3 }
+			},
+			"metrics": {
+				"clicks": 2,
+				"impressions": 130
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 4 }
+			},
+			"metrics": {
+				"clicks": 123,
+				"impressions": 589
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 5 }
+			},
+			"metrics": {
+				"clicks": 98,
+				"impressions": 100
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 6 }
+			},
+			"metrics": {
+				"clicks": 9,
+				"impressions": 12
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 7 }
+			},
+			"metrics": {
+				"clicks": 18,
+				"impressions": 251
+			}
+		}
+	],
+	"nextPageToken": "pagetwo"
 }

@@ -1,102 +1,102 @@
 {
-  "results": [
-    {
-      "metrics": {
-        "clicks": "12",
-        "conversions": 1,
-        "conversionsValue": 20,
-        "costMicros": "6650000",
-        "impressions": "1987"
-      },
-      "segments": {
-        "date": "2021-05-01",
-        "productItemId": "gla_123",
-        "productTitle": "Product One"
-      }
-    },
-    {
-      "metrics": {
-        "clicks": "98",
-        "conversions": 3,
-        "conversionsValue": 15,
-        "costMicros": "2260000",
-        "impressions": "123"
-      },
-      "segments": {
-        "date": "2021-05-02",
-        "productItemId": "gla_123",
-        "productTitle": "Product One"
-      }
-    },
-    {
-      "metrics": {
-        "clicks": "7",
-        "conversions": 5,
-        "conversionsValue": 82,
-        "costMicros": "120000",
-        "impressions": "842"
-      },
-      "segments": {
-        "date": "2021-05-03",
-        "productItemId": "345",
-        "productTitle": "Product Two"
-      }
-    },
-    {
-      "metrics": {
-        "clicks": "83",
-        "conversions": 2,
-        "conversionsValue": 34,
-        "costMicros": "7890000",
-        "impressions": "2831"
-      },
-      "segments": {
-        "date": "2021-05-04",
-        "productItemId": "345",
-        "productTitle": "Product Two"
-      }
-    },
-    {
-      "metrics": {
-        "clicks": "118",
-        "conversions": 7,
-        "conversionsValue": 123,
-        "costMicros": "82360000",
-        "impressions": "9627"
-      },
-      "segments": {
-        "date": "2021-05-05",
-        "productItemId": "345",
-        "productTitle": "Product Two"
-      }
-    },
-    {
-      "metrics": {
-        "clicks": "12",
-        "conversions": 0,
-        "conversionsValue": 0,
-        "costMicros": "1020000",
-        "impressions": "375"
-      },
-      "segments": {
-        "date": "2021-05-06",
-        "productItemId": "567",
-        "productTitle": "Product Three"
-      }
-    },
-    {
-      "metrics": {
-        "clicks": "83",
-        "conversions": 8,
-        "conversionsValue": 964,
-        "costMicros": "3680000",
-        "impressions": "1450"
-      },
-      "segments": {
-        "date": "2021-05-07",
-        "productItemId": "567",
-        "productTitle": "Product Three"
-      }
-    }
-  ]
+	"results": [
+		{
+			"metrics": {
+				"clicks": "12",
+				"conversions": 1,
+				"conversionsValue": 20,
+				"costMicros": "6650000",
+				"impressions": "1987"
+			},
+			"segments": {
+				"date": "2021-05-01",
+				"productItemId": "gla_123",
+				"productTitle": "Product One"
+			}
+		},
+		{
+			"metrics": {
+				"clicks": "98",
+				"conversions": 3,
+				"conversionsValue": 15,
+				"costMicros": "2260000",
+				"impressions": "123"
+			},
+			"segments": {
+				"date": "2021-05-02",
+				"productItemId": "gla_123",
+				"productTitle": "Product One"
+			}
+		},
+		{
+			"metrics": {
+				"clicks": "7",
+				"conversions": 5,
+				"conversionsValue": 82,
+				"costMicros": "120000",
+				"impressions": "842"
+			},
+			"segments": {
+				"date": "2021-05-03",
+				"productItemId": "345",
+				"productTitle": "Product Two"
+			}
+		},
+		{
+			"metrics": {
+				"clicks": "83",
+				"conversions": 2,
+				"conversionsValue": 34,
+				"costMicros": "7890000",
+				"impressions": "2831"
+			},
+			"segments": {
+				"date": "2021-05-04",
+				"productItemId": "345",
+				"productTitle": "Product Two"
+			}
+		},
+		{
+			"metrics": {
+				"clicks": "118",
+				"conversions": 7,
+				"conversionsValue": 123,
+				"costMicros": "82360000",
+				"impressions": "9627"
+			},
+			"segments": {
+				"date": "2021-05-05",
+				"productItemId": "345",
+				"productTitle": "Product Two"
+			}
+		},
+		{
+			"metrics": {
+				"clicks": "12",
+				"conversions": 0,
+				"conversionsValue": 0,
+				"costMicros": "1020000",
+				"impressions": "375"
+			},
+			"segments": {
+				"date": "2021-05-06",
+				"productItemId": "567",
+				"productTitle": "Product Three"
+			}
+		},
+		{
+			"metrics": {
+				"clicks": "83",
+				"conversions": 8,
+				"conversionsValue": 964,
+				"costMicros": "3680000",
+				"impressions": "1450"
+			},
+			"segments": {
+				"date": "2021-05-07",
+				"productItemId": "567",
+				"productTitle": "Product Three"
+			}
+		}
+	]
 }

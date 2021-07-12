@@ -1,5 +1,4 @@
-Using a proxy for mocked data
----
+## Using a proxy for mocked data
 
 Since data returned from the Google API can rely on actual live campaigns, the purpose of this proxy is to mock some of that data.
 
@@ -13,6 +12,7 @@ npm run test-proxy
 ```
 
 Or, if you want to use a local connect server:
+
 ```
 WOOCOMMERCE_CONNECT_SERVER=http://localhost:5000 npm run test-proxy
 ```
@@ -32,6 +32,7 @@ define( 'WOOCOMMERCE_GLA_CONNECT_SERVER_URL', 'http://host.docker.internal:5500'
 ```
 
 #### Non Mac users
+
 `host.docker.internal` works only on Mac environments. On others, you would have to use `172.17.0.1` instead of `localhost` in the PHP snippet and in `tests/proxy/config.js`.
 
 ### Available mocks
