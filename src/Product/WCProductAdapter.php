@@ -553,7 +553,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return bool
 	 */
 	public function is_virtual(): bool {
-		return $this->wc_product->is_virtual();
+		return false !== $this->wc_product->is_virtual();
 	}
 
 	/**
