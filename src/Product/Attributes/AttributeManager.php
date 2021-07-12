@@ -80,7 +80,7 @@ class AttributeManager implements Service {
 		$this->validate( $product, $attribute_id );
 
 		$value = null;
-		if ( $product->meta_exists( $this->prefix_meta_key( $attribute_id ) ) ) {
+		if ( $this->exists( $product, $attribute_id ) ) {
 			$value = $product->get_meta( $this->prefix_meta_key( $attribute_id ), true );
 		}
 
@@ -158,6 +158,20 @@ class AttributeManager implements Service {
 	}
 
 	/**
+	 * Whether the attribute exists and has been set for the product.
+	 *
+	 * @param WC_Product $product
+	 * @param string     $attribute_id
+	 *
+	 * @return bool
+	 *
+	 * @since x.x.x
+	 */
+	public function exists( WC_Product $product, string $attribute_id ): bool {
+		return $product->meta_exists( $this->prefix_meta_key( $attribute_id ) );
+	}
+
+	/**
 	 * Returns an array of attribute types for the given product
 	 *
 	 * @param WC_Product $product
@@ -198,7 +212,7 @@ class AttributeManager implements Service {
 	 *
 	 * @return string[][] of attribute classes mapped to product types
 	 */
-	public function get_attribute_types_map(): array {
+	protected function get_attribute_types_map(): array {
 		if ( ! isset( $this->attribute_types_map ) ) {
 			$this->map_attribute_types();
 		}

@@ -19,7 +19,7 @@ class Adult extends AbstractAttribute {
 	 *
 	 * @return string
 	 *
-	 * @see Google\Service\ShoppingContent\Product for the list of properties.
+	 * @see \Google\Service\ShoppingContent\Product for the list of properties.
 	 */
 	public static function get_id(): string {
 		return 'adult';
