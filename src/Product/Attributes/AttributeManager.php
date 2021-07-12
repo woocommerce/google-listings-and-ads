@@ -164,6 +164,8 @@ class AttributeManager implements Service {
 	 * @param string     $attribute_id
 	 *
 	 * @return bool
+	 *
+	 * @since x.x.x
 	 */
 	public function exists( WC_Product $product, string $attribute_id ): bool {
 		return $product->meta_exists( $this->prefix_meta_key( $attribute_id ) );
