@@ -65,6 +65,8 @@ class InvalidValue extends LogicException implements GoogleListingsAndAdsExcepti
 	 * @param string $key The name of the value.
 	 *
 	 * @return static
+	 *
+	 * @since x.x.x
 	 */
 	public static function is_empty( string $key ): InvalidValue {
 		return new static( sprintf( 'The value of %s can not be empty.', $key ) );
