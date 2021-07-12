@@ -1,0 +1,26 @@
+# ignore CSS and SCSS files since they are handled by stylelint.
+*.css
+*.scss
+
+# ignore .yml file and use the .editorconfig instead.
+*.yml
+
+# from .eslintignore file.
+build
+build-module
+coverage
+languages
+node_modules
+vendor
+legacy
+
+# from .gitignore file.
+.DS_Store
+Thumbs.db
+wp-cli.local.yml
+*.sql
+*.tar.gz
+*.tgz
+*.zip
+.idea
+.vscode/
