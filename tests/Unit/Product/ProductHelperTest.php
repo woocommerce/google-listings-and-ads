@@ -41,7 +41,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_synced( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
@@ -69,7 +69,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_synced_keeps_existing_google_ids( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
@@ -89,7 +89,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_synced_doesnt_delete_errors_unless_all_target_countries_synced( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
@@ -156,7 +156,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_unsynced( WC_Product $product ) {
 		// First mark the product as synced to update its meta data
@@ -173,7 +173,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
 		$parent = WC_Helper_Product::create_variation_product();
@@ -200,7 +200,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_remove_google_id( WC_Product $product ) {
 		$this->product_meta->update_google_ids(
@@ -219,7 +219,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_remove_google_id_marks_as_unsynced_if_empty_ids( WC_Product $product ) {
 		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1', ] );
@@ -233,7 +233,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_invalid( WC_Product $product ) {
 		$errors = [
@@ -257,7 +257,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_invalid_updates_failed_sync_attempts_if_internal_error_exists( WC_Product $product ) {
 		$errors = [
@@ -314,7 +314,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_pending( WC_Product $product ) {
 		$this->product_helper->mark_as_pending( $product );
@@ -338,7 +338,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_synced_google_product_ids( WC_Product $product ) {
 		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1' ] );
@@ -386,7 +386,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_product_synced( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
@@ -397,7 +397,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_product_synced_return_false_if_no_google_id( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
@@ -409,7 +409,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_product_synced_return_false_if_no_synced_at( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
@@ -421,7 +421,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_ready_visible_published( WC_Product $product ) {
 		$product->set_status( 'publish' );
@@ -434,7 +434,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_ready_not_visible_published( WC_Product $product ) {
 		$product->set_status( 'publish' );
@@ -447,7 +447,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_ready_visible_not_published( WC_Product $product ) {
 		$product->set_status( 'draft' );
@@ -585,7 +585,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_failed_recently( WC_Product $product ) {
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD + 5 );
@@ -596,7 +596,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_failed_recently_less_than_threshold( WC_Product $product ) {
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD - 1 );
@@ -607,7 +607,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_failed_recently_old_failure_but_more_than_threshold( WC_Product $product ) {
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD + 5 );
@@ -618,7 +618,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_channel_visibility( WC_Product $product ) {
 		$this->product_meta->update_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
@@ -637,7 +637,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_sync_status( WC_Product $product ) {
 		$this->product_meta->update_sync_status( $product, SyncStatus::SYNCED );
@@ -647,7 +647,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_mc_status( WC_Product $product ) {
 		$this->product_meta->update_mc_status( $product, MCStatus::APPROVED );
@@ -684,7 +684,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_validation_errors( WC_Product $product ) {
 		$errors = [
@@ -718,7 +718,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_validation_errors_returns_as_is_if_keys_arent_product_ids( WC_Product $product ) {
 		$errors = [
@@ -747,7 +747,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @return array
 	 */
-	public function return_blank_test_products(): array {
+	public function return_test_products(): array {
 		// variation products are provided separately to related tests
 		return [
 			[ WC_Helper_Product::create_simple_product() ],
