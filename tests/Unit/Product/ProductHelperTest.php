@@ -457,18 +457,102 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $result );
 	}
 
-	public function test_is_sync_ready_variation_parent_visible_and_published() {
-		$parent    = WC_Helper_Product::create_variation_product();
+	public function test_is_sync_ready_out_of_stock() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_status( 'publish' );
+		$product->set_stock_status( 'outofstock' );
+		$product->save();
+		$this->product_meta->update_visibility( $product, ChannelVisibility::SYNC_AND_SHOW );
+
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $product ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'no' );
+		$this->assertTrue( $this->product_helper->is_sync_ready( $product ) );
+	}
+
+	public function test_is_sync_ready_variation_out_of_stock() {
+		$parent = WC_Helper_Product::create_variation_product();
 		$parent->set_status( 'publish' );
 		$parent->save();
 		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
 
-		$variation = $this->wc->get_product( $parent->get_children()[0] );
-		$variation->set_status( 'draft' );
-		$variation->save();
-		$this->product_meta->update_visibility( $variation, ChannelVisibility::DONT_SYNC_AND_SHOW );
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$variation_1->set_stock_status( 'outofstock' );
+		$variation_1->save();
 
-		$this->assertTrue( $this->product_helper->is_sync_ready( $variation ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation_1 ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'no' );
+		$this->assertTrue( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variation_with_no_price() {
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$variation_1->set_price( '' );
+		$variation_1->set_regular_price( '' );
+		$variation_1->save();
+
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variation_disabled() {
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$variation_1->set_status( 'private' );
+		$variation_1->save();
+
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variation_disabled_but_hide_invisible_filter_returns_false() {
+		add_filter(
+			'woocommerce_hide_invisible_variations',
+			function () {
+				return false;
+			}
+		);
+
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$parent->set_status( 'private' );
+		$variation_1->save();
+
+		$this->assertTrue( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variable_out_of_stock() {
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		foreach ( $parent->get_children() as $variation_id ) {
+			$variation = $this->wc->get_product( $variation_id );
+			$variation->set_stock_status( 'outofstock' );
+			$variation->save();
+		}
+		$parent->set_stock_status( 'outofstock' );
+		$parent->save();
+
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $parent ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'no' );
+		$this->assertTrue( $this->product_helper->is_sync_ready( $parent ) );
 	}
 
 	public function test_is_sync_ready_variation_parent_not_visible_but_published() {
@@ -669,6 +753,13 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 			[ WC_Helper_Product::create_simple_product() ],
 			[ WC_Helper_Product::create_variation_product() ], // WC_Product_Variable
 		];
+	}
+
+	public function tearDown() {
+		parent::tearDown();
+
+		delete_option( 'woocommerce_hide_out_of_stock_items' );
+		remove_all_filters( 'woocommerce_hide_invisible_variations' );
 	}
 
 	/**
