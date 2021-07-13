@@ -270,7 +270,7 @@ class ProductRepository implements Service {
 				[
 					'key'     => ProductMetaHandler::KEY_SYNCED_AT,
 					'compare' => '<',
-					'value'   => strtotime( '-28 days' ),
+					'value'   => strtotime( '-25 days' ),
 				],
 			],
 		];
