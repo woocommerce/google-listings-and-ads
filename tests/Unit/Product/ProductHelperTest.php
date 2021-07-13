@@ -620,18 +620,18 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	 *
 	 * @dataProvider return_blank_test_products
 	 */
-	public function test_get_visibility( WC_Product $product ) {
+	public function test_get_channel_visibility( WC_Product $product ) {
 		$this->product_meta->update_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
-		$result = $this->product_helper->get_visibility( $product );
+		$result = $this->product_helper->get_channel_visibility( $product );
 		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $result );
 	}
 
-	public function test_get_visibility_variation_product_inherits_from_parent() {
+	public function test_get_channel_visibility_variation_product_inherits_from_parent() {
 		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
 		$this->product_meta->update_visibility( $parent, ChannelVisibility::DONT_SYNC_AND_SHOW );
 		$this->product_meta->update_visibility( $variation, ChannelVisibility::SYNC_AND_SHOW );
-		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_helper->get_visibility( $variation ) );
+		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_helper->get_channel_visibility( $variation ) );
 	}
 
 	/**

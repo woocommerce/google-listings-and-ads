@@ -125,7 +125,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'field_id'    => $this->get_visibility_field_id(),
 			'product_id'  => $product_id,
 			'product'     => $product,
-			'visibility'  => $this->product_helper->get_visibility( $product ),
+			'visibility'  => $this->product_helper->get_channel_visibility( $product ),
 			'sync_status' => $this->meta_handler->get_sync_status( $product ),
 			'issues'      => $this->product_helper->get_validation_errors( $product ),
 		];

@@ -295,7 +295,7 @@ class ProductHelper implements Service {
 			}
 		}
 
-		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_visibility( $product ) ) &&
+		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) ) &&
 			   ( in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) &&
 			   ( 'publish' === $product_status ) &&
 			   $product_visibility;
@@ -325,7 +325,7 @@ class ProductHelper implements Service {
 	 *
 	 * @return string|null
 	 */
-	public function get_visibility( WC_Product $wc_product ): ?string {
+	public function get_channel_visibility( WC_Product $wc_product ): ?string {
 		$visibility = $this->meta_handler->get_visibility( $wc_product );
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			// todo: we might need to define visibility per variation later.
