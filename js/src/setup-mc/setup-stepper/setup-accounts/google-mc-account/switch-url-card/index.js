@@ -2,14 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { Button, createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import toAccountText from '.~/utils/toAccountText';
 import AppButton from '.~/components/app-button';
-import AppTextButton from '.~/components/app-text-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
@@ -103,15 +102,12 @@ const SwitchUrlCard = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<AppTextButton
-					isSecondary
-					onClick={ handleUseDifferentMCClick }
-				>
+				<Button isLink onClick={ handleUseDifferentMCClick }>
 					{ __(
 						'Or, use a different Merchant Center account',
 						'google-listings-and-ads'
 					) }
-				</AppTextButton>
+				</Button>
 			</Section.Card.Footer>
 		</Section.Card>
 	);

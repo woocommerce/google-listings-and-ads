@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -9,7 +10,6 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import TitleButtonLayout from '.~/components/title-button-layout';
 import CreateAccountButton from './create-account-button';
-import AppTextButton from '.~/components/app-text-button';
 
 const CreateAccountCard = ( props ) => {
 	const {
@@ -35,12 +35,12 @@ const CreateAccountCard = ( props ) => {
 			</Section.Card.Body>
 			{ allowShowExisting && (
 				<Section.Card.Footer>
-					<AppTextButton isSecondary onClick={ onShowExisting }>
+					<Button isLink onClick={ onShowExisting }>
 						{ __(
 							'Or, use your existing Google Merchant Center account',
 							'google-listings-and-ads'
 						) }
-					</AppTextButton>
+					</Button>
 				</Section.Card.Footer>
 			) }
 		</Section.Card>

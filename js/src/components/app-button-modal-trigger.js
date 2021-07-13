@@ -15,9 +15,9 @@ import { useState, cloneElement } from '@wordpress/element';
  * ```js
  * <AppButtonModalTrigger
 		button={
-			<AppTextButton>
+			<Button isLink>
 				Click to open MySuperModal
-			</AppTextButton>
+			</Button>
 		}
 		modal={ <MySuperModal /> }
 	/>

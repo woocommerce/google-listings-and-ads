@@ -3,6 +3,7 @@
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -15,7 +16,6 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import AppTextButton from '.~/components/app-text-button';
 
 const ConnectAds = ( props ) => {
 	const { onCreateNew = () => {} } = props;
@@ -73,12 +73,12 @@ const ConnectAds = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<AppTextButton isSecondary onClick={ onCreateNew }>
+				<Button isLink onClick={ onCreateNew }>
 					{ __(
 						'Or, create a new Google Ads account',
 						'google-listings-and-ads'
 					) }
-				</AppTextButton>
+				</Button>
 			</Section.Card.Footer>
 		</Section.Card>
 	);
