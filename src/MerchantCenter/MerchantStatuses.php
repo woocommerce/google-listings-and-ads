@@ -388,7 +388,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	/**
 	 * Custom issues can be added to the merchant issues table.
 	 *
-	 * @since 1.2.0
+	 * @since x.x.x
 	 */
 	protected function refresh_custom_merchant_issues() {
 		$custom_issues = apply_filters( 'woocommerce_gla_custom_merchant_issues', [], $this->cache_created_time );

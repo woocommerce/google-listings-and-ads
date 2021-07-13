@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class GoogleProductFeedValidator
  *
- * @since 1.2.0
+ * @since x.x.x
  *
  * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
