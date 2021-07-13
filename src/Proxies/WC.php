@@ -86,4 +86,20 @@ class WC {
 
 		return $product;
 	}
+
+	/**
+	 * Get a WooCommerce product if it exists or return null if it doesn't
+	 *
+	 * @param int $product_id
+	 *
+	 * @return WC_Product|null
+	 */
+	public function maybe_get_product( int $product_id ): ?WC_Product {
+		$product = wc_get_product( $product_id );
+		if ( ! $product instanceof WC_Product ) {
+			return null;
+		}
+
+		return $product;
+	}
 }

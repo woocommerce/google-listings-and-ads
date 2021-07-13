@@ -27,11 +27,11 @@ class BatchProductIDRequestEntry {
 	 * BatchDeleteProductRequestEntry constructor.
 	 *
 	 * @param int    $wc_product_id
-	 * @param string $product
+	 * @param string $product_id
 	 */
-	public function __construct( int $wc_product_id, string $product ) {
+	public function __construct( int $wc_product_id, string $product_id ) {
 		$this->wc_product_id = $wc_product_id;
-		$this->product_id    = $product;
+		$this->product_id    = $product_id;
 	}
 
 	/**

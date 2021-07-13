@@ -34,6 +34,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\StartProductSync;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\SyncerHooks;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -103,7 +104,8 @@ class JobServiceProvider extends AbstractServiceProvider {
 			BatchProductHelper::class,
 			ProductHelper::class,
 			JobRepository::class,
-			MerchantCenterService::class
+			MerchantCenterService::class,
+			WC::class
 		);
 
 		$this->share_with_tags( StartProductSync::class, JobRepository::class );

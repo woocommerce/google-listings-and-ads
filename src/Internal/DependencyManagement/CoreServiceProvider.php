@@ -234,7 +234,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			GoogleProductService::class,
 			BatchProductHelper::class,
 			ProductHelper::class,
-			MerchantCenterService::class
+			MerchantCenterService::class,
+			WC::class
 		);
 
 		// Set up inflector for tracks classes.
