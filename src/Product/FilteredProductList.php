@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Countable;
 use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
-class FilteredProductList {
+class FilteredProductList implements Countable {
 
 	/**
 	 * List of product objects or IDs.
@@ -76,5 +77,14 @@ class FilteredProductList {
 	 */
 	public function get_unfiltered_count(): int {
 		return $this->unfiltered_count;
+	}
+
+	/**
+	 * Count products for Countable.
+	 *
+	 * @return int
+	 */
+	public function count(): int {
+		return count( $this->products );
 	}
 }

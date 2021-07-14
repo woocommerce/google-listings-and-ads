@@ -208,6 +208,34 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		);
 	}
 
+	public function test_find_sync_ready_products_unfiltered_count() {
+		// a variable product that is not sync ready (only the parent is marked as do not sync and show)
+		$no_sync_product = WC_Helper_Product::create_variation_product();
+		$this->product_meta->update_visibility( wc_get_product( $no_sync_product ), ChannelVisibility::DONT_SYNC_AND_SHOW );
+
+		// a simple product that is sync ready
+		$simple_product = WC_Helper_Product::create_simple_product();
+		$this->product_meta->update_visibility( $simple_product, ChannelVisibility::SYNC_AND_SHOW );
+
+		// a variable product that is sync ready along with all its variations
+		$variable_product = WC_Helper_Product::create_variation_product();
+		$this->product_meta->update_visibility( wc_get_product( $variable_product ), ChannelVisibility::SYNC_AND_SHOW );
+
+		$results = $this->product_repository->find_sync_ready_products();
+
+		// compare the IDs because the objects might not be identical
+		$this->assertEquals(
+			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
+			$results->get_product_ids()
+		);
+
+		// unsynced variations should be included in the unfiltered count
+		$this->assertEquals(
+			$results->get_unfiltered_count(),
+			count( $results ) + count( $no_sync_product->get_children() )
+		);
+	}
+
 	public function test_find_expiring_product_ids() {
 		$product_1 = WC_Helper_Product::create_simple_product();
 		$this->product_helper->mark_as_synced( $product_1, $this->generate_google_product_mock() );
