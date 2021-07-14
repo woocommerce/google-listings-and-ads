@@ -259,7 +259,7 @@ class ProductSyncer implements Service {
 	/**
 	 * Return the list of product types we will hide functionality for (default none).
 	 *
-	 * @since x.x.x
+	 * @since 1.2.0
 	 *
 	 * @return array
 	 */

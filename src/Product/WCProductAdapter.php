@@ -289,7 +289,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 *
 	 * @param string $country
 	 *
-	 * @since x.x.x
+	 * @since 1.2.0
 	 */
 	public function remove_shipping_country( string $country ): void {
 		$product_shippings = $this->getShipping() ?? [];
