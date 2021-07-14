@@ -285,7 +285,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
-	 * Add a shipping country for the product.
+	 * Remove a shipping country from the product.
 	 *
 	 * @param string $country
 	 *
