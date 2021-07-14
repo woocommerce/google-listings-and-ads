@@ -80,6 +80,7 @@ export default function ChooseAudience( {
 						} }
 						validate={ handleValidate }
 						onSubmitCallback={ onContinue }
+						onSubmit={ onContinue }
 						onChangeCallback={ onChange }
 					>
 						{ ( formProps ) => {

@@ -112,6 +112,7 @@ const SetupFreeListings = () => {
 				} }
 				validate={ handleValidate }
 				onSubmitCallback={ handleSubmitCallback }
+				onSubmit={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
 					const { values, handleSubmit } = formProps;
