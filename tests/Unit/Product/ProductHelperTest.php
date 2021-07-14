@@ -20,8 +20,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WC_Helper_Product;
 use WC_Product;
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * Class ProductHelperTest
  *
