@@ -1043,7 +1043,7 @@ class ConnectionTest implements Service, Registerable {
 				$product_repository = $this->container->get( ProductRepository::class );
 
 				try {
-					$products = $product_repository->find_sync_ready_products();
+					$products = $product_repository->find_sync_ready_products()->get();
 
 					$result = $product_syncer->update( $products );
 
