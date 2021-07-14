@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -194,21 +195,16 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		}
 
 		$results = $this->product_repository->find_sync_ready_products();
+		$this->assertInstanceOf( FilteredProductList::class, $results );
 
 		// compare the IDs because the objects might not be identical
-		$result_ids = array_map(
-			function ( WC_Product $product ) {
-				return $product->get_id();
-			},
-			$results
+		$this->assertEquals(
+			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
+			$results->get_product_ids()
 		);
 		$this->assertEquals(
 			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
-			$result_ids
-		);
-		$this->assertEquals(
-			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
-			$this->product_repository->find_sync_ready_product_ids()
+			$this->product_repository->find_sync_ready_product_ids()->get()
 		);
 	}
 
