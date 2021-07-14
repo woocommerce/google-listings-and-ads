@@ -67,13 +67,16 @@ const SetupAdsForm = () => {
 		} );
 	};
 
+	const handleChange = ( _, values ) => {
+		setEditedValues( values );
+	};
+
 	return (
 		<Form
 			initialValues={ initialValues }
 			validate={ handleValidate }
-			onChangeCallback={ ( _, values ) => {
-				setEditedValues( values );
-			} }
+			onChangeCallback={ handleChange }
+			onChange={ handleChange }
 			onSubmitCallback={ handleSubmit }
 			onSubmit={ handleSubmit }
 		>

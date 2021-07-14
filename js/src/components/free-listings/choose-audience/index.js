@@ -23,7 +23,7 @@ import '.~/components/free-listings/choose-audience/index.scss';
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.
  * @param {string} [props.initialData] Target audience data, if not given AppSinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
 export default function ChooseAudience( {
@@ -82,6 +82,7 @@ export default function ChooseAudience( {
 						onSubmitCallback={ onContinue }
 						onSubmit={ onContinue }
 						onChangeCallback={ onChange }
+						onChange={ onChange }
 					>
 						{ ( formProps ) => {
 							return <FormContent formProps={ formProps } />;
