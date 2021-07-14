@@ -5,6 +5,9 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests;
 
 use WC_Install;
 
+define( 'GLA_TESTS_DIR', __DIR__ );
+define( 'GLA_TESTS_DATA_DIR', GLA_TESTS_DIR . '/data' );
+
 global $gla_dir;
 global $wp_plugins_dir;
 global $wc_dir;

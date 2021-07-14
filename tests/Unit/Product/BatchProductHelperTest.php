@@ -160,6 +160,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	public function test_validate_and_generate_update_request_entries() {
 		$products = $this->create_and_return_supported_test_products();
 
+		$this->merchant_center->expects( $this->any() )
+							  ->method( 'get_main_target_country' )
+							  ->willReturn( 'US' );
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
 						->willReturn( [] );
@@ -213,6 +216,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 							}
 						);
 
+		$this->merchant_center->expects( $this->any() )
+							  ->method( 'get_main_target_country' )
+							  ->willReturn( 'US' );
+
 		$results = $this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 
 		$results_product_ids = array_map(
@@ -236,6 +243,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->product_meta->update_visibility( $skipped_product, ChannelVisibility::DONT_SYNC_AND_SHOW );
 		}
 
+		$this->merchant_center->expects( $this->any() )
+							  ->method( 'get_main_target_country' )
+							  ->willReturn( 'US' );
 		$this->validator->expects( $this->any() )
 						->method( 'validate' )
 						->willReturn( [] );
@@ -291,6 +301,9 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->merchant_center->expects( $this->once() )
 							  ->method( 'get_target_countries' )
 							  ->willReturn( [ 'US' ] );
+		$this->merchant_center->expects( $this->any() )
+							  ->method( 'get_main_target_country' )
+							  ->willReturn( 'US' );
 
 		$stale_google_ids = [
 			'AU' => "online:en:AU:gla_{$stale_product_id}",
