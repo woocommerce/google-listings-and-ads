@@ -50,9 +50,13 @@ matrix:
       script: npm run lint
     - name: "Bundle size"
       php: 7.4
-      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=cs WP_MULTISITE=0 CI_BRANCH_BASE="${TRAVIS_BRANCH}"
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=bs WP_MULTISITE=0 CI_BRANCH_BASE="${TRAVIS_BRANCH}"
       # We run the production build, to watch also .zip size.
-      script: npm run build && npx bundlewatch
+      script:
+        - echo 'Build production bundles' && echo -en "travis_fold:start:Build\r"
+        - npm run build
+        - echo -en 'travis_fold:end:Build\r'
+        - npx bundlewatch
 
 before_install:
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer self-update --1; fi
@@ -71,7 +75,7 @@ before_script:
   - if [[ "${WP_TRAVISCI}" != "jest" ]]; then composer install; fi
   - bash bin/install-wp-tests.sh wordpress_test root '' localhost $WP_VERSION
   - npm ci
-  - npm run dev
+  - if [[ "${WP_TRAVISCI}" != "bs" ]]; then npm run dev; fi
 
 script:
   - composer test-unit
