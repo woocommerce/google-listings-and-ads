@@ -115,6 +115,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.2.1 - 2021-07-15 =
+* Fix - Made Forms submit and change behavior work with WooCommerce >= 5.5 (WooCommerce Admin >= 2.4.0).
+
 = 1.2.0 - 2021-07-14 =
 * Add - Added a param to indicate the redirect URI when back from Google authorization.
 * Add - Endpoint for checking access to previously connected accounts.
