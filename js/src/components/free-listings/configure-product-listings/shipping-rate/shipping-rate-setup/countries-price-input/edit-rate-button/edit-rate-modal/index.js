@@ -78,6 +78,7 @@ const EditRateModal = ( {
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
+			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
 				const {

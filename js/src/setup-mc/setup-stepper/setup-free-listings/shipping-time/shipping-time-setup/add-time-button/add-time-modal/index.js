@@ -54,6 +54,7 @@ const AddTimeModal = ( props ) => {
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
+			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
 				const { getInputProps, isValidForm, handleSubmit } = formProps;

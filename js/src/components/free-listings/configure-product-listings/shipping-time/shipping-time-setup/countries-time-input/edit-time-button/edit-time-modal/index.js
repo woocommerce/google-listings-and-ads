@@ -77,6 +77,7 @@ const EditTimeModal = ( {
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
+			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
 				const { getInputProps, isValidForm, handleSubmit } = formProps;
