@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -13,7 +14,6 @@ import CreateAccountButton from './create-account-button';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import AppTextButton from '.~/components/app-text-button';
 
 const CreateAccount = ( props ) => {
 	const { allowShowExisting, onShowExisting } = props;
@@ -71,12 +71,12 @@ const CreateAccount = ( props ) => {
 			</Section.Card.Body>
 			{ allowShowExisting && (
 				<Section.Card.Footer>
-					<AppTextButton isSecondary onClick={ onShowExisting }>
+					<Button isLink onClick={ onShowExisting }>
 						{ __(
 							'Or, use your existing Google Ads account',
 							'google-listings-and-ads'
 						) }
-					</AppTextButton>
+					</Button>
 				</Section.Card.Footer>
 			) }
 		</Section.Card>

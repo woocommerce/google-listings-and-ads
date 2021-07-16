@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AppTextButton from '.~/components/app-text-button';
 import EditProgramPromptModal from './edit-program-prompt-modal';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 
@@ -16,9 +16,9 @@ const EditProgramButton = ( props ) => {
 	return (
 		<AppButtonModalTrigger
 			button={
-				<AppTextButton isSecondary>
+				<Button isLink>
 					{ __( 'Edit', 'google-listings-and-ads' ) }
-				</AppTextButton>
+				</Button>
 			}
 			modal={ <EditProgramPromptModal programId={ programId } /> }
 		/>
