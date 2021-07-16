@@ -59,6 +59,7 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmitCallback }
+			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
 				const { getInputProps, isValidForm, handleSubmit } = formProps;

@@ -68,6 +68,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmit }
+			onSubmit={ handleSubmit }
 		>
 			{ ( formProps ) => {
 				const {

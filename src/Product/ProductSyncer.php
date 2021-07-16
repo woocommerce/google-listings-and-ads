@@ -140,14 +140,23 @@ class ProductSyncer implements Service {
 		do_action(
 			'woocommerce_gla_debug_message',
 			sprintf(
-				"Submitted %s products:\n%s\n%s Failed:\n%s",
+				"Submitted %s products:\n%s",
 				count( $updated_products ),
-				json_encode( $updated_products ),
-				count( $invalid_products ),
-				json_encode( $invalid_products )
+				json_encode( $updated_products )
 			),
 			__METHOD__
 		);
+		if ( ! empty( $invalid_products ) ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf(
+					"%s products failed to sync with Merchant Center:\n%s",
+					count( $invalid_products ),
+					json_encode( $invalid_products )
+				),
+				__METHOD__
+			);
+		}
 
 		return new BatchProductResponse( $updated_products, $invalid_products );
 	}
@@ -217,14 +226,23 @@ class ProductSyncer implements Service {
 		do_action(
 			'woocommerce_gla_debug_message',
 			sprintf(
-				"Deleted %s products:\n%s\n%s Failed:\n%s",
+				"Deleted %s products:\n%s",
 				count( $deleted_products ),
 				json_encode( $deleted_products ),
-				count( $invalid_products ),
-				json_encode( $invalid_products )
 			),
 			__METHOD__
 		);
+		if ( ! empty( $invalid_products ) ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf(
+					"Failed to delete %s products from Merchant Center:\n%s",
+					count( $invalid_products ),
+					json_encode( $invalid_products )
+				),
+				__METHOD__
+			);
+		}
 
 		return new BatchProductResponse( $deleted_products, $invalid_products );
 	}
@@ -241,7 +259,7 @@ class ProductSyncer implements Service {
 	/**
 	 * Return the list of product types we will hide functionality for (default none).
 	 *
-	 * @since x.x.x
+	 * @since 1.2.0
 	 *
 	 * @return array
 	 */

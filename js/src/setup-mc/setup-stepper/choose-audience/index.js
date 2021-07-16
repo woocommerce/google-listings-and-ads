@@ -78,6 +78,7 @@ const ChooseAudience = ( props ) => {
 						} }
 						validate={ handleValidate }
 						onSubmitCallback={ handleSubmitCallback }
+						onSubmit={ handleSubmitCallback }
 					>
 						{ ( formProps ) => {
 							return <FormContent formProps={ formProps } />;

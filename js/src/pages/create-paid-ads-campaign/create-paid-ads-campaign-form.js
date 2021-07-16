@@ -74,6 +74,7 @@ const CreatePaidAdsCampaignForm = () => {
 			} }
 			validate={ handleValidate }
 			onSubmitCallback={ handleSubmit }
+			onSubmit={ handleSubmit }
 		>
 			{ ( formProps ) => {
 				const {

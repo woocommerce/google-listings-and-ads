@@ -11,8 +11,6 @@ use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * Trait Product
  *

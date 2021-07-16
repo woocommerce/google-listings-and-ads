@@ -14,7 +14,7 @@ import getCountriesPriceArray from './getCountriesPriceArray';
  * @param {Array<ShippingRateFromServerSide>} props.value Array of individual shipping rates to be used as the initial values of the form.
  * @param {string} props.currencyCode Shop's currency code.
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
- * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
 export default function ShippingCountriesForm( {
 	value: shippingRates,

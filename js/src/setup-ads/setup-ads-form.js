@@ -56,23 +56,29 @@ const SetupAdsForm = () => {
 		shouldPreventLeave
 	);
 
+	const handleSubmit = ( values ) => {
+		const { amount, country: countryArr } = values;
+		const country = countryArr && countryArr[ 0 ];
+
+		recordLaunchPaidCampaignClickEvent( amount, country );
+
+		handleSetupComplete( amount, country, () => {
+			setSubmitted( true );
+		} );
+	};
+
+	const handleChange = ( _, values ) => {
+		setEditedValues( values );
+	};
+
 	return (
 		<Form
 			initialValues={ initialValues }
 			validate={ handleValidate }
-			onChangeCallback={ ( _, values ) => {
-				setEditedValues( values );
-			} }
-			onSubmitCallback={ ( values ) => {
-				const { amount, country: countryArr } = values;
-				const country = countryArr && countryArr[ 0 ];
-
-				recordLaunchPaidCampaignClickEvent( amount, country );
-
-				handleSetupComplete( amount, country, () => {
-					setSubmitted( true );
-				} );
-			} }
+			onChangeCallback={ handleChange }
+			onChange={ handleChange }
+			onSubmitCallback={ handleSubmit }
+			onSubmit={ handleSubmit }
 		>
 			{ ( formProps ) => {
 				const mixedFormProps = {

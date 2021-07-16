@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.7
 Requires PHP: 7.3
-Stable tag: 1.1.0
+Stable tag: 1.2.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -115,6 +115,46 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.2.1 - 2021-07-15 =
+* Fix - Made Forms submit and change behavior work with WooCommerce >= 5.5 (WooCommerce Admin >= 2.4.0).
+
+= 1.2.0 - 2021-07-14 =
+* Add - Added a param to indicate the redirect URI when back from Google authorization.
+* Add - Endpoint for checking access to previously connected accounts.
+* Add - Google account reconnection UI and flow.
+* Add - Incompatibility warning for Google Product Feed plugin.
+* Fix - Add unit test configurations.
+* Fix - Add unit tests for AttributeManager and AbstractAttribute.
+* Fix - Add unit tests for BatchProductHelper and ProductFactory.
+* Fix - Add unit tests for ProductHelper and ProductMetaHandler.
+* Fix - Add unit tests for ProductRepository.
+* Fix - Add unit tests for ProductSyncer and SyncerHooks.
+* Fix - Add unit tests for WCProductAdapter.
+* Fix - Adds e2e testing covering merchant getting started to Setup MC page 1.
+* Fix - Conflict with LiteSpeed cache plugin.
+* Fix - Consistently return error codes from the middleware server.
+* Fix - Create test products manually instead of using a provider.
+* Fix - Hide product attributes and channel visibility for subscription products.
+* Fix - Order billing status results by newest entries first.
+* Fix - Remove undefined variable warning during Ads account connection.
+* Fix - TypeError in WooCommerce Brands integration.
+* Fix - Update travis config to use latest version of WP and WC.
+* Tweak - 401 error when retrieving status data and Google account is not connected.
+* Tweak - Add bundlewatch to monitor bundle size in GitHub PRs.
+* Tweak - Change product expiry to after 25 days.
+* Tweak - Clarify which HTML header tags are inserted by GLA.
+* Tweak - Clear Merchant Center issues table on account disconnect.
+* Tweak - Improve namespace replacements in conflicting composer packages.
+* Tweak - Omit unpublished products from issues to resolve.
+* Tweak - Prevent showing all 401 response errors in the general error message UI.
+* Tweak - Stop syncing products if the Merchant or Google accounts are no longer connected.
+* Tweak - Unset Ads currency DB option when disconnecting account.
+* Tweak - WC 5.5 compatibility.
+* Update - Latest versions of phpseclib and wp-cli packages.
+* Update - Switch apiclient services to namespaces.
+* Update - Version 10.0 of the Google Ads library.
+* Update - Version 2.10 of the apiclient library.
+
 = 1.1.0 - 2021-06-23 =
 * Fix - Adds warning message and checkbox for reclaiming URL in Google Merchant Center account connection setup.
 * Fix - Align not synced product stats.
@@ -144,89 +184,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Use target countries as shipping destinations.
 * Tweak - WC 5.4 compatibility.
 * Update - Increase required minimum WordPress and WooCommerce versions.
-
-= 1.0.0 - 2021-06-08 =
-* Fix - Add Tracks events for site claim and URL switching.
-* Fix - Add debugging logs for product syncer.
-* Fix - Add event tracking when clicking on the chart tabs in the report pages.
-* Fix - Add event trackings when the "Launch paid campaign" buttons are clicked.
-* Fix - Add status box in the Product Feed page.
-* Fix - Add table's pagination tracking events to the product feed page.
-* Fix - Add track events for account connections.
-* Fix - Add validations to fix that the free listings setup/edit forms could be submitted with a negative shipping rate/time.
-* Fix - Bump TravisCI's OS and node version to match the one used for the release.
-* Fix - Change "disconnect all accounts" modal text.
-* Fix - Change error message and add Open Google MC button to the Dashboard.
-* Fix - Change to use batch upsert actions for saving shipping data on the Edit Free Listings page.
-* Fix - Check product exists with helper function.
-* Fix - Cleanup synced product IDs on settings change.
-* Fix - Do not request ads reports when the setup is incomplete.
-* Fix - Double check product's sync ready status returned by repository.
-* Fix - Expose pre-sync errors.
-* Fix - Fall back to 'SurfacesAcrossGoogle' status if 'Shopping' isn't available for Product Feed.
-* Fix - Fix compatibility issue that lacks required class of new WC Navigation in supported WC versions.
-* Fix - Fix fatal error when duplicating and trashing synced variable products.
-* Fix - Fix the alignment of label and helper next to radio and checkbox.
-* Fix - Fix the problem of the "Create another campaign" button not working.
-* Fix - Hide the ChannelVisibilityMetaBox for unsupported products.
-* Fix - Hide unpublished products from the product feed.
-* Fix - Include pre-sync product errors in the issues API.
-* Fix - Make the free shipping threshold be able to set up with $0.
-* Fix - Modify `path` in URL to make additional pages work with WooCommerce Navigation.
-* Fix - Only submit 'Published' products.
-* Fix - Optimize presync error to issue collation process.
-* Fix - Override values for enhanced free listings issue.
-* Fix - Prevent render breaking when getting errors from report API in the programs report page.
-* Fix - Product titles for Free Listing reports.
-* Fix - Refactor product meta to use product object instead of ID.
-* Fix - Remove Checkbox.
-* Fix - Reports mocked responses.
-* Fix - Resolve getLabels immediately, if free listings are requested. ….
-* Fix - Retrieve product IDs and use update_post_meta.
-* Fix - Return empty if no matching attributes found.
-* Fix - Scheduled sync count.
-* Fix - Shipping rates and shipping times: Add and edit modals - validation logic.
-* Fix - Show selected program label in the filter on program report page load.
-* Fix - Small ProductQueryFeedHelper Fix.
-* Fix - Sort list of supported countries.
-* Fix - Throw an error if no ID is provided.
-* Fix - Tracking doc tweaks.
-* Fix - Tracking settings.
-* Fix - Use empty check for campaign name.
-* Fix - Use product name or title in products report.
-* Fix - Validate required and incompatible plugins.
-* Fix - Workaround `woocommerce/data` dependency issues, reset `package-lock.json`.
-
-= 0.6.0 - 2021-05-27 =
-* Fix - Add FAQs to step 1 of the MC setup flow.
-* Fix - Add extra product attributes.
-* Fix - Add validations for the main steps of edit free listings.
-* Fix - Admin Notes 2 to 4.
-* Fix - Aggregate intervals from free and paid campaigns, render programs report w/o waiting for secondary request.
-* Fix - Change JetPack connection name.
-* Fix - Changes to Success Modal after first setup.
-* Fix - Connect programs report page to the API data.
-* Fix - Connect programs report table to API data.
-* Fix - Consistent currency format across all summary list usages.
-* Fix - Edit the channel visibility of products on the Product Feed page.
-* Fix - Error notice if WooCommerce Admin isn't active.
-* Fix - Fix fatal in Product Feed API.
-* Fix - Get started copy updates.
-* Fix - Implement the deletion feature of paid campaigns for the dashboard page.
-* Fix - Integration with new WC Navigation.
-* Fix - Make `getReport` ignore unsupported orderby query params.
-* Fix - Make unit-tests run with @woocommerce packages.
-* Fix - Make unit-tests run with `woocommerce/date` (~`/components`~) dependency.
-* Fix - Move @woocommerce/* dependency tests to /tests/unit.
-* Fix - Note lack of support for IE in `README.md`.
-* Fix - Prefetch product feed data to prevent multiple duplicated Google API requests.
-* Fix - REST endpoint for batch product channel visibility updates.
-* Fix - Redirect to onboarding / get started page on plugin activation.
-* Fix - Remove product feed coming soon notice and show reports by default.
-* Fix - Run unit tests on TravisCI,.
-* Fix - Silently skip Product Feed products that are no longer in WooCommerce .
-* Fix - Sort report API results by date index.
-* Fix - Sort the merged programs table.
-* Tweak - WC 5.4 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

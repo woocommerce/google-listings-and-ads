@@ -80,6 +80,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			throw InvalidValue::not_instance_of( WC_Product_Variable::class, 'parent_wc_product' );
 		}
 
+		if ( empty( $array['targetCountry'] ) ) {
+			throw InvalidValue::is_empty( 'targetCountry' );
+		}
+
 		$this->wc_product        = $array['wc_product'];
 		$this->parent_wc_product = $array['parent_wc_product'] ?? null;
 
@@ -152,13 +156,15 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return string
 	 */
 	protected function get_wc_product_description(): string {
-		$description = ! empty( $this->wc_product->get_description() ) ?
+		$use_short_description = apply_filters( 'woocommerce_gla_use_short_description', false );
+
+		$description = ! empty( $this->wc_product->get_description() ) && ! $use_short_description ?
 			$this->wc_product->get_description() :
 			$this->wc_product->get_short_description();
 
 		// prepend the parent product description to the variation product
 		if ( $this->is_variation() ) {
-			$parent_description = ! empty( $this->parent_wc_product->get_description() ) ?
+			$parent_description = ! empty( $this->parent_wc_product->get_description() ) && ! $use_short_description ?
 				$this->parent_wc_product->get_description() :
 				$this->parent_wc_product->get_short_description();
 			$new_line           = ! empty( $description ) && ! empty( $parent_description ) ? PHP_EOL : '';
@@ -166,13 +172,17 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		}
 
 		// Strip out invalid unicode.
+		$description = mb_convert_encoding( $description, 'UTF-8', 'UTF-8' );
 		$description = preg_replace(
 			'/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u',
 			'',
 			$description
 		);
 
-		return strip_shortcodes( wp_strip_all_tags( $description ) );
+		// Strip out active shortcodes and HTML tags.
+		$description = strip_shortcodes( wp_strip_all_tags( $description ) );
+
+		return apply_filters( 'woocommerce_gla_product_attribute_value_description', $description, $this->wc_product );
 	}
 
 	/**
@@ -277,6 +287,25 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$current_shipping = $this->getShipping() ?? [];
 			$this->setShipping( array_merge( $current_shipping, $new_shipping ) );
 		}
+	}
+
+	/**
+	 * Remove a shipping country from the product.
+	 *
+	 * @param string $country
+	 *
+	 * @since 1.2.0
+	 */
+	public function remove_shipping_country( string $country ): void {
+		$product_shippings = $this->getShipping() ?? [];
+
+		foreach ( $product_shippings as $index => $shipping ) {
+			if ( $country === $shipping->getCountry() ) {
+				unset( $product_shippings[ $index ] );
+			}
+		}
+
+		$this->setShipping( $product_shippings );
 	}
 
 	/**
@@ -415,8 +444,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			/**
 			 * Filters the calculated product price.
 			 *
-			 * @param float      $price   Calculated price of the product
-			 * @param WC_Product $product WooCommerce product
+			 * @param float      $price        Calculated price of the product
+			 * @param WC_Product $product      WooCommerce product
 			 * @param bool       $tax_excluded Whether tax is excluded from product price
 			 */
 			$price = apply_filters( 'woocommerce_gla_product_attribute_value_price', $price, $product, $this->tax_excluded );
@@ -452,7 +481,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$sale_price    = $product->get_sale_price();
 		$active_price  = $product->get_price();
 		if ( ( empty( $sale_price ) && $active_price < $regular_price ) ||
-			( ! empty( $sale_price ) && $active_price < $sale_price ) ) {
+			 ( ! empty( $sale_price ) && $active_price < $sale_price ) ) {
 			$sale_price = $active_price;
 		}
 
@@ -505,22 +534,22 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$now = new WC_DateTime();
 		// if we have a sale end date in the future, but no start date, set the start date to now()
 		if ( ! empty( $end_date ) &&
-			$end_date > $now &&
-			empty( $start_date )
+			 $end_date > $now &&
+			 empty( $start_date )
 		) {
 			$start_date = $now;
 		}
 		// if we have a sale start date in the past, but no end date, do not include the start date.
 		if ( ! empty( $start_date ) &&
-			$start_date < $now &&
-			empty( $end_date )
+			 $start_date < $now &&
+			 empty( $end_date )
 		) {
 			$start_date = null;
 		}
 		// if we have a start date in the future, but no end date, assume a one-day sale.
 		if ( ! empty( $start_date ) &&
-			$start_date > $now &&
-			empty( $end_date )
+			 $start_date > $now &&
+			 empty( $end_date )
 		) {
 			$end_date = clone $start_date;
 			$end_date->add( new DateInterval( 'P1D' ) );
@@ -548,7 +577,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return bool
 	 */
 	public function is_virtual(): bool {
-		return $this->wc_product->is_virtual();
+		return false !== $this->wc_product->is_virtual();
 	}
 
 	/**
@@ -630,7 +659,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 *
 	 * @return $this
 	 */
-	public function map_gla_attributes( array $attributes ): WCProductAdapter {
+	protected function map_gla_attributes( array $attributes ): WCProductAdapter {
 		$gla_attributes = [];
 		foreach ( $attributes as $attribute_id => $attribute_value ) {
 			if ( property_exists( $this, $attribute_id ) ) {
@@ -654,6 +683,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 	 */
 	public function setTargetCountry( $targetCountry ) {
+		// remove shipping for current target country
+		$this->remove_shipping_country( $this->getTargetCountry() );
+
+		// set the new target country
 		parent::setTargetCountry( $targetCountry );
 
 		// we need to reset the prices because tax is based on the country

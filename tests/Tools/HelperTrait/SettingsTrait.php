@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * Trait SettingsTrait
  *

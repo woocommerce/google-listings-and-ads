@@ -19,7 +19,7 @@ import getCountriesTimeArray from './getCountriesTimeArray';
  * @param {Object} props
  * @param {Array<ShippingTime>} props.value Array of individual shipping times to be used as the initial values of the form.
  * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
- * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChangeCallback}
+ * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping times are changed.
  */
 export default function ShippingCountriesForm( {
 	value: shippingTimes,
