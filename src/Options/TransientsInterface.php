@@ -12,6 +12,10 @@ interface TransientsInterface {
 
 	public const MC_STATUSES = 'mc_statuses';
 
+	public const VALID_OPTIONS = [
+		self::MC_STATUSES => true,
+	];
+
 	/**
 	 * Get a transient.
 	 *
@@ -41,4 +45,11 @@ interface TransientsInterface {
 	 * @return bool
 	 */
 	public function delete( string $name ): bool;
+
+	/**
+	 * Returns all available transient keys.
+	 *
+	 * @return array
+	 */
+	public static function get_all_transient_keys(): array;
 }

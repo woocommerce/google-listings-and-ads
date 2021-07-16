@@ -19,10 +19,6 @@ final class Transients implements TransientsInterface, Service {
 
 	use PluginHelper;
 
-	private const VALID_OPTIONS = [
-		self::MC_STATUSES => true,
-	];
-
 	/**
 	 * Array of transients that we have loaded.
 	 *
@@ -87,6 +83,15 @@ final class Transients implements TransientsInterface, Service {
 		unset( $this->transients[ $name ] );
 
 		return boolval( delete_transient( $this->prefix_name( $name ) ) );
+	}
+
+	/**
+	 * Returns all available transient keys.
+	 *
+	 * @return array
+	 */
+	public static function get_all_transient_keys(): array {
+		return array_keys( self::VALID_OPTIONS );
 	}
 
 	/**
