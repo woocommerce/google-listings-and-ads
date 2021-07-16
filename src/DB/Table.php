@@ -124,5 +124,5 @@ abstract class Table implements TableInterface {
 	 *
 	 * @return string
 	 */
-	abstract protected function get_raw_name(): string;
+	abstract public static function get_raw_name(): string;
 }

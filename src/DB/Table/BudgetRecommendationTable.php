@@ -57,7 +57,7 @@ SQL;
 	 *
 	 * @return string
 	 */
-	protected function get_raw_name(): string {
+	public static function get_raw_name(): string {
 		return 'budget_recommendations';
 	}
 
@@ -87,7 +87,6 @@ SQL;
 
 		if ( file_exists( $path ) ) {
 			$csv     = array_map( 'str_getcsv', file( $path ) );
-			$headers = array_shift( $csv );
 			if ( empty( $csv ) ) {
 				return;
 			}
