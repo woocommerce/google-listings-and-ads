@@ -48,7 +48,7 @@ SQL;
 		// phpcs:ignore WordPress.DB.PreparedSQL
 		$result = $this->wpdb->get_row( "SELECT COUNT(*) AS count FROM `{$this->get_sql_safe_name()}`" );
 		if ( empty( $result->count ) ) {
-			 $this->load_initial_data();
+			$this->load_initial_data();
 		}
 	}
 
@@ -86,7 +86,7 @@ SQL;
 		$chunk_size = 500;
 
 		if ( file_exists( $path ) ) {
-			$csv     = array_map( 'str_getcsv', file( $path ) );
+			$csv = array_map( 'str_getcsv', file( $path ) );
 			if ( empty( $csv ) ) {
 				return;
 			}
