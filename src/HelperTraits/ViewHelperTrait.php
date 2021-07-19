@@ -39,6 +39,7 @@ trait ViewHelperTrait {
 			'name'             => true,
 			'selected'         => true,
 			'type'             => true,
+			'disabled'         => true,
 		];
 
 		return array_merge(
