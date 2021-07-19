@@ -216,21 +216,21 @@ trait ProductTrait {
 
 		$variations = [];
 
-		$variations[] = WC_Helper_Product::create_product_variation_object(
+		$variations[] = $this->create_product_variation_object(
 			$product->get_id(),
 			'DUMMY SKU VARIABLE SMALL',
 			10,
 			[ 'pa_size' => 'small' ]
 		);
 
-		$variations[] = WC_Helper_Product::create_product_variation_object(
+		$variations[] = $this->create_product_variation_object(
 			$product->get_id(),
 			'DUMMY SKU VARIABLE LARGE',
 			15,
 			[ 'pa_size' => 'large' ]
 		);
 
-		$variations[] = WC_Helper_Product::create_product_variation_object(
+		$variations[] = $this->create_product_variation_object(
 			$product->get_id(),
 			'DUMMY SKU VARIABLE HUGE',
 			15,
@@ -250,6 +250,36 @@ trait ProductTrait {
 		$product->set_children( $variation_ids );
 
 		return $product;
+	}
+
+	/**
+	 * Creates an instance of WC_Product_Variation with the supplied parameters, optionally persisting it to the
+	 * database.
+	 *
+	 * @param string $parent_id  Parent product id.
+	 * @param string $sku        SKU for the variation.
+	 * @param int    $price      Price of the variation.
+	 * @param array  $attributes Attributes that define the variation, e.g. ['pa_color'=>'red'].
+	 * @param bool   $save       If true, the object will be saved to the database after being created and configured.
+	 *
+	 * @return WC_Product_Variation The created object.
+	 */
+	protected function create_product_variation_object( $parent_id, $sku, $price, $attributes, $save = true ) {
+		$variation = new WC_Product_Variation();
+		$variation->set_props(
+			[
+				'parent_id'     => $parent_id,
+				'sku'           => $sku,
+				'regular_price' => $price,
+			]
+		);
+		$variation->set_parent_data( [ 'catalog_visibility' => 'visible' ] );
+		$variation->set_attributes( $attributes );
+		if ( $save ) {
+			$variation->save();
+		}
+
+		return $variation;
 	}
 
 	/**
