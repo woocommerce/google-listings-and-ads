@@ -26,6 +26,36 @@ function toTimes( ...tuples ) {
  * should not pass - returned object should contain respective property with an error message.
  */
 describe( 'checkErrors', () => {
+	it( 'When all checks are passed, should return an empty object', () => {
+		const values = {
+			shipping_rate: 'flat',
+			shipping_time: 'flat',
+			offers_free_shipping: true,
+			free_shipping_threshold: 100,
+			tax_rate: 'manual',
+			website_live: true,
+			checkout_process_secure: true,
+			payment_methods_visible: true,
+			refund_tos_visible: true,
+			contact_info_visible: true,
+		};
+		const rates = toRates( [ 'US', 10 ], [ 'JP', 30 ] );
+		const times = toTimes( [ 'US', 3 ], [ 'JP', 10 ] );
+		const codes = [ 'US', 'JP' ];
+
+		const errors = checkErrors( values, rates, times, codes );
+
+		expect( errors ).toStrictEqual( {} );
+	} );
+
+	it( 'should indicate multiple unpassed checks by setting properties in the returned object', () => {
+		const errors = checkErrors( {}, [], [], [] );
+
+		expect( errors ).toHaveProperty( 'shipping_rate' );
+		expect( errors ).toHaveProperty( 'shipping_time' );
+		expect( errors ).toHaveProperty( 'website_live' );
+	} );
+
 	describe( 'Shipping rates', () => {
 		let flatShipping;
 		let manualShipping;
