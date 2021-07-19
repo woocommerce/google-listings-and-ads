@@ -221,27 +221,6 @@ describe( 'sumToPerformance', () => {
 			} );
 		} );
 
-		it( 'When it able to sum but any fields value is `null`, should consider `null` as 0', () => {
-			const sameFields = [ 'ranks' ];
-			const paid = toTotals( sameFields, 123 );
-			const free = toTotals( sameFields, 456 );
-			const nullField = toTotals( sameFields, null );
-
-			// Paid `totals` have null value
-			let performance = sumToPerformance( nullField, free, sameFields );
-
-			expect( performance ).toMatchObject( {
-				[ sameFields[ 0 ] ]: { value: 456 },
-			} );
-
-			// Free `totals` have null value
-			performance = sumToPerformance( paid, nullField, sameFields );
-
-			expect( performance ).toMatchObject( {
-				[ sameFields[ 0 ] ]: { value: 123 },
-			} );
-		} );
-
 		it( 'When a paid field is not (yet) available in API, should flag the data is not available', () => {
 			const paidOnlyFields = [ 'ranks' ];
 			const expectedFreeFields = [ 'views' ];
