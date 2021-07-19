@@ -54,12 +54,12 @@ function sumProperies( metrics, totals1 = {}, totals2 = {} ) {
  *
  * @param {Array<IntervalsData>} [intervals1]
  * @param {Array<IntervalsData>} [intervals2]
- * @return {Array<IntervalsData>} Aggregated intervals.
+ * @return {Array<IntervalsData>|null} Aggregated intervals. `null` if both intervals are not provided.
  */
 export function aggregateIntervals( intervals1, intervals2 ) {
 	// Return early if there is nothing to merge.
 	if ( ! intervals2 ) {
-		return intervals1;
+		return intervals1 || null;
 	} else if ( ! intervals1 ) {
 		return intervals2;
 	}
@@ -119,7 +119,9 @@ export function sumToPerformance(
 					MISSING_FREE_LISTINGS_DATA.FOR_REQUEST;
 			} else {
 				// There is free listings data, sum with paid one.
-				value = ( paidTotals[ key ] || 0 ) + ( freeTotals[ key ] || 0 );
+				// `freeTotals` doesn't have fallback because it will only be number or undefined type,
+				// and the undefined has been checked above.
+				value = ( paidTotals[ key ] || 0 ) + freeTotals[ key ];
 			}
 		}
 
@@ -146,8 +148,7 @@ export function addBaseToPerformance( performance, base ) {
 			[ key ]: fieldsToPerformance(
 				performance[ key ].value,
 				base[ key ]?.value,
-				performance[ key ].missingFreeListingsData ||
-					base[ key ].missingFreeListingsData
+				performance[ key ].missingFreeListingsData
 			),
 		} ),
 		{}
