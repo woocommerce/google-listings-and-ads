@@ -50,6 +50,11 @@ if ( ! $product->is_visible() ) {
 	$input_disabled     = true;
 	$input_description  = __( 'This product cannot be shown on any channel because it is hidden from your store catalog.', 'google-listings-and-ads' );
 }
+
+$custom_attributes = [];
+if ( $input_disabled ) {
+	$custom_attributes['disabled'] = 'disabled';
+}
 ?>
 
 <div class="gla-channel-visibility-box">
@@ -65,9 +70,7 @@ if ( ! $product->is_visible() ) {
 				ChannelVisibility::SYNC_AND_SHOW      => __( 'Sync and show', 'google-listings-and-ads' ),
 				ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
 			],
-			'custom_attributes' => [
-				'disabled' => 'disabled',
-			],
+			'custom_attributes' => $custom_attributes,
 		]
 	);
 	?>
