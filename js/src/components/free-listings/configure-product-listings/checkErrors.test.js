@@ -68,7 +68,7 @@ describe( 'checkErrors', () => {
 				};
 			}
 
-			it( `When there are any selected countries' shipping rates is not set, should not pass`, () => {
+			it( `When there are any selected countries with shipping rates not set, should not pass`, () => {
 				const rates = toRates( [ 'US', 10.5 ], [ 'FR', 12.8 ] );
 				const codes = [ 'US', 'JP', 'FR' ];
 
