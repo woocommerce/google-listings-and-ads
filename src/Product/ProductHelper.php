@@ -276,8 +276,7 @@ class ProductHelper implements Service {
 	 * @return bool
 	 */
 	public function is_sync_ready( WC_Product $product ): bool {
-		$hide_out_of_stock  = 'yes' === get_option( 'woocommerce_hide_out_of_stock_items' );
-		$product_visibility = ! $hide_out_of_stock || $product->is_in_stock();
+		$product_visibility = $product->is_visible();
 		$product_status     = $product->get_status();
 
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {

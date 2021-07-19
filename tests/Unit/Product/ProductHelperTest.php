@@ -582,6 +582,20 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $this->product_helper->is_sync_ready( $variation ) );
 	}
 
+	public function test_is_sync_ready_variation_parent_hidden_in_catalog() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->set_catalog_visibility( 'hidden' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+		$variation->set_status( 'publish' );
+		$variation->save();
+		$this->product_meta->update_visibility( $variation, ChannelVisibility::SYNC_AND_SHOW );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation ) );
+	}
+
 	/**
 	 * @param WC_Product $product
 	 *
