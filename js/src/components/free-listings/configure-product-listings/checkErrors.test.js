@@ -17,6 +17,14 @@ function toTimes( ...tuples ) {
 	} ) );
 }
 
+/**
+ * checkErrors function returns an object, and if any checks are not passed,
+ * set properties respectively with an error message to indicate it.
+ *
+ * To test each cases separately, the meaning of "should (not) pass" in test descriptions are:
+ * should pass - returned object should not contain respective property.
+ * should not pass - returned object should contain respective property with an error message.
+ */
 describe( 'checkErrors', () => {
 	describe( 'Shipping rates', () => {
 		let flatShipping;
@@ -27,7 +35,7 @@ describe( 'checkErrors', () => {
 			manualShipping = { shipping_rate: 'manual' };
 		} );
 
-		it( 'When the type of shipping rate is an invalid value, should not pass', () => {
+		it( 'When the type of shipping rate is an invalid value or missing, should not pass', () => {
 			// Not set yet
 			let errors = checkErrors( {}, [], [], [] );
 
@@ -106,7 +114,7 @@ describe( 'checkErrors', () => {
 				expect( errors ).not.toHaveProperty( 'shipping_rate' );
 			} );
 
-			it( 'When the free shipping threshold is an invalid value, should not pass', () => {
+			it( 'When the free shipping threshold is an invalid value or missing, should not pass', () => {
 				// Not set yet
 				let freeShipping = createFreeShipping( null );
 				const rates = toRates( [ 'JP', 2 ] );
@@ -167,7 +175,7 @@ describe( 'checkErrors', () => {
 			manualShipping = { shipping_time: 'manual' };
 		} );
 
-		it( 'When the type of shipping time is an invalid value, should not pass', () => {
+		it( 'When the type of shipping time is an invalid value or missing, should not pass', () => {
 			// Not set yet
 			let errors = checkErrors( {}, [], [], [] );
 
@@ -247,7 +255,7 @@ describe( 'checkErrors', () => {
 			codes = [ 'US' ];
 		} );
 
-		it( `When the tax rate option is an invalid value, should not pass`, () => {
+		it( `When the tax rate option is an invalid value or missing, should not pass`, () => {
 			// Not set yet
 			let errors = checkErrors( {}, [], [], codes );
 
