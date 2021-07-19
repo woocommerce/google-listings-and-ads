@@ -146,6 +146,7 @@ describe( 'checkErrors', () => {
 
 			it( 'When the free shipping threshold is an invalid value or missing, should not pass', () => {
 				// Not set yet
+				// When set up from scratch, the initial value of `free_shipping_threshold` is null.
 				let freeShipping = createFreeShipping( null );
 				const rates = toRates( [ 'JP', 2 ] );
 				const codes = [ 'JP' ];
