@@ -20,7 +20,7 @@ $product_id = $this->product_id;
  */
 $product = $this->product;
 
-$visibility = $this->visibility;
+$channel_visibility = $this->channel_visibility;
 
 /**
  * @var string
@@ -35,26 +35,43 @@ if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
 } elseif ( ! is_null( $this->sync_status ) ) {
 	$sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
 }
-$show_status = $visibility === ChannelVisibility::SYNC_AND_SHOW && $this->sync_status !== SyncStatus::SYNCED;
+$show_status = $channel_visibility === ChannelVisibility::SYNC_AND_SHOW && $this->sync_status !== SyncStatus::SYNCED;
 
 /**
  * @var array $issues
  */
 $issues     = $this->issues;
 $has_issues = ! empty( $issues );
+
+$input_description = '';
+$input_disabled    = false;
+if ( ! $product->is_visible() ) {
+	$channel_visibility = ChannelVisibility::DONT_SYNC_AND_SHOW;
+	$show_status        = false;
+	$input_disabled     = true;
+	$input_description  = __( 'This product cannot be shown on any channel because it is hidden from your store catalog.', 'google-listings-and-ads' );
+}
+
+$custom_attributes = [];
+if ( $input_disabled ) {
+	$custom_attributes['disabled'] = 'disabled';
+}
 ?>
 
 <div class="gla-channel-visibility-box">
 	<?php
 	woocommerce_wp_select(
 		[
-			'id'      => $field_id,
-			'value'   => $visibility,
-			'label'   => __( 'Google Listing & Ads', 'google-listings-and-ads' ),
-			'options' => [
+			'id'                => $field_id,
+			'value'             => $channel_visibility,
+			'label'             => __( 'Google Listing & Ads', 'google-listings-and-ads' ),
+			'description'       => $input_description,
+			'desc_tip'          => false,
+			'options'           => [
 				ChannelVisibility::SYNC_AND_SHOW      => __( 'Sync and show', 'google-listings-and-ads' ),
 				ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
 			],
+			'custom_attributes' => $custom_attributes,
 		]
 	);
 	?>
