@@ -47,6 +47,7 @@ $input_description = '';
 $input_disabled    = false;
 if ( ! $product->is_visible() ) {
 	$channel_visibility = ChannelVisibility::DONT_SYNC_AND_SHOW;
+	$show_status        = false;
 	$input_disabled     = true;
 	$input_description  = __( 'This product cannot be shown on any channel because it is hidden from your store catalog.', 'google-listings-and-ads' );
 }
