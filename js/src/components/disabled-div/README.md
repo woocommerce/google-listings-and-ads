@@ -12,6 +12,6 @@ Make the child component appear disabled by using CSS filter.
 
 ## API
 
-| Property | Description | Type | Default |
-| --- | --- | --- | --- |
-| `disabled` | Make the child component appear disabled. | Boolean | `true` |
+| Property   | Description                               | Type    | Default |
+| ---------- | ----------------------------------------- | ------- | ------- |
+| `disabled` | Make the child component appear disabled. | Boolean | `true`  |

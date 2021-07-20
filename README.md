@@ -2,10 +2,10 @@
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
-- [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
-- [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
-- [User documentation](https://docs.woocommerce.com/document/google-listings-and-ads/)
-- [Ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986)
+-   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
+-   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)
+-   [User documentation](https://docs.woocommerce.com/document/google-listings-and-ads/)
+-   [Ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986)
 
 ## Support
 
@@ -19,23 +19,23 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 ## Prerequisites
 
- - WordPress 5.5+
- - WooCommerce 5.2+
- - PHP 7.3+
+-   WordPress 5.5+
+-   WooCommerce 5.2+
+-   PHP 7.3+
 
 ## Browsers supported
 
 As per [WordPress Core Handbook](https://make.wordpress.org/core/handbook/best-practices/browser-support/) we currently support:
 
-> - Last 1 Android versions.
-> - Last 1 ChromeAndroid versions.
-> - Last 2 Chrome versions.
-> - Last 2 Firefox versions.
-> - Last 2 Safari versions.
-> - Last 2 iOS versions.
-> - Last 2 Edge versions.
-> - Last 2 Opera versions.
-> - Browsers with > 1% usage based on [can I use browser usage table](https://caniuse.com/usage-table)
+> -   Last 1 Android versions.
+> -   Last 1 ChromeAndroid versions.
+> -   Last 2 Chrome versions.
+> -   Last 2 Firefox versions.
+> -   Last 2 Safari versions.
+> -   Last 2 iOS versions.
+> -   Last 2 Edge versions.
+> -   Last 2 Opera versions.
+> -   Browsers with > 1% usage based on [can I use browser usage table](https://caniuse.com/usage-table)
 
 :warning: We do not support Internet Explorer.
 
@@ -43,29 +43,29 @@ As per [WordPress Core Handbook](https://make.wordpress.org/core/handbook/best-p
 
 After cloning the repo, install dependencies:
 
- - `npm install` to install JavaScript dependencies.
- - `composer install` to gather PHP dependencies.
+-   `npm install` to install JavaScript dependencies.
+-   `composer install` to gather PHP dependencies.
 
 Now you can build the files using one of these commands:
 
- - `npm run build` : Build a production version
- - `npm run dev` : Build a development version
- - `npm run start` : Build a development version, watch files for changes
+-   `npm run build` : Build a production version
+-   `npm run dev` : Build a development version
+-   `npm run start` : Build a development version, watch files for changes
 
 ## Helper Scripts
 
 There are a number of helper scripts exposed via our package.json (below list is not exhaustive, you can view the [package.json file directly](https://github.com/woocommerce/google-listings-and-ads/blob/trunk/package.json#L11) to see all):
 
- - `npm run lint:js` : Run eslint over the javascript files
- - `npm run lint:css` : Run stylelint over the javascript files
- - `npm run test-unit` : Run the JS test suite
- - `npm run test-unit:watch` : Run the JS test suite, watch for changes
+-   `npm run lint:js` : Run eslint over the javascript files
+-   `npm run lint:css` : Run stylelint over the javascript files
+-   `npm run test-unit` : Run the JS test suite
+-   `npm run test-unit:watch` : Run the JS test suite, watch for changes
 
 ## WordPress Code Standards
 
 After running `composer install` to install PHP dependencies you can use the following command to run php code standards checks:
 
- - `./vendor/bin/phpcs`
+-   `./vendor/bin/phpcs`
 
 ## PHPUnit
 
@@ -90,20 +90,23 @@ $ ./bin/install-wp-tests.sh <db-name> <db-user> <db-pass> <db-host>
 ```
 
 Example:
+
 ```bash
 $ ./bin/install-wp-tests.sh wordpress_tests root root localhost
 ```
-    
+
 This script installs the test dependencies into your system's temporary directory and also creates a test database.
-        
+  
 You can also specify the path to their directories by setting the following environment variables:
 
-- `WP_TESTS_DIR`: WordPress Unit Test lib directory
-- `WP_CORE_DIR`: WordPress core directory
-- `WC_DIR`: WooCommerce directory
+-   `WP_TESTS_DIR`: WordPress Unit Test lib directory
+-   `WP_CORE_DIR`: WordPress core directory
+-   `WC_DIR`: WooCommerce directory
 
 ### Running Tests
+
 Change to the plugin root directory and type:
+
 ```bash
 $ vendor/bin/phpunit
 ```
@@ -124,15 +127,16 @@ Make sure Docker is running in your machine, and run the following:
 
 Run E2E testing:
 
-- `npm run test:e2e` to run the test in headless mode.
-- `npm run test:e2e-dev` to run the tests in Chromium browser.
+-   `npm run test:e2e` to run the test in headless mode.
+-   `npm run test:e2e-dev` to run the tests in Chromium browser.
 
 To remove the Docker container and images (this will **delete everything** in the WordPress Docker container):
 
 `npm run docker:down`
+
 ## Docs
 
-* [Usage Tracking](./src/Tracking/README.md)
+-   [Usage Tracking](./src/Tracking/README.md)
 
 <p align="center">
 	<br/><br/>

@@ -1,0 +1,32 @@
+# ignore CSS and SCSS files since they are handled by stylelint.
+*.css
+*.scss
+
+# ignore .yml file and use the .editorconfig instead.
+*.yml
+
+# ignore composer.lock file and let it use space indentation like WC Admin and Gutenberg.
+composer.lock
+
+# ignore the files in .github folder; running prettier for the files would mess with the templates.
+.github
+
+# from .eslintignore file.
+build
+build-module
+coverage
+languages
+node_modules
+vendor
+legacy
+
+# from .gitignore file.
+.DS_Store
+Thumbs.db
+wp-cli.local.yml
+*.sql
+*.tar.gz
+*.tgz
+*.zip
+.idea
+.vscode/

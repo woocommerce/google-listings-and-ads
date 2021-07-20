@@ -5,10 +5,7 @@ A wrapper around `@wordpress/components` [InputControl](https://github.com/WordP
 ## Usage
 
 ```jsx
-<AppInputControl
-  label='Price'
-  suffix='USD'
-/>
+<AppInputControl label="Price" suffix="USD" />
 ```
 
 ## API

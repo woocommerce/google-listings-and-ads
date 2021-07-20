@@ -10,20 +10,18 @@ On mobile and bigger screens, the buttons will render as normal buttons and are 
 
 ```jsx
 <AppModal
-  title='Modal title here'
-  buttons={ [
-    <Button key="secondary" isSecondary onClick={ handleCancelClick }>
-      Cancel
-    </Button>,
-    <Button key="primary" isPrimary onClick={ handleOkClick }>
-      OK
-    </Button>,
-  ] }
-  onRequestClose={ onRequestClose }
+	title="Modal title here"
+	buttons={ [
+		<Button key="secondary" isSecondary onClick={ handleCancelClick }>
+			Cancel
+		</Button>,
+		<Button key="primary" isPrimary onClick={ handleOkClick }>
+			OK
+		</Button>,
+	] }
+	onRequestClose={ onRequestClose }
 >
-  <p>
-    Modal content here.
-  </p>
+	<p>Modal content here.</p>
 </AppModal>
 ```
 
@@ -31,6 +29,6 @@ On mobile and bigger screens, the buttons will render as normal buttons and are 
 
 Same as Modal component, with the following additional props.
 
-| Property | Description | Type | Default |
-| --- | --- | --- | --- |
-| `buttons` | Buttons to be rendered in the footer. The primary button should be the last element in the array. | Array<`Button`> | [] |
+| Property  | Description                                                                                       | Type            | Default |
+| --------- | ------------------------------------------------------------------------------------------------- | --------------- | ------- |
+| `buttons` | Buttons to be rendered in the footer. The primary button should be the last element in the array. | Array<`Button`> | []      |

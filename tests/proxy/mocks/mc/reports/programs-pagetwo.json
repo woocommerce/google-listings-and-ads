@@ -1,67 +1,67 @@
 {
-  "results": [
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 8 }
-      },
-      "metrics": {
-        "clicks": 81,
-        "impressions": 99
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 9 }
-      },
-      "metrics": {
-        "clicks": 12,
-        "impressions": 240
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 10 }
-      },
-      "metrics": {
-        "clicks": 27,
-        "impressions": 380
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 11 }
-      },
-      "metrics": {
-        "clicks": 34,
-        "impressions": 167
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 12 }
-      },
-      "metrics": {
-        "clicks": 2,
-        "impressions": 87
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 13 }
-      },
-      "metrics": {
-        "clicks": 32,
-        "impressions": 478
-      }
-    },
-    {
-      "segments": {
-        "date": { "year": 2021, "month": 5, "day": 14 }
-      },
-      "metrics": {
-        "clicks": 7,
-        "impressions": 125
-      }
-    }
-  ]
+	"results": [
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 8 }
+			},
+			"metrics": {
+				"clicks": 81,
+				"impressions": 99
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 9 }
+			},
+			"metrics": {
+				"clicks": 12,
+				"impressions": 240
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 10 }
+			},
+			"metrics": {
+				"clicks": 27,
+				"impressions": 380
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 11 }
+			},
+			"metrics": {
+				"clicks": 34,
+				"impressions": 167
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 12 }
+			},
+			"metrics": {
+				"clicks": 2,
+				"impressions": 87
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 13 }
+			},
+			"metrics": {
+				"clicks": 32,
+				"impressions": 478
+			}
+		},
+		{
+			"segments": {
+				"date": { "year": 2021, "month": 5, "day": 14 }
+			},
+			"metrics": {
+				"clicks": 7,
+				"impressions": 125
+			}
+		}
+	]
 }
