@@ -361,22 +361,49 @@ class ProductHelper implements Service {
 	}
 
 	/**
-	 * If the provided product has a parent, return its ID. Otherwise, return the
-	 * given (valid product) ID.
+	 * If the provided product has a parent, return its ID. Otherwise, return the given (valid product) ID.
 	 *
-	 * @param int|WC_Product $product A WC product, or a WC product ID.
+	 * @param int $product WooCommerce product ID.
 	 *
 	 * @return int The parent ID or product ID of it doesn't have a parent.
-	 * @throws InvalidValue If a given ID doesn't reference a valid product.
+	 *
+	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
+	 *                      valid parent ID (i.e. it's an orphan).
 	 */
-	public function maybe_swap_for_parent_id( $product ): int {
-		if ( is_integer( $product ) ) {
-			$product = $this->get_wc_product( $product );
-		}
+	public function maybe_swap_for_parent_id( int $product ): int {
+		$product = $this->get_wc_product( $product );
+
+		return $this->maybe_swap_for_parent( $product )->get_id();
+	}
+
+	/**
+	 * If the provided product has a parent, return its parent object. Otherwise, return the given product.
+	 *
+	 * @param WC_Product $product WooCommerce product object.
+	 *
+	 * @return WC_Product The parent product object or the given product object of it doesn't have a parent.
+	 *
+	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
+	 *                      valid parent ID (i.e. it's an orphan).
+	 *
+	 * @since x.x.x
+	 */
+	public function maybe_swap_for_parent( WC_Product $product ): WC_Product {
 		if ( $product instanceof WC_Product_Variation ) {
-			return $product->get_parent_id();
+			try {
+				return $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf( 'An orphaned variation found (ID: %s). Please delete it via "WooCommerce > Status > Tools > Delete orphaned variations".', $product->get_id() ),
+					__METHOD__
+				);
+
+				throw $exception;
+			}
 		}
-		return $product->get_id();
+
+		return $product;
 	}
 
 	/**
