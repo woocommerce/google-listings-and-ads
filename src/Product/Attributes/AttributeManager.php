@@ -208,6 +208,25 @@ class AttributeManager implements Service {
 	}
 
 	/**
+	 * Returns all available attribute IDs.
+	 *
+	 * @return array
+	 *
+	 * @since x.x.x
+	 */
+	public static function get_available_attribute_ids(): array {
+		$attributes = [];
+		foreach ( self::get_available_attribute_types() as $attribute_type ) {
+			if ( method_exists( $attribute_type, 'get_id' ) ) {
+				$attribute_id                = call_user_func( [ $attribute_type, 'get_id' ] );
+				$attributes[ $attribute_id ] = $attribute_id;
+			}
+		}
+
+		return $attributes;
+	}
+
+	/**
 	 * Return an array of all available attribute class names.
 	 *
 	 * @return string[] Attribute class names
