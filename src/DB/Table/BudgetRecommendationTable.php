@@ -87,6 +87,10 @@ SQL;
 
 		if ( file_exists( $path ) ) {
 			$csv = array_map( 'str_getcsv', file( $path ) );
+
+			// Remove the headers
+			array_shift( $csv );
+
 			if ( empty( $csv ) ) {
 				return;
 			}
