@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
@@ -61,5 +62,10 @@ if ( defined( 'WC_GLA_REMOVE_ALL_DATA' ) && true === WC_GLA_REMOVE_ALL_DATA ) {
 	// delete products metadata
 	foreach ( ProductMetaHandler::get_all_meta_keys() as $meta_key ) {
 		delete_post_meta_by_key( WC_GLA_METAKEY_PREFIX . "_{$meta_key}" );
+	}
+
+	// delete products attributes
+	foreach ( AttributeManager::get_available_attribute_ids() as $attribute_id ) {
+		delete_post_meta_by_key( WC_GLA_METAKEY_PREFIX . "_{$attribute_id}" );
 	}
 }
