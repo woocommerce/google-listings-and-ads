@@ -249,12 +249,13 @@ class ProductHelper implements Service {
 	/**
 	 * Get WooCommerce product
 	 *
-	 * @param int|false $product_id
+	 * @param int $product_id
 	 *
 	 * @return WC_Product
+	 *
 	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
-	public function get_wc_product( $product_id ): WC_Product {
+	public function get_wc_product( int $product_id ): WC_Product {
 		return $this->wc->get_product( $product_id );
 	}
 
