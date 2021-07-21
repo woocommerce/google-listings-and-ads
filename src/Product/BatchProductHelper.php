@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
@@ -167,46 +168,56 @@ class BatchProductHelper implements Service {
 		foreach ( $products as $product ) {
 			$this->validate_instanceof( $product, WC_Product::class );
 
-			if ( ! $this->product_helper->is_sync_ready( $product ) ) {
+			try {
+				if ( ! $this->product_helper->is_sync_ready( $product ) ) {
+					do_action(
+						'woocommerce_gla_debug_message',
+						sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
+						__METHOD__
+					);
+
+					continue;
+				}
+
+				if ( $product instanceof WC_Product_Variable ) {
+					$request_entries = array_merge( $request_entries, $this->validate_and_generate_update_request_entries( $product->get_available_variations( 'objects' ) ) );
+					continue;
+				}
+
+				$target_countries    = $this->merchant_center->get_target_countries();
+				$main_target_country = $this->merchant_center->get_main_target_country();
+
+				// validate the product
+				$adapted_product   = $this->product_factory->create( $product, $main_target_country );
+				$validation_result = $this->validate_product( $adapted_product );
+				if ( $validation_result instanceof BatchInvalidProductEntry ) {
+					$this->mark_as_invalid( $validation_result );
+
+					do_action(
+						'woocommerce_gla_debug_message',
+						sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), json_encode( $validation_result ) ),
+						__METHOD__
+					);
+
+					continue;
+				}
+
+				// add shipping for all selected target countries
+				array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
+
+				$request_entries[] = new BatchProductRequestEntry(
+					$product->get_id(),
+					$adapted_product
+				);
+			} catch ( GoogleListingsAndAdsException $exception ) {
 				do_action(
-					'woocommerce_gla_debug_message',
-					sprintf( 'Skipping product (ID: %s) because it is not ready to be synced.', $product->get_id() ),
+					'woocommerce_gla_error',
+					sprintf( 'Skipping product (ID: %s) due to exception: %s', $product->get_id(), $exception->getMessage() ),
 					__METHOD__
 				);
 
 				continue;
 			}
-
-			if ( $product instanceof WC_Product_Variable ) {
-				$request_entries = array_merge( $request_entries, $this->validate_and_generate_update_request_entries( $product->get_available_variations( 'objects' ) ) );
-				continue;
-			}
-
-			$target_countries    = $this->merchant_center->get_target_countries();
-			$main_target_country = $this->merchant_center->get_main_target_country();
-
-			// validate the product
-			$adapted_product   = $this->product_factory->create( $product, $main_target_country );
-			$validation_result = $this->validate_product( $adapted_product );
-			if ( $validation_result instanceof BatchInvalidProductEntry ) {
-				$this->mark_as_invalid( $validation_result );
-
-				do_action(
-					'woocommerce_gla_debug_message',
-					sprintf( 'Skipping product (ID: %s) because it does not pass validation: %s', $product->get_id(), json_encode( $validation_result ) ),
-					__METHOD__
-				);
-
-				continue;
-			}
-
-			// add shipping for all selected target countries
-			array_walk( $target_countries, [ $adapted_product, 'add_shipping_country' ] );
-
-			$request_entries[] = new BatchProductRequestEntry(
-				$product->get_id(),
-				$adapted_product
-			);
 		}
 
 		return $request_entries;
