@@ -73,12 +73,13 @@ class WC {
 	/**
 	 * Get a WooCommerce product and confirm it exists.
 	 *
-	 * @param int|false $product_id
+	 * @param int $product_id
 	 *
 	 * @return WC_Product
+	 *
 	 * @throws InvalidValue When the product does not exist.
 	 */
-	public function get_product( $product_id ): WC_Product {
+	public function get_product( int $product_id ): WC_Product {
 		$product = wc_get_product( $product_id );
 		if ( ! $product instanceof WC_Product ) {
 			throw InvalidValue::not_valid_product_id( $product_id );
