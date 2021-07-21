@@ -11,6 +11,7 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import toAccountText from '.~/utils/toAccountText';
+import { getConnectedJetpackInfo } from '.~/data/utils';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
@@ -93,7 +94,7 @@ export default function DisconnectAccounts() {
 									'WordPress.com',
 									'google-listings-and-ads'
 								) }
-								info={ jetpack.email }
+								info={ getConnectedJetpackInfo( jetpack ) }
 								helperContent={ requiredText }
 							/>
 							<AccountSubsection
