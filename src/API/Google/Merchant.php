@@ -110,7 +110,7 @@ class Merchant implements OptionsAwareInterface {
 			$mc_account = $this->service->accounts->get( $id, $id );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
+			throw new Exception( __( 'Unable to retrieve Merchant Center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account;
 	}
@@ -129,7 +129,7 @@ class Merchant implements OptionsAwareInterface {
 			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve merchant center account status.', 'google-listings-and-ads' ), $e->getCode() );
+			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
 	}
@@ -190,7 +190,7 @@ class Merchant implements OptionsAwareInterface {
 			$account = $this->service->accounts->update( $account->getId(), $account->getId(), $account );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to update merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
+			throw new Exception( __( 'Unable to update Merchant Center account.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $account;
 	}
