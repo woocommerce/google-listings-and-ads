@@ -246,6 +246,7 @@ class ProductHelper implements Service {
 		if ( ! preg_match( $pattern, $mc_product_id, $matches ) ) {
 			return 0;
 		}
+
 		return intval( $matches[1] );
 	}
 
@@ -456,6 +457,7 @@ class ProductHelper implements Service {
 	 * Combines errors for variable products, which have a variation-indexed array of errors.
 	 *
 	 * @param WC_Product $product
+	 *
 	 * @return array
 	 */
 	public function get_validation_errors( WC_Product $product ): array {
