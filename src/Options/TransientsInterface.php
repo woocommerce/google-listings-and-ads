@@ -50,6 +50,8 @@ interface TransientsInterface {
 	 * Returns all available transient keys.
 	 *
 	 * @return array
+	 *
+	 * @since x.x.x
 	 */
 	public static function get_all_transient_keys(): array;
 }

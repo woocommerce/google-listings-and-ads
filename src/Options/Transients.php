@@ -89,6 +89,8 @@ final class Transients implements TransientsInterface, Service {
 	 * Returns all available transient keys.
 	 *
 	 * @return array
+	 *
+	 * @since x.x.x
 	 */
 	public static function get_all_transient_keys(): array {
 		return array_keys( self::VALID_OPTIONS );
