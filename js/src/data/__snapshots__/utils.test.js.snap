@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getConnectedJetpackInfo For connected jetpack When current user is not the jetpack owner, should return a successfully connected info 1`] = `"Successfully connected through Jetpack"`;
