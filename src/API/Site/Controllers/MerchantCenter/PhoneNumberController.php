@@ -192,6 +192,9 @@ class PhoneNumberController extends BaseController {
 			if ( is_string( $value ) && preg_match( '/[^0-9\(\) \-\.\+]/', $value ) ) {
 				return new WP_Error( 'rest_invalid_phone_number', __( 'Invalid phone number characters.', 'google-listings-and-ads' ) );
 			}
+			if ( empty( $value ) ) {
+				return new WP_Error( 'rest_empty_phone_number', __( 'Invalid phone number.', 'google-listings-and-ads' ) );
+			}
 
 			return rest_validate_request_arg( $value, $request, $param );
 		};
