@@ -15,11 +15,19 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import AppDocumentationLink from '.~/components/app-documentation-link';
-import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import { glaData } from '.~/constants';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import './index.scss';
 import AppButton from '.~/components/app-button';
+
+/**
+ * Full URL to the header image.
+ * Preferably we would inline it into HTML to reduce the bundle size.
+ *
+ * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
+ */
+const motivationImageURL =
+	glaData.assetsURL + 'js/src/get-started-page/get-started-card/image.svg';
 
 const GetStartedCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;
@@ -74,7 +82,15 @@ const GetStartedCard = () => {
 					</Text>
 				</FlexBlock>
 				<FlexItem className="motivation-image">
-					<GoogleShoppingImage viewBox="0 0 416 394"></GoogleShoppingImage>
+					<img
+						src={ motivationImageURL }
+						alt={ __(
+							'Google Shopping search results example',
+							'google-listings-and-ads'
+						) }
+						width="416"
+						height="394"
+					/>
 				</FlexItem>
 			</Flex>
 		</Card>

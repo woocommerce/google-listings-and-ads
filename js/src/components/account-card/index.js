@@ -7,10 +7,19 @@ import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
-import { ReactComponent as GoogleLogo } from './gogole-g-logo.svg';
 import './index.scss';
+
+/**
+ * Full URL to the Google G logo image.
+ * Preferably we would inline it into HTML to reduce the bundle size.
+ *
+ * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
+ */
+const googleLogoURL =
+	glaData.assetsURL + 'js/src/components/account-card/gogole-g-logo.svg';
 
 /**
  * Enum of account card appearances.
@@ -23,7 +32,14 @@ export const APPEARANCE = {
 
 const appearanceDict = {
 	[ APPEARANCE.GOOGLE ]: {
-		Logo: GoogleLogo,
+		Logo: (
+			<img
+				src={ googleLogoURL }
+				alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
+				width="40"
+				height="40"
+			/>
+		),
 		title: __( 'Google account', 'google-listings-and-ads' ),
 	},
 };
@@ -49,9 +65,7 @@ export default function AccountCard( {
 		<Section.Card className="gla-account-card">
 			<Section.Card.Body>
 				<Flex gap={ 4 }>
-					<FlexItem>
-						<Logo />
-					</FlexItem>
+					<FlexItem>{ Logo }</FlexItem>
 					<FlexBlock>
 						<Subsection.Title>{ title }</Subsection.Title>
 						<div>{ description }</div>

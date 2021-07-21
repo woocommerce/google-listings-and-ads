@@ -14,8 +14,7 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import { ReactComponent as GoogleLogoSvg } from './google-logo.svg';
-import { ReactComponent as WooCommerceLogoSvg } from './woocommerce-logo.svg';
+import { glaData } from '.~/constants';
 import Guide from '.~/external-components/wordpress/guide';
 import GuidePageContent, {
 	ContentLink,
@@ -27,6 +26,19 @@ const GUIDE_NAME = 'submission-success';
 const EVENT_NAME = 'gla_modal_closed';
 const LATER_BUTTON_CLASS = 'components-guide__finish-button';
 
+/**
+ * Full URL to the logo images.
+ * Preferably we would inline it into HTML to reduce the bundle size.
+ *
+ * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
+ */
+const wooLogoURL =
+	glaData.assetsURL +
+	'js/src/product-feed/submission-success-guide/woocommerce-logo.svg';
+const googleLogoURL =
+	glaData.assetsURL +
+	'js/src/product-feed/submission-success-guide/google-logo.svg';
+
 const productFeedPath = getNewPath(
 	{ guide: undefined },
 	'/google/product-feed'
@@ -35,11 +47,21 @@ const productFeedPath = getNewPath(
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
 		<div className="gla-submission-success-guide__logo-item">
-			<WooCommerceLogoSvg viewBox="0 0 145 31" />
+			<img
+				src={ wooLogoURL }
+				alt={ __( 'WooCommerce Logo', 'google-listings-and-ads' ) }
+				width="145"
+				height="31"
+			/>
 		</div>
 		<div className="gla-submission-success-guide__logo-separator-line" />
 		<div className="gla-submission-success-guide__logo-item">
-			<GoogleLogoSvg width="106" height="36" viewBox="0 0 272 92" />
+			<img
+				src={ googleLogoURL }
+				alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
+				width="106"
+				height="36"
+			/>
 		</div>
 	</div>
 );

@@ -10,16 +10,26 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import { getCreateCampaignUrl } from '.~/utils/urls';
 import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
-import { ReactComponent as HeaderSvg } from './header.svg';
 import './index.scss';
 
 const GUIDE_NAME = 'campaign-creation-success';
 const CTA_CREATE_ANOTHER_CAMPAIGN = 'create-another-campaign';
+
+/**
+ * Full URL to the header image.
+ * Preferably we would inline it into HTML to reduce the bundle size.
+ *
+ * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
+ */
+const headerImageURL =
+	glaData.assetsURL +
+	'js/src/dashboard/campaign-creation-success-guide/header.svg';
 
 const handleCloseWithAction = ( e, specifiedAction ) => {
 	const action = specifiedAction || e.currentTarget.dataset.action;
@@ -73,7 +83,15 @@ const GuideImplementation = () => {
 			] }
 		>
 			<div className="gla-campaign-creation-success-guide__header-image">
-				<HeaderSvg viewBox="0 0 413 160" />
+				<img
+					src={ headerImageURL }
+					alt={ __(
+						'Drawing of a person who successfuly launched a campaign',
+						'google-listings-and-ads'
+					) }
+					width="413"
+					height="160"
+				/>
 			</div>
 			<GuidePageContent
 				title={ __(
