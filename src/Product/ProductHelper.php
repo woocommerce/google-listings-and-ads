@@ -79,8 +79,13 @@ class ProductHelper implements Service {
 		}
 
 		// mark the parent product as synced if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$parent_product = $this->get_wc_product( $product->get_parent_id() );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
 			$this->mark_as_synced( $parent_product, $google_product );
 		}
 	}
@@ -97,8 +102,13 @@ class ProductHelper implements Service {
 		$this->meta_handler->delete_sync_failed_at( $product );
 
 		// mark the parent product as un-synced if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$parent_product = $this->get_wc_product( $product->get_parent_id() );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
 			$this->mark_as_unsynced( $parent_product );
 		}
 	}
@@ -157,9 +167,12 @@ class ProductHelper implements Service {
 		}
 
 		// mark the parent product as invalid if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$wc_parent_id   = $product->get_parent_id();
-			$parent_product = $this->get_wc_product( $wc_parent_id );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
 
 			$parent_errors = ! empty( $this->meta_handler->get_errors( $parent_product ) ) ?
 				$this->meta_handler->get_errors( $parent_product ) :
@@ -182,9 +195,13 @@ class ProductHelper implements Service {
 		$this->meta_handler->update_sync_status( $product, SyncStatus::PENDING );
 
 		// mark the parent product as pending if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$wc_parent_id   = $product->get_parent_id();
-			$parent_product = $this->get_wc_product( $wc_parent_id );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
 			$this->mark_as_pending( $parent_product );
 		}
 	}
