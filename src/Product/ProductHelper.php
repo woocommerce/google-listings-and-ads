@@ -285,9 +285,20 @@ class ProductHelper implements Service {
 		$product_visibility = $product->is_visible();
 		$product_status     = $product->get_status();
 
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
+		if ( $product instanceof WC_Product_Variation ) {
 			// Check the post status of the parent product if it's a variation
-			$parent         = $this->get_wc_product( $product->get_parent_id() );
+			try {
+				$parent = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf( 'Cannot sync an orphaned variation (ID: %s).', $product->get_id() ),
+					__METHOD__
+				);
+
+				return false;
+			}
+
 			$product_status = $parent->get_status();
 
 			/**
