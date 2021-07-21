@@ -195,7 +195,12 @@ class ProductHelper implements Service {
 	 * @param WC_Product $product
 	 */
 	protected function update_empty_visibility( WC_Product $product ): void {
-		$product    = $product instanceof WC_Product_Variation ? $this->get_wc_product( $product->get_parent_id() ) : $product;
+		try {
+			$product = $this->maybe_swap_for_parent( $product );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
+
 		$visibility = $this->meta_handler->get_visibility( $product );
 
 		if ( empty( $visibility ) ) {
@@ -326,13 +331,18 @@ class ProductHelper implements Service {
 	 * @return string|null
 	 */
 	public function get_channel_visibility( WC_Product $wc_product ): ?string {
-		$visibility = $this->meta_handler->get_visibility( $wc_product );
-		if ( $wc_product instanceof WC_Product_Variation ) {
+		try {
 			// todo: we might need to define visibility per variation later.
-			$visibility = $this->meta_handler->get_visibility( $this->get_wc_product( $wc_product->get_parent_id() ) );
-		}
+			return $this->meta_handler->get_visibility( $this->maybe_swap_for_parent( $wc_product ) );
+		} catch ( InvalidValue $exception ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Channel visibility forced to "%s" for invalid product (ID: %s).', ChannelVisibility::DONT_SYNC_AND_SHOW, $wc_product->get_id() ),
+				__METHOD__
+			);
 
-		return $visibility;
+			return ChannelVisibility::DONT_SYNC_AND_SHOW;
+		}
 	}
 
 	/**
@@ -354,10 +364,17 @@ class ProductHelper implements Service {
 	 * @return string|null
 	 */
 	public function get_mc_status( WC_Product $wc_product ): ?string {
-		if ( $wc_product instanceof WC_Product_Variation ) {
-			return $this->meta_handler->get_mc_status( $this->get_wc_product( $wc_product->get_parent_id() ) );
+		try {
+			return $this->meta_handler->get_mc_status( $this->maybe_swap_for_parent( $wc_product ) );
+		} catch ( InvalidValue $exception ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Product status returned null for invalid product (ID: %s).', $wc_product->get_id() ),
+				__METHOD__
+			);
+
+			return null;
 		}
-		return $this->meta_handler->get_mc_status( $wc_product );
 	}
 
 	/**
