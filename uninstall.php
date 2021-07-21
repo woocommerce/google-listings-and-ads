@@ -40,7 +40,7 @@ if ( defined( 'WC_GLA_REMOVE_ALL_DATA' ) && true === WC_GLA_REMOVE_ALL_DATA ) {
 
 	// un-schedule all ActionScheduler jobs for GLA
 	if ( function_exists( 'as_unschedule_all_actions' ) ) {
-		as_unschedule_all_actions( null, null, 'gla' );
+		as_unschedule_all_actions( null, null, WC_GLA_SLUG );
 	}
 
 	// drop custom tables
