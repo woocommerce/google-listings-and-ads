@@ -3,43 +3,31 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class DBController
+ * Class Installer
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  */
 class Installer implements Service, FirstInstallInterface, InstallableInterface {
 
-	use ValidateInterface;
-
 	/**
-	 * @var OptionsInterface
+	 * @var TableManager
 	 */
-	protected $options;
+	protected $table_manager;
 
 	/**
-	 * @var Table[]
-	 */
-	protected $tables;
-
-	/**
-	 * DBController constructor.
+	 * Installer constructor.
 	 *
-	 * @param Table[]          $tables
-	 * @param OptionsInterface $options
+	 * @param TableManager $table_manager
 	 */
-	public function __construct( array $tables, OptionsInterface $options ) {
-		$this->tables  = $tables;
-		$this->options = $options;
-		$this->validate_table_controllers();
+	public function __construct( TableManager $table_manager ) {
+		$this->table_manager = $table_manager;
 	}
 
 	/**
@@ -49,7 +37,7 @@ class Installer implements Service, FirstInstallInterface, InstallableInterface 
 	 * @param string $new_version Current version after updating.
 	 */
 	public function install( string $old_version, string $new_version ): void {
-		foreach ( $this->tables as $table ) {
+		foreach ( $this->table_manager->get_tables() as $table ) {
 			$table->install();
 		}
 	}
@@ -58,19 +46,10 @@ class Installer implements Service, FirstInstallInterface, InstallableInterface 
 	 * Logic to run when the plugin is first installed.
 	 */
 	public function first_install(): void {
-		foreach ( $this->tables as $table ) {
+		foreach ( $this->table_manager->get_tables() as $table ) {
 			if ( $table instanceof FirstInstallInterface ) {
 				$table->first_install();
 			}
-		}
-	}
-
-	/**
-	 * Set up each of the table controllers.
-	 */
-	protected function validate_table_controllers() {
-		foreach ( $this->tables as $table ) {
-			$this->validate_instanceof( $table, Table::class );
 		}
 	}
 }

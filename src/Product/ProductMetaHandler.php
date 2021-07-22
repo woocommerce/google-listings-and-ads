@@ -292,4 +292,12 @@ class ProductMetaHandler implements Service, Registerable {
 		return $updated_queries;
 	}
 
+	/**
+	 * Returns all available meta keys.
+	 *
+	 * @return array
+	 */
+	public static function get_all_meta_keys(): array {
+		return array_keys( self::TYPES );
+	}
 }

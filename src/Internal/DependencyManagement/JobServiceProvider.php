@@ -57,7 +57,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		ActionSchedulerInterface::class  => true,
 		AsyncActionRunner::class         => true,
 		ActionSchedulerJobMonitor::class => true,
-		PluginUpdateJobs::class          => true,
+		PluginUpdate::class              => true,
 		ProductSyncStats::class          => true,
 		SyncerHooks::class               => true,
 		Service::class                   => true,
