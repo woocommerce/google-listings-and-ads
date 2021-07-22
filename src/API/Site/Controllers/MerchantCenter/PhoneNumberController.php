@@ -18,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class PhoneNumberController
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class PhoneNumberController extends BaseController {
