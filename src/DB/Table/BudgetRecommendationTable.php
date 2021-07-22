@@ -48,7 +48,7 @@ SQL;
 		// phpcs:ignore WordPress.DB.PreparedSQL
 		$result = $this->wpdb->get_row( "SELECT COUNT(*) AS count FROM `{$this->get_sql_safe_name()}`" );
 		if ( empty( $result->count ) ) {
-			 $this->load_initial_data();
+			$this->load_initial_data();
 		}
 	}
 
@@ -57,7 +57,7 @@ SQL;
 	 *
 	 * @return string
 	 */
-	protected function get_raw_name(): string {
+	public static function get_raw_name(): string {
 		return 'budget_recommendations';
 	}
 
@@ -86,8 +86,11 @@ SQL;
 		$chunk_size = 500;
 
 		if ( file_exists( $path ) ) {
-			$csv     = array_map( 'str_getcsv', file( $path ) );
-			$headers = array_shift( $csv );
+			$csv = array_map( 'str_getcsv', file( $path ) );
+
+			// Remove the headers
+			array_shift( $csv );
+
 			if ( empty( $csv ) ) {
 				return;
 			}

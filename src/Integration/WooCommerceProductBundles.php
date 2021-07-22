@@ -101,7 +101,7 @@ class WooCommerceProductBundles implements IntegrationInterface {
 	 */
 	protected function init_product_types(): void {
 		// every attribute that applies to simple products also applies to bundle products.
-		foreach ( AttributeManager::ATTRIBUTES as $attribute_type ) {
+		foreach ( AttributeManager::get_available_attribute_types() as $attribute_type ) {
 			$attribute_id     = call_user_func( [ $attribute_type, 'get_id' ] );
 			$applicable_types = call_user_func( [ $attribute_type, 'get_applicable_product_types' ] );
 			if ( ! in_array( 'simple', $applicable_types, true ) ) {

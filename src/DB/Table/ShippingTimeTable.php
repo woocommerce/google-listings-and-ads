@@ -38,7 +38,7 @@ SQL;
 	 *
 	 * @return string
 	 */
-	protected function get_raw_name(): string {
+	public static function get_raw_name(): string {
 		return 'shipping_times';
 	}
 

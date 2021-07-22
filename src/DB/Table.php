@@ -10,9 +10,12 @@ use wpdb;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class DBTable
+ * Class Table
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
+ *
+ * @see TableManager::VALID_TABLES contains a list of table classes that will be installed.
+ * @see \Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer::install for installing tables.
  */
 abstract class Table implements TableInterface {
 
@@ -25,7 +28,7 @@ abstract class Table implements TableInterface {
 	protected $wpdb;
 
 	/**
-	 * DBTable constructor.
+	 * Table constructor.
 	 *
 	 * @param WP   $wp   The WP proxy object.
 	 * @param wpdb $wpdb The wpdb object.
@@ -59,7 +62,7 @@ abstract class Table implements TableInterface {
 	 * Delete the Database table.
 	 */
 	public function delete(): void {
-		$this->wpdb->query( "DROP TABLE `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$this->wpdb->query( "DROP TABLE IF EXISTS `{$this->get_sql_safe_name()}`" ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/**
@@ -121,5 +124,5 @@ abstract class Table implements TableInterface {
 	 *
 	 * @return string
 	 */
-	abstract protected function get_raw_name(): string;
+	abstract public static function get_raw_name(): string;
 }
