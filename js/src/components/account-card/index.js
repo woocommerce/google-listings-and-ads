@@ -32,7 +32,7 @@ export const APPEARANCE = {
 
 const appearanceDict = {
 	[ APPEARANCE.GOOGLE ]: {
-		Logo: (
+		logo: (
 			<img
 				src={ googleLogoURL }
 				alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
@@ -59,13 +59,13 @@ export default function AccountCard( {
 	indicator,
 	children,
 } ) {
-	const { Logo, title } = appearanceDict[ appearance ];
+	const { logo, title } = appearanceDict[ appearance ];
 
 	return (
 		<Section.Card className="gla-account-card">
 			<Section.Card.Body>
 				<Flex gap={ 4 }>
-					<FlexItem>{ Logo }</FlexItem>
+					<FlexItem>{ logo }</FlexItem>
 					<FlexBlock>
 						<Subsection.Title>{ title }</Subsection.Title>
 						<div>{ description }</div>
