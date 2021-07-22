@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Attribu
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Installer;
@@ -39,6 +40,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
@@ -123,6 +125,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ViewFactory::class            => true,
 		DebugLogger::class            => true,
 		MerchantStatuses::class       => true,
+		MerchantVerification::class   => true,
 		MerchantCenterService::class  => true,
 		MerchantAccountState::class   => true,
 		AdsAccountState::class        => true,
@@ -217,6 +220,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( MerchantStatuses::class );
+		$this->share_with_tags( MerchantVerification::class, Merchant::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MerchantCenterService::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductHelper::class );
