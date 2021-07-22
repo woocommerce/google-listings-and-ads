@@ -12,6 +12,7 @@ import GridiconSync from 'gridicons/dist/sync';
  */
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import { ISSUE_TABLE_PER_PAGE } from '../constants';
+import { glaData } from '.~/constants';
 
 function getUnsolvedStatusText( totalUnsolvedIssues ) {
 	if ( ! Number.isInteger( totalUnsolvedIssues ) ) {
@@ -71,7 +72,10 @@ function getSyncResult( {
 				totalSynced,
 				'google-listings-and-ads'
 			),
-			formatDate( 'j F Y, h:ia', new Date( timestamp * 1000 ) ),
+			formatDate(
+				glaData.dateFormat + ', '  + glaData.timeFormat,
+				new Date( timestamp * 1000 )
+			),
 			totalSynced
 		),
 	};
