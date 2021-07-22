@@ -4,12 +4,11 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use Google\Service\ShoppingContent\Account;
-use Google\Service\ShoppingContent\AccountBusinessInformation;
 use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -23,22 +22,22 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
-class PhoneNumberController extends BaseController {
+class PhoneNumberController extends BaseOptionsController {
 
 	/**
-	 * @var Merchant $merchant
+	 * @var Merchant $merchant_verification
 	 */
-	protected $merchant;
+	protected $merchant_verification;
 
 	/**
 	 * PhoneNumberController constructor.
 	 *
-	 * @param RESTServer $server
-	 * @param Merchant   $merchant
+	 * @param RESTServer           $server
+	 * @param MerchantVerification $merchant_verification
 	 */
-	public function __construct( RESTServer $server, Merchant $merchant ) {
+	public function __construct( RESTServer $server, MerchantVerification $merchant_verification ) {
 		parent::__construct( $server );
-		$this->merchant = $merchant;
+		$this->merchant_verification = $merchant_verification;
 	}
 
 	/**
@@ -72,8 +71,10 @@ class PhoneNumberController extends BaseController {
 	protected function get_phone_number_endpoint_read_callback(): callable {
 		return function( $request ) {
 			try {
-				$account = $this->merchant->get_account();
-				return $this->get_phone_number_response( $request, $account );
+				return $this->get_phone_number_response(
+					$this->merchant_verification->get_phone_number(),
+					$request
+				);
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -88,12 +89,10 @@ class PhoneNumberController extends BaseController {
 	protected function get_phone_number_endpoint_edit_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$account              = $this->merchant->get_account();
-				$business_information = $account->getBusinessInformation() ?: new AccountBusinessInformation();
-				$business_information->setPhoneNumber( $request['phone_number'] );
-				$account->setBusinessInformation( $business_information );
-				$this->merchant->update_account( $account );
-				return $this->get_phone_number_response( $request, $account );
+				return $this->get_phone_number_response(
+					$this->merchant_verification->update_phone_number( $request['phone_number'] ),
+					$request
+				);
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -147,17 +146,16 @@ class PhoneNumberController extends BaseController {
 	/**
 	 * Get the prepared REST response with Merchant Center account ID and phone number.
 	 *
+	 * @param string  $phone_number
 	 * @param Request $request
-	 * @param Account $account
 	 *
 	 * @return Response
 	 */
-	protected function get_phone_number_response( Request $request, Account $account ): Response {
-		$business_information = $account->getBusinessInformation();
+	protected function get_phone_number_response( string $phone_number, Request $request ): Response {
 		return $this->prepare_item_for_response(
 			[
-				'id'           => $account->getId(),
-				'phone_number' => $business_information ? $business_information->getPhoneNumber() : '',
+				'id'           => $this->options->get_merchant_id(),
+				'phone_number' => $phone_number,
 			],
 			$request
 		);

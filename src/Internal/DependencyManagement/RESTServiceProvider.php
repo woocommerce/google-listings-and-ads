@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
@@ -39,6 +38,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQue
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -84,7 +84,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( MerchantCenterIssuesController::class, MerchantStatuses::class, ProductHelper::class );
 		$this->share( MerchantCenterProductFeedController::class, ProductFeedQueryHelper::class );
 		$this->share( MerchantCenterProductVisibilityController::class, ProductHelper::class, MerchantIssueQuery::class );
-		$this->share( MerchantCenterPhoneNumberController::class, Merchant::class );
+		$this->share( MerchantCenterPhoneNumberController::class, MerchantVerification::class );
 		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class );
 		$this->share_with_container( MerchantCenterAccountController::class );
 		$this->share_with_container( MerchantCenterReportsController::class );
