@@ -5,14 +5,12 @@ Renders a button with a `GridiconHelpOutline`. Upon clicking the button, it will
 ## Usage
 
 ```jsx
-<HelpPopover id="issues-to-resolve">
-  Tooltip content.
-</HelpPopover>
+<HelpPopover id="issues-to-resolve">Tooltip content.</HelpPopover>
 ```
 
 ## API
 
-| Property | Description | Type | Default |
-| --- | --- | --- | --- |
-| id | Identifier used in track event | string | - |
-| children | Tooltip content | ReactNode | - |
+| Property | Description                    | Type      | Default |
+| -------- | ------------------------------ | --------- | ------- |
+| id       | Identifier used in track event | string    | -       |
+| children | Tooltip content                | ReactNode | -       |

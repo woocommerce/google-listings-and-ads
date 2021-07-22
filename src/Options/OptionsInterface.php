@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
+
 /**
  * Interface OptionsInterface
  *
@@ -30,6 +32,34 @@ interface OptionsInterface {
 	public const SITE_VERIFICATION      = 'site_verification';
 	public const TARGET_AUDIENCE        = 'target_audience';
 	public const WP_TOS_ACCEPTED        = 'wp_tos_accepted';
+
+	public const VALID_OPTIONS = [
+		self::ADS_ACCOUNT_CURRENCY   => true,
+		self::ADS_ACCOUNT_STATE      => true,
+		self::ADS_BILLING_URL        => true,
+		self::ADS_ID                 => true,
+		self::ADS_CONVERSION_ACTION  => true,
+		self::ADS_SETUP_COMPLETED_AT => true,
+		self::DB_VERSION             => true,
+		self::FILE_VERSION           => true,
+		self::GOOGLE_CONNECTED       => true,
+		self::INSTALL_TIMESTAMP      => true,
+		self::MC_SETUP_COMPLETED_AT  => true,
+		self::MERCHANT_ACCOUNT_STATE => true,
+		self::MERCHANT_CENTER        => true,
+		self::MERCHANT_ID            => true,
+		self::SHIPPING_RATES         => true,
+		self::SHIPPING_TIMES         => true,
+		self::REDIRECT_TO_ONBOARDING => true,
+		self::SITE_VERIFICATION      => true,
+		self::TARGET_AUDIENCE        => true,
+		self::WP_TOS_ACCEPTED        => true,
+	];
+
+	public const OPTION_TYPES = [
+		self::ADS_ID      => PositiveInteger::class,
+		self::MERCHANT_ID => PositiveInteger::class,
+	];
 
 	/**
 	 * Get an option.
@@ -76,6 +106,13 @@ interface OptionsInterface {
 	 * @return int
 	 */
 	public function get_merchant_id(): int;
+
+	/**
+	 * Returns all available option keys.
+	 *
+	 * @return array
+	 */
+	public static function get_all_option_keys(): array;
 
 	/**
 	 * Helper function to retrieve the Ads Account ID.

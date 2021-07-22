@@ -8,7 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\CastableValueInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PositiveInteger;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ValueInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -21,34 +20,6 @@ defined( 'ABSPATH' ) || exit;
 final class Options implements OptionsInterface, Service {
 
 	use PluginHelper;
-
-	private const VALID_OPTIONS = [
-		self::ADS_ACCOUNT_CURRENCY   => true,
-		self::ADS_ACCOUNT_STATE      => true,
-		self::ADS_BILLING_URL        => true,
-		self::ADS_ID                 => true,
-		self::ADS_CONVERSION_ACTION  => true,
-		self::ADS_SETUP_COMPLETED_AT => true,
-		self::DB_VERSION             => true,
-		self::FILE_VERSION           => true,
-		self::GOOGLE_CONNECTED       => true,
-		self::INSTALL_TIMESTAMP      => true,
-		self::MC_SETUP_COMPLETED_AT  => true,
-		self::MERCHANT_ACCOUNT_STATE => true,
-		self::MERCHANT_CENTER        => true,
-		self::MERCHANT_ID            => true,
-		self::SHIPPING_RATES         => true,
-		self::SHIPPING_TIMES         => true,
-		self::REDIRECT_TO_ONBOARDING => true,
-		self::SITE_VERIFICATION      => true,
-		self::TARGET_AUDIENCE        => true,
-		self::WP_TOS_ACCEPTED        => true,
-	];
-
-	private const OPTION_TYPES = [
-		self::ADS_ID      => PositiveInteger::class,
-		self::MERCHANT_ID => PositiveInteger::class,
-	];
 
 	/**
 	 * Array of options that we have loaded.
@@ -154,6 +125,15 @@ final class Options implements OptionsInterface, Service {
 		// TODO: Remove overriding with default once ConnectionTest is removed.
 		$default = intval( $_GET['merchant_id'] ?? 0 ); // phpcs:ignore WordPress.Security
 		return $default ?: $this->get( self::MERCHANT_ID );
+	}
+
+	/**
+	 * Returns all available option keys.
+	 *
+	 * @return array
+	 */
+	public static function get_all_option_keys(): array {
+		return array_keys( self::VALID_OPTIONS );
 	}
 
 	/**

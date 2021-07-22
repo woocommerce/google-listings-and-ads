@@ -39,7 +39,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_synced( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
@@ -67,7 +67,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_synced_keeps_existing_google_ids( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
@@ -87,7 +87,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_synced_doesnt_delete_errors_unless_all_target_countries_synced( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
@@ -154,7 +154,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_unsynced( WC_Product $product ) {
 		// First mark the product as synced to update its meta data
@@ -171,7 +171,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	}
 
 	/**
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
 		$parent = WC_Helper_Product::create_variation_product();
@@ -198,7 +198,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_remove_google_id( WC_Product $product ) {
 		$this->product_meta->update_google_ids(
@@ -217,7 +217,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_remove_google_id_marks_as_unsynced_if_empty_ids( WC_Product $product ) {
 		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1', ] );
@@ -231,7 +231,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_invalid( WC_Product $product ) {
 		$errors = [
@@ -255,7 +255,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_invalid_updates_failed_sync_attempts_if_internal_error_exists( WC_Product $product ) {
 		$errors = [
@@ -312,7 +312,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_mark_as_pending( WC_Product $product ) {
 		$this->product_helper->mark_as_pending( $product );
@@ -336,7 +336,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_synced_google_product_ids( WC_Product $product ) {
 		$this->product_meta->update_google_ids( $product, [ 'US' => 'online:en:US:gla_1' ] );
@@ -384,7 +384,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_product_synced( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
@@ -395,7 +395,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_product_synced_return_false_if_no_google_id( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
@@ -407,7 +407,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_product_synced_return_false_if_no_synced_at( WC_Product $product ) {
 		$this->product_helper->mark_as_synced( $product, $this->generate_google_product_mock() );
@@ -419,7 +419,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_ready_visible_published( WC_Product $product ) {
 		$product->set_status( 'publish' );
@@ -432,7 +432,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_ready_not_visible_published( WC_Product $product ) {
 		$product->set_status( 'publish' );
@@ -445,7 +445,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_ready_visible_not_published( WC_Product $product ) {
 		$product->set_status( 'draft' );
@@ -455,18 +455,102 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $result );
 	}
 
-	public function test_is_sync_ready_variation_parent_visible_and_published() {
-		$parent    = WC_Helper_Product::create_variation_product();
+	public function test_is_sync_ready_out_of_stock() {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_status( 'publish' );
+		$product->set_stock_status( 'outofstock' );
+		$product->save();
+		$this->product_meta->update_visibility( $product, ChannelVisibility::SYNC_AND_SHOW );
+
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $product ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'no' );
+		$this->assertTrue( $this->product_helper->is_sync_ready( $product ) );
+	}
+
+	public function test_is_sync_ready_variation_out_of_stock() {
+		$parent = WC_Helper_Product::create_variation_product();
 		$parent->set_status( 'publish' );
 		$parent->save();
 		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
 
-		$variation = $this->wc->get_product( $parent->get_children()[0] );
-		$variation->set_status( 'draft' );
-		$variation->save();
-		$this->product_meta->update_visibility( $variation, ChannelVisibility::DONT_SYNC_AND_SHOW );
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$variation_1->set_stock_status( 'outofstock' );
+		$variation_1->save();
 
-		$this->assertTrue( $this->product_helper->is_sync_ready( $variation ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation_1 ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'no' );
+		$this->assertTrue( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variation_with_no_price() {
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$variation_1->set_price( '' );
+		$variation_1->set_regular_price( '' );
+		$variation_1->save();
+
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variation_disabled() {
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$variation_1->set_status( 'private' );
+		$variation_1->save();
+
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variation_disabled_but_hide_invisible_filter_returns_false() {
+		add_filter(
+			'woocommerce_hide_invisible_variations',
+			function () {
+				return false;
+			}
+		);
+
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation_1 = $this->wc->get_product( $parent->get_children()[0] );
+		$parent->set_status( 'private' );
+		$variation_1->save();
+
+		$this->assertTrue( $this->product_helper->is_sync_ready( $variation_1 ) );
+	}
+
+	public function test_is_sync_ready_variable_out_of_stock() {
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+
+		$parent = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		foreach ( $parent->get_children() as $variation_id ) {
+			$variation = $this->wc->get_product( $variation_id );
+			$variation->set_stock_status( 'outofstock' );
+			$variation->save();
+		}
+		$parent->set_stock_status( 'outofstock' );
+		$parent->save();
+
+		update_option( 'woocommerce_hide_out_of_stock_items', 'yes' );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $parent ) );
+		update_option( 'woocommerce_hide_out_of_stock_items', 'no' );
+		$this->assertTrue( $this->product_helper->is_sync_ready( $parent ) );
 	}
 
 	public function test_is_sync_ready_variation_parent_not_visible_but_published() {
@@ -496,10 +580,24 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $this->product_helper->is_sync_ready( $variation ) );
 	}
 
+	public function test_is_sync_ready_variation_parent_hidden_in_catalog() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->set_catalog_visibility( 'hidden' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+		$variation->set_status( 'publish' );
+		$variation->save();
+		$this->product_meta->update_visibility( $variation, ChannelVisibility::SYNC_AND_SHOW );
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation ) );
+	}
+
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_failed_recently( WC_Product $product ) {
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD + 5 );
@@ -510,7 +608,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_failed_recently_less_than_threshold( WC_Product $product ) {
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD - 1 );
@@ -521,7 +619,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_is_sync_failed_recently_old_failure_but_more_than_threshold( WC_Product $product ) {
 		$this->product_meta->update_failed_sync_attempts( $product, ProductSyncer::FAILURE_THRESHOLD + 5 );
@@ -532,26 +630,26 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
-	public function test_get_visibility( WC_Product $product ) {
+	public function test_get_channel_visibility( WC_Product $product ) {
 		$this->product_meta->update_visibility( $product, ChannelVisibility::DONT_SYNC_AND_SHOW );
-		$result = $this->product_helper->get_visibility( $product );
+		$result = $this->product_helper->get_channel_visibility( $product );
 		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $result );
 	}
 
-	public function test_get_visibility_variation_product_inherits_from_parent() {
+	public function test_get_channel_visibility_variation_product_inherits_from_parent() {
 		$parent    = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
 		$this->product_meta->update_visibility( $parent, ChannelVisibility::DONT_SYNC_AND_SHOW );
 		$this->product_meta->update_visibility( $variation, ChannelVisibility::SYNC_AND_SHOW );
-		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_helper->get_visibility( $variation ) );
+		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_helper->get_channel_visibility( $variation ) );
 	}
 
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_sync_status( WC_Product $product ) {
 		$this->product_meta->update_sync_status( $product, SyncStatus::SYNCED );
@@ -561,7 +659,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_mc_status( WC_Product $product ) {
 		$this->product_meta->update_mc_status( $product, MCStatus::APPROVED );
@@ -598,7 +696,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_validation_errors( WC_Product $product ) {
 		$errors = [
@@ -632,7 +730,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @param WC_Product $product
 	 *
-	 * @dataProvider return_blank_test_products
+	 * @dataProvider return_test_products
 	 */
 	public function test_get_validation_errors_returns_as_is_if_keys_arent_product_ids( WC_Product $product ) {
 		$errors = [
@@ -661,12 +759,19 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	/**
 	 * @return array
 	 */
-	public function return_blank_test_products(): array {
+	public function return_test_products(): array {
 		// variation products are provided separately to related tests
 		return [
 			[ WC_Helper_Product::create_simple_product() ],
 			[ WC_Helper_Product::create_variation_product() ], // WC_Product_Variable
 		];
+	}
+
+	public function tearDown() {
+		parent::tearDown();
+
+		delete_option( 'woocommerce_hide_out_of_stock_items' );
+		remove_all_filters( 'woocommerce_hide_invisible_variations' );
 	}
 
 	/**

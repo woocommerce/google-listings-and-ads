@@ -8,12 +8,12 @@ This uses `@wordpress/components` [RadioControl](https://github.com/WordPress/gu
 
 ```jsx
 <AppRadioContentControl
-  { ...getInputProps( 'shippingRateOption' ) }
-  label='Click me to see additional content'
-  value="simple"
-  collapsible
+	{ ...getInputProps( 'shippingRateOption' ) }
+	label="Click me to see additional content"
+	value="simple"
+	collapsible
 >
-  My additional content here.
+	My additional content here.
 </AppRadioContentControl>
 ```
 
@@ -21,10 +21,10 @@ This uses `@wordpress/components` [RadioControl](https://github.com/WordPress/gu
 
 Same as [InputControl](https://github.com/WordPress/gutenberg/tree/master/packages/components/src/input-control) API with the following noteworthy props.
 
-| Property | Description | Type | Default |
-| --- | --- | --- | --- |
-| `label` | The option's label | Array | - |
-| `value` | The option's value | String | - |
-| `selected` | The selected `value` string | String | - |
-| `collapsible` | Collapse the additional content when `selected !== value` | Boolean | - |
-| `children` | The additional content to display | React.Node | - |
+| Property      | Description                                               | Type       | Default |
+| ------------- | --------------------------------------------------------- | ---------- | ------- |
+| `label`       | The option's label                                        | Array      | -       |
+| `value`       | The option's value                                        | String     | -       |
+| `selected`    | The selected `value` string                               | String     | -       |
+| `collapsible` | Collapse the additional content when `selected !== value` | Boolean    | -       |
+| `children`    | The additional content to display                         | React.Node | -       |

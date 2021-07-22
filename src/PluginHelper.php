@@ -45,6 +45,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_slug(): string {
+		// This value is also hard-coded in uninstall.php
 		return 'gla';
 	}
 
@@ -74,6 +75,7 @@ trait PluginHelper {
 	 * @return string
 	 */
 	protected function get_meta_key_prefix(): string {
+		// This value is also hard-coded in uninstall.php
 		return "_wc_{$this->get_slug()}";
 	}
 

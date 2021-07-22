@@ -90,7 +90,7 @@ class ProductFeedQueryHelper implements ContainerAwareInterface, Service {
 			$products[ $id ] = [
 				'id'      => $id,
 				'title'   => $product->get_name(),
-				'visible' => $product_helper->get_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
+				'visible' => $product_helper->get_channel_visibility( $product ) !== ChannelVisibility::DONT_SYNC_AND_SHOW,
 				'status'  => $product_helper->get_mc_status( $product ) ?: $product_helper->get_sync_status( $product ),
 				'errors'  => array_values( $errors ),
 			];

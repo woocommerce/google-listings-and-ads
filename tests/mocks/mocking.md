@@ -1,5 +1,4 @@
-Mocking responses for development & testing
----
+# Mocking responses for development & testing
 
 This folder contains set of sample data, that could be used to mock server-side API responses for development end testing.
 You can use them by using `woocommerce_gla_prepared_response_{route}` filter, like the following snippet

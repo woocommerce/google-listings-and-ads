@@ -81,12 +81,12 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_adding_variation_schedules_update_job() {
-		$variable_product = WC_Helper_Product::create_variation_product();
+		$variable_product = $this->create_variation_product();
 
 		$this->update_products_job->expects( $this->once() )
 								  ->method( 'schedule' );
 
-		WC_Helper_Product::create_product_variation_object(
+		$this->create_product_variation_object(
 			$variable_product->get_id(),
 			'DUMMY SKU VARIABLE SMALL BLUE 2',
 			10,
@@ -131,7 +131,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_synced_variable_schedules_delete_job_for_all_variations() {
-		$variable_product = WC_Helper_Product::create_variation_product();
+		$variable_product = $this->create_variation_product();
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
@@ -144,7 +144,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_force_deleting_synced_variable_schedules_delete_job_for_all_variations() {
-		$variable_product = WC_Helper_Product::create_variation_product();
+		$variable_product = $this->create_variation_product();
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
@@ -157,7 +157,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_trashing_synced_variation_schedules_delete_job() {
-		$variable_product = WC_Helper_Product::create_variation_product();
+		$variable_product = $this->create_variation_product();
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock( 'online:en:US:gla_' . $variation_id ) );
@@ -172,7 +172,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 	}
 
 	public function test_force_deleting_synced_variation_schedules_delete_job() {
-		$variable_product = WC_Helper_Product::create_variation_product();
+		$variable_product = $this->create_variation_product();
 		foreach ( $variable_product->get_children() as $variation_id ) {
 			$variation = wc_get_product( $variation_id );
 			$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock( 'online:en:US:gla_' . $variation_id ) );

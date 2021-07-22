@@ -22,7 +22,7 @@ class AttributeManager implements Service {
 	use PluginHelper;
 	use ValidateInterface;
 
-	public const ATTRIBUTES = [
+	protected const ATTRIBUTES = [
 		GTIN::class,
 		MPN::class,
 		Brand::class,
@@ -208,6 +208,41 @@ class AttributeManager implements Service {
 	}
 
 	/**
+	 * Returns all available attribute IDs.
+	 *
+	 * @return array
+	 *
+	 * @since x.x.x
+	 */
+	public static function get_available_attribute_ids(): array {
+		$attributes = [];
+		foreach ( self::get_available_attribute_types() as $attribute_type ) {
+			if ( method_exists( $attribute_type, 'get_id' ) ) {
+				$attribute_id                = call_user_func( [ $attribute_type, 'get_id' ] );
+				$attributes[ $attribute_id ] = $attribute_id;
+			}
+		}
+
+		return $attributes;
+	}
+
+	/**
+	 * Return an array of all available attribute class names.
+	 *
+	 * @return string[] Attribute class names
+	 *
+	 * @since x.x.x
+	 */
+	public static function get_available_attribute_types(): array {
+		/**
+		 * Filters the list of available product attributes.
+		 *
+		 * @param string[] $attributes Array of attribute class names (FQN)
+		 */
+		return apply_filters( 'woocommerce_gla_product_attribute_types', self::ATTRIBUTES );
+	}
+
+	/**
 	 * Returns an array of attribute types for all product types
 	 *
 	 * @return string[][] of attribute classes mapped to product types
@@ -243,10 +278,8 @@ class AttributeManager implements Service {
 	 * @throws InvalidClass If any of the given attribute classes do not implement the AttributeInterface.
 	 */
 	protected function map_attribute_types(): void {
-		$available_attributes = apply_filters( 'woocommerce_gla_product_attribute_types', self::ATTRIBUTES );
-
 		$this->attribute_types_map = [];
-		foreach ( $available_attributes as $attribute_type ) {
+		foreach ( self::get_available_attribute_types() as $attribute_type ) {
 			$this->validate_interface( $attribute_type, AttributeInterface::class );
 
 			$attribute_id     = call_user_func( [ $attribute_type, 'get_id' ] );

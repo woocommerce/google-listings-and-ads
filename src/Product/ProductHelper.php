@@ -276,16 +276,28 @@ class ProductHelper implements Service {
 	 * @return bool
 	 */
 	public function is_sync_ready( WC_Product $product ): bool {
-		$product_status = $product->get_status();
+		$product_visibility = $product->is_visible();
+		$product_status     = $product->get_status();
+
 		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
 			// Check the post status of the parent product if it's a variation
 			$parent         = $this->get_wc_product( $product->get_parent_id() );
 			$product_status = $parent->get_status();
+
+			/**
+			 * Optionally hide invisible variations (disabled variations and variations with empty price).
+			 *
+			 * @see WC_Product_Variable::get_available_variations for filter documentation
+			 */
+			if ( apply_filters( 'woocommerce_hide_invisible_variations', true, $parent->get_id(), $product ) && ! $product->variation_is_visible() ) {
+				$product_visibility = false;
+			}
 		}
 
-		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_visibility( $product ) ) &&
+		return ( ChannelVisibility::DONT_SYNC_AND_SHOW !== $this->get_channel_visibility( $product ) ) &&
 			   ( in_array( $product->get_type(), ProductSyncer::get_supported_product_types(), true ) ) &&
-			   ( 'publish' === $product_status );
+			   ( 'publish' === $product_status ) &&
+			   $product_visibility;
 	}
 
 	/**
@@ -312,7 +324,7 @@ class ProductHelper implements Service {
 	 *
 	 * @return string|null
 	 */
-	public function get_visibility( WC_Product $wc_product ): ?string {
+	public function get_channel_visibility( WC_Product $wc_product ): ?string {
 		$visibility = $this->meta_handler->get_visibility( $wc_product );
 		if ( $wc_product instanceof WC_Product_Variation ) {
 			// todo: we might need to define visibility per variation later.

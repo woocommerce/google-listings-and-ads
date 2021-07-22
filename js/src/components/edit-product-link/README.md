@@ -10,6 +10,6 @@ Renders a link that points to the product edit page.
 
 ## API
 
-| Property | Description | Type | Default |
-| --- | --- | --- | --- |
-| productId | Product ID | string \| number  | - |
+| Property  | Description | Type             | Default |
+| --------- | ----------- | ---------------- | ------- |
+| productId | Product ID  | string \| number | -       |
