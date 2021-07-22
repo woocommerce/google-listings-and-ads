@@ -7,8 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Google\Service\ShoppingContent\Account;
 use Exception;
+use Google\Service\ShoppingContent\Account;
+use Google\Service\ShoppingContent\AccountBusinessInformation;
 use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -88,7 +89,7 @@ class PhoneNumberController extends BaseController {
 		return function( Request $request ) {
 			try {
 				$account              = $this->merchant->get_account();
-				$business_information = $account->getBusinessInformation();
+				$business_information = $account->getBusinessInformation() ?: new AccountBusinessInformation();
 				$business_information->setPhoneNumber( $request['phone_number'] );
 				$account->setBusinessInformation( $business_information );
 				$this->merchant->update_account( $account );
@@ -152,10 +153,11 @@ class PhoneNumberController extends BaseController {
 	 * @return Response
 	 */
 	protected function get_phone_number_response( Request $request, Account $account ): Response {
+		$business_information = $account->getBusinessInformation();
 		return $this->prepare_item_for_response(
 			[
 				'id'           => $account->getId(),
-				'phone_number' => $account->getBusinessInformation()->getPhoneNumber() ?: '',
+				'phone_number' => $business_information ? $business_information->getPhoneNumber() : '',
 			],
 			$request
 		);
