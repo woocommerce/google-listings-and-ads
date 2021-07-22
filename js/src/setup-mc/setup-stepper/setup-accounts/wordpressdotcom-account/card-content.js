@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getConnectedJetpackInfo } from '.~/data/utils';
+import getConnectedJetpackInfo from '.~/utils/getConnectedJetpackInfo';
 import AppSpinner from '.~/components/app-spinner';
 import TitleButtonLayout from '.~/components/title-button-layout';
 import ConnectAccount from './connect-account';

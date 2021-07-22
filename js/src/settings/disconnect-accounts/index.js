@@ -11,7 +11,7 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import toAccountText from '.~/utils/toAccountText';
-import { getConnectedJetpackInfo } from '.~/data/utils';
+import getConnectedJetpackInfo from '.~/utils/getConnectedJetpackInfo';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useJetpackAccount from '.~/hooks/useJetpackAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
