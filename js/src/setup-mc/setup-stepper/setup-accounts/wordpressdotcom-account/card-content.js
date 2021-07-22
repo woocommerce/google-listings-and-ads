@@ -31,8 +31,9 @@ const CardContent = () => {
 	}
 
 	if ( jetpack.active === 'yes' ) {
-		const title = getConnectedJetpackInfo( jetpack );
-		return <TitleButtonLayout title={ title } />;
+		return (
+			<TitleButtonLayout title={ getConnectedJetpackInfo( jetpack ) } />
+		);
 	}
 
 	if ( jetpack.active === 'no' ) {
