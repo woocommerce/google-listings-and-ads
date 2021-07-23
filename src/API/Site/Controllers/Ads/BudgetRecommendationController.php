@@ -8,6 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCode
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -19,9 +22,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class BudgetRecommendationController extends BaseController implements ISO3166AwareInterface {
+class BudgetRecommendationController extends BaseController implements ISO3166AwareInterface, OptionsAwareInterface {
 
 	use CountryCodeTrait;
+	use OptionsAwareTrait;
 
 	/**
 	 * @var BudgetRecommendationQuery
@@ -61,7 +65,9 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
 			$country        = strtoupper( $request->get_param( 'country_code' ) );
-			$currency       = strtoupper( get_woocommerce_currency() );
+			// Provide recommentation in Ads account currency, as this is the one which will be used for the created campaign.
+			// TODO: Make sure it's set or do something like `! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) &&  $proxy->request_ads_currency();`
+			$currency		= strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) );
 			$recommendation = $this
 				->budget_recommendation_query
 				->where( 'country', $country )
