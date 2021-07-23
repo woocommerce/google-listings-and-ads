@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import getConnectedJetpackInfo from '.~/utils/getConnectedJetpackInfo';
 import AppSpinner from '.~/components/app-spinner';
 import TitleButtonLayout from '.~/components/title-button-layout';
 import ConnectAccount from './connect-account';
@@ -30,7 +31,9 @@ const CardContent = () => {
 	}
 
 	if ( jetpack.active === 'yes' ) {
-		return <TitleButtonLayout title={ jetpack.email } />;
+		return (
+			<TitleButtonLayout title={ getConnectedJetpackInfo( jetpack ) } />
+		);
 	}
 
 	if ( jetpack.active === 'no' ) {
