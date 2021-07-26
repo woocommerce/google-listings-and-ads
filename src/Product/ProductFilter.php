@@ -10,6 +10,8 @@ use WC_Product;
  *
  * Filters a list of products retrieved from the repository.
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */
 class ProductFilter implements Service {
