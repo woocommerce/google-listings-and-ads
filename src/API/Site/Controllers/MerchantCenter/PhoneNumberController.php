@@ -69,7 +69,7 @@ class PhoneNumberController extends BaseOptionsController {
 	 * @return callable
 	 */
 	protected function get_phone_number_endpoint_read_callback(): callable {
-		return function( $request ) {
+		return function( Request $request ) {
 			try {
 				return $this->get_phone_number_response(
 					$this->merchant_verification->get_phone_number(),
