@@ -67,18 +67,15 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 		$this->monitor->validate_failure_rate( $this );
 
 		$items = $this->get_batch( $batch_number );
-		$count = $this->unfiltered_count ?? count( $items );
 
-		if ( 0 === $count ) {
+		if ( empty( $items ) ) {
 			// if no more items the job is complete
 			$this->handle_complete( $batch_number );
 		} else {
 			// if items, schedule the process action
-			if ( ! empty( $items ) ) {
-				$this->schedule_process_action( $items );
-			}
+			$this->schedule_process_action( $items );
 
-			if ( $count >= $this->get_batch_size() ) {
+			if ( count( $items ) >= $this->get_batch_size() ) {
 				// if there might be more items, add another "create_batch" action to handle them
 				$this->schedule_create_batch_action( $batch_number + 1 );
 			}
