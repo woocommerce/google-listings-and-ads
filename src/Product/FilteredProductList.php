@@ -39,7 +39,7 @@ class FilteredProductList implements Countable {
 	 * @param WC_Product[]|int[] $products         List of filtered products.
 	 * @param int                $unfiltered_count Product count before filtering.
 	 */
-	public function __construct( $products, $unfiltered_count ) {
+	public function __construct( $products, int $unfiltered_count ) {
 		$this->products         = $products ?? [];
 		$this->unfiltered_count = $unfiltered_count;
 	}
