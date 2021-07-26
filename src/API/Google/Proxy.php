@@ -420,6 +420,22 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get the ads account currency.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return string
+	 */
+	public function get_ads_currency(): string {
+		// Retrieve account currency from the API if we haven't done so previously.
+		if ( $this->options->get( OptionsInterface::ADS_ID ) && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
+			$this->request_ads_currency();
+		}
+
+		return strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ?? get_woocommerce_currency() );
+	}
+
+	/**
 	 * Determine whether the TOS have been accepted.
 	 *
 	 * @param string $service Name of service.
