@@ -389,14 +389,9 @@ class Proxy implements OptionsAwareInterface {
 	public function get_connected_ads_account(): array {
 		$id = $this->options->get( OptionsInterface::ADS_ID );
 
-		// Retrieve account currency if we haven't done so previously.
-		if ( $id && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
-			$this->request_ads_currency();
-		}
-
 		$status = [
 			'id'       => $id,
-			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
+			'currency' => $this->get_ads_currency(),
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 
