@@ -3,14 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
@@ -22,10 +20,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class BudgetRecommendationController extends BaseController implements ISO3166AwareInterface, OptionsAwareInterface {
+class BudgetRecommendationController extends BaseController implements ISO3166AwareInterface {
 
 	use CountryCodeTrait;
-	use OptionsAwareTrait;
 
 	/**
 	 * @var BudgetRecommendationQuery
@@ -33,14 +30,21 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	protected $budget_recommendation_query;
 
 	/**
+	 * @var Middleware
+	 */
+	protected $middleware;
+
+	/**
 	 * BudgetRecommendationController constructor.
 	 *
 	 * @param RESTServer                $rest_server
 	 * @param BudgetRecommendationQuery $budget_recommendation_query
+	 * @param Middleware                $middleware
 	 */
-	public function __construct( RESTServer $rest_server, BudgetRecommendationQuery $budget_recommendation_query ) {
+	public function __construct( RESTServer $rest_server, BudgetRecommendationQuery $budget_recommendation_query, Middleware $middleware ) {
 		parent::__construct( $rest_server );
 		$this->budget_recommendation_query = $budget_recommendation_query;
+		$this->middleware                  = $middleware;
 	}
 
 	/**
@@ -65,9 +69,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
 			$country        = strtoupper( $request->get_param( 'country_code' ) );
-			// Provide recommentation in Ads account currency, as this is the one which will be used for the created campaign.
-			// TODO: Make sure it's set or do something like `! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) &&  $proxy->request_ads_currency();`
-			$currency		= strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) );
+			$currency       = $this->middleware->get_ads_currency();
 			$recommendation = $this
 				->budget_recommendation_query
 				->where( 'country', $country )
