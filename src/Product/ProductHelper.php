@@ -432,7 +432,7 @@ class ProductHelper implements Service {
 	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
 	 *                      valid parent ID (i.e. it's an orphan).
 	 *
-	 * @since x.x.x
+	 * @since 1.3.0
 	 */
 	public function maybe_swap_for_parent( WC_Product $product ): WC_Product {
 		if ( $product instanceof WC_Product_Variation ) {
