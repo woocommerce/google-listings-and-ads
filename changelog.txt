@@ -1,5 +1,21 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.3.0 - 2021-07-27 =
+* Fix - Bump WordPress tested version to 5.8.
+* Fix - Code formatting with Prettier.
+* Fix - Disable the "Complete setup" button if the free shipping price is not yet entered when setting up Merchant Center for the first time.
+* Fix - Fix: add eslint-plugin-import to help catch JavaScript import errors.
+* Fix - Import `Button` from `@wordpress/components` in Switch URL flow.
+* Fix - Remove unused code.
+* Fix - Shows a Jetpack connected success text instead of blank when viewing the onboarding setup and the settings pages as a non jetpack owner account.
+* Fix - Skip orphaned variations instead of throwing errors when syncing products.
+* Tweak - Add filters for adjusting description.
+* Tweak - Allow safe HTML tags for product descriptions.
+* Tweak - Replaced `<AppTextButton>` with WP's `<Button isLink>`.
+* Tweak - Use @wordpress/prettier-config package.
+* Update - Optionally clean up plugin data on uninstall.
+* Update - Stop syncing invisible products and variations.
+
 = 1.2.1 - 2021-07-15 =
 * Fix - Made Forms submit and change behavior work with WooCommerce >= 5.5 (WooCommerce Admin >= 2.4.0).
 
