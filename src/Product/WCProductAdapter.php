@@ -179,8 +179,13 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$description
 		);
 
-		// Strip out active shortcodes and HTML tags.
-		$description = strip_shortcodes( wp_strip_all_tags( $description ) );
+		// Strip out invalid HTML tags (e.g. script, style, canvas, etc.) along with attributes of all tags.
+		$valid_html_tags   = array_keys( wp_kses_allowed_html( 'post' ) );
+		$kses_allowed_tags = array_fill_keys( $valid_html_tags, [] );
+		$description       = wp_kses( $description, $kses_allowed_tags );
+
+		// Strip out active shortcodes
+		$description = strip_shortcodes( $description );
 
 		return apply_filters( 'woocommerce_gla_product_attribute_value_description', $description, $this->wc_product );
 	}

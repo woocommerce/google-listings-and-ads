@@ -232,10 +232,10 @@ class WCProductAdapterTest extends UnitTest {
 			false,
 			[
 				'description'       =>
-					'<h1>Sample product</h1> description with some valid ⏰⌛⊗⊝Ɋ❤😍 and <strong>invalid</strong> unicode chars' . $invalid_chars .
+					'<h1>Sample product</h1> description with some valid ⏰⌛⊗⊝Ɋ❤😍 and <strong data-title="what?">invalid</strong> unicode chars' . $invalid_chars .
 					' and some registered short code like [video mp4="source.mp4"] and [gallery order="DESC" orderby="ID"] that ' .
-					'will get <strike>striped out</strike>, along with an unregistered short code [some-test-short-code id=1] that will remain intact.' .
-					'<script>window.alert("this should be removed!")</script><style>h1 {font-size: 2em;}</style>'
+					'will get <i>stripped out</i>, along with an unregistered short code [some-test-short-code id=1] that will remain intact.' .
+					'<script>window.alert("this should be plain text!")</script><style>h1 {font-size: 2em;}</style>'
 				,
 				'short_description' => 'Short description.',
 			]
@@ -247,10 +247,10 @@ class WCProductAdapterTest extends UnitTest {
 			]
 		);
 
-		$expected_description = 'Sample product description with some valid ⏰⌛⊗⊝Ɋ❤😍 and invalid unicode chars  and some registered short code like ' .
+		$expected_description = '<h1>Sample product</h1> description with some valid ⏰⌛⊗⊝Ɋ❤😍 and <strong>invalid</strong> unicode chars  and some registered short code like ' .
 								' and  that ' .
-								'will get striped out, along with an unregistered short code [some-test-short-code id=1] that will remain intact.' .
-								'';
+								'will get <i>stripped out</i>, along with an unregistered short code [some-test-short-code id=1] that will remain intact.' .
+								'window.alert("this should be plain text!")h1 {font-size: 2em;}';
 
 		$this->assertEquals( $expected_description, $adapted_product->getDescription() );
 	}
