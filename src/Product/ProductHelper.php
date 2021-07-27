@@ -409,15 +409,15 @@ class ProductHelper implements Service {
 	/**
 	 * If the provided product has a parent, return its ID. Otherwise, return the given (valid product) ID.
 	 *
-	 * @param int $product WooCommerce product ID.
+	 * @param int $product_id WooCommerce product ID.
 	 *
 	 * @return int The parent ID or product ID of it doesn't have a parent.
 	 *
 	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
 	 *                      valid parent ID (i.e. it's an orphan).
 	 */
-	public function maybe_swap_for_parent_id( int $product ): int {
-		$product = $this->get_wc_product( $product );
+	public function maybe_swap_for_parent_id( int $product_id ): int {
+		$product = $this->get_wc_product( $product_id );
 
 		return $this->maybe_swap_for_parent( $product )->get_id();
 	}
