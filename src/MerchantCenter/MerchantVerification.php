@@ -36,10 +36,10 @@ class MerchantVerification implements Service {
 	/**
 	 * Get the phone number for the connected Merchant Center account.
 	 *
-	 * @return string The phone number associated with the Merchant Center account.
+	 * @return string|null The phone number associated with the Merchant Center account or null.
 	 * @throws ContentApiException If the Merchant Center account can't be retrieved.
 	 */
-	public function get_phone_number(): string {
+	public function get_phone_number(): ?string {
 		return $this->extract_phone_number( $this->merchant->get_account() );
 	}
 
@@ -48,10 +48,10 @@ class MerchantVerification implements Service {
 	 *
 	 * @param string $phone_number The new phone number to add the the Merchant Center account.
 	 *
-	 * @return string The phone number associated with the Merchant Center account.
+	 * @return string|null The phone number associated with the Merchant Center account or null.
 	 * @throws ContentApiException If the Merchant Center account can't be retrieved or updated.
 	 */
-	public function update_phone_number( string $phone_number ): string {
+	public function update_phone_number( string $phone_number ): ?string {
 		$account              = $this->merchant->get_account();
 		$business_information = $account->getBusinessInformation() ?: new AccountBusinessInformation();
 		$business_information->setPhoneNumber( $phone_number );
@@ -66,10 +66,10 @@ class MerchantVerification implements Service {
 	 *
 	 * @param Account $account
 	 *
-	 * @return string Empty if the account has no phone number.
+	 * @return string|null Null if the account has no phone number.
 	 */
-	protected function extract_phone_number( Account $account ): string {
+	protected function extract_phone_number( Account $account ): ?string {
 		$business_information = $account->getBusinessInformation();
-		return $business_information ? $business_information->getPhoneNumber() : '';
+		return $business_information ? $business_information->getPhoneNumber() : null;
 	}
 }

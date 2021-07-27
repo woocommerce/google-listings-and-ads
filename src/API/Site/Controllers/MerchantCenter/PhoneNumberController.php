@@ -146,12 +146,12 @@ class PhoneNumberController extends BaseOptionsController {
 	/**
 	 * Get the prepared REST response with Merchant Center account ID and phone number.
 	 *
-	 * @param string  $phone_number
-	 * @param Request $request
+	 * @param string|null $phone_number
+	 * @param Request     $request
 	 *
 	 * @return Response
 	 */
-	protected function get_phone_number_response( string $phone_number, Request $request ): Response {
+	protected function get_phone_number_response( ?string $phone_number, Request $request ): Response {
 		return $this->prepare_item_for_response(
 			[
 				'id'           => $this->options->get_merchant_id(),
