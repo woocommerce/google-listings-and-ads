@@ -110,6 +110,7 @@ class Admin implements Service, Registerable, Conditional {
 		) )->add_inline_script(
 			'glaData',
 			[
+				'assetsURL'           => plugin_dir_url( $this->get_main_file() ),
 				'mcSetupComplete'     => $this->merchant_center->is_setup_complete(),
 				'mcSupportedCountry'  => $this->merchant_center->is_country_supported(),
 				'mcSupportedLanguage' => $this->merchant_center->is_language_supported(),
