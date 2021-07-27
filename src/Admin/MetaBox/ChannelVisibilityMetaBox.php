@@ -118,7 +118,7 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @return array
 	 */
 	protected function get_view_context( WP_Post $post, array $args ): array {
-		$product_id = $post->ID;
+		$product_id = absint( $post->ID );
 		$product    = $this->product_helper->get_wc_product( $product_id );
 
 		return [

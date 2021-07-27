@@ -79,8 +79,13 @@ class ProductHelper implements Service {
 		}
 
 		// mark the parent product as synced if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$parent_product = $this->get_wc_product( $product->get_parent_id() );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
 			$this->mark_as_synced( $parent_product, $google_product );
 		}
 	}
@@ -97,8 +102,13 @@ class ProductHelper implements Service {
 		$this->meta_handler->delete_sync_failed_at( $product );
 
 		// mark the parent product as un-synced if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$parent_product = $this->get_wc_product( $product->get_parent_id() );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
 			$this->mark_as_unsynced( $parent_product );
 		}
 	}
@@ -157,9 +167,12 @@ class ProductHelper implements Service {
 		}
 
 		// mark the parent product as invalid if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$wc_parent_id   = $product->get_parent_id();
-			$parent_product = $this->get_wc_product( $wc_parent_id );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
 
 			$parent_errors = ! empty( $this->meta_handler->get_errors( $parent_product ) ) ?
 				$this->meta_handler->get_errors( $parent_product ) :
@@ -182,9 +195,13 @@ class ProductHelper implements Service {
 		$this->meta_handler->update_sync_status( $product, SyncStatus::PENDING );
 
 		// mark the parent product as pending if it's a variation
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
-			$wc_parent_id   = $product->get_parent_id();
-			$parent_product = $this->get_wc_product( $wc_parent_id );
+		if ( $product instanceof WC_Product_Variation ) {
+			try {
+				$parent_product = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				return;
+			}
+
 			$this->mark_as_pending( $parent_product );
 		}
 	}
@@ -195,7 +212,12 @@ class ProductHelper implements Service {
 	 * @param WC_Product $product
 	 */
 	protected function update_empty_visibility( WC_Product $product ): void {
-		$product    = $product instanceof WC_Product_Variation ? $this->get_wc_product( $product->get_parent_id() ) : $product;
+		try {
+			$product = $this->maybe_swap_for_parent( $product );
+		} catch ( InvalidValue $exception ) {
+			return;
+		}
+
 		$visibility = $this->meta_handler->get_visibility( $product );
 
 		if ( empty( $visibility ) ) {
@@ -224,6 +246,7 @@ class ProductHelper implements Service {
 		if ( ! preg_match( $pattern, $mc_product_id, $matches ) ) {
 			return 0;
 		}
+
 		return intval( $matches[1] );
 	}
 
@@ -249,12 +272,13 @@ class ProductHelper implements Service {
 	/**
 	 * Get WooCommerce product
 	 *
-	 * @param int|false $product_id
+	 * @param int $product_id
 	 *
 	 * @return WC_Product
+	 *
 	 * @throws InvalidValue If the given ID doesn't reference a valid product.
 	 */
-	public function get_wc_product( $product_id ): WC_Product {
+	public function get_wc_product( int $product_id ): WC_Product {
 		return $this->wc->get_product( $product_id );
 	}
 
@@ -279,9 +303,20 @@ class ProductHelper implements Service {
 		$product_visibility = $product->is_visible();
 		$product_status     = $product->get_status();
 
-		if ( $product instanceof WC_Product_Variation && ! empty( $product->get_parent_id() ) ) {
+		if ( $product instanceof WC_Product_Variation ) {
 			// Check the post status of the parent product if it's a variation
-			$parent         = $this->get_wc_product( $product->get_parent_id() );
+			try {
+				$parent = $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf( 'Cannot sync an orphaned variation (ID: %s).', $product->get_id() ),
+					__METHOD__
+				);
+
+				return false;
+			}
+
 			$product_status = $parent->get_status();
 
 			/**
@@ -325,13 +360,18 @@ class ProductHelper implements Service {
 	 * @return string|null
 	 */
 	public function get_channel_visibility( WC_Product $wc_product ): ?string {
-		$visibility = $this->meta_handler->get_visibility( $wc_product );
-		if ( $wc_product instanceof WC_Product_Variation ) {
+		try {
 			// todo: we might need to define visibility per variation later.
-			$visibility = $this->meta_handler->get_visibility( $this->get_wc_product( $wc_product->get_parent_id() ) );
-		}
+			return $this->meta_handler->get_visibility( $this->maybe_swap_for_parent( $wc_product ) );
+		} catch ( InvalidValue $exception ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Channel visibility forced to "%s" for invalid product (ID: %s).', ChannelVisibility::DONT_SYNC_AND_SHOW, $wc_product->get_id() ),
+				__METHOD__
+			);
 
-		return $visibility;
+			return ChannelVisibility::DONT_SYNC_AND_SHOW;
+		}
 	}
 
 	/**
@@ -353,29 +393,63 @@ class ProductHelper implements Service {
 	 * @return string|null
 	 */
 	public function get_mc_status( WC_Product $wc_product ): ?string {
-		if ( $wc_product instanceof WC_Product_Variation ) {
-			return $this->meta_handler->get_mc_status( $this->get_wc_product( $wc_product->get_parent_id() ) );
+		try {
+			return $this->meta_handler->get_mc_status( $this->maybe_swap_for_parent( $wc_product ) );
+		} catch ( InvalidValue $exception ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'Product status returned null for invalid product (ID: %s).', $wc_product->get_id() ),
+				__METHOD__
+			);
+
+			return null;
 		}
-		return $this->meta_handler->get_mc_status( $wc_product );
 	}
 
 	/**
-	 * If the provided product has a parent, return its ID. Otherwise, return the
-	 * given (valid product) ID.
+	 * If the provided product has a parent, return its ID. Otherwise, return the given (valid product) ID.
 	 *
-	 * @param int|WC_Product $product A WC product, or a WC product ID.
+	 * @param int $product_id WooCommerce product ID.
 	 *
 	 * @return int The parent ID or product ID of it doesn't have a parent.
-	 * @throws InvalidValue If a given ID doesn't reference a valid product.
+	 *
+	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
+	 *                      valid parent ID (i.e. it's an orphan).
 	 */
-	public function maybe_swap_for_parent_id( $product ): int {
-		if ( is_integer( $product ) ) {
-			$product = $this->get_wc_product( $product );
-		}
+	public function maybe_swap_for_parent_id( int $product_id ): int {
+		$product = $this->get_wc_product( $product_id );
+
+		return $this->maybe_swap_for_parent( $product )->get_id();
+	}
+
+	/**
+	 * If the provided product has a parent, return its parent object. Otherwise, return the given product.
+	 *
+	 * @param WC_Product $product WooCommerce product object.
+	 *
+	 * @return WC_Product The parent product object or the given product object of it doesn't have a parent.
+	 *
+	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
+	 *                      valid parent ID (i.e. it's an orphan).
+	 *
+	 * @since x.x.x
+	 */
+	public function maybe_swap_for_parent( WC_Product $product ): WC_Product {
 		if ( $product instanceof WC_Product_Variation ) {
-			return $product->get_parent_id();
+			try {
+				return $this->get_wc_product( $product->get_parent_id() );
+			} catch ( InvalidValue $exception ) {
+				do_action(
+					'woocommerce_gla_error',
+					sprintf( 'An orphaned variation found (ID: %s). Please delete it via "WooCommerce > Status > Tools > Delete orphaned variations".', $product->get_id() ),
+					__METHOD__
+				);
+
+				throw $exception;
+			}
 		}
-		return $product->get_id();
+
+		return $product;
 	}
 
 	/**
@@ -383,6 +457,7 @@ class ProductHelper implements Service {
 	 * Combines errors for variable products, which have a variation-indexed array of errors.
 	 *
 	 * @param WC_Product $product
+	 *
 	 * @return array
 	 */
 	public function get_validation_errors( WC_Product $product ): array {

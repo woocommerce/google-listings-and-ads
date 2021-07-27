@@ -104,6 +104,8 @@ class IssuesController extends BaseOptionsController {
 						sprintf( 'Merchant Center product ID %s not found in this WooCommerce store.', $issue['product_id'] ),
 						__METHOD__,
 					);
+
+					continue;
 				}
 			}
 

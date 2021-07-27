@@ -118,8 +118,8 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 	public function test_mark_as_synced_updates_both_variation_and_parent() {
 		$google_product = $this->generate_google_product_mock();
-		$parent = WC_Helper_Product::create_variation_product();
-		$variation = $this->wc->get_product( $parent->get_children()[0] );
+		$parent         = WC_Helper_Product::create_variation_product();
+		$variation      = $this->wc->get_product( $parent->get_children()[0] );
 
 		$this->merchant_center->expects( $this->any() )
 							  ->method( 'get_target_countries' )
@@ -151,6 +151,33 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		}
 	}
 
+	public function test_mark_as_synced_does_not_update_parent_if_orphan_variation() {
+		$google_product = $this->generate_google_product_mock();
+		$parent         = WC_Helper_Product::create_variation_product();
+		$variation      = $this->wc->get_product( $parent->get_children()[0] );
+
+		// make the variation orphan by setting its parent to 0
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->merchant_center->expects( $this->any() )
+							  ->method( 'get_target_countries' )
+							  ->willReturn( [ $this->get_sample_target_country() ] );
+
+		$this->product_helper->mark_as_synced( $variation, $google_product );
+
+		// get the updated parent object from DB
+		$parent = $this->wc->get_product( $parent->get_id() );
+
+		$this->assertGreaterThan( 0, $this->product_meta->get_synced_at( $variation ) );
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $variation ) );
+		$this->assertEquals( [ $google_product->getTargetCountry() => $google_product->getId() ], $this->product_meta->get_google_ids( $variation ) );
+
+		$this->assertEmpty( $this->product_meta->get_synced_at( $parent ) );
+		$this->assertEmpty( $this->product_meta->get_sync_status( $parent ) );
+		$this->assertEmpty( $this->product_meta->get_google_ids( $parent ) );
+	}
+
 	/**
 	 * @param WC_Product $product
 	 *
@@ -170,9 +197,6 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
 	}
 
-	/**
-	 * @dataProvider return_test_products
-	 */
 	public function test_mark_as_unsynced_updates_both_variation_and_parent() {
 		$parent = WC_Helper_Product::create_variation_product();
 		$variation = $this->wc->get_product( $parent->get_children()[0] );
@@ -193,6 +217,31 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 			$this->assertEmpty( $this->product_meta->get_failed_sync_attempts( $product ) );
 			$this->assertEmpty( $this->product_meta->get_sync_failed_at( $product ) );
 		}
+	}
+
+	public function test_mark_as_unsynced_does_not_update_parent_if_orphan_variation() {
+		$parent = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		// First mark the product as synced to update its meta data
+		$this->product_helper->mark_as_synced( $variation, $this->generate_google_product_mock() );
+
+		// make the variation orphan by setting its parent to 0
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->product_helper->mark_as_unsynced( $variation );
+
+		// get the updated parent object from DB
+		$parent = $this->wc->get_product( $parent->get_id() );
+
+		$this->assertEmpty( $this->product_meta->get_synced_at( $variation ) );
+		$this->assertEquals( SyncStatus::NOT_SYNCED, $this->product_meta->get_sync_status( $variation ) );
+		$this->assertEmpty( $this->product_meta->get_google_ids( $variation ) );
+
+		$this->assertNotEmpty( $this->product_meta->get_synced_at( $parent ) );
+		$this->assertEquals( SyncStatus::SYNCED, $this->product_meta->get_sync_status( $parent ) );
+		$this->assertNotEmpty( $this->product_meta->get_google_ids( $parent ) );
 	}
 
 	/**
@@ -309,6 +358,31 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 	}
 
+	public function test_mark_as_invalid_does_not_update_parent_if_orphan_variation() {
+		$errors = [
+			'Error 1',
+			'Error 2',
+		];
+
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		// make the variation orphan by setting its parent to 0
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->product_helper->mark_as_invalid( $variation, $errors );
+
+		// get the updated parent object from DB
+		$parent = $this->wc->get_product( $parent->get_id() );
+
+		$this->assertEqualSets( $errors, $this->product_meta->get_errors( $variation ) );
+		$this->assertEquals( SyncStatus::HAS_ERRORS, $this->product_meta->get_sync_status( $variation ) );
+
+		$this->assertEmpty( $this->product_meta->get_errors( $parent ) );
+		$this->assertEmpty( $this->product_meta->get_sync_status( $parent ) );
+	}
+
 	/**
 	 * @param WC_Product $product
 	 *
@@ -331,6 +405,23 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 
 		$this->assertEquals( SyncStatus::PENDING, $this->product_meta->get_sync_status( $variation ) );
 		$this->assertEquals( SyncStatus::PENDING, $this->product_meta->get_sync_status( $parent ) );
+	}
+
+	public function test_mark_as_pending_does_not_update_parent_if_orphan_variation() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+
+		// make the variation orphan by setting its parent to 0
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->product_helper->mark_as_pending( $variation );
+
+		// get the updated parent object from DB
+		$parent = $this->wc->get_product( $parent->get_id() );
+
+		$this->assertEquals( SyncStatus::PENDING, $this->product_meta->get_sync_status( $variation ) );
+		$this->assertEmpty( $this->product_meta->get_sync_status( $parent ) );
 	}
 
 	/**
@@ -594,6 +685,26 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $this->product_helper->is_sync_ready( $variation ) );
 	}
 
+	public function test_is_sync_ready_variation_returns_false_if_orphan() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$parent->set_status( 'publish' );
+		$parent->save();
+		$this->product_meta->update_visibility( $parent, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+		$variation->set_status( 'publish' );
+		$variation->save();
+		$this->product_meta->update_visibility( $variation, ChannelVisibility::SYNC_AND_SHOW );
+
+		$this->assertTrue( $this->product_helper->is_sync_ready( $variation ) );
+
+		// make the variation orphan by setting its parent to 0
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->assertFalse( $this->product_helper->is_sync_ready( $variation ) );
+	}
+
 	/**
 	 * @param WC_Product $product
 	 *
@@ -646,6 +757,21 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_helper->get_channel_visibility( $variation ) );
 	}
 
+	public function test_get_channel_visibility_variation_product_returns_dont_sync_and_show_if_orphan() {
+		$variable = WC_Helper_Product::create_variation_product();
+		$this->product_meta->update_visibility( $variable, ChannelVisibility::SYNC_AND_SHOW );
+
+		$variation = $this->wc->get_product( $variable->get_children()[0] );
+
+		$this->assertEquals( ChannelVisibility::SYNC_AND_SHOW, $this->product_helper->get_channel_visibility( $variation ) );
+
+		// make the variation orphan by setting its parent to 0
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->assertEquals( ChannelVisibility::DONT_SYNC_AND_SHOW, $this->product_helper->get_channel_visibility( $variation ) );
+	}
+
 	/**
 	 * @param WC_Product $product
 	 *
@@ -674,6 +800,20 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEquals( MCStatus::APPROVED, $this->product_helper->get_mc_status( $variation ) );
 	}
 
+	public function test_get_mc_status_variation_product_returns_null_if_orphan() {
+		$parent    = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $parent->get_children()[0] );
+		$this->product_meta->update_mc_status( $parent, MCStatus::APPROVED );
+
+		$this->assertEquals( MCStatus::APPROVED, $this->product_helper->get_mc_status( $variation ) );
+
+		// make the variation orphan by setting its parent to 0
+		$variation->set_parent_id( 0 );
+		$variation->save();
+
+		$this->assertNull( $this->product_helper->get_mc_status( $variation ) );
+	}
+
 	public function test_maybe_swap_for_parent_id() {
 		$simple = WC_Helper_Product::create_simple_product();
 
@@ -683,14 +823,27 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$simple_product_id = $this->product_helper->maybe_swap_for_parent_id( $simple->get_id() );
 		$this->assertEquals( $simple->get_id(), $simple_product_id );
 
-		$simple_product_id = $this->product_helper->maybe_swap_for_parent_id( $simple );
-		$this->assertEquals( $simple->get_id(), $simple_product_id );
-
-		$variable_product_id = $this->product_helper->maybe_swap_for_parent_id( $variable );
+		$variable_product_id = $this->product_helper->maybe_swap_for_parent_id( $variable->get_id() );
 		$this->assertEquals( $variable->get_id(), $variable_product_id );
 
-		$variation_parent_id = $this->product_helper->maybe_swap_for_parent_id( $variation );
+		$variation_parent_id = $this->product_helper->maybe_swap_for_parent_id( $variation->get_id() );
 		$this->assertEquals( $variable->get_id(), $variation_parent_id );
+	}
+
+	public function test_maybe_swap_for_parent() {
+		$simple = WC_Helper_Product::create_simple_product();
+
+		$variable  = WC_Helper_Product::create_variation_product();
+		$variation = $this->wc->get_product( $variable->get_children()[0] );
+
+		$simple_product = $this->product_helper->maybe_swap_for_parent( $simple );
+		$this->assertEquals( $simple->get_id(), $simple_product->get_id() );
+
+		$variable_product = $this->product_helper->maybe_swap_for_parent( $variable );
+		$this->assertEquals( $variable->get_id(), $variable_product->get_id() );
+
+		$variation_parent = $this->product_helper->maybe_swap_for_parent( $variation );
+		$this->assertEquals( $variable->get_id(), $variation_parent->get_id() );
 	}
 
 	/**
