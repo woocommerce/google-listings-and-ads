@@ -50,6 +50,7 @@ class MerchantVerification implements Service {
 	 *
 	 * @return string|null The phone number associated with the Merchant Center account or null.
 	 * @throws ContentApiException If the Merchant Center account can't be retrieved or updated.
+	 * @throws InvalidValue If the provided phone number is invalid.
 	 */
 	public function update_phone_number( string $phone_number ): ?string {
 		if ( ! $this->validate_phone_number( $phone_number ) ) {
