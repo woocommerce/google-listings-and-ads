@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ContentApiException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
@@ -51,6 +52,11 @@ class MerchantVerification implements Service {
 	 * @throws ContentApiException If the Merchant Center account can't be retrieved or updated.
 	 */
 	public function update_phone_number( string $phone_number ): ?string {
+		if ( ! $this->validate_phone_number( $phone_number ) ) {
+			throw new InvalidValue( __( 'Invalid phone number.', 'google-listings-and-ads' ) );
+		}
+		$phone_number = $this->sanitize_phone_number( $phone_number );
+
 		$account              = $this->merchant->get_account();
 		$business_information = $account->getBusinessInformation() ?: new AccountBusinessInformation();
 		$business_information->setPhoneNumber( $phone_number );
@@ -70,5 +76,34 @@ class MerchantVerification implements Service {
 	protected function extract_phone_number( Account $account ): ?string {
 		$business_information = $account->getBusinessInformation();
 		return $business_information ? $business_information->getPhoneNumber() : null;
+	}
+
+	/**
+	 * Validate that the phone number doesn't contain invalid characters.
+	 * Allowed: ()-.0123456789 and space
+	 *
+	 * @param string|int $phone_number The phone number to validate.
+	 *
+	 * @return bool
+	 */
+	public function validate_phone_number( $phone_number ): bool {
+		// Disallowed characters.
+		if ( is_string( $phone_number ) && preg_match( '/[^0-9() \-.+]/', $phone_number ) ) {
+			return false;
+		}
+		// Don't allow integer 0
+		return ! empty( $phone_number );
+	}
+
+	/**
+	 *
+	 * Sanitize the phone number, leaving only `+` (plus) and numbers.
+	 *
+	 * @param string|int $phone_number The phone number to sanitize.
+	 *
+	 * @return string
+	 */
+	public function sanitize_phone_number( $phone_number ): string {
+		return preg_replace( '/[^+0-9]/', '', "$phone_number" );
 	}
 }
