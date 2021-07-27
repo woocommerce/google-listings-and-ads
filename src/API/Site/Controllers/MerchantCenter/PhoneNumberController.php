@@ -179,7 +179,7 @@ class PhoneNumberController extends BaseOptionsController {
 	 */
 	protected function get_phone_number_sanitize_callback(): callable {
 		return function( $phone_number ) {
-			return preg_replace( '/[^\+0-9]/', '', "$phone_number" );
+			return preg_replace( '/[^+0-9]/', '', "$phone_number" );
 		};
 	}
 
@@ -191,7 +191,7 @@ class PhoneNumberController extends BaseOptionsController {
 	 */
 	protected function get_phone_number_validate_callback() {
 		return function( $value, $request, $param ) {
-			if ( is_string( $value ) && preg_match( '/[^0-9\(\) \-\.\+]/', $value ) ) {
+			if ( is_string( $value ) && preg_match( '/[^0-9() \-.+]/', $value ) ) {
 				return new WP_Error( 'rest_invalid_phone_number', __( 'Invalid phone number characters.', 'google-listings-and-ads' ) );
 			}
 			if ( empty( $value ) ) {

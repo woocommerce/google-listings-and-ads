@@ -6,7 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ContentApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Exception;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
 
