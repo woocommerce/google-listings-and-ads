@@ -14,9 +14,6 @@ import './index.scss';
 
 /**
  * Full URL to the Google G logo image.
- * Preferably we would inline it into HTML to reduce the bundle size.
- *
- * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
  */
 const googleLogoURL =
 	glaData.assetsURL + 'js/src/components/account-card/gogole-g-logo.svg';

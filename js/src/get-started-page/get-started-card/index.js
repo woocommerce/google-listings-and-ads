@@ -22,9 +22,6 @@ import AppButton from '.~/components/app-button';
 
 /**
  * Full URL to the header image.
- * Preferably we would inline it into HTML to reduce the bundle size.
- *
- * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
  */
 const motivationImageURL =
 	glaData.assetsURL + 'js/src/get-started-page/get-started-card/image.svg';

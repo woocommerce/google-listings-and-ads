@@ -28,9 +28,6 @@ const LATER_BUTTON_CLASS = 'components-guide__finish-button';
 
 /**
  * Full URL to the logo images.
- * Preferably we would inline it into HTML to reduce the bundle size.
- *
- * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
  */
 const wooLogoURL =
 	glaData.assetsURL +

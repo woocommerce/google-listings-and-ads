@@ -17,9 +17,6 @@ import './index.scss';
 
 /**
  * Full URL to the feature images folder.
- * Preferably we would inline it into HTML to reduce the bundle size.
- *
- * Unfortunately, React does not support `import.meta`, so we need to hardcode the module path.
  */
 const imagesURL = glaData.assetsURL + 'js/src/get-started-page/features-card/';
 
