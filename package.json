@@ -53,6 +53,7 @@
 		"@wordpress/stylelint-config": "^19.0.5",
 		"bundlewatch": "^0.3.2",
 		"eslint-import-resolver-webpack": "^0.13.1",
+		"eslint-plugin-import": "^2.23.4",
 		"h2o2": "^8.2.0",
 		"prettier": "npm:wp-prettier@^2.0.5"
 	},

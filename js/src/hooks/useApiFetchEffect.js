@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import { APIFetchOptions } from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
@@ -15,7 +14,7 @@ import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
  *
  * If you pass falsey options value (e.g. undefined or null), the apiFetch effect won't be fired. This can be useful for initial rendering.
  *
- * @param {APIFetchOptions} options Options to be used in apiFetch call.
+ * @param {import('@wordpress/api-fetch').APIFetchOptions} options Options to be used in apiFetch call.
  * @return {Object} FetchResult from useApiFetchCallback.
  */
 const useApiFetchEffect = ( options ) => {
