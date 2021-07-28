@@ -103,6 +103,17 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
+	 * Get whether the contact information has been setup.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return bool
+	 */
+	public function is_contact_information_setup(): bool {
+		return boolval( $this->options->get( OptionsInterface::CONTACT_INFO_SETUP, false ) );
+	}
+
+	/**
 	 * @return string[] List of target countries specified in options. Defaults to WooCommerce store base country.
 	 */
 	public function get_target_countries(): array {
