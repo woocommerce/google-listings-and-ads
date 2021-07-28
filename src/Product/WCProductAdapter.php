@@ -156,6 +156,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return string
 	 */
 	protected function get_wc_product_description(): string {
+		/**
+		 * Filters whether the short product description should be used for the synced product.
+		 *
+		 * @param bool $use_short_description
+		 */
 		$use_short_description = apply_filters( 'woocommerce_gla_use_short_description', false );
 
 		$description = ! empty( $this->wc_product->get_description() ) && ! $use_short_description ?
@@ -179,14 +184,32 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$description
 		);
 
+		/**
+		 * Filters whether the shortcodes should be applied for product descriptions when syncing a product or be stripped out.
+		 *
+		 * @param bool       $apply_shortcodes Shortcodes are applied if set to `true` and stripped out if set to `false`.
+		 * @param WC_Product $wc_product       WooCommerce product object.
+		 */
+		$apply_shortcodes = apply_filters( 'woocommerce_gla_product_description_apply_shortcodes', false, $this->wc_product );
+		if ( $apply_shortcodes ) {
+			// Apply active shortcodes
+			$description = do_shortcode( $description );
+		} else {
+			// Strip out active shortcodes
+			$description = strip_shortcodes( $description );
+		}
+
 		// Strip out invalid HTML tags (e.g. script, style, canvas, etc.) along with attributes of all tags.
 		$valid_html_tags   = array_keys( wp_kses_allowed_html( 'post' ) );
 		$kses_allowed_tags = array_fill_keys( $valid_html_tags, [] );
 		$description       = wp_kses( $description, $kses_allowed_tags );
 
-		// Strip out active shortcodes
-		$description = strip_shortcodes( $description );
-
+		/**
+		 * Filters the product's description.
+		 *
+		 * @param string     $description Product description.
+		 * @param WC_Product $wc_product  WooCommerce product object.
+		 */
 		return apply_filters( 'woocommerce_gla_product_attribute_value_description', $description, $this->wc_product );
 	}
 
