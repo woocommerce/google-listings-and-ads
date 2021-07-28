@@ -6,8 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
-use Exception;
-use WP_REST_Response;
 
 /**
  * Trait MerchantTrait
@@ -35,19 +33,5 @@ trait MerchantTrait {
 		$business_info->setPhoneNumber( $this->valid_account_phone_number );
 		$account->setBusinessInformation( $business_info );
 		return $account;
-	}
-
-	public function get_valid_account_json( $server, $request ) {
-
-		$response = <<<STR
-{
-  "kind": "content#account",
-  "businessInformation": {
-    "phoneNumber": {$this->valid_account_phone_number}"
-  }
-}'
-STR;
-		return false; //new WP_REST_Response( json_decode($response) );
-
 	}
 }

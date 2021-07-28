@@ -8,10 +8,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
-use Exception;
-use Google\Model;
-use Google\Service\ShoppingContent\Account;
-use Google\Service\ShoppingContent\AccountBusinessInformation;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -44,7 +40,7 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 					   ->method( 'get_account' )
 					   ->willReturn( $this->get_empty_account() );
 
-		$this->assertEquals( '', $this->merchant_verification->get_phone_number() );
+		$this->assertNull( $this->merchant_verification->get_phone_number() );
 	}
 
 	public function test_get_valid_phone_number() {
