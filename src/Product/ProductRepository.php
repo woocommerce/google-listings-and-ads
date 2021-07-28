@@ -1,4 +1,5 @@
 <?php
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
@@ -6,8 +7,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\MCStatus;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use WC_Product;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class ProductRepository
@@ -26,19 +28,19 @@ class ProductRepository implements Service {
 	protected $meta_handler;
 
 	/**
-	 * @var ProductHelper
+	 * @var ProductFilter
 	 */
-	protected $product_helper;
+	protected $product_filter;
 
 	/**
 	 * ProductRepository constructor.
 	 *
 	 * @param ProductMetaHandler $meta_handler
-	 * @param ProductHelper      $product_helper
+	 * @param ProductFilter      $product_filter
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, ProductHelper $product_helper ) {
+	public function __construct( ProductMetaHandler $meta_handler, ProductFilter $product_filter ) {
 		$this->meta_handler   = $meta_handler;
-		$this->product_helper = $product_helper;
+		$this->product_filter = $product_filter;
 	}
 
 	/**
@@ -141,12 +143,12 @@ class ProductRepository implements Service {
 	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int   $offset Amount to offset product results.
 	 *
-	 * @return WC_Product[] Array of WooCommerce product objects
+	 * @return FilteredProductList List of WooCommerce product objects after filtering.
 	 */
-	public function find_sync_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+	public function find_sync_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): FilteredProductList {
 		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->filter_sync_ready_products( $results, false );
+		return $this->product_filter->filter_sync_ready_products( $results, false );
 	}
 
 	/**
@@ -156,46 +158,12 @@ class ProductRepository implements Service {
 	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int   $offset Amount to offset product results.
 	 *
-	 * @return int[] Array of WooCommerce product IDs
+	 * @return FilteredProductList List of WooCommerce product IDs after filtering.
 	 */
-	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): array {
+	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): FilteredProductList {
 		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->filter_sync_ready_products( $results, true );
-	}
-
-	/**
-	 * Filters and returns a list of products that are ready to be submitted to Google Merchant Center.
-	 *
-	 * @param WC_Product[] $products
-	 * @param bool         $return_ids
-	 *
-	 * @return WC_Product[]
-	 */
-	protected function filter_sync_ready_products( array $products, bool $return_ids = false ): array {
-		/**
-		 * Filters the list of products ready to be synced (before applying filters to check failures and sync-ready status).
-		 *
-		 * @param WC_Product[] $products Sync-ready WooCommerce products
-		 */
-		$products = apply_filters( 'woocommerce_gla_get_sync_ready_products_pre_filter', $products );
-
-		$results = [];
-		foreach ( $products as $product ) {
-			// skip if it's not sync ready or if syncing has recently failed
-			if ( ! $this->product_helper->is_sync_ready( $product ) || $this->product_helper->is_sync_failed_recently( $product ) ) {
-				continue;
-			}
-
-			$results[] = $return_ids ? $product->get_id() : $product;
-		}
-
-		/**
-		 * Filters the list of products ready to be synced (after applying filters to check failures and sync-ready status).
-		 *
-		 * @param WC_Product[] $results Sync-ready WooCommerce products
-		 */
-		return apply_filters( 'woocommerce_gla_get_sync_ready_products_filter', $results );
+		return $this->product_filter->filter_sync_ready_products( $results, true );
 	}
 
 	/**

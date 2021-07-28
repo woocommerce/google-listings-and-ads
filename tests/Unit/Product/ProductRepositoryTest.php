@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\FilteredProductList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -194,21 +195,44 @@ class ProductRepositoryTest extends ContainerAwareUnitTest {
 		}
 
 		$results = $this->product_repository->find_sync_ready_products();
+		$this->assertInstanceOf( FilteredProductList::class, $results );
 
 		// compare the IDs because the objects might not be identical
-		$result_ids = array_map(
-			function ( WC_Product $product ) {
-				return $product->get_id();
-			},
-			$results
+		$this->assertEquals(
+			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
+			$results->get_product_ids()
 		);
 		$this->assertEquals(
 			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
-			$result_ids
+			$this->product_repository->find_sync_ready_product_ids()->get()
 		);
+	}
+
+	public function test_find_sync_ready_products_unfiltered_count() {
+		// a variable product that is not sync ready (only the parent is marked as do not sync and show)
+		$no_sync_product = WC_Helper_Product::create_variation_product();
+		$this->product_meta->update_visibility( wc_get_product( $no_sync_product ), ChannelVisibility::DONT_SYNC_AND_SHOW );
+
+		// a simple product that is sync ready
+		$simple_product = WC_Helper_Product::create_simple_product();
+		$this->product_meta->update_visibility( $simple_product, ChannelVisibility::SYNC_AND_SHOW );
+
+		// a variable product that is sync ready along with all its variations
+		$variable_product = WC_Helper_Product::create_variation_product();
+		$this->product_meta->update_visibility( wc_get_product( $variable_product ), ChannelVisibility::SYNC_AND_SHOW );
+
+		$results = $this->product_repository->find_sync_ready_products();
+
+		// compare the IDs because the objects might not be identical
 		$this->assertEquals(
 			array_merge( [ $simple_product->get_id() ], $variable_product->get_children() ),
-			$this->product_repository->find_sync_ready_product_ids()
+			$results->get_product_ids()
+		);
+
+		// unsynced variations should be included in the unfiltered count
+		$this->assertEquals(
+			$results->get_unfiltered_count(),
+			count( $results ) + count( $no_sync_product->get_children() )
 		);
 	}
 

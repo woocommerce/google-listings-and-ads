@@ -37,7 +37,7 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 */
 	public function process_items( array $product_ids ) {
 		$args     = [ 'include' => $product_ids ];
-		$products = $this->product_repository->find_sync_ready_products( $args );
+		$products = $this->product_repository->find_sync_ready_products( $args )->get();
 
 		if ( empty( $products ) ) {
 			throw JobException::item_not_found();
