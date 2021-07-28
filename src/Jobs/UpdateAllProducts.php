@@ -37,7 +37,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 * @return array
 	 */
 	public function get_batch( int $batch_number ): array {
-		return $this->get_filtered_batch()->get();
+		return $this->get_filtered_batch( $batch_number )->get();
 	}
 
 	/**
