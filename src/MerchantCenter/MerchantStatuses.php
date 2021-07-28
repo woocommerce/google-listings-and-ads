@@ -229,6 +229,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$all_google_ids       = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_GOOGLE_IDS );
 		$filtered_google_ids  = [];
 		foreach ( array_intersect_key( $all_google_ids, $filtered_product_ids ) as $product_ids ) {
+			if ( empty( $product_ids ) || ! is_array( $product_ids ) ) {
+				// Skip if empty or not an array
+				continue;
+			}
+
 			$filtered_google_ids = array_merge( $filtered_google_ids, array_values( $product_ids ) );
 		}
 		return $filtered_google_ids;
