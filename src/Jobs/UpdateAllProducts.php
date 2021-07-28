@@ -45,6 +45,8 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 *
 	 * If no items are returned the job will stop.
 	 *
+	 * @since x.x.x
+	 *
 	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
 	 *
 	 * @return FilteredProductList
@@ -60,6 +62,8 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 *
 	 * Schedules an action to run immediately for the items in the batch.
 	 * Uses the unfiltered count to check if there are additional batches.
+	 *
+	 * @since x.x.x
 	 *
 	 * @param int $batch_number The batch number increments for each new batch in the job cycle.
 	 *
