@@ -334,6 +334,30 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( 'Short description.', $adapted_product->getDescription() );
 	}
 
+	public function test_description_can_be_modified_using_filter() {
+		add_filter(
+			'woocommerce_gla_product_attribute_value_description',
+			function () {
+				return 'Modified description!';
+			}
+		);
+
+		$product         = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'description'       => 'Long description.',
+			]
+		);
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 'Modified description!', $adapted_product->getDescription() );
+	}
+
 	public function test_parent_description_is_included_in_variation_description() {
 		$variable = WC_Helper_Product::create_variation_product();
 		$variable->set_description( 'Parent description.' );
@@ -1396,6 +1420,7 @@ DESCRIPTION;
 		remove_all_filters( 'woocommerce_prices_include_tax' );
 		remove_all_filters( 'woocommerce_gla_product_description_apply_shortcodes' );
 		remove_all_filters( 'woocommerce_gla_use_short_description' );
+		remove_all_filters( 'woocommerce_gla_product_attribute_value_description' );
 
 		// remove added shortcodes
 		remove_shortcode( 'wc_gla_sample_test_shortcode' );
