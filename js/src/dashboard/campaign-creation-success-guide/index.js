@@ -10,23 +10,16 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import { getCreateCampaignUrl } from '.~/utils/urls';
 import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
+import headerImageURL from './header.svg';
 import './index.scss';
 
 const GUIDE_NAME = 'campaign-creation-success';
 const CTA_CREATE_ANOTHER_CAMPAIGN = 'create-another-campaign';
-
-/**
- * Full URL to the header image.
- */
-const headerImageURL =
-	glaData.assetsURL +
-	'js/src/dashboard/campaign-creation-success-guide/header.svg';
 
 const handleCloseWithAction = ( e, specifiedAction ) => {
 	const action = specifiedAction || e.currentTarget.dataset.action;

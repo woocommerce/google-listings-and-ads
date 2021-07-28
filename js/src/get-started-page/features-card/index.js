@@ -12,13 +12,10 @@ import {
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
+import connectionImageURL from './img-connection.svg';
+import freeListingsImageURL from './img-free-listings.svg';
+import googleAdsImageURL from './img-google-ads.svg';
 import './index.scss';
-
-/**
- * Full URL to the feature images folder.
- */
-const imagesURL = glaData.assetsURL + 'js/src/get-started-page/features-card/';
 
 const FeaturesCard = () => {
 	return (
@@ -26,7 +23,7 @@ const FeaturesCard = () => {
 			<Flex>
 				<FlexBlock>
 					<img
-						src={ imagesURL + 'img-connection.svg' }
+						src={ connectionImageURL }
 						alt={ __(
 							'Drawing of jigsaw puzzles connecting together',
 							'google-listings-and-ads'
@@ -55,7 +52,7 @@ const FeaturesCard = () => {
 				</FlexBlock>
 				<FlexBlock>
 					<img
-						src={ imagesURL + 'img-free-listings.svg' }
+						src={ freeListingsImageURL }
 						alt={ __(
 							'Drawing of a person looking at their mobile',
 							'google-listings-and-ads'
@@ -84,7 +81,7 @@ const FeaturesCard = () => {
 				</FlexBlock>
 				<FlexBlock>
 					<img
-						src={ imagesURL + 'img-google-ads.svg' }
+						src={ googleAdsImageURL }
 						alt={ __(
 							'Drawing of a bar and line charts heading up',
 							'google-listings-and-ads'

@@ -31,9 +31,35 @@ const requestToHandle = ( request ) => {
 
 	return wcHandleMap[ request ];
 };
+const exceptSVGRule = ( rule ) => {
+	return ! rule.test.toString().match( /svg/i );
+};
 
 const webpackConfig = {
 	...defaultConfig,
+	module: {
+		...defaultConfig.module,
+		// Expose image assets as files.
+		// In Webpack 5 we would use Asset Modules and `asset/resource`
+		rules: [
+			// Remove `@wordpress/` rules for SVGs.
+			...defaultConfig.module.rules.filter( exceptSVGRule ),
+			{
+				test: /\.(svg|png|jpe?g|gif)$/i,
+				use: {
+					loader: 'file-loader',
+					options: {
+						name: 'images/[path]/[contenthash].[name].[ext]',
+						// FIXME: for production build, for some reason `__webpack_public_path__` is empty.
+						// Making default publicPath empty.
+						// postTransformPublicPath: (p) => `__webpack_public_path__ + ${p}`,
+					},
+				},
+				// Prevent Webpack 5 from procesing files again.
+				type: 'javascript/auto',
+			},
+		],
+	},
 	resolve: {
 		...defaultConfig.resolve,
 		alias: {

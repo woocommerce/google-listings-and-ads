@@ -67,7 +67,6 @@
 		"exclude": [
 			"!/js/build",
 			"!/vendor/*",
-			"!/js/src/**/*.svg",
 			"!/languages"
 		]
 	},

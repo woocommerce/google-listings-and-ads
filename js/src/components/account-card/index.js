@@ -7,16 +7,10 @@ import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
+import googleLogoURL from './gogole-g-logo.svg';
 import './index.scss';
-
-/**
- * Full URL to the Google G logo image.
- */
-const googleLogoURL =
-	glaData.assetsURL + 'js/src/components/account-card/gogole-g-logo.svg';
 
 /**
  * Enum of account card appearances.

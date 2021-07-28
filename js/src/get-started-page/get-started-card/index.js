@@ -17,14 +17,9 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import { glaData } from '.~/constants';
 import AppDocumentationLink from '.~/components/app-documentation-link';
+import motivationImageURL from './image.svg';
 import './index.scss';
 import AppButton from '.~/components/app-button';
-
-/**
- * Full URL to the header image.
- */
-const motivationImageURL =
-	glaData.assetsURL + 'js/src/get-started-page/get-started-card/image.svg';
 
 const GetStartedCard = () => {
 	const disableNextStep = ! glaData.mcSupportedLanguage;

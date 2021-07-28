@@ -14,27 +14,18 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import Guide from '.~/external-components/wordpress/guide';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
+import wooLogoURL from './woocommerce-logo.svg';
+import googleLogoURL from './google-logo.svg';
 import './index.scss';
 
 const GUIDE_NAME = 'submission-success';
 const EVENT_NAME = 'gla_modal_closed';
 const LATER_BUTTON_CLASS = 'components-guide__finish-button';
-
-/**
- * Full URL to the logo images.
- */
-const wooLogoURL =
-	glaData.assetsURL +
-	'js/src/product-feed/submission-success-guide/woocommerce-logo.svg';
-const googleLogoURL =
-	glaData.assetsURL +
-	'js/src/product-feed/submission-success-guide/google-logo.svg';
 
 const productFeedPath = getNewPath(
 	{ guide: undefined },

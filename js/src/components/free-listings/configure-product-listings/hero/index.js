@@ -6,16 +6,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import heroImageURL from './google-free-listing.svg';
 import './index.scss';
-
-/**
- * Full URL to the hero image.
- */
-const heroImageURL =
-	glaData.assetsURL +
-	'js/src/components/free-listings/configure-product-listings/hero/google-free-listing.svg';
 
 /**
  * Hero element for free listing configuration.
