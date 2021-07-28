@@ -8,14 +8,16 @@ use RuntimeException;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class ContentApiException
+ * Class MerchantApiException
  *
  * Error messages generated in this class should be translated, as they are intended to be displayed
  * to end users.
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
-class ContentApiException extends RuntimeException implements GoogleListingsAndAdsException {
+class MerchantApiException extends RuntimeException implements GoogleListingsAndAdsException {
 
 	/**
 	 * Create a new instance of the exception when a Merchant Center account can't be retrieved.
@@ -24,7 +26,7 @@ class ContentApiException extends RuntimeException implements GoogleListingsAndA
 	 *
 	 * @return static
 	 */
-	public static function account_retrieve_failed( int $code = 0 ): ContentApiException {
+	public static function account_retrieve_failed( int $code = 0 ): MerchantApiException {
 		return new static(
 			__( 'Unable to retrieve Merchant Center account.', 'google-listings-and-ads' ),
 			$code
@@ -38,7 +40,7 @@ class ContentApiException extends RuntimeException implements GoogleListingsAndA
 	 *
 	 * @return static
 	 */
-	public static function account_update_failed( int $code = 0 ): ContentApiException {
+	public static function account_update_failed( int $code = 0 ): MerchantApiException {
 		return new static(
 			__( 'Unable to update Merchant Center account.', 'google-listings-and-ads' ),
 			$code

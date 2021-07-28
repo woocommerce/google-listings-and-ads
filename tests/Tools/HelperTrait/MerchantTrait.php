@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
 use Exception;
@@ -20,8 +21,8 @@ trait MerchantTrait {
 	protected $valid_account_phone_number = '+18008675309';
 	protected $valid_account_id = '123581321';
 
-	public function get_account_exception( int $code = 400 ) {
-		return new Exception( __( 'Unable to retrieve Merchant Center account.', 'google-listings-and-ads' ), $code );
+	public function get_account_exception( int $code = 400 ): MerchantApiException {
+		return MerchantApiException::account_retrieve_failed( $code );
 	}
 
 	public function get_empty_account(): Account {

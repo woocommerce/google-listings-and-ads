@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
@@ -75,7 +76,7 @@ class PhoneNumberController extends BaseOptionsController {
 					$this->merchant_verification->get_phone_number(),
 					$request
 				);
-			} catch ( Exception $e ) {
+			} catch ( MerchantApiException $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
@@ -93,7 +94,7 @@ class PhoneNumberController extends BaseOptionsController {
 					$this->merchant_verification->update_phone_number( $request['phone_number'] ),
 					$request
 				);
-			} catch ( Exception $e ) {
+			} catch ( MerchantApiException $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
 		};
