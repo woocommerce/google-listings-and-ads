@@ -377,6 +377,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'created_at' => $created_at,
 				'type'       => self::TYPE_ACCOUNT,
 				'severity'   => $issue->getSeverity(),
+				'source'     => 'mc',
 			];
 		}
 
@@ -426,6 +427,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'product_id'           => $wc_product_id,
 				'created_at'           => $created_at,
 				'applicable_countries' => [],
+				'source'               => 'mc',
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
