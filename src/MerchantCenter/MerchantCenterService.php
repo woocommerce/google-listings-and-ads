@@ -188,6 +188,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * Disconnect Merchant Center account
 	 */
 	public function disconnect() {
+		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
