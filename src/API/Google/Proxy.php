@@ -397,6 +397,7 @@ class Proxy implements OptionsAwareInterface {
 		$status = [
 			'id'       => $id,
 			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
+			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 
