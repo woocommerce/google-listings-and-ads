@@ -32,7 +32,7 @@ const SavedSetupStepper = ( props ) => {
 	};
 
 	const handleStepClick = ( stepKey ) => {
-		if ( stepKey <= savedStep ) {
+		if ( Number( stepKey ) <= Number( savedStep ) ) {
 			setStep( stepKey );
 		}
 	};
