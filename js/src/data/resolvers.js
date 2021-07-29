@@ -106,6 +106,10 @@ export function* getExistingGoogleAdsAccounts() {
 	yield fetchExistingGoogleAdsAccounts();
 }
 
+export function* getGoogleMCPhoneNumber() {
+	// TODO: [lite-contact-info] integrate with API
+}
+
 export function* getCountries() {
 	yield fetchCountries();
 }
