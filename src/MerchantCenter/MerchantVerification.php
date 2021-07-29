@@ -4,10 +4,10 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
 
 /**
@@ -25,34 +25,47 @@ class MerchantVerification implements Service {
 	protected $merchant;
 
 	/**
+	 * @var Settings
+	 */
+	protected $settings;
+
+	/**
 	 * MerchantVerification constructor.
 	 *
 	 * @param Merchant $merchant
+	 * @param Settings $settings
 	 */
-	public function __construct( Merchant $merchant ) {
+	public function __construct( Merchant $merchant, Settings $settings ) {
 		$this->merchant = $merchant;
+		$this->settings = $settings;
 	}
 
 	/**
-	 * Get the phone number for the connected Merchant Center account.
+	 * Get the contact information for the connected Merchant Center account.
 	 *
-	 * @return string|null The phone number associated with the Merchant Center account or null.
+	 * @return AccountBusinessInformation|null The contact information associated with the Merchant Center account or
+	 *                                         null.
+	 *
 	 * @throws MerchantApiException If the Merchant Center account can't be retrieved.
 	 */
-	public function get_phone_number(): ?string {
-		return $this->extract_phone_number( $this->merchant->get_account() );
+	public function get_contact_information(): ?AccountBusinessInformation {
+		$business_information = $this->merchant->get_account()->getBusinessInformation();
+
+		return $business_information ?: null;
 	}
 
 	/**
-	 * Update the phone number for the connected Merchant Center account.
+	 * Update the contact information for the connected Merchant Center account.
 	 *
-	 * @param string $phone_number The new phone number to add the the Merchant Center account.
+	 * @param string|null $phone_number The new phone number to add the the Merchant Center account.
 	 *
-	 * @return string|null The phone number associated with the Merchant Center account or null.
+	 * @return AccountBusinessInformation|null The contact information associated with the Merchant Center account or
+	 *                                         null.
+	 *
 	 * @throws MerchantApiException If the Merchant Center account can't be retrieved or updated.
 	 * @throws InvalidValue If the provided phone number is invalid.
 	 */
-	public function update_phone_number( string $phone_number ): ?string {
+	public function update_contact_information( string $phone_number ): ?AccountBusinessInformation {
 		if ( ! $this->validate_phone_number( $phone_number ) ) {
 			throw new InvalidValue( __( 'Invalid phone number.', 'google-listings-and-ads' ) );
 		}
@@ -61,22 +74,14 @@ class MerchantVerification implements Service {
 		$account              = $this->merchant->get_account();
 		$business_information = $account->getBusinessInformation() ?: new AccountBusinessInformation();
 		$business_information->setPhoneNumber( $phone_number );
+
+		$store_address = $this->settings->get_store_address();
+		$business_information->setAddress( $store_address );
+
 		$account->setBusinessInformation( $business_information );
 		$this->merchant->update_account( $account );
-		return $this->extract_phone_number( $account );
-	}
 
-	/**
-	 * Extract the phone number from the provided Merchant Center account. If the
-	 * account has no phone number, an empty string is returned.
-	 *
-	 * @param Account $account
-	 *
-	 * @return string|null Null if the account has no phone number.
-	 */
-	protected function extract_phone_number( Account $account ): ?string {
-		$business_information = $account->getBusinessInformation();
-		return $business_information ? $business_information->getPhoneNumber() : null;
+		return $business_information;
 	}
 
 	/**
@@ -92,6 +97,7 @@ class MerchantVerification implements Service {
 		if ( is_string( $phone_number ) && preg_match( '/[^0-9() \-.+]/', $phone_number ) ) {
 			return false;
 		}
+
 		// Don't allow integer 0
 		return ! empty( $phone_number );
 	}

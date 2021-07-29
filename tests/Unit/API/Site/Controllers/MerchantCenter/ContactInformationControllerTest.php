@@ -3,7 +3,8 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PhoneNumberController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ContactInformationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
@@ -18,36 +19,38 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  *
- * @since x.x.x
+ * @since   x.x.x
  * @property MockObject|MerchantVerification $merchant_verification
- * @property MockObject|Merchant $merchant
- * @property MockObject|OptionsInterface $options
- * @property RESTServer $rest_server
- * @property PhoneNumberController $phone_number_controller
+ * @property MockObject|Settings             $google_settings
+ * @property MockObject|Merchant             $merchant
+ * @property MockObject|OptionsInterface     $options
+ * @property RESTServer                      $rest_server
+ * @property ContactInformationController    $contact_information_controller
  */
-class PhoneNumberControllerTest extends ContainerAwareUnitTest {
+class ContactInformationControllerTest extends ContainerAwareUnitTest {
 
 	use MerchantTrait;
 
-	const ROUTE = '/wc/gla/mc/phone-number';
+	const ROUTE = '/wc/gla/mc/contact-information';
 
 	/**
 	 * Runs before each test is executed.
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->merchant_verification = $this->createMock( MerchantVerification::class );
-		$this->rest_server = $this->container->get( RESTServer::class );
-		$this->phone_number_controller = new PhoneNumberController( $this->rest_server, $this->merchant_verification );
+		$this->merchant_verification          = $this->createMock( MerchantVerification::class );
+		$this->google_settings                = $this->createMock( Settings::class );
+		$this->rest_server                    = $this->container->get( RESTServer::class );
+		$this->contact_information_controller = new ContactInformationController( $this->rest_server, $this->merchant_verification, $this->google_settings );
 
 		$this->options = $this->createMock( OptionsInterface::class );
-		$this->phone_number_controller->set_options_object( $this->options );
+		$this->contact_information_controller->set_options_object( $this->options );
 
 		do_action( 'rest_api_init' );
 		$this->login_as_administrator();
 	}
 
-	public function test_register_route(  ) {
+	public function test_register_route() {
 		$this->assertArrayHasKey( self::ROUTE, $this->rest_server->get_routes() );
 	}
 }

@@ -19,7 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\Site
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController as MerchantCenterAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\IssuesController as MerchantCenterIssuesController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PhoneNumberController as MerchantCenterPhoneNumberController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ContactInformationController as MerchantCenterContactInformationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductStatisticsController as MerchantCenterProductStatsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ProductFeedController as MerchantCenterProductFeedController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
@@ -84,7 +84,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( MerchantCenterIssuesController::class, MerchantStatuses::class, ProductHelper::class );
 		$this->share( MerchantCenterProductFeedController::class, ProductFeedQueryHelper::class );
 		$this->share( MerchantCenterProductVisibilityController::class, ProductHelper::class, MerchantIssueQuery::class );
-		$this->share( MerchantCenterPhoneNumberController::class, MerchantVerification::class );
+		$this->share( MerchantCenterContactInformationController::class, MerchantVerification::class, Settings::class );
 		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class );
 		$this->share_with_container( MerchantCenterAccountController::class );
 		$this->share_with_container( MerchantCenterReportsController::class );
