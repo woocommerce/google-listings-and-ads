@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -27,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * ContainerAware used to access:
  * - MerchantAccountState
  * - MerchantStatuses
+ * - MerchantVerification
  * - ShippingRateTable
  * - ShippingTimeTable
  * - TransientsInterface
@@ -127,7 +129,34 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * @return bool
 	 */
 	public function is_contact_information_setup(): bool {
-		return boolval( $this->options->get( OptionsInterface::CONTACT_INFO_SETUP, false ) );
+		if ( true === boolval( $this->options->get( OptionsInterface::CONTACT_INFO_SETUP, false ) ) ) {
+			return true;
+		}
+
+		// Additional check for users that have already gone through onboarding.
+		if ( $this->is_setup_complete() ) {
+			/** @var TransientsInterface $transients */
+			$transients   = $this->container->get( TransientsInterface::class );
+			$contact_info = $transients->get( TransientsInterface::MC_CONTACT_INFO );
+
+			if ( ! $contact_info ) {
+				/** @var MerchantVerification $verification */
+				$verification = $this->container->get( MerchantVerification::class );
+				$contact_info = [
+					'phone_number' => $verification->get_phone_number(),
+				];
+
+				// Cache the contact info so we don't repeat the API requests multiple times.
+				$transients->set( TransientsInterface::MC_CONTACT_INFO, $contact_info, HOUR_IN_SECONDS );
+			}
+
+			// Determine if contact information has been setup.
+			if ( ! empty( $contact_info['phone_number'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -223,6 +252,8 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
+
+		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_CONTACT_INFO );
 
 		$this->container->get( MerchantStatuses::class )->delete();
 
