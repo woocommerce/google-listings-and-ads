@@ -49,9 +49,14 @@ const AppButton = ( props ) => {
 		onClick( ...args );
 	};
 
+	const classes = [ 'app-button', className ];
+	if ( rest.iconPosition === 'right' ) {
+		classes.push( 'gla-app-button--fix-icon-position' );
+	}
+
 	return (
 		<Button
-			className={ classnames( 'app-button', className ) }
+			className={ classnames( ...classes ) }
 			disabled={ disabled || loading }
 			onClick={ handleClick }
 			{ ...rest }
