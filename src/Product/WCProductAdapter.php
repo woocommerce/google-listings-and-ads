@@ -187,6 +187,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		/**
 		 * Filters whether the shortcodes should be applied for product descriptions when syncing a product or be stripped out.
 		 *
+		 * @since x.x.x
+		 *
 		 * @param bool       $apply_shortcodes Shortcodes are applied if set to `true` and stripped out if set to `false`.
 		 * @param WC_Product $wc_product       WooCommerce product object.
 		 */
