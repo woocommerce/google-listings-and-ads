@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
 import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
 import GridiconPhone from 'gridicons/dist/phone';
+import { Icon, store as storeIcon } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -28,6 +29,7 @@ const googleLogoURL =
 export const APPEARANCE = {
 	GOOGLE: 'google',
 	PHONE: 'phone',
+	ADDRESS: 'address',
 };
 
 const appearanceDict = {
@@ -45,6 +47,10 @@ const appearanceDict = {
 	[ APPEARANCE.PHONE ]: {
 		icon: <GridiconPhone size={ 32 } />,
 		title: __( 'Phone number', 'google-listings-and-ads' ),
+	},
+	[ APPEARANCE.ADDRESS ]: {
+		icon: <Icon icon={ storeIcon } size={ 32 } />,
+		title: __( 'Store address', 'google-listings-and-ads' ),
 	},
 };
 
