@@ -14,8 +14,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use DateTime;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,9 +37,24 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInterface, Service {
 
+	use ContainerAwareTrait;
 	use GoogleHelper;
 	use OptionsAwareTrait;
-	use ContainerAwareTrait;
+	use PluginHelper;
+
+	/**
+	 * MerchantCenterService constructor.
+	 */
+	public function __construct() {
+		add_filter(
+			'woocommerce_gla_custom_merchant_issues',
+			function( array $issues, DateTime $cache_created_time ) {
+				return $this->maybe_add_contact_info_issue( $issues, $cache_created_time );
+			},
+			10,
+			2
+		);
+	}
 
 	/**
 	 * Get whether Merchant Center setup is completed.
@@ -238,5 +255,32 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		$empty_selection = 'selected' === $audience['location'] && empty( $audience['countries'] );
 		return ! $empty_selection;
+	}
+
+	/**
+	 * Checks if we should add an issue when the contact information is not setup.
+	 *
+	 * @param array    $issues             The current array of custom issues
+	 * @param DateTime $cache_created_time The time of the cache/issues generation.
+	 *
+	 * @return array
+	 */
+	protected function maybe_add_contact_info_issue( array $issues, DateTime $cache_created_time ): array {
+		if ( $this->is_setup_complete() && ! $this->is_contact_information_setup() ) {
+			$issues[] = [
+				'product_id' => 0,
+				'product'    => 'All products',
+				'code'       => 'missing_contact_information',
+				'issue'      => __( 'No contact information.', 'google-listings-and-ads' ),
+				'action'     => __( 'Add store contact information', 'google-listings-and-ads' ),
+				'action_url' => $this->get_contact_information_setup_url(),
+				'created_at' => $cache_created_time->format( 'Y-m-d H:i:s' ),
+				'type'       => MerchantStatuses::TYPE_ACCOUNT,
+				'severity'   => 'error',
+				'source'     => 'filter',
+			];
+		}
+
+		return $issues;
 	}
 }
