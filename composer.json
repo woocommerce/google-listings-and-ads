@@ -31,7 +31,12 @@
 	"autoload": {
 		"psr-4": {
 			"Automattic\\WooCommerce\\GoogleListingsAndAds\\": "src/"
-		}
+		},
+		"files": [
+			"vendor/guzzlehttp/guzzle/src/functions_include.php",
+			"vendor/guzzlehttp/promises/src/functions_include.php",
+			"vendor/guzzlehttp/psr7/src/functions_include.php"
+		]
 	},
 	"autoload-dev": {
 		"psr-4": {
