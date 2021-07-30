@@ -13,6 +13,7 @@ import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppSpinner from '.~/components/app-spinner';
+import SpinnerCard from '.~/components/spinner-card';
 import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard from './store-address-card';
 import NoContactInformationCard from './no-contact-information-card';
@@ -109,7 +110,10 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 					<StoreAddressCard />
 				</VerticalGapLayout>
 			) : (
-				<AppSpinner />
+				<VerticalGapLayout size="large">
+					<SpinnerCard />
+					<SpinnerCard />
+				</VerticalGapLayout>
 			) }
 		</Section>
 	);
