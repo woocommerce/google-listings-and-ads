@@ -31,7 +31,7 @@ export default function NoContactInformationCard( {
 					</Subsection.Title>
 					<Subsection.Body>
 						{ __(
-							'Google requires the phone number and store address for all stores using Google Merchant Center. This is required to verify that you are the owner of the business.',
+							'Google requires the phone number and store address for all stores using Google Merchant Center.',
 							'google-listings-and-ads'
 						) }
 					</Subsection.Body>
