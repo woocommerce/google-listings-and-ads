@@ -2,10 +2,12 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { getEditContactInformationUrl } from '.~/utils/urls';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -13,6 +15,10 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppSpinner from '.~/components/app-spinner';
 import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard from './store-address-card';
+import NoContactInformationCard from './no-contact-information-card';
+
+// TODO: [lite-contact-info] add link
+const learnMoreUrl = 'https://example.com/';
 
 const description = __(
 	'Your contact information is required by Google for verification purposes. It will be shared with the Google Merchant Center and will not be displayed to customers.',
@@ -21,6 +27,50 @@ const description = __(
 
 const mcTitle = __( 'Enter contact information', 'google-listings-and-ads' );
 const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
+
+export function ContactInformationPreview() {
+	const phone = useGoogleMCPhoneNumber();
+
+	const handleEditClick = () => {
+		getHistory().push( getEditContactInformationUrl() );
+	};
+
+	let sectionContent;
+
+	if ( phone.loaded ) {
+		if ( phone.data.isValid ) {
+			sectionContent = (
+				<VerticalGapLayout size="overlap">
+					<PhoneNumberCard
+						isPreview
+						initEditing={ false }
+						onEditClick={ handleEditClick }
+					/>
+					<StoreAddressCard isPreview />
+				</VerticalGapLayout>
+			);
+		} else {
+			sectionContent = (
+				<NoContactInformationCard
+					onEditClick={ handleEditClick }
+					learnMoreUrl={ learnMoreUrl }
+				/>
+			);
+		}
+	} else {
+		sectionContent = (
+			<Section.Card>
+				<AppSpinner />
+			</Section.Card>
+		);
+	}
+
+	return (
+		<Section title={ settingsTitle } description={ description }>
+			{ sectionContent }
+		</Section>
+	);
+}
 
 export default function ContactInformation( { view, onPhoneNumberChange } ) {
 	const phone = useGoogleMCPhoneNumber();
@@ -42,8 +92,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 						<AppDocumentationLink
 							context={ trackContext }
 							linkId="contact-information-read-more"
-							// TODO: [lite-contact-info] add link
-							href="https://example.com/"
+							href={ learnMoreUrl }
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
 						</AppDocumentationLink>
