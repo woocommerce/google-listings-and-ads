@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,12 +21,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since x.x.x
  *
- * @property  MockObject|Merchant $merchant
- * @property  MockObject|Settings $google_settings
- * @property  ContactInformation  $contact_information
+ * @property  MockObject|Settings            $google_settings
+ * @property  MockObject|Merchant            $merchant
+ * @property  MockObject|TransientsInterface $transients
+ * @property  ContactInformation             $contact_information
  */
 class ContactInformationTest extends ContainerAwareUnitTest {
-
 	use MerchantTrait;
 
 	/**
@@ -33,9 +34,10 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->merchant              = $this->createMock( Merchant::class );
-		$this->google_settings       = $this->createMock( Settings::class );
-		$this->contact_information = new ContactInformation( $this->merchant, $this->google_settings );
+		$this->merchant            = $this->createMock( Merchant::class );
+		$this->google_settings     = $this->createMock( Settings::class );
+		$this->transients          = $this->createMock( TransientsInterface::class );
+		$this->contact_information = new ContactInformation( $this->merchant, $this->google_settings, $this->transients );
 	}
 
 	public function test_get_empty_contact_information() {
