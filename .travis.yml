@@ -7,12 +7,6 @@ services:
 notifications:
   email: false
 
-# Safelist (only test pushes/merges with these branches)
-branches:
-  only:
-    - trunk
-    - develop
-
 cache:
   directories:
     - $HOME/.composer/cache
