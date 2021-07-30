@@ -24,17 +24,17 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
  * const { currency, isResolving } = useAdsCurrency()
  * console.log( currency.formatAmount( 1234.678 ) ) // Print the number in the store's currency format '1 234,68'.
  * // After some time, once Ads account details are fetched.
- * console.log( currency.isResolving ) // true
+ * console.log( currency.hasFinishedResolution ) // true
  * console.log( currency.formatAmount( 1234.678 ) ) // Print the number in the store's currency format with the Ad's currency '1 234,68 zł'.
  * ```
  *
  * @see CurrencyFactory
  *
- * @return {{currency: Object, isResolving: boolean}} The currency object.
+ * @return {{currency: Object, hasFinishedResolution: boolean}} The currency object.
  */
 const useAdsCurrency = () => {
 	const currencySetting = useStoreCurrency();
-	const { googleAdsAccount, isResolving } = useGoogleAdsAccount();
+	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
 	return {
 		currency: useMemo( () => {
@@ -54,7 +54,7 @@ const useAdsCurrency = () => {
 				symbol: '',
 			} );
 		}, [ currencySetting, googleAdsAccount ] ),
-		isResolving,
+		hasFinishedResolution,
 	};
 };
 
