@@ -217,13 +217,36 @@ class ContactInformationController extends BaseOptionsController {
 	 * @return Response
 	 */
 	protected function get_contact_information_response( ?AccountBusinessInformation $contact_information, Request $request ): Response {
+		$phone_number    = null;
+		$mc_address      = null;
+		$wc_address      = null;
+		$is_address_diff = false;
+
+		if ( $contact_information instanceof AccountBusinessInformation ) {
+			$phone_number = $contact_information->getPhoneNumber();
+
+			if ( $contact_information->getAddress() instanceof AccountAddress ) {
+				$mc_address      = $contact_information->getAddress();
+				$is_address_diff = true;
+			}
+
+			if ( $this->settings->get_store_address() instanceof AccountAddress ) {
+				$wc_address      = $this->settings->get_store_address();
+				$is_address_diff = true;
+			}
+
+			if ( null !== $mc_address && null !== $wc_address ) {
+				$is_address_diff = ! $this->address_utility->compare_addresses( $contact_information->getAddress(), $this->settings->get_store_address() );
+			}
+		}
+
 		return $this->prepare_item_for_response(
 			[
 				'id'                      => $this->options->get_merchant_id(),
-				'phone_number'            => $contact_information->getPhoneNumber(),
-				'mc_address'              => self::serialize_address( $contact_information->getAddress() ),
-				'wc_address'              => self::serialize_address( $this->settings->get_store_address() ),
-				'is_mc_address_different' => ! $this->address_utility->compare_addresses( $contact_information->getAddress(), $this->settings->get_store_address() ),
+				'phone_number'            => $phone_number,
+				'mc_address'              => self::serialize_address( $mc_address ),
+				'wc_address'              => self::serialize_address( $wc_address ),
+				'is_mc_address_different' => $is_address_diff,
 			],
 			$request
 		);
