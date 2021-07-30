@@ -50,9 +50,6 @@ const webpackConfig = {
 					loader: 'file-loader',
 					options: {
 						name: 'images/[path]/[contenthash].[name].[ext]',
-						// FIXME: for production build, for some reason `__webpack_public_path__` is empty.
-						// Making default publicPath empty.
-						// postTransformPublicPath: (p) => `__webpack_public_path__ + ${p}`,
 					},
 				},
 				// Prevent Webpack 5 from procesing files again.
