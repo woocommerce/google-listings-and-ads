@@ -76,6 +76,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TrackerSnapshot;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -94,6 +95,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		Installer::class              => true,
 		ActivationRedirect::class     => true,
 		Admin::class                  => true,
+		AddressUtility::class         => true,
 		Reports::class                => true,
 		AssetsHandlerInterface::class => true,
 		CompleteSetup::class          => true,
@@ -185,6 +187,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 				return new Installer( ...$arguments );
 			}
 		);
+
+		// Share utility classes
+		$this->share_with_tags( AddressUtility::class );
 
 		// Share our regular service classes.
 		$this->conditionally_share_with_tags(

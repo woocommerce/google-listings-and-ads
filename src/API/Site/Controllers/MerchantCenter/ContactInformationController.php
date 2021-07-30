@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Google\Service\ShoppingContent\AccountAddress;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
 use WP_Error;
@@ -38,16 +39,23 @@ class ContactInformationController extends BaseOptionsController {
 	protected $settings;
 
 	/**
+	 * @var AddressUtility
+	 */
+	protected $address_utility;
+
+	/**
 	 * ContactInformationController constructor.
 	 *
 	 * @param RESTServer           $server
 	 * @param MerchantVerification $merchant_verification
 	 * @param Settings             $settings
+	 * @param AddressUtility       $address_utility
 	 */
-	public function __construct( RESTServer $server, MerchantVerification $merchant_verification, Settings $settings ) {
+	public function __construct( RESTServer $server, MerchantVerification $merchant_verification, Settings $settings, AddressUtility $address_utility ) {
 		parent::__construct( $server );
 		$this->merchant_verification = $merchant_verification;
 		$this->settings              = $settings;
+		$this->address_utility       = $address_utility;
 	}
 
 	/**
@@ -215,7 +223,7 @@ class ContactInformationController extends BaseOptionsController {
 				'phone_number'            => $contact_information->getPhoneNumber(),
 				'mc_address'              => self::serialize_address( $contact_information->getAddress() ),
 				'wc_address'              => self::serialize_address( $this->settings->get_store_address() ),
-				'is_mc_address_different' => ! self::compare_addresses( $contact_information->getAddress(), $this->settings->get_store_address() ),
+				'is_mc_address_different' => ! $this->address_utility->compare_addresses( $contact_information->getAddress(), $this->settings->get_store_address() ),
 			],
 			$request
 		);
@@ -238,28 +246,6 @@ class ContactInformationController extends BaseOptionsController {
 			'postal_code'    => $address->getPostalCode(),
 			'country'        => $address->getCountry(),
 		];
-	}
-
-	/**
-	 * Checks whether two account addresses are the same and returns true if they are.
-	 *
-	 * @param AccountAddress|null $address_1
-	 * @param AccountAddress|null $address_2
-	 *
-	 * @return bool True if the two addresses are the same, false otherwise.
-	 */
-	protected static function compare_addresses( ?AccountAddress $address_1, ?AccountAddress $address_2 ): bool {
-		if ( $address_1 instanceof AccountAddress && $address_2 instanceof AccountAddress ) {
-			$cmp_street_address = $address_1->getStreetAddress() === $address_2->getStreetAddress();
-			$cmp_locality       = $address_1->getLocality() === $address_2->getLocality();
-			$cmp_region         = $address_1->getRegion() === $address_2->getRegion();
-			$cmp_postal_code    = $address_1->getPostalCode() === $address_2->getPostalCode();
-			$cmp_country        = $address_1->getCountry() === $address_2->getCountry();
-
-			return $cmp_street_address && $cmp_locality && $cmp_region && $cmp_postal_code && $cmp_country;
-		}
-
-		return $address_1 === $address_2;
 	}
 
 	/**
