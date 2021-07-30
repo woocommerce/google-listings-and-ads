@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -24,6 +25,7 @@ defined( 'ABSPATH' ) || exit;
  * @property MockObject|Settings             $google_settings
  * @property MockObject|Merchant             $merchant
  * @property MockObject|OptionsInterface     $options
+ * @property MockObject|AddressUtility       $address_utility
  * @property RESTServer                      $rest_server
  * @property ContactInformationController    $contact_information_controller
  */
@@ -40,8 +42,9 @@ class ContactInformationControllerTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->merchant_verification          = $this->createMock( MerchantVerification::class );
 		$this->google_settings                = $this->createMock( Settings::class );
+		$this->address_utility                = $this->createMock( Settings::class );
 		$this->rest_server                    = $this->container->get( RESTServer::class );
-		$this->contact_information_controller = new ContactInformationController( $this->rest_server, $this->merchant_verification, $this->google_settings );
+		$this->contact_information_controller = new ContactInformationController( $this->rest_server, $this->merchant_verification, $this->google_settings, $this->address_utility );
 
 		$this->options = $this->createMock( OptionsInterface::class );
 		$this->contact_information_controller->set_options_object( $this->options );
