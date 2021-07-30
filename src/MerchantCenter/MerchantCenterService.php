@@ -141,7 +141,9 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		// Additional check for users that have already gone through onboarding.
 		if ( $this->is_setup_complete() ) {
-			return $this->is_mc_contact_information_setup();
+			$is_mc_setup = $this->is_mc_contact_information_setup();
+			$this->options->update( OptionsInterface::CONTACT_INFO_SETUP, $is_mc_setup );
+			return $is_mc_setup;
 		}
 
 		return false;
