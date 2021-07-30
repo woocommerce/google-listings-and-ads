@@ -73,7 +73,7 @@ function getSyncResult( {
 				'google-listings-and-ads'
 			),
 			formatDate(
-				glaData.dateFormat + ', ' + glaData.timeFormat,
+				glaData.dateFormat + ( glaData.timeFormat ? ', ' + glaData.timeFormat : '' ),
 				new Date( timestamp * 1000 )
 			),
 			totalSynced
