@@ -42,7 +42,7 @@ class ContactInformationControllerTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->contact_information            = $this->createMock( ContactInformation::class );
 		$this->google_settings                = $this->createMock( Settings::class );
-		$this->address_utility                = $this->createMock( Settings::class );
+		$this->address_utility                = $this->createMock( AddressUtility::class );
 		$this->rest_server                    = $this->container->get( RESTServer::class );
 		$this->contact_information_controller = new ContactInformationController( $this->rest_server, $this->contact_information, $this->google_settings, $this->address_utility );
 
