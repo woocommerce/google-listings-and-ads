@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
 
 /**
@@ -32,12 +33,14 @@ class ContactInformation implements Service {
 	/**
 	 * ContactInformation constructor.
 	 *
-	 * @param Merchant $merchant
-	 * @param Settings $settings
+	 * @param Merchant            $merchant
+	 * @param Settings            $settings
+	 * @param TransientsInterface $transients
 	 */
-	public function __construct( Merchant $merchant, Settings $settings ) {
-		$this->merchant = $merchant;
-		$this->settings = $settings;
+	public function __construct( Merchant $merchant, Settings $settings, TransientsInterface $transients ) {
+		$this->merchant   = $merchant;
+		$this->settings   = $settings;
+		$this->transients = $transients;
 	}
 
 	/**
@@ -98,6 +101,8 @@ class ContactInformation implements Service {
 		$business_information->setAddress( $store_address );
 
 		$this->update_contact_information( $business_information );
+
+		$this->transients->delete( TransientsInterface::MC_CONTACT_INFO );
 
 		return $business_information;
 	}
