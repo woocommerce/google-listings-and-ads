@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -14,17 +14,17 @@ use PHPUnit\Framework\MockObject\MockObject;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class MerchantVerificationTest
+ * Class ContactInformationTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  *
  * @since x.x.x
  *
- * @property  MockObject|Merchant  $merchant
- * @property  MockObject|Settings  $google_settings
- * @property  MerchantVerification $merchant_verification
+ * @property  MockObject|Merchant $merchant
+ * @property  MockObject|Settings $google_settings
+ * @property  ContactInformation  $contact_information
  */
-class MerchantVerificationTest extends ContainerAwareUnitTest {
+class ContactInformationTest extends ContainerAwareUnitTest {
 
 	use MerchantTrait;
 
@@ -35,7 +35,7 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->merchant              = $this->createMock( Merchant::class );
 		$this->google_settings       = $this->createMock( Settings::class );
-		$this->merchant_verification = new MerchantVerification( $this->merchant, $this->google_settings );
+		$this->contact_information = new ContactInformation( $this->merchant, $this->google_settings );
 	}
 
 	public function test_get_empty_contact_information() {
@@ -43,7 +43,7 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 					   ->method( 'get_account' )
 					   ->willReturn( $this->get_empty_account() );
 
-		$this->assertNull( $this->merchant_verification->get_contact_information() );
+		$this->assertNull( $this->contact_information->get_contact_information() );
 	}
 
 	public function test_get_valid_contact_information() {
@@ -51,7 +51,7 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 					   ->method( 'get_account' )
 					   ->willReturn( $this->get_valid_account() );
 
-		$contact_information = $this->merchant_verification->get_contact_information();
+		$contact_information = $this->contact_information->get_contact_information();
 
 		$this->assertEquals(
 			$this->valid_account_phone_number,
@@ -80,7 +80,29 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 		);
 	}
 
-	public function test_update_contact_information() {
+	public function test_update_phone_number() {
+		$this->merchant->expects( $this->any() )
+					   ->method( 'get_account' )
+					   ->willReturn( $this->get_valid_account() );
+
+		$results = $this->contact_information->update_phone_number( $this->valid_account_phone_number );
+
+		$this->assertEquals(
+			$this->valid_account_phone_number,
+			$results->getPhoneNumber()
+		);
+	}
+
+	public function test_update_phone_number_empty_or_null() {
+		$this->merchant->expects( $this->any() )
+					   ->method( 'get_account' )
+					   ->willReturn( $this->get_valid_account() );
+
+		$this->assertNull( $this->contact_information->update_phone_number( null )->getPhoneNumber() );
+		$this->assertNull( $this->contact_information->update_phone_number( '' )->getPhoneNumber() );
+	}
+
+	public function test_update_address() {
 		$this->merchant->expects( $this->any() )
 					   ->method( 'get_account' )
 					   ->willReturn( $this->get_valid_account() );
@@ -89,12 +111,7 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 							  ->method( 'get_store_address' )
 							  ->willReturn( $this->get_sample_address() );
 
-		$results = $this->merchant_verification->update_contact_information( $this->valid_account_phone_number );
-
-		$this->assertEquals(
-			$this->valid_account_phone_number,
-			$results->getPhoneNumber()
-		);
+		$results = $this->contact_information->update_address_based_on_store_settings();
 
 		$this->assertEquals(
 			$this->get_sample_address()->getPostalCode(),
@@ -118,9 +135,9 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 		);
 	}
 
-	public function test_update_contact_information_throws_exception_if_invalid_phone_number() {
+	public function test_update_phone_number_throws_exception_if_invalid_phone_number() {
 		$this->expectException( InvalidValue::class );
-		$this->merchant_verification->update_contact_information( 'The quick brown fox' );
+		$this->contact_information->update_phone_number( 'The quick brown fox' );
 	}
 
 	public function test_get_account_exception() {
@@ -129,27 +146,27 @@ class MerchantVerificationTest extends ContainerAwareUnitTest {
 					   ->willThrowException( $this->get_account_exception() );
 
 		$this->expectExceptionObject( $this->get_account_exception() );
-		$this->merchant_verification->get_contact_information();
+		$this->contact_information->get_contact_information();
 	}
 
 	public function test_sanitize_phone_number() {
 		$this->assertEquals(
 			$this->valid_account_phone_number,
-			$this->merchant_verification->sanitize_phone_number( $this->valid_account_phone_number )
+			$this->contact_information->sanitize_phone_number( $this->valid_account_phone_number )
 		);
 
 		$this->assertEquals(
 			'123456789',
-			$this->merchant_verification->sanitize_phone_number( '(123) 45-6789' )
+			$this->contact_information->sanitize_phone_number( '(123) 45-6789' )
 		);
 	}
 
 	public function test_get_phone_number_validate_callback() {
-		$this->assertFalse( $this->merchant_verification->validate_phone_number( 'Bad number' ) );
-		$this->assertFalse( $this->merchant_verification->validate_phone_number( '[192] 123 123' ) );
-		$this->assertFalse( $this->merchant_verification->validate_phone_number( '' ) );
-		$this->assertTrue( $this->merchant_verification->validate_phone_number( $this->valid_account_phone_number ) );
-		$this->assertTrue( $this->merchant_verification->validate_phone_number( '197.123.5482' ) );
-		$this->assertTrue( $this->merchant_verification->validate_phone_number( '+001 (197) 123-5482' ) );
+		$this->assertFalse( $this->contact_information->validate_phone_number( 'Bad number' ) );
+		$this->assertFalse( $this->contact_information->validate_phone_number( '[192] 123 123' ) );
+		$this->assertFalse( $this->contact_information->validate_phone_number( '' ) );
+		$this->assertTrue( $this->contact_information->validate_phone_number( $this->valid_account_phone_number ) );
+		$this->assertTrue( $this->contact_information->validate_phone_number( '197.123.5482' ) );
+		$this->assertTrue( $this->contact_information->validate_phone_number( '+001 (197) 123-5482' ) );
 	}
 }

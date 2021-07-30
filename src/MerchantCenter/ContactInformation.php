@@ -11,13 +11,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
 
 /**
- * Class MerchantVerification.
+ * Class ContactInformation.
  *
  * @since x.x.x
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
-class MerchantVerification implements Service {
+class ContactInformation implements Service {
 
 	/**
 	 * @var Merchant
@@ -30,7 +30,7 @@ class MerchantVerification implements Service {
 	protected $settings;
 
 	/**
-	 * MerchantVerification constructor.
+	 * ContactInformation constructor.
 	 *
 	 * @param Merchant $merchant
 	 * @param Settings $settings
@@ -55,33 +55,64 @@ class MerchantVerification implements Service {
 	}
 
 	/**
-	 * Update the contact information for the connected Merchant Center account.
+	 * Update the phone number for the connected Merchant Center account.
 	 *
 	 * @param string|null $phone_number The new phone number to add the the Merchant Center account.
 	 *
-	 * @return AccountBusinessInformation|null The contact information associated with the Merchant Center account or
-	 *                                         null.
+	 * @return AccountBusinessInformation The contact information associated with the Merchant Center account.
 	 *
 	 * @throws MerchantApiException If the Merchant Center account can't be retrieved or updated.
 	 * @throws InvalidValue If the provided phone number is invalid.
 	 */
-	public function update_contact_information( string $phone_number ): ?AccountBusinessInformation {
-		if ( ! $this->validate_phone_number( $phone_number ) ) {
-			throw new InvalidValue( __( 'Invalid phone number.', 'google-listings-and-ads' ) );
-		}
-		$phone_number = $this->sanitize_phone_number( $phone_number );
+	public function update_phone_number( ?string $phone_number ): AccountBusinessInformation {
+		$business_information = $this->get_contact_information() ?: new AccountBusinessInformation();
 
-		$account              = $this->merchant->get_account();
-		$business_information = $account->getBusinessInformation() ?: new AccountBusinessInformation();
+		if ( ! empty( $phone_number ) ) {
+			if ( ! $this->validate_phone_number( $phone_number ) ) {
+				throw new InvalidValue( __( 'Invalid phone number.', 'google-listings-and-ads' ) );
+			}
+			$phone_number = $this->sanitize_phone_number( $phone_number );
+		} else {
+			$phone_number = null;
+		}
+
 		$business_information->setPhoneNumber( $phone_number );
+
+		$this->update_contact_information( $business_information );
+
+		return $business_information;
+	}
+
+	/**
+	 * Update the address for the connected Merchant Center account to the store address set in WooCommerce
+	 * settings.
+	 *
+	 * @return AccountBusinessInformation The contact information associated with the Merchant Center account.
+	 *
+	 * @throws MerchantApiException If the Merchant Center account can't be retrieved or updated.
+	 */
+	public function update_address_based_on_store_settings(): AccountBusinessInformation {
+		$business_information = $this->get_contact_information() ?: new AccountBusinessInformation();
 
 		$store_address = $this->settings->get_store_address();
 		$business_information->setAddress( $store_address );
 
-		$account->setBusinessInformation( $business_information );
-		$this->merchant->update_account( $account );
+		$this->update_contact_information( $business_information );
 
 		return $business_information;
+	}
+
+	/**
+	 * Update the contact information for the connected Merchant Center account.
+	 *
+	 * @param AccountBusinessInformation $business_information
+	 *
+	 * @throws MerchantApiException If the Merchant Center account can't be retrieved or updated.
+	 */
+	protected function update_contact_information( AccountBusinessInformation $business_information ): void {
+		$account = $this->merchant->get_account();
+		$account->setBusinessInformation( $business_information );
+		$this->merchant->update_account( $account );
 	}
 
 	/**

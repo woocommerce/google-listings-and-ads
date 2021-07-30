@@ -3,12 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Google\Service\ShoppingContent\AccountAddress;
@@ -29,9 +28,9 @@ defined( 'ABSPATH' ) || exit;
 class ContactInformationController extends BaseOptionsController {
 
 	/**
-	 * @var Merchant $merchant_verification
+	 * @var ContactInformation $contact_information
 	 */
-	protected $merchant_verification;
+	protected $contact_information;
 
 	/**
 	 * @var Settings
@@ -46,16 +45,16 @@ class ContactInformationController extends BaseOptionsController {
 	/**
 	 * ContactInformationController constructor.
 	 *
-	 * @param RESTServer           $server
-	 * @param MerchantVerification $merchant_verification
-	 * @param Settings             $settings
-	 * @param AddressUtility       $address_utility
+	 * @param RESTServer         $server
+	 * @param ContactInformation $contact_information
+	 * @param Settings           $settings
+	 * @param AddressUtility     $address_utility
 	 */
-	public function __construct( RESTServer $server, MerchantVerification $merchant_verification, Settings $settings, AddressUtility $address_utility ) {
+	public function __construct( RESTServer $server, ContactInformation $contact_information, Settings $settings, AddressUtility $address_utility ) {
 		parent::__construct( $server );
-		$this->merchant_verification = $merchant_verification;
-		$this->settings              = $settings;
-		$this->address_utility       = $address_utility;
+		$this->contact_information = $contact_information;
+		$this->settings            = $settings;
+		$this->address_utility     = $address_utility;
 	}
 
 	/**
@@ -90,7 +89,7 @@ class ContactInformationController extends BaseOptionsController {
 		return function ( Request $request ) {
 			try {
 				return $this->get_contact_information_response(
-					$this->merchant_verification->get_contact_information(),
+					$this->contact_information->get_contact_information(),
 					$request
 				);
 			} catch ( MerchantApiException $e ) {
@@ -107,8 +106,12 @@ class ContactInformationController extends BaseOptionsController {
 	protected function get_contact_information_endpoint_edit_callback(): callable {
 		return function ( Request $request ) {
 			try {
+				if ( $request->has_param( 'phone_number' ) ) {
+					$this->contact_information->update_phone_number( $request['phone_number'] );
+				}
+
 				return $this->get_contact_information_response(
-					$this->merchant_verification->update_contact_information( $request['phone_number'] ),
+					$this->contact_information->update_address_based_on_store_settings(),
 					$request
 				);
 			} catch ( MerchantApiException $e ) {
@@ -289,7 +292,7 @@ class ContactInformationController extends BaseOptionsController {
 	 */
 	protected function get_phone_number_sanitize_callback(): callable {
 		return function ( $phone_number ) {
-			return $this->merchant_verification->sanitize_phone_number( $phone_number );
+			return $this->contact_information->sanitize_phone_number( $phone_number );
 		};
 	}
 
@@ -301,7 +304,7 @@ class ContactInformationController extends BaseOptionsController {
 	 */
 	protected function get_phone_number_validate_callback() {
 		return function ( $value, $request, $param ) {
-			return $this->merchant_verification->validate_phone_number( $value )
+			return $this->contact_information->validate_phone_number( $value )
 				? rest_validate_request_arg( $value, $request, $param )
 				: new WP_Error( 'rest_empty_phone_number', __( 'Invalid phone number.', 'google-listings-and-ads' ) );
 		};
