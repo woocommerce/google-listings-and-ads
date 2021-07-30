@@ -31,9 +31,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * ContainerAware used to access:
  * - AddressUtility
+ * - ContactInformation
  * - MerchantAccountState
  * - MerchantStatuses
- * - MerchantVerification
  * - Settings
  * - ShippingRateTable
  * - ShippingTimeTable
@@ -324,7 +324,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 				'address'      => false,
 			];
 
-			$contact_info = $this->container->get( MerchantVerification::class )->get_contact_information();
+			$contact_info = $this->container->get( ContactInformation::class )->get_contact_information();
 
 			if ( $contact_info instanceof AccountBusinessInformation ) {
 				$is_setup['phone_number'] = ! empty( $contact_info->getPhoneNumber() );
