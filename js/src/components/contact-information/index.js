@@ -18,8 +18,8 @@ import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard from './store-address-card';
 import NoContactInformationCard from './no-contact-information-card';
 
-// TODO: [lite-contact-info] add link
-const learnMoreUrl = 'https://example.com/';
+const learnMoreUrl =
+	'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information';
 
 const description = __(
 	'Your contact information is required by Google for verification purposes. It will be shared with the Google Merchant Center and will not be displayed to customers.',
