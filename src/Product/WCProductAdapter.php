@@ -97,6 +97,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		parent::mapTypes( $array );
 
 		$this->map_woocommerce_product();
+
+		// Allow users to override the product's attributes using a WordPress filter.
+		$this->override_attributes();
 	}
 
 	/**
@@ -118,6 +121,37 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			 ->map_wc_prices();
 
 		$this->setIdentifierExists( ! empty( $this->getGtin() ) || ! empty( $this->getMpn() ) );
+	}
+
+	/**
+	 * Overrides the product attributes by applying a filter and setting the provided values.
+	 *
+	 * @since x.x.x
+	 */
+	protected function override_attributes() {
+		/**
+		 * Filters the list of overridden attributes to set for this product.
+		 *
+		 * @param array            $attributes An array of values for the product properties. All properties of the
+		 *                                     `\Google\Service\ShoppingContent\Product` class can be set by providing
+		 *                                     the property name as key and its value as array item.
+		 *                                     For example:
+		 *                                     [ 'imageLink' => 'https://example.com/image.jpg' ] overrides the product's
+		 *                                     main image.
+		 *
+		 * @param WC_Product       $wc_product The WooCommerce product object.
+		 * @param WCProductAdapter $this       The Adapted Google product object. All WooCommerce product properties
+		 *                                     are already mapped to this object.
+		 *
+		 * @see \Google\Service\ShoppingContent\Product for the list of product properties that can be overriden.
+		 *
+		 * @since x.x.x
+		 */
+		$attributes = apply_filters( 'woocommerce_gla_override_product_attribute_values', [], $this->wc_product, $this );
+
+		if ( ! empty( $attributes ) ) {
+			parent::mapTypes( $attributes );
+		}
 	}
 
 	/**
