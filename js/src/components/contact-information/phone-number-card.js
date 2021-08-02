@@ -1,7 +1,10 @@
 /**
  * External dependencies
  */
-import { getCountryCallingCode } from 'libphonenumber-js';
+import {
+	getCountryCallingCode,
+	parsePhoneNumberFromString as parsePhoneNumber,
+} from 'libphonenumber-js';
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { Flex, FlexItem, FlexBlock, CardDivider } from '@wordpress/components';
@@ -39,10 +42,35 @@ function PhoneNumberContent( {
 			setNumber( nextNumber );
 		}
 
-		const countryCallingCode = nextCountry
-			? getCountryCallingCode( nextCountry )
-			: '';
-		onPhoneNumberChange( countryCallingCode, nextNumber, nextCountry );
+		const parsed = parsePhoneNumber( nextNumber, nextCountry );
+		const isValid = parsed ? parsed.isValid() : false;
+
+		if ( parsed ) {
+			const isDirty =
+				nextCountry !== initCountry ||
+				parsed.nationalNumber !== initNationalNumber;
+
+			onPhoneNumberChange( {
+				...parsed,
+				isValid,
+				isDirty,
+			} );
+		} else {
+			const isDirty =
+				nextCountry !== initCountry ||
+				nextNumber !== initNationalNumber;
+
+			const countryCallingCode = nextCountry
+				? getCountryCallingCode( nextCountry )
+				: '';
+
+			onPhoneNumberChange( {
+				isValid,
+				isDirty,
+				countryCallingCode,
+				nationalNumber: nextNumber,
+			} );
+		}
 	};
 
 	const handleCountryChange = ( v ) => handleChange( v, number );
