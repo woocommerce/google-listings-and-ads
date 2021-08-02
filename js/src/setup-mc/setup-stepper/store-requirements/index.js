@@ -10,7 +10,10 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '.~/data';
 import useAdminUrl from '.~/hooks/useAdminUrl';
+import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
+import useStoreAddress from '.~/hooks/useStoreAddress';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
@@ -20,26 +23,29 @@ import AppButton from '.~/components/app-button';
 
 export default function StoreRequirements() {
 	const adminUrl = useAdminUrl();
+	const { updateGoogleMCContactInformation } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
+	const { data: initPhoneNumber } = useGoogleMCPhoneNumber();
+	const { data: address } = useStoreAddress();
 	const [ completing, setCompleting ] = useState( false );
+	const [ phoneNumber, setPhoneNumber ] = useState( {
+		isValid: false,
+		isDirty: false,
+	} );
 
 	const handleValidate = () => {
-		// TODO: [lite-contact-info] add validation
+		// TODO: [lite-contact-info] add validation for pre-launch checklist
 		return {};
-	};
-
-	const handlePhoneNumberChange = ( countryCallingCode, nationalNumber ) => {
-		// TODO: [lite-contact-info] handle the onChange callback of phone number
-		console.log( countryCallingCode, nationalNumber ); // eslint-disable-line
 	};
 
 	const handleSubmitCallback = async () => {
 		try {
+			const { isDirty, countryCallingCode, nationalNumber } = phoneNumber;
+			const args = isDirty ? [ countryCallingCode, nationalNumber ] : [];
+
 			setCompleting( true );
 
-			// TODO: [lite-contact-info] POST phone number to API if it has changed
-
-			// TODO: [lite-contact-info] POST address to API
+			await updateGoogleMCContactInformation( ...args );
 
 			await apiFetch( {
 				path: '/wc/gla/mc/settings/sync',
@@ -87,18 +93,27 @@ export default function StoreRequirements() {
 				{ ( formProps ) => {
 					const { handleSubmit, isValidForm } = formProps;
 
+					const isPhoneNumberReady = phoneNumber.isDirty
+						? phoneNumber.isValid
+						: initPhoneNumber.isValid;
+
+					const isReadyToComplete =
+						isValidForm &&
+						isPhoneNumberReady &&
+						address.isAddressFilled;
+
 					return (
 						<>
 							<ContactInformation
 								view="setup-mc"
-								onPhoneNumberChange={ handlePhoneNumberChange }
+								onPhoneNumberChange={ setPhoneNumber }
 							/>
 							<div>TODO: move pre-lauch checklist to here</div>
 							<StepContentFooter>
 								<AppButton
 									isPrimary
 									loading={ completing }
-									disabled={ ! isValidForm }
+									disabled={ ! isReadyToComplete }
 									onClick={ handleSubmit }
 								>
 									{ __(
