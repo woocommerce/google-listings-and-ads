@@ -16,6 +16,7 @@ use Google\Service\ShoppingContent\ProductShipping;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Helper_Product;
+use WC_Product;
 use WC_Tax;
 
 /**
@@ -141,6 +142,47 @@ class WCProductAdapterTest extends UnitTest {
 
 		// if an attribute isn't previously set its value won't be overridden
 		$this->assertNull( $adapted_product->getGtin() );
+	}
+
+	public function test_basic_attributes_can_be_overridden_via_filter() {
+		add_filter(
+			'woocommerce_gla_override_product_attribute_values',
+			function ( array $attributes, WC_Product $product, WCProductAdapter $google_product ) {
+				$attributes['imageLink'] = 'https://example.com/image_overide.png?prev=' . $google_product->getImageLink();
+				$attributes['description'] = 'Overridden description!';
+
+				return $attributes;
+			},
+			10,
+			3
+		);
+
+		$product = WC_Helper_Product::create_simple_product(
+			[
+				'description' => 'Some long product description containing lorem ipsum and such.',
+			]
+		);
+
+		$image = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $product->get_id() );
+
+		$product->set_image_id( $image );
+		$product->save();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals(
+			'https://example.com/image_overide.png?prev=' . wp_get_attachment_image_url( $image ),
+			$adapted_product->getImageLink()
+		);
+		$this->assertEquals(
+			'Overridden description!',
+			$adapted_product->getDescription()
+		);
 	}
 
 	public function test_channel_is_always_set_to_online() {
@@ -1421,6 +1463,7 @@ DESCRIPTION;
 		remove_all_filters( 'woocommerce_gla_product_description_apply_shortcodes' );
 		remove_all_filters( 'woocommerce_gla_use_short_description' );
 		remove_all_filters( 'woocommerce_gla_product_attribute_value_description' );
+		remove_all_filters( 'woocommerce_gla_override_product_attribute_values' );
 
 		// remove added shortcodes
 		remove_shortcode( 'wc_gla_sample_test_shortcode' );
