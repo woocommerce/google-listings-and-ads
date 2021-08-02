@@ -515,6 +515,50 @@ export function* fetchExistingGoogleAdsAccounts() {
 	}
 }
 
+export function receiveGoogleMCContactInformation( data ) {
+	return {
+		type: TYPES.RECEIVE_MC_CONTACT_INFORMATION,
+		data,
+	};
+}
+
+/**
+ * Update the contact information to user's account of Google Merchant Center.
+ * The phone number will be updated only if `countryCallingCode` and `nationalNumber` are not falsy.
+ *
+ * @param {string} [countryCallingCode] The country calling code. Example: '1'.
+ * @param {string} [nationalNumber] The national (significant) number. Example: '2133734253'.
+ */
+export function* updateGoogleMCContactInformation(
+	countryCallingCode,
+	nationalNumber
+) {
+	const data = {};
+
+	if ( countryCallingCode && nationalNumber ) {
+		data.phone_number = `+${ countryCallingCode }${ nationalNumber }`;
+	}
+
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/contact-information`,
+			method: 'POST',
+			data,
+		} );
+
+		yield receiveGoogleMCContactInformation( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to update your Google Merchant Center contact information. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+		throw error;
+	}
+}
+
 export function* fetchCountries() {
 	try {
 		const response = yield apiFetch( {
