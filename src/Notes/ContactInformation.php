@@ -53,7 +53,7 @@ class ContactInformation implements Deactivateable, Service, Registerable, Optio
 
 		$note = new Note();
 		$note->set_title( __( 'Please add your contact information', 'google-listings-and-ads' ) );
-		$note->set_content( __( 'Google requires the phone number and store address for all stores using Google Merchant Center. This is required to verify that you are the owner of the business and it will not be shown to customers. If you do not add your contact information, your listings may not appear on Google.', 'google-listings-and-ads' ) );
+		$note->set_content( __( 'Google requires the phone number and store address for all stores using Google Merchant Center. This is required to verify your store, and it will not be shown to customers. If you do not add your contact information, your listings may not appear on Google.', 'google-listings-and-ads' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
