@@ -10,12 +10,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface TransientsInterface {
 
-	public const MC_CONTACT_INFO = 'mc_contact_info';
-	public const MC_STATUSES     = 'mc_statuses';
+	public const MC_STATUSES = 'mc_statuses';
 
 	public const VALID_OPTIONS = [
-		self::MC_CONTACT_INFO => true,
-		self::MC_STATUSES     => true,
+		self::MC_STATUSES => true,
 	];
 
 	/**

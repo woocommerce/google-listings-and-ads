@@ -15,7 +15,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -37,7 +36,6 @@ defined( 'ABSPATH' ) || exit;
  * - Settings
  * - ShippingRateTable
  * - ShippingTimeTable
- * - TransientsInterface
  * - WC
  * - WP
  *
@@ -243,8 +241,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
 
-		$this->container->get( TransientsInterface::class )->delete( TransientsInterface::MC_CONTACT_INFO );
-
 		$this->container->get( MerchantStatuses::class )->delete();
 
 		$this->container->get( MerchantIssueTable::class )->truncate();
@@ -309,41 +305,31 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 	/**
 	 * Check if the Merchant Center contact information has been setup already.
-	 * The check results are stored in a transient to prevent multiple requests to the API.
 	 *
 	 * @since x.x.x
 	 *
 	 * @return boolean
 	 */
 	protected function is_mc_contact_information_setup(): bool {
-		/** @var TransientsInterface $transients */
-		$transients = $this->container->get( TransientsInterface::class );
-		$is_setup   = $transients->get( TransientsInterface::MC_CONTACT_INFO );
+		$is_setup = [
+			'phone_number' => false,
+			'address'      => false,
+		];
 
-		if ( ! $is_setup ) {
-			$is_setup = [
-				'phone_number' => false,
-				'address'      => false,
-			];
+		$contact_info = $this->container->get( ContactInformation::class )->get_contact_information();
 
-			$contact_info = $this->container->get( ContactInformation::class )->get_contact_information();
+		if ( $contact_info instanceof AccountBusinessInformation ) {
+			$is_setup['phone_number'] = ! empty( $contact_info->getPhoneNumber() );
 
-			if ( $contact_info instanceof AccountBusinessInformation ) {
-				$is_setup['phone_number'] = ! empty( $contact_info->getPhoneNumber() );
+			/** @var Settings $settings */
+			$settings = $this->container->get( Settings::class );
 
-				/** @var Settings $settings */
-				$settings = $this->container->get( Settings::class );
-
-				if ( $contact_info->getAddress() instanceof AccountAddress && $settings->get_store_address() instanceof AccountAddress ) {
-					$is_setup['address'] = $this->container->get( AddressUtility::class )->compare_addresses(
-						$contact_info->getAddress(),
-						$settings->get_store_address()
-					);
-				}
+			if ( $contact_info->getAddress() instanceof AccountAddress && $settings->get_store_address() instanceof AccountAddress ) {
+				$is_setup['address'] = $this->container->get( AddressUtility::class )->compare_addresses(
+					$contact_info->getAddress(),
+					$settings->get_store_address()
+				);
 			}
-
-			// Cache the contact info check so we don't repeat the API requests multiple times.
-			$transients->set( TransientsInterface::MC_CONTACT_INFO, $is_setup, HOUR_IN_SECONDS );
 		}
 
 		return $is_setup['phone_number'] && $is_setup['address'];
