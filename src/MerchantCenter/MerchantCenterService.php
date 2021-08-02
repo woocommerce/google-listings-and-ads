@@ -4,6 +4,8 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
@@ -220,6 +222,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 			if ( $this->saved_target_audience() ) {
 				$step = 'shipping_and_taxes';
+
+				if ( $this->saved_shipping_and_tax_options() ) {
+					$step = 'store_requirements';
+				}
 			}
 		}
 
@@ -333,5 +339,44 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		return $is_setup['phone_number'] && $is_setup['address'];
+	}
+	
+	/*
+	 * Check if the taxes + shipping rate and time + free shipping settings have been saved.
+	 *
+	 * @return bool If all required settings have been provided.
+	 *
+	 * @since x.x.x
+	 */
+	protected function saved_shipping_and_tax_options(): bool {
+		$merchant_center_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+		$target_countries         = $this->get_target_countries();
+
+		// Tax options saved if: not US (no taxes) or tax_rate has been set
+		if ( in_array( 'US', $target_countries, true ) && empty( $merchant_center_settings['tax_rate'] ) ) {
+			return false;
+		}
+
+		// Free shipping saved if: not offered, OR offered and threshold not null
+		if ( ! empty( $merchant_center_settings['offers_free_shipping'] ) && is_null( $merchant_center_settings['free_shipping_threshold'] ) ) {
+			return false;
+		}
+
+		// Shipping options saved if: 'manual' OR 'flat' + records for all countries
+		if ( 'manual' === ( $merchant_center_settings['shipping_time'] ?? 'flat' ) ) {
+			$saved_shipping_time = true;
+		} else {
+			$shipping_time_rows  = $this->container->get( ShippingTimeQuery::class )->get_count();
+			$saved_shipping_time = $shipping_time_rows === count( $target_countries );
+		}
+
+		if ( 'manual' === ( $merchant_center_settings['shipping_rate'] ?? 'flat' ) ) {
+			$saved_shipping_rate = true;
+		} else {
+			$shipping_rate_rows  = $this->container->get( ShippingRateQuery::class )->get_count();
+			$saved_shipping_rate = $shipping_rate_rows === count( $target_countries );
+		}
+
+		return $saved_shipping_rate && $saved_shipping_time;
 	}
 }
