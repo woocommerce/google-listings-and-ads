@@ -143,10 +143,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_SETTINGS:
 		case TYPES.SAVE_SETTINGS: {
-			const { settings } = action;
-			const newState = cloneDeep( state );
-			newState.mc.settings = settings;
-			return newState;
+			return {
+				...state,
+				mc: {
+					...state.mc,
+					settings: {
+						...state.mc.settings,
+						...action.settings,
+					},
+				},
+			};
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_JETPACK: {
