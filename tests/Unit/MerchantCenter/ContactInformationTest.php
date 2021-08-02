@@ -20,11 +20,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since x.x.x
  *
- * @property  MockObject|Settings $google_settings
  * @property  MockObject|Merchant $merchant
+ * @property  MockObject|Settings $google_settings
  * @property  ContactInformation  $contact_information
  */
 class ContactInformationTest extends ContainerAwareUnitTest {
+
 	use MerchantTrait;
 
 	/**
