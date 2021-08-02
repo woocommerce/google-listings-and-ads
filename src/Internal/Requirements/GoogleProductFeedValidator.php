@@ -77,14 +77,6 @@ class GoogleProductFeedValidator extends RequirementValidator {
 	 * @return array The issues with the new conflict issue included
 	 */
 	protected function add_conflict_issue( array $issues, DateTime $cache_created_time ): array {
-		foreach ( $issues as &$issue ) {
-			// Make sure all issues have the source attribute to avoid errors.
-			if ( ! empty( $issue['source'] ) ) {
-				continue;
-			}
-			$issue['source'] = 'mc';
-		}
-
 		$issues[] = [
 			'product_id' => 0,
 			'product'    => 'All products',

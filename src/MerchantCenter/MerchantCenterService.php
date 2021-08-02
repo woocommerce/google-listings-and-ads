@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
@@ -14,8 +15,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
+use DateTime;
+use Google\Service\ShoppingContent\AccountAddress;
+use Google\Service\ShoppingContent\AccountBusinessInformation;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,11 +29,13 @@ defined( 'ABSPATH' ) || exit;
  * Class MerchantCenterService
  *
  * ContainerAware used to access:
+ * - AddressUtility
+ * - ContactInformation
  * - MerchantAccountState
  * - MerchantStatuses
+ * - Settings
  * - ShippingRateTable
  * - ShippingTimeTable
- * - TransientsInterface
  * - WC
  * - WP
  *
@@ -35,9 +43,24 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInterface, Service {
 
+	use ContainerAwareTrait;
 	use GoogleHelper;
 	use OptionsAwareTrait;
-	use ContainerAwareTrait;
+	use PluginHelper;
+
+	/**
+	 * MerchantCenterService constructor.
+	 */
+	public function __construct() {
+		add_filter(
+			'woocommerce_gla_custom_merchant_issues',
+			function( array $issues, DateTime $cache_created_time ) {
+				return $this->maybe_add_contact_info_issue( $issues, $cache_created_time );
+			},
+			10,
+			2
+		);
+	}
 
 	/**
 	 * Get whether Merchant Center setup is completed.
@@ -100,6 +123,28 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			strtolower( $language ),
 			$this->get_mc_supported_languages()
 		);
+	}
+
+	/**
+	 * Get whether the contact information has been setup.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return bool
+	 */
+	public function is_contact_information_setup(): bool {
+		if ( true === boolval( $this->options->get( OptionsInterface::CONTACT_INFO_SETUP, false ) ) ) {
+			return true;
+		}
+
+		// Additional check for users that have already gone through onboarding.
+		if ( $this->is_setup_complete() ) {
+			$is_mc_setup = $this->is_mc_contact_information_setup();
+			$this->options->update( OptionsInterface::CONTACT_INFO_SETUP, $is_mc_setup );
+			return $is_mc_setup;
+		}
+
+		return false;
 	}
 
 	/**
@@ -188,6 +233,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 * Disconnect Merchant Center account
 	 */
 	public function disconnect() {
+		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
 		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
 		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
 		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
@@ -226,5 +272,66 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		$empty_selection = 'selected' === $audience['location'] && empty( $audience['countries'] );
 		return ! $empty_selection;
+	}
+
+	/**
+	 * Checks if we should add an issue when the contact information is not setup.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array    $issues             The current array of custom issues
+	 * @param DateTime $cache_created_time The time of the cache/issues generation.
+	 *
+	 * @return array
+	 */
+	protected function maybe_add_contact_info_issue( array $issues, DateTime $cache_created_time ): array {
+		if ( $this->is_setup_complete() && ! $this->is_contact_information_setup() ) {
+			$issues[] = [
+				'product_id' => 0,
+				'product'    => 'All products',
+				'code'       => 'missing_contact_information',
+				'issue'      => __( 'No contact information.', 'google-listings-and-ads' ),
+				'action'     => __( 'Add store contact information', 'google-listings-and-ads' ),
+				'action_url' => $this->get_contact_information_setup_url(),
+				'created_at' => $cache_created_time->format( 'Y-m-d H:i:s' ),
+				'type'       => MerchantStatuses::TYPE_ACCOUNT,
+				'severity'   => 'error',
+				'source'     => 'filter',
+			];
+		}
+
+		return $issues;
+	}
+
+	/**
+	 * Check if the Merchant Center contact information has been setup already.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return boolean
+	 */
+	protected function is_mc_contact_information_setup(): bool {
+		$is_setup = [
+			'phone_number' => false,
+			'address'      => false,
+		];
+
+		$contact_info = $this->container->get( ContactInformation::class )->get_contact_information();
+
+		if ( $contact_info instanceof AccountBusinessInformation ) {
+			$is_setup['phone_number'] = ! empty( $contact_info->getPhoneNumber() );
+
+			/** @var Settings $settings */
+			$settings = $this->container->get( Settings::class );
+
+			if ( $contact_info->getAddress() instanceof AccountAddress && $settings->get_store_address() instanceof AccountAddress ) {
+				$is_setup['address'] = $this->container->get( AddressUtility::class )->compare_addresses(
+					$contact_info->getAddress(),
+					$settings->get_store_address()
+				);
+			}
+		}
+
+		return $is_setup['phone_number'] && $is_setup['address'];
 	}
 }

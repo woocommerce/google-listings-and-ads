@@ -33,8 +33,8 @@ class ContactInformationTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->merchant              = $this->createMock( Merchant::class );
-		$this->google_settings       = $this->createMock( Settings::class );
+		$this->merchant            = $this->createMock( Merchant::class );
+		$this->google_settings     = $this->createMock( Settings::class );
 		$this->contact_information = new ContactInformation( $this->merchant, $this->google_settings );
 	}
 
