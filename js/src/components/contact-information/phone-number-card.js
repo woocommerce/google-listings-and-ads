@@ -11,7 +11,6 @@ import { Spinner } from '@woocommerce/components';
  * Internal dependencies
  */
 import useCountryCallingCodeOptions from '.~/hooks/useCountryCallingCodeOptions';
-import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import SelectControl from '.~/wcdl/select-control';
 import AppInputControl from '.~/components/app-input-control';
@@ -79,13 +78,14 @@ function PhoneNumberContent( {
 }
 
 export default function PhoneNumberCard( {
+	phoneNumber,
 	isPreview,
 	initEditing,
 	onEditClick,
 	onPhoneNumberChange = noop,
 } ) {
 	const [ isEditing, setEditing ] = useState( initEditing );
-	const { loaded, data } = useGoogleMCPhoneNumber();
+	const { loaded, data } = phoneNumber;
 
 	const editButton = isEditing ? null : (
 		<AppButton

@@ -53,6 +53,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 			{ phone.loaded ? (
 				<VerticalGapLayout size="large">
 					<PhoneNumberCard
+						phoneNumber={ phone }
 						initEditing={ initEditing }
 						onPhoneNumberChange={ onPhoneNumberChange }
 					/>
