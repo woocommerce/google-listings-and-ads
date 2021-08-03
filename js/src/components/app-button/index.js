@@ -51,7 +51,7 @@ const AppButton = ( props ) => {
 
 	const classes = [ 'app-button', className ];
 	if ( rest.iconPosition === 'right' ) {
-		classes.push( 'gla-app-button--fix-icon-position' );
+		classes.push( 'app-button--fix-icon-position-right' );
 	}
 
 	return (
