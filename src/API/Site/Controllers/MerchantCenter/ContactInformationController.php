@@ -225,16 +225,16 @@ class ContactInformationController extends BaseOptionsController {
 		$wc_address      = null;
 		$is_address_diff = false;
 
+		if ( $this->settings->get_store_address() instanceof AccountAddress ) {
+			$wc_address      = $this->settings->get_store_address();
+			$is_address_diff = true;
+		}
+
 		if ( $contact_information instanceof AccountBusinessInformation ) {
 			$phone_number = $contact_information->getPhoneNumber();
 
 			if ( $contact_information->getAddress() instanceof AccountAddress ) {
 				$mc_address      = $contact_information->getAddress();
-				$is_address_diff = true;
-			}
-
-			if ( $this->settings->get_store_address() instanceof AccountAddress ) {
-				$wc_address      = $this->settings->get_store_address();
 				$is_address_diff = true;
 			}
 
