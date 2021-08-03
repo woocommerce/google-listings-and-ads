@@ -21,6 +21,7 @@ import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
+import AppSpinner from '.~/components/app-spinner';
 import PreLaunchChecklist from './pre-launch-checklist';
 import checkErrors from './pre-launch-checklist/checkErrors';
 
@@ -74,6 +75,10 @@ export default function StoreRequirements() {
 			);
 		}
 	};
+
+	if ( ! settings ) {
+		return <AppSpinner />;
+	}
 
 	return (
 		<StepContent>
