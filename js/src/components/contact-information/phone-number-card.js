@@ -10,7 +10,7 @@ import { Spinner } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import useCountryCallingCodes from '.~/hooks/useCountryCallingCodes';
+import useCountryCallingCodeOptions from '.~/hooks/useCountryCallingCodeOptions';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import SelectControl from '.~/wcdl/select-control';
@@ -27,7 +27,7 @@ function PhoneNumberContent( {
 	initNationalNumber,
 	onPhoneNumberChange,
 } ) {
-	const countryCallingCodes = useCountryCallingCodes( 'select-options' );
+	const countryCallingCodeOptions = useCountryCallingCodeOptions();
 	const [ country, setCountry ] = useState( initCountry );
 	const [ number, setNumber ] = useState( initNationalNumber );
 
@@ -58,7 +58,7 @@ function PhoneNumberContent( {
 						) }
 						isSearchable
 						excludeSelectedOptions={ false }
-						options={ countryCallingCodes }
+						options={ countryCallingCodeOptions }
 						selected={ country }
 						onChange={ handleCountryChange }
 					/>

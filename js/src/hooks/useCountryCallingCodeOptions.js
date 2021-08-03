@@ -9,30 +9,25 @@ import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
  */
 import useCountryKeyNameMap from './useCountryKeyNameMap';
 
-const toData = ( country, countryCallingCode, countryName ) => ( {
-	country,
-	countryCallingCode,
-	countryName,
-} );
-
 const toOption = ( country, countryCallingCode, countryName ) => ( {
 	key: country,
 	keywords: [ countryName, countryCallingCode, country ],
 	label: `${ countryName } (+${ countryCallingCode })`,
 } );
 
-export default function useCountryCallingCodes( as ) {
+export default function useCountryCallingCodeOptions() {
 	const countryNameDict = useCountryKeyNameMap();
 
 	return useMemo( () => {
 		return getCountries().reduce( ( acc, country ) => {
 			const countryName = countryNameDict[ country ];
 			if ( countryName ) {
-				const fn = as === 'select-options' ? toOption : toData;
 				const countryCallingCode = getCountryCallingCode( country );
-				acc.push( fn( country, countryCallingCode, countryName ) );
+				acc.push(
+					toOption( country, countryCallingCode, countryName )
+				);
 			}
 			return acc;
 		}, [] );
-	}, [ as, countryNameDict ] );
+	}, [ countryNameDict ] );
 }
