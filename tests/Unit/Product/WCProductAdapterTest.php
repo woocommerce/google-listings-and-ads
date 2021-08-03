@@ -146,7 +146,7 @@ class WCProductAdapterTest extends UnitTest {
 
 	public function test_basic_attributes_can_be_overridden_via_filter() {
 		add_filter(
-			'woocommerce_gla_override_product_attribute_values',
+			'woocommerce_gla_product_attribute_values',
 			function ( array $attributes, WC_Product $product, WCProductAdapter $google_product ) {
 				$attributes['imageLink'] = 'https://example.com/image_overide.png?prev=' . $google_product->getImageLink();
 				$attributes['description'] = 'Overridden description!';
@@ -1463,7 +1463,7 @@ DESCRIPTION;
 		remove_all_filters( 'woocommerce_gla_product_description_apply_shortcodes' );
 		remove_all_filters( 'woocommerce_gla_use_short_description' );
 		remove_all_filters( 'woocommerce_gla_product_attribute_value_description' );
-		remove_all_filters( 'woocommerce_gla_override_product_attribute_values' );
+		remove_all_filters( 'woocommerce_gla_product_attribute_values' );
 
 		// remove added shortcodes
 		remove_shortcode( 'wc_gla_sample_test_shortcode' );

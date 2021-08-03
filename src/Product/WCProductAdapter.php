@@ -152,7 +152,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 *
 		 * @since x.x.x
 		 */
-		$attributes = apply_filters( 'woocommerce_gla_override_product_attribute_values', [], $this->wc_product, $this );
+		$attributes = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
 
 		if ( ! empty( $attributes ) ) {
 			parent::mapTypes( $attributes );
@@ -742,16 +742,16 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 				 * set for the product through WooCommerce's edit product page
 				 *
 				 * In order to override all product attributes and/or set new ones for the product use the
-				 * `woocommerce_gla_override_product_attribute_values` filter.
+				 * `woocommerce_gla_product_attribute_values` filter.
 				 *
-				 * Note that the `woocommerce_gla_override_product_attribute_values` filter takes precedence over
+				 * Note that the `woocommerce_gla_product_attribute_values` filter takes precedence over
 				 * this filter, and it can be used to override any values defined here.
 				 *
 				 * @param mixed      $attribute_value The attribute's current value
 				 * @param WC_Product $wc_product      The WooCommerce product object.
 				 *
 				 * @see AttributeManager::ATTRIBUTES for the list of attributes that their values can be modified using this filter.
-				 * @see WCProductAdapter::override_attributes for the docuemntation of the `woocommerce_gla_override_product_attribute_values` filter.
+				 * @see WCProductAdapter::override_attributes for the docuemntation of the `woocommerce_gla_product_attribute_values` filter.
 				 */
 				$gla_attributes[ $attribute_id ] = apply_filters( "woocommerce_gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
 			}
