@@ -150,6 +150,7 @@ class WCProductAdapterTest extends UnitTest {
 			function ( array $attributes, WC_Product $product, WCProductAdapter $google_product ) {
 				$attributes['imageLink'] = 'https://example.com/image_overide.png?prev=' . $google_product->getImageLink();
 				$attributes['description'] = 'Overridden description!';
+				$attributes['id'] = 'override_' . $product->get_id();
 
 				return $attributes;
 			},
@@ -183,6 +184,41 @@ class WCProductAdapterTest extends UnitTest {
 			'Overridden description!',
 			$adapted_product->getDescription()
 		);
+		$this->assertEquals(
+			'override_' . $product->get_id(),
+			$adapted_product->getId()
+		);
+	}
+
+	public function test_attribute_values_filter_takes_precedence() {
+
+		add_filter(
+			'woocommerce_gla_product_attribute_value_gtin',
+			function () {
+				return '1234';
+			}
+		);
+
+		add_filter(
+			'woocommerce_gla_product_attribute_values',
+			function ( array $attributes ) {
+				$attributes['gtin'] = '56789';
+
+				return $attributes;
+			}
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'     => WC_Helper_Product::create_simple_product( false ),
+				'gla_attributes' => [
+					Brand::get_id() => 'Google',
+				],
+				'targetCountry'  => 'US',
+			]
+		);
+
+		$this->assertEquals( '56789', $adapted_product->getGtin() );
 	}
 
 	public function test_channel_is_always_set_to_online() {
