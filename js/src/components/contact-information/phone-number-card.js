@@ -32,12 +32,8 @@ function PhoneNumberContent( {
 	const [ number, setNumber ] = useState( initNationalNumber );
 
 	const handleChange = ( nextCountry, nextNumber ) => {
-		if ( nextCountry !== country ) {
-			setCountry( nextCountry );
-		}
-		if ( nextNumber !== number ) {
-			setNumber( nextNumber );
-		}
+		setCountry( nextCountry );
+		setNumber( nextNumber );
 
 		const countryCallingCode = nextCountry
 			? getCountryCallingCode( nextCountry )
@@ -45,8 +41,11 @@ function PhoneNumberContent( {
 		onPhoneNumberChange( countryCallingCode, nextNumber, nextCountry );
 	};
 
-	const handleCountryChange = ( v ) => handleChange( v, number );
-	const handleNumberChange = ( v ) => handleChange( country, v );
+	const handleCountryChange = ( nextCountry ) =>
+		handleChange( nextCountry, number );
+
+	const handleNumberChange = ( nextNumber ) =>
+		handleChange( country, nextNumber );
 
 	return (
 		<Section.Card.Body>
