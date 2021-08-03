@@ -147,8 +147,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 *                                     are already mapped to this object.
 		 *
 		 * @see \Google\Service\ShoppingContent\Product for the list of product properties that can be overriden.
-		 * @see self::map_gla_attributes where another filter is defined (`woocommerce_gla_product_attribute_value_{$attribute_id}`)
-		 *                               that allows modifying some attributes such as GTIN, MPN, Brand, etc.
+		 * @see WCProductAdapter::map_gla_attributes for the docuementation of `woocommerce_gla_product_attribute_value_{$attribute_id}`
+		 *                                           filter, which allows modifying some attributes such as GTIN, MPN, etc.
 		 *
 		 * @since x.x.x
 		 */
