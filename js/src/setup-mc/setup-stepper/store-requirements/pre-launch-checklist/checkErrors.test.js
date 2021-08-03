@@ -4,85 +4,53 @@
 import checkErrors from './checkErrors';
 
 /**
- * checkErrors function returns an object, and if any checks are not passed,
+ * `checkErrors` function returns an object, and if any checks are not passed,
  * set properties respectively with an error message to indicate it.
- *
- * To test each cases separately, the meaning of "should (not) pass" in test descriptions are:
- * should pass - returned object should not contain respective property.
- * should not pass - returned object should contain respective property with an error message.
  */
 describe( 'checkErrors', () => {
-	it( 'When all checks are passed, should return an empty object', () => {
-		const values = {
-			website_live: true,
-			checkout_process_secure: true,
-			payment_methods_visible: true,
-			refund_tos_visible: true,
-			contact_info_visible: true,
-		};
+	describe( 'Should check the presence of required properties in the given object. Returned object should have error messages for respective properties.', () => {
+		for ( const property of [
+			'website_live',
+			'checkout_process_secure',
+			'payment_methods_visible',
+			'refund_tos_visible',
+			'contact_info_visible',
+		] ) {
+			it( `${ property } === true`, () => {
+				expect( checkErrors( {} ) ).toHaveProperty(
+					property,
+					'Please check the requirement.'
+				);
 
-		const errors = checkErrors( values );
+				expect( checkErrors( { [ property ]: 'foo' } ) ).toHaveProperty(
+					property,
+					'Please check the requirement.'
+				);
 
-		expect( errors ).toStrictEqual( {} );
-	} );
-
-	it( 'should indicate multiple unpassed checks by setting properties in the returned object', () => {
-		const errors = checkErrors( {} );
-
-		expect( errors ).toHaveProperty( 'website_live' );
-		expect( errors ).toHaveProperty( 'checkout_process_secure' );
-	} );
-
-	describe( 'Requirements', () => {
-		describe( 'should not pass', () => {
-			it( 'When there are any requirements are not set yet', () => {
-				const errors = checkErrors( {}, [], [], [] );
-
-				expect( errors ).toHaveProperty( 'website_live' );
-				expect( errors.website_live ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'checkout_process_secure' );
-				expect( errors.checkout_process_secure ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'payment_methods_visible' );
-				expect( errors.payment_methods_visible ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'refund_tos_visible' );
-				expect( errors.refund_tos_visible ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'contact_info_visible' );
-				expect( errors.contact_info_visible ).toMatchSnapshot();
+				expect(
+					checkErrors( { [ property ]: true } )
+				).not.toHaveProperty( property );
 			} );
+		}
+		it( 'When there are many missing/invalid properties, should report them all.', () => {
+			const values = {
+				website_live: false,
+				payment_methods_visible: 'true',
+				refund_tos_visible: [],
+				contact_info_visible: {},
+			};
 
-			it( 'When there are any requirements are invalid value', () => {
-				const values = {
-					website_live: false,
-					checkout_process_secure: 1,
-					payment_methods_visible: 'true',
-					refund_tos_visible: [],
-					contact_info_visible: {},
-				};
-
-				const errors = checkErrors( values, [], [], [] );
-
-				expect( errors ).toHaveProperty( 'website_live' );
-				expect( errors.website_live ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'checkout_process_secure' );
-				expect( errors.checkout_process_secure ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'payment_methods_visible' );
-				expect( errors.payment_methods_visible ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'refund_tos_visible' );
-				expect( errors.refund_tos_visible ).toMatchSnapshot();
-
-				expect( errors ).toHaveProperty( 'contact_info_visible' );
-				expect( errors.contact_info_visible ).toMatchSnapshot();
+			const errorMessage = 'Please check the requirement.';
+			expect( checkErrors( values ) ).toEqual( {
+				website_live: errorMessage,
+				checkout_process_secure: errorMessage,
+				payment_methods_visible: errorMessage,
+				refund_tos_visible: errorMessage,
+				contact_info_visible: errorMessage,
 			} );
 		} );
 
-		it( 'When all requirements are true, should pass', () => {
+		it( 'When all properties are valid, should return an empty object.', () => {
 			const values = {
 				website_live: true,
 				checkout_process_secure: true,
@@ -91,13 +59,7 @@ describe( 'checkErrors', () => {
 				contact_info_visible: true,
 			};
 
-			const errors = checkErrors( values, [], [], [] );
-
-			expect( errors ).not.toHaveProperty( 'website_live' );
-			expect( errors ).not.toHaveProperty( 'checkout_process_secure' );
-			expect( errors ).not.toHaveProperty( 'payment_methods_visible' );
-			expect( errors ).not.toHaveProperty( 'refund_tos_visible' );
-			expect( errors ).not.toHaveProperty( 'contact_info_visible' );
+			expect( checkErrors( values ) ).toEqual( {} );
 		} );
 	} );
 } );
