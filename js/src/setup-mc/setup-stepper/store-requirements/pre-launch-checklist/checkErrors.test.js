@@ -34,50 +34,52 @@ describe( 'checkErrors', () => {
 	} );
 
 	describe( 'Requirements', () => {
-		it( 'When there are any requirements are not true, should not pass', () => {
-			// Not set yet
-			let errors = checkErrors( {}, [], [], [] );
+		describe( 'should not pass', () => {
+			it( 'When there are any requirements are not set yet', () => {
+				const errors = checkErrors( {}, [], [], [] );
 
-			expect( errors ).toHaveProperty( 'website_live' );
-			expect( errors.website_live ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'website_live' );
+				expect( errors.website_live ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'checkout_process_secure' );
-			expect( errors.checkout_process_secure ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'checkout_process_secure' );
+				expect( errors.checkout_process_secure ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'payment_methods_visible' );
-			expect( errors.payment_methods_visible ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'payment_methods_visible' );
+				expect( errors.payment_methods_visible ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'refund_tos_visible' );
-			expect( errors.refund_tos_visible ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'refund_tos_visible' );
+				expect( errors.refund_tos_visible ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'contact_info_visible' );
-			expect( errors.contact_info_visible ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'contact_info_visible' );
+				expect( errors.contact_info_visible ).toMatchSnapshot();
+			} );
 
-			// Invalid value
-			const values = {
-				website_live: false,
-				checkout_process_secure: 1,
-				payment_methods_visible: 'true',
-				refund_tos_visible: [],
-				contact_info_visible: {},
-			};
+			it( 'When there are any requirements are invalid value', () => {
+				const values = {
+					website_live: false,
+					checkout_process_secure: 1,
+					payment_methods_visible: 'true',
+					refund_tos_visible: [],
+					contact_info_visible: {},
+				};
 
-			errors = checkErrors( values, [], [], [] );
+				const errors = checkErrors( values, [], [], [] );
 
-			expect( errors ).toHaveProperty( 'website_live' );
-			expect( errors.website_live ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'website_live' );
+				expect( errors.website_live ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'checkout_process_secure' );
-			expect( errors.checkout_process_secure ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'checkout_process_secure' );
+				expect( errors.checkout_process_secure ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'payment_methods_visible' );
-			expect( errors.payment_methods_visible ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'payment_methods_visible' );
+				expect( errors.payment_methods_visible ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'refund_tos_visible' );
-			expect( errors.refund_tos_visible ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'refund_tos_visible' );
+				expect( errors.refund_tos_visible ).toMatchSnapshot();
 
-			expect( errors ).toHaveProperty( 'contact_info_visible' );
-			expect( errors.contact_info_visible ).toMatchSnapshot();
+				expect( errors ).toHaveProperty( 'contact_info_visible' );
+				expect( errors.contact_info_visible ).toMatchSnapshot();
+			} );
 		} );
 
 		it( 'When all requirements are true, should pass', () => {
