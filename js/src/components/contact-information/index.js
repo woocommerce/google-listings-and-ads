@@ -10,7 +10,6 @@ import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AppSpinner from '.~/components/app-spinner';
 import PhoneNumberCard from './phone-number-card';
 
 const description = __(
@@ -50,18 +49,14 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 				</div>
 			}
 		>
-			{ phone.loaded ? (
-				<VerticalGapLayout size="large">
-					<PhoneNumberCard
-						phoneNumber={ phone }
-						initEditing={ initEditing }
-						onPhoneNumberChange={ onPhoneNumberChange }
-					/>
-					<div>TODO: add store address card</div>
-				</VerticalGapLayout>
-			) : (
-				<AppSpinner />
-			) }
+			<VerticalGapLayout size="large">
+				<PhoneNumberCard
+					phoneNumber={ phone }
+					initEditing={ initEditing }
+					onPhoneNumberChange={ onPhoneNumberChange }
+				/>
+				<div>TODO: add store address card</div>
+			</VerticalGapLayout>
 		</Section>
 	);
 }
