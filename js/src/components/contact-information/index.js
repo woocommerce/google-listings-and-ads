@@ -35,7 +35,7 @@ export function ContactInformationPreview() {
 		getHistory().push( getEditContactInformationUrl() );
 	};
 
-	let sectionContent;
+	let sectionContent = <SpinnerCard />;
 
 	if ( phone.loaded ) {
 		if ( phone.data.isValid ) {
@@ -57,8 +57,6 @@ export function ContactInformationPreview() {
 				/>
 			);
 		}
-	} else {
-		sectionContent = <SpinnerCard />;
 	}
 
 	return (
