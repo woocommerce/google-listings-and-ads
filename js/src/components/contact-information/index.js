@@ -12,6 +12,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppSpinner from '.~/components/app-spinner';
 import PhoneNumberCard from './phone-number-card';
+import StoreAddressCard from './store-address-card';
 
 const description = __(
 	'Your contact information is required by Google for verification purposes. It will be shared with the Google Merchant Center and will not be displayed to customers.',
@@ -57,7 +58,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 						initEditing={ initEditing }
 						onPhoneNumberChange={ onPhoneNumberChange }
 					/>
-					<div>TODO: add store address card</div>
+					<StoreAddressCard />
 				</VerticalGapLayout>
 			) : (
 				<AppSpinner />
