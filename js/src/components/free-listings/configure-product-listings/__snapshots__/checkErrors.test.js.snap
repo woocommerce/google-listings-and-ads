@@ -6,26 +6,6 @@ exports[`checkErrors For tax rate, if selected country codes include 'US' When t
 
 exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 3`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 1`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 2`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 3`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 4`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 5`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 6`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 7`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 8`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 9`] = `"Please check the requirement."`;
-
-exports[`checkErrors Requirements When there are any requirements are not true, should not pass 10`] = `"Please check the requirement."`;
-
 exports[`checkErrors Shipping rates For flat type When the free shipping threshold is an invalid value or missing, should not pass 1`] = `"Please specify a valid minimum order price for free shipping"`;
 
 exports[`checkErrors Shipping rates For flat type When the free shipping threshold is an invalid value or missing, should not pass 2`] = `"Please specify a valid minimum order price for free shipping"`;

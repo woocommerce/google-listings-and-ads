@@ -14,28 +14,33 @@ import { useAppDispatch } from '.~/data';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import useStoreAddress from '.~/hooks/useStoreAddress';
+import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
+import AppSpinner from '.~/components/app-spinner';
+import PreLaunchChecklist from './pre-launch-checklist';
+import checkErrors from './pre-launch-checklist/checkErrors';
 
 export default function StoreRequirements() {
 	const adminUrl = useAdminUrl();
-	const { updateGoogleMCContactInformation } = useAppDispatch();
+	const { updateGoogleMCContactInformation, saveSettings } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const { data: initPhoneNumber } = useGoogleMCPhoneNumber();
 	const { data: address } = useStoreAddress();
+	const { settings } = useSettings();
+
 	const [ completing, setCompleting ] = useState( false );
 	const [ phoneNumber, setPhoneNumber ] = useState( {
 		isValid: false,
 		isDirty: false,
 	} );
 
-	const handleValidate = () => {
-		// TODO: [lite-contact-info] add validation for pre-launch checklist
-		return {};
+	const handleChangeCallback = ( _, values ) => {
+		saveSettings( values );
 	};
 
 	const handleSubmitCallback = async () => {
@@ -71,6 +76,10 @@ export default function StoreRequirements() {
 		}
 	};
 
+	if ( ! settings ) {
+		return <AppSpinner />;
+	}
+
 	return (
 		<StepContent>
 			<StepContentHeader
@@ -85,8 +94,16 @@ export default function StoreRequirements() {
 				) }
 			/>
 			<Form
-				initialValues={ {} }
-				validate={ handleValidate }
+				initialValues={ {
+					website_live: settings.website_live,
+					checkout_process_secure: settings.checkout_process_secure,
+					payment_methods_visible: settings.payment_methods_visible,
+					refund_tos_visible: settings.refund_tos_visible,
+					contact_info_visible: settings.contact_info_visible,
+				} }
+				validate={ checkErrors }
+				onChangeCallback={ handleChangeCallback }
+				onChange={ handleChangeCallback }
 				onSubmitCallback={ handleSubmitCallback }
 				onSubmit={ handleSubmitCallback }
 			>
@@ -108,7 +125,7 @@ export default function StoreRequirements() {
 								view="setup-mc"
 								onPhoneNumberChange={ setPhoneNumber }
 							/>
-							<div>TODO: move pre-lauch checklist to here</div>
+							<PreLaunchChecklist formProps={ formProps } />
 							<StepContentFooter>
 								<AppButton
 									isPrimary
