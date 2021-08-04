@@ -45,6 +45,7 @@ export function ContactInformationPreview() {
 					<PhoneNumberCard
 						isPreview
 						initEditing={ false }
+						phoneNumber={ phone }
 						onEditClick={ handleEditClick }
 					/>
 					<StoreAddressCard isPreview />
