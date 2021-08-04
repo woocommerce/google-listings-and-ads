@@ -1,0 +1,42 @@
+.gla-phone-number-card {
+	// Country code selector
+	.wcdl-select-control {
+		.wcdl-select-control__input {
+			margin-bottom: 0;
+		}
+
+		.woocommerce-select-control {
+			.components-base-control {
+				height: 36px;
+				border-color: $gray-600;
+			}
+
+			.woocommerce-select-control__control-input {
+				font-size: 13px;
+				color: $gray-900;
+			}
+
+			.woocommerce-select-control__listbox {
+				top: 37px;
+			}
+
+			.woocommerce-select-control__option {
+				min-height: 36px;
+				font-size: 13px;
+			}
+		}
+	}
+
+	// Phone number input
+	.components-input-control .components-input-control__container {
+		.components-input-control__input {
+			height: 36px;
+			font-size: 13px;
+			color: $gray-900;
+		}
+
+		.components-input-control__backdrop {
+			border-color: $gray-600;
+		}
+	}
+}

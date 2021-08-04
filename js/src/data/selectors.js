@@ -68,6 +68,15 @@ export const getExistingGoogleAdsAccounts = ( state ) => {
 	return state.mc.accounts.existing_ads;
 };
 
+const mockPhoneNumber = Math.random() > 0.5 ? '+12133734253' : '';
+export const getGoogleMCPhoneNumber = () => {
+	// TODO: [lite-contact-info] integrate with API
+	return {
+		id: '123456789',
+		phone_number: mockPhoneNumber,
+	};
+};
+
 export const getCountries = ( state ) => {
 	return state.mc.countries;
 };

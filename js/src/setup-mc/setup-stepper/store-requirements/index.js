@@ -15,6 +15,7 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import ContactInformation from '.~/components/contact-information';
 import AppButton from '.~/components/app-button';
 
 export default function StoreRequirements() {
@@ -25,6 +26,11 @@ export default function StoreRequirements() {
 	const handleValidate = () => {
 		// TODO: [lite-contact-info] add validation
 		return {};
+	};
+
+	const handlePhoneNumberChange = ( countryCallingCode, nationalNumber ) => {
+		// TODO: [lite-contact-info] handle the onChange callback of phone number
+		console.log( countryCallingCode, nationalNumber ); // eslint-disable-line
 	};
 
 	const handleSubmitCallback = async () => {
@@ -83,7 +89,10 @@ export default function StoreRequirements() {
 
 					return (
 						<>
-							<div>TODO: implement contact information setup</div>
+							<ContactInformation
+								view="setup-mc"
+								onPhoneNumberChange={ handlePhoneNumberChange }
+							/>
 							<div>TODO: move pre-lauch checklist to here</div>
 							<StepContentFooter>
 								<AppButton

@@ -2,7 +2,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import classnames from 'classnames';
 import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
+import GridiconPhone from 'gridicons/dist/phone';
 
 /**
  * Internal dependencies
@@ -25,11 +27,12 @@ const googleLogoURL =
  */
 export const APPEARANCE = {
 	GOOGLE: 'google',
+	PHONE: 'phone',
 };
 
 const appearanceDict = {
 	[ APPEARANCE.GOOGLE ]: {
-		logo: (
+		icon: (
 			<img
 				src={ googleLogoURL }
 				alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
@@ -39,30 +42,38 @@ const appearanceDict = {
 		),
 		title: __( 'Google account', 'google-listings-and-ads' ),
 	},
+	[ APPEARANCE.PHONE ]: {
+		icon: <GridiconPhone size={ 32 } />,
+		title: __( 'Phone number', 'google-listings-and-ads' ),
+	},
 };
 
 /**
  * Renders a Card component with account info and status.
  *
  * @param {Object} props React props.
+ * @param {string} [props.className] Additional CSS class name to be appended.
  * @param {APPEARANCE} props.appearance Kind of account to indicate the card appearance.
  * @param {JSX.Element} props.description Content below the card title.
+ * @param {boolean} [props.hideIcon=false] Whether hide the leading icon.
  * @param {JSX.Element} [props.indicator] Indicator of actions or status on the right side of the card.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
  */
 export default function AccountCard( {
+	className,
 	appearance,
 	description,
+	hideIcon = false,
 	indicator,
 	children,
 } ) {
-	const { logo, title } = appearanceDict[ appearance ];
+	const { icon, title } = appearanceDict[ appearance ];
 
 	return (
-		<Section.Card className="gla-account-card">
+		<Section.Card className={ classnames( 'gla-account-card', className ) }>
 			<Section.Card.Body>
 				<Flex gap={ 4 }>
-					<FlexItem>{ logo }</FlexItem>
+					{ ! hideIcon && <FlexItem>{ icon }</FlexItem> }
 					<FlexBlock>
 						<Subsection.Title>{ title }</Subsection.Title>
 						<div>{ description }</div>
