@@ -15,6 +15,7 @@ import './no-contact-information-card.scss';
 export default function NoContactInformationCard( {
 	onEditClick,
 	learnMoreUrl,
+	learnMoreLinkId,
 } ) {
 	return (
 		<Section.Card className="gla-no-contact-information-card">
@@ -47,6 +48,13 @@ export default function NoContactInformationCard( {
 						<AppButton
 							isTertiary
 							target="_blank"
+							eventName="gla_google_mc_link_click"
+							eventProps={ {
+								context:
+									'settings-no-contact-information-notice',
+								link_id: learnMoreLinkId,
+								href: learnMoreUrl,
+							} }
 							href={ learnMoreUrl }
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }

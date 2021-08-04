@@ -17,6 +17,7 @@ import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard from './store-address-card';
 import NoContactInformationCard from './no-contact-information-card';
 
+const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
 	'https://docs.woocommerce.com/document/google-listings-and-ads/#contact-information';
 
@@ -54,6 +55,7 @@ export function ContactInformationPreview() {
 				<NoContactInformationCard
 					onEditClick={ handleEditClick }
 					learnMoreUrl={ learnMoreUrl }
+					learnMoreLinkId={ learnMoreLinkId }
 				/>
 			);
 		}
@@ -85,7 +87,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 					<p>
 						<AppDocumentationLink
 							context={ trackContext }
-							linkId="contact-information-read-more"
+							linkId={ learnMoreLinkId }
 							href={ learnMoreUrl }
 						>
 							{ __( 'Learn more', 'google-listings-and-ads' ) }
