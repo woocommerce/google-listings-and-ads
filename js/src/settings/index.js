@@ -10,13 +10,17 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountsUrl } from '.~/utils/urls';
 import NavigationClassic from '.~/components/navigation-classic';
+import { ContactInformationPreview } from '.~/components/contact-information';
 import DisconnectAccounts from './disconnect-accounts';
 import ReconnectAccounts from './reconnect-accounts';
+import EditContactInformation from './edit-contact-information';
 import './index.scss';
 
 const Settings = () => {
 	const { subpath } = getQuery();
 	const { google } = useGoogleAccount();
+	const isEditContactInformationPage =
+		subpath === subpaths.editContactInformation;
 	const isReconnectAccountsPage = subpath === subpaths.reconnectAccounts;
 
 	// This page wouldn't get any 401 response when losing Google account access,
@@ -27,6 +31,10 @@ const Settings = () => {
 		}
 	}, [ isReconnectAccountsPage, google ] );
 
+	if ( isEditContactInformationPage ) {
+		return <EditContactInformation />;
+	}
+
 	if ( isReconnectAccountsPage ) {
 		return <ReconnectAccounts />;
 	}
@@ -35,6 +43,7 @@ const Settings = () => {
 		<div className="gla-settings">
 			<NavigationClassic />
 			<DisconnectAccounts />
+			<ContactInformationPreview />
 		</div>
 	);
 };

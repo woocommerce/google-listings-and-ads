@@ -10,6 +10,7 @@ export const subpaths = {
 	editFreeListings: '/free-listings/edit',
 	editCampaign: '/campaigns/edit',
 	createCampaign: '/campaigns/create',
+	editContactInformation: '/edit-contact-information',
 	reconnectAccounts: '/reconnect-accounts',
 };
 
@@ -30,6 +31,18 @@ export const getCreateCampaignUrl = () => {
 
 export const getDashboardUrl = () => {
 	return getNewPath( null, dashboardPath, null );
+};
+
+export const getSettingsUrl = () => {
+	return getNewPath( null, settingsPath, null );
+};
+
+export const getEditContactInformationUrl = () => {
+	return getNewPath(
+		{ subpath: subpaths.editContactInformation },
+		settingsPath,
+		null
+	);
 };
 
 export const getReconnectAccountsUrl = () => {
