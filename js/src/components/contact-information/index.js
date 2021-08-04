@@ -12,7 +12,6 @@ import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import AppSpinner from '.~/components/app-spinner';
 import SpinnerCard from '.~/components/spinner-card';
 import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard from './store-address-card';
@@ -59,9 +58,7 @@ export function ContactInformationPreview() {
 			);
 		}
 	} else {
-		sectionContent = (
-			<SpinnerCard />
-		);
+		sectionContent = <SpinnerCard />;
 	}
 
 	return (
