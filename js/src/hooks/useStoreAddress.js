@@ -1,19 +1,19 @@
 /**
- * External dependencies
+ * Internal dependencies
  */
-import { useCallback } from '@wordpress/element';
-import { useSelect, useDispatch } from '@wordpress/data';
-import { SETTINGS_STORE_NAME, OPTIONS_STORE_NAME } from '@woocommerce/data';
+import useAppSelectDispatch from './useAppSelectDispatch';
+import useCountryKeyNameMap from './useCountryKeyNameMap';
 
-const optionNames = [
-	'woocommerce_store_address',
-	'woocommerce_store_address_2',
-	'woocommerce_store_city',
-	'woocommerce_default_country',
-	'woocommerce_store_postcode',
-];
-
-const selectorName = 'getOption';
+const emptyData = {
+	address: '',
+	address2: '',
+	city: '',
+	state: '',
+	country: '',
+	postcode: '',
+	isMCAddressDifferent: null,
+	isAddressFilled: null,
+};
 
 /**
  * @typedef {Object} StoreAddress
@@ -23,6 +23,10 @@ const selectorName = 'getOption';
  * @property {string} state Store country state if available.
  * @property {string} country Store country.
  * @property {string} postcode Store postcode.
+ * @property {boolean|null} isAddressFilled Whether the minimum address data is filled in.
+ *                          `null` if data have not loaded yet.
+ * @property {boolean|null} isMCAddressDifferent Whether the address data from WC store and GMC are the same.
+ *                          `null` if data have not loaded yet.
  */
 /**
  * @typedef {Object} StoreAddressResult
@@ -36,68 +40,47 @@ const selectorName = 'getOption';
  * @return {StoreAddressResult} Store address result.
  */
 export default function useStoreAddress() {
-	const { invalidateResolution } = useDispatch( OPTIONS_STORE_NAME );
-	const refetch = useCallback( () => {
-		optionNames.forEach( ( name ) =>
-			invalidateResolution( selectorName, [ name ] )
-		);
-	}, [ invalidateResolution ] );
+	const {
+		data: contact,
+		hasFinishedResolution: loaded,
+		invalidateResolution: refetch,
+	} = useAppSelectDispatch( 'getGoogleMCContactInformation' );
 
-	return useSelect(
-		( select ) => {
-			const selector = select( OPTIONS_STORE_NAME );
-			const { hasFinishedResolution } = selector;
+	const countryNameDict = useCountryKeyNameMap();
 
-			const [
-				address,
-				address2,
-				city,
-				countryAndState,
-				postcode,
-			] = optionNames.map( ( name ) => selector[ selectorName ]( name ) );
+	let data = emptyData;
 
-			const loaded = optionNames
-				.map( ( name ) =>
-					hasFinishedResolution( selectorName, [ name ] )
-				)
-				.every( Boolean );
+	if ( loaded && contact ) {
+		const {
+			wc_address: {
+				country: countryCode,
+				locality: city,
+				postal_code: postcode,
+				region: state,
+				street_address: streetAddress,
+			},
+			is_mc_address_different: isMCAddressDifferent,
+		} = contact;
 
-			let country = '';
-			let state = '';
+		const [ address, address2 = '' ] = streetAddress.split( '\n' );
+		const country = countryNameDict[ countryCode ];
+		const isAddressFilled = !! ( address && city && country && postcode );
 
-			if ( loaded ) {
-				const { getSetting } = select( SETTINGS_STORE_NAME );
-				const { countries } = getSetting( 'wc_admin', 'dataEndpoints' );
-				const [ countryCode, stateCode ] = countryAndState.split( ':' );
+		data = {
+			address,
+			address2,
+			city,
+			state,
+			country,
+			postcode,
+			isAddressFilled,
+			isMCAddressDifferent,
+		};
+	}
 
-				const countryMeta = countries.find(
-					( el ) => el.code === countryCode
-				);
-				if ( countryMeta ) {
-					country = countryMeta.name;
-
-					const stateMeta = countryMeta.states.find(
-						( el ) => el.code === stateCode
-					);
-					if ( stateMeta ) {
-						state = stateMeta.name;
-					}
-				}
-			}
-
-			return {
-				refetch,
-				loaded,
-				data: {
-					address,
-					address2,
-					city,
-					state,
-					country,
-					postcode,
-				},
-			};
-		},
-		[ refetch ]
-	);
+	return {
+		refetch,
+		loaded,
+		data,
+	};
 }

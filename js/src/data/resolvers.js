@@ -25,6 +25,7 @@ import {
 	fetchGoogleAdsAccount,
 	fetchGoogleAdsAccountBillingStatus,
 	fetchExistingGoogleAdsAccounts,
+	receiveGoogleMCContactInformation,
 	fetchCountries,
 	fetchTargetAudience,
 	fetchAdsCampaigns,
@@ -106,8 +107,21 @@ export function* getExistingGoogleAdsAccounts() {
 	yield fetchExistingGoogleAdsAccounts();
 }
 
-export function* getGoogleMCPhoneNumber() {
-	// TODO: [lite-contact-info] integrate with API
+export function* getGoogleMCContactInformation() {
+	try {
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/contact-information`,
+		} );
+		yield receiveGoogleMCContactInformation( data );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading Google Merchant Center contact information.',
+				'google-listings-and-ads'
+			)
+		);
+	}
 }
 
 export function* getCountries() {

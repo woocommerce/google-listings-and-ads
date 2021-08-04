@@ -9,7 +9,6 @@ import { parsePhoneNumberFromString as parsePhoneNumber } from 'libphonenumber-j
  */
 import { STORE_KEY } from '.~/data/constants';
 
-const selectorName = 'getGoogleMCPhoneNumber';
 const emptyData = {
 	country: '',
 	countryCallingCode: '',
@@ -20,12 +19,13 @@ const emptyData = {
 
 export default function useGoogleMCPhoneNumber() {
 	return useSelect( ( select ) => {
-		const selector = select( STORE_KEY );
-		const phone = selector[ selectorName ]();
+		const { getGoogleMCPhoneNumber } = select( STORE_KEY );
+		const { data: contact, loaded } = getGoogleMCPhoneNumber();
 		let data = emptyData;
 
-		if ( phone ) {
-			const parsed = parsePhoneNumber( phone.phone_number );
+		if ( contact ) {
+			// Prevent to call parsePhoneNumber with null.
+			const parsed = parsePhoneNumber( contact.phone_number || '' );
 			if ( parsed ) {
 				data = {
 					...parsed,
@@ -37,7 +37,7 @@ export default function useGoogleMCPhoneNumber() {
 		}
 
 		return {
-			loaded: selector.hasFinishedResolution( selectorName ),
+			loaded,
 			data,
 		};
 	}, [] );
