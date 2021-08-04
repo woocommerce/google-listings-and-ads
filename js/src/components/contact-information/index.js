@@ -60,9 +60,7 @@ export function ContactInformationPreview() {
 		}
 	} else {
 		sectionContent = (
-			<Section.Card>
-				<AppSpinner />
-			</Section.Card>
+			<SpinnerCard />
 		);
 	}
 
