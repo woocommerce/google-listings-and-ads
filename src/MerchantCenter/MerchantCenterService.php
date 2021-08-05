@@ -358,7 +358,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		// Free shipping saved if: not offered, OR offered and threshold not null
-		if ( ! empty( $merchant_center_settings['offers_free_shipping'] ) && is_null( $merchant_center_settings['free_shipping_threshold'] ) ) {
+		if ( ! empty( $merchant_center_settings['offers_free_shipping'] ) && ! isset( $merchant_center_settings['free_shipping_threshold'] ) ) {
 			return false;
 		}
 
