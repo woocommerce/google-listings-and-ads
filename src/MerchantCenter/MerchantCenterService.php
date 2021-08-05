@@ -139,7 +139,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			return true;
 		}
 
-		// Additional check for users that have already gone through onboarding.
+		// Additional check for users that have already gone through on-boarding.
 		if ( $this->is_setup_complete() ) {
 			$is_mc_setup = $this->is_mc_contact_information_setup();
 			$this->options->update( OptionsInterface::CONTACT_INFO_SETUP, $is_mc_setup );
@@ -340,8 +340,8 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		return $is_setup['phone_number'] && $is_setup['address'];
 	}
-	
-	/*
+
+	/**
 	 * Check if the taxes + shipping rate and time + free shipping settings have been saved.
 	 *
 	 * @return bool If all required settings have been provided.
