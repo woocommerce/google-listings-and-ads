@@ -44,7 +44,6 @@ export function ContactInformationPreview() {
 				<VerticalGapLayout size="overlap">
 					<PhoneNumberCard
 						isPreview
-						initEditing={ false }
 						phoneNumber={ phone }
 						onEditClick={ handleEditClick }
 					/>
@@ -73,7 +72,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 	const phone = useGoogleMCPhoneNumber();
 	const isSetupMC = view === 'setup-mc';
 
-	const initEditing = isSetupMC ? ! phone.data.isValid : true;
+	const initEditing = isSetupMC ? null : true;
 	const title = isSetupMC ? mcTitle : settingsTitle;
 	const trackContext = isSetupMC
 		? 'setup-mc-contact-information'
@@ -97,21 +96,14 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 				</div>
 			}
 		>
-			{ phone.loaded ? (
-				<VerticalGapLayout size="large">
-					<PhoneNumberCard
-						phoneNumber={ phone }
-						initEditing={ initEditing }
-						onPhoneNumberChange={ onPhoneNumberChange }
-					/>
-					<StoreAddressCard />
-				</VerticalGapLayout>
-			) : (
-				<VerticalGapLayout size="large">
-					<SpinnerCard />
-					<SpinnerCard />
-				</VerticalGapLayout>
-			) }
+			<VerticalGapLayout size="large">
+				<PhoneNumberCard
+					phoneNumber={ phone }
+					initEditing={ initEditing }
+					onPhoneNumberChange={ onPhoneNumberChange }
+				/>
+				<StoreAddressCard />
+			</VerticalGapLayout>
 		</Section>
 	);
 }

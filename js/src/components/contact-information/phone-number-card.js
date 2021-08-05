@@ -6,7 +6,7 @@ import {
 	parsePhoneNumberFromString as parsePhoneNumber,
 } from 'libphonenumber-js';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { Flex, FlexItem, FlexBlock, CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
 
@@ -23,6 +23,11 @@ import AppSpinner from '.~/components/app-spinner';
 import './phone-number-card.scss';
 
 const noop = () => {};
+
+const basePhoneNumberCardProps = {
+	className: 'gla-phone-number-card',
+	appearance: APPEARANCE.PHONE,
+};
 
 function PhoneNumberContent( {
 	initCountry,
@@ -105,67 +110,100 @@ function PhoneNumberContent( {
 	);
 }
 
+function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
+	const { loaded, data } = phoneNumber;
+	const phoneNumberContent = loaded ? (
+		<>
+			<CardDivider />
+			<PhoneNumberContent
+				initCountry={ data.country }
+				initNationalNumber={ data.nationalNumber }
+				onPhoneNumberChange={ onPhoneNumberChange }
+			/>
+		</>
+	) : (
+		<AppSpinner />
+	);
+
+	return (
+		<AccountCard
+			{ ...basePhoneNumberCardProps }
+			description={ __(
+				'Please enter a phone number to be used for verification.',
+				'google-listings-and-ads'
+			) }
+		>
+			{ phoneNumberContent }
+		</AccountCard>
+	);
+}
+
 export default function PhoneNumberCard( {
 	phoneNumber,
-	isPreview,
-	initEditing,
+	isPreview = false,
+	initEditing = null,
 	onEditClick,
 	onPhoneNumberChange = noop,
 } ) {
-	const [ isEditing, setEditing ] = useState( initEditing );
 	const { loaded, data } = phoneNumber;
-
-	const editButton = isEditing ? null : (
-		<AppButton
-			isSecondary
-			onClick={ () => {
-				if ( onEditClick ) {
-					onEditClick();
-				} else {
-					setEditing( true );
-				}
-			} }
-		>
-			{ __( 'Edit', 'google-listings-and-ads' ) }
-		</AppButton>
+	const [ isEditing, setEditing ] = useState(
+		isPreview ? false : initEditing
 	);
 
-	let description = null;
-	let phoneNumberContent = null;
+	useEffect( () => {
+		if ( loaded && isEditing === null ) {
+			setEditing( ! data.isValid );
+		}
+	}, [ loaded, data.isValid, isEditing ] );
+
+	// Return a simple loading AccountCard since the initial edit state is unknown before loaded.
+	if ( isEditing === null ) {
+		return (
+			<AccountCard
+				{ ...basePhoneNumberCardProps }
+				indicator={ <Spinner /> }
+			/>
+		);
+	}
 
 	if ( isEditing ) {
-		description = __(
-			'Please enter a phone number to be used for verification.',
-			'google-listings-and-ads'
+		return (
+			<EditPhoneNumberCard
+				phoneNumber={ phoneNumber }
+				onPhoneNumberChange={ onPhoneNumberChange }
+			/>
 		);
+	}
 
-		if ( loaded ) {
-			phoneNumberContent = (
-				<>
-					<CardDivider />
-					<PhoneNumberContent
-						initCountry={ data.country }
-						initNationalNumber={ data.nationalNumber }
-						onPhoneNumberChange={ onPhoneNumberChange }
-					/>
-				</>
-			);
-		} else {
-			phoneNumberContent = <AppSpinner />;
-		}
+	let description = null;
+	let indicator = null;
+
+	if ( loaded ) {
+		description = data.display;
+		indicator = (
+			<AppButton
+				isSecondary
+				onClick={ () => {
+					if ( onEditClick ) {
+						onEditClick();
+					} else {
+						setEditing( true );
+					}
+				} }
+			>
+				{ __( 'Edit', 'google-listings-and-ads' ) }
+			</AppButton>
+		);
 	} else {
-		description = loaded ? data.display : <Spinner />;
+		indicator = <Spinner />;
 	}
 
 	return (
 		<AccountCard
-			className="gla-phone-number-card"
-			appearance={ APPEARANCE.PHONE }
+			{ ...basePhoneNumberCardProps }
 			description={ description }
 			hideIcon={ isPreview }
-			indicator={ editButton }
-		>
-			{ phoneNumberContent }
-		</AccountCard>
+			indicator={ indicator }
+		/>
 	);
 }
