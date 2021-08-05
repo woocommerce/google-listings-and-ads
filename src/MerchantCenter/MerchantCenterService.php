@@ -362,15 +362,15 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			return false;
 		}
 
-		// Shipping options saved if: 'manual' OR 'flat' + records for all countries
-		if ( 'manual' === ( $merchant_center_settings['shipping_time'] ?? 'flat' ) ) {
+		// Shipping options saved if: 'manual' OR records for all countries
+		if ( isset( $merchant_center_settings['shipping_time'] ) && 'manual' === $merchant_center_settings['shipping_time'] ) {
 			$saved_shipping_time = true;
 		} else {
 			$shipping_time_rows  = $this->container->get( ShippingTimeQuery::class )->get_count();
 			$saved_shipping_time = $shipping_time_rows === count( $target_countries );
 		}
 
-		if ( 'manual' === ( $merchant_center_settings['shipping_rate'] ?? 'flat' ) ) {
+		if ( isset( $merchant_center_settings['shipping_rate'] ) && 'manual' === $merchant_center_settings['shipping_rate'] ) {
 			$saved_shipping_rate = true;
 		} else {
 			$shipping_rate_rows  = $this->container->get( ShippingRateQuery::class )->get_count();
