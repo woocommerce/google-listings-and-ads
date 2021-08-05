@@ -29,6 +29,23 @@ const basePhoneNumberCardProps = {
 	appearance: APPEARANCE.PHONE,
 };
 
+/**
+ * @typedef { import(".~/hooks/useGoogleMCPhoneNumber").PhoneNumber } PhoneNumber
+ * @typedef { import(".~/hooks/useGoogleMCPhoneNumber").PhoneNumberData } PhoneNumberData
+ */
+
+/**
+ * @typedef {Object} ExtraPhoneNumberData
+ * @property {boolean} isDirty Whether the phone number data contain unsaved changes.
+ *
+ * @typedef {PhoneNumberData & ExtraPhoneNumberData} CallbackPhoneNumberData
+ */
+
+/**
+ * @callback onPhoneNumberChange
+ * @param {CallbackPhoneNumberData} phoneNumberData The changed phone number data.
+ */
+
 function PhoneNumberContent( {
 	initCountry,
 	initNationalNumber,
@@ -69,6 +86,7 @@ function PhoneNumberContent( {
 				isDirty,
 				countryCallingCode,
 				nationalNumber: nextNumber,
+				country: nextCountry,
 			} );
 		}
 	};
@@ -138,6 +156,20 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
 	);
 }
 
+/**
+ * Renders phone number data in Card UI and is able to edit.
+ *
+ * @param {Object} props React props.
+ * @param {PhoneNumber} props.phoneNumber Phone number data.
+ * @param {boolean} [props.isPreview=false] Whether to display as preview UI.
+ * @param {boolean|null} [props.initEditing=null] Specify the inital UI state. This prop would be ignored if `isPreview` is true.
+ *     `true`: initialize with the editing UI.
+ *     `false`: initialize with the viewing UI.
+ *     `null`: determine the initial UI state according to the `data.isValid` after the `phoneNumber` loaded.
+ * @param {Function} [props.onEditClick] Called when clicking on "Edit" button.
+ *     If this callback is omitted, it will enter edit mode when clicking on "Edit" button.
+ * @param {onPhoneNumberChange} [props.onPhoneNumberChange] Called when inputs of phone number are changed in edit mode.
+ */
 export default function PhoneNumberCard( {
 	phoneNumber,
 	isPreview = false,
