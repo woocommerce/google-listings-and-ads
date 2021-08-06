@@ -208,7 +208,7 @@ export default function PhoneNumberCard( {
 	}
 
 	let description = null;
-	let indicator = null;
+	let indicator = <Spinner />;
 
 	if ( loaded ) {
 		description = data.display;
@@ -226,8 +226,6 @@ export default function PhoneNumberCard( {
 				{ __( 'Edit', 'google-listings-and-ads' ) }
 			</AppButton>
 		);
-	} else {
-		indicator = <Spinner />;
 	}
 
 	return (
