@@ -180,6 +180,8 @@ export default function PhoneNumberCard( {
 		isPreview ? false : initEditing
 	);
 
+	// Handle the initial UI state of `initEditing = null`.
+	// The `isEditing` state is on hold. Determine it after the `phoneNumber` loaded.
 	useEffect( () => {
 		if ( loaded && isEditing === null ) {
 			setEditing( ! data.isValid );
