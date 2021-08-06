@@ -131,14 +131,11 @@ function PhoneNumberContent( {
 function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
 	const { loaded, data } = phoneNumber;
 	const phoneNumberContent = loaded ? (
-		<>
-			<CardDivider />
-			<PhoneNumberContent
-				initCountry={ data.country }
-				initNationalNumber={ data.nationalNumber }
-				onPhoneNumberChange={ onPhoneNumberChange }
-			/>
-		</>
+		<PhoneNumberContent
+			initCountry={ data.country }
+			initNationalNumber={ data.nationalNumber }
+			onPhoneNumberChange={ onPhoneNumberChange }
+		/>
 	) : (
 		<AppSpinner />
 	);
@@ -151,6 +148,7 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
 				'google-listings-and-ads'
 			) }
 		>
+			<CardDivider />
 			{ phoneNumberContent }
 		</AccountCard>
 	);
