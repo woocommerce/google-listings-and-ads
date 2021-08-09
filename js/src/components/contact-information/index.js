@@ -82,7 +82,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 		? 'setup-mc-contact-information'
 		: 'settings-contact-information';
 
-	usePhoneNumberCheckTrackEventEffect( view, phone );
+	usePhoneNumberCheckTrackEventEffect( phone );
 
 	return (
 		<Section

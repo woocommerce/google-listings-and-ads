@@ -129,9 +129,9 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `mc_account_reclaim_url_button_click` - Clicking on the button to reclaim URL for a Google Merchant Center account.
 
--   `mc_phone_number_check` - Whether the phone number for Merchant Center exists or not.
+-   `mc_phone_number_check` - Check for whether the phone number for Merchant Center exists or not.
 
-    -   `view`: which view the check is in. Possible values: `setup-mc`, `settings`.
+    -   `path`: the path where the check is in.
     -   `exist`: whether the phone number exists or not.
     -   `isValid`: whether the phone number is valid or not.
 
