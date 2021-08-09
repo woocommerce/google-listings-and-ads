@@ -148,9 +148,9 @@ class WCProductAdapterTest extends UnitTest {
 		add_filter(
 			'woocommerce_gla_product_attribute_values',
 			function ( array $attributes, WC_Product $product, WCProductAdapter $google_product ) {
-				$attributes['imageLink'] = 'https://example.com/image_overide.png?prev=' . $google_product->getImageLink();
+				$attributes['imageLink']   = 'https://example.com/image_overide.png?prev=' . $google_product->getImageLink();
 				$attributes['description'] = 'Overridden description!';
-				$attributes['id'] = 'override_' . $product->get_id();
+				$attributes['id']          = 'override_' . $product->get_id();
 
 				return $attributes;
 			},
@@ -423,7 +423,7 @@ class WCProductAdapterTest extends UnitTest {
 		$product         = WC_Helper_Product::create_simple_product(
 			false,
 			[
-				'description'       => 'Long description.',
+				'description' => 'Long description.',
 			]
 		);
 		$adapted_product = new WCProductAdapter(
@@ -434,6 +434,26 @@ class WCProductAdapterTest extends UnitTest {
 		);
 
 		$this->assertEquals( 'Modified description!', $adapted_product->getDescription() );
+	}
+
+	public function test_description_is_trimmed_if_more_than_5000_chars() {
+		$long_description = rand_long_str( 10000 );
+
+		$product         = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'description' => $long_description,
+			]
+		);
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 5000, mb_strlen( $adapted_product->getDescription(), 'utf-8' ) );
+		$this->assertEquals( mb_substr( $long_description, 0, 5000, 'utf-8' ), $adapted_product->getDescription() );
 	}
 
 	public function test_parent_description_is_included_in_variation_description() {
