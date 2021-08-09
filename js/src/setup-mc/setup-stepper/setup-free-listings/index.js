@@ -2,10 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
-import apiFetch from '@wordpress/api-fetch';
 import { Form } from '@woocommerce/components';
-import { getNewPath } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -15,8 +12,6 @@ import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import FormContent from './form-content';
-import useAdminUrl from '.~/hooks/useAdminUrl';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
@@ -26,18 +21,18 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
  * Setup step to configure free listings.
  * Auto-saves changes.
  *
+ * @param {Object} props React props.
+ * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
  * @see /js/src/edit-free-campaign/setup-free-listings/index.js
  */
-const SetupFreeListings = () => {
-	const [ completing, setCompleting ] = useState( false );
+const SetupFreeListings = ( props ) => {
+	const { onContinue = () => {} } = props;
 	const { settings } = useSettings();
 	const { data: shippingRatesData } = useShippingRates();
 	const { data: shippingTimesData } = useShippingTimes();
 	const {
 		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();
-	const { createNotice } = useDispatchCoreNotices();
-	const adminUrl = useAdminUrl();
 
 	if (
 		! settings ||
@@ -64,32 +59,8 @@ const SetupFreeListings = () => {
 		return {};
 	};
 
-	const handleSubmitCallback = async () => {
-		try {
-			setCompleting( true );
-
-			await apiFetch( {
-				path: '/wc/gla/mc/settings/sync',
-				method: 'POST',
-			} );
-
-			// Force reload WC admin page to initiate the relevant dependencies of the Dashboard page.
-			const path = getNewPath(
-				{ guide: 'submission-success' },
-				'/google/product-feed'
-			);
-			window.location.href = adminUrl + path;
-		} catch ( error ) {
-			setCompleting( false );
-
-			createNotice(
-				'error',
-				__(
-					'Unable to complete your setup. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		}
+	const handleSubmitCallback = () => {
+		onContinue();
 	};
 
 	return (
@@ -104,11 +75,6 @@ const SetupFreeListings = () => {
 					free_shipping_threshold: settings.free_shipping_threshold,
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
-					website_live: settings.website_live,
-					checkout_process_secure: settings.checkout_process_secure,
-					payment_methods_visible: settings.payment_methods_visible,
-					refund_tos_visible: settings.refund_tos_visible,
-					contact_info_visible: settings.contact_info_visible,
 				} }
 				validate={ handleValidate }
 				onSubmitCallback={ handleSubmitCallback }
@@ -124,7 +90,7 @@ const SetupFreeListings = () => {
 						finalCountryCodesData
 					);
 
-					const isCompleteSetupDisabled =
+					const isContinueDisabled =
 						Object.keys( errors ).length >= 1;
 
 					return (
@@ -133,12 +99,11 @@ const SetupFreeListings = () => {
 							submitButton={
 								<AppButton
 									isPrimary
-									loading={ completing }
-									disabled={ isCompleteSetupDisabled }
+									disabled={ isContinueDisabled }
 									onClick={ handleSubmit }
 								>
 									{ __(
-										'Complete setup',
+										'Continue',
 										'google-listings-and-ads'
 									) }
 								</AppButton>

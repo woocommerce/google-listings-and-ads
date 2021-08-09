@@ -12,6 +12,7 @@ import { recordSetupMCEvent } from '.~/utils/recordEvent';
 import SetupAccounts from './setup-accounts';
 import SetupFreeListings from './setup-free-listings';
 import ChooseAudience from './choose-audience';
+import StoreRequirements from './store-requirements';
 import './index.scss';
 import stepNameKeyMap from './stepNameKeyMap';
 
@@ -31,8 +32,14 @@ const SavedSetupStepper = ( props ) => {
 		onRefetchSavedStep();
 	};
 
+	const handleSetupListingsContinue = () => {
+		recordSetupMCEvent( 'step3_continue' );
+		setStep( stepNameKeyMap.store_requirements );
+		onRefetchSavedStep();
+	};
+
 	const handleStepClick = ( stepKey ) => {
-		if ( stepKey <= savedStep ) {
+		if ( Number( stepKey ) <= Number( savedStep ) ) {
 			setStep( stepKey );
 		}
 	};
@@ -74,7 +81,20 @@ const SavedSetupStepper = ( props ) => {
 						'Configure your product listings',
 						'google-listings-and-ads'
 					),
-					content: <SetupFreeListings />,
+					content: (
+						<SetupFreeListings
+							onContinue={ handleSetupListingsContinue }
+						/>
+					),
+					onClick: handleStepClick,
+				},
+				{
+					key: stepNameKeyMap.store_requirements,
+					label: __(
+						'Confirm store requirements',
+						'google-listings-and-ads'
+					),
+					content: <StoreRequirements />,
 					onClick: handleStepClick,
 				},
 			] }

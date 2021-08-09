@@ -49,9 +49,14 @@ const AppButton = ( props ) => {
 		onClick( ...args );
 	};
 
+	const classes = [ 'app-button', className ];
+	if ( rest.iconPosition === 'right' ) {
+		classes.push( 'app-button--fix-icon-position-right' );
+	}
+
 	return (
 		<Button
-			className={ classnames( 'app-button', className ) }
+			className={ classnames( ...classes ) }
 			disabled={ disabled || loading }
 			onClick={ handleClick }
 			{ ...rest }

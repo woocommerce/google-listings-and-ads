@@ -1,7 +1,12 @@
 .gla-settings {
 	.wcdl-section {
 		max-width: 780px;
-		margin: 0 auto;
+		margin-left: auto;
+		margin-right: auto;
+
+		&:first-child {
+			margin-top: var(--large-gap);
+		}
 	}
 
 	.wcdl-subsection-helper-text {

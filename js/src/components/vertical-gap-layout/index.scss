@@ -6,4 +6,12 @@
 	&.gla-vertical-gap-layout__large {
 		gap: calc(var(--large-gap) / 2);
 	}
+
+	&.gla-vertical-gap-layout__overlap {
+		gap: 0;
+
+		> *:not(:first-child) {
+			margin-top: -1px;
+		}
+	}
 }
