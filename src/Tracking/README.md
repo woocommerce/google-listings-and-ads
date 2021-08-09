@@ -45,6 +45,8 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `report`: name of the report (e.g. `"reports-programs" | "reports-products"`)
     -   `context`: metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
 
+-   `contact_information_save_button_click` - Triggered when the save button in contact information page is clicked.
+
 -   `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
 
     -   `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)

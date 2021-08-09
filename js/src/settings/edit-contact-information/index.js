@@ -69,6 +69,7 @@ export default function EditContactInformation() {
 							isPrimary
 							loading={ isSaving }
 							disabled={ ! isReadyToSave }
+							eventName="gla_contact_information_save_button_click"
 							onClick={ handleSaveClick }
 						>
 							{ __( 'Save details', 'google-listings-and-ads' ) }
