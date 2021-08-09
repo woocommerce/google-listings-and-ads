@@ -245,6 +245,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$kses_allowed_tags = array_fill_keys( $valid_html_tags, [] );
 		$description       = wp_kses( $description, $kses_allowed_tags );
 
+		// Trim the description if it's more than 5000 characters.
+		$description = mb_substr( $description, 0, 5000, 'utf-8' );
+
 		/**
 		 * Filters the product's description.
 		 *
