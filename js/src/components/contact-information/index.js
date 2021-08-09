@@ -46,6 +46,7 @@ export function ContactInformationPreview() {
 			sectionContent = (
 				<VerticalGapLayout size="overlap">
 					<PhoneNumberCard
+						view="settings"
 						isPreview
 						phoneNumber={ phone }
 						onEditClick={ handleEditClick }
