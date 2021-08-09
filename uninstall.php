@@ -5,7 +5,7 @@
  * Uninstalling Google Listings and Ads unschedules any pending jobs, deletes its custom tables, related transients,
  * options, and product metadata.
  *
- * @since x.x.x
+ * @since 1.3.0
  */
 
 declare( strict_types=1 );
