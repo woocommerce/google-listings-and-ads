@@ -37,9 +37,12 @@ const emptyData = {
 /**
  * Get store address data and refectch function.
  *
+ * @param {'wc'|'mc'} [source='wc'] The data source of store address. 'wc' by default.
+ *     'wc': get from WooCommerce Settings.
+ *     'mc': get from Google Merchant Center.
  * @return {StoreAddressResult} Store address result.
  */
-export default function useStoreAddress() {
+export default function useStoreAddress( source = 'wc' ) {
 	const {
 		data: contact,
 		hasFinishedResolution: loaded,
@@ -51,19 +54,18 @@ export default function useStoreAddress() {
 	let data = emptyData;
 
 	if ( loaded && contact ) {
-		const {
-			wc_address: wcAddress,
-			is_mc_address_different: isMCAddressDifferent,
-		} = contact;
+		const { is_mc_address_different: isMCAddressDifferent } = contact;
+		const storeAddress =
+			source === 'wc' ? contact.wc_address : contact.mc_address;
 
 		// Handle fallback for `null` fields to make sure the returned data types are consistent.
-		const streetAddress = wcAddress.street_address || '';
-		const city = wcAddress.locality || '';
-		const state = wcAddress.region || '';
-		const postcode = wcAddress.postal_code || '';
+		const streetAddress = storeAddress?.street_address || '';
+		const city = storeAddress?.locality || '';
+		const state = storeAddress?.region || '';
+		const postcode = storeAddress?.postal_code || '';
 
 		const [ address, address2 = '' ] = streetAddress.split( '\n' );
-		const country = countryNameDict[ wcAddress.country ];
+		const country = countryNameDict[ storeAddress?.country ];
 		const isAddressFilled = !! ( address && city && country && postcode );
 
 		data = {

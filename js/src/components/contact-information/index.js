@@ -9,6 +9,7 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import { getEditContactInformationUrl } from '.~/utils/urls';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
+import useStoreAddress from '.~/hooks/useStoreAddress';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
@@ -31,6 +32,7 @@ const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
 
 export function ContactInformationPreview() {
 	const phone = useGoogleMCPhoneNumber();
+	const address = useStoreAddress( 'mc' );
 
 	const handleEditClick = () => {
 		getHistory().push( getEditContactInformationUrl() );
@@ -38,8 +40,8 @@ export function ContactInformationPreview() {
 
 	let sectionContent = <SpinnerCard />;
 
-	if ( phone.loaded ) {
-		if ( phone.data.isValid ) {
+	if ( phone.loaded && address.loaded ) {
+		if ( phone.data.isValid && address.data.isAddressFilled ) {
 			sectionContent = (
 				<VerticalGapLayout size="overlap">
 					<PhoneNumberCard
