@@ -158,6 +158,7 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
  * Renders phone number data in Card UI and is able to edit.
  *
  * @param {Object} props React props.
+ * @param {string} props.view The view the card is in.
  * @param {PhoneNumber} props.phoneNumber Phone number data.
  * @param {boolean} [props.isPreview=false] Whether to display as preview UI.
  * @param {boolean|null} [props.initEditing=null] Specify the inital UI state. This prop would be ignored if `isPreview` is true.
@@ -169,6 +170,7 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
  * @param {onPhoneNumberChange} [props.onPhoneNumberChange] Called when inputs of phone number are changed in edit mode.
  */
 export default function PhoneNumberCard( {
+	view,
 	phoneNumber,
 	isPreview = false,
 	initEditing = null,
@@ -215,6 +217,10 @@ export default function PhoneNumberCard( {
 		indicator = (
 			<AppButton
 				isSecondary
+				eventName="gla_mc_phone_number_edit_button_click"
+				eventProps={ {
+					view,
+				} }
 				onClick={ () => {
 					if ( onEditClick ) {
 						onEditClick();
