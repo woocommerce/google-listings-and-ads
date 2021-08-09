@@ -52,18 +52,18 @@ export default function useStoreAddress() {
 
 	if ( loaded && contact ) {
 		const {
-			wc_address: {
-				country: countryCode,
-				locality: city,
-				postal_code: postcode,
-				region: state,
-				street_address: streetAddress,
-			},
+			wc_address: wcAddress,
 			is_mc_address_different: isMCAddressDifferent,
 		} = contact;
 
+		// Handle fallback for `null` fields to make sure the returned data types are consistent.
+		const streetAddress = wcAddress.street_address || '';
+		const city = wcAddress.locality || '';
+		const state = wcAddress.region || '';
+		const postcode = wcAddress.postal_code || '';
+
 		const [ address, address2 = '' ] = streetAddress.split( '\n' );
-		const country = countryNameDict[ countryCode ];
+		const country = countryNameDict[ wcAddress.country ];
 		const isAddressFilled = !! ( address && city && country && postcode );
 
 		data = {
