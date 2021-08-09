@@ -13,7 +13,7 @@ use Google\Service\ShoppingContent\AccountBusinessInformation;
 /**
  * Class ContactInformation.
  *
- * @since x.x.x
+ * @since 1.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */

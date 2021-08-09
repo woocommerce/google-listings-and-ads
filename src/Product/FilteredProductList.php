@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * A list of filtered products and their total count before filtering.
  *
- * @since x.x.x
+ * @since 1.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  */

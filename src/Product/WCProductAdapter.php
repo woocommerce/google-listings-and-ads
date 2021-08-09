@@ -126,7 +126,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	/**
 	 * Overrides the product attributes by applying a filter and setting the provided values.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 */
 	protected function override_attributes() {
 		/**
@@ -150,7 +150,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		 * @see WCProductAdapter::map_gla_attributes for the docuementation of `woocommerce_gla_product_attribute_value_{$attribute_id}`
 		 *                                           filter, which allows modifying some attributes such as GTIN, MPN, etc.
 		 *
-		 * @since x.x.x
+		 * @since 1.4.0
 		 */
 		$attributes = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
 
@@ -226,7 +226,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		/**
 		 * Filters whether the shortcodes should be applied for product descriptions when syncing a product or be stripped out.
 		 *
-		 * @since x.x.x
+		 * @since 1.4.0
 		 *
 		 * @param bool       $apply_shortcodes Shortcodes are applied if set to `true` and stripped out if set to `false`.
 		 * @param WC_Product $wc_product       WooCommerce product object.

@@ -140,7 +140,7 @@ trait PluginHelper {
 	/**
 	 * Get the contact information setup URL
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 *
 	 * @return string
 	 */

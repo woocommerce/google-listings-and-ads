@@ -130,7 +130,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	/**
 	 * Get whether the contact information has been setup.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 *
 	 * @return bool
 	 */
@@ -283,7 +283,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	/**
 	 * Checks if we should add an issue when the contact information is not setup.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 *
 	 * @param array    $issues             The current array of custom issues
 	 * @param DateTime $cache_created_time The time of the cache/issues generation.
@@ -312,7 +312,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	/**
 	 * Check if the Merchant Center contact information has been setup already.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 *
 	 * @return boolean
 	 */
@@ -346,7 +346,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 *
 	 * @return bool If all required settings have been provided.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 */
 	protected function saved_shipping_and_tax_options(): bool {
 		$merchant_center_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );

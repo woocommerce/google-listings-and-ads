@@ -53,7 +53,7 @@ class RESTServer {
 	 * @return array `'/path/regex' => array( $callback, $bitmask )` or
 	 *               `'/path/regex' => array( array( $callback, $bitmask ), ...)`.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 */
 	public function get_routes( string $namespace = '' ): array {
 		return $this->server->get_routes( $namespace );

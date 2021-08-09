@@ -35,7 +35,7 @@ class MerchantSetupCompleted implements OptionsAwareInterface, Registerable, Ser
 	/**
 	 * Mark the contact information as setup.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 */
 	protected function set_contact_information_setup() {
 		$this->options->update( OptionsInterface::CONTACT_INFO_SETUP, true );

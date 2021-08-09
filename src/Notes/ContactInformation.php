@@ -20,7 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  *
- * @since x.x.x
+ * @since 1.4.0
  */
 class ContactInformation implements Deactivateable, Service, Registerable, OptionsAwareInterface, MerchantCenterAwareInterface {
 

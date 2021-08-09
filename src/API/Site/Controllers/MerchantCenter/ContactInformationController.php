@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class ContactInformationController
  *
- * @since x.x.x
+ * @since 1.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */

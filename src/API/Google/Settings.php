@@ -355,7 +355,7 @@ class Settings {
 	 *
 	 * @return AccountAddress
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 */
 	public function get_store_address(): AccountAddress {
 		/** @var WC $wc */
@@ -395,7 +395,7 @@ class Settings {
 	 *
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.4.0
 	 */
 	protected function maybe_get_state_name( string $state_code, string $country ): string {
 		/** @var WC $wc */

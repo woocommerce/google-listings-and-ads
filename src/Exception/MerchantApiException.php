@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * Error messages generated in this class should be translated, as they are intended to be displayed
  * to end users.
  *
- * @since x.x.x
+ * @since 1.4.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
