@@ -115,6 +115,16 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.4.0 - 2021-08-09 =
+* Add - Filter to allow applying shortcodes to product description.
+* Add - New contact information feature.
+* Fix - Add `woocommerce_gla_product_attribute_values` filter to allow overriding all product attributes.
+* Fix - Invalid Google IDs meta value causing fatal failure.
+* Fix - Load deprecated functions from Guzzle which are required for the GAX library.
+* Fix - Process all batches when updating products.
+* Tweak - Removed SVGs from JS bundle.
+* Tweak - Use the WordPress date and time formats on the Product Feed page.
+
 = 1.3.0 - 2021-07-27 =
 * Fix - Bump WordPress tested version to 5.8.
 * Fix - Code formatting with Prettier.
