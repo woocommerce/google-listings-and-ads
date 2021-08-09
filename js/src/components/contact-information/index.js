@@ -17,6 +17,7 @@ import SpinnerCard from '.~/components/spinner-card';
 import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard from './store-address-card';
 import NoContactInformationCard from './no-contact-information-card';
+import usePhoneNumberCheckTrackEventEffect from './usePhoneNumberCheckTrackEventEffect';
 
 const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
@@ -45,6 +46,7 @@ export function ContactInformationPreview() {
 			sectionContent = (
 				<VerticalGapLayout size="overlap">
 					<PhoneNumberCard
+						view="settings"
 						isPreview
 						phoneNumber={ phone }
 						onEditClick={ handleEditClick }
@@ -80,6 +82,8 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 		? 'setup-mc-contact-information'
 		: 'settings-contact-information';
 
+	usePhoneNumberCheckTrackEventEffect( phone );
+
 	return (
 		<Section
 			title={ title }
@@ -100,6 +104,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 		>
 			<VerticalGapLayout size="large">
 				<PhoneNumberCard
+					view={ view }
 					phoneNumber={ phone }
 					initEditing={ initEditing }
 					onPhoneNumberChange={ onPhoneNumberChange }
