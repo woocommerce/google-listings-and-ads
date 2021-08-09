@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
-import { useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -18,7 +17,7 @@ import SpinnerCard from '.~/components/spinner-card';
 import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard from './store-address-card';
 import NoContactInformationCard from './no-contact-information-card';
-import recordEvent from '.~/utils/recordEvent';
+import usePhoneNumberCheckTrackEventEffect from './usePhoneNumberCheckTrackEventEffect';
 
 const learnMoreLinkId = 'contact-information-read-more';
 const learnMoreUrl =
@@ -82,22 +81,7 @@ export default function ContactInformation( { view, onPhoneNumberChange } ) {
 		? 'setup-mc-contact-information'
 		: 'settings-contact-information';
 
-	const {
-		loaded,
-		data: { display, isValid },
-	} = phone;
-	const exist = !! display;
-	useEffect( () => {
-		if ( ! loaded ) {
-			return;
-		}
-
-		recordEvent( 'gla_mc_phone_number_check', {
-			view,
-			exist,
-			isValid,
-		} );
-	}, [ exist, isValid, loaded, view ] );
+	usePhoneNumberCheckTrackEventEffect( view, phone );
 
 	return (
 		<Section
