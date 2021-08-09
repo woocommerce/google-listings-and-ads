@@ -23,8 +23,11 @@ export default function EditContactInformation() {
 	const { updateGoogleMCContactInformation } = useAppDispatch();
 	const { data: address } = useStoreAddress();
 	const [ isSaving, setSaving ] = useState( false );
+
+	// The initial `isValid: true` is to avoid blocking the submission when only the store address is changed.
+	// And the prevention of saving invalid phone number can be checked by initial `isDirty: false`.
 	const [ phoneNumber, setPhoneNumber ] = useState( {
-		isValid: false,
+		isValid: true,
 		isDirty: false,
 	} );
 
