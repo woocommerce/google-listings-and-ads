@@ -59,13 +59,13 @@ export default function useStoreAddress( source = 'wc' ) {
 			source === 'wc' ? contact.wc_address : contact.mc_address;
 
 		// Handle fallback for `null` fields to make sure the returned data types are consistent.
-		const streetAddress = storeAddress.street_address || '';
-		const city = storeAddress.locality || '';
-		const state = storeAddress.region || '';
-		const postcode = storeAddress.postal_code || '';
+		const streetAddress = storeAddress?.street_address || '';
+		const city = storeAddress?.locality || '';
+		const state = storeAddress?.region || '';
+		const postcode = storeAddress?.postal_code || '';
 
 		const [ address, address2 = '' ] = streetAddress.split( '\n' );
-		const country = countryNameDict[ storeAddress.country ];
+		const country = countryNameDict[ storeAddress?.country ];
 		const isAddressFilled = !! ( address && city && country && postcode );
 
 		data = {
