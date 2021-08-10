@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
@@ -23,20 +24,16 @@ defined( 'ABSPATH' ) || exit;
 class SyncerHooks implements Service, Registerable {
     
     use PluginHelper;
-    
-    protected const SCHEDULE_TYPE_UPDATE = 'update';
-    protected const SCHEDULE_TYPE_DELETE = 'delete';
-    
-    /**
-     * @var CouponHelper
-     */
-    //protected $coupon_helper;
-    
+     
     /**
      * @var UpdateCoupon
      */
     protected $update_coupon_job;
     
+    /**
+     * @var DeleteCoupon
+     */
+    protected $delete_coupon_job;
     
     /**
      * @var MerchantCenterService
@@ -61,6 +58,7 @@ class SyncerHooks implements Service, Registerable {
         WC $wc
         ) {
             $this->update_coupon_job  = $job_repository->get( UpdateCoupon::class );
+            $this->delete_coupon_job  = $job_repository->get( DeleteCoupon::class );
             $this->merchant_center     = $merchant_center;
             $this->wc                  = $wc;
     }
@@ -79,13 +77,17 @@ class SyncerHooks implements Service, Registerable {
         };
         
         $delete_by_id = function ( int $coupon_id ) {
-            // TODO: trigger delete coupn job
+            $this->delete_coupon_job->schedule( [ $coupon_id ] );
         };
         
         // when a coupon is added / updated, schedule a update job.
         add_action( 'woocommerce_new_coupon', $update_by_id, 90, 2 );
         add_action( 'woocommerce_update_coupon', $update_by_id, 90, 2 );
+        // when a product is trashed or removed, schedule a delete job.
         add_action( 'woocommerce_delete_coupon', $delete_by_id, 90, 2);
+        add_action( 'woocommerce_trash_coupon', $delete_by_id, 90, 2);
+        
+        // TODO: trigger update job for coupon restore from trash
     }
 }
 
