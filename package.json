@@ -93,7 +93,11 @@
 	"config": {
 		"wp_org_slug": "google-listings-and-ads",
 		"version_replace_paths": [
-			"src"
+			"src",
+			"views",
+			"bin",
+			"uninstall.php",
+			"google-listings-and-ads.php"
 		]
 	},
 	"bundlewatch": {
