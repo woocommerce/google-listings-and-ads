@@ -215,14 +215,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$description        = $parent_description . $new_line . $description;
 		}
 
-		// Strip out invalid unicode.
-		$description = mb_convert_encoding( $description, 'UTF-8', 'UTF-8' );
-		$description = preg_replace(
-			'/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u',
-			'',
-			$description
-		);
-
 		/**
 		 * Filters whether the shortcodes should be applied for product descriptions when syncing a product or be stripped out.
 		 *
@@ -240,10 +232,21 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$description = strip_shortcodes( $description );
 		}
 
+		// Strip out invalid unicode.
+		$description = mb_convert_encoding( $description, 'UTF-8', 'UTF-8' );
+		$description = preg_replace(
+			'/[\x00-\x08\x0B\x0C\x0E-\x1F\x80-\x9F]/u',
+			'',
+			$description
+		);
+
 		// Strip out invalid HTML tags (e.g. script, style, canvas, etc.) along with attributes of all tags.
 		$valid_html_tags   = array_keys( wp_kses_allowed_html( 'post' ) );
 		$kses_allowed_tags = array_fill_keys( $valid_html_tags, [] );
 		$description       = wp_kses( $description, $kses_allowed_tags );
+
+		// Trim the description if it's more than 5000 characters.
+		$description = mb_substr( $description, 0, 5000, 'utf-8' );
 
 		/**
 		 * Filters the product's description.
