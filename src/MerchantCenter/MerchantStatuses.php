@@ -496,6 +496,13 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$chunk_size     = apply_filters( 'woocommerce_gla_merchant_status_presync_issues_chunk', 500 );
 		$product_issues = [];
 		foreach ( $all_errors as $product_id => $presync_errors ) {
+			// Don't create issues with empty descriptions
+			// or for variable parents (they contain issues of all children).
+			$error = $presync_errors[ array_key_first( $presync_errors ) ];
+			if ( empty( $error ) || ! is_string( $error ) ) {
+				continue;
+			}
+
 			$product = get_post( $product_id );
 			// Don't store pre-sync errors for unpublished (draft, trashed) products.
 			if ( 'publish' !== get_post_status( $product ) ) {
@@ -503,11 +510,6 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 			}
 
 			foreach ( $presync_errors as $text ) {
-				// Don't create issues with empty descriptions or for variable parents (they contain issues of all children).
-				if ( empty( $text ) || ! is_string( $text ) ) {
-					continue;
-				}
-
 				$issue_parts      = $this->parse_presync_issue_text( $text );
 				$product_issues[] = [
 					'product'              => $product->post_title,
