@@ -186,7 +186,6 @@ class ConnectionTest implements Service, Registerable {
 							<p>
 								<code><?php echo Jetpack_Options::get_option( 'id' ); ?></code>
 							</p>
-							<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
 						</td>
 					</tr>
 				<?php } ?>
@@ -198,7 +197,6 @@ class ConnectionTest implements Service, Registerable {
 							<p>
 								<code><?php echo $user_data['ID']; ?></code>
 							</p>
-							<!--<pre><?php var_dump( $user_token ); ?></pre>-->
 						</td>
 					</tr>
 				<?php } elseif ( $blog_token ) { ?>
