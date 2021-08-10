@@ -24,6 +24,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncerJobInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ResubmitExpiringProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateAllProducts;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\DeleteCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
@@ -94,6 +95,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		
 		// share coupon syncer jobs.
 		$this->share_coupon_syncer_job( UpdateCoupon::class );
+		$this->share_coupon_syncer_job( DeleteCoupon::class );
 
 		$this->share_with_tags(
 			JobRepository::class,

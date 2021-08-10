@@ -3,8 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncerException;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -36,14 +34,7 @@ class UpdateCoupon extends AbstractCouponSyncerJob implements StartOnHookInterfa
 	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( $coupon_id ) {
-		/*$args     = [ 'include' => $product_ids ];
-		$products = $this->product_repository->find_sync_ready_products( $args )->get();
-
-		if ( empty( $products ) ) {
-			throw JobException::item_not_found();
-		}
-
-		$this->product_syncer->update( $products );*/
+		// TODO read coupon data, upsert coupon to Google and mark coupon as synchronized.
 	}
 
 	/**
