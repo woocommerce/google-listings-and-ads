@@ -26,3 +26,6 @@ wp-cli.local.yml
 # Files allowed to be overridden with a local version
 phpcs.xml
 phpunit.xml
+
+# Do not include backup PHP files
+*.php.bak
