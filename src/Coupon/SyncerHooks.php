@@ -75,12 +75,17 @@ class SyncerHooks implements Service, Registerable {
         }
         
         $update_by_id = function ( int $coupon_id ) {
-            $this->update_coupon_job->schedule($coupon_id);
+            $this->update_coupon_job->schedule( [ $coupon_id ] );
+        };
+        
+        $delete_by_id = function ( int $coupon_id ) {
+            // TODO: trigger delete coupn job
         };
         
         // when a coupon is added / updated, schedule a update job.
         add_action( 'woocommerce_new_coupon', $update_by_id, 90, 2 );
         add_action( 'woocommerce_update_coupon', $update_by_id, 90, 2 );
+        add_action( 'woocommerce_delete_coupon', $delete_by_id, 90, 2);
     }
 }
 
