@@ -498,7 +498,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		foreach ( $all_errors as $product_id => $presync_errors ) {
 			// Don't create issues with empty descriptions
 			// or for variable parents (they contain issues of all children).
-			if ( empty( $presync_errors[0] ) ) {
+			$error = $presync_errors[ array_key_first( $presync_errors ) ];
+			if ( empty( $error ) || ! is_string( $error ) ) {
 				continue;
 			}
 
