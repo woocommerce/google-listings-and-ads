@@ -602,6 +602,23 @@ DESCRIPTION;
 		$this->assertEquals( WCProductAdapter::AVAILABILITY_IN_STOCK, $adapted_product->getAvailability() );
 	}
 
+	public function test_availability_is_set_to_backorder_if_0_stock_and_backorder_enabled() {
+		$product = WC_Helper_Product::create_simple_product( false );
+		$product->set_manage_stock( true );
+
+		$product->set_stock_status( 'instock' );
+		$product->set_backorders( 'yes' );
+		$product->set_stock_quantity( 0 );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+		$this->assertEquals( WCProductAdapter::AVAILABILITY_BACKORDER, $adapted_product->getAvailability() );
+	}
+
 	public function test_shipping_country_is_set_based_on_target_country() {
 		$product = WC_Helper_Product::create_simple_product( false );
 
