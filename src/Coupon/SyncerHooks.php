@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateCoupon;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use WC_Coupon;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -73,7 +74,10 @@ class SyncerHooks implements Service, Registerable {
         }
         
         $update_by_id = function ( int $coupon_id ) {
-            $this->update_coupon_job->schedule( [ $coupon_id ] );
+            $coupon = $this->wc->maybe_get_coupon( $coupon_id );
+            if ( $coupon instanceof WC_Coupon) {
+               $this->update_coupon_job->schedule( [ $coupon_id ] );
+            }
         };
         
         $delete_by_id = function ( int $coupon_id ) {
@@ -87,7 +91,8 @@ class SyncerHooks implements Service, Registerable {
         add_action( 'woocommerce_delete_coupon', $delete_by_id, 90, 2);
         add_action( 'woocommerce_trash_coupon', $delete_by_id, 90, 2);
         
-        // TODO: trigger update job for coupon restore from trash
+        // when a coupon is restored from trash, schedule a update job.
+        add_action( 'untrashed_post', $update_by_id, 90 );
     }
 }
 

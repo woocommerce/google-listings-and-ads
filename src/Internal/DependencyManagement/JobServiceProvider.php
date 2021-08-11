@@ -192,6 +192,7 @@ class JobServiceProvider extends AbstractServiceProvider {
         $this->validate_interface($class, ProductSyncerJobInterface::class);
         $this->share_action_scheduler_job(
             $class,
+            WC::class,
             MerchantCenterService::class,
             ...$arguments
         );

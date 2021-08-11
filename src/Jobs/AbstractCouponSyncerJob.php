@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerI
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,14 +19,9 @@ defined( 'ABSPATH' ) || exit;
 abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implements ProductSyncerJobInterface {
 
 	/**
-	 * @var ProductSyncer
-	 */
-	//protected $coupon_syncer;
-
-	/**
-	 * @var ProductRepository
-	 */
-	//protected $coupon_repository;
+     * @var WC
+     */
+    protected $wc;
 
 	/**
 	 * @var MerchantCenterService
@@ -45,11 +41,10 @@ abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implem
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
 		//CouponSyncer $coupon_syncer,
-		//CouponRepository $coupon_repository,
+	    WC $wc,
 		MerchantCenterService $merchant_center
 	) {
-	//	$this->coupon_syncer     = $coupon_syncer;
-	//	$this->coupon_repository = $coupon_repository;
+	    $this->wc  = $wc;
 		$this->merchant_center    = $merchant_center;
 		parent::__construct( $action_scheduler, $monitor );
 	}
