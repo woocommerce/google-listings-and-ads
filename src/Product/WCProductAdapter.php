@@ -40,6 +40,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	public const AVAILABILITY_IN_STOCK     = 'in stock';
 	public const AVAILABILITY_OUT_OF_STOCK = 'out of stock';
 	public const AVAILABILITY_BACKORDER    = 'backorder';
+	public const AVAILABILITY_PREORDER     = 'preorder';
 
 	public const IMAGE_SIZE_FULL = 'full';
 
@@ -308,7 +309,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_availability() {
-		// todo: include 'preorder' status (maybe a new field for products / or using an extension?)
 		if ( ! $this->wc_product->is_in_stock() ) {
 			$availability = self::AVAILABILITY_OUT_OF_STOCK;
 		} elseif ( $this->wc_product->is_on_backorder( 1 ) ) {
