@@ -37,8 +37,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     `source` varchar(10) NOT NULL DEFAULT 'mc',
     `type` varchar(10) NOT NULL DEFAULT 'product',
     `created_at` datetime NOT NULL,
-    PRIMARY KEY `id` (`id`),
-    UNIQUE KEY `product_issue` (`product_id`, `issue`)
+    PRIMARY KEY `id` (`id`)
 ) {$this->get_collation()};
 SQL;
 	}
