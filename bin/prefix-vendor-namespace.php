@@ -43,6 +43,9 @@ $direct_replacements = [
 	],
 ];
 
+// Read our composer.json file into an array.
+$composer_json = json_decode( file_get_contents( dirname( __DIR__ ) . '/composer.json' ), true );
+
 foreach ( $replacements as $namespace => $path ) {
 	$files = find_files( $path );
 
@@ -99,6 +102,9 @@ foreach ( $replacements as $namespace => $path ) {
 	// Update the namespace in vendor/composer/installed.json
 	// This file is used to generate the classmaps.
 	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $new_namespace );
+
+	// Remove file autoloads from vendor/composer/installed.json
+	remove_file_autoloads( "{$vendor_dir}/composer/installed.json", $composer_json, $path );
 }
 
 function find_files( string $path ): array {
@@ -140,4 +146,51 @@ function replace_in_json_file( string $file, string $namespace, string $new_name
 			$contents
 		)
 	);
+}
+
+function remove_file_autoloads( string $file, array $composer_json, string $package_name ) {
+	if ( ! file_exists( $file ) ) {
+		return;
+	}
+
+	$json = json_decode( file_get_contents( $file ), true );
+	if ( empty( $json['packages'] ) ) {
+		return;
+	}
+
+	$modified = false;
+	foreach( $json['packages'] as $key => $package ) {
+		if ( 0 !== strpos( $package['name'], $package_name ) ) {
+			continue;
+		}
+
+		if ( empty( $package['autoload']['files'] ) ) {
+			continue;
+		}
+
+		foreach( $package['autoload']['files'] as $autoload_file ) {
+
+			// Confirm we already include this autoload in the main composer file.
+			$filename = 'vendor/' . $package['name'] . '/' . $autoload_file;
+			if ( in_array( $filename, $composer_json['autoload']['files'] ?? [], true ) ) {
+				continue;
+			}
+
+			printf(
+				'Autoloaded file "%s" should be included in composer.json' . PHP_EOL,
+				$filename
+			);
+			exit( 1 );
+		}
+
+		$json['packages'][ $key ]['autoload']['files'] = [];
+		$modified = true;
+	}
+
+	if ( $modified ) {
+		file_put_contents(
+			$file,
+			json_encode( $json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+		);
+	}
 }
