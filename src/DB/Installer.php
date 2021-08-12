@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\FirstInstallInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
@@ -22,12 +23,19 @@ class Installer implements Service, FirstInstallInterface, InstallableInterface 
 	protected $table_manager;
 
 	/**
+	 * @var Migrator
+	 */
+	protected $migrator;
+
+	/**
 	 * Installer constructor.
 	 *
 	 * @param TableManager $table_manager
+	 * @param Migrator     $migrator
 	 */
-	public function __construct( TableManager $table_manager ) {
+	public function __construct( TableManager $table_manager, Migrator $migrator ) {
 		$this->table_manager = $table_manager;
+		$this->migrator      = $migrator;
 	}
 
 	/**
@@ -40,6 +48,9 @@ class Installer implements Service, FirstInstallInterface, InstallableInterface 
 		foreach ( $this->table_manager->get_tables() as $table ) {
 			$table->install();
 		}
+
+		// Run migrations.
+		$this->migrator->migrate( $old_version, $new_version );
 	}
 
 	/**

@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\ConnectionTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Installer as DBInstaller;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
@@ -275,7 +276,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( ClearProductStatsCache::class, MerchantStatuses::class );
 
 		$this->share_with_tags( TableManager::class, 'db_table' );
-		$this->share_with_tags( DBInstaller::class, TableManager::class );
+		$this->share_with_tags( DBInstaller::class, TableManager::class, Migrator::class );
 
 		$this->share_with_tags( DeprecatedFilters::class );
 	}
