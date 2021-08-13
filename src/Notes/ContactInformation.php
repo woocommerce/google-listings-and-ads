@@ -88,7 +88,7 @@ class ContactInformation implements Deactivateable, Service, Registerable, Optio
 			return false;
 		}
 
-		if ( ! $this->merchant_center->is_setup_complete() ) {
+		if ( ! $this->merchant_center->is_connected() ) {
 			return false;
 		}
 
