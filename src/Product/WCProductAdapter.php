@@ -680,6 +680,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$metadata->addGetterConstraint( 'salePrice', new GooglePriceConstraint() );
 
 		$metadata->addConstraint( new Assert\Callback( 'validate_item_group_id' ) );
+		$metadata->addConstraint( new Assert\Callback( 'validate_availability' ) );
 
 		$metadata->addPropertyConstraint( 'gtin', new Assert\Regex( '/^\d{8}(?:\d{4,6})?$/' ) );
 		$metadata->addPropertyConstraint( 'mpn', new Assert\Type( 'alnum' ) ); // alphanumeric
@@ -723,6 +724,19 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		if ( $this->is_variation() && empty( $this->getItemGroupId() ) ) {
 			$context->buildViolation( 'ItemGroupId needs to be set for variable products.' )
 					->atPath( 'itemGroupId' )
+					->addViolation();
+		}
+	}
+
+	/**
+	 * Used by the validator to check if the availability date is set for product available as `backorder`.
+	 *
+	 * @param ExecutionContextInterface $context
+	 */
+	public function validate_availability( ExecutionContextInterface $context ) {
+		if ( self::AVAILABILITY_BACKORDER === $this->getAvailability() && empty( $this->getAvailabilityDate() ) ) {
+			$context->buildViolation( 'Availability date is required if you set the product\'s availability to backorder.' )
+					->atPath( 'availabilityDate' )
 					->addViolation();
 		}
 	}
