@@ -31,18 +31,6 @@ class DBHelper implements Service {
 	}
 
 	/**
-	 * Checks whether a database table exists.
-	 *
-	 * @param string $table_name The table's name.
-	 *
-	 * @return bool True if the table exists and False if not.
-	 */
-	public function table_exists( string $table_name ): bool {
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		return $table_name === $this->wpdb->get_var( $this->wpdb->prepare( 'SHOW TABLES LIKE %s', [ $table_name ] ) );
-	}
-
-	/**
 	 * Checks whether an index exists for the given database table.
 	 *
 	 * @param string $table_name The table's name.

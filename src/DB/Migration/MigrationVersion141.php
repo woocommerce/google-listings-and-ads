@@ -57,7 +57,7 @@ class MigrationVersion141 extends AbstractMigration {
 	 * @return void
 	 */
 	public function apply(): void {
-		if ( $this->db_helper->table_exists( $this->mc_issues_table->get_name() ) &&
+		if ( $this->mc_issues_table->exists() &&
 			 $this->db_helper->index_exists( $this->mc_issues_table->get_name(), 'product_issue' )
 		) {
 			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
