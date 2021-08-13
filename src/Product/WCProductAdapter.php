@@ -729,13 +729,17 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
-	 * Used by the validator to check if the availability date is set for product available as `backorder`.
+	 * Used by the validator to check if the availability date is set for product available as `backorder` or
+	 * `preorder`.
 	 *
 	 * @param ExecutionContextInterface $context
 	 */
 	public function validate_availability( ExecutionContextInterface $context ) {
-		if ( self::AVAILABILITY_BACKORDER === $this->getAvailability() && empty( $this->getAvailabilityDate() ) ) {
-			$context->buildViolation( 'Availability date is required if you set the product\'s availability to backorder.' )
+		if (
+			( self::AVAILABILITY_BACKORDER === $this->getAvailability() || self::AVAILABILITY_PREORDER === $this->getAvailability() ) &&
+			empty( $this->getAvailabilityDate() )
+		) {
+			$context->buildViolation( 'Availability date is required if you set the product\'s availability to backorder or pre-order.' )
 					->atPath( 'availabilityDate' )
 					->addViolation();
 		}
