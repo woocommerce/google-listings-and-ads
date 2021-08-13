@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\DBHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationVersion141;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
@@ -49,7 +48,6 @@ class DBServiceProvider extends AbstractServiceProvider {
 		MerchantIssueQuery::class        => true,
 		ProductFeedQueryHelper::class    => true,
 		ProductMetaQueryHelper::class    => true,
-		DBHelper::class                  => true,
 		MigrationInterface::class        => true,
 		Migrator::class                  => true,
 	];
@@ -86,8 +84,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ProductFeedQueryHelper::class, wpdb::class, ProductRepository::class );
 		$this->share_with_tags( ProductMetaQueryHelper::class, wpdb::class );
 
-		$this->share_with_tags( DBHelper::class, wpdb::class );
-		$this->share_with_tags( MigrationVersion141::class, wpdb::class, DBHelper::class, MerchantIssueTable::class );
+		$this->share_with_tags( MigrationVersion141::class, wpdb::class, MerchantIssueTable::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 
