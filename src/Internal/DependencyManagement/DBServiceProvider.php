@@ -16,6 +16,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\BudgetRecommendationTab
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
@@ -29,6 +31,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement
  */
 class DBServiceProvider extends AbstractServiceProvider {
+
+	use ValidateInterface;
 
 	/**
 	 * Array of classes provided by this container.
@@ -84,7 +88,8 @@ class DBServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ProductFeedQueryHelper::class, wpdb::class, ProductRepository::class );
 		$this->share_with_tags( ProductMetaQueryHelper::class, wpdb::class );
 
-		$this->share_with_tags( MigrationVersion141::class, wpdb::class, MerchantIssueTable::class );
+		// Share DB migrations
+		$this->share_migration( MigrationVersion141::class, MerchantIssueTable::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 
@@ -113,5 +118,24 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 */
 	protected function share_table_class( string $class, ...$arguments ): DefinitionInterface {
 		return parent::share( $class, WP::class, wpdb::class, ...$arguments )->addTag( 'db_table' );
+	}
+
+	/**
+	 * Share a migration class.
+	 *
+	 * @param string $class        The class name to add.
+	 * @param mixed  ...$arguments Constructor arguments for the class.
+	 *
+	 * @throws InvalidClass When the given class does not implement the MigrationInterface.
+	 *
+	 * @since x.x.x
+	 */
+	protected function share_migration( string $class, ...$arguments ) {
+		$this->validate_interface( $class, MigrationInterface::class );
+		$this->share_with_tags(
+			$class,
+			wpdb::class,
+			...$arguments
+		);
 	}
 }
