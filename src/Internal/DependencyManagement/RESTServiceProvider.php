@@ -86,7 +86,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( MerchantCenterProductFeedController::class, ProductFeedQueryHelper::class );
 		$this->share( MerchantCenterProductVisibilityController::class, ProductHelper::class, MerchantIssueQuery::class );
 		$this->share( MerchantCenterContactInformationController::class, ContactInformation::class, Settings::class, AddressUtility::class );
-		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class );
+		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class, Middleware::class );
 		$this->share_with_container( MerchantCenterAccountController::class );
 		$this->share_with_container( MerchantCenterReportsController::class );
 		$this->share_with_container( ShippingRateBatchController::class );

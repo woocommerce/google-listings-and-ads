@@ -12,6 +12,7 @@ import './index.scss';
 import FreeAdCredit from './free-ad-credit';
 import BudgetRecommendation from './budget-recommendation';
 import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
+import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 
 const BudgetSection = ( props ) => {
@@ -22,8 +23,11 @@ const BudgetSection = ( props ) => {
 		country: [ selectedCountryCode ],
 		amount,
 	} = values;
+	const { googleAdsAccount } = useGoogleAdsAccount();
 	const hasFreeAdCredit = useFreeAdCredit();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( values.amount );
+	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
+	const currency = googleAdsAccount?.currency;
 
 	return (
 		<div className="gla-budget-section">
@@ -46,6 +50,7 @@ const BudgetSection = ( props ) => {
 									'Daily average cost',
 									'google-listings-and-ads'
 								) }
+								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
 							/>
 							<AppInputPriceControl
@@ -54,6 +59,7 @@ const BudgetSection = ( props ) => {
 									'Monthly max, estimated ',
 									'google-listings-and-ads'
 								) }
+								suffix={ currency }
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
