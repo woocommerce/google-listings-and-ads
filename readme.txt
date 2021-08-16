@@ -141,7 +141,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Optionally clean up plugin data on uninstall.
 * Update - Stop syncing invisible products and variations.
 
-= 1.2.1 - 2021-07-15 =
-* Fix - Made Forms submit and change behavior work with WooCommerce >= 5.5 (WooCommerce Admin >= 2.4.0).
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
