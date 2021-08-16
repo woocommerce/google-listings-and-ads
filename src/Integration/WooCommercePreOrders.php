@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 use DateTimeZone;
@@ -61,6 +62,13 @@ class WooCommercePreOrders implements IntegrationInterface {
 			2,
 			10
 		);
+
+		add_action(
+			'wc_pre_orders_pre_orders_disabled_for_product',
+			function ( $product_id ) {
+				$this->trigger_sync( $product_id );
+			},
+		);
 	}
 
 	/**
@@ -104,5 +112,25 @@ class WooCommercePreOrders implements IntegrationInterface {
 
 			return null;
 		}
+	}
+
+	/**
+	 * Triggers an update job for the product to be synced with Merchant Center.
+	 *
+	 * @hooked wc_pre_orders_pre_orders_disabled_for_product
+	 *
+	 * @param mixed $product_id
+	 */
+	protected function trigger_sync( $product_id ): void {
+		try {
+			$product = $this->product_helper->get_wc_product( (int) $product_id );
+		} catch ( InvalidValue $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			return;
+		}
+
+		// Manually trigger an update job by saving the product object.
+		$product->save();
 	}
 }
