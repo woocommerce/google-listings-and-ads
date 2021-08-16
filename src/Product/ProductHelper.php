@@ -429,8 +429,7 @@ class ProductHelper implements Service {
 	 *
 	 * @return WC_Product The parent product object or the given product object of it doesn't have a parent.
 	 *
-	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
-	 *                      valid parent ID (i.e. it's an orphan).
+	 * @throws InvalidValue If a variation product does not have a valid parent ID (i.e. it's an orphan).
 	 *
 	 * @since 1.3.0
 	 */
