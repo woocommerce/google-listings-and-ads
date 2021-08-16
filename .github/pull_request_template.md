@@ -33,5 +33,5 @@ Each line should start with `(Fix|Add|Tweak|Update) - `, for example:
 > Update - I made big changes to something that wasn't broken.
 
 Or leave the "Changelog entry" header in place without any summary if no changelog entry is needed.  
-Otherwise, the title of Pull Request will be used as the changelog entry.  
+If you remove the "Changelog entry" header, the title of Pull Request will be used as the changelog entry.  
 -->
