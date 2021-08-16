@@ -2,13 +2,20 @@
 	white-space: nowrap;
 
 	svg {
-		width: inherit;
-		height: inherit;
 		max-width: inherit;
 		max-height: inherit;
 
 		circle {
 			stroke: currentColor;
 		}
+	}
+
+	/**
+	 * Fix that the SVG icon gap to text should be on the left side.
+	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/button/style.scss#L309-L311
+	 */
+	&--fix-icon-position-right.has-icon.has-text svg {
+		margin-right: 0;
+		margin-left: 8px;
 	}
 }

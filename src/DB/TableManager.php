@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB
  *
- * @since x.x.x
+ * @since 1.3.0
  */
 class TableManager {
 

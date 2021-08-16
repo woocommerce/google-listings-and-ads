@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -47,6 +48,8 @@ class ProductFactory {
 	 * @param string     $target_country
 	 *
 	 * @return WCProductAdapter
+	 *
+	 * @throws InvalidValue When the product is a variation and its parent does not exist.
 	 */
 	public function create( WC_Product $product, string $target_country ): WCProductAdapter {
 		// We do not support syncing the parent variable product. Each variation is synced individually instead.

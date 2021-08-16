@@ -5,7 +5,6 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import CombinedShipping from './combined-shipping';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
-import PreLaunchChecklist from './pre-launch-checklist';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
@@ -32,7 +31,6 @@ const FormContent = ( props ) => {
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate formProps={ formProps } />
 			</ConditionalSection>
-			<PreLaunchChecklist formProps={ formProps } />
 			<StepContentFooter>{ submitButton }</StepContentFooter>
 		</StepContent>
 	);

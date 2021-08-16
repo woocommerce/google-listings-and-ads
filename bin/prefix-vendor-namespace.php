@@ -85,7 +85,7 @@ foreach ( $replacements as $namespace => $path ) {
 	$composer_files = array_filter(
 		explode(
 			"\n",
-			`find {$vendor_dir}/{$path} -iname 'composer.json'`
+			`find "{$vendor_dir}/{$path}" -iname 'composer.json'`
 		)
 	);
 
@@ -107,7 +107,7 @@ function find_files( string $path ): array {
 	$files = array_filter(
 		explode(
 			"\n",
-			`find {$vendor_dir}/{$path} -iname '*.php'`
+			`find "{$vendor_dir}/{$path}" -iname '*.php'`
 		)
 	);
 
@@ -116,7 +116,7 @@ function find_files( string $path ): array {
 			$dependent_files = array_filter(
 				explode(
 					"\n",
-					`find {$vendor_dir}/{$dependency} -iname '*.php'`
+					`find "{$vendor_dir}/{$dependency}" -iname '*.php'`
 				)
 			);
 			$files = array_merge( $files, $dependent_files );

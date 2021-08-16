@@ -1,4 +1,3 @@
-
 .woocommerce-marketing-google-get-started-card {
 	.components-flex {
 		flex-direction: column;
@@ -27,11 +26,6 @@
 
 			@include break-large() {
 				margin-top: calc(var(--main-gap) * 1.5);
-			}
-
-			svg {
-				width: 100%;
-				height: 100%;
 			}
 		}
 	}

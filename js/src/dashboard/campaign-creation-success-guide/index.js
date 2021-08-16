@@ -15,7 +15,7 @@ import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
-import { ReactComponent as HeaderSvg } from './header.svg';
+import headerImageURL from './header.svg';
 import './index.scss';
 
 const GUIDE_NAME = 'campaign-creation-success';
@@ -73,7 +73,15 @@ const GuideImplementation = () => {
 			] }
 		>
 			<div className="gla-campaign-creation-success-guide__header-image">
-				<HeaderSvg viewBox="0 0 413 160" />
+				<img
+					src={ headerImageURL }
+					alt={ __(
+						'Drawing of a person who successfuly launched a campaign',
+						'google-listings-and-ads'
+					) }
+					width="413"
+					height="160"
+				/>
 			</div>
 			<GuidePageContent
 				title={ __(

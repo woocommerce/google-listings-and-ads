@@ -212,7 +212,7 @@ class AttributeManager implements Service {
 	 *
 	 * @return array
 	 *
-	 * @since x.x.x
+	 * @since 1.3.0
 	 */
 	public static function get_available_attribute_ids(): array {
 		$attributes = [];
@@ -231,7 +231,7 @@ class AttributeManager implements Service {
 	 *
 	 * @return string[] Attribute class names
 	 *
-	 * @since x.x.x
+	 * @since 1.3.0
 	 */
 	public static function get_available_attribute_types(): array {
 		/**

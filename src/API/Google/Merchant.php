@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Exception as GoogleException;
@@ -100,8 +101,9 @@ class Merchant implements OptionsAwareInterface {
 	 * Retrieve the user's Merchant Center account information.
 	 *
 	 * @param int $id Optional - the Merchant Center account to retrieve
+	 *
 	 * @return Account The user's Merchant Center account.
-	 * @throws Exception If the account can't be retrieved.
+	 * @throws MerchantApiException If the account can't be retrieved.
 	 */
 	public function get_account( int $id = 0 ): Account {
 		$id = $id ?: $this->options->get_merchant_id();
@@ -110,7 +112,7 @@ class Merchant implements OptionsAwareInterface {
 			$mc_account = $this->service->accounts->get( $id, $id );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
+			throw MerchantApiException::account_retrieve_failed( $e->getCode() );
 		}
 		return $mc_account;
 	}
@@ -129,7 +131,7 @@ class Merchant implements OptionsAwareInterface {
 			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to retrieve merchant center account status.', 'google-listings-and-ads' ), $e->getCode() );
+			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
 	}
@@ -183,14 +185,14 @@ class Merchant implements OptionsAwareInterface {
 	 * @param Account $account The Account data to update.
 	 *
 	 * @return Account The user's Merchant Center account.
-	 * @throws Exception If the account can't be retrieved.
+	 * @throws MerchantApiException If the account can't be retrieved.
 	 */
 	public function update_account( Account $account ): Account {
 		try {
 			$account = $this->service->accounts->update( $account->getId(), $account->getId(), $account );
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
-			throw new Exception( __( 'Unable to update merchant center account.', 'google-listings-and-ads' ), $e->getCode() );
+			throw MerchantApiException::account_update_failed( $e->getCode() );
 		}
 		return $account;
 	}
@@ -201,7 +203,7 @@ class Merchant implements OptionsAwareInterface {
 	 * @param int $ads_id Google Ads ID to link.
 	 *
 	 * @return bool
-	 * @throws Exception When unable to retrieve or update account data.
+	 * @throws MerchantApiException When unable to retrieve or update account data.
 	 */
 	public function link_ads_id( int $ads_id ): bool {
 		$account   = $this->get_account();

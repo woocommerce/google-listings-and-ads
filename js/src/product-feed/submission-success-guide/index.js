@@ -14,13 +14,13 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import { ReactComponent as GoogleLogoSvg } from './google-logo.svg';
-import { ReactComponent as WooCommerceLogoSvg } from './woocommerce-logo.svg';
 import Guide from '.~/external-components/wordpress/guide';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
+import wooLogoURL from './woocommerce-logo.svg';
+import googleLogoURL from './google-logo.svg';
 import './index.scss';
 
 const GUIDE_NAME = 'submission-success';
@@ -35,11 +35,21 @@ const productFeedPath = getNewPath(
 const image = (
 	<div className="gla-submission-success-guide__logo-block">
 		<div className="gla-submission-success-guide__logo-item">
-			<WooCommerceLogoSvg viewBox="0 0 145 31" />
+			<img
+				src={ wooLogoURL }
+				alt={ __( 'WooCommerce Logo', 'google-listings-and-ads' ) }
+				width="145"
+				height="31"
+			/>
 		</div>
 		<div className="gla-submission-success-guide__logo-separator-line" />
 		<div className="gla-submission-success-guide__logo-item">
-			<GoogleLogoSvg width="106" height="36" viewBox="0 0 272 92" />
+			<img
+				src={ googleLogoURL }
+				alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
+				width="106"
+				height="36"
+			/>
 		</div>
 	</div>
 );

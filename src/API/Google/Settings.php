@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as Ti
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\AccountAddress;
 use Google\Service\ShoppingContent\AccountTax;
 use Google\Service\ShoppingContent\AccountTaxTaxRule as TaxRule;
 use Google\Service\ShoppingContent\DeliveryTime;
@@ -347,6 +348,69 @@ class Settings {
 		$wc = $this->container->get( WC::class );
 
 		return $wc->get_wc_countries()->get_base_state();
+	}
+
+	/**
+	 * Get the WooCommerce store physical address.
+	 *
+	 * @return AccountAddress
+	 *
+	 * @since 1.4.0
+	 */
+	public function get_store_address(): AccountAddress {
+		/** @var WC $wc */
+		$wc = $this->container->get( WC::class );
+
+		$countries   = $wc->get_wc_countries();
+		$postal_code = ! empty( $countries->get_base_postcode() ) ? $countries->get_base_postcode() : null;
+		$locality    = ! empty( $countries->get_base_city() ) ? $countries->get_base_city() : null;
+		$country     = ! empty( $countries->get_base_country() ) ? $countries->get_base_country() : null;
+		$region      = ! empty( $countries->get_base_state() ) ? $countries->get_base_state() : null;
+
+		$mc_address = new AccountAddress();
+		$mc_address->setPostalCode( $postal_code );
+		$mc_address->setLocality( $locality );
+		$mc_address->setCountry( $country );
+
+		if ( ! empty( $region ) && ! empty( $country ) ) {
+			$mc_address->setRegion( $this->maybe_get_state_name( $region, $country ) );
+		}
+
+		$address   = ! empty( $countries->get_base_address() ) ? $countries->get_base_address() : null;
+		$address_2 = ! empty( $countries->get_base_address_2() ) ? $countries->get_base_address_2() : null;
+		$separator = ! empty( $address ) && ! empty( $address_2 ) ? "\n" : '';
+		$address   = sprintf( '%s%s%s', $countries->get_base_address(), $separator, $countries->get_base_address_2() );
+		if ( ! empty( $address ) ) {
+			$mc_address->setStreetAddress( $address );
+		}
+
+		return $mc_address;
+	}
+
+	/**
+	 * Return a state name.
+	 *
+	 * @param string $state_code State code.
+	 * @param string $country    Country code.
+	 *
+	 * @return string
+	 *
+	 * @since 1.4.0
+	 */
+	protected function maybe_get_state_name( string $state_code, string $country ): string {
+		/** @var WC $wc */
+		$wc = $this->container->get( WC::class );
+
+		$states = $country ? array_filter( (array) $wc->get_wc_countries()->get_states( $country ) ) : [];
+
+		if ( ! empty( $states ) ) {
+			$state_code = wc_strtoupper( $state_code );
+			if ( isset( $states[ $state_code ] ) ) {
+				return $states[ $state_code ];
+			}
+		}
+
+		return $state_code;
 	}
 
 	/**

@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import StepContentHeader from '.~/components/stepper/step-content-header';
-import { ReactComponent as GoogleFreeListingImage } from './google-free-listing.svg';
+import heroImageURL from './google-free-listing.svg';
 import './index.scss';
 
 /**
@@ -16,7 +16,6 @@ import './index.scss';
  * @param {Object} props
  * @param {string} props.stepHeader Header text to indicate the step number.
  */
-
 const Hero = ( { stepHeader } ) => {
 	return (
 		<div className="gla-setup-free-listing-hero">
@@ -45,7 +44,15 @@ const Hero = ( { stepHeader } ) => {
 				}
 			/>
 			<div className="hero-image">
-				<GoogleFreeListingImage viewBox="0 0 720 319"></GoogleFreeListingImage>
+				<img
+					src={ heroImageURL }
+					alt={ __(
+						'Google Shopping search results example',
+						'google-listings-and-ads'
+					) }
+					width="720"
+					height="319"
+				/>
 			</div>
 		</div>
 	);

@@ -15,9 +15,9 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import AppDocumentationLink from '.~/components/app-documentation-link';
-import { ReactComponent as GoogleShoppingImage } from './image.svg';
 import { glaData } from '.~/constants';
+import AppDocumentationLink from '.~/components/app-documentation-link';
+import motivationImageURL from './image.svg';
 import './index.scss';
 import AppButton from '.~/components/app-button';
 
@@ -74,7 +74,15 @@ const GetStartedCard = () => {
 					</Text>
 				</FlexBlock>
 				<FlexItem className="motivation-image">
-					<GoogleShoppingImage viewBox="0 0 416 394"></GoogleShoppingImage>
+					<img
+						src={ motivationImageURL }
+						alt={ __(
+							'Google Shopping search results example',
+							'google-listings-and-ads'
+						) }
+						width="416"
+						height="394"
+					/>
 				</FlexItem>
 			</Flex>
 		</Card>

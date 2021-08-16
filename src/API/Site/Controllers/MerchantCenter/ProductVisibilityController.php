@@ -179,9 +179,9 @@ class ProductVisibilityController extends BaseController {
 	 */
 	protected function change_product_visibility( int $product_id, bool $new_visibility ): bool {
 		try {
-			$product_id = $this->product_helper->maybe_swap_for_parent_id( $product_id );
+			$product = $this->product_helper->get_wc_product( $product_id );
+			$product = $this->product_helper->maybe_swap_for_parent( $product );
 			// Use $product->save() instead of ProductMetaHandler to trigger MC sync.
-			$product = wc_get_product( $product_id );
 			$product->update_meta_data(
 				$this->prefix_meta_key( ProductMetaHandler::KEY_VISIBILITY ),
 				$new_visibility ? ChannelVisibility::SYNC_AND_SHOW : ChannelVisibility::DONT_SYNC_AND_SHOW
@@ -190,6 +190,8 @@ class ProductVisibilityController extends BaseController {
 
 			return true;
 		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
 			return false;
 		}
 	}

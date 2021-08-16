@@ -33,11 +33,6 @@ describe( 'checkErrors', () => {
 			offers_free_shipping: true,
 			free_shipping_threshold: 100,
 			tax_rate: 'manual',
-			website_live: true,
-			checkout_process_secure: true,
-			payment_methods_visible: true,
-			refund_tos_visible: true,
-			contact_info_visible: true,
 		};
 		const rates = toRates( [ 'US', 10 ], [ 'JP', 30 ] );
 		const times = toTimes( [ 'US', 3 ], [ 'JP', 10 ] );
@@ -53,7 +48,6 @@ describe( 'checkErrors', () => {
 
 		expect( errors ).toHaveProperty( 'shipping_rate' );
 		expect( errors ).toHaveProperty( 'shipping_time' );
-		expect( errors ).toHaveProperty( 'website_live' );
 	} );
 
 	describe( 'Shipping rates', () => {
@@ -320,72 +314,6 @@ describe( 'checkErrors', () => {
 			errors = checkErrors( manualTaxRate, [], [], codes );
 
 			expect( errors ).not.toHaveProperty( 'tax_rate' );
-		} );
-	} );
-
-	describe( 'Requirements', () => {
-		it( 'When there are any requirements are not true, should not pass', () => {
-			// Not set yet
-			let errors = checkErrors( {}, [], [], [] );
-
-			expect( errors ).toHaveProperty( 'website_live' );
-			expect( errors.website_live ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'checkout_process_secure' );
-			expect( errors.checkout_process_secure ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'payment_methods_visible' );
-			expect( errors.payment_methods_visible ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'refund_tos_visible' );
-			expect( errors.refund_tos_visible ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'contact_info_visible' );
-			expect( errors.contact_info_visible ).toMatchSnapshot();
-
-			// Invalid value
-			const values = {
-				website_live: false,
-				checkout_process_secure: 1,
-				payment_methods_visible: 'true',
-				refund_tos_visible: [],
-				contact_info_visible: {},
-			};
-
-			errors = checkErrors( values, [], [], [] );
-
-			expect( errors ).toHaveProperty( 'website_live' );
-			expect( errors.website_live ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'checkout_process_secure' );
-			expect( errors.checkout_process_secure ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'payment_methods_visible' );
-			expect( errors.payment_methods_visible ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'refund_tos_visible' );
-			expect( errors.refund_tos_visible ).toMatchSnapshot();
-
-			expect( errors ).toHaveProperty( 'contact_info_visible' );
-			expect( errors.contact_info_visible ).toMatchSnapshot();
-		} );
-
-		it( 'When all requirements are true, should pass', () => {
-			const values = {
-				website_live: true,
-				checkout_process_secure: true,
-				payment_methods_visible: true,
-				refund_tos_visible: true,
-				contact_info_visible: true,
-			};
-
-			const errors = checkErrors( values, [], [], [] );
-
-			expect( errors ).not.toHaveProperty( 'website_live' );
-			expect( errors ).not.toHaveProperty( 'checkout_process_secure' );
-			expect( errors ).not.toHaveProperty( 'payment_methods_visible' );
-			expect( errors ).not.toHaveProperty( 'refund_tos_visible' );
-			expect( errors ).not.toHaveProperty( 'contact_info_visible' );
 		} );
 	} );
 } );

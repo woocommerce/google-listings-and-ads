@@ -138,6 +138,17 @@ trait PluginHelper {
 	}
 
 	/**
+	 * Get the contact information setup URL
+	 *
+	 * @since 1.4.0
+	 *
+	 * @return string
+	 */
+	protected function get_contact_information_setup_url(): string {
+		return admin_url( 'admin.php?page=wc-admin&path=/google/settings&subpath=/edit-contact-information' );
+	}
+
+	/**
 	 * Check whether debugging mode is enabled.
 	 *
 	 * @return bool Whether debugging mode is enabled.

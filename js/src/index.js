@@ -7,6 +7,7 @@ import { addFilter } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
+import './public-path';
 import './css/index.scss';
 import GetStartedPage from './get-started-page';
 import SetupMC from './setup-mc';

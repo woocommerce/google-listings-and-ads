@@ -12,9 +12,9 @@ import {
 /**
  * Internal dependencies
  */
-import { ReactComponent as ImageConnection } from './img-connection.svg';
-import { ReactComponent as ImageFreeListings } from './img-free-listings.svg';
-import { ReactComponent as ImageGoogldAds } from './img-googld-ads.svg';
+import connectionImageURL from './img-connection.svg';
+import freeListingsImageURL from './img-free-listings.svg';
+import googleAdsImageURL from './img-google-ads.svg';
 import './index.scss';
 
 const FeaturesCard = () => {
@@ -22,7 +22,15 @@ const FeaturesCard = () => {
 		<Card className="gla-get-started-features-card">
 			<Flex>
 				<FlexBlock>
-					<ImageConnection viewBox="0 0 117 100" />
+					<img
+						src={ connectionImageURL }
+						alt={ __(
+							'Drawing of jigsaw puzzles connecting together',
+							'google-listings-and-ads'
+						) }
+						width="117"
+						height="100"
+					/>
 					<Text
 						className="gla-get-started-features-card__label"
 						variant="label"
@@ -43,7 +51,15 @@ const FeaturesCard = () => {
 					</Text>
 				</FlexBlock>
 				<FlexBlock>
-					<ImageFreeListings viewBox="0 0 100 100" />
+					<img
+						src={ freeListingsImageURL }
+						alt={ __(
+							'Drawing of a person looking at their mobile',
+							'google-listings-and-ads'
+						) }
+						width="100"
+						height="100"
+					/>
 					<Text
 						className="gla-get-started-features-card__label"
 						variant="label"
@@ -64,7 +80,15 @@ const FeaturesCard = () => {
 					</Text>
 				</FlexBlock>
 				<FlexBlock>
-					<ImageGoogldAds viewBox="0 0 104 100" />
+					<img
+						src={ googleAdsImageURL }
+						alt={ __(
+							'Drawing of a bar and line charts heading up',
+							'google-listings-and-ads'
+						) }
+						width="104"
+						height="100"
+					/>
 					<Text
 						className="gla-get-started-features-card__label"
 						variant="label"
