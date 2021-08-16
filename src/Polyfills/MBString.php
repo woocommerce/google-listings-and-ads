@@ -221,7 +221,7 @@ final class MBString {
 	 *
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.4.1
 	 */
 	public static function mb_substr( $string, $start, $length = null, $encoding = null ) {
 		$encoding = self::get_encoding( $encoding );

@@ -62,7 +62,7 @@ interface TableInterface {
 	 *
 	 * @return bool True if the index exists on the table and False if not.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.1
 	 */
 	public function has_index( string $index_name ): bool;
 }

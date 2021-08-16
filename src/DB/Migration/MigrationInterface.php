@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration
  *
- * @since x.x.x
+ * @since 1.4.1
  */
 interface MigrationInterface {
 	/**

@@ -128,7 +128,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @throws InvalidClass When the given class does not implement the MigrationInterface.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.1
 	 */
 	protected function share_migration( string $class, ...$arguments ) {
 		$this->validate_interface( $class, MigrationInterface::class );

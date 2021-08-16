@@ -52,7 +52,7 @@ if ( ! function_exists( 'mb_substr' ) ) {
 	 *
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.4.1
 	 */
 	function mb_substr( $string, $start, $length = null, $encoding = null ) {
 		return MBString::mb_substr( $string, $start, $length, $encoding );

@@ -417,7 +417,7 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Get the ads account currency.
 	 *
-	 * @since x.x.x
+	 * @since 1.4.1
 	 *
 	 * @return string
 	 */
