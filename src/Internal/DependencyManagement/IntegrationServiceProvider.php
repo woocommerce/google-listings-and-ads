@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WooCommerceProductBu
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\WooCommerceSubscriptions;
 use Automattic\WooCommerce\GoogleListingsAndAds\Integration\YoastWooCommerceSeo;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
@@ -45,7 +46,7 @@ class IntegrationServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( WooCommerceBrands::class, WP::class );
 		$this->share_with_tags( WooCommerceProductBundles::class, AttributeManager::class );
 		$this->share_with_tags( WooCommerceSubscriptions::class );
-		$this->share_with_tags( WooCommercePreOrders::class );
+		$this->share_with_tags( WooCommercePreOrders::class, ProductHelper::class );
 
 		$this->share_with_tags(
 			IntegrationInitializer::class,

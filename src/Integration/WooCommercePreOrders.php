@@ -3,7 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Integration;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
+use DateTimeZone;
+use Exception;
+use WC_DateTime;
 use WC_Pre_Orders_Product;
 use WC_Product;
 
@@ -19,6 +23,20 @@ defined( 'ABSPATH' ) || exit;
  * @since x.x.x
  */
 class WooCommercePreOrders implements IntegrationInterface {
+
+	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
+	 * WooCommercePreOrders constructor.
+	 *
+	 * @param ProductHelper $product_helper
+	 */
+	public function __construct( ProductHelper $product_helper ) {
+		$this->product_helper = $product_helper;
+	}
 
 	/**
 	 * Returns whether the integration is active or not.
@@ -57,15 +75,34 @@ class WooCommercePreOrders implements IntegrationInterface {
 		if ( $product->is_in_stock() && WC_Pre_Orders_Product::product_can_be_pre_ordered( $product ) ) {
 			$attributes['availability'] = WCProductAdapter::AVAILABILITY_PREORDER;
 
-			$timestamp = WC_Pre_Orders_Product::get_localized_availability_datetime_timestamp( $product );
-			if ( ! empty( $timestamp ) ) {
-				// Convert the timestamp back to UTC.
-				// The localized offset is already applied to timestamp by WC_Pre_Orders_Product.
-				$utc_timestamp                  = $timestamp - wc_timezone_offset();
-				$attributes['availabilityDate'] = gmdate( 'c', intval( $utc_timestamp ) );
+			$availability_date = $this->get_availability_datetime( $product );
+			if ( ! empty( $availability_date ) ) {
+				$attributes['availabilityDate'] = (string) $availability_date;
 			}
 		}
 
 		return $attributes;
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @return WC_DateTime|null
+	 */
+	protected function get_availability_datetime( WC_Product $product ): ?WC_DateTime {
+		$product   = $this->product_helper->maybe_swap_for_parent( $product );
+		$timestamp = $product->get_meta( '_wc_pre_orders_availability_datetime', true );
+
+		if ( empty( $timestamp ) ) {
+			return null;
+		}
+
+		try {
+			return new WC_DateTime( "@{$timestamp}", new DateTimeZone( 'UTC' ) );
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+
+			return null;
+		}
 	}
 }
