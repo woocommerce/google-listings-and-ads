@@ -19,10 +19,6 @@ _Replace this with a good description of your changes & reasoning._
 3. 
 
 
-### Changelog entry
-
-> 
-
 <!--
 Optional.
 Enter a summary of all changes in this Pull Request, which will be added to the changelog if accepted.
@@ -32,6 +28,9 @@ Each line should start with `(Fix|Add|Tweak|Update) - `, for example:
 > Tweak - I made a small change.
 > Update - I made big changes to something that wasn't broken.
 
-Or leave the "Changelog entry" header in place completely empty, without any summary and **without this comment** if no changelog entry is needed.
+Leave the "Changelog entry" header in place completely empty, without any summary if no changelog entry is needed.
 If you remove the "Changelog entry" header, the title of Pull Request will be used as the changelog entry.
 -->
+### Changelog entry
+
+>
