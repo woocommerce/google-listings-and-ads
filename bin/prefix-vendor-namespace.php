@@ -171,7 +171,7 @@ function remove_file_autoloads( string $file, array $composer_json, string $pack
 		foreach( $package['autoload']['files'] as $autoload_file ) {
 
 			// Confirm we already include this autoload in the main composer file.
-			$filename = 'vendor/' . $package['name'] . '/' . $autoload_file;
+			$filename = "vendor/{$package['name']}/{$autoload_file}";
 			if ( in_array( $filename, $composer_json['autoload']['files'] ?? [], true ) ) {
 				continue;
 			}
