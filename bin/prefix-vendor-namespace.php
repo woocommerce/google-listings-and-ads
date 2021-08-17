@@ -104,7 +104,11 @@ foreach ( $replacements as $namespace => $path ) {
 	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $new_namespace );
 
 	// Remove file autoloads from vendor/composer/installed.json
-	remove_file_autoloads( "{$vendor_dir}/composer/installed.json", $composer_json, $path );
+	remove_file_autoloads(
+		"{$vendor_dir}/composer/installed.json",
+		$composer_json['autoload']['files'] ?? [],
+		$path
+	);
 }
 
 function find_files( string $path ): array {
@@ -148,7 +152,7 @@ function replace_in_json_file( string $file, string $namespace, string $new_name
 	);
 }
 
-function remove_file_autoloads( string $file, array $composer_json, string $package_name ) {
+function remove_file_autoloads( string $file, array $composer_autoload, string $package_name ) {
 	if ( ! file_exists( $file ) ) {
 		return;
 	}
@@ -172,7 +176,7 @@ function remove_file_autoloads( string $file, array $composer_json, string $pack
 
 			// Confirm we already include this autoload in the main composer file.
 			$filename = "vendor/{$package['name']}/{$autoload_file}";
-			if ( in_array( $filename, $composer_json['autoload']['files'] ?? [], true ) ) {
+			if ( in_array( $filename, $composer_autoload, true ) ) {
 				continue;
 			}
 
