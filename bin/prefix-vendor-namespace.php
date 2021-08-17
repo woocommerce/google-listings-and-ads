@@ -111,6 +111,15 @@ foreach ( $replacements as $namespace => $path ) {
 	);
 }
 
+/**
+ * Find a list of PHP files for this package, and append a list of dependent
+ * files that use the package.
+ *
+ * @since 1.1.0
+ *
+ * @param string $path Package path
+ * @return array Merged list of files
+ */
 function find_files( string $path ): array {
 	global $vendor_dir, $dependencies;
 
@@ -136,6 +145,15 @@ function find_files( string $path ): array {
 	return $files;
 }
 
+/**
+ * Replace namespace strings with a JSON file.
+ *
+ * @since 1.2.0
+ *
+ * @param string $file          Filename to replace the strings
+ * @param string $namespace     Namespace to search for
+ * @param string $new_namespace Namespace to replace with
+ */
 function replace_in_json_file( string $file, string $namespace, string $new_namespace ) {
 	if ( ! file_exists( $file ) ) {
 		return;
@@ -152,6 +170,18 @@ function replace_in_json_file( string $file, string $namespace, string $new_name
 	);
 }
 
+/**
+ * Removes any autoload files from a package, and confirms they are loaded from the main composer.json file.
+ * This ensures that the generated file vendor/composer/autoload_files.php will only autoload the files once,
+ * using the new namespace. Autoloading the files from our main composer.json ensures we use a unique hash so
+ * we don't conflict with other extensions autoloading the same files.
+ *
+ * @since x.x.x
+ *
+ * @param string $file              Generated file containing information about all the installed packages
+ * @param array  $composer_autoload List of autoloaded files in composer.json
+ * @param string $package_name      Name of the package we are replacing
+ */
 function remove_file_autoloads( string $file, array $composer_autoload, string $package_name ) {
 	if ( ! file_exists( $file ) ) {
 		return;
