@@ -71,8 +71,8 @@ foreach ( $replacements as $namespace => $path ) {
 		);
 
 		if ( ! empty( $direct_replacements[ $path ] ) ) {
-			foreach( $direct_replacements[ $path ] as $replace ) {
-				$replace = preg_quote( $replace, '#' );
+			foreach ( $direct_replacements[ $path ] as $replace ) {
+				$replace  = preg_quote( $replace, '#' );
 				$contents =	preg_replace(
 					"#({$replace})#m",
 					"{$new_namespace}\\\\\$1",
@@ -118,7 +118,7 @@ function find_files( string $path ): array {
 	);
 
 	if ( ! empty( $dependencies[ $path ] ) ) {
-		foreach( $dependencies[ $path ] as $dependency ) {
+		foreach ( $dependencies[ $path ] as $dependency ) {
 			$dependent_files = array_filter(
 				explode(
 					"\n",
@@ -159,7 +159,7 @@ function remove_file_autoloads( string $file, array $composer_json, string $pack
 	}
 
 	$modified = false;
-	foreach( $json['packages'] as $key => $package ) {
+	foreach ( $json['packages'] as $key => $package ) {
 		if ( 0 !== strpos( $package['name'], $package_name ) ) {
 			continue;
 		}
@@ -168,7 +168,7 @@ function remove_file_autoloads( string $file, array $composer_json, string $pack
 			continue;
 		}
 
-		foreach( $package['autoload']['files'] as $autoload_file ) {
+		foreach ( $package['autoload']['files'] as $autoload_file ) {
 
 			// Confirm we already include this autoload in the main composer file.
 			$filename = "vendor/{$package['name']}/{$autoload_file}";
