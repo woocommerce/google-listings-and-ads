@@ -43,6 +43,9 @@ $direct_replacements = [
 	],
 ];
 
+// Read our composer.json file into an array.
+$composer_json = json_decode( file_get_contents( dirname( __DIR__ ) . '/composer.json' ), true );
+
 foreach ( $replacements as $namespace => $path ) {
 	$files = find_files( $path );
 
@@ -68,8 +71,8 @@ foreach ( $replacements as $namespace => $path ) {
 		);
 
 		if ( ! empty( $direct_replacements[ $path ] ) ) {
-			foreach( $direct_replacements[ $path ] as $replace ) {
-				$replace = preg_quote( $replace, '#' );
+			foreach ( $direct_replacements[ $path ] as $replace ) {
+				$replace  = preg_quote( $replace, '#' );
 				$contents =	preg_replace(
 					"#({$replace})#m",
 					"{$new_namespace}\\\\\$1",
@@ -99,8 +102,24 @@ foreach ( $replacements as $namespace => $path ) {
 	// Update the namespace in vendor/composer/installed.json
 	// This file is used to generate the classmaps.
 	replace_in_json_file( "{$vendor_dir}/composer/installed.json", $namespace, $new_namespace );
+
+	// Remove file autoloads from vendor/composer/installed.json
+	remove_file_autoloads(
+		"{$vendor_dir}/composer/installed.json",
+		$composer_json['autoload']['files'] ?? [],
+		$path
+	);
 }
 
+/**
+ * Find a list of PHP files for this package, and append a list of dependent
+ * files that use the package.
+ *
+ * @since 1.1.0
+ *
+ * @param string $path Package path
+ * @return array Merged list of files
+ */
 function find_files( string $path ): array {
 	global $vendor_dir, $dependencies;
 
@@ -112,7 +131,7 @@ function find_files( string $path ): array {
 	);
 
 	if ( ! empty( $dependencies[ $path ] ) ) {
-		foreach( $dependencies[ $path ] as $dependency ) {
+		foreach ( $dependencies[ $path ] as $dependency ) {
 			$dependent_files = array_filter(
 				explode(
 					"\n",
@@ -126,6 +145,15 @@ function find_files( string $path ): array {
 	return $files;
 }
 
+/**
+ * Replace namespace strings with a JSON file.
+ *
+ * @since 1.2.0
+ *
+ * @param string $file          Filename to replace the strings
+ * @param string $namespace     Namespace to search for
+ * @param string $new_namespace Namespace to replace with
+ */
 function replace_in_json_file( string $file, string $namespace, string $new_namespace ) {
 	if ( ! file_exists( $file ) ) {
 		return;
@@ -140,4 +168,63 @@ function replace_in_json_file( string $file, string $namespace, string $new_name
 			$contents
 		)
 	);
+}
+
+/**
+ * Removes any autoload files from a package, and confirms they are loaded from the main composer.json file.
+ * This ensures that the generated file vendor/composer/autoload_files.php will only autoload the files once,
+ * using the new namespace. Autoloading the files from our main composer.json ensures we use a unique hash so
+ * we don't conflict with other extensions autoloading the same files.
+ *
+ * @since x.x.x
+ *
+ * @param string $file              Generated file containing information about all the installed packages
+ * @param array  $composer_autoload List of autoloaded files in composer.json
+ * @param string $package_name      Name of the package we are replacing
+ */
+function remove_file_autoloads( string $file, array $composer_autoload, string $package_name ) {
+	if ( ! file_exists( $file ) ) {
+		return;
+	}
+
+	$json = json_decode( file_get_contents( $file ), true );
+	if ( empty( $json['packages'] ) ) {
+		return;
+	}
+
+	$modified = false;
+	foreach ( $json['packages'] as $key => $package ) {
+		if ( 0 !== strpos( $package['name'], $package_name ) ) {
+			continue;
+		}
+
+		if ( empty( $package['autoload']['files'] ) ) {
+			continue;
+		}
+
+		foreach ( $package['autoload']['files'] as $autoload_file ) {
+
+			// Confirm we already include this autoload in the main composer file.
+			$filename = "vendor/{$package['name']}/{$autoload_file}";
+			if ( in_array( $filename, $composer_autoload, true ) ) {
+				continue;
+			}
+
+			printf(
+				'Autoloaded file "%s" should be included in composer.json' . PHP_EOL,
+				$filename
+			);
+			exit( 1 );
+		}
+
+		$json['packages'][ $key ]['autoload']['files'] = [];
+		$modified = true;
+	}
+
+	if ( $modified ) {
+		file_put_contents(
+			$file,
+			json_encode( $json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+		);
+	}
 }
