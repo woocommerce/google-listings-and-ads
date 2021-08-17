@@ -40,6 +40,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	public const AVAILABILITY_IN_STOCK     = 'in stock';
 	public const AVAILABILITY_OUT_OF_STOCK = 'out of stock';
 	public const AVAILABILITY_BACKORDER    = 'backorder';
+	public const AVAILABILITY_PREORDER     = 'preorder';
 
 	public const IMAGE_SIZE_FULL = 'full';
 
@@ -308,7 +309,6 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_availability() {
-		// todo: include 'preorder' status (maybe a new field for products / or using an extension?)
 		if ( ! $this->wc_product->is_in_stock() ) {
 			$availability = self::AVAILABILITY_OUT_OF_STOCK;
 		} elseif ( $this->wc_product->is_on_backorder( 1 ) ) {
@@ -729,13 +729,17 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	}
 
 	/**
-	 * Used by the validator to check if the availability date is set for product available as `backorder`.
+	 * Used by the validator to check if the availability date is set for product available as `backorder` or
+	 * `preorder`.
 	 *
 	 * @param ExecutionContextInterface $context
 	 */
 	public function validate_availability( ExecutionContextInterface $context ) {
-		if ( self::AVAILABILITY_BACKORDER === $this->getAvailability() && empty( $this->getAvailabilityDate() ) ) {
-			$context->buildViolation( 'Availability date is required if you set the product\'s availability to backorder.' )
+		if (
+			( self::AVAILABILITY_BACKORDER === $this->getAvailability() || self::AVAILABILITY_PREORDER === $this->getAvailability() ) &&
+			empty( $this->getAvailabilityDate() )
+		) {
+			$context->buildViolation( 'Availability date is required if you set the product\'s availability to backorder or pre-order.' )
 					->atPath( 'availabilityDate' )
 					->addViolation();
 		}
