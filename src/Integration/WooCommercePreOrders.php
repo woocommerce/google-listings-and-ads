@@ -117,6 +117,9 @@ class WooCommercePreOrders implements IntegrationInterface {
 	/**
 	 * Triggers an update job for the product to be synced with Merchant Center.
 	 *
+	 * This is required because WooCommerce Pre-orders updates the product's metadata via `update_post_meta`, which
+	 * does not automatically trigger a sync.
+	 *
 	 * @hooked wc_pre_orders_pre_orders_disabled_for_product
 	 *
 	 * @param mixed $product_id
