@@ -115,4 +115,18 @@ class WP {
 	public function is_wp_error( $thing ): bool {
 		return is_wp_error( $thing );
 	}
+
+	/**
+	 * Retrieves the timezone from site settings as a string.
+	 *
+	 * Uses the `timezone_string` option to get a proper timezone if available,
+	 * otherwise falls back to an offset.
+	 *
+	 * @return string PHP timezone string or a ±HH:MM offset.
+	 *
+	 * @since x.x.x
+	 */
+	public function wp_timezone_string(): string {
+		return wp_timezone_string();
+	}
 }
