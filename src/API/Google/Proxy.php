@@ -10,10 +10,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
-use DateTime;
-use DateTimeZone;
 use Exception;
 use Google\Ads\GoogleAds\Util\V8\ResourceNames;
 use Google\ApiCore\ApiException;
@@ -602,22 +602,13 @@ class Proxy implements OptionsAwareInterface {
 	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	protected function get_site_timezone_string(): string {
-		$timezone = wp_timezone_string();
+		/** @var WP $wp */
+		$wp       = $this->container->get( WP::class );
+		$timezone = $wp->wp_timezone_string();
 
-		// Convert a timezone offset to the closest match.
-		if ( false !== strpos( $timezone, ':' ) ) {
-			list( $hours, $minutes ) = explode( ':', $timezone );
+		/** @var DateTimeUtility $datetime_util */
+		$datetime_util = $this->container->get( DateTimeUtility::class );
 
-			$dst      = (int) ( new DateTime( 'now', new DateTimeZone( $timezone ) ) )->format( 'I' );
-			$seconds  = $hours * 60 * 60 + $minutes * 60;
-			$tz_name  = timezone_name_from_abbr( '', $seconds, $dst );
-			$timezone = $tz_name !== false ? $tz_name : date_default_timezone_get();
-		}
-
-		if ( 'UTC' === $timezone ) {
-			$timezone = 'Etc/GMT';
-		}
-
-		return $timezone;
+		return $datetime_util->maybe_convert_tz_string( $timezone );
 	}
 }
