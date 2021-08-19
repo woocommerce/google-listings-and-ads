@@ -154,23 +154,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'get_merchant_id' )
 			->will( $this->onConsecutiveCalls( 0, $merchant_id ) );
 
-		$this->options->expects( $this->any() )
-			->method( 'get' )
-			->will(
-            	$this->returnCallback(
-					function( $arg ) {
-                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
-							return [
-								'claim' => [
-									'status'  => MerchantAccountState::STEP_PENDING,
-									'message' => '',
-									'data'    => [],
-								],
-							];
-    	    	        }
-            		}
-				)
-			);
+		$this->expected_account_state(
+			[
+				'claim' => [
+					'status'  => MerchantAccountState::STEP_PENDING,
+					'message' => '',
+					'data'    => [],
+				],
+			]
+		);
 
 		$this->merchant->expects( $this->any() )
 			->method( 'claimwebsite' )
@@ -191,30 +183,22 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'get_merchant_id' )
 			->will( $this->onConsecutiveCalls( 0, $merchant_id ) );
 
-		$this->options->expects( $this->any() )
-			->method( 'get' )
-			->will(
-            	$this->returnCallback(
-					function( $arg ) {
-                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
-							return [
-								'set_id' => [
-									'status'  => MerchantAccountState::STEP_DONE,
-									'message' => '',
-									'data'    => [
-										'from_mca' => false,
-									],
-								],
-								'claim' => [
-									'status'  => MerchantAccountState::STEP_PENDING,
-									'message' => '',
-									'data'    => [],
-								],
-							];
-    	    	        }
-            		}
-				)
-			);
+		$this->expected_account_state(
+			[
+				'set_id' => [
+					'status'  => MerchantAccountState::STEP_DONE,
+					'message' => '',
+					'data'    => [
+						'from_mca' => false,
+					],
+				],
+				'claim' => [
+					'status'  => MerchantAccountState::STEP_PENDING,
+					'message' => '',
+					'data'    => [],
+				],
+			]
+		);
 
 		$this->merchant->expects( $this->any() )
 			->method( 'claimwebsite' )
@@ -268,23 +252,15 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'get_merchant_id' )
 			->willReturn( 0 );
 
-		$this->options->expects( $this->any() )
-			->method( 'get' )
-			->will(
-            	$this->returnCallback(
-					function( $arg ) {
-                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
-							return [
-								'link' => [
-									'status'  => MerchantAccountState::STEP_PENDING,
-									'message' => '',
-									'data'    => [],
-								],
-							];
-    	    	        }
-            		}
-				)
-			);
+		$this->expected_account_state(
+			[
+				'link' => [
+					'status'  => MerchantAccountState::STEP_PENDING,
+					'message' => '',
+					'data'    => [],
+				],
+			]
+		);
 
 		$this->middleware->expects( $this->any() )
 			->method( 'link_merchant_to_mca' )
@@ -330,28 +306,20 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function test_claim_overwrite() {
 		$merchant_id = 12345;
 
-		$this->options->expects( $this->any() )
-			->method( 'get' )
-			->will(
-            	$this->returnCallback(
-					function( $arg ) {
-                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
-							return [
-								'set_id' => [
-									'status'  => MerchantAccountState::STEP_DONE,
-								],
-								'claim' => [
-									'status'  => MerchantAccountState::STEP_PENDING,
-									'message' => '',
-									'data'    => [
-										'overwrite_required' => true,
-									],
-								],
-							];
-    	    	        }
-            		}
-				)
-			);
+		$this->expected_account_state(
+			[
+				'set_id' => [
+					'status'  => MerchantAccountState::STEP_DONE,
+				],
+				'claim' => [
+					'status'  => MerchantAccountState::STEP_PENDING,
+					'message' => '',
+					'data'    => [
+						'overwrite_required' => true,
+					],
+				],
+			]
+		);
 
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
@@ -384,28 +352,20 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function test_switch_url() {
 		$merchant_id = 12345;
 
-		$this->options->expects( $this->any() )
-			->method( 'get' )
-			->will(
-            	$this->returnCallback(
-					function( $arg ) {
-                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
-							return [
-								'set_id' => [
-									'status'  => $this->onConsecutiveCalls(
-										MerchantAccountState::STEP_PENDING,
-										MerchantAccountState::STEP_DONE
-									),
-									'message' => '',
-									'data'    => [
-										'old_url' => 'oldurl.test',
-									],
-								],
-							];
-    	    	        }
-            		}
-				)
-			);
+		$this->expected_account_state(
+			[
+				'set_id' => [
+					'status'  => $this->onConsecutiveCalls(
+						MerchantAccountState::STEP_PENDING,
+						MerchantAccountState::STEP_DONE
+					),
+					'message' => '',
+					'data'    => [
+						'old_url' => 'oldurl.test',
+					],
+				],
+			]
+		);
 
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
@@ -424,5 +384,19 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	protected function clean_site_url(): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
+	}
+
+	protected function expected_account_state( array $state ) {
+		$this->options->expects( $this->any() )
+			->method( 'get' )
+			->will(
+				$this->returnCallback(
+					function( $arg ) use ( $state ) {
+						if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
+							return $state;
+						}
+					}
+				)
+			);
 	}
 }
