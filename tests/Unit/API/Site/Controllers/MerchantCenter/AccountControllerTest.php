@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Exception;
 use Google\Service\ShoppingContent\Account;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -170,6 +171,50 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $merchant_id, $response->data['id'] );
 	}
 
+	public function test_overwrite_claim_for_standalone_account() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->will( $this->onConsecutiveCalls( 0, $merchant_id, $merchant_id ) );
+
+		$this->options->expects( $this->any() )
+			->method( 'get' )
+			->will(
+            	$this->returnCallback(
+					function( $arg ) {
+                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
+							return [
+								'set_id' => [
+									'status'  => 1,
+									'message' => '',
+									'data'    => [
+										'from_mca' => false,
+									],
+								],
+								'claim' => [
+									'status'  => 0,
+									'message' => '',
+									'data'    => [],
+								],
+							];
+    	    	        }
+            		}
+				)
+			);
+
+		$this->merchant->expects( $this->any() )
+			->method( 'claimwebsite' )
+			->will(
+				$this->throwException( new Exception( 'Error', 403 ) )
+			);
+
+		$response = $this->do_request( '/wc/gla/mc/accounts', 'POST' );
+		$this->assertExpectedResponse( $response, 406 );
+		$this->assertEquals( $merchant_id, $response->data['id'] );
+		$this->assertEquals( $this->clean_site_url(), $response->data['website_url'] );
+	}
+
 	public function test_already_claimed_url_is_different() {
 		$merchant_id = 12345;
 
@@ -200,10 +245,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertExpectedResponse( $response, 409 );
 		$this->assertEquals( $merchant_id, $response->data['id'] );
 		$this->assertEquals( 'accounturl.test', $response->data['claimed_url'] );
-		$this->assertEquals(
-			preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) ),
-			$response->data['new_url']
-		);
+		$this->assertEquals( $this->clean_site_url(), $response->data['new_url'] );
 	}
 
 	public function test_account_already_connected() {
@@ -223,4 +265,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'message', $response->data );
 	}
 
+	protected function clean_site_url(): string {
+		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
+	}
 }
