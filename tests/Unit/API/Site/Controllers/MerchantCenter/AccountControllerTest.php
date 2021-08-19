@@ -162,7 +162,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
                 		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
 							return [
 								'claim' => [
-									'status'  => 0,
+									'status'  => MerchantAccountState::STEP_PENDING,
 									'message' => '',
 									'data'    => [],
 								],
@@ -199,14 +199,14 @@ class AccountControllerTest extends RESTControllerUnitTest {
                 		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
 							return [
 								'set_id' => [
-									'status'  => 1,
+									'status'  => MerchantAccountState::STEP_DONE,
 									'message' => '',
 									'data'    => [
 										'from_mca' => false,
 									],
 								],
 								'claim' => [
-									'status'  => 0,
+									'status'  => MerchantAccountState::STEP_PENDING,
 									'message' => '',
 									'data'    => [],
 								],
@@ -276,7 +276,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
                 		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
 							return [
 								'link' => [
-									'status'  => 0,
+									'status'  => MerchantAccountState::STEP_PENDING,
 									'message' => '',
 									'data'    => [],
 								],
@@ -338,10 +338,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
                 		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
 							return [
 								'set_id' => [
-									'status'  => 1,
+									'status'  => MerchantAccountState::STEP_DONE,
 								],
 								'claim' => [
-									'status'  => 0,
+									'status'  => MerchantAccountState::STEP_PENDING,
 									'message' => '',
 									'data'    => [
 										'overwrite_required' => true,
@@ -392,7 +392,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
                 		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
 							return [
 								'set_id' => [
-									'status'  => $this->onConsecutiveCalls( 0, 1 ),
+									'status'  => $this->onConsecutiveCalls(
+										MerchantAccountState::STEP_PENDING,
+										MerchantAccountState::STEP_DONE
+									),
 									'message' => '',
 									'data'    => [
 										'old_url' => 'oldurl.test',
