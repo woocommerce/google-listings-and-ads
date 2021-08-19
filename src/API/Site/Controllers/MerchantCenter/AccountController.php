@@ -445,6 +445,7 @@ class AccountController extends BaseOptionsController {
 				if ( 'claim' === $name && 403 === $e->getCode() ) {
 					$data = [
 						'id'          => $merchant_id,
+						'step'        => $name,
 						'website_url' => $this->strip_url_protocol(
 							esc_url_raw( $this->get_site_url() )
 						),
