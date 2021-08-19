@@ -12,16 +12,12 @@ import './index.scss';
 
 /**
  * Hero element for free listing configuration.
- *
- * @param {Object} props
- * @param {string} props.stepHeader Header text to indicate the step number.
  */
-const Hero = ( { stepHeader } ) => {
+const Hero = () => {
 	return (
 		<div className="gla-setup-free-listing-hero">
 			<StepContentHeader
 				className="hero-text"
-				step={ stepHeader }
 				title={ __(
 					'Configure your product listings',
 					'google-listings-and-ads'

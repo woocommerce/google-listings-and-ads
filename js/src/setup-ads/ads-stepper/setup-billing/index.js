@@ -31,7 +31,6 @@ const SetupBilling = ( props ) => {
 	return (
 		<StepContent>
 			<StepContentHeader
-				step={ __( 'STEP THREE', 'google-listings-and-ads' ) }
 				title={ __( 'Set up billing', 'google-listings-and-ads' ) }
 				description={
 					billingStatus.status === 'approved'

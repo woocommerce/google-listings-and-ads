@@ -21,7 +21,6 @@ const CreateCampaign = ( props ) => {
 	return (
 		<StepContent>
 			<StepContentHeader
-				step={ __( 'STEP TWO', 'google-listings-and-ads' ) }
 				title={ __(
 					'Create your paid campaign',
 					'google-listings-and-ads'

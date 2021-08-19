@@ -21,13 +21,11 @@ import '.~/components/free-listings/choose-audience/index.scss';
  * Copied from {@link .~/setup-mc/setup-stepper/choose-audience/index.js}.
  *
  * @param {Object} props
- * @param {string} props.stepHeader Header text to indicate the step number.
  * @param {string} [props.initialData] Target audience data, if not given AppSinner will be rendered.
  * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
 export default function ChooseAudience( {
-	stepHeader,
 	initialData,
 	onChange = () => {},
 	onContinue = () => {},
@@ -60,7 +58,6 @@ export default function ChooseAudience( {
 		<div className="gla-choose-audience">
 			<StepContent>
 				<StepContentHeader
-					step={ stepHeader }
 					title={ __(
 						'Choose your audience',
 						'google-listings-and-ads'

@@ -58,7 +58,6 @@ const ChooseAudience = ( props ) => {
 		<div className="gla-choose-audience">
 			<StepContent>
 				<StepContentHeader
-					step={ __( 'STEP TWO', 'google-listings-and-ads' ) }
 					title={ __(
 						'Choose your audience',
 						'google-listings-and-ads'

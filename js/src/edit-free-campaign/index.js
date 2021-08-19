@@ -240,10 +240,6 @@ export default function EditFreeCampaign() {
 						),
 						content: (
 							<ChooseAudience
-								stepHeader={ __(
-									'STEP ONE',
-									'google-listings-and-ads'
-								) }
 								initialData={ targetAudience }
 								onChange={ ( change, newTargetAudience ) =>
 									updateTargetAudience( newTargetAudience )
@@ -261,10 +257,6 @@ export default function EditFreeCampaign() {
 						),
 						content: (
 							<SetupFreeListings
-								stepHeader={ __(
-									'STEP TWO',
-									'google-listings-and-ads'
-								) }
 								countries={ getFinalCountries(
 									targetAudience
 								) }
