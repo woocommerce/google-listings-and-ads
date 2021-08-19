@@ -171,12 +171,49 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $merchant_id, $response->data['id'] );
 	}
 
+	public function test_claim_overwrite_required() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->will( $this->onConsecutiveCalls( 0, $merchant_id ) );
+
+		$this->options->expects( $this->any() )
+			->method( 'get' )
+			->will(
+            	$this->returnCallback(
+					function( $arg ) {
+                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
+							return [
+								'claim' => [
+									'status'  => 0,
+									'message' => '',
+									'data'    => [],
+								],
+							];
+    	    	        }
+            		}
+				)
+			);
+
+		$this->merchant->expects( $this->any() )
+			->method( 'claimwebsite' )
+			->will(
+				$this->throwException( new Exception( 'Error', 403 ) )
+			);
+
+		$response = $this->do_request( '/wc/gla/mc/accounts', 'POST' );
+		$this->assertExpectedResponse( $response, 403 );
+		$this->assertEquals( $merchant_id, $response->data['id'] );
+		$this->assertEquals( $this->clean_site_url(), $response->data['website_url'] );
+	}
+
 	public function test_overwrite_claim_for_standalone_account() {
 		$merchant_id = 12345;
 
 		$this->options->expects( $this->any() )
 			->method( 'get_merchant_id' )
-			->will( $this->onConsecutiveCalls( 0, $merchant_id, $merchant_id ) );
+			->will( $this->onConsecutiveCalls( 0, $merchant_id ) );
 
 		$this->options->expects( $this->any() )
 			->method( 'get' )
