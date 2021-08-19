@@ -86,6 +86,7 @@ abstract class RESTControllerUnitTest extends UnitTest {
 
 	/**
 	 * Validate that the returned API schema matches what is expected.
+
 	 */
 	public function test_schema_properties() {
 		$request    = new Request( 'OPTIONS', $this->routes[0] );
