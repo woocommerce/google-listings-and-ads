@@ -58,7 +58,7 @@ abstract class AccountState implements Service, OptionsAwareInterface {
 			$this->update( $state );
 		}
 
-		return $state;
+		return $state ?: [];
 	}
 
 	/**

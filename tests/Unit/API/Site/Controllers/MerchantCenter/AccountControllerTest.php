@@ -120,18 +120,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 			->method( 'insert' )
 			->willReturn( true );
 
-		$this->options->expects( $this->any() )
-			->method( 'get' )
-			->will(
-            	$this->returnCallback(
-					function( $arg ) {
-                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
-							return [];
-    	            	}
-            		}
-				)
-			);
-
 		$response = $this->do_request( '/wc/gla/mc/accounts', 'POST' );
 		$this->assertExpectedResponse( $response, 200 );
 		$this->assertEquals( $merchant_id, $response->data['id'] );
@@ -147,18 +135,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->site_verification->expects( $this->any() )
 			->method( 'insert' )
 			->willReturn( true );
-
-		$this->options->expects( $this->any() )
-			->method( 'get' )
-			->will(
-            	$this->returnCallback(
-					function( $arg ) {
-                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
-							return [];
-    	    	        }
-            		}
-				)
-			);
 
 		$response = $this->do_request(
 			'/wc/gla/mc/accounts',
