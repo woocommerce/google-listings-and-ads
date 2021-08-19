@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Google\Service\ShoppingContent\Account;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -167,6 +168,42 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		);
 		$this->assertExpectedResponse( $response, 200 );
 		$this->assertEquals( $merchant_id, $response->data['id'] );
+	}
+
+	public function test_already_claimed_url_is_different() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->merchant->expects( $this->any() )
+			->method( 'is_website_claimed' )
+			->willReturn( true );
+
+		$account = $this->createMock( Account::class );
+		$account->expects( $this->any() )
+			->method( 'getWebsiteUrl' )
+			->willReturn( 'https://accounturl.test' );
+
+		$this->merchant->expects( $this->any() )
+			->method( 'get_account' )
+			->willReturn( $account );
+
+		$response = $this->do_request(
+			'/wc/gla/mc/accounts',
+			'POST',
+			[
+				'id' => $merchant_id,
+			]
+		);
+		$this->assertExpectedResponse( $response, 409 );
+		$this->assertEquals( $merchant_id, $response->data['id'] );
+		$this->assertEquals( 'accounturl.test', $response->data['claimed_url'] );
+		$this->assertEquals(
+			preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) ),
+			$response->data['new_url']
+		);
 	}
 
 	public function test_account_already_connected() {
