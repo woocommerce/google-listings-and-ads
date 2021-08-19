@@ -314,6 +314,60 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'message', $response->data );
 	}
 
+	public function test_invalid_claim_overwrite() {
+		$merchant_id = 12345;
+
+		$response = $this->do_request(
+			'/wc/gla/mc/accounts/claim-overwrite',
+			'POST',
+			[
+				'id' => $merchant_id,
+			]
+		);
+		$this->assertExpectedResponse( $response, 400 );
+	}
+
+	public function test_claim_overwrite() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get' )
+			->will(
+            	$this->returnCallback(
+					function( $arg ) {
+                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
+							return [
+								'set_id' => [
+									'status'  => 1,
+								],
+								'claim' => [
+									'status'  => 0,
+									'message' => '',
+									'data'    => [
+										'overwrite_required' => true,
+									],
+								],
+							];
+    	    	        }
+            		}
+				)
+			);
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( $merchant_id );
+
+		$response = $this->do_request(
+			'/wc/gla/mc/accounts/claim-overwrite',
+			'POST',
+			[
+				'id' => $merchant_id,
+			]
+		);
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( $merchant_id, $response->data['id'] );
+	}
+
 	protected function clean_site_url(): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
 	}
