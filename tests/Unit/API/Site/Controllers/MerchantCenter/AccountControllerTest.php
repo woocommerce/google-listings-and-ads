@@ -135,4 +135,38 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $merchant_id, $response->data['id'] );
 	}
 
+	public function test_link_existing_account() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->will( $this->onConsecutiveCalls( 0, $merchant_id ) );
+
+		$this->site_verification->expects( $this->any() )
+			->method( 'insert' )
+			->willReturn( true );
+
+		$this->options->expects( $this->any() )
+			->method( 'get' )
+			->will(
+            	$this->returnCallback(
+					function( $arg ) {
+                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
+							return [];
+    	    	        }
+            		}
+				)
+			);
+
+		$response = $this->do_request(
+			'/wc/gla/mc/accounts',
+			'POST',
+			[
+				'id' => $merchant_id,
+			]
+		);
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( $merchant_id, $response->data['id'] );
+	}
+
 }
