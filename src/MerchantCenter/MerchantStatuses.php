@@ -371,7 +371,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$merchant       = $this->container->get( Merchant::class );
 		$account_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
-		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
+		foreach ( $merchant->get_account_level_issues() as $issue ) {
 			$account_issues[] = [
 				'product_id' => 0,
 				'product'    => __( 'All products', 'google-listings-and-ads' ),

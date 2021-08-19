@@ -416,7 +416,7 @@ class AccountController extends BaseOptionsController {
 					case 'claim':
 						// At this step, the website URL is assumed to be correct.
 						// If the URL is already claimed, no claim should be attempted.
-						if ( $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed() ) {
+						if ( $this->merchant->is_website_claimed( $merchant_id ) ) {
 							break;
 						}
 
@@ -602,7 +602,7 @@ class AccountController extends BaseOptionsController {
 
 		if ( untrailingslashit( $site_website_url ) !== untrailingslashit( $account_website_url ) ) {
 
-			$is_website_claimed = $this->merchant->get_accountstatus( $merchant_id )->getWebsiteClaimed();
+			$is_website_claimed = $this->merchant->is_website_claimed( $merchant_id );
 
 			if ( ! empty( $account_website_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
 				$state                              = $this->account_state->get();

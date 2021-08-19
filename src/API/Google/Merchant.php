@@ -123,7 +123,7 @@ class Merchant implements OptionsAwareInterface {
 	 * @return AccountStatus The user's Merchant Center account status.
 	 * @throws Exception If the account can't be retrieved.
 	 */
-	public function get_accountstatus( int $id = 0 ): AccountStatus {
+	protected function get_accountstatus( int $id = 0 ): AccountStatus {
 		$id = $id ?: $this->options->get_merchant_id();
 
 		try {
@@ -133,6 +133,31 @@ class Merchant implements OptionsAwareInterface {
 			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
+	}
+
+	/**
+	 * Check if the account website has been claimed.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param integer $merchant_id Merchant Account ID.
+	 * @return bool
+	 * @throws Exception If the account can't be retrieved.
+	 */
+	public function is_website_claimed( int $merchant_id ): bool {
+		return $this->get_accountstatus( $merchant_id )->getWebsiteClaimed();
+	}
+
+	/**
+	 * Return list of account level issues from the account status.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return array
+	 * @throws Exception If the account can't be retrieved.
+	 */
+	public function get_account_level_issues(): array {
+		return $this->get_accountstatus()->getAccountLevelIssues();
 	}
 
 	/**
