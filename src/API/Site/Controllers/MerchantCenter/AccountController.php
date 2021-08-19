@@ -364,9 +364,8 @@ class AccountController extends BaseOptionsController {
 	 * @return Response
 	 */
 	protected function prepare_error_response( array $data, int $code = null ): Response {
-		$merchant_id = $this->options->get_merchant_id();
-		if ( $merchant_id ) {
-			$data['id'] = $merchant_id;
+		if ( ! isset( $data['id'] ) && $this->options->get_merchant_id() ) {
+			$data['id'] = $this->options->get_merchant_id();
 		}
 		return new Response( $data, $code ?: 400 );
 
