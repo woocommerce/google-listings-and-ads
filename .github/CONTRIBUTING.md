@@ -19,7 +19,8 @@ Please see [SECURITY.md](./SECURITY.md).
 Feature requests can be submitted to our [ideas board](https://ideas.woocommerce.com/forums/133476-woocommerce?category_id=403986). Be sure to include a good description of the expected behavior and use case, and before submitting a request, please search for similar ones.
 
 ## Getting started
-* [Git Flow](https://github.com/woocommerce/google-listings-and-ads/wiki/Git-Flow)
-* [Writing Code & Requesting a Review](https://github.com/woocommerce/google-listings-and-ads/wiki/Working-With-Code#writing-code-and-requesting-a-review)
-* [Reviewing Code](https://github.com/woocommerce/google-listings-and-ads/wiki/Working-With-Code#reviewing-code)
-* [Development Docs, Guides & Best Practices](https://github.com/woocommerce/google-listings-and-ads/wiki/Development-Docs,-Guides-&-Best-Practices)
+
+-   [Git Flow](https://github.com/woocommerce/google-listings-and-ads/wiki/Git-Flow)
+-   [Writing Code & Requesting a Review](https://github.com/woocommerce/google-listings-and-ads/wiki/Working-With-Code#writing-code-and-requesting-a-review)
+-   [Reviewing Code](https://github.com/woocommerce/google-listings-and-ads/wiki/Working-With-Code#reviewing-code)
+-   [Development Docs, Guides & Best Practices](https://github.com/woocommerce/google-listings-and-ads/wiki/Development-Docs,-Guides-&-Best-Practices)
