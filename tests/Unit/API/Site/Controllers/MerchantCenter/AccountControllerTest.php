@@ -368,6 +368,57 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $merchant_id, $response->data['id'] );
 	}
 
+	public function test_invalid_switch_url() {
+		$merchant_id = 12345;
+
+		$response = $this->do_request(
+			'/wc/gla/mc/accounts/switch-url',
+			'POST',
+			[
+				'id' => $merchant_id,
+			]
+		);
+		$this->assertExpectedResponse( $response, 400 );
+	}
+
+	public function test_switch_url() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get' )
+			->will(
+            	$this->returnCallback(
+					function( $arg ) {
+                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
+							return [
+								'set_id' => [
+									'status'  => $this->onConsecutiveCalls( 0, 1 ),
+									'message' => '',
+									'data'    => [
+										'old_url' => 'oldurl.test',
+									],
+								],
+							];
+    	    	        }
+            		}
+				)
+			);
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( $merchant_id );
+
+		$response = $this->do_request(
+			'/wc/gla/mc/accounts/switch-url',
+			'POST',
+			[
+				'id' => $merchant_id,
+			]
+		);
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( $merchant_id, $response->data['id'] );
+	}
+
 	protected function clean_site_url(): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
 	}
