@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -13,10 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
-use Google\Service\ShoppingContent\Account as MC_Account;
 use Exception;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -30,11 +28,6 @@ defined( 'ABSPATH' ) || exit;
 class AccountController extends BaseOptionsController {
 
 	use PluginHelper;
-
-	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
 
 	/**
 	 * @var Middleware
@@ -57,6 +50,11 @@ class AccountController extends BaseOptionsController {
 	protected $mc_service;
 
 	/**
+	 * @var SiteVerification
+	 */
+	protected $site_verification;
+
+	/**
 	 * @var bool Whether to perform website claim with overwrite.
 	 */
 	protected $overwrite_claim = false;
@@ -70,15 +68,27 @@ class AccountController extends BaseOptionsController {
 	/**
 	 * AccountController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer            $server
+	 * @param Middleware            $middleware
+	 * @param Merchant              $merchant
+	 * @param MerchantAccountState  $account_state
+	 * @param MerchantCenterService $mc_service
+	 * @param SiteVerification      $site_verification
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->middleware    = $container->get( Middleware::class );
-		$this->merchant      = $container->get( Merchant::class );
-		$this->account_state = $container->get( MerchantAccountState::class );
-		$this->mc_service    = $container->get( MerchantCenterService::class );
-		$this->container     = $container;
+	public function __construct(
+		RESTServer $server,
+		Middleware $middleware,
+		Merchant $merchant,
+		MerchantAccountState $account_state,
+		MerchantCenterService $mc_service,
+		SiteVerification $site_verification
+	) {
+		parent::__construct( $server );
+		$this->middleware        = $middleware;
+		$this->merchant          = $merchant;
+		$this->account_state     = $account_state;
+		$this->mc_service        = $mc_service;
+		$this->site_verification = $site_verification;
 	}
 
 	/**
@@ -494,10 +504,8 @@ class AccountController extends BaseOptionsController {
 		}
 
 		// Retrieve the meta tag with verification token.
-		/** @var SiteVerification $site_verification */
-		$site_verification = $this->container->get( SiteVerification::class );
 		try {
-			$meta_tag = $site_verification->get_token( $site_url );
+			$meta_tag = $this->site_verification->get_token( $site_url );
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'token' ] );
 			throw $e;
@@ -505,7 +513,7 @@ class AccountController extends BaseOptionsController {
 
 		// Store the meta tag in the options table and mark as unverified.
 		$site_verification_options = [
-			'verified' => $site_verification::VERIFICATION_STATUS_UNVERIFIED,
+			'verified' => $this->site_verification::VERIFICATION_STATUS_UNVERIFIED,
 			'meta_tag' => $meta_tag,
 		];
 		$this->options->update(
@@ -515,8 +523,8 @@ class AccountController extends BaseOptionsController {
 
 		// Attempt verification.
 		try {
-			if ( $site_verification->insert( $site_url ) ) {
-				$site_verification_options['verified'] = $site_verification::VERIFICATION_STATUS_VERIFIED;
+			if ( $this->site_verification->insert( $site_url ) ) {
+				$site_verification_options['verified'] = $this->site_verification::VERIFICATION_STATUS_VERIFIED;
 				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
 				do_action( 'woocommerce_gla_site_verify_success', [] );
 
