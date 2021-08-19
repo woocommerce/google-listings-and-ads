@@ -382,7 +382,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function setup_merchant_account() {
 		$state       = $this->account_state->get();
-		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
+		$merchant_id = $this->options->get_merchant_id();
 
 		foreach ( $state as $name => &$step ) {
 			if ( MerchantAccountState::STEP_DONE === $step['status'] ) {
