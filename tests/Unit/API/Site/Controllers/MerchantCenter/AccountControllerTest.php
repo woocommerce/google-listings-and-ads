@@ -285,6 +285,42 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $this->clean_site_url(), $response->data['new_url'] );
 	}
 
+	public function test_wait_for_account_create_to_complete() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( 0 );
+
+		$this->options->expects( $this->any() )
+			->method( 'get' )
+			->will(
+            	$this->returnCallback(
+					function( $arg ) {
+                		if ( OptionsInterface::MERCHANT_ACCOUNT_STATE === $arg ) {
+							return [
+								'link' => [
+									'status'  => 0,
+									'message' => '',
+									'data'    => [],
+								],
+							];
+    	    	        }
+            		}
+				)
+			);
+
+		$this->middleware->expects( $this->any() )
+			->method( 'link_merchant_to_mca' )
+			->will(
+				$this->throwException( new Exception( 'Error', 401 ) )
+			);
+
+		$response = $this->do_request( '/wc/gla/mc/accounts', 'POST' );
+		$this->assertExpectedResponse( $response, 503 );
+		$this->assertArrayHasKey( 'retry_after', $response->data );
+	}
+
 	public function test_account_already_connected() {
 		$merchant_id = 12345;
 
