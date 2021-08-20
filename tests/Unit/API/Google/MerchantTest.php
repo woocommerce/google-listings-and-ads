@@ -11,9 +11,11 @@ use Exception;
 use Google\Exception as GoogleException;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\Account;
+use Google\Service\ShoppingContent\AccountStatus;
 use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
 use Google\Service\ShoppingContent\Resource\Accounts;
+use Google\Service\ShoppingContent\Resource\Accountstatuses;
 use Google\Service\ShoppingContent\Resource\Products;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -160,4 +162,29 @@ class MerchantTest extends UnitTest {
         $this->expectExceptionCode( 400 );
 		$this->merchant->get_account();
 	}
+
+	public function test_get_accountstatuses() {
+		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
+		$this->service->accountstatuses->expects( $this->any() )
+			->method( 'get' )
+			->willReturn( $this->createMock( AccountStatus::class ) );
+
+		$this->assertInstanceOf( AccountStatus::class, $this->merchant->get_accountstatus() );
+	}
+
+	public function test_get_accountstatus_failure() {
+		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
+		$this->service->accountstatuses->expects( $this->any() )
+			->method( 'get' )
+			->will(
+				$this->throwException(
+					new GoogleException( 'error', 400 )
+				)
+			);
+
+		$this->expectException( Exception::class );
+        $this->expectExceptionCode( 400 );
+		$this->merchant->get_accountstatus();
+	}
+
 }
