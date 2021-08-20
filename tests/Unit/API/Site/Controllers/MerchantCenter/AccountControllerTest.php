@@ -22,8 +22,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  *
- * @since   x.x.x
- *
  * @property MockObject|Middleware            $middleware
  * @property MockObject|Merchant              $merchant
  * @property MockObject|MerchantCenterService $mc_service

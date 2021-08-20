@@ -10,8 +10,6 @@ defined( 'ABSPATH' ) || exit;
  * Class MockRESTServer
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework
- *
- * @since   x.x.x
  */
 class MockRESTServer extends WP_REST_Server {
 	/**

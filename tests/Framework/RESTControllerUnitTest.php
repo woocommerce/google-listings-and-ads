@@ -13,8 +13,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework
  *
- * @since   x.x.x
- *
  * @property RESTServer $server
  */
 abstract class RESTControllerUnitTest extends UnitTest {
