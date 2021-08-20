@@ -4,11 +4,13 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Exception;
 use Google\Exception as GoogleException;
 use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
 use Google\Service\ShoppingContent\Resource\Accounts;
@@ -135,5 +137,27 @@ class MerchantTest extends UnitTest {
 		$this->expectException( Exception::class );
         $this->expectExceptionCode( 403 );
 		$this->merchant->claimwebsite();
+	}
+
+	public function test_get_account() {
+		$this->service->accounts->expects( $this->any() )
+			->method( 'get' )
+			->willReturn( $this->createMock( Account::class ) );
+
+		$this->assertInstanceOf( Account::class, $this->merchant->get_account() );
+	}
+
+	public function test_get_account_failure() {
+		$this->service->accounts->expects( $this->any() )
+			->method( 'get' )
+			->will(
+				$this->throwException(
+					new GoogleException( 'error', 400 )
+				)
+			);
+
+		$this->expectException( MerchantApiException::class );
+        $this->expectExceptionCode( 400 );
+		$this->merchant->get_account();
 	}
 }
