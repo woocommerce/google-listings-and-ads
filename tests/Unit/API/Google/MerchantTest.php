@@ -202,4 +202,33 @@ class MerchantTest extends UnitTest {
 		);
 	}
 
+	public function test_update_account() {
+		$account = $this->createMock( Account::class );
+
+		$this->service->accounts->expects( $this->any() )
+			->method( 'update' )
+			->willReturn( $account );
+
+		$this->assertInstanceOf(
+			Account::class,
+			$this->merchant->update_account( $account )
+		);
+	}
+
+	public function test_update_account_failure() {
+		$account = $this->createMock( Account::class );
+
+		$this->service->accounts->expects( $this->any() )
+			->method( 'update' )
+			->will(
+				$this->throwException(
+					new GoogleException( 'error', 400 )
+				)
+			);
+
+		$this->expectException( MerchantApiException::class );
+        $this->expectExceptionCode( 400 );
+		$this->merchant->update_account( $account );
+	}
+
 }
