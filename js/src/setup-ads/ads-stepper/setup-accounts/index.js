@@ -30,7 +30,6 @@ const SetupAccounts = ( props ) => {
 	return (
 		<StepContent>
 			<StepContentHeader
-				step={ __( 'STEP ONE', 'google-listings-and-ads' ) }
 				title={ __(
 					'Set up your accounts',
 					'google-listings-and-ads'

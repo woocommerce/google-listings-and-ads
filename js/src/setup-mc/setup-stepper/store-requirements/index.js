@@ -83,7 +83,6 @@ export default function StoreRequirements() {
 	return (
 		<StepContent>
 			<StepContentHeader
-				step={ __( 'STEP FOUR', 'google-listings-and-ads' ) }
 				title={ __(
 					'Confirm store requirements',
 					'google-listings-and-ads'

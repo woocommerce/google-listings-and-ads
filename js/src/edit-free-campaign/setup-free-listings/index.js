@@ -25,7 +25,6 @@ import FormContent from './form-content';
  * without any save strategy, this is to be bound externaly.
  *
  * @param {Object} props
- * @param {string} props.stepHeader Header text to indicate the step number.
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to FormContent.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
  * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
@@ -37,7 +36,6 @@ import FormContent from './form-content';
  * @param {string} [props.submitLabel] Submit button label, to be forwarded to `FormContent`.
  */
 const SetupFreeListings = ( {
-	stepHeader,
 	countries,
 	settings,
 	onSettingsChange = () => {},
@@ -96,7 +94,7 @@ const SetupFreeListings = ( {
 
 	return (
 		<div className="gla-setup-free-listings">
-			<Hero stepHeader={ stepHeader } />
+			<Hero />
 			<Form
 				initialValues={ {
 					shipping_rate: settings.shipping_rate,

@@ -4,11 +4,10 @@
 import './index.scss';
 
 const StepContentHeader = ( props ) => {
-	const { className = '', step, title, description } = props;
+	const { className = '', title, description } = props;
 
 	return (
 		<header className={ `gla-step-content-header ${ className }` }>
-			<p className="step">{ step }</p>
 			<h1>{ title }</h1>
 			<div className="description">{ description }</div>
 		</header>
