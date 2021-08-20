@@ -60,7 +60,7 @@ const AppButton = ( props ) => {
 		text.push( passedInText );
 
 		if ( rest.icon ) {
-			classes.push( 'app-button--fix-padding' );
+			classes.push( 'app-button--icon-with-text' );
 		}
 		if ( rest.iconPosition === 'right' ) {
 			classes.push( 'app-button--icon-position-right' );
