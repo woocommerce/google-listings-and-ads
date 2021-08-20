@@ -11,6 +11,7 @@ use Exception;
 use Google\Exception as GoogleException;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\Account;
+use Google\Service\ShoppingContent\AccountAdsLink;
 use Google\Service\ShoppingContent\AccountStatus;
 use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
@@ -229,6 +230,49 @@ class MerchantTest extends UnitTest {
 		$this->expectException( MerchantApiException::class );
         $this->expectExceptionCode( 400 );
 		$this->merchant->update_account( $account );
+	}
+
+	public function test_link_ads_id() {
+		$account = $this->createMock( Account::class );
+		$ads_id  = 12345;
+
+		$account->expects( $this->any() )
+			->method( 'getAdsLinks' )
+			->willReturn( [] );
+
+		$this->service->accounts->expects( $this->any() )
+			->method( 'get' )
+			->willReturn( $account );
+
+		$this->service->accounts->expects( $this->any() )
+			->method( 'update' )
+			->willReturn( $account );
+
+		$this->assertTrue(
+			$this->merchant->link_ads_id( $ads_id )
+		);
+	}
+
+	public function test_ads_id_already_linked() {
+		$account  = $this->createMock( Account::class );
+		$ads_link = $this->createMock( AccountAdsLink::class );
+		$ads_id   = 12345;
+
+		$ads_link->expects( $this->any() )
+			->method( 'getAdsId' )
+			->willReturn( $ads_id );
+
+		$account->expects( $this->any() )
+			->method( 'getAdsLinks' )
+			->willReturn( [ $ads_link ] );
+
+		$this->service->accounts->expects( $this->any() )
+			->method( 'get' )
+			->willReturn( $account );
+
+		$this->assertFalse(
+			$this->merchant->link_ads_id( $ads_id )
+		);
 	}
 
 }
