@@ -418,6 +418,11 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $status, $response->data );
 	}
 
+	/**
+	 * Mock the merchant account state to return specific state values.
+	 *
+	 * @param array $state Expected state values to return.
+	 */
 	protected function expected_account_state( array $state ) {
 		$this->options->expects( $this->any() )
 			->method( 'get' )
