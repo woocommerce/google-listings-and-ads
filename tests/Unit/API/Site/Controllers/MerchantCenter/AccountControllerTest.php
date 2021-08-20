@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\MerchantTrait;
 use Exception;
 use Google\Service\ShoppingContent\Account;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -32,6 +33,8 @@ defined( 'ABSPATH' ) || exit;
  * @property MerchantAccountState             $account_state
  */
 class AccountControllerTest extends RESTControllerUnitTest {
+
+	use MerchantTrait;
 
 	/**
 	 * Routes that this endpoint creates.
@@ -413,10 +416,6 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( '/wc/gla/mc/setup', 'GET' );
 		$this->assertExpectedResponse( $response, 200 );
 		$this->assertEquals( $status, $response->data );
-	}
-
-	protected function clean_site_url(): string {
-		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
 	}
 
 	protected function expected_account_state( array $state ) {

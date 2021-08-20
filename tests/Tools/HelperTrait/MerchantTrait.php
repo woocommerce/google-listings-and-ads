@@ -46,4 +46,8 @@ trait MerchantTrait {
 
 		return $account;
 	}
+
+	protected function clean_site_url(): string {
+		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
+	}
 }
