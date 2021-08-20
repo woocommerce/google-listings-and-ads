@@ -382,6 +382,26 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $merchant_id, $response->data['id'] );
 	}
 
+	public function test_connection_status() {
+		$status = [
+			'id'     => '12345',
+			'status' => 'connected',
+		];
+		$this->mc_service->expects( $this->any() )
+			->method( 'get_connected_status' )
+			->willReturn( $status );
+
+		$response = $this->do_request( '/wc/gla/mc/connection', 'GET' );
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( $status, $response->data );
+	}
+
+	public function test_disconnect() {
+		$response = $this->do_request( '/wc/gla/mc/connection', 'DELETE' );
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( 'success', $response->data['status'] );
+	}
+
 	protected function clean_site_url(): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
 	}
