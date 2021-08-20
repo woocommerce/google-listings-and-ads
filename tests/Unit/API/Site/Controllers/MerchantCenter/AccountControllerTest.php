@@ -276,6 +276,27 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertArrayHasKey( 'retry_after', $response->data );
 	}
 
+	public function test_invalid_step() {
+		$merchant_id = 12345;
+
+		$this->options->expects( $this->any() )
+			->method( 'get_merchant_id' )
+			->willReturn( $merchant_id );
+
+		$this->expected_account_state(
+			[
+				'invalid' => [
+					'status'  => MerchantAccountState::STEP_PENDING,
+					'message' => '',
+					'data'    => [],
+				],
+			]
+		);
+
+		$response = $this->do_request( '/wc/gla/mc/accounts', 'POST' );
+		$this->assertExpectedResponse( $response, 400 );
+	}
+
 	public function test_account_already_connected() {
 		$merchant_id = 12345;
 
