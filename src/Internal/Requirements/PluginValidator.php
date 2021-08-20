@@ -31,6 +31,7 @@ class PluginValidator {
 	public static function validate(): bool {
 		$validated = true;
 
+		/** @var RequirementValidator $plugin */
 		foreach ( self::PLUGINS as $plugin ) {
 			if ( ! $plugin::instance()->validate() ) {
 				$validated = false;
