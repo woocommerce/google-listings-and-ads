@@ -14,9 +14,11 @@ use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountStatus;
 use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
+use Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
 use Google\Service\ShoppingContent\Resource\Accounts;
 use Google\Service\ShoppingContent\Resource\Accountstatuses;
 use Google\Service\ShoppingContent\Resource\Products;
+use Google\Service\ShoppingContent\Resource\Productstatuses;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -185,6 +187,19 @@ class MerchantTest extends UnitTest {
 		$this->expectException( Exception::class );
         $this->expectExceptionCode( 400 );
 		$this->merchant->get_accountstatus();
+	}
+
+	public function test_get_productstatuses_batch() {
+		$this->service->productstatuses = $this->createMock( Productstatuses::class );
+
+		$this->service->productstatuses->expects( $this->any() )
+			->method( 'custombatch' )
+			->willReturn( $this->createMock( ProductstatusesCustomBatchResponse::class ) );
+
+		$this->assertInstanceOf(
+			ProductstatusesCustomBatchResponse::class,
+			$this->merchant->get_productstatuses_batch( [ 1, 2, 3 ] )
+		);
 	}
 
 }
