@@ -13,6 +13,7 @@ use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountAdsLink;
 use Google\Service\ShoppingContent\AccountStatus;
+use Google\Service\ShoppingContent\AccountUser;
 use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
 use Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
@@ -272,6 +273,48 @@ class MerchantTest extends UnitTest {
 
 		$this->assertFalse(
 			$this->merchant->link_ads_id( $ads_id )
+		);
+	}
+
+	public function test_has_access_to_account() {
+		$account = $this->createMock( Account::class );
+		$user    = $this->createMock( AccountUser::class );
+		$email   = 'john@doe.email';
+
+		$user->expects( $this->any() )
+			->method( 'getEmailAddress' )
+			->willReturn( $email );
+
+		$user->expects( $this->any() )
+			->method( 'getAdmin' )
+			->willReturn( true );
+
+		$account->expects( $this->any() )
+			->method( 'getUsers' )
+			->willReturn( [ $user ] );
+
+		$this->service->accounts->expects( $this->any() )
+			->method( 'get' )
+			->willReturn( $account );
+
+		$this->assertTrue(
+			$this->merchant->has_access( $email )
+		);
+	}
+
+	public function test_no_access_to_account() {
+		$email = 'john@doe.email';
+
+		$this->service->accounts->expects( $this->any() )
+			->method( 'get' )
+			->will(
+				$this->throwException(
+					new GoogleException( 'no access', 403 )
+				)
+			);
+
+		$this->assertFalse(
+			$this->merchant->has_access( $email )
 		);
 	}
 
