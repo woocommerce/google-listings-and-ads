@@ -20,7 +20,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  *
- * @since   x.x.x
  * @property MockObject|ContactInformation $contact_information
  * @property MockObject|Settings           $google_settings
  * @property MockObject|Merchant           $merchant

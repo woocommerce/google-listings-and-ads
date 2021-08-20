@@ -12,8 +12,6 @@ use Google\Service\ShoppingContent\AccountBusinessInformation;
  * Trait MerchantTrait
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait
- *
- * @since x.x.x
  */
 trait MerchantTrait {
 
