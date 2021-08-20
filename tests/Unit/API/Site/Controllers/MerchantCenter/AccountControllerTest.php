@@ -402,6 +402,19 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'success', $response->data['status'] );
 	}
 
+	public function test_is_setup() {
+		$status = [
+			'status' => 'complete',
+		];
+		$this->mc_service->expects( $this->any() )
+			->method( 'get_setup_status' )
+			->willReturn( $status );
+
+		$response = $this->do_request( '/wc/gla/mc/setup', 'GET' );
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( $status, $response->data );
+	}
+
 	protected function clean_site_url(): string {
 		return preg_replace( '#^https?://#', '', untrailingslashit( site_url() ) );
 	}
