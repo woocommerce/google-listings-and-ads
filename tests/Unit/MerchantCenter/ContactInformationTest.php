@@ -18,8 +18,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  *
- * @since x.x.x
- *
  * @property  MockObject|Merchant $merchant
  * @property  MockObject|Settings $google_settings
  * @property  ContactInformation  $contact_information
