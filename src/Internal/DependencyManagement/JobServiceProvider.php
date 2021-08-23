@@ -30,6 +30,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\UpdateProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\CleanupProductTargetCountriesJob;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\Update\PluginUpdate;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
@@ -118,6 +120,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		
 		$this->share_with_tags(
 		    Coupon\SyncerHooks::class,
+		    CouponHelper::class,
 		    JobRepository::class,
 		    MerchantCenterService::class,
 		    WC::class
@@ -192,6 +195,8 @@ class JobServiceProvider extends AbstractServiceProvider {
         $this->validate_interface($class, ProductSyncerJobInterface::class);
         $this->share_action_scheduler_job(
             $class,
+            CouponHelper::class,
+            CouponSyncer::class,
             WC::class,
             MerchantCenterService::class,
             ...$arguments

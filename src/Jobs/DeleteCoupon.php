@@ -30,11 +30,16 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements StartOnHookInterfa
 	 *
 	 * @param  int $coupon_id
 	 *
-	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
-	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.
+	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.
+	 * @throws JobException If invalid or non-existing coupon are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( $coupon_id ) {
-		// TODO read coupon data, check if coupon is synced, and delete synchorized coupon from Google.
+	    $coupon = $this->$wc->may_get_coupon( $coupon_id );
+	    if ( $coupon instanceof WC_Coupon && $this->coupon_helper->is_sync_ready( $coupon ) ) {
+	       return;
+	    }
+	    // TODO: Pass in google id to support delete coupon.
+	    $this->$coupon_syncer->delete( $coupon_id );
 	}
 
 	/**
