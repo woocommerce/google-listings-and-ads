@@ -34,7 +34,12 @@ class UpdateCoupon extends AbstractCouponSyncerJob implements StartOnHookInterfa
 	 * @throws JobException If invalid or non-existing products are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( $coupon_id ) {
-		// TODO read coupon data, upsert coupon to Google and mark coupon as synchronized.
+	    $coupon = $this->$wc->may_get_coupon( $coupon_id );
+	    if ( $coupon instanceof WC_Coupon && $this->coupon_helper->is_sync_ready( $coupon ) ) {
+	       $this->$coupon_syncer->update( $coupon );
+	       // TODO: Update sync status with google id and targeted country or log the sync errors.
+	       // $this->coupon_helper->mark_as_synced( $coupon, $google_id, $country);
+	    }
 	}
 
 	/**

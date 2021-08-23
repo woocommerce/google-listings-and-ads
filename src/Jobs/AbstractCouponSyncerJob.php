@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponRepository;
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 
@@ -18,6 +19,16 @@ defined( 'ABSPATH' ) || exit;
  */
 abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implements ProductSyncerJobInterface {
 
+    /**
+     * @var CouponHelper
+     */
+    protected $coupon_helper;
+    
+    /**
+     * @var CouponSyncher
+     */
+    protected $coupon_syncer;
+    
 	/**
      * @var WC
      */
@@ -33,17 +44,20 @@ abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implem
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
-	 * @param CouponSyncer             $coupon_syncer
-	 * @param CouponRepository         $coupon_repository
+	 * @param CouponSyncer              $coupon_syncer
+	 * @param WC                        $wc
 	 * @param MerchantCenterService     $merchant_center
 	 */
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
-		//CouponSyncer $coupon_syncer,
+	    CouponHelper $coupon_helper,
+		CouponSyncer $coupon_syncer,
 	    WC $wc,
 		MerchantCenterService $merchant_center
 	) {
+	    $this->coupon_helper = $coupon_helper;
+	    $this->coupon_syncer = $coupon_syncer;
 	    $this->wc  = $wc;
 		$this->merchant_center    = $merchant_center;
 		parent::__construct( $action_scheduler, $monitor );
