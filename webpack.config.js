@@ -1,5 +1,5 @@
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
-const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 const path = require( 'path' );
 
 const requestToExternal = ( request ) => {
@@ -14,23 +14,8 @@ const requestToExternal = ( request ) => {
 	if ( bundled.includes( request ) ) {
 		return false;
 	}
-
-	const wcDepMap = {
-		'@woocommerce/components': [ 'wc', 'components' ],
-		'@woocommerce/navigation': [ 'wc', 'navigation' ],
-	};
-
-	return wcDepMap[ request ];
 };
 
-const requestToHandle = ( request ) => {
-	const wcHandleMap = {
-		'@woocommerce/components': 'wc-components',
-		'@woocommerce/navigation': 'wc-navigation',
-	};
-
-	return wcHandleMap[ request ];
-};
 const exceptSVGRule = ( rule ) => {
 	return ! rule.test.toString().match( /svg/i );
 };
@@ -66,14 +51,14 @@ const webpackConfig = {
 		extensions: [ '.ts', '.tsx', '.js', '.jsx', '.json' ],
 	},
 	plugins: [
+		// Replace the default `@wordpress/DependencyExtractionWebpackPlugin` with the `@woocommerce` one.
 		...defaultConfig.plugins.filter(
 			( plugin ) =>
 				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
 		),
-		new DependencyExtractionWebpackPlugin( {
+		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal,
-			requestToHandle,
 		} ),
 	],
 	entry: {
