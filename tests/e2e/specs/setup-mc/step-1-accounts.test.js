@@ -150,7 +150,7 @@ describe( 'At setup page', () => {
 
 		describe( 'after clicking the "Connect your Google account" button', () => {
 			let googleConnectMock;
-			beforeEach( async function mockJetpackConnect() {
+			beforeEach( async function mockGoogleConnect() {
 				// Spy on Google connection request.
 				googleConnectMock = requestMock
 					.mock( /%2Fwc%2Fgla%2Fgoogle%2Fconnect\b/ )
@@ -166,13 +166,13 @@ describe( 'At setup page', () => {
 					} );
 			} );
 
-			it( 'should sent an API request to connect Jetpack, and redirect to the returned URL', async () => {
-				const connectWPButton = await page.waitForXPath(
+			it( 'should sent an API request to connect Google account, and redirect to the returned URL', async () => {
+				const connectGoogleButton = await page.waitForXPath(
 					"//button[text()='Connect'][not(@disabled)]"
 				);
 
 				// Click the button
-				await connectWPButton.click();
+				await connectGoogleButton.click();
 
 				// Wait for all XHRs and redirects.
 				await page.waitForNavigation( { waitUntil: 'networkidle0' } );
