@@ -37,4 +37,23 @@ class InvalidVersion extends RuntimeException implements GoogleListingsAndAdsExc
 			)
 		);
 	}
+
+	/**
+	 * Create a new instance of the exception when a requirement is missing.
+	 *
+	 * @param string $requirement
+	 * @param string $minimum_version
+	 *
+	 * @return InvalidVersion
+	 */
+	public static function requirement_missing( string $requirement, string $minimum_version ): InvalidVersion {
+		return new static(
+			sprintf(
+				/* translators: 1 is the required component, 2 is the minimum required version */
+				__( 'Google Listings and Ads requires %1$s version %2$s or higher.', 'google-listings-and-ads' ),
+				$requirement,
+				$minimum_version
+			)
+		);
+	}
 }
