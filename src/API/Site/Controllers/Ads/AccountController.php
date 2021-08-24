@@ -16,7 +16,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -30,19 +29,9 @@ defined( 'ABSPATH' ) || exit;
 class AccountController extends BaseOptionsController {
 
 	/**
-	 * @var ContainerInterface
-	 */
-	protected $container;
-
-	/**
 	 * @var Middleware
 	 */
 	protected $middleware;
-
-	/**
-	 * @var AdsAccountState
-	 */
-	protected $account_state;
 
 	/**
 	 * @var Ads
@@ -50,22 +39,52 @@ class AccountController extends BaseOptionsController {
 	protected $ads;
 
 	/**
+	 * @var AdsAccountState
+	 */
+	protected $account_state;
+
+	/**
+	 * @var AdsService
+	 */
+	protected $ads_service;
+
+	/**
 	 * @var AdsConversionAction
 	 */
 	protected $ads_conversion_action;
 
 	/**
+	 * @var Merchant
+	 */
+	protected $merchant;
+
+	/**
 	 * AccountController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer          $server
+	 * @param Middleware          $middleware
+	 * @param Ads                 $ads
+	 * @param AdsAccountState     $account_state
+	 * @param AdsService          $ads_service
+	 * @param AdsConversionAction $ads_conversion_action
+	 * @param Merchant            $merchant
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->middleware            = $container->get( Middleware::class );
-		$this->ads                   = $container->get( Ads::class );
-		$this->account_state         = $container->get( AdsAccountState::class );
-		$this->ads_conversion_action = $container->get( AdsConversionAction::class );
-		$this->container             = $container;
+	public function __construct(
+		RESTServer $server,
+		Middleware $middleware,
+		Ads $ads,
+		AdsAccountState $account_state,
+		AdsService $ads_service,
+		AdsConversionAction $ads_conversion_action,
+		Merchant $merchant
+	) {
+		parent::__construct( $server );
+		$this->middleware            = $middleware;
+		$this->ads                   = $ads;
+		$this->ads_service           = $ads_service;
+		$this->account_state         = $account_state;
+		$this->ads_conversion_action = $ads_conversion_action;
+		$this->merchant              = $merchant;
 	}
 
 	/**
@@ -174,7 +193,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function disconnect_ads_account_callback(): callable {
 		return function() {
-			$this->container->get( AdsService::class )->disconnect();
+			$this->ads_service->disconnect();
 
 			return [
 				'status'  => 'success',
@@ -342,8 +361,6 @@ class AccountController extends BaseOptionsController {
 	 * @throws Exception When the merchant or ads account hasn't been set yet.
 	 */
 	private function link_merchant_account() {
-		/** @var Merchant $merchant */
-		$merchant = $this->container->get( Merchant::class );
 		if ( ! $this->options->get_merchant_id() ) {
 			throw new Exception( 'A Merchant Center account must be connected' );
 		}
@@ -353,7 +370,7 @@ class AccountController extends BaseOptionsController {
 		}
 
 		// Create link for Merchant and accept it in Ads.
-		$merchant->link_ads_id( $this->options->get_ads_id() );
+		$this->merchant->link_ads_id( $this->options->get_ads_id() );
 		$this->ads->accept_merchant_link( $this->options->get_merchant_id() );
 	}
 
