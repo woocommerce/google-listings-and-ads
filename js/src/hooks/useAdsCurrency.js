@@ -30,7 +30,7 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
  *
  * @see CurrencyFactory
  *
- * @return {{currency: Object, hasFinishedResolution: boolean}} The currency object.
+ * @return {{currency: Object, hasFinishedResolution: boolean | undefined}} The currency object.
  */
 const useAdsCurrency = () => {
 	const currencySetting = useStoreCurrency();
