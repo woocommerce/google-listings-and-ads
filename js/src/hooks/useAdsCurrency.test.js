@@ -94,12 +94,10 @@ describe( 'useAdsCurrency', () => {
 
 			// assert initial state
 			expect( result.current.hasFinishedResolution ).toEqual( undefined );
-			// assert
-			// await act( async () => {
+			// assert eventual state
 			await waitFor( () =>
 				expect( result.current.hasFinishedResolution ).toEqual( true )
 			);
-			// } );
 		} );
 
 		test( 'should return Ads account currency', async () => {
