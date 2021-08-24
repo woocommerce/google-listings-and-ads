@@ -15,9 +15,35 @@ export class RequestMock {
 	 */
 	#observedPage;
 
+	#callMock;
+
 	constructor() {
 		this.#mocks = new Map();
-		this.#callMocksOnThis = this.#callMocks.bind( this );
+		/**
+		 * Calls a matching mock, if any.
+		 *
+		 * @param {import("puppeteer").Request} interceptedRequest
+		 */
+		this.#callMock = ( interceptedRequest ) => {
+			const url = interceptedRequest.url();
+			// Find a matching mock.
+			for ( const [ mock, pattern ] of this.#mocks ) {
+				if ( url.match( pattern ) ) {
+					const result = mock( interceptedRequest );
+
+					if ( result === undefined ) {
+						interceptedRequest.continue();
+					} else if ( ! result ) {
+						interceptedRequest.abort();
+					}
+					return;
+				}
+			}
+			// Pass through non-matching requests.
+			if ( ! interceptedRequest._interceptionHandled ) {
+				interceptedRequest.continue();
+			}
+		};
 	}
 
 	/**
@@ -59,45 +85,15 @@ export class RequestMock {
 
 		this.#observedPage = page;
 		await page.setRequestInterception( true );
-		page.on( 'request', this.#callMocksOnThis );
+		page.on( 'request', this.#callMock );
 	}
 	/**
 	 * Stop observing.
 	 */
 	disconnect() {
 		if ( this.#observedPage ) {
-			this.#observedPage.off( 'request', this.#callMocksOnThis );
+			this.#observedPage.off( 'request', this.#callMock );
 			this.#observedPage = undefined;
 		}
 	}
-
-	/**
-	 * Call a matching mock, if any.
-	 *
-	 * @param {import("puppeteer").Request} interceptedRequest
-	 */
-	#callMocks( interceptedRequest ) {
-		const url = interceptedRequest.url();
-		// Find a matching mock.
-		for ( const [ mock, pattern ] of this.#mocks ) {
-			if ( url.match( pattern ) ) {
-				const result = mock( interceptedRequest );
-
-				if ( result === undefined ) {
-					interceptedRequest.continue();
-				} else if ( ! result ) {
-					interceptedRequest.abort();
-				}
-				return;
-			}
-		}
-		// Pass through non-matching requests.
-		if ( ! interceptedRequest._interceptionHandled ) {
-			interceptedRequest.continue();
-		}
-	}
-	/**
-	 * @alias RequestMock#callMocks
-	 */
-	#callMocksOnThis; // Needed because `Page#addEventListener` does not take {@link https://developer.mozilla.org/en-US/docs/Web/API/EventListener | `EventListener`s}.
 }
