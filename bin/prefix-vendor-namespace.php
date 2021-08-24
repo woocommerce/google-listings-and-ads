@@ -176,7 +176,7 @@ function replace_in_json_file( string $file, string $namespace, string $new_name
  * using the new namespace. Autoloading the files from our main composer.json ensures we use a unique hash so
  * we don't conflict with other extensions autoloading the same files.
  *
- * @since x.x.x
+ * @since 1.4.2
  *
  * @param string $file              Generated file containing information about all the installed packages
  * @param array  $composer_autoload List of autoloaded files in composer.json
