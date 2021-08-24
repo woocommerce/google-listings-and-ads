@@ -72,7 +72,7 @@ describe( 'useAdsCurrency', () => {
 				status: 'connected',
 			};
 			apiFetch
-				// Mock /wp-json/wc/gla/jetpack/connected?_locale=user
+				// Mock /wp-json/wc/gla/jetpack/connected
 				.mockReturnValueOnce( {
 					active: 'yes',
 					owner: 'yes',
