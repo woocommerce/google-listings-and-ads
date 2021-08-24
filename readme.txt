@@ -115,6 +115,14 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.4.2 - 2021-08-24 =
+* Fix - Fix a potential fatal error when WooCommerce isn't active while activating Google Listings and Ads.
+* Fix - Fix margin/padding styles for the AppButton when having spinner/icon/text.
+* Fix - Make audience country searchable in Setup Ads.
+* Fix - Remove file autoloads for namespaced packages.
+* Tweak - Remove all "STEP [NUMBER]" texts from step headers on the onboarding setup, paid campaign setup, and free listings edit pages.
+* Tweak - WC 5.5 compatibility.
+
 = 1.4.1 - 2021-08-16 =
 * Fix - Allow connection test page for other admin users.
 * Fix - Allow spaces in paths when prefixing vendor namespaces.
