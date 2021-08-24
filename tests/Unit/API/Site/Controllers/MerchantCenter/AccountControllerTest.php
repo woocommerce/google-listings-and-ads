@@ -377,10 +377,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->expected_account_state(
 			[
 				'set_id' => [
-					'status'  => $this->onConsecutiveCalls(
-						MerchantAccountState::STEP_PENDING,
-						MerchantAccountState::STEP_DONE
-					),
+					'status'  => MerchantAccountState::STEP_PENDING,
 					'message' => '',
 					'data'    => [
 						'old_url' => 'oldurl.test',
