@@ -72,6 +72,7 @@ if ( $input_disabled ) {
 				ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
 			],
 			'custom_attributes' => $custom_attributes,
+			'wrapper_class'     => 'form-row form-row-full',
 		]
 	);
 	?>
