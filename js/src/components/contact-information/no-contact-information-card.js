@@ -17,8 +17,8 @@ import './no-contact-information-card.scss';
  *
  * @param {Object} props React props.
  * @param {Function} props.onEditClick Called when clicking on the "Add information" button.
- * @param {string} props.learnMoreUrl The URL of learn more link and the props `href` value of the link's click tracking event.
- * @param {string} props.learnMoreLinkId The props `link_id` value of the learn more link's click tracking event.
+ * @param {string} props.learnMoreUrl Value for the "Learn more" link URL and the click tracking `href` event property.
+ * @param {string} props.learnMoreLinkId Value for the click tracking `link_id` event property.
  */
 export default function NoContactInformationCard( {
 	onEditClick,

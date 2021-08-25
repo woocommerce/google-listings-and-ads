@@ -85,7 +85,7 @@ export function ContactInformationPreview() {
  *
  * @param {Object} props React props.
  * @param {'setup-mc'|'settings'} props.view Indicate where this component is used.
- * @param {onPhoneNumberChange} [props.onPhoneNumberChange] Called when phone number are changed.
+ * @param {onPhoneNumberChange} [props.onPhoneNumberChange] Called when phone number is changed.
  */
 export default function ContactInformation( { view, onPhoneNumberChange } ) {
 	const phone = useGoogleMCPhoneNumber();
