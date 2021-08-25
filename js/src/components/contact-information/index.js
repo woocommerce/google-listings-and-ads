@@ -31,6 +31,10 @@ const description = __(
 const mcTitle = __( 'Enter contact information', 'google-listings-and-ads' );
 const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
 
+/**
+ * Renders a preview of contact information section,
+ * or a <NoContactInformationCard> if contact informations are not saved yet.
+ */
 export function ContactInformationPreview() {
 	const phone = useGoogleMCPhoneNumber();
 	const address = useStoreAddress( 'mc' );
@@ -72,6 +76,17 @@ export function ContactInformationPreview() {
 	);
 }
 
+/**
+ * @typedef { import("./phone-number-card").onPhoneNumberChange } onPhoneNumberChange
+ */
+
+/**
+ * Renders a contact information section with specified initial state and texts, determined by the `view` prop.
+ *
+ * @param {Object} props React props.
+ * @param {'setup-mc'|'settings'} props.view Indicate where this component is used.
+ * @param {onPhoneNumberChange} [props.onPhoneNumberChange] Called when phone number is changed.
+ */
 export default function ContactInformation( { view, onPhoneNumberChange } ) {
 	const phone = useGoogleMCPhoneNumber();
 	const isSetupMC = view === 'setup-mc';

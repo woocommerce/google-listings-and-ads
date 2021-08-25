@@ -12,6 +12,14 @@ import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
 import './no-contact-information-card.scss';
 
+/**
+ * Renders a warning section to prompt users to add contact information.
+ *
+ * @param {Object} props React props.
+ * @param {Function} props.onEditClick Called when clicking on the "Add information" button.
+ * @param {string} props.learnMoreUrl Value for the "Learn more" link URL and the click tracking `href` event property.
+ * @param {string} props.learnMoreLinkId Value for the click tracking `link_id` event property.
+ */
 export default function NoContactInformationCard( {
 	onEditClick,
 	learnMoreUrl,
