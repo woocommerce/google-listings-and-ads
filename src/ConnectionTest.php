@@ -186,7 +186,6 @@ class ConnectionTest implements Service, Registerable {
 							<p>
 								<code><?php echo Jetpack_Options::get_option( 'id' ); ?></code>
 							</p>
-							<!--<pre><?php var_dump( $blog_token ); ?></pre>-->
 						</td>
 					</tr>
 				<?php } ?>
@@ -198,12 +197,16 @@ class ConnectionTest implements Service, Registerable {
 							<p>
 								<code><?php echo $user_data['ID']; ?></code>
 							</p>
-							<!--<pre><?php var_dump( $user_token ); ?></pre>-->
 						</td>
+					</tr>
+				<?php } elseif ( $blog_token ) { ?>
+					<tr>
+						<th><label>User:</label></th>
+						<td><p>Connected with another user account</p></td>
 					</tr>
 				<?php } ?>
 
-				<?php if ( $blog_token && $user_token ) { ?>
+				<?php if ( $blog_token ) { ?>
 				<tr>
 					<th>Test Authenticated WCS Request:</th>
 					<td>
@@ -217,10 +220,9 @@ class ConnectionTest implements Service, Registerable {
 				<tr>
 					<th>Toggle Connection:</th>
 					<td>
-						<?php if ( ! $blog_token || ! $user_token ) { ?>
+						<?php if ( ! $blog_token ) { ?>
 							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'connect' ], $url ), 'connect' ) ); ?>">Connect to Jetpack</a></p>
-						<?php } ?>
-						<?php if ( $blog_token && $user_token ) { ?>
+						<?php } else { ?>
 							<p><a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'disconnect' ], $url ), 'disconnect' ) ); ?>">Disconnect Jetpack</a></p>
 						<?php } ?>
 					</td>
@@ -230,7 +232,7 @@ class ConnectionTest implements Service, Registerable {
 
 			<hr />
 
-			<?php if ( $blog_token && $user_token ) { ?>
+			<?php if ( $blog_token ) { ?>
 
 				<h2 class="title">Google Account</h2>
 
@@ -1043,7 +1045,7 @@ class ConnectionTest implements Service, Registerable {
 				$product_repository = $this->container->get( ProductRepository::class );
 
 				try {
-					$products = $product_repository->find_sync_ready_products();
+					$products = $product_repository->find_sync_ready_products()->get();
 
 					$result = $product_syncer->update( $products );
 

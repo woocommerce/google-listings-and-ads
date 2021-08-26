@@ -40,3 +40,21 @@ if ( ! function_exists( 'mb_strlen' ) ) {
 		return MBString::mb_strlen( $string, $encoding );
 	}
 }
+
+if ( ! function_exists( 'mb_substr' ) ) {
+	/**
+	 * Get part of string.
+	 *
+	 * @param string      $string
+	 * @param int         $start
+	 * @param int|null    $length
+	 * @param string|null $encoding
+	 *
+	 * @return string
+	 *
+	 * @since 1.4.1
+	 */
+	function mb_substr( $string, $start, $length = null, $encoding = null ) {
+		return MBString::mb_substr( $string, $start, $length, $encoding );
+	}
+}

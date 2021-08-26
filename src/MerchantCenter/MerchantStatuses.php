@@ -229,6 +229,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$all_google_ids       = $product_meta_query_helper->get_all_values( ProductMetaHandler::KEY_GOOGLE_IDS );
 		$filtered_google_ids  = [];
 		foreach ( array_intersect_key( $all_google_ids, $filtered_product_ids ) as $product_ids ) {
+			if ( empty( $product_ids ) || ! is_array( $product_ids ) ) {
+				// Skip if empty or not an array
+				continue;
+			}
+
 			$filtered_google_ids = array_merge( $filtered_google_ids, array_values( $product_ids ) );
 		}
 		return $filtered_google_ids;
@@ -377,6 +382,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'created_at' => $created_at,
 				'type'       => self::TYPE_ACCOUNT,
 				'severity'   => $issue->getSeverity(),
+				'source'     => 'mc',
 			];
 		}
 
@@ -426,6 +432,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 				'product_id'           => $wc_product_id,
 				'created_at'           => $created_at,
 				'applicable_countries' => [],
+				'source'               => 'mc',
 			];
 			foreach ( $product->getItemLevelIssues() as $item_level_issue ) {
 				if ( 'merchant_action' !== $item_level_issue->getResolution() ) {
@@ -491,7 +498,8 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		foreach ( $all_errors as $product_id => $presync_errors ) {
 			// Don't create issues with empty descriptions
 			// or for variable parents (they contain issues of all children).
-			if ( empty( $presync_errors[0] ) ) {
+			$error = $presync_errors[ array_key_first( $presync_errors ) ];
+			if ( empty( $error ) || ! is_string( $error ) ) {
 				continue;
 			}
 

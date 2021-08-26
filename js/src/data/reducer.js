@@ -27,6 +27,7 @@ const DEFAULT_STATE = {
 			ads_billing_status: null,
 			google_access: null,
 		},
+		contact: null,
 	},
 	ads_campaigns: null,
 	mc_setup: null,
@@ -142,10 +143,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_SETTINGS:
 		case TYPES.SAVE_SETTINGS: {
-			const { settings } = action;
-			const newState = cloneDeep( state );
-			newState.mc.settings = settings;
-			return newState;
+			return {
+				...state,
+				mc: {
+					...state.mc,
+					settings: {
+						...state.mc.settings,
+						...action.settings,
+					},
+				},
+			};
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_JETPACK: {
@@ -220,6 +227,17 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const { accounts } = action;
 			const newState = cloneDeep( state );
 			newState.mc.accounts.existing_ads = accounts;
+			return newState;
+		}
+
+		case TYPES.RECEIVE_MC_CONTACT_INFORMATION: {
+			const newState = {
+				...state,
+				mc: {
+					...state.mc,
+					contact: action.data,
+				},
+			};
 			return newState;
 		}
 

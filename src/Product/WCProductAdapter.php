@@ -97,6 +97,9 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		parent::mapTypes( $array );
 
 		$this->map_woocommerce_product();
+
+		// Allow users to override the product's attributes using a WordPress filter.
+		$this->override_attributes();
 	}
 
 	/**
@@ -118,6 +121,42 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			 ->map_wc_prices();
 
 		$this->setIdentifierExists( ! empty( $this->getGtin() ) || ! empty( $this->getMpn() ) );
+	}
+
+	/**
+	 * Overrides the product attributes by applying a filter and setting the provided values.
+	 *
+	 * @since 1.4.0
+	 */
+	protected function override_attributes() {
+		/**
+		 * Filters the list of overridden attributes to set for this product.
+		 *
+		 * Note: This filter takes precedence over any other filter that modify products attributes. Including
+		 *       `woocommerce_gla_product_attribute_value_{$attribute_id}` defined in self::map_gla_attributes.
+		 *
+		 * @param array            $attributes An array of values for the product properties. All properties of the
+		 *                                     `\Google\Service\ShoppingContent\Product` class can be set by providing
+		 *                                     the property name as key and its value as array item.
+		 *                                     For example:
+		 *                                     [ 'imageLink' => 'https://example.com/image.jpg' ] overrides the product's
+		 *                                     main image.
+		 *
+		 * @param WC_Product       $wc_product The WooCommerce product object.
+		 * @param WCProductAdapter $this       The Adapted Google product object. All WooCommerce product properties
+		 *                                     are already mapped to this object.
+		 *
+		 * @see \Google\Service\ShoppingContent\Product for the list of product properties that can be overriden.
+		 * @see WCProductAdapter::map_gla_attributes for the docuementation of `woocommerce_gla_product_attribute_value_{$attribute_id}`
+		 *                                           filter, which allows modifying some attributes such as GTIN, MPN, etc.
+		 *
+		 * @since 1.4.0
+		 */
+		$attributes = apply_filters( 'woocommerce_gla_product_attribute_values', [], $this->wc_product, $this );
+
+		if ( ! empty( $attributes ) ) {
+			parent::mapTypes( $attributes );
+		}
 	}
 
 	/**
@@ -156,6 +195,11 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return string
 	 */
 	protected function get_wc_product_description(): string {
+		/**
+		 * Filters whether the short product description should be used for the synced product.
+		 *
+		 * @param bool $use_short_description
+		 */
 		$use_short_description = apply_filters( 'woocommerce_gla_use_short_description', false );
 
 		$description = ! empty( $this->wc_product->get_description() ) && ! $use_short_description ?
@@ -171,6 +215,23 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$description        = $parent_description . $new_line . $description;
 		}
 
+		/**
+		 * Filters whether the shortcodes should be applied for product descriptions when syncing a product or be stripped out.
+		 *
+		 * @since 1.4.0
+		 *
+		 * @param bool       $apply_shortcodes Shortcodes are applied if set to `true` and stripped out if set to `false`.
+		 * @param WC_Product $wc_product       WooCommerce product object.
+		 */
+		$apply_shortcodes = apply_filters( 'woocommerce_gla_product_description_apply_shortcodes', false, $this->wc_product );
+		if ( $apply_shortcodes ) {
+			// Apply active shortcodes
+			$description = do_shortcode( $description );
+		} else {
+			// Strip out active shortcodes
+			$description = strip_shortcodes( $description );
+		}
+
 		// Strip out invalid unicode.
 		$description = mb_convert_encoding( $description, 'UTF-8', 'UTF-8' );
 		$description = preg_replace(
@@ -184,9 +245,15 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$kses_allowed_tags = array_fill_keys( $valid_html_tags, [] );
 		$description       = wp_kses( $description, $kses_allowed_tags );
 
-		// Strip out active shortcodes
-		$description = strip_shortcodes( $description );
+		// Trim the description if it's more than 5000 characters.
+		$description = mb_substr( $description, 0, 5000, 'utf-8' );
 
+		/**
+		 * Filters the product's description.
+		 *
+		 * @param string     $description Product description.
+		 * @param WC_Product $wc_product  WooCommerce product object.
+		 */
 		return apply_filters( 'woocommerce_gla_product_attribute_value_description', $description, $this->wc_product );
 	}
 
@@ -668,6 +735,27 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$gla_attributes = [];
 		foreach ( $attributes as $attribute_id => $attribute_value ) {
 			if ( property_exists( $this, $attribute_id ) ) {
+				/**
+				 * Filters a product attribute's value.
+				 *
+				 * This only applies to the extra attributes defined in `AttributeManager::ATTRIBUTES`
+				 * like GTIN, MPN, Brand, Size, etc. and it cannot modify other product attributes.
+				 *
+				 * This filter also cannot add or set a new attribute or modify one that isn't currently
+				 * set for the product through WooCommerce's edit product page
+				 *
+				 * In order to override all product attributes and/or set new ones for the product use the
+				 * `woocommerce_gla_product_attribute_values` filter.
+				 *
+				 * Note that the `woocommerce_gla_product_attribute_values` filter takes precedence over
+				 * this filter, and it can be used to override any values defined here.
+				 *
+				 * @param mixed      $attribute_value The attribute's current value
+				 * @param WC_Product $wc_product      The WooCommerce product object.
+				 *
+				 * @see AttributeManager::ATTRIBUTES for the list of attributes that their values can be modified using this filter.
+				 * @see WCProductAdapter::override_attributes for the docuemntation of the `woocommerce_gla_product_attribute_values` filter.
+				 */
 				$gla_attributes[ $attribute_id ] = apply_filters( "woocommerce_gla_product_attribute_value_{$attribute_id}", $attribute_value, $this->get_wc_product() );
 			}
 		}

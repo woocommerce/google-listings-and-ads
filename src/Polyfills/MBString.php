@@ -210,4 +210,41 @@ final class MBString {
 
 		return $encoding;
 	}
+
+	/**
+	 * Get part of string.
+	 *
+	 * @param string      $string
+	 * @param int         $start
+	 * @param int|null    $length
+	 * @param string|null $encoding
+	 *
+	 * @return string
+	 *
+	 * @since 1.4.1
+	 */
+	public static function mb_substr( $string, $start, $length = null, $encoding = null ) {
+		$encoding = self::get_encoding( $encoding );
+		if ( 'CP850' === $encoding || 'ASCII' === $encoding ) {
+			return (string) substr( $string, $start, null === $length ? 2147483647 : $length );
+		}
+
+		if ( $start < 0 ) {
+			$start = \iconv_strlen( $string, $encoding ) + $start;
+			if ( $start < 0 ) {
+				$start = 0;
+			}
+		}
+
+		if ( null === $length ) {
+			$length = 2147483647;
+		} elseif ( $length < 0 ) {
+			$length = \iconv_strlen( $string, $encoding ) + $length - $start;
+			if ( $length < 0 ) {
+				return '';
+			}
+		}
+
+		return (string) \iconv_substr( $string, $start, $length, $encoding );
+	}
 }

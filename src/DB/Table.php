@@ -102,6 +102,23 @@ abstract class Table implements TableInterface {
 	}
 
 	/**
+	 * Checks whether an index exists for the table.
+	 *
+	 * @param string $index_name The index name.
+	 *
+	 * @return bool True if the index exists on the table and False if not.
+	 *
+	 * @since 1.4.1
+	 */
+	public function has_index( string $index_name ): bool {
+		$result = $this->wpdb->get_results(
+			$this->wpdb->prepare( "SHOW INDEX FROM `{$this->get_sql_safe_name()}` WHERE Key_name = %s ", [ $index_name ] )  // phpcs:ignore WordPress.DB.PreparedSQL
+		);
+
+		return ! empty( $result );
+	}
+
+	/**
 	 * Get the DB collation.
 	 *
 	 * @return string

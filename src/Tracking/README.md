@@ -45,6 +45,8 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `report`: name of the report (e.g. `"reports-programs" | "reports-products"`)
     -   `context`: metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
 
+-   `contact_information_save_button_click` - Triggered when the save button in contact information page is clicked.
+
 -   `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
 
     -   `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
@@ -64,6 +66,11 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `link_id`: link identifier
     -   `context`: indicate which link is clicked
     -   `href`: link's URL
+
+-   `edit_mc_store_address` - Trigger when store address edit button is clicked.
+
+    - `path`: The path used in the page, e.g. `"/google/settings"`.
+    - `subpath`: The subpath used in the page, e.g. `"/edit-contact-information"` or `undefined` when there is no subpath.
 
 -   `edit_product_click` - Trigger when edit links are clicked from product feed table
 
@@ -128,6 +135,16 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `checked`: indicate whether the checkbox is checked or unchecked.
 
 -   `mc_account_reclaim_url_button_click` - Clicking on the button to reclaim URL for a Google Merchant Center account.
+
+-   `mc_phone_number_check` - Check for whether the phone number for Merchant Center exists or not.
+
+    -   `path`: the path where the check is in.
+    -   `exist`: whether the phone number exists or not.
+    -   `isValid`: whether the phone number is valid or not.
+
+-   `mc_phone_number_edit_button_click` - Clicking on the Merchant Center phone number edit button.
+
+    -   `view`: which view the edit button is in. Possible values: `setup-mc`, `settings`.
 
 -   `mc_url_switch`
 

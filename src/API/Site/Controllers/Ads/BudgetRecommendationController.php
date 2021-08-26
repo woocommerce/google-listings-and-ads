@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
@@ -29,14 +30,21 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	protected $budget_recommendation_query;
 
 	/**
+	 * @var Middleware
+	 */
+	protected $middleware;
+
+	/**
 	 * BudgetRecommendationController constructor.
 	 *
 	 * @param RESTServer                $rest_server
 	 * @param BudgetRecommendationQuery $budget_recommendation_query
+	 * @param Middleware                $middleware
 	 */
-	public function __construct( RESTServer $rest_server, BudgetRecommendationQuery $budget_recommendation_query ) {
+	public function __construct( RESTServer $rest_server, BudgetRecommendationQuery $budget_recommendation_query, Middleware $middleware ) {
 		parent::__construct( $rest_server );
 		$this->budget_recommendation_query = $budget_recommendation_query;
+		$this->middleware                  = $middleware;
 	}
 
 	/**
@@ -61,7 +69,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
 			$country        = strtoupper( $request->get_param( 'country_code' ) );
-			$currency       = strtoupper( get_woocommerce_currency() );
+			$currency       = $this->middleware->get_ads_currency();
 			$recommendation = $this
 				->budget_recommendation_query
 				->where( 'country', $country )

@@ -47,6 +47,19 @@ class RESTServer {
 	}
 
 	/**
+	 * Get the registered REST routes.
+	 *
+	 * @param string $namespace Optionally, only return routes in the given namespace.
+	 * @return array `'/path/regex' => array( $callback, $bitmask )` or
+	 *               `'/path/regex' => array( array( $callback, $bitmask ), ...)`.
+	 *
+	 * @since 1.4.0
+	 */
+	public function get_routes( string $namespace = '' ): array {
+		return $this->server->get_routes( $namespace );
+	}
+
+	/**
 	 * Run an internal request.
 	 *
 	 * @param Request $request

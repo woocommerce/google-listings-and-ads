@@ -2,7 +2,7 @@
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
-	"version": "1.3.0",
+	"version": "1.4.2",
 	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
@@ -33,7 +33,7 @@
 		"docker:down": "npx wc-e2e docker:down",
 		"test:e2e": "npx wc-e2e test:e2e",
 		"test:e2e-dev": "npx wc-e2e test:e2e-dev",
-		"test-unit": "wp-scripts test-unit-js",
+		"test-unit": "wp-scripts test-unit-js --coverage",
 		"test-unit:watch": "npm run test-unit -- --watch",
 		"test-proxy": "node ./tests/proxy"
 	},
@@ -54,6 +54,7 @@
 		"bundlewatch": "^0.3.2",
 		"eslint-import-resolver-webpack": "^0.13.1",
 		"eslint-plugin-import": "^2.23.4",
+		"file-loader": "^6.2.0",
 		"h2o2": "^8.2.0",
 		"prettier": "npm:wp-prettier@^2.0.5"
 	},
@@ -75,12 +76,14 @@
 		"@wordpress/dom": "^3.1.1",
 		"@wordpress/element": "^2.18.0",
 		"@wordpress/hooks": "^3.1.1",
+		"@wordpress/html-entities": "^3.2.1",
 		"@wordpress/i18n": "^4.1.1",
 		"@wordpress/icons": ">=2.9.1 <3.0.0",
 		"@wordpress/primitives": ">=1.12.3 <2.0.0",
 		"@wordpress/url": "^2.22.2",
 		"classnames": "^2.3.1",
 		"gridicons": "^3.3.1",
+		"libphonenumber-js": "^1.9.22",
 		"lodash": "^4.17.20",
 		"md5": "^2.3.0",
 		"prop-types": "^15.7.2",
@@ -90,7 +93,11 @@
 	"config": {
 		"wp_org_slug": "google-listings-and-ads",
 		"version_replace_paths": [
-			"src"
+			"src",
+			"views",
+			"bin",
+			"uninstall.php",
+			"google-listings-and-ads.php"
 		]
 	},
 	"bundlewatch": {

@@ -16,6 +16,7 @@ use Google\Service\ShoppingContent\ProductShipping;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Helper_Product;
+use WC_Product;
 use WC_Tax;
 
 /**
@@ -143,6 +144,83 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertNull( $adapted_product->getGtin() );
 	}
 
+	public function test_basic_attributes_can_be_overridden_via_filter() {
+		add_filter(
+			'woocommerce_gla_product_attribute_values',
+			function ( array $attributes, WC_Product $product, WCProductAdapter $google_product ) {
+				$attributes['imageLink']   = 'https://example.com/image_overide.png?prev=' . $google_product->getImageLink();
+				$attributes['description'] = 'Overridden description!';
+				$attributes['id']          = 'override_' . $product->get_id();
+
+				return $attributes;
+			},
+			10,
+			3
+		);
+
+		$product = WC_Helper_Product::create_simple_product(
+			[
+				'description' => 'Some long product description containing lorem ipsum and such.',
+			]
+		);
+
+		$image = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $product->get_id() );
+
+		$product->set_image_id( $image );
+		$product->save();
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals(
+			'https://example.com/image_overide.png?prev=' . wp_get_attachment_image_url( $image ),
+			$adapted_product->getImageLink()
+		);
+		$this->assertEquals(
+			'Overridden description!',
+			$adapted_product->getDescription()
+		);
+		$this->assertEquals(
+			'override_' . $product->get_id(),
+			$adapted_product->getId()
+		);
+	}
+
+	public function test_attribute_values_filter_takes_precedence() {
+
+		add_filter(
+			'woocommerce_gla_product_attribute_value_gtin',
+			function () {
+				return '1234';
+			}
+		);
+
+		add_filter(
+			'woocommerce_gla_product_attribute_values',
+			function ( array $attributes ) {
+				$attributes['gtin'] = '56789';
+
+				return $attributes;
+			}
+		);
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'     => WC_Helper_Product::create_simple_product( false ),
+				'gla_attributes' => [
+					Brand::get_id() => 'Google',
+				],
+				'targetCountry'  => 'US',
+			]
+		);
+
+		$this->assertEquals( '56789', $adapted_product->getGtin() );
+	}
+
 	public function test_channel_is_always_set_to_online() {
 		$adapted_product = new WCProductAdapter(
 			[
@@ -255,6 +333,42 @@ class WCProductAdapterTest extends UnitTest {
 		$this->assertEquals( $expected_description, $adapted_product->getDescription() );
 	}
 
+	public function test_description_shortcodes_are_applied() {
+		add_filter(
+			'woocommerce_gla_product_description_apply_shortcodes',
+			function () {
+				return true;
+			}
+		);
+
+		// add a sample shortcode to test
+		add_shortcode(
+			'wc_gla_sample_test_shortcode',
+			function () {
+				return 'sample-shortcode-rendered-result';
+			}
+		);
+
+		$product         = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'description' => 'This product has a shortcode like [wc_gla_sample_test_shortcode] that will not get stripped out, ' .
+								 'along with an unregistered short code [some-test-short-code id=1] that will also remain intact.',
+			]
+		);
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$expected_description = 'This product has a shortcode like sample-shortcode-rendered-result that will not get stripped out, ' .
+								'along with an unregistered short code [some-test-short-code id=1] that will also remain intact.';
+
+		$this->assertEquals( $expected_description, $adapted_product->getDescription() );
+	}
+
 	public function test_short_description_is_set_if_description_empty() {
 		$product         = WC_Helper_Product::create_simple_product(
 			false,
@@ -271,6 +385,75 @@ class WCProductAdapterTest extends UnitTest {
 		);
 
 		$this->assertEquals( 'Short description.', $adapted_product->getDescription() );
+	}
+
+	public function test_short_description_is_set_if_filter_used() {
+		add_filter(
+			'woocommerce_gla_use_short_description',
+			function () {
+				return true;
+			}
+		);
+
+		$product         = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'description'       => 'Long description.',
+				'short_description' => 'Short description.',
+			]
+		);
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 'Short description.', $adapted_product->getDescription() );
+	}
+
+	public function test_description_can_be_modified_using_filter() {
+		add_filter(
+			'woocommerce_gla_product_attribute_value_description',
+			function () {
+				return 'Modified description!';
+			}
+		);
+
+		$product         = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'description' => 'Long description.',
+			]
+		);
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 'Modified description!', $adapted_product->getDescription() );
+	}
+
+	public function test_description_is_trimmed_if_more_than_5000_chars() {
+		$long_description = rand_long_str( 10000 );
+
+		$product         = WC_Helper_Product::create_simple_product(
+			false,
+			[
+				'description' => $long_description,
+			]
+		);
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+
+		$this->assertEquals( 5000, mb_strlen( $adapted_product->getDescription(), 'utf-8' ) );
+		$this->assertEquals( mb_substr( $long_description, 0, 5000, 'utf-8' ), $adapted_product->getDescription() );
 	}
 
 	public function test_parent_description_is_included_in_variation_description() {
@@ -1333,5 +1516,12 @@ DESCRIPTION;
 		remove_all_filters( 'woocommerce_gla_product_attribute_value_sale_price' );
 		remove_all_filters( 'wc_tax_enabled' );
 		remove_all_filters( 'woocommerce_prices_include_tax' );
+		remove_all_filters( 'woocommerce_gla_product_description_apply_shortcodes' );
+		remove_all_filters( 'woocommerce_gla_use_short_description' );
+		remove_all_filters( 'woocommerce_gla_product_attribute_value_description' );
+		remove_all_filters( 'woocommerce_gla_product_attribute_values' );
+
+		// remove added shortcodes
+		remove_shortcode( 'wc_gla_sample_test_shortcode' );
 	}
 }

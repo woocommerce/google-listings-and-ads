@@ -389,11 +389,6 @@ class Proxy implements OptionsAwareInterface {
 	public function get_connected_ads_account(): array {
 		$id = $this->options->get( OptionsInterface::ADS_ID );
 
-		// Retrieve account currency if we haven't done so previously.
-		if ( $id && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
-			$this->request_ads_currency();
-		}
-
 		$status = [
 			'id'       => $id,
 			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
@@ -418,6 +413,22 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function disconnect_ads_account() {
 		$this->update_ads_id( 0 );
+	}
+
+	/**
+	 * Get the ads account currency.
+	 *
+	 * @since 1.4.1
+	 *
+	 * @return string
+	 */
+	public function get_ads_currency(): string {
+		// Retrieve account currency from the API if we haven't done so previously.
+		if ( $this->options->get( OptionsInterface::ADS_ID ) && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
+			$this->request_ads_currency();
+		}
+
+		return strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ?? get_woocommerce_currency() );
 	}
 
 	/**

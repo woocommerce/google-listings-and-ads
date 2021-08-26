@@ -54,4 +54,15 @@ interface TableInterface {
 	 * @return string
 	 */
 	public function get_primary_column(): string;
+
+	/**
+	 * Checks whether an index exists for the table.
+	 *
+	 * @param string $index_name The index name.
+	 *
+	 * @return bool True if the index exists on the table and False if not.
+	 *
+	 * @since 1.4.1
+	 */
+	public function has_index( string $index_name ): bool;
 }

@@ -41,7 +41,6 @@ const AudienceSection = ( props ) => {
 							'google-listings-and-ads'
 						) }
 						helperText={ countrySelectHelperText }
-						isSearchable={ false }
 						inlineTags={ false }
 						{ ...inputProps }
 					/>

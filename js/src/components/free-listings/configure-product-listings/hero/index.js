@@ -6,29 +6,18 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import StepContentHeader from '.~/components/stepper/step-content-header';
+import heroImageURL from './google-free-listing.svg';
 import './index.scss';
 
 /**
- * Full URL to the hero image.
- */
-const heroImageURL =
-	glaData.assetsURL +
-	'js/src/components/free-listings/configure-product-listings/hero/google-free-listing.svg';
-
-/**
  * Hero element for free listing configuration.
- *
- * @param {Object} props
- * @param {string} props.stepHeader Header text to indicate the step number.
  */
-const Hero = ( { stepHeader } ) => {
+const Hero = () => {
 	return (
 		<div className="gla-setup-free-listing-hero">
 			<StepContentHeader
 				className="hero-text"
-				step={ stepHeader }
 				title={ __(
 					'Configure your product listings',
 					'google-listings-and-ads'
