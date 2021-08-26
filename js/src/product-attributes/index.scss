@@ -36,7 +36,7 @@
 	}
 }
 
-#channel_visibility .gla-channel-visibility-box select {
+.gla-channel-visibility-box .form-row > select {
 	display: block;
 	margin: $grid-unit-10 0;
 	max-width: 100%;
