@@ -57,7 +57,7 @@ class MerchantTest extends UnitTest {
 	public function test_get_products_empty_list() {
 		$list_response = $this->createMock( ProductsListResponse::class );
 
-		$this->service->products->expects( $this->any() )
+		$this->service->products->expects( $this->once() )
 			->method( 'listProducts' )
 			->with( $this->merchant_id )
 			->willReturn( $list_response );
@@ -78,16 +78,15 @@ class MerchantTest extends UnitTest {
 			->method( 'getResources' )
 			->willReturn( $product_list );
 
-		$this->service->products->expects( $this->any() )
+		$this->service->products->expects( $this->once() )
 			->method( 'listProducts' )
 			->with( $this->merchant_id )
 			->willReturn( $list_response );
 
-		$products = $this->merchant->get_products();
-		$this->assertCount( count( $product_list ), $products );
-		foreach ( $products as $product ) {
-			$this->assertInstanceOf( Product::class, $product );
-		}
+		$this->assertEquals(
+			$product_list,
+			$this->merchant->get_products()
+		);
 	}
 
 	public function test_get_products_multiple_pages() {
@@ -328,11 +327,11 @@ class MerchantTest extends UnitTest {
 			->method( 'getAdsId' )
 			->willReturn( $ads_id );
 
-		$account->expects( $this->any() )
+		$account->expects( $this->once() )
 			->method( 'getAdsLinks' )
 			->willReturn( [ $ads_link ] );
 
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'get' )
 			->with( $this->merchant_id, $this->merchant_id )
 			->willReturn( $account );
@@ -347,15 +346,15 @@ class MerchantTest extends UnitTest {
 		$user    = $this->createMock( AccountUser::class );
 		$email   = 'john@doe.email';
 
-		$user->expects( $this->any() )
+		$user->expects( $this->once() )
 			->method( 'getEmailAddress' )
 			->willReturn( $email );
 
-		$user->expects( $this->any() )
+		$user->expects( $this->once() )
 			->method( 'getAdmin' )
 			->willReturn( true );
 
-		$account->expects( $this->any() )
+		$account->expects( $this->once() )
 			->method( 'getUsers' )
 			->willReturn( [ $user ] );
 
