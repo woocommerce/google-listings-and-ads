@@ -127,12 +127,16 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_claim_website() {
+		$this->service->accounts->expects( $this->once() )
+			->method( 'claimwebsite' )
+			->with( $this->merchant_id, $this->merchant_id, [] );
 		$this->assertTrue( $this->merchant->claimwebsite() );
 	}
 
 	public function test_claimwebsite_error() {
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'claimwebsite' )
+			->with( $this->merchant_id, $this->merchant_id, [] )
 			->will(
 				$this->throwException(
 					new GoogleException()
@@ -144,8 +148,9 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_website_already_claimed() {
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'claimwebsite' )
+			->with( $this->merchant_id, $this->merchant_id, [] )
 			->will(
 				$this->throwException(
 					new GoogleException( 'claimed', 403 )
