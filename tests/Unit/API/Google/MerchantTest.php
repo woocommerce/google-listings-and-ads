@@ -288,15 +288,29 @@ class MerchantTest extends UnitTest {
 		$account = $this->createMock( Account::class );
 		$ads_id  = 12345;
 
-		$account->expects( $this->any() )
+		$account->expects( $this->once() )
 			->method( 'getAdsLinks' )
 			->willReturn( [] );
 
-		$this->service->accounts->expects( $this->any() )
+		$account->expects( $this->once() )
+			->method( 'setAdsLinks' )
+			->with(
+				$this->callback(
+					function( array $links ) use ( $ads_id ) {
+						$this->assertEquals( $ads_id, $links[0]->getAdsId() );
+						$this->assertEquals( 'active', $links[0]->getStatus() );
+
+						return true;
+					}
+				)
+			);
+
+		$this->service->accounts->expects( $this->once() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->willReturn( $account );
 
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'update' )
 			->willReturn( $account );
 
@@ -320,6 +334,7 @@ class MerchantTest extends UnitTest {
 
 		$this->service->accounts->expects( $this->any() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->willReturn( $account );
 
 		$this->assertFalse(
