@@ -163,16 +163,18 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_get_account() {
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->willReturn( $this->createMock( Account::class ) );
 
 		$this->assertInstanceOf( Account::class, $this->merchant->get_account() );
 	}
 
 	public function test_get_account_failure() {
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->will(
 				$this->throwException(
 					new GoogleException( 'error', 400 )
@@ -186,8 +188,9 @@ class MerchantTest extends UnitTest {
 
 	public function test_get_accountstatuses() {
 		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
-		$this->service->accountstatuses->expects( $this->any() )
+		$this->service->accountstatuses->expects( $this->once() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->willReturn( $this->createMock( AccountStatus::class ) );
 
 		$this->assertInstanceOf( AccountStatus::class, $this->merchant->get_accountstatus() );
@@ -195,8 +198,9 @@ class MerchantTest extends UnitTest {
 
 	public function test_get_accountstatus_failure() {
 		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
-		$this->service->accountstatuses->expects( $this->any() )
+		$this->service->accountstatuses->expects( $this->once() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->will(
 				$this->throwException(
 					new GoogleException( 'error', 400 )
@@ -211,7 +215,7 @@ class MerchantTest extends UnitTest {
 	public function test_get_productstatuses_batch() {
 		$this->service->productstatuses = $this->createMock( Productstatuses::class );
 
-		$this->service->productstatuses->expects( $this->any() )
+		$this->service->productstatuses->expects( $this->once() )
 			->method( 'custombatch' )
 			->willReturn( $this->createMock( ProductstatusesCustomBatchResponse::class ) );
 
