@@ -427,10 +427,9 @@ class ProductHelper implements Service {
 	 *
 	 * @param WC_Product $product WooCommerce product object.
 	 *
-	 * @return WC_Product The parent product object or the given product object of it doesn't have a parent.
+	 * @return WC_Product The parent product object or the given product object if it doesn't have a parent.
 	 *
-	 * @throws InvalidValue If a given ID doesn't reference a valid product. Or if a variation product does not have a
-	 *                      valid parent ID (i.e. it's an orphan).
+	 * @throws InvalidValue If a variation product does not have a valid parent ID (i.e. it's an orphan).
 	 *
 	 * @since 1.3.0
 	 */

@@ -36,7 +36,8 @@
 	}
 }
 
-.gla-channel-visibility-box select {
+#channel_visibility .gla-channel-visibility-box select {
 	display: block;
 	margin: $grid-unit-10 0;
+	max-width: 100%;
 }

@@ -3,16 +3,18 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\GenderInput;
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\AvailabilityDateInput;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Gender
+ * Class AvailabilityDate
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes
+ *
+ * @since x.x.x
  */
-class Gender extends AbstractAttribute implements WithValueOptionsInterface {
+class AvailabilityDate extends AbstractAttribute {
 
 	/**
 	 * Returns the attribute ID.
@@ -24,22 +26,25 @@ class Gender extends AbstractAttribute implements WithValueOptionsInterface {
 	 * @see \Google\Service\ShoppingContent\Product for the list of properties.
 	 */
 	public static function get_id(): string {
-		return 'gender';
+		return 'availabilityDate';
 	}
 
 	/**
-	 * Return an array of values available to choose for the attribute.
+	 * Returns a name for the attribute. Used in attribute's input.
 	 *
-	 * Note: array key is used as the option key.
-	 *
-	 * @return array
+	 * @return string
 	 */
-	public static function get_value_options(): array {
-		return [
-			'male'   => __( 'Male', 'google-listings-and-ads' ),
-			'female' => __( 'Female', 'google-listings-and-ads' ),
-			'unisex' => __( 'Unisex', 'google-listings-and-ads' ),
-		];
+	public static function get_name(): string {
+		return __( 'Availability Date', 'google-listings-and-ads' );
+	}
+
+	/**
+	 * Returns a short description for the attribute. Used in attribute's input.
+	 *
+	 * @return string
+	 */
+	public static function get_description(): string {
+		return __( 'The date a preordered or backordered product becomes available for delivery. Required if product availability is preorder or backorder', 'google-listings-and-ads' );
 	}
 
 	/**
@@ -57,11 +62,9 @@ class Gender extends AbstractAttribute implements WithValueOptionsInterface {
 	 * @return string
 	 *
 	 * @see AttributeInputInterface
-	 *
-	 * @since x.x.x
 	 */
 	public static function get_input_type(): string {
-		return GenderInput::class;
+		return AvailabilityDateInput::class;
 	}
 
 }

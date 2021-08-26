@@ -79,6 +79,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -104,6 +105,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
+		DateTimeUtility::class        => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
 		GlobalSiteTag::class          => true,
@@ -193,6 +195,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share utility classes
 		$this->share_with_tags( AddressUtility::class );
+		$this->share_with_tags( DateTimeUtility::class );
 
 		// Share our regular service classes.
 		$this->conditionally_share_with_tags(
