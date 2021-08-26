@@ -16,6 +16,7 @@ use Google\Service\ShoppingContent\AccountStatus;
 use Google\Service\ShoppingContent\AccountUser;
 use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
+use Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
 use Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
 use Google\Service\ShoppingContent\Resource\Accounts;
 use Google\Service\ShoppingContent\Resource\Accountstatuses;
@@ -217,6 +218,23 @@ class MerchantTest extends UnitTest {
 
 		$this->service->productstatuses->expects( $this->once() )
 			->method( 'custombatch' )
+			->with(
+				$this->callback(
+					function( ProductstatusesCustomBatchRequest $request ) {
+						$this->assertEquals(
+							[
+								'batchId'    => 3,
+								'productId'  => 3,
+								'method'     => 'GET',
+								'merchantId' => $this->merchant_id,
+							],
+							$request->getEntries()[2]
+						);
+
+						return true;
+					}
+				)
+			)
 			->willReturn( $this->createMock( ProductstatusesCustomBatchResponse::class ) );
 
 		$this->assertInstanceOf(
