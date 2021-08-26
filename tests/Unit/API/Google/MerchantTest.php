@@ -48,6 +48,9 @@ class MerchantTest extends UnitTest {
 		$this->options  = $this->createMock( OptionsInterface::class );
 		$this->merchant = new Merchant( $this->service );
 		$this->merchant->set_options_object( $this->options );
+
+		$this->merchant_id = 12345;
+		$this->options->method( 'get_merchant_id' )->willReturn( $this->merchant_id );
 	}
 
 	public function test_get_products_empty_list() {
@@ -55,6 +58,7 @@ class MerchantTest extends UnitTest {
 
 		$this->service->products->expects( $this->any() )
 			->method( 'listProducts' )
+			->with( $this->merchant_id )
 			->willReturn( $list_response );
 
 		$products = $this->merchant->get_products();
@@ -75,6 +79,7 @@ class MerchantTest extends UnitTest {
 
 		$this->service->products->expects( $this->any() )
 			->method( 'listProducts' )
+			->with( $this->merchant_id )
 			->willReturn( $list_response );
 
 		$products = $this->merchant->get_products();
@@ -87,6 +92,7 @@ class MerchantTest extends UnitTest {
 	public function test_get_products_multiple_pages() {
 		$list_response = $this->createMock( ProductsListResponse::class );
 
+		$token        = uniqid();
 		$product_list = [
 			$this->createMock( Product::class ),
 			$this->createMock( Product::class ),
@@ -100,14 +106,20 @@ class MerchantTest extends UnitTest {
 			->method( 'getNextPageToken' )
 			->will(
 				$this->onConsecutiveCalls(
-					'token',
-					'token',
+					$token,
+					$token,
 					null
 				)
 			);
 
-		$this->service->products->expects( $this->any() )
+		$this->service->products->expects( $this->at( 0 ) )
 			->method( 'listProducts' )
+			->with( $this->merchant_id )
+			->willReturn( $list_response );
+
+		$this->service->products->expects( $this->at( 1 ) )
+			->method( 'listProducts' )
+			->with( $this->merchant_id, [ 'pageToken' => $token ] )
 			->willReturn( $list_response );
 
 		$products = $this->merchant->get_products();
