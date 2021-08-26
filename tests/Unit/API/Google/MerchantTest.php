@@ -226,23 +226,31 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_update_account() {
-		$account = $this->createMock( Account::class );
+		$account_id = uniqid();
+		$account    = $this->createMock( Account::class );
 
-		$this->service->accounts->expects( $this->any() )
+		$account->method( 'getId' )->willReturn( $account_id );
+
+		$this->service->accounts->expects( $this->once() )
 			->method( 'update' )
+			->with( $account_id, $account_id, $account )
 			->willReturn( $account );
 
-		$this->assertInstanceOf(
-			Account::class,
+		$this->assertEquals(
+			$account,
 			$this->merchant->update_account( $account )
 		);
 	}
 
 	public function test_update_account_failure() {
-		$account = $this->createMock( Account::class );
+		$account_id = uniqid();
+		$account    = $this->createMock( Account::class );
 
-		$this->service->accounts->expects( $this->any() )
+		$account->method( 'getId' )->willReturn( $account_id );
+
+		$this->service->accounts->expects( $this->once() )
 			->method( 'update' )
+			->with( $account_id, $account_id, $account )
 			->will(
 				$this->throwException(
 					new GoogleException( 'error', 400 )
