@@ -164,12 +164,14 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_get_account() {
+		$account = $this->createMock( Account::class );
+
 		$this->service->accounts->expects( $this->once() )
 			->method( 'get' )
 			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $this->createMock( Account::class ) );
+			->willReturn( $account );
 
-		$this->assertInstanceOf( Account::class, $this->merchant->get_account() );
+		$this->assertEquals( $account, $this->merchant->get_account() );
 	}
 
 	public function test_get_account_failure() {
@@ -188,13 +190,15 @@ class MerchantTest extends UnitTest {
 	}
 
 	public function test_get_accountstatuses() {
+		$account_status = $this->createMock( AccountStatus::class );
+
 		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
 		$this->service->accountstatuses->expects( $this->once() )
 			->method( 'get' )
 			->with( $this->merchant_id, $this->merchant_id )
-			->willReturn( $this->createMock( AccountStatus::class ) );
+			->willReturn( $account_status );
 
-		$this->assertInstanceOf( AccountStatus::class, $this->merchant->get_accountstatus() );
+		$this->assertEquals( $account_status, $this->merchant->get_accountstatus() );
 	}
 
 	public function test_get_accountstatus_failure() {
