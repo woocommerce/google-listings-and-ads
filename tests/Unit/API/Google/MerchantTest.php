@@ -340,8 +340,9 @@ class MerchantTest extends UnitTest {
 			->method( 'getUsers' )
 			->willReturn( [ $user ] );
 
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->willReturn( $account );
 
 		$this->assertTrue(
@@ -352,8 +353,9 @@ class MerchantTest extends UnitTest {
 	public function test_no_access_to_account() {
 		$email = 'john@doe.email';
 
-		$this->service->accounts->expects( $this->any() )
+		$this->service->accounts->expects( $this->once() )
 			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
 			->will(
 				$this->throwException(
 					new GoogleException( 'no access', 403 )
