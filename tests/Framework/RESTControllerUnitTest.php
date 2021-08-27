@@ -142,32 +142,15 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	}
 
 	/**
-	 * Test the request/response matched the data we sent.
+	 * Test the response matches the expected status code and contains data.
 	 *
-	 * @param array $response    Array of response data from do_request above.
-	 * @param int   $status_code Expected status code.
-	 * @param array $data        Array of expected data.
+	 * @param object $response    Response object from do_request above.
+	 * @param int    $status_code Expected status code.
 	 */
-	protected function assertExpectedResponse( $response, $status_code = 200, $data = array() ) {
+	protected function assertExpectedResponse( object $response, int $status_code = 200 ) {
 		$this->assertObjectHasAttribute( 'status', $response );
 		$this->assertObjectHasAttribute( 'data', $response );
-		$this->assertEquals( $status_code, $response->status, print_r( $response->data, true ) );
-
-		if ( ! $data ) {
-			return;
-		}
-
-		foreach ( $data as $key => $value ) {
-			if ( ! isset( $response->data[ $key ] ) ) {
-				continue;
-			}
-
-			if ( is_array( $value ) ) {
-				$this->assertArraySubset( $value, $response->data[ $key ] );
-			} else {
-				$this->assertEquals( $value, $response->data[ $key ] );
-			}
-		}
+		$this->assertEquals( $status_code, $response->status );
 	}
 
 }
