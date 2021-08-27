@@ -86,8 +86,6 @@ abstract class RESTControllerUnitTest extends UnitTest {
 
 	/**
 	 * Validate that the returned API schema matches what is expected.
-	 *
-	 * @return void
 	 */
 	public function test_schema_properties() {
 		$request    = new Request( 'OPTIONS', $this->routes[0] );
@@ -129,16 +127,16 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	 * @param array   $params   Request body or query.
 	 * @return object
 	 */
-	protected function do_request( $endpoint, $type = 'GET', $params = [] ) {
+	protected function do_request( string $endpoint, string $type = 'GET', array $params = [] ): object {
 		$request = new Request( $type, untrailingslashit( $endpoint ) );
 		'GET' === $type ? $request->set_query_params( $params ) : $request->set_body_params( $params );
 		$response = $this->server->dispatch_request( $request );
 
-		return (object) array(
+		return (object) [
 			'status' => $response->get_status(),
 			'data'   => json_decode( wp_json_encode( $response->get_data() ), true ),
 			'raw'    => $response->get_data(),
-		);
+		];
 	}
 
 	/**
