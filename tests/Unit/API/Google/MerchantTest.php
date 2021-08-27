@@ -189,6 +189,37 @@ class MerchantTest extends UnitTest {
 		$this->merchant->get_account();
 	}
 
+	public function test_is_website_claimed() {
+		$account_status = $this->createMock( AccountStatus::class );
+		$account_status->expects( $this->once() )
+			->method( 'getWebsiteClaimed' )
+			->willReturn( true );
+
+		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
+		$this->service->accountstatuses->expects( $this->once() )
+			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->willReturn( $account_status );
+
+		$this->assertTrue( $this->merchant->is_website_claimed( $this->merchant_id ) );
+	}
+
+	public function test_is_website_claimed_failure() {
+		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
+		$this->service->accountstatuses->expects( $this->once() )
+			->method( 'get' )
+			->with( $this->merchant_id, $this->merchant_id )
+			->will(
+				$this->throwException(
+					new GoogleException( 'error', 400 )
+				)
+			);
+
+		$this->expectException( Exception::class );
+        $this->expectExceptionCode( 400 );
+		$this->merchant->is_website_claimed( $this->merchant_id );
+	}
+
 	public function test_get_account_level_issues() {
 		$issues = [
 			$this->createMock( AccountStatusAccountLevelIssue::class ),
