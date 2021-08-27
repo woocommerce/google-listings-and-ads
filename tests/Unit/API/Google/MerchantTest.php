@@ -13,6 +13,7 @@ use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountAdsLink;
 use Google\Service\ShoppingContent\AccountStatus;
+use Google\Service\ShoppingContent\AccountStatusAccountLevelIssue;
 use Google\Service\ShoppingContent\AccountUser;
 use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
@@ -188,8 +189,15 @@ class MerchantTest extends UnitTest {
 		$this->merchant->get_account();
 	}
 
-	public function test_get_accountstatuses() {
+	public function test_get_account_level_issues() {
+		$issues = [
+			$this->createMock( AccountStatusAccountLevelIssue::class ),
+			$this->createMock( AccountStatusAccountLevelIssue::class ),
+		];
 		$account_status = $this->createMock( AccountStatus::class );
+		$account_status->expects( $this->once() )
+			->method( 'getAccountLevelIssues' )
+			->willReturn( $issues );
 
 		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
 		$this->service->accountstatuses->expects( $this->once() )
@@ -197,10 +205,10 @@ class MerchantTest extends UnitTest {
 			->with( $this->merchant_id, $this->merchant_id )
 			->willReturn( $account_status );
 
-		$this->assertEquals( $account_status, $this->merchant->get_accountstatus() );
+		$this->assertEquals( $issues, $this->merchant->get_account_level_issues() );
 	}
 
-	public function test_get_accountstatus_failure() {
+	public function test_get_account_level_issues_failure() {
 		$this->service->accountstatuses = $this->createMock( Accountstatuses::class );
 		$this->service->accountstatuses->expects( $this->once() )
 			->method( 'get' )
@@ -213,7 +221,7 @@ class MerchantTest extends UnitTest {
 
 		$this->expectException( Exception::class );
         $this->expectExceptionCode( 400 );
-		$this->merchant->get_accountstatus();
+		$this->merchant->get_account_level_issues();
 	}
 
 	public function test_get_productstatuses_batch() {
