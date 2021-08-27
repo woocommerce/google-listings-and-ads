@@ -13,7 +13,6 @@ use Google\Service\ShoppingContent\AccountAdsLink;
 use Google\Service\ShoppingContent\AccountStatus;
 use Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
 use Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
-use Google\Service\ShoppingContent\ProductstatusesListResponse;
 use Google\Service\ShoppingContent\Product;
 use Exception;
 
@@ -134,22 +133,6 @@ class Merchant implements OptionsAwareInterface {
 			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
 		}
 		return $mc_account_status;
-	}
-
-	/**
-	 * Retrieve a page of the user's Merchant Center product statuses.
-	 *
-	 * @param string|null $page_token
-	 *
-	 * @return ProductstatusesListResponse A page of the Merchant Center product statuses.
-	 */
-	public function get_productstatuses( ?string $page_token ): ProductstatusesListResponse {
-		$merchant_id = $this->options->get_merchant_id();
-		$opt_params  = [ 'maxResults' => 250 ];
-		if ( ! empty( $page_token ) ) {
-			$opt_params['pageToken'] = $page_token;
-		}
-		return $this->service->productstatuses->listProductstatuses( $merchant_id, $opt_params );
 	}
 
 	/**
