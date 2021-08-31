@@ -12,6 +12,7 @@ branches:
   only:
     - trunk
     - develop
+    - feature/add-test-coverage-report
 
 cache:
   directories:
