@@ -53,7 +53,7 @@ matrix:
       php: 7.4
       env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=tc WP_MULTISITE=0
       script:
-        - vendor/bin/phpunit --coverage-text --coverage-clover clover.xml
+        - vendor/bin/phpunit --coverage-text --coverage-clover ./tests/logs/clover.xml
         # Coveralls.io
         - vendor/bin/php-coveralls --verbose
     - name: "Bundle size"
