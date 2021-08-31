@@ -75,7 +75,7 @@ install:
 before_script:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - |
-    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ] && [ "${WP_TRAVISCI}" != "jest" ]; then
+    if [ -f ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini ] && [ "${WP_TRAVISCI}" != "tc" ]; then
       phpenv config-rm xdebug.ini
     else
       echo "xdebug.ini does not exist"
