@@ -4,12 +4,6 @@ declare( strict_types=1 );
 
 // phpcs:ignoreFile
 
-// Exit the script if WC_GLA_SKIP_VENDOR_RENAME env variable is set
-if ( getenv( 'WC_GLA_SKIP_VENDOR_RENAME' ) ) {
-	echo 'Skipping vendor namespace replacement because WC_GLA_SKIP_VENDOR_RENAME is set.';
-	exit();
-}
-
 $replacements  = [
 	'League\\Container' => 'league/container',
 	'League\\ISO3166'   => 'league/iso3166',
@@ -29,6 +23,7 @@ $dependencies = [
 		'google/apiclient',
 		'google/auth',
 		'google/gax',
+		'php-coveralls/php-coveralls',
 	],
 ];
 
@@ -138,6 +133,10 @@ function find_files( string $path ): array {
 
 	if ( ! empty( $dependencies[ $path ] ) ) {
 		foreach ( $dependencies[ $path ] as $dependency ) {
+			if ( ! file_exists( "{$vendor_dir}/{$dependency}" ) ) {
+				continue;
+			}
+
 			$dependent_files = array_filter(
 				explode(
 					"\n",

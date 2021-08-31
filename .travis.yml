@@ -51,11 +51,8 @@ matrix:
       script: npm run lint
     - name: "Test coverage"
       php: 7.4
-      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=tc WP_MULTISITE=0 WC_GLA_SKIP_VENDOR_RENAME=1
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=tc WP_MULTISITE=0
       script:
-        # Re-install vendors to rollback vendor namespaces renamed by `bin/prefix-vendor-namespace.php` script.
-        - rm -rf vendor
-        - composer install
         - vendor/bin/phpunit --coverage-text --coverage-clover ./tests/logs/clover.xml
         # Coveralls.io
         - vendor/bin/php-coveralls --verbose
