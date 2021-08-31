@@ -16,4 +16,15 @@
 			<directory suffix=".php">./tests/integration</directory>
 		</testsuite>
 	</testsuites>
+	<filter>
+		<whitelist addUncoveredFilesFromWhitelist="true">
+			<directory suffix=".php">./src</directory>
+			<file>google-listings-and-ads.php</file>
+			<file>uninstall.php</file>
+			<exclude>
+				<directory suffix=".php">./views</directory>
+				<directory suffix=".php">./vendor</directory>
+			</exclude>
+		</whitelist>
+	</filter>
 </phpunit>
