@@ -53,6 +53,7 @@ matrix:
       php: 7.4
       env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=tc WP_MULTISITE=0
       script:
+        - phpenv config-add xdebug.ini
         - vendor/bin/phpunit --coverage-text --coverage-clover clover.xml
         # Coveralls.io
         - vendor/bin/php-coveralls --verbose
