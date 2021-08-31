@@ -4,6 +4,12 @@ declare( strict_types=1 );
 
 // phpcs:ignoreFile
 
+// Exit the script if WC_GLA_SKIP_VENDOR_RENAME env variable is set
+if ( getenv( 'WC_GLA_SKIP_VENDOR_RENAME' ) ) {
+	echo 'Skipping vendor namespace replacement because WC_GLA_SKIP_VENDOR_RENAME is set.';
+	exit();
+}
+
 $replacements  = [
 	'League\\Container' => 'league/container',
 	'League\\ISO3166'   => 'league/iso3166',
