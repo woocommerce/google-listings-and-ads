@@ -48,6 +48,13 @@ matrix:
       php: 7.4
       env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=cs WP_MULTISITE=0
       script: npm run lint
+    - name: "Test coverage"
+      php: 7.4
+      env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=tc WP_MULTISITE=0
+      script:
+        - vendor/bin/phpunit --coverage-text --coverage-clover clover.xml
+        # Coveralls.io
+        - vendor/bin/php-coveralls --verbose
     - name: "Bundle size"
       php: 7.4
       env: WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}" WP_TRAVISCI=bs WP_MULTISITE=0 CI_BRANCH_BASE="${TRAVIS_BRANCH}"
