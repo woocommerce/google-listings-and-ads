@@ -228,8 +228,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );
-		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class );
-		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class );
+		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
+		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
