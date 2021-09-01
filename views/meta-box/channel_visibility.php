@@ -86,8 +86,8 @@ if ( $input_disabled ) {
 		<?php endif; ?>
 	<?php else : ?>
 		<p><strong><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></strong></p>
-		<p><?php esc_html_e( 'Integrate with Google to list your products for free and launch paid ad campaigns.', 'google-listings-and-ads' ); ?></p>
+		<p><?php esc_html_e( 'Complete setup to get your products listed on Google for free.', 'google-listings-and-ads' ); ?></p>
 		<a href="<?php echo esc_attr( $get_started_url ); ?>"
-		   class="button button-primary"><?php esc_html_e( 'Get Started', 'google-listings-and-ads' ); ?></a>
+		   class="button"><?php esc_html_e( 'Complete setup', 'google-listings-and-ads' ); ?></a>
 	<?php endif; ?>
 </div>
