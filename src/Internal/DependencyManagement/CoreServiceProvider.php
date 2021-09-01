@@ -266,7 +266,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			 ->invokeMethod( 'set_tracks', [ TracksInterface::class ] );
 
 		// Share admin meta boxes
-		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class );
+		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class );
 
 		$this->share_with_tags( PHPViewFactory::class );
