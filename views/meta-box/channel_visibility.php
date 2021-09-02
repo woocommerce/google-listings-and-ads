@@ -18,7 +18,7 @@ $channel_visibility = $this->channel_visibility;
 
 /** @var string */
 $field_id = $this->field_id;
-/** @var string */
+/** @var bool */
 $is_setup_complete = $this->is_setup_complete;
 /** @var string */
 $get_started_url = $this->get_started_url;
