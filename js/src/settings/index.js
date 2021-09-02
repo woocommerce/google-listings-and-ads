@@ -15,6 +15,7 @@ import DisconnectAccounts from './disconnect-accounts';
 import ReconnectAccounts from './reconnect-accounts';
 import EditContactInformation from './edit-contact-information';
 import './index.scss';
+import { DemoVerifyPhoneNumberCard } from '.~/components/contact-information/phone-number-card/phone-number-card';
 
 const Settings = () => {
 	const { subpath } = getQuery();
@@ -42,6 +43,7 @@ const Settings = () => {
 	return (
 		<div className="gla-settings">
 			<NavigationClassic />
+			<DemoVerifyPhoneNumberCard />
 			<DisconnectAccounts />
 			<ContactInformationPreview />
 		</div>
