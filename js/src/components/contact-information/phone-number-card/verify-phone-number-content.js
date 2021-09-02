@@ -9,7 +9,7 @@ import {
 	useRef,
 	createInterpolateElement,
 } from '@wordpress/element';
-import { Flex } from '@wordpress/components';
+import { Notice, Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -37,8 +37,14 @@ const requestVerificationCode = ( country, phoneNumber, method ) => {
 const verifyPhoneNumber = ( id, code, method ) => {
 	// eslint-disable-next-line no-console
 	console.log( 'verifyPhoneNumber', { id, code, method } );
-	return new Promise( ( resolve ) => {
-		setTimeout( resolve, 2000 );
+	return new Promise( ( resolve, reject ) => {
+		setTimeout( () => {
+			if ( code === '000000' ) {
+				resolve();
+			} else {
+				reject( 'Incorrect verification code. Please try again.' );
+			}
+		}, 2000 );
 	} );
 };
 
@@ -109,6 +115,7 @@ export default function VerifyPhoneNumberContent( {
 	const [ second, callCount, startCountdown ] = useCountdown( method );
 	const [ verification, setVerification ] = useState( null );
 	const [ verifying, setVerifying ] = useState( false );
+	const [ error, setError ] = useState( null );
 	const verificationIdRef = useRef( {} );
 
 	const isSMS = method === VERIFICATION_METHOD_SMS;
@@ -122,20 +129,33 @@ export default function VerifyPhoneNumberContent( {
 	};
 
 	const handleVerificationCodeRequest = useCallback( () => {
+		setError( null );
 		startCountdown( 60 );
 
-		requestVerificationCode( country, number, method ).then( ( id ) => {
-			verificationIdRef.current[ method ] = id;
-		} );
+		requestVerificationCode( country, number, method )
+			.then( ( id ) => {
+				verificationIdRef.current[ method ] = id;
+			} )
+			.catch( () => {
+				startCountdown( 0 );
+				// TODO: [full-contact-info] add error handling.
+			} );
 	}, [ country, number, method, startCountdown ] );
 
 	const handleVerifyClick = () => {
+		setError( null );
 		setVerifying( true );
 
 		const id = verificationIdRef.current[ method ];
-		verifyPhoneNumber( id, verification.code, method ).then( () => {
-			onPhoneNumberVerified();
-		} );
+		verifyPhoneNumber( id, verification.code, method )
+			.then( () => {
+				onPhoneNumberVerified();
+			} )
+			.catch( ( e ) => {
+				// TODO: [full-contact-info] align to the real error data structure.
+				setError( e );
+				setVerifying( false );
+			} );
 	};
 
 	// Trigger a verification code request if the current method hasn't been requested yet.
@@ -156,6 +176,13 @@ export default function VerifyPhoneNumberContent( {
 	return (
 		<>
 			<Section.Card.Body>
+				{ error && (
+					<Subsection>
+						<Notice status="error" isDismissible={ false }>
+							{ error }
+						</Notice>
+					</Subsection>
+				) }
 				<Subsection>
 					<Subsection.Title>
 						{ __(
