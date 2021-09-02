@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	useState,
 	useEffect,
@@ -13,6 +13,7 @@ import { Flex } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import useCountdown from './useCountdown';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import AppButton from '.~/components/app-button';
@@ -80,6 +81,7 @@ export default function VerifyPhoneNumberContent( {
 	display,
 } ) {
 	const [ method, setMethod ] = useState( verificationMethod );
+	const [ second, callCount, startCountdown ] = useCountdown( method );
 	const [ verification, setVerification ] = useState( null );
 
 	const isSMS = method === VERIFICATION_METHOD_SMS;
@@ -92,14 +94,24 @@ export default function VerifyPhoneNumberContent( {
 		}
 	};
 
-	const handleVerificationCodeRequest = useCallback( () => {}, [] );
+	const handleVerificationCodeRequest = useCallback( () => {
+		startCountdown( 60 );
+	}, [ startCountdown ] );
 
+	// Trigger a verification code request if the current method hasn't been requested yet.
 	useEffect( () => {
-		handleVerificationCodeRequest();
-	}, [ method, handleVerificationCodeRequest ] );
+		if ( callCount === 0 ) {
+			handleVerificationCodeRequest();
+		}
+	}, [ method, callCount, handleVerificationCodeRequest ] );
 
 	// Render related.
-	const { toInstruction, textResend, textSwitch } = appearanceDict[ method ];
+	const {
+		toInstruction,
+		textResend,
+		textResendCooldown,
+		textSwitch,
+	} = appearanceDict[ method ];
 
 	return (
 		<>
@@ -115,7 +127,7 @@ export default function VerifyPhoneNumberContent( {
 				</Subsection>
 				<Subsection>
 					<VerificationCodeControl
-						resetNeedle={ method }
+						resetNeedle={ method + callCount }
 						onCodeChange={ setVerification }
 					/>
 				</Subsection>
@@ -131,7 +143,12 @@ export default function VerifyPhoneNumberContent( {
 						/>
 						<AppButton
 							isSecondary
-							text={ textResend }
+							disabled={ second > 0 }
+							text={
+								second
+									? sprintf( textResendCooldown, second )
+									: textResend
+							}
 							onClick={ handleVerificationCodeRequest }
 						/>
 					</Flex>
