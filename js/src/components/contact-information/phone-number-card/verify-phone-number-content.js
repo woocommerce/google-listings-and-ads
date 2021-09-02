@@ -6,6 +6,7 @@ import {
 	useState,
 	useEffect,
 	useCallback,
+	useRef,
 	createInterpolateElement,
 } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
@@ -22,6 +23,24 @@ import {
 	VERIFICATION_METHOD_SMS,
 	VERIFICATION_METHOD_PHONE_CALL,
 } from './constants';
+
+// TODO: [full-contact-info] remove mock functions
+const requestVerificationCode = ( country, phoneNumber, method ) => {
+	// eslint-disable-next-line no-console
+	console.log( 'requestVerificationCode', { country, phoneNumber, method } );
+	return new Promise( ( resolve ) =>
+		setTimeout( () => resolve( `${ method }-12345` ), 1000 )
+	);
+};
+
+// TODO: [full-contact-info] remove mock functions
+const verifyPhoneNumber = ( id, code, method ) => {
+	// eslint-disable-next-line no-console
+	console.log( 'verifyPhoneNumber', { id, code, method } );
+	return new Promise( ( resolve ) => {
+		setTimeout( resolve, 2000 );
+	} );
+};
 
 const appearanceDict = {
 	[ VERIFICATION_METHOD_SMS ]: {
@@ -74,15 +93,23 @@ const appearanceDict = {
  *
  * @param {Object} props React props.
  * @param {string} props.verificationMethod The initial verification method.
+ * @param {string} props.country The country code. Example: 'US'.
+ * @param {string} props.number The phone number string in E.164 format. Example: '+12133734253'.
  * @param {string} props.display The phone number string in international format. Example: '+1 213 373 4253'.
+ * @param {Function} props.onPhoneNumberVerified Called when the phone number is verified.
  */
 export default function VerifyPhoneNumberContent( {
 	verificationMethod,
+	country,
+	number,
 	display,
+	onPhoneNumberVerified,
 } ) {
 	const [ method, setMethod ] = useState( verificationMethod );
 	const [ second, callCount, startCountdown ] = useCountdown( method );
 	const [ verification, setVerification ] = useState( null );
+	const [ verifying, setVerifying ] = useState( false );
+	const verificationIdRef = useRef( {} );
 
 	const isSMS = method === VERIFICATION_METHOD_SMS;
 
@@ -96,7 +123,20 @@ export default function VerifyPhoneNumberContent( {
 
 	const handleVerificationCodeRequest = useCallback( () => {
 		startCountdown( 60 );
-	}, [ startCountdown ] );
+
+		requestVerificationCode( country, number, method ).then( ( id ) => {
+			verificationIdRef.current[ method ] = id;
+		} );
+	}, [ country, number, method, startCountdown ] );
+
+	const handleVerifyClick = () => {
+		setVerifying( true );
+
+		const id = verificationIdRef.current[ method ];
+		verifyPhoneNumber( id, verification.code, method ).then( () => {
+			onPhoneNumberVerified();
+		} );
+	};
 
 	// Trigger a verification code request if the current method hasn't been requested yet.
 	useEffect( () => {
@@ -136,10 +176,12 @@ export default function VerifyPhoneNumberContent( {
 						<AppButton
 							isSecondary
 							disabled={ ! verification?.isFilled }
+							loading={ verifying }
 							text={ __(
 								'Verify phone number',
 								'google-listings-and-ads'
 							) }
+							onClick={ handleVerifyClick }
 						/>
 						<AppButton
 							isSecondary
@@ -157,6 +199,7 @@ export default function VerifyPhoneNumberContent( {
 			<Section.Card.Footer>
 				<AppButton
 					isLink
+					disabled={ verifying }
 					text={ textSwitch }
 					onClick={ switchMethod }
 				/>
