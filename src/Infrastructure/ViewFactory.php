@@ -13,11 +13,11 @@ defined( 'ABSPATH' ) || exit;
 interface ViewFactory {
 
 	/**
-	 * Create a new view object for a given relative path.
+	 * Create a new view object.
 	 *
-	 * @param string $relative_path Relative path to create the view for.
+	 * @param string $path Path to the view file to render.
 	 *
 	 * @return View Instantiated view object.
 	 */
-	public function create( string $relative_path ): View;
+	public function create( string $path ): View;
 }
