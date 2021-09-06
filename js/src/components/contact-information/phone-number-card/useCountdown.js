@@ -3,6 +3,20 @@
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 
+/**
+ * @typedef {Object} Countdown
+ * @property {number} second The current remaining seconds of countdown.
+ * @property {number} callCount The calling count of `startCountdown` function.
+ * @property {(countdownSecond: number) => void} startCountdown Start the countdown with the given starting seconds.
+ */
+
+/**
+ * Get the corresponding countdown states and its start function by given `handle`.
+ * The states would be updated every 1000 ms interval till counting down to 0.
+ *
+ * @param {string} handle The countdown handle.
+ * @return {Countdown} The corresponding countdown states and its start function.
+ */
 export default function useCountdown( handle ) {
 	const timerRef = useRef( {} );
 	const [ second, setSecond ] = useState( 0 );
