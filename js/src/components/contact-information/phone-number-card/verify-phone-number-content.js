@@ -112,7 +112,7 @@ export default function VerifyPhoneNumberContent( {
 	onPhoneNumberVerified,
 } ) {
 	const [ method, setMethod ] = useState( verificationMethod );
-	const [ second, callCount, startCountdown ] = useCountdown( method );
+	const { second, callCount, startCountdown } = useCountdown( method );
 	const [ verification, setVerification ] = useState( null );
 	const [ verifying, setVerifying ] = useState( false );
 	const [ error, setError ] = useState( null );

@@ -58,5 +58,5 @@ export default function useCountdown( handle ) {
 	}, [] );
 
 	const { callCount } = timerRef.current[ handle ];
-	return [ second, callCount, startCountdown ];
+	return { second, callCount, startCountdown };
 }
