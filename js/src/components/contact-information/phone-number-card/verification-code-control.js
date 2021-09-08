@@ -82,8 +82,10 @@ export default function VerificationCodeControl( {
 	const handleInput = ( e ) => {
 		const { value, dataset } = e.target;
 		const idx = Number( dataset.idx );
-		const digit = value.substr( cursorRef.current, 1 ).replace( /\D/, '' );
 
+		// Only keep the first entered char from the starting position of key cursor.
+		// If that char is not a digit, then clear the input to empty.
+		const digit = value.substr( cursorRef.current, 1 ).replace( /\D/, '' );
 		if ( digit !== value ) {
 			e.target.value = digit;
 		}
