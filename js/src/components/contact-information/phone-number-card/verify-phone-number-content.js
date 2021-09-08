@@ -209,7 +209,7 @@ export default function VerifyPhoneNumberContent( {
 						/>
 						<AppButton
 							isSecondary
-							disabled={ second > 0 }
+							disabled={ second > 0 || verifying }
 							text={
 								second
 									? sprintf( textResendCooldown, second )
