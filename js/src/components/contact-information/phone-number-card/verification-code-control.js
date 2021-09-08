@@ -121,15 +121,17 @@ export default function VerificationCodeControl( {
 			justify="normal"
 			gap={ 2 }
 		>
-			{ digits.map( ( _, idx ) => {
+			{ digits.map( ( value, idx ) => {
 				return (
 					<AppInputControl
 						key={ idx }
 						ref={ ( el ) => ( inputsRef.current[ idx ] = el ) }
 						data-idx={ idx }
+						value={ value }
 						onKeyDown={ handleKeyDown }
 						onBeforeInput={ handleBeforeInput }
 						onInput={ handleInput }
+						autoComplete="off"
 					/>
 				);
 			} ) }
