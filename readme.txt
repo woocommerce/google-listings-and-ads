@@ -115,6 +115,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.4.3 - 2021-09-08 =
+* Fix - PHP notice when creating a product variation.
+* Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
+
 = 1.4.2 - 2021-08-24 =
 * Fix - Fix a potential fatal error when WooCommerce isn't active while activating Google Listings and Ads.
 * Fix - Fix margin/padding styles for the AppButton when having spinner/icon/text.
