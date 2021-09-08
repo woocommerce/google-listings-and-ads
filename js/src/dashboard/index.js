@@ -45,7 +45,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="gla-dashboard">
-			<DifferentCurrencyNotice />
+			<DifferentCurrencyNotice context="dashboard" />
 			<NavigationClassic />
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker

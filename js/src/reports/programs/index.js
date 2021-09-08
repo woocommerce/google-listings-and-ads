@@ -89,7 +89,7 @@ const ProgramsReport = () => {
 
 	return (
 		<>
-			<DifferentCurrencyNotice />
+			<DifferentCurrencyNotice context={ trackEventId } />
 			<NavigationClassic />
 			<ReportsNavigation />
 			<ProgramsReportFilters

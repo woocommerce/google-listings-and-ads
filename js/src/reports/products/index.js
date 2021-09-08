@@ -117,7 +117,7 @@ const ProductsReportPage = () => {
 
 	return (
 		<>
-			<DifferentCurrencyNotice />
+			<DifferentCurrencyNotice context="reports-products" />
 			<NavigationClassic />
 			<ReportsNavigation />
 			{ loaded ? (

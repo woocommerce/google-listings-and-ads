@@ -16,9 +16,11 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
  * Shows warning {@link Notice}
  * when the store's currency is different than the one set in Google Ads account.
  *
+ * @param {Object} props React props.
+ * @param {string} props.context Context or page on which the notice is shown, to be forwarded to the link's track event.
  * @return {JSX.Element} {@link Notice} element with the warning message and the link to the documentation.
  */
-export default function DifferentCurrencyNotice() {
+export default function DifferentCurrencyNotice( { context } ) {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { code: storeCurrency } = useStoreCurrency();
 
@@ -48,7 +50,7 @@ export default function DifferentCurrencyNotice() {
 							className="gla-different-currency-notice__link"
 							href="https://support.google.com/google-ads/answer/9841530"
 							eventName="gla_different_currency_notice_link_click"
-							context="dashboard"
+							context={ context }
 							linkId="setting-up-currency"
 						/>
 					),
