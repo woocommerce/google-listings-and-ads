@@ -19,10 +19,7 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import AppButton from '.~/components/app-button';
 import VerificationCodeControl from './verification-code-control';
-import {
-	VERIFICATION_METHOD_SMS,
-	VERIFICATION_METHOD_PHONE_CALL,
-} from './constants';
+import { VERIFICATION_METHOD } from './constants';
 
 // TODO: [full-contact-info] remove mock functions
 const requestVerificationCode = ( country, phoneNumber, method ) => {
@@ -49,7 +46,7 @@ const verifyPhoneNumber = ( id, code, method ) => {
 };
 
 const appearanceDict = {
-	[ VERIFICATION_METHOD_SMS ]: {
+	[ VERIFICATION_METHOD.SMS ]: {
 		toInstruction( phoneNumber ) {
 			return createInterpolateElement(
 				__(
@@ -70,7 +67,7 @@ const appearanceDict = {
 			'google-listings-and-ads'
 		),
 	},
-	[ VERIFICATION_METHOD_PHONE_CALL ]: {
+	[ VERIFICATION_METHOD.PHONE_CALL ]: {
 		toInstruction( phoneNumber ) {
 			return createInterpolateElement(
 				__(
@@ -118,13 +115,13 @@ export default function VerifyPhoneNumberContent( {
 	const [ error, setError ] = useState( null );
 	const verificationIdRef = useRef( {} );
 
-	const isSMS = method === VERIFICATION_METHOD_SMS;
+	const isSMS = method === VERIFICATION_METHOD.SMS;
 
 	const switchMethod = () => {
 		if ( isSMS ) {
-			setMethod( VERIFICATION_METHOD_PHONE_CALL );
+			setMethod( VERIFICATION_METHOD.PHONE_CALL );
 		} else {
-			setMethod( VERIFICATION_METHOD_SMS );
+			setMethod( VERIFICATION_METHOD.SMS );
 		}
 	};
 

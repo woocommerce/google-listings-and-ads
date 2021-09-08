@@ -1,2 +1,7 @@
-export const VERIFICATION_METHOD_SMS = 'SMS';
-export const VERIFICATION_METHOD_PHONE_CALL = 'PHONE_CALL';
+/**
+ * @enum {string}
+ */
+export const VERIFICATION_METHOD = Object.freeze( {
+	SMS: 'SMS',
+	PHONE_CALL: 'PHONE_CALL',
+} );
