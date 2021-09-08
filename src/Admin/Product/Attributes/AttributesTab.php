@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use WC_Product;
@@ -34,20 +35,32 @@ class AttributesTab implements Service, Registerable, Conditional {
 	protected $attribute_manager;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * AttributesTab constructor.
 	 *
-	 * @param Admin            $admin
-	 * @param AttributeManager $attribute_manager
+	 * @param Admin                 $admin
+	 * @param AttributeManager      $attribute_manager
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( Admin $admin, AttributeManager $attribute_manager ) {
+	public function __construct( Admin $admin, AttributeManager $attribute_manager, MerchantCenterService $merchant_center ) {
 		$this->admin             = $admin;
 		$this->attribute_manager = $attribute_manager;
+		$this->merchant_center   = $merchant_center;
 	}
 
 	/**
 	 * Register a service.
 	 */
 	public function register(): void {
+		// Register the hooks only if Merchant Center is set up.
+		if ( ! $this->merchant_center->is_setup_complete() ) {
+			return;
+		}
+
 		add_action(
 			'woocommerce_new_product',
 			function ( int $product_id, WC_Product $product ) {

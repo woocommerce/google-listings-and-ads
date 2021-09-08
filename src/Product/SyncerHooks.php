@@ -127,16 +127,16 @@ class SyncerHooks implements Service, Registerable {
 			$this->handle_delete_product( $product_id );
 		};
 
-		// when a product is added / updated, schedule a update job.
-		add_action( 'woocommerce_new_product', $update_by_object, 90, 2 );
+		// when a product is added / updated, schedule an "update" job.
+		add_action( 'woocommerce_new_product', $update_by_id, 90 );
+		add_action( 'woocommerce_new_product_variation', $update_by_id, 90 );
 		add_action( 'woocommerce_update_product', $update_by_object, 90, 2 );
-		add_action( 'woocommerce_new_product_variation', $update_by_object, 90, 2 );
 		add_action( 'woocommerce_update_product_variation', $update_by_object, 90, 2 );
 
 		// if we don't attach to these we miss product gallery updates.
 		add_action( 'woocommerce_process_product_meta', $update_by_id, 90 );
 
-		// when a product is trashed or removed, schedule a delete job.
+		// when a product is trashed or removed, schedule a "delete" job.
 		add_action( 'wp_trash_post', $pre_delete, 90 );
 		add_action( 'before_delete_post', $pre_delete, 90 );
 		add_action( 'woocommerce_before_delete_product_variation', $pre_delete, 90 );
@@ -145,10 +145,10 @@ class SyncerHooks implements Service, Registerable {
 		add_action( 'woocommerce_delete_product_variation', $delete, 90 );
 		add_action( 'woocommerce_trash_product_variation', $delete, 90 );
 
-		// when a product is restored from the trash, schedule a update job.
+		// when a product is restored from the trash, schedule an "update" job.
 		add_action( 'untrashed_post', $update_by_id, 90 );
 
-		// exclude the sync meta data when duplicating the product
+		// exclude the sync metadata when duplicating the product
 		add_action(
 			'woocommerce_duplicate_product_exclude_meta',
 			function ( array $exclude_meta ) {

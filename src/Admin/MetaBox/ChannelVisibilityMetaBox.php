@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -21,6 +23,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 
+	use PluginHelper;
+
 	/**
 	 * @var ProductMetaHandler
 	 */
@@ -32,15 +36,22 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected $product_helper;
 
 	/**
+	 * @var MerchantCenterService
+	 */
+	protected $merchant_center;
+
+	/**
 	 * ChannelVisibilityMetaBox constructor.
 	 *
-	 * @param Admin              $admin
-	 * @param ProductMetaHandler $meta_handler
-	 * @param ProductHelper      $product_helper
+	 * @param Admin                 $admin
+	 * @param ProductMetaHandler    $meta_handler
+	 * @param ProductHelper         $product_helper
+	 * @param MerchantCenterService $merchant_center
 	 */
-	public function __construct( Admin $admin, ProductMetaHandler $meta_handler, ProductHelper $product_helper ) {
-		$this->meta_handler   = $meta_handler;
-		$this->product_helper = $product_helper;
+	public function __construct( Admin $admin, ProductMetaHandler $meta_handler, ProductHelper $product_helper, MerchantCenterService $merchant_center ) {
+		$this->meta_handler    = $meta_handler;
+		$this->product_helper  = $product_helper;
+		$this->merchant_center = $merchant_center;
 		parent::__construct( $admin );
 	}
 
@@ -128,6 +139,8 @@ class ChannelVisibilityMetaBox extends SubmittableMetaBox {
 			'channel_visibility' => $this->product_helper->get_channel_visibility( $product ),
 			'sync_status'        => $this->meta_handler->get_sync_status( $product ),
 			'issues'             => $this->product_helper->get_validation_errors( $product ),
+			'is_setup_complete'  => $this->merchant_center->is_setup_complete(),
+			'get_started_url'    => $this->get_start_url(),
 		];
 	}
 
