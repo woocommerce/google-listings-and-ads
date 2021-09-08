@@ -54,7 +54,7 @@ describe( 'useCountdown', () => {
 			jest.useRealTimers();
 		} );
 
-		it( 'should start countdown 10 to 0 by calling `startCountdown( 10 )` and update the current remaining countdown to `second` value after every second.', () => {
+		it( 'should start countdown 10 to 0 by calling `startCountdown( 10 )` and update the `second` property every second with the current remaining countdown.', () => {
 			const { result } = renderHook( () => useCountdown( 'A' ) );
 
 			act( () => {
