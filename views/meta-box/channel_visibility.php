@@ -65,6 +65,7 @@ if ( $input_disabled ) {
 					ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t Sync and show', 'google-listings-and-ads' ),
 				],
 				'custom_attributes' => $custom_attributes,
+				'wrapper_class'     => 'form-row form-row-full',
 			]
 		);
 		?>
@@ -77,7 +78,7 @@ if ( $input_disabled ) {
 						<p><strong><?php esc_html_e( 'Issues', 'google-listings-and-ads' ); ?></strong></p>
 						<ul>
 							<?php foreach ( $issues as $issue ) : ?>
-							<li><?php echo esc_html( $issue ); ?></li>
+								<li><?php echo esc_html( $issue ); ?></li>
 							<?php endforeach; ?>
 						</ul>
 					</div>
