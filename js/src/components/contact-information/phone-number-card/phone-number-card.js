@@ -13,7 +13,6 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
 import EditPhoneNumberContent from './edit-phone-number-content';
-import VerifyPhoneNumberContent from './verify-phone-number-content';
 import './phone-number-card.scss';
 
 const noop = () => {};
@@ -22,62 +21,6 @@ const basePhoneNumberCardProps = {
 	className: 'gla-phone-number-card',
 	appearance: APPEARANCE.PHONE,
 };
-
-// TODO: remove <DemoVerifyPhoneNumberCard> before merging PR.
-export function DemoVerifyPhoneNumberCard() {
-	const display = '+1 213 373 4253';
-	const [ unverifiedPhoneNumber, setUnverifiedPhoneNumber ] = useState(
-		null
-	);
-
-	const cardContent = unverifiedPhoneNumber ? (
-		<>
-			<CardDivider />
-			<VerifyPhoneNumberContent
-				{ ...unverifiedPhoneNumber }
-				onPhoneNumberVerified={ () => {
-					// eslint-disable-next-line no-console
-					console.log( 'onPhoneNumberVerified' );
-					setUnverifiedPhoneNumber( null );
-				} }
-			/>
-		</>
-	) : null;
-
-	const indicator = (
-		<AppButton
-			isSecondary
-			text={ unverifiedPhoneNumber ? 'Edit' : 'Send verification code' }
-			onClick={ () => {
-				if ( unverifiedPhoneNumber ) {
-					setUnverifiedPhoneNumber( null );
-				} else {
-					setUnverifiedPhoneNumber( {
-						verificationMethod: 'SMS',
-						country: 'US',
-						number: '+12133734253',
-						display,
-					} );
-				}
-			} }
-		/>
-	);
-
-	return (
-		<section className="wcdl-section">
-			<header />
-			<div className="wcdl-section__body">
-				<AccountCard
-					{ ...basePhoneNumberCardProps }
-					description={ display }
-					indicator={ indicator }
-				>
-					{ cardContent }
-				</AccountCard>
-			</div>
-		</section>
-	);
-}
 
 /**
  * @typedef { import(".~/hooks/useGoogleMCPhoneNumber").PhoneNumber } PhoneNumber
