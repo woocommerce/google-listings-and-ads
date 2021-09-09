@@ -44,25 +44,34 @@ class PhoneVerificationController extends BaseOptionsController {
 	public function register_routes(): void {
 		$verification_method = [
 			'description'       => __( 'Method used to verify the phone number.', 'google-listings-and-ads' ),
+			'enum'              => [
+				PhoneVerification::VERIFICATION_METHOD_SMS,
+				PhoneVerification::VERIFICATION_METHOD_PHONE_CALL,
+			],
+			'required'          => true,
 			'type'              => 'string',
 			'validate_callback' => 'rest_validate_request_arg',
-			'required'          => true,
 		];
 
 		$this->register_route(
 			'/mc/phone-verification/request',
 			[
 				[
-					'method'              => TransportMethods::CREATABLE,
+					'methods'              => TransportMethods::CREATABLE,
 					'callback'            => $this->get_request_phone_verification_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => [
-						'context'             => $this->get_context_param( [ 'default' => 'view' ] ),
+						'phone_region_code' => [
+							'description'       => __( 'Two-letter country code (ISO 3166-1 alpha-2) for the phone number.', 'google-listings-and-ads' ),
+							'required'          => true,
+							'type'              => 'string',
+							'validate_callback' => 'rest_validate_request_arg',
+						],
 						'phone_number'        => [
 							'description'       => __( 'The phone number to verify.', 'google-listings-and-ads' ),
+							'required'          => true,
 							'type'              => [ 'integer', 'string' ],
 							'validate_callback' => 'rest_validate_request_arg',
-							'required'          => true,
 						],
 						'verification_method' => $verification_method,
 					],
@@ -74,22 +83,21 @@ class PhoneVerificationController extends BaseOptionsController {
 			'/mc/phone-verification/verify',
 			[
 				[
-					'method'              => TransportMethods::CREATABLE,
+					'methods'              => TransportMethods::CREATABLE,
 					'callback'            => $this->get_verify_phone_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => [
-						'context'                   => $this->get_context_param( [ 'default' => 'view' ] ),
 						'verification_id'           => [
 							'description'       => __( 'The verification ID returned by the /request call.', 'google-listings-and-ads' ),
+							'required'          => true,
 							'type'              => 'string',
 							'validate_callback' => 'rest_validate_request_arg',
-							'required'          => true,
 						],
 						'verification_code' => [
 							'description'       => __( 'The verification code that was sent to the phone number for validation.', 'google-listings-and-ads' ),
+							'required'          => true,
 							'type'              => 'string',
 							'validate_callback' => 'rest_validate_request_arg',
-							'required'          => true,
 						],
 						'verification_method' => $verification_method,
 					],
