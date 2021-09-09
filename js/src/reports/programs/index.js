@@ -8,6 +8,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import useProgramsReport, { usePerformanceReport } from './useProgramsReport';
+import DifferentCurrencyNotice from '.~/components/different-currency-notice';
 import NavigationClassic from '.~/components/navigation-classic';
 import ProgramsReportFilters from './programs-report-filters';
 import SummarySection from '../summary-section';
@@ -88,6 +89,7 @@ const ProgramsReport = () => {
 
 	return (
 		<>
+			<DifferentCurrencyNotice context={ trackEventId } />
 			<NavigationClassic />
 			<ReportsNavigation />
 			<ProgramsReportFilters
