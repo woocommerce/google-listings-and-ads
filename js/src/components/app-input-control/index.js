@@ -1,6 +1,8 @@
 /**
  * External dependencies
  */
+import classnames from 'classnames';
+import { forwardRef } from '@wordpress/element';
 import { __experimentalInputControl as InputControl } from '@wordpress/components';
 
 /**
@@ -8,14 +10,14 @@ import { __experimentalInputControl as InputControl } from '@wordpress/component
  */
 import './index.scss';
 
-const AppInputControl = ( props ) => {
-	const { className = '', ...rest } = props;
+const AppInputControl = forwardRef( ( props, ref ) => {
+	const { className, ...rest } = props;
 
 	return (
-		<div className={ `app-input-control ${ className }` }>
-			<InputControl { ...rest } />
+		<div className={ classnames( 'app-input-control', className ) }>
+			<InputControl ref={ ref } { ...rest } />
 		</div>
 	);
-};
+} );
 
 export default AppInputControl;
