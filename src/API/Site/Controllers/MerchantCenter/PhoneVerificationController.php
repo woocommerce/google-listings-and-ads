@@ -5,14 +5,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFromExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerificationException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
+use Exception;
 use WP_REST_Request as Request;
-use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,6 +25,7 @@ defined( 'ABSPATH' ) || exit;
 class PhoneVerificationController extends BaseOptionsController {
 
 	use EmptySchemaPropertiesTrait;
+	use ResponseFromExceptionTrait;
 
 	/**
 	 * @var PhoneVerification
@@ -128,11 +128,8 @@ class PhoneVerificationController extends BaseOptionsController {
 					'verification_id' => $verification_id
 				];
 			}
-			catch ( InvalidValue $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
-			catch ( PhoneVerificationException $e ) {
-				return new Response( [ 'code' => $e->get_reason(), 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			catch ( Exception $e ) {
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -151,11 +148,8 @@ class PhoneVerificationController extends BaseOptionsController {
 					$request->get_param( 'verification_method' ),
 				);
 			}
-			catch ( InvalidValue $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
-			catch ( PhoneVerificationException $e ) {
-				return new Response( [ 'code' => $e->get_reason(), 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			catch ( Exception $e ) {
+				$this->response_from_exception( $e );
 			}
 		};
 	}
