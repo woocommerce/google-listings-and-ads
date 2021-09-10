@@ -149,7 +149,7 @@ class PhoneVerificationController extends BaseOptionsController {
 				);
 			}
 			catch ( Exception $e ) {
-				$this->response_from_exception( $e );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}

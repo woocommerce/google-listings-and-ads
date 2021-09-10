@@ -25,9 +25,15 @@ class PhoneVerificationControllerTest extends RESTControllerUnitTest {
 	protected const ROUTE_VERIFY_PHONE             = '/wc/gla/mc/phone-verification/verify';
 	protected const TEST_PHONE_NUMBER              = '0412 123 123';
 	protected const TEST_VERIFICATION_ID           = 'test_verification_id';
+	protected const TEST_VERIFICATION_CODE         = '123346';
 	protected const TEST_REQUEST_VERIFICATION_ARGS = [
 		'phone_region_code'   => 'AU',
 		'phone_number'        => self::TEST_PHONE_NUMBER,
+		'verification_method' => 'SMS',
+	];
+	protected const TEST_VERIFY_PHONE_ARGS         = [
+		'verification_id'     => self::TEST_VERIFICATION_ID,
+		'verification_code'   => self::TEST_VERIFICATION_CODE,
 		'verification_method' => 'SMS',
 	];
 
@@ -74,15 +80,61 @@ class PhoneVerificationControllerTest extends RESTControllerUnitTest {
 		$this->phone_verification->expects( $this->once() )
 		                         ->method( 'request_phone_verification' )
 		                         ->willThrowException(
-		                         	new PhoneVerificationException( 'oops', 429, null, [ 'reason' => 'rateLimitExceeded' ] )
+			                         new PhoneVerificationException( 'oops', 429, null, [ 'reason' => 'rateLimitExceeded' ] )
 		                         );
 
 		$response = $this->do_request( self::ROUTE_REQUEST_VERIFICATION, 'POST', self::TEST_REQUEST_VERIFICATION_ARGS );
 
 		$this->assertEquals( 429, $response->get_status() );
-		$this->assertEquals( 'rateLimitExceeded', $response->get_data()['code'] );
+		$this->assertEquals( 'rateLimitExceeded', $response->get_data()['reason'] );
 		$this->assertEquals( 'oops', $response->get_data()['message'] );
 	}
 
+	public function test_verify_phone() {
+		$this->phone_verification->expects( $this->once() )
+		                         ->method( 'verify_phone_number' )
+		                         ->with(
+			                         self::TEST_VERIFICATION_ID,
+			                         self::TEST_VERIFICATION_CODE,
+			                         'SMS'
+		                         );
+
+		$response = $this->do_request( self::ROUTE_VERIFY_PHONE, 'POST', self::TEST_VERIFY_PHONE_ARGS );
+
+		$this->assertEquals( 200, $response->get_status() );
+		$this->assertNull( $response->get_data() );
+	}
+
+	public function test_verify_phone_missing_args() {
+		$response = $this->do_request( self::ROUTE_VERIFY_PHONE, 'POST' );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 'rest_missing_callback_param', $response->get_data()['code'] );
+		$this->assertCount( 3, $response->get_data()['data']['params'], 'All 3 params should be required.' );
+	}
+
+	public function test_verify_phone_with_phone_verification_exception() {
+		$this->phone_verification->expects( $this->once() )
+		                         ->method( 'verify_phone_number' )
+		                         ->willThrowException(
+			                         new PhoneVerificationException(
+				                         'Wrong code.',
+				                         400,
+				                         null,
+				                         [ 'reason' => 'badRequest' ]
+			                         )
+		                         );
+
+		$response = $this->do_request( self::ROUTE_VERIFY_PHONE, 'POST', self::TEST_VERIFY_PHONE_ARGS );
+
+		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals(
+			[
+				'message' => 'Wrong code.',
+				'reason'  => 'badRequest'
+			],
+			$response->get_data()
+		);
+	}
 
 }
