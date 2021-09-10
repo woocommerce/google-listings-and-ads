@@ -6,8 +6,13 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\EmptySchemaPropertiesTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerificationException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
+use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -111,8 +116,25 @@ class PhoneVerificationController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function get_request_phone_verification_callback() {
-
+	protected function get_request_phone_verification_callback(): callable {
+		return function( Request $request ) {
+			try {
+				$verification_id = $this->phone_verification->request_phone_verification(
+					$request->get_param( 'phone_region_code' ),
+					new PhoneNumber( (string) $request->get_param( 'phone_number' ) ),
+					$request->get_param( 'verification_method' ),
+				);
+				return [
+					'verification_id' => $verification_id
+				];
+			}
+			catch ( InvalidValue $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+			catch ( PhoneVerificationException $e ) {
+				return new Response( [ 'code' => $e->get_reason(), 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+		};
 	}
 
 	/**
