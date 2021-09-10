@@ -80,7 +80,7 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	 * @return Response
 	 */
 	protected function do_request( string $endpoint, string $type = 'GET', array $params = [] ): object {
-		$request = new Request( $type, untrailingslashit( $endpoint ) );
+		$request = new Request( $type, $endpoint );
 		'GET' === $type ? $request->set_query_params( $params ) : $request->set_body_params( $params );
 		return $this->server->dispatch_request( $request );
 	}
