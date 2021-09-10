@@ -56,13 +56,13 @@ export default function VerificationCodeControl( {
 	};
 
 	const handleKeyDown = ( e ) => {
-		const { dataset, selectionStart, value } = e.target;
+		const { dataset, selectionStart, selectionEnd, value } = e.target;
 		const idx = Number( dataset.idx );
 
 		switch ( e.keyCode ) {
 			case KEY_CODE_LEFT:
 			case KEY_CODE_BACKSPACE:
-				if ( selectionStart === 0 ) {
+				if ( selectionStart === 0 && selectionEnd === 0 ) {
 					maybeMoveFocus( idx - 1 );
 				}
 				break;
