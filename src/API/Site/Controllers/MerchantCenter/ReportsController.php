@@ -5,10 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFromExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Exception;
 use WP_REST_Request as Request;
-use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,6 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class ReportsController extends BaseReportsController {
+
+	use ResponseFromExceptionTrait;
 
 	/**
 	 * Register rest routes with WordPress.
@@ -63,7 +65,7 @@ class ReportsController extends BaseReportsController {
 				$data     = $merchant->get_report_data( 'free_listings', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -81,7 +83,7 @@ class ReportsController extends BaseReportsController {
 				$data     = $merchant->get_report_data( 'products', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
