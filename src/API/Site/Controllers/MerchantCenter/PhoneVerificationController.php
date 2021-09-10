@@ -142,8 +142,22 @@ class PhoneVerificationController extends BaseOptionsController {
 	 *
 	 * @return callable
 	 */
-	protected function get_verify_phone_callback() {
-
+	protected function get_verify_phone_callback(): callable {
+		return function( Request $request ) {
+			try {
+				$this->phone_verification->verify_phone_number(
+					$request->get_param( 'verification_id' ),
+					$request->get_param( 'verification_code' ),
+					$request->get_param( 'verification_method' ),
+				);
+			}
+			catch ( InvalidValue $e ) {
+				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+			catch ( PhoneVerificationException $e ) {
+				return new Response( [ 'code' => $e->get_reason(), 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+			}
+		};
 	}
 
 	/**
