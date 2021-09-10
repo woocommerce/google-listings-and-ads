@@ -33,10 +33,10 @@ class PhoneVerificationController extends BaseOptionsController {
 	protected $phone_verification;
 
 	/**
-	 * ContactInformationController constructor.
+	 * PhoneVerificationController constructor.
 	 *
 	 * @param RESTServer        $server
-	 * @param PhoneVerification $phone_verification
+	 * @param PhoneVerification $phone_verification Phone verification service.
 	 */
 	public function __construct( RESTServer $server, PhoneVerification $phone_verification ) {
 		parent::__construct( $server );
