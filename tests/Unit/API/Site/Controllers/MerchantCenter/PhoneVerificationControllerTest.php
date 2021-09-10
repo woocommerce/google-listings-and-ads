@@ -74,7 +74,7 @@ class PhoneVerificationControllerTest extends RESTControllerUnitTest {
 		$this->phone_verification->expects( $this->once() )
 		                         ->method( 'request_phone_verification' )
 		                         ->willThrowException(
-		                         	new PhoneVerificationException( 'oops', 429, null, 'rateLimitExceeded' )
+		                         	new PhoneVerificationException( 'oops', 429, null, [ 'reason' => 'rateLimitExceeded' ] )
 		                         );
 
 		$response = $this->do_request( self::ROUTE_REQUEST_VERIFICATION, 'POST', self::TEST_REQUEST_VERIFICATION_ARGS );

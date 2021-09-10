@@ -148,6 +148,6 @@ class PhoneVerification implements Service {
 			$reason  = $error['reason'] ?? '';
 		}
 
-		return new PhoneVerificationException( $message, $code, $exception, $reason );
+		return new PhoneVerificationException( $message, $code, $exception, [ 'reason' => $reason ] );
 	}
 }

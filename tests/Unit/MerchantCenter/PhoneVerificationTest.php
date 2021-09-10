@@ -92,7 +92,7 @@ class PhoneVerificationTest extends UnitTest {
 		try {
 			$this->phone_verification->request_phone_verification( 'US', new PhoneNumber( '8772733049' ), PhoneVerification::VERIFICATION_METHOD_SMS );
 		} catch ( PhoneVerificationException $exception ) {
-			$this->assertEquals( 'rateLimitExceeded', $exception->get_reason() );
+			$this->assertEquals( 'rateLimitExceeded', $exception->get_response_data()['reason'] );
 			throw $exception;
 		}
 	}
