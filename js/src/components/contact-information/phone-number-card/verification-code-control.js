@@ -48,6 +48,12 @@ export default function VerificationCodeControl( {
 
 	onCodeChangeRef.current = onCodeChange;
 
+	/**
+	 * Moves focus to the input at given input
+	 * if it exists.
+	 *
+	 * @param {number} targetIdx Index of the node to move the focus to.
+	 */
 	const maybeMoveFocus = ( targetIdx ) => {
 		const node = inputsRef.current[ targetIdx ];
 		if ( node ) {
@@ -75,6 +81,7 @@ export default function VerificationCodeControl( {
 		}
 	};
 
+	// Track the cursor's position.
 	const handleBeforeInput = ( e ) => {
 		cursorRef.current = e.target.selectionStart;
 	};
@@ -103,6 +110,7 @@ export default function VerificationCodeControl( {
 		}
 	};
 
+	// Update the inputs' values.
 	useEffect( () => {
 		inputsRef.current.forEach( ( el ) => ( el.value = '' ) );
 
@@ -111,6 +119,8 @@ export default function VerificationCodeControl( {
 	}, [ resetNeedle ] );
 
 	/**
+	 * Set the focus to the first input if the control's value is (back) at the initial state.
+	 *
 	 * Since the <InputControl> has an internal state management that always controls the actual `value` prop the <input>,
 	 * the <InputControl> is forced to be a controlled input.
 	 * When using it, it's always necessary to specify `value` prop from the below <AppInputControl>
