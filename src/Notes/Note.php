@@ -59,9 +59,9 @@ abstract class Note implements Service, Registerable, Deactivateable {
 	/**
 	 * Get note data store.
 	 *
-	 * @return DataStore
+	 * @return WC_Data_Store
 	 */
-	protected function get_data_store(): DataStore {
+	protected function get_data_store(): WC_Data_Store {
 		return WC_Data_Store::load( 'admin-note' );
 	}
 
