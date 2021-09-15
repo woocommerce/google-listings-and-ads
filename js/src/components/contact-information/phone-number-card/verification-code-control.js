@@ -121,8 +121,8 @@ export default function VerificationCodeControl( {
 	/**
 	 * Set the focus to the first input if the control's value is (back) at the initial state.
 	 *
-	 * Since the <InputControl> has an internal state management that always controls the actual `value` prop the <input>,
-	 * the <InputControl> is forced to be a controlled input.
+	 * Since the <InputControl> has an internal state management that always controls the actual `value` prop of the <input>,
+	 * the <InputControl> is forced the <input> to be a controlled input.
 	 * When using it, it's always necessary to specify `value` prop from the below <AppInputControl>
 	 * to avoid the warning - A component is changing an uncontrolled input to be controlled.
 	 *
@@ -136,8 +136,6 @@ export default function VerificationCodeControl( {
 	 * then move the focus calling after the synchronization tick finished.
 	 *
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L73-L90
-	 *
-	 * And it's also used for the first time focus after this component being mounted.
 	 */
 	useEffect( () => {
 		if ( digits === initDigits ) {
