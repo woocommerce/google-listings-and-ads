@@ -15,6 +15,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Class CompleteSetup
  *
