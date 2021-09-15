@@ -14,6 +14,7 @@ import { Notice, Flex } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import useIsMounted from '.~/hooks/useIsMounted';
 import useCountdown from './useCountdown';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
@@ -108,6 +109,7 @@ export default function VerifyPhoneNumberContent( {
 	display,
 	onPhoneNumberVerified,
 } ) {
+	const isMounted = useIsMounted();
 	const [ method, setMethod ] = useState( verificationMethod );
 	const { second, callCount, startCountdown } = useCountdown( method );
 	const [ verification, setVerification ] = useState( null );
@@ -134,10 +136,12 @@ export default function VerifyPhoneNumberContent( {
 				verificationIdRef.current[ method ] = id;
 			} )
 			.catch( () => {
-				startCountdown( 0 );
+				if ( isMounted() ) {
+					startCountdown( 0 );
+				}
 				// TODO: [full-contact-info] add error handling.
 			} );
-	}, [ country, number, method, startCountdown ] );
+	}, [ country, number, method, startCountdown, isMounted ] );
 
 	const handleVerifyClick = () => {
 		setError( null );
@@ -150,8 +154,10 @@ export default function VerifyPhoneNumberContent( {
 			} )
 			.catch( ( e ) => {
 				// TODO: [full-contact-info] align to the real error data structure.
-				setError( e );
-				setVerifying( false );
+				if ( isMounted() ) {
+					setError( e );
+					setVerifying( false );
+				}
 			} );
 	};
 

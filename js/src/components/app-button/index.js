@@ -49,15 +49,20 @@ const AppButton = ( props ) => {
 		onClick( ...args );
 	};
 
-	const text = [];
 	const classes = [ 'app-button', className ];
+	let text;
 
 	if ( loading ) {
-		text.push( <Spinner /> );
+		text = <Spinner />;
 	}
 
 	if ( passedInText ) {
-		text.push( passedInText );
+		text = (
+			<>
+				{ loading && <Spinner /> }
+				{ passedInText }
+			</>
+		);
 
 		if ( rest.icon ) {
 			classes.push( 'app-button--icon-with-text' );
@@ -71,7 +76,7 @@ const AppButton = ( props ) => {
 		<Button
 			className={ classnames( ...classes ) }
 			disabled={ disabled || loading }
-			text={ text.length ? text : undefined }
+			text={ text }
 			onClick={ handleClick }
 			{ ...rest }
 		/>
