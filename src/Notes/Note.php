@@ -31,7 +31,7 @@ abstract class Note implements Service, Registerable, Deactivateable {
 	/**
 	 * Possibly add the note
 	 */
-	abstract function possibly_add_note(): void;
+	abstract public function possibly_add_note(): void;
 
 	/**
 	 * Register a service.
