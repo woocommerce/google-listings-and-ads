@@ -138,4 +138,18 @@ class WP {
 	public function wp_timezone_string(): string {
 		return wp_timezone_string();
 	}
+
+	/**
+	 * Convert float number to format based on the locale.
+	 *
+	 * @param float $number   The number to convert based on locale.
+	 * @param int   $decimals Optional. Precision of the number of decimal places. Default 0.
+	 *
+	 * @return string Converted number in string format.
+	 *
+	 * @since x.x.x
+	 */
+	public function number_format_i18n( float $number, int $decimals = 0 ): string {
+		return number_format_i18n( $number, $decimals );
+	}
 }
