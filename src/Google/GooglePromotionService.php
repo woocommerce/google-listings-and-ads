@@ -22,9 +22,11 @@ class GooglePromotionService implements OptionsAwareInterface, Service {
     use OptionsAwareTrait;
     use ValidateInterface;
 
-    public const INTERNAL_ERROR_REASON = 'internalError';
+    public const INTERNAL_ERROR_CODE = 500;
+    
+    public const INTERNAL_ERROR_MSG = 'Internal error';
 
-    public const NOT_FOUND_ERROR_REASON = 'notFound';
+    public const NOT_FOUND_ERROR_MSG = 'notFound';
 
     /**
      *

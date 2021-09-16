@@ -91,12 +91,12 @@ class InvalidCouponEntry implements JsonSerializable {
 
     /**
      *
-     * @param string $error_reason
+     * @param int $error_code
      *
      * @return bool
      */
-    public function has_error(string $error_reason): bool {
-        return ! empty($this->errors[$error_reason]);
+    public function has_error(int $error_code): bool {
+        return ! empty($this->errors[$error_code]);
     }
 
     /**

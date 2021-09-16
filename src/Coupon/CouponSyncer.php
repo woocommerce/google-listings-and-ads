@@ -28,7 +28,7 @@ class CouponSyncer implements Service {
 
     /**
      *
-     * @var GoogleProductService
+     * @var GooglePromotionService
      */
     protected $google_service;
 
@@ -59,7 +59,7 @@ class CouponSyncer implements Service {
     /**
      * CouponSyncer constructor.
      *
-     * @param GoogleProductService $google_service
+     * @param GooglePromotionService $google_service
      * @param CouponHelper $coupon_helper
      * @param ValidatorInterface $validator
      * @param MerchantCenterService $merchant_center
@@ -135,7 +135,7 @@ class CouponSyncer implements Service {
             $this->coupon_helper->mark_as_synced( 
                 $coupon,
                 $response->getId(),
-                $country );
+                $target_country );
             do_action( 'woocommerce_gla_updated_coupon', $adapted_coupon );
 
             do_action( 
@@ -147,11 +147,11 @@ class CouponSyncer implements Service {
         } catch ( GoogleException $google_exception ) {
             $invalid_promotion = new InvalidCouponEntry( 
                 $wc_coupon_id = $coupon->get_id(),
-                $target_country = $target_country,
-                $errors = [$google_exception->getMessage()] );
-            $this->coupon_helper->mark_as_invalid( 
-                $coupon,
-                [$invalid_promotion] );
+                $errors = [
+                    $google_exception->getCode() => $google_exception->getMessage()],
+                $target_country = $target_country );
+            $this->coupon_helper->mark_as_invalid( $coupon, [
+                $invalid_promotion] );
 
             $this->handle_update_errors( [$invalid_promotion] );
 
@@ -182,7 +182,7 @@ class CouponSyncer implements Service {
     protected function validate_coupon( WCCouponAdapter $coupon ) {
         $violations = $this->validator->validate( $coupon );
 
-        if ( 0 !== count( $violations ) ) {
+        if ( ! empty( $violations ) ) {
             $invalid_promotion = new InvalidCouponEntry( 
                 $coupon->get_wc_coupon()->get_id() );
             $invalid_promotion->map_validation_violations( $violations );
@@ -191,27 +191,6 @@ class CouponSyncer implements Service {
         }
 
         return true;
-    }
-
-    /**
-     * Filters the list of invalid coupon entries and returns an array of WooCommerce coupon IDs with internal errors
-     *
-     * @param InvalidCouponEntry[] $invalid_coupons
-     *
-     * @return int[] An array of WooCommerce coupon ids.
-     */
-    public function get_internal_error_coupons( array $invalid_coupons ): array {
-        $internal_error_ids = [];
-        foreach ( $invalid_coupons as $invalid_coupon ) {
-            if ( $invalid_coupon->has_error( 
-                GooglePromotionService::INTERNAL_ERROR_REASON ) ) {
-                $coupon_id = $invalid_coupon->get_wc_coupon_id();
-
-                $internal_error_ids[$coupon_id] = $coupon_id;
-            }
-        }
-
-        return $internal_error_ids;
     }
 
     /**
@@ -228,7 +207,7 @@ class CouponSyncer implements Service {
         $invalid_promotions = [];
         $synced_google_ids = $coupon->get_synced_google_ids;
         $wc_coupon = $this->wc->maybe_get_coupon();
-        $wc_coupon_exist = $wc_product instanceof WC_Product;
+        $wc_coupon_exist = $wc_coupon instanceof WC_Coupon;
         foreach ( $synced_google_ids as $target_country => $google_id ) {
             try {
                 $adapted_coupon = $coupon->get_coupon();
@@ -246,11 +225,12 @@ class CouponSyncer implements Service {
             } catch ( GoogleException $google_exception ) {
                 array_push( 
                     $invalid_promotions,
-                    $this->generate_update_coupon_invalid( 
-                        $coupon->get_coupon()
-                            ->getPromotionId(),
-                        $country,
-                        [$google_exception->getMessage()] ) );
+                    new InvalidCouponEntry( 
+                        $wc_coupon_id = $coupon->get_coupon()->getPromotionId(),
+                        $errors = [
+                            $google_exception->getCode() => $google_exception->getMessage()],
+                        $target_country = $country,
+                        $google_promotion_id = $google_id ) );
             } catch ( Exception $exception ) {
                 do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
 
@@ -333,11 +313,16 @@ class CouponSyncer implements Service {
      *
      * @param InvalidCouponEntry[] $invalid_promotions
      */
-    protected function handle_update_errors( array $invalid_promotions ) {
-        // An invalid promtoion is a wc_coupon mapping to a country.
-        // Get all related wc coupon ids that have internal errors.
-        $internal_error_coupon_ids = $this->get_internal_error_coupons( 
-            $invalid_promotions );
+    protected function handle_update_errors( array $invalid_coupons ) {
+        // Get a coupon id to country mappings.
+        $internal_error_coupon_ids = [];
+        foreach ( $invalid_coupons as $invalid_coupon ) {
+            if ( $invalid_coupon->has_error( 
+                GooglePromotionService::INTERNAL_ERROR_CODE ) ) {
+                $coupon_id = $invalid_coupon->get_wc_coupon_id();
+                $internal_error_coupon_ids[$coupon_id] = $invalid_coupon->get_target_country();
+            }
+        }
 
         if ( 
             ! empty( $internal_error_coupon_ids ) &&
@@ -363,7 +348,33 @@ class CouponSyncer implements Service {
      * @param BatchInvalidCouponEntry[] $invalid_coupons
      */
     protected function handle_delete_errors( array $invalid_coupons ) {
-        // TODO: handle delete errors.
+        // Get all wc coupon id to google id mappings that have internal errors.
+        $internal_error_ids = [];
+        foreach ( $invalid_coupons as $invalid_coupon ) {
+            if ( $invalid_coupon->has_error( 
+                GooglePromotionService::INTERNAL_ERROR_CODE ) ) {
+                $coupon_id = $invalid_coupon->get_wc_coupon_id();
+                $internal_error_ids[$coupon_id] = $invalid_coupon->get_google_promotion_id();
+            }
+        }
+
+        if ( 
+            ! empty( $internal_error_coupon_ids ) &&
+            apply_filters( 
+                'woocommerce_gla_coupons_delete_retry_on_failure',
+                true,
+                $internal_error_coupon_ids ) ) {
+            do_action( 
+                'woocommerce_gla_retry_delete_coupons',
+                $internal_error_coupon_ids );
+
+            do_action( 
+                'woocommerce_gla_error',
+                sprintf( 
+                    'Internal API errors while deleting the following coupons: %s',
+                    join( ', ', $internal_error_coupon_ids ) ),
+                __METHOD__ );
+        }
     }
 
     /**
