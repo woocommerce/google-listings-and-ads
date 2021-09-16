@@ -75,7 +75,6 @@ class PhoneNumber implements CastableValueInterface, ValueInterface {
 	}
 
 	/**
-	 *
 	 * Sanitize the phone number, leaving only `+` (plus) and numbers.
 	 *
 	 * @param string|int $phone_number The phone number to sanitize.
