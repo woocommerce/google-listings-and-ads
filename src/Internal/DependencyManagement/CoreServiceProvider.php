@@ -26,6 +26,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -277,8 +278,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		);
 		$this->share_with_tags(
 		    CouponSyncer::class,
-		    GoogleProductService::class,
+		    GooglePromotionService::class,
 		    CouponHelper::class,
+		    ValidatorInterface::class,
 		    MerchantCenterService::class,
 		    WC::class
 		);

@@ -185,6 +185,18 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		return in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
 	}
+	
+	/**
+	 * Return if the given country is supported to have promotions on Google.
+	 */
+	protected function is_promotion_supported_country(string $country = ''): bool {
+	    // Default to WooCommerce store country
+	    if ( empty( $country ) ) {
+	        $country = $this->container->get( WC::class )->get_base_country();
+	    }
+	    
+	    return array_key_exists( $country, $this->get_mc_promotion_supported_countries() );
+	}
 
 	/**
 	 * Get the connected merchant account.
