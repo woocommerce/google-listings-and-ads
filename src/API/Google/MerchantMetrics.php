@@ -48,7 +48,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = new MerchantFreeListingReportQuery(
 			[
-				'after' => self::MAX_QUERY_START_DATE,
+				'after'  => self::MAX_QUERY_START_DATE,
 				'before' => $this->get_today(),
 				'fields' => [ 'clicks' ],
 			]
