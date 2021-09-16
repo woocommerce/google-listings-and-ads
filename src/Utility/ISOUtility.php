@@ -62,7 +62,7 @@ class ISOUtility implements Service {
 	 * @see https://tools.ietf.org/html/bcp47 IETF BCP 47 language codes.
 	 */
 	public function wp_locale_to_bcp47( string $wp_locale ): string {
-		if ( empty( $wp_locale ) || ! preg_match( '/^[a-zA-Z]{2}([-_][a-zA-Z]{2})?$/', $wp_locale ) ) {
+		if ( empty( $wp_locale ) || ! preg_match( '/^[-_a-zA-Z0-9]{2,}$/', $wp_locale, $matches ) ) {
 			return 'en-US';
 		}
 
