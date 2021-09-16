@@ -61,6 +61,10 @@ class ReviewAfterClicks extends Note implements MerchantCenterAwareInterface {
 	 * Possibly add the note.
 	 */
 	public function possibly_add_note(): void {
+		if ( ! $this->can_add_note() ) {
+			return;
+		}
+
 		// Check "click logic" here to avoid multiple calls to count clicks. Currently not cached.
 		$clicks_count = $this->merchant_metrics->get_free_listing_clicks();
 		if ( $clicks_count <= 100 ) {
