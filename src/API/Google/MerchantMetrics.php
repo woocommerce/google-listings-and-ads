@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
 use Google\Service\ShoppingContent;
+use Google\Service\ShoppingContent\SearchResponse;
 
 /**
  * Class MerchantMetrics
@@ -54,7 +55,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 			]
 		);
 
-		/** @var ShoppingContent\SearchResponse $results */
+		/** @var SearchResponse $results */
 		$results = $query
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();

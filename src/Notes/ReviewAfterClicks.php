@@ -22,9 +22,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class ReviewAfterClicks extends Note implements MerchantCenterAwareInterface {
 
+	use LeaveReviewActionTrait;
 	use MerchantCenterAwareTrait;
 	use PluginHelper;
-	use LeaveReviewActionTrait;
 	use Utilities;
 
 	/**
