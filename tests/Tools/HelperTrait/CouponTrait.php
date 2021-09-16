@@ -2,6 +2,8 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\WCCouponAdapter;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
 use Google\Service\ShoppingContent\Promotion as GooglePromotion;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -37,7 +39,7 @@ trait CouponTrait {
      */
     public function create_simple_coupon() {
         $coupon = new WC_Coupon();
-        $coupon->set_code( sprintf( 'ready_to_sync_coupon_%d', rand() ) );
+        $coupon->set_code( sprintf( 'simple_coupon_%d', rand() ) );
         $coupon->set_amount( 10 );
         $coupon->set_discount_type( 'percent' );
         $coupon->set_free_shipping( true );
@@ -76,24 +78,39 @@ trait CouponTrait {
     }
 
     /**
+     * Creates a ready-to-delete WC_Coupon object
+     *
+     * @return DeleteCouponEntry
+     */
+    public function generate_delete_coupon_entry( WC_Coupon $coupon ) {
+        return new DeleteCouponEntry( 
+            new WCCouponAdapter( ['wc_coupon' => $coupon] ),
+            $this->coupon_helper->get_synced_google_ids( $coupon ) );
+    }
+
+    /**
      * Generates and returns a mock of a Google promotion object
      *
-     * @param string|null $id
+     * @param string|null $coupon_id
      * @param string|null $target_country
      *
      * @return MockObject|GooglePromotion
      */
     public function generate_google_promotion_mock( 
-        $id = null,
+        $coupon_id = null,
         $target_country = null ) {
         $promotion = $this->createMock( GooglePromotion::class );
 
         $target_country = $target_country ?: $this->get_sample_target_country();
-        $id = $id ?: rand();
+        $promotion_id = $coupon_id ?: rand();
+        $google_id = rand();
 
         $promotion->expects( $this->any() )
-            ->method( 'getId' )
-            ->willReturn( sprintf( '%d', $id ) );
+        ->method( 'getId' )
+        ->willReturn( sprintf( '%d', $google_id ) );
+        $promotion->expects( $this->any() )
+            ->method( 'getPromotionId' )
+            ->willReturn( sprintf( 'slug_%d', $promotion_id ) );
         $promotion->expects( $this->any() )
             ->method( 'getTargetCountry' )
             ->willReturn( $target_country );

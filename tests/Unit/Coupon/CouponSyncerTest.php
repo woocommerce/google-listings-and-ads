@@ -51,7 +51,8 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 
         $this->coupon_syncer->update( $coupon );
 
-        $this->assert_successfull_update_results( $coupon );
+        $this->assertEquals( 1, did_action( 'woocommerce_gla_updated_coupon' ) );
+        $this->assert_coupon_synced( $coupon );
     }
 
     public function test_update_fail() {
@@ -67,22 +68,66 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
 
         $this->coupon_syncer->update( $invalid_coupon );
 
-        $this->assert_failed_update_results( $invalid_coupon );
+        $this->assertEquals( 
+            1,
+            did_action( 'woocommerce_gla_retry_update_coupons' ) );
+        $this->assert_coupon_has_errors( $invalid_coupon );
     }
 
-    protected function assert_successfull_update_results( $coupon ) {
-        $this->assertEquals( 1, did_action( 'woocommerce_gla_updated_coupon' ) );
+    public function test_delete_succeed() {
+        $coupon = $this->create_ready_to_delete_coupon();
+        $this->mock_google_service( $coupon );
+        $coupon_syncer = new CouponSyncer( 
+            $this->google_service,
+            $this->coupon_helper,
+            $this->validator,
+            $this->merchant_center,
+            $this->wc );
 
+        $this->coupon_syncer->delete( 
+            $this->generate_delete_coupon_entry( $coupon ) );
+
+        $this->assertEquals( 
+            1,
+            did_action( 'woocommerce_gla_deleted_promotions' ) );
+        $this->assert_coupon_unsynced( $coupon );
+    }
+
+    public function test_delete_fail() {
+        $invalid_coupon = $this->create_ready_to_delete_coupon();
+        $exist_coupon = $this->create_ready_to_delete_coupon();
+        $this->mock_google_service( $exist_coupon );
+        $coupon_syncer = new CouponSyncer( 
+            $this->google_service,
+            $this->coupon_helper,
+            $this->validator,
+            $this->merchant_center,
+            $this->wc );
+
+        $this->coupon_syncer->delete( 
+            $this->generate_delete_coupon_entry( $invalid_coupon ) );
+
+        $this->assertEquals( 
+            1,
+            did_action( 'woocommerce_gla_deleted_promotions' ) );
+        $this->assertEquals( 
+            1,
+            did_action( 'woocommerce_gla_retry_delete_coupons' ) );
+    }
+
+    protected function assert_coupon_synced( $coupon ) {
         $reloaded_coupon = new WC_Coupon( $coupon->get_id() );
         $this->assertTrue( 
             $this->coupon_helper->is_coupon_synced( $reloaded_coupon ) );
     }
 
-    protected function assert_failed_update_results( $coupon ) {
-        $this->assertEquals( 
-            1,
-            did_action( 'woocommerce_gla_retry_update_coupons' ) );
+    protected function assert_coupon_unsynced( $coupon ) {
+        $reloaded_coupon = new WC_Coupon( $coupon->get_id() );
+        $this->assertFalse( 
+            $this->coupon_helper->is_coupon_synced( $reloaded_coupon ) );
+    }
 
+    protected function assert_coupon_has_errors( $coupon ) {
         $reloaded_coupon = new WC_Coupon( $coupon->get_id() );
         $this->assertNotEmpty( 
             $this->coupon_meta->get_errors( $reloaded_coupon ) );
@@ -95,7 +140,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
         $callback = function ( $promotion ) use ($coupon ) {
             if ( $promotion->getGenericRedemptionCode() === $coupon->get_code() ) {
                 $google_promotion = $this->generate_google_promotion_mock( 
-                    $coupon->get_id() );
+                    $coupon_id = $coupon->get_id() );
                 return $google_promotion;
             } else {
                 throw new GoogleException( 

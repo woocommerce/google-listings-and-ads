@@ -49,6 +49,12 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
     public const COUPON_VALUE_TYPE_PERCENT_OFF = 'PERCENT_OFF';
 
     /**
+     *
+     * @var int wc_coupon_id
+     */
+    protected $wc_coupon_id;
+
+    /**
      * Initialize this object's properties from an array.
      *
      * @param array $array
@@ -66,6 +72,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
         }
 
         $wc_coupon = $array['wc_coupon'];
+        $this->wc_coupon_id = $wc_coupon->get_id();
         $this->map_woocommerce_coupon( $wc_coupon );
 
         // Google doesn't expect extra fields, so it's best to remove them
@@ -115,7 +122,9 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
         $coupon_amount = $wc_coupon->get_amount();
         if ( $wc_coupon->is_type( self::WC_DISCOUNT_TYPE_PERCENT ) ) {
             $this->setCouponValueType( self::COUPON_VALUE_TYPE_PERCENT_OFF );
-            $this->setPercentOff( round( $coupon_amount ) );
+            $percent_off = round( $coupon_amount );
+            $this->setPercentOff( $percent_off );
+            $this->setLongtitle( sprintf( '%d off', $percent_off ) );
         } else if ( $wc_coupon->is_type( 
             [
                 self::WC_DISCOUNT_TYPE_FIXED_CART,
@@ -123,6 +132,11 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
             $this->setCouponValueType( self::COUPON_VALUE_TYPE_MONEY_OFF );
             $this->setMoneyOffAmount( 
                 $this->map_google_price_amount( $coupon_amount ) );
+            $this->setLongtitle( 
+                sprintf( 
+                    '%d %s% off',
+                    $coupon_amount,
+                    get_woocommerce_currency() ) );
         }
 
         $this->setPromotionEffectiveDates( 
@@ -146,13 +160,13 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
         // If there is no expiring date, set to promotion maximumal effective days allowed by Google.\
         // Refer to https://support.google.com/merchants/answer/2906014?hl=en
         if ( empty( $expiring_date ) ) {
-            $end_date = $now->add(new DateInterval('P183D'));
+            $end_date = $now->add( new DateInterval( 'P183D' ) );
         }
 
         // If the coupon is already expired. set the effective date to a past period.
         if ( ! empty( $end_date ) && $end_date < $now ) {
             $end_date = $now;
-            $now = $end_date->sub(new DateInterval('P1D'));
+            $now = $end_date->sub( new DateInterval( 'P1D' ) );
         }
         return sprintf( '%s/%s', (string) $now, (string) $end_date );
     }
@@ -207,7 +221,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
             $this->setProductApplicability( 
                 self::PRODUCT_APPLICABILITY_ALL_PRODUCTS );
         }
-        
+
         return $this;
     }
 
@@ -232,11 +246,19 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
     }
 
     /**
+     *
+     * @return int $wc_coupon_id
+     */
+    public function get_wc_coupon_id(): int {
+        return $this->wc_coupon_id;
+    }
+
+    /**
      * Update google promotion for a deleted or disabled WooCommerce coupon.
      *
      * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
      */
-    public function disableCoupon() {
+    public function disable_coupon() {
         $end_date = new WC_DateTime();
         $start_date = $end_date;
         $this->setPromotionEffectiveDates( 

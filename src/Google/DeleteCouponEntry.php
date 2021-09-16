@@ -41,7 +41,7 @@ class DeleteCouponEntry {
      *
      * @return WCCouponAdapter
      */
-    public function get_couopn(): WCCouponAdapter {
+    public function get_coupon(): WCCouponAdapter {
         return $this->coupon;
     }
 
