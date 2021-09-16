@@ -59,7 +59,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
-		if ( empty( $results ) ) {
+		if ( empty( $results->getResults() ) ) {
 			return 0;
 		}
 
