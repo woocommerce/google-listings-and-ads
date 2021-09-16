@@ -12,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Coupon;
 
@@ -28,6 +28,7 @@ use WC_Coupon;
  * @property SyncerHooks $syncer_hooks
  */
 class SyncerHooksTest extends ContainerAwareUnitTest {
+    use CouponTrait;
 
     public function test_create_new_simple_coupon_schedules_update_job() {
         $this->update_coupon_job->expects( $this->once() )
@@ -68,14 +69,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
     }
 
     public function test_trash_simple_coupon_schedules_delete_job() {
-        $string_code = 'test_coupon_codes';
-        $coupon = new WC_Coupon();
-        $coupon->set_code( $string_code );
-        $coupon->save();
+        $coupon = $this->create_ready_to_delete_coupon();
 
         $expected_coupon_entry = new DeleteCouponEntry( 
             new WCCouponAdapter( ['wc_coupon' => $coupon] ),
-            null );
+            ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
             ->with( $this->equalTo( [$expected_coupon_entry] ) );
@@ -84,14 +82,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
     }
 
     public function test_delete_simple_coupon_schedules_delete_job() {
-        $string_code = 'test_coupon_codes';
-        $coupon = new WC_Coupon();
-        $coupon->set_code( $string_code );
-        $coupon->save();
+        $coupon = $this->create_ready_to_delete_coupon();
 
         $expected_coupon_entry = new DeleteCouponEntry( 
             new WCCouponAdapter( ['wc_coupon' => $coupon] ),
-            null );
+            ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
             ->with( $this->equalTo( [$expected_coupon_entry] ) );

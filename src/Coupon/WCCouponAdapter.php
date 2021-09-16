@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit();
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Coupon
  */
-class WCProductAdapter extends GooglePromotion implements Validatable {
+class WCCouponAdapter extends GooglePromotion implements Validatable {
     use PluginHelper;
 
     public const CHANNEL_ONLINE = 'ONLINE';
@@ -59,7 +59,8 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
      * @throws InvalidValue When a WooCommerce coupon is not provided or it is invalid.
      */
     public function mapTypes( $array ) {
-        if ( empty( $array['wc_coupon'] ) ||
+        if ( 
+            empty( $array['wc_coupon'] ) ||
             ! $array['wc_coupon'] instanceof WC_Coupon ) {
             throw InvalidValue::not_instance_of( WC_Coupon::class, 'wc_coupon' );
         }
@@ -68,7 +69,7 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
         $this->map_woocommerce_coupon( $wc_coupon );
 
         // Google doesn't expect extra fields, so it's best to remove them
-        unset( $array['wc_coupn'] );
+        unset( $array['wc_coupon'] );
 
         parent::mapTypes( $array );
     }
@@ -96,7 +97,7 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
      * @return $this
      */
     protected function map_wc_coupon_id( WC_Coupon $wc_coupon ): WCCouponAdapter {
-        $coupon_id = "{$this->get_slug()}_{$this->wc_coupon->get_id()}";
+        $coupon_id = "{$this->get_slug()}_{$wc_coupon->get_id()}";
         $this->setPromotionId( $coupon_id );
 
         return $this;
@@ -109,19 +110,19 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
      */
     protected function map_wc_general_attributes( WC_Coupon $wc_coupon ): WCCouponAdapter {
         $this->setOfferType( self::OFFER_TYPE_GENERIC_CODE );
-        $this->setGenericRedemptionCode( $this->wc_coupon->get_code() );
+        $this->setGenericRedemptionCode( $wc_coupon->get_code() );
 
-        $coupon_amount = $this->wc_coupon->get_amount();
-        if ( $this->wc_coupon->is_type( self::WC_DISCOUNT_TYPE_PERCENT ) ) {
+        $coupon_amount = $wc_coupon->get_amount();
+        if ( $wc_coupon->is_type( self::WC_DISCOUNT_TYPE_PERCENT ) ) {
             $this->setCouponValueType( self::COUPON_VALUE_TYPE_PERCENT_OFF );
             $this->setPercentOff( round( $coupon_amount ) );
-        } else if ( $this->wc_coupon->is_type( 
+        } else if ( $wc_coupon->is_type( 
             [
                 self::WC_DISCOUNT_TYPE_FIXED_CART,
-                self::WC_DISCOUNT_TYPE_FIXED_PRODUCT
-            ] ) ) {
+                self::WC_DISCOUNT_TYPE_FIXED_PRODUCT] ) ) {
             $this->setCouponValueType( self::COUPON_VALUE_TYPE_MONEY_OFF );
-            $this->setMoneyOffAmount( map_google_price_amount( $coupon_amount ) );
+            $this->setMoneyOffAmount( 
+                $this->map_google_price_amount( $coupon_amount ) );
         }
 
         $this->setPromotionEffectiveDates( 
@@ -135,19 +136,23 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
      * Return the effective dates for the WooCommerce couopon.
      *
      *
-     * @return string|null
+     * @return WC_DateTime|null
      */
-    protected function get_wc_coupon_effective_dates( WC_DateTime $end_date ): ?string {
+    protected function get_wc_coupon_effective_dates( $expiring_date ): ?string {
         // TODO: Get start effective date when allows to upload coupons that start in the future.
         $now = new WC_DateTime();
+        $end_date = $expiring_date;
 
-        if ( empty( $end_date ) ) {
-            return null;
+        // If there is no expiring date, set to promotion maximumal effective days allowed by Google.\
+        // Refer to https://support.google.com/merchants/answer/2906014?hl=en
+        if ( empty( $expiring_date ) ) {
+            $end_date = $now->add(new DateInterval('P183D'));
         }
 
-        // if we have a sale end date in the future, but no start date, set the start date to now()
+        // If the coupon is already expired. set the effective date to a past period.
         if ( ! empty( $end_date ) && $end_date < $now ) {
             $end_date = $now;
+            $now = $end_date->sub(new DateInterval('P1D'));
         }
         return sprintf( '%s/%s', (string) $now, (string) $end_date );
     }
@@ -158,37 +163,38 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
      * @return $this
      */
     protected function map_wc_usage_restriction( WC_Coupon $wc_coupon ): WCCouponAdapter {
-        $minimal_spend = $this->wc_coupon->get_minimum_amount();
+        $minimal_spend = $wc_coupon->get_minimum_amount();
         if ( isset( $minimal_spend ) ) {
             $this->setMinimumPurchaseAmount( 
-                map_google_price_amount( $minimal_spend ) );
+                $this->map_google_price_amount( $minimal_spend ) );
         }
 
-        $maximal_spend = $this->wc_coupon->get_maximum_amount();
+        $maximal_spend = $wc_coupon->get_maximum_amount();
         if ( isset( $maximal_spend ) ) {
-            $this->setLimitValue( map_google_price_amount( $maximal_spend ) );
+            $this->setLimitValue( 
+                $this->map_google_price_amount( $maximal_spend ) );
         }
 
         $has_product_restriction = false;
-        $wc_product_ids = $this->wc_coupon->get_product_ids();
+        $wc_product_ids = $wc_coupon->get_product_ids();
         if ( ! empty( $wc_product_ids ) ) {
             $has_product_restriction = true;
             $this->setItemId( $wc_product_ids );
         }
 
-        $wc_exclued_product_ids = $this->wc_coupon->get_excluded_product_ids();
+        $wc_exclued_product_ids = $wc_coupon->get_excluded_product_ids();
         if ( ! empty( $wc_exclued_product_ids ) ) {
             $has_product_restriction = true;
             $this->setItemId( $wc_exclued_product_ids );
         }
 
-        $wc_product_categories = $this->wc_coupon->get_product_categories();
+        $wc_product_categories = $wc_coupon->get_product_categories();
         if ( ! empty( $wc_product_categories ) ) {
             $has_product_restriction = true;
             // TODO: add proudct category resriction mappings.
         }
 
-        $wc_exclued_product_categories = $this->wc_coupon->get_excluded_product_categories();
+        $wc_exclued_product_categories = $wc_coupon->get_excluded_product_categories();
         if ( ! empty( $wc_exclued_product_categories ) ) {
             $has_product_restriction = true;
             // TODO: add proudct category resriction mappings.
@@ -201,6 +207,8 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
             $this->setProductApplicability( 
                 self::PRODUCT_APPLICABILITY_ALL_PRODUCTS );
         }
+        
+        return $this;
     }
 
     /**
@@ -210,10 +218,7 @@ class WCProductAdapter extends GooglePromotion implements Validatable {
      */
     protected function map_google_price_amount( $wc_amount ): GooglePriceAmount {
         return new GooglePriceAmount( 
-            [
-                'currency' => get_woocommerce_currency(),
-                'value' => $wc_amount
-            ] );
+            ['currency' => get_woocommerce_currency(),'value' => $wc_amount] );
     }
 
     /**

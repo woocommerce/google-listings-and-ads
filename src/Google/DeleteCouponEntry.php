@@ -47,9 +47,9 @@ class DeleteCouponEntry {
 
     /**
      *
-     * @return int
+     * @return array
      */
-    public function get_synced_google_ids(): int {
+    public function get_synced_google_ids(): array {
         return $this->synced_google_ids;
     }
 }
