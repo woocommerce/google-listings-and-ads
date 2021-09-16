@@ -7,8 +7,6 @@ use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,10 +18,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.4.0
  */
-class ContactInformation extends Note implements OptionsAwareInterface, MerchantCenterAwareInterface {
+class ContactInformation extends Note implements MerchantCenterAwareInterface {
 
 	use MerchantCenterAwareTrait;
-	use OptionsAwareTrait;
 	use PluginHelper;
 	use Utilities;
 

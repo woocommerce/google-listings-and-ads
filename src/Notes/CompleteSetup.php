@@ -18,10 +18,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class CompleteSetup extends Note implements OptionsAwareInterface, MerchantCenterAwareInterface {
+class CompleteSetup extends Note implements MerchantCenterAwareInterface {
 
 	use MerchantCenterAwareTrait;
-	use OptionsAwareTrait;
 	use PluginHelper;
 	use Utilities;
 
