@@ -8,6 +8,7 @@ import { getNewPath, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import DifferentCurrencyNotice from '.~/components/different-currency-notice';
 import NavigationClassic from '.~/components/navigation-classic';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
@@ -44,6 +45,7 @@ const Dashboard = () => {
 
 	return (
 		<div className="gla-dashboard">
+			<DifferentCurrencyNotice context="dashboard" />
 			<NavigationClassic />
 			<div className="gla-dashboard__filter">
 				<AppDateRangeFilterPicker
