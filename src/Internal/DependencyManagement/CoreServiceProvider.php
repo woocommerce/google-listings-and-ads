@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
@@ -47,6 +48,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as ReviewAfterClicksNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -118,6 +120,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		OptionsInterface::class       => true,
 		TransientsInterface::class    => true,
 		ProductFeed::class            => true,
+		ReviewAfterClicksNote::class  => true,
 		RESTControllers::class        => true,
 		Service::class                => true,
 		Settings::class               => true,
@@ -232,6 +235,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Inbox Notes
 		$this->conditionally_share_with_tags( ContactInformationNote::class );
 		$this->conditionally_share_with_tags( CompleteSetupNote::class );
+		$this->conditionally_share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
 		$this->conditionally_share_with_tags( SetupCampaignNote::class );
 		$this->conditionally_share_with_tags( SetupCampaign2Note::class );
 

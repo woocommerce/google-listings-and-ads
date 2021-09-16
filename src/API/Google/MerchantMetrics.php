@@ -12,6 +12,8 @@ use Google\Service\ShoppingContent;
 /**
  * Class MerchantMetrics
  *
+ * @since x.x.x
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
 class MerchantMetrics implements OptionsAwareInterface {
