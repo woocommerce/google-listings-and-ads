@@ -20,7 +20,7 @@ import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
-import formatAmountWithCode from './format-amount-with-code';
+import formatAmountWithCode from '.~/utils/formatAmountWithCode';
 
 const headers = [
 	{
