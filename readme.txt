@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.8
 Requires PHP: 7.3
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -115,6 +115,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.4.3 - 2021-09-08 =
+* Fix - PHP notice when creating a product variation.
+* Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
+
 = 1.4.2 - 2021-08-24 =
 * Fix - Fix a potential fatal error when WooCommerce isn't active while activating Google Listings and Ads.
 * Fix - Fix margin/padding styles for the AppButton when having spinner/icon/text.
@@ -131,15 +135,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Some pre-sync errors being skipped in the product issues table.
 * Fix - display the correct currency actually used for the paid campaign budget.
 * Tweak - Limit the product descriptions to 5000 characters when syncing.
-
-= 1.4.0 - 2021-08-09 =
-* Add - Filter to allow applying shortcodes to product description.
-* Add - New contact information feature.
-* Fix - Add `woocommerce_gla_product_attribute_values` filter to allow overriding all product attributes.
-* Fix - Invalid Google IDs meta value causing fatal failure.
-* Fix - Load deprecated functions from Guzzle which are required for the GAX library.
-* Fix - Process all batches when updating products.
-* Tweak - Removed SVGs from JS bundle.
-* Tweak - Use the WordPress date and time formats on the Product Feed page.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

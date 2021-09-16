@@ -67,6 +67,15 @@ class WP {
 	}
 
 	/**
+	 * Get the locale of the current user.
+	 *
+	 * @return string
+	 */
+	public function get_user_locale(): string {
+		return get_user_locale();
+	}
+
+	/**
 	 * Run the WP dbDelta() function.
 	 *
 	 * @param string|string[] $sql The query or queries to run.

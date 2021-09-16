@@ -128,7 +128,7 @@ class PhoneVerification implements Service {
 	 * @return string
 	 */
 	protected function get_language_code(): string {
-		return $this->iso_utility->wp_locale_to_bcp47( $this->wp->get_locale() );
+		return $this->iso_utility->wp_locale_to_bcp47( $this->wp->get_user_locale() );
 	}
 
 	/**

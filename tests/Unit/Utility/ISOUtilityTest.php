@@ -30,13 +30,15 @@ class ISOUtilityTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 'fr-CA', $this->iso_utility->wp_locale_to_bcp47( 'fr_CA' ) );
 		$this->assertEquals( 'fr', $this->iso_utility->wp_locale_to_bcp47( 'fr' ) );
 		$this->assertEquals( 'fr-FR', $this->iso_utility->wp_locale_to_bcp47( 'fr-FR' ) );
+		$this->assertEquals( 'de-CH-informal', $this->iso_utility->wp_locale_to_bcp47( 'de_CH_informal' ) );
+		$this->assertEquals( 'french', $this->iso_utility->wp_locale_to_bcp47( 'french' ) );
+		$this->assertEquals( 'ceb', $this->iso_utility->wp_locale_to_bcp47( 'ceb' ), 'For Cebuano' );
+		$this->assertEquals( 'pt-PT-ao90', $this->iso_utility->wp_locale_to_bcp47( 'pt_PT_ao90' ), 'Português (AO90)' );
 
 		// Fall back to 'en-US' if invalid or unsupported locale provided.
-		$this->assertEquals( 'en-US', $this->iso_utility->wp_locale_to_bcp47( '' ) );
-		$this->assertEquals( 'en-US', $this->iso_utility->wp_locale_to_bcp47( 'de_CH_informal' ) );
-		$this->assertEquals( 'en-US', $this->iso_utility->wp_locale_to_bcp47( 'e' ) );
-		$this->assertEquals( 'en-US', $this->iso_utility->wp_locale_to_bcp47( 'french' ) );
 		$this->assertEquals( 'en-US', $this->iso_utility->wp_locale_to_bcp47( 'Lorem ipsum!' ) );
+		$this->assertEquals( 'en-US', $this->iso_utility->wp_locale_to_bcp47( 'e' ) );
+		$this->assertEquals( 'en-US', $this->iso_utility->wp_locale_to_bcp47( '' ) );
 	}
 
 	/**
