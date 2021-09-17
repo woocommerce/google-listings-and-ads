@@ -155,7 +155,7 @@ abstract class BaseReportsController extends BaseController {
 	protected function normalize_timezones( &$query_args ) {
 		/** @var WP $wp */
 		$wp       = $this->container->get( WP::class );
-		$local_tz = new DateTimeZone( $wp->wp_timezone_string() );
+		$local_tz = $wp->wp_timezone();
 
 		foreach ( [ 'before', 'after' ] as $query_arg_key ) {
 			if ( isset( $query_args[ $query_arg_key ] ) && is_string( $query_args[ $query_arg_key ] ) ) {

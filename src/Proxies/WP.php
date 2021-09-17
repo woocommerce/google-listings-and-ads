@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use DateTimeZone;
 use WP as WPCore;
 use WP_Error;
 use WP_Post;
@@ -137,6 +138,19 @@ class WP {
 	 */
 	public function wp_timezone_string(): string {
 		return wp_timezone_string();
+	}
+
+	/**
+	 * Retrieves the timezone from site settings as a `DateTimeZone` object.
+	 *
+	 * Timezone can be based on a PHP timezone string or a ±HH:MM offset.
+	 *
+	 * @return DateTimeZone Timezone object.
+	 *
+	 * @since x.x.x
+	 */
+	function wp_timezone() {
+		return wp_timezone();
 	}
 
 	/**
