@@ -7,6 +7,7 @@ use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use WC_Data_Store;
 
 defined( 'ABSPATH' ) || exit;
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-abstract class Note implements Service, Registerable, Deactivateable {
+abstract class Note implements Service, Registerable, Deactivateable, OptionsAwareInterface {
 
 	/**
 	 * Get the note's unique name.
