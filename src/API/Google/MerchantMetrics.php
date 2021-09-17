@@ -55,15 +55,14 @@ class MerchantMetrics implements OptionsAwareInterface {
 	public function get_free_listing_clicks(): int {
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = ( new MerchantFreeListingReportQuery( [] ) )
+			->set_client( $this->service, $this->options->get_merchant_id() )
 			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_today() )
 			->fields( [ 'clicks' ] );
 
 		/** @var SearchResponse $response */
-		$response = $query
-			->set_client( $this->service, $this->options->get_merchant_id() )
-			->get_results();
+		$response = $query->get_results();
 
-		if ( empty( $response->getResults() ) ) {
+		if ( empty( $response ) || empty( $response->getResults() ) ) {
 			return 0;
 		}
 
