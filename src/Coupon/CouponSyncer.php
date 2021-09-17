@@ -151,9 +151,8 @@ class CouponSyncer implements Service {
                 $errors = [
                     $google_exception->getCode() => $google_exception->getMessage()],
                 $target_country = $target_country );
-            $this->coupon_helper->mark_as_invalid( 
-                $coupon,
-                [$invalid_promotion] );
+            $this->coupon_helper->mark_as_invalid( $coupon, [
+                $invalid_promotion] );
 
             $this->handle_update_errors( [$invalid_promotion] );
 
@@ -280,6 +279,9 @@ class CouponSyncer implements Service {
      * @return bool
      */
     public static function is_coupon_supported( WC_Coupon $coupon ): bool {
+        if ( $coupon->get_virtual() ) {
+            return false;
+        }
         if ( ! empty( $coupon->get_email_restrictions() ) ) {
             return false;
         }
