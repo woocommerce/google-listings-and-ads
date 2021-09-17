@@ -25,6 +25,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client as GuzzleClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\ClientInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\RequestException;
@@ -108,7 +109,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share( Merchant::class, ShoppingContent::class );
-		$this->share( MerchantMetrics::class, ShoppingContent::class );
+		$this->share( MerchantMetrics::class, ShoppingContent::class, WP::class );
 		$this->share( MerchantReport::class, ShoppingContent::class, ProductHelper::class );
 
 		$this->add(

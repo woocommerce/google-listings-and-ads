@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeListingReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use DateTime;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\SearchResponse;
@@ -13,7 +14,7 @@ use Google\Service\ShoppingContent\SearchResponse;
 /**
  * Class MerchantMetrics
  *
- * @since x.x.x
+ * @since   x.x.x
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
@@ -28,15 +29,21 @@ class MerchantMetrics implements OptionsAwareInterface {
 	 */
 	protected $service;
 
+	/**
+	 * @var WP
+	 */
+	protected $wp;
+
 	protected const MAX_QUERY_START_DATE = '2020-01-01';
 
 	/**
-	 * Merchant Report constructor.
+	 * MerchantMetrics constructor.
 	 *
 	 * @param ShoppingContent $service
 	 */
-	public function __construct( ShoppingContent $service ) {
+	public function __construct( ShoppingContent $service, WP $wp ) {
 		$this->service = $service;
+		$this->wp      = $wp;
 	}
 
 	/**
@@ -60,6 +67,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 		}
 
 		$report_row = $response->getResults()[0];
+
 		return (int) $report_row->getMetrics()->getClicks();
 	}
 
@@ -69,7 +77,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 	 * @return string
 	 */
 	protected function get_today(): string {
-		return ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d' );
+		return ( new DateTime( 'now', $this->wp->wp_timezone() ) )->format( 'Y-m-d' );
 	}
 
 }
