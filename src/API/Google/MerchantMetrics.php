@@ -20,7 +20,6 @@ use Google\Service\ShoppingContent\SearchResponse;
 class MerchantMetrics implements OptionsAwareInterface {
 
 	use OptionsAwareTrait;
-	use ReportTrait;
 
 	/**
 	 * The shopping service.
