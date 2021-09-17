@@ -132,8 +132,10 @@ abstract class Query implements QueryInterface {
 	 *
 	 * @since x.x.x
 	 *
-	 * @param string $after  Date in ISO 8601(YYYY-MM-DD) format.
-	 * @param string $before Date in ISO 8601(YYYY-MM-DD) format.
+	 * @link https://developers.google.com/shopping-content/guides/reports/query-language/date-ranges
+	 *
+	 * @param string $after  Start of date range. In ISO 8601(YYYY-MM-DD) format.
+	 * @param string $before End of date range. In ISO 8601(YYYY-MM-DD) format.
 	 *
 	 * @return QueryInterface
 	 */
