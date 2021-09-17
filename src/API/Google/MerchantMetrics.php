@@ -40,6 +40,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 	 * MerchantMetrics constructor.
 	 *
 	 * @param ShoppingContent $service
+	 * @param WP              $wp
 	 */
 	public function __construct( ShoppingContent $service, WP $wp ) {
 		$this->service = $service;

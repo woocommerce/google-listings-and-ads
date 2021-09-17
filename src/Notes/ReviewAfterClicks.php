@@ -41,11 +41,11 @@ class ReviewAfterClicks extends Note implements MerchantCenterAwareInterface {
 	 * ReviewAfterClicks constructor.
 	 *
 	 * @param MerchantMetrics $merchant_metrics
-	 * @param WP $wp
+	 * @param WP              $wp
 	 */
 	public function __construct( MerchantMetrics $merchant_metrics, WP $wp ) {
 		$this->merchant_metrics = $merchant_metrics;
-		$this->wp = $wp;
+		$this->wp               = $wp;
 	}
 
 	/**
