@@ -54,17 +54,17 @@ class MerchantMetrics implements OptionsAwareInterface {
 			]
 		);
 
-		/** @var SearchResponse $results */
-		$results = $query
+		/** @var SearchResponse $response */
+		$response = $query
 			->set_client( $this->service, $this->options->get_merchant_id() )
 			->get_results();
 
-		if ( empty( $results->getResults() ) ) {
+		if ( empty( $response->getResults() ) ) {
 			return 0;
 		}
 
-		$result = $results->getResults()[0];
-		return (int) $result->getMetrics()->getClicks();
+		$report_row = $response->getResults()[0];
+		return (int) $report_row->getMetrics()->getClicks();
 	}
 
 	/**
