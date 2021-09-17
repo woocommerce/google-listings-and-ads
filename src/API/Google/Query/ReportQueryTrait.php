@@ -27,7 +27,7 @@ trait ReportQueryTrait {
 		}
 
 		if ( ! empty( $args['after'] ) && ! empty( $args['before'] ) ) {
-			$this->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' );
+			$this->where_date_between( $args['after'], $args['before'] );
 		}
 
 		if ( ! empty( $args['ids'] ) ) {

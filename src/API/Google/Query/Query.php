@@ -128,6 +128,22 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Add a where date between clause to the query.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $after  Date in ISO 8601(YYYY-MM-DD) format.
+	 * @param string $before Date in ISO 8601(YYYY-MM-DD) format.
+	 *
+	 * @return QueryInterface
+	 */
+	public function where_date_between( string $after, string $before ): QueryInterface {
+		$this->where( 'segments.date', [ $after, $before ], 'BETWEEN' );
+
+		return $this;
+	}
+
+	/**
 	 * Set the where relation for the query.
 	 *
 	 * @param string $relation
