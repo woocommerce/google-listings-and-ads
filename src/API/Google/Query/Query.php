@@ -140,9 +140,7 @@ abstract class Query implements QueryInterface {
 	 * @return QueryInterface
 	 */
 	public function where_date_between( string $after, string $before ): QueryInterface {
-		$this->where( 'segments.date', [ $after, $before ], 'BETWEEN' );
-
-		return $this;
+		return $this->where( 'segments.date', [ $after, $before ], 'BETWEEN' );
 	}
 
 	/**
