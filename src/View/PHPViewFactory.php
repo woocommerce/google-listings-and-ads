@@ -17,15 +17,15 @@ defined( 'ABSPATH' ) || exit;
 final class PHPViewFactory implements Service, ViewFactory {
 
 	/**
-	 * Create a new view object for a given relative path.
+	 * Create a new view object.
 	 *
-	 * @param string $relative_path Relative path to create the view for.
+	 * @param string $path Path to the view file to render.
 	 *
 	 * @return View Instantiated view object.
 	 *
 	 * @throws ViewException If an invalid path was passed into the View.
 	 */
-	public function create( string $relative_path ): View {
-		return new PHPView( $relative_path, $this );
+	public function create( string $path ): View {
+		return new PHPView( $path, $this );
 	}
 }
