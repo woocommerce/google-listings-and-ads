@@ -11,11 +11,8 @@ import { onQueryChange } from '@woocommerce/navigation';
  */
 import { getIdsFromQuery } from './utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
-import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppTableCard from '.~/components/app-table-card';
-
-const numberFormatSetting = { precision: 0 };
 
 /**
  * All data table, with compare feature.
@@ -46,9 +43,8 @@ const CompareTableCard = ( {
 	nameCell,
 	...restProps
 } ) => {
+	const storeCurrencyConfig = useStoreCurrency();
 	const query = useUrlQuery();
-	const formatNumber = useCurrencyFormat( numberFormatSetting );
-	const { formatAmount } = useCurrencyFactory();
 
 	const [ selectedRows, setSelectedRows ] = useState( () => {
 		return new Set( getIdsFromQuery( query[ compareBy ] ) );
@@ -104,7 +100,6 @@ const CompareTableCard = ( {
 		...metricHeaders,
 	];
 
-	const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
 	/**
 	 * Creates an array of metric cells for {@link getRows},
 	 * for a given row.
@@ -116,13 +111,9 @@ const CompareTableCard = ( {
 	 */
 	const renderMetricDataCells = ( row ) =>
 		metrics.map( ( metric ) => {
-			const formatFn = metric.isCurrency ? formatAmount : formatNumber;
 			const value = row.subtotals[ metric.key ];
 			return {
-				display:
-					value === null || value === undefined
-						? unavailable
-						: formatFn( value ),
+				display: metric.formatFn( storeCurrencyConfig, value ),
 			};
 		} );
 	/**

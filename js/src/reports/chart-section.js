@@ -11,7 +11,6 @@ import { getChartTypeForQuery } from '@woocommerce/date';
  */
 import useUrlQuery from '.~/hooks/useUrlQuery';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 
 const emptyMessage = __(
 	'No data for the selected date range',
@@ -29,7 +28,6 @@ const emptyMessage = __(
 export default function ChartSection( { metrics, loaded, intervals } ) {
 	const query = useUrlQuery();
 	const currency = useStoreCurrency();
-	const { formatAmount } = useCurrencyFactory();
 
 	const { selectedMetric } = query;
 	let visibleMetric = {};
@@ -40,11 +38,11 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			metrics[ 0 ];
 	}
 
-	const { key, label, isCurrency = false } = visibleMetric;
+	const { key, label, isCurrency = false, formatFn } = visibleMetric;
 
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
-	const tooltipValueFormat = isCurrency ? formatAmount : ',';
+	const localizedFormatFn = ( number ) => formatFn( currency, number );
 
 	const chartData = useMemo( () => {
 		if ( ! loaded ) {
@@ -70,7 +68,7 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			currency={ currency }
 			chartType={ chartType }
 			valueType={ valueType }
-			tooltipValueFormat={ tooltipValueFormat }
+			tooltipValueFormat={ localizedFormatFn }
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
 			layout="time-comparison"

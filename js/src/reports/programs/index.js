@@ -15,6 +15,7 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProgramsTableCard from './compare-programs-table-card';
 import ReportsNavigation from '../reports-navigation';
+import { formatCurrencyCell, formatNumericCell } from '../format-amount';
 
 /**
  * Available metrics and their human-readable labels.
@@ -25,19 +26,23 @@ const commonMetrics = [
 	{
 		key: 'sales',
 		label: __( 'Total Sales', 'google-listings-and-ads' ),
+		formatFn: formatCurrencyCell,
 		isCurrency: true,
 	},
 	{
 		key: 'conversions',
 		label: __( 'Conversions', 'google-listings-and-ads' ),
+		formatFn: formatNumericCell,
 	},
 	{
 		key: 'clicks',
 		label: __( 'Clicks', 'google-listings-and-ads' ),
+		formatFn: formatNumericCell,
 	},
 	{
 		key: 'impressions',
 		label: __( 'Impressions', 'google-listings-and-ads' ),
+		formatFn: formatNumericCell,
 	},
 ];
 const performanceMetrics = [
@@ -45,6 +50,7 @@ const performanceMetrics = [
 	{
 		key: 'spend',
 		label: __( 'Total Spend', 'google-listings-and-ads' ),
+		formatFn: formatCurrencyCell,
 		isCurrency: true,
 	},
 ];
@@ -53,6 +59,7 @@ const tableMetrics = [
 	{
 		key: 'spend',
 		label: __( 'Spend', 'google-listings-and-ads' ),
+		formatFn: formatCurrencyCell,
 		isCurrency: true,
 	},
 ];

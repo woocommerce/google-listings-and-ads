@@ -16,11 +16,8 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
 import './metric-number.scss';
 import AppTooltip from '.~/components/app-tooltip';
 import TrackableLink from '.~/components/trackable-link';
-import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import { MISSING_FREE_LISTINGS_DATA } from '.~/data/utils';
-
-const numberFormatSetting = { precision: 0 };
 
 const googleMCReportingDashboardURL =
 	'https://merchants.google.com/mc/reporting/dashboard';
@@ -33,39 +30,30 @@ const googleMCReportingDashboardURL =
  * informing about missing data for some metrics.
  *
  * @param {Object} props
- * @param {string} props.label Metric label.
+ * @param {import('./index').Metric} props.metric Metrics label and formatting characteristics.
  * @param {string} [props.href] An internal link to the report focused on this metric.
  * @param {boolean} [props.selected] Whether show a highlight style on this metric.
  * @param {Function} [props.onLinkClickCallback] A function to be called after a SummaryNumber, rendered as a link, is clicked.
- * @param {boolean} [props.isCurrency=false] Display `data.value` and `data.prevValue` as price format if true.
- *                                           Otherwise, display as number format.
  * @param {import('.~/data/utils').PerformanceMetrics} props.data Data as get from API.
  *
  * @return {SummaryNumber} Filled SummaryNumber.
  */
 const MetricNumber = ( {
-	label,
 	href,
 	selected,
 	onLinkClickCallback,
-	isCurrency = false,
+	metric,
 	data: { value, prevValue, delta, missingFreeListingsData },
 } ) => {
-	const formatNumber = useCurrencyFormat( numberFormatSetting );
-	const { formatAmount } = useCurrencyFactory();
+	const storeCurrencyConfig = useStoreCurrency();
 	const valueProps = useMemo( () => {
-		const formatFn = isCurrency ? formatAmount : formatNumber;
-
 		return {
-			value:
-				value === undefined
-					? __( 'Unavailable', 'google-listings-and-ads' )
-					: formatFn( value ),
-			prevValue: formatFn( prevValue ),
+			value: metric.formatFn( storeCurrencyConfig, value ),
+			prevValue: metric.formatFn( storeCurrencyConfig, prevValue ),
 		};
-	}, [ isCurrency, value, prevValue, formatNumber, formatAmount ] );
+	}, [ metric, storeCurrencyConfig, value, prevValue ] );
 
-	let markedLabel = label;
+	let markedLabel = metric.label;
 	const infos = [];
 	const ariaInfos = [];
 
@@ -136,7 +124,7 @@ const MetricNumber = ( {
 		) );
 		markedLabel = (
 			<div className="gla-reports__metric-label">
-				{ label }
+				{ metric.label }
 				<AppTooltip text={ infoElements }>
 					<GridiconInfoOutline
 						className="gla-reports__metric-infoicon"

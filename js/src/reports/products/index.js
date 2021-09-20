@@ -23,6 +23,7 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 import ReportsNavigation from '../reports-navigation';
+import { formatCurrencyCell, formatNumericCell } from '../format-amount';
 
 /**
  * Available metrics and their human-readable labels.
@@ -33,26 +34,31 @@ const freeMetrics = [
 	{
 		key: 'clicks',
 		label: __( 'Clicks', 'google-listings-and-ads' ),
+		formatFn: formatNumericCell,
 	},
 	{
 		key: 'impressions',
 		label: __( 'Impressions', 'google-listings-and-ads' ),
+		formatFn: formatNumericCell,
 	},
 ];
 const paidMetrics = [
 	{
 		key: 'sales',
 		label: __( 'Total Sales', 'google-listings-and-ads' ),
+		formatFn: formatCurrencyCell,
 		isCurrency: true,
 	},
 	{
 		key: 'conversions',
 		label: __( 'Conversions', 'google-listings-and-ads' ),
+		formatFn: formatNumericCell,
 	},
 	...freeMetrics,
 	{
 		key: 'spend',
 		label: __( 'Spend', 'google-listings-and-ads' ),
+		formatFn: formatCurrencyCell,
 		isCurrency: true,
 	},
 ];
