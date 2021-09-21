@@ -71,6 +71,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Activated;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Loaded;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteVerificationEvents;
@@ -279,6 +280,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PHPViewFactory::class );
 
 		// Share other classes.
+		$this->conditionally_share_with_tags( Activated::class );
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
 		$this->conditionally_share_with_tags( SiteClaimEvents::class );

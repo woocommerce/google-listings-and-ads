@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\Activated;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -56,6 +57,12 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 		}
 
 		flush_rewrite_rules();
+
+		/** @var Activated $activated_event */
+		$activated_event = $this->container->get( Activated::class );
+		if ( ! empty( $activated_event ) ) {
+			$activated_event->maybe_track_activation_source( $_SERVER );
+		}
 	}
 
 	/**
