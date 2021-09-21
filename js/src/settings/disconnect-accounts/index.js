@@ -72,7 +72,7 @@ export default function DisconnectAccounts() {
 		<Section
 			title={ __( 'Linked accounts', 'google-listings-and-ads' ) }
 			description={ __(
-				'A Wordpress.com account, Google account, and Google Merchant Center account are required to use this extension in WooCommerce.',
+				'A WordPress.com account, Google account, and Google Merchant Center account are required to use this extension in WooCommerce.',
 				'google-listings-and-ads'
 			) }
 		>
