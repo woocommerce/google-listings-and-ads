@@ -1,24 +1,4 @@
 {
-<<<<<<< HEAD
-	"name": "woocommerce/google-listings-and-ads",
-	"type": "wordpress-plugin",
-	"description": "Native integration with Google that allows merchants to easily display their products across Google’s network.",
-	"prefer-stable": true,
-	"minimum-stability": "dev",
-	"require": {
-		"php": ">=7.3",
-		"automattic/jetpack-autoloader": "^2.4",
-		"automattic/jetpack-config": "^1.4",
-		"automattic/jetpack-connection": "^1.20",
-		"google/apiclient": "^2.10",
-		"googleads/google-ads-php": "^10.0",
-		"league/container": "^3.3",
-		"league/iso3166": "^3.0",
-		"phpseclib/bcmath_compat": "^2.0",
-		"psr/container": "^1.0",
-		"symfony/validator": "^5.2",
-		"ext-json": "*"
-=======
 	"name" : "woocommerce/google-listings-and-ads",
 	"type" : "wordpress-plugin",
 	"description" : "Native integration with Google that allows merchants to easily display their products across Google\u2019s network.",
@@ -29,8 +9,8 @@
 		"automattic/jetpack-autoloader" : "^2.4",
 		"automattic/jetpack-config" : "^1.4",
 		"automattic/jetpack-connection" : "^1.20",
-		"google/apiclient" : "~2.10",
-		"google/apiclient-services" : "~0.211",
+		"google/apiclient" : "^2.10",
+		"google/apiclient-services" : "~0.212",
 		"googleads/google-ads-php" : "^10.0",
 		"league/container" : "^3.3",
 		"league/iso3166" : "^3.0",
@@ -38,7 +18,6 @@
 		"psr/container" : "^1.0",
 		"symfony/validator" : "^5.2",
 		"ext-json" : "*"
->>>>>>> 5096701c... fix unit tests for SyncerHooks and CouponSyncer
 	},
 	"require-dev" : {
 		"dealerdirect/phpcodesniffer-composer-installer" : "^v0.7",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d5ed98dfe3518046e391db16a3d3d9dd",
+    "content-hash": "15e80ceabb9b9737158be3d96cddb9b0",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -706,7 +706,7 @@
             },
             "require": {
                 "firebase/php-jwt": "~2.0||~3.0||~4.0||~5.0",
-                "google/apiclient-services": "^0.200.0",
+                "google/apiclient-services": "~0.212.0",
                 "google/auth": "^1.10",
                 "guzzlehttp/guzzle": "~5.3.3||~6.0||~7.0",
                 "guzzlehttp/psr7": "^1.2",
@@ -761,16 +761,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.200.0",
+            "version": "v0.212.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "0375af405757b36f3bcc82e19d7daf61e0b4cfd8"
+                "reference": "2c4bd512502ad9cdfec8ea711ea1592c79d345e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/0375af405757b36f3bcc82e19d7daf61e0b4cfd8",
-                "reference": "0375af405757b36f3bcc82e19d7daf61e0b4cfd8",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/2c4bd512502ad9cdfec8ea711ea1592c79d345e5",
+                "reference": "2c4bd512502ad9cdfec8ea711ea1592c79d345e5",
                 "shasum": ""
             },
             "require": {
@@ -799,9 +799,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.200.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.212.0"
             },
-            "time": "2021-06-18T15:00:35+00:00"
+            "time": "2021-09-12T11:18:27+00:00"
         },
         {
             "name": "google/auth",
