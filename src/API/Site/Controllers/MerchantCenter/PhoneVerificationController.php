@@ -147,7 +147,7 @@ class PhoneVerificationController extends BaseOptionsController {
 					$request->get_param( 'verification_code' ),
 					$request->get_param( 'verification_method' ),
 				);
-				return new Response( [], 204 );
+				return new Response( null, 204 );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
