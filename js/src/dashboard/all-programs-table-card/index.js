@@ -13,7 +13,7 @@ import EditProgramButton from './edit-program-button';
 import './index.scss';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
-import useAdsCurrency from '.~/hooks/useAdsCurrency';
+import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import AppSpinner from '.~/components/app-spinner';
 import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
@@ -56,16 +56,12 @@ const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 	// Budget is given in the currency that is used by Google Ads, which may differ from the current store's currency.
 	// We will still use the store's currency **formatting** settings.
-	const {
-		currency: { getCurrencyConfig },
-	} = useAdsCurrency();
+	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
 	const {
 		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
 	const map = useCountryKeyNameMap();
-
-	const adsCurrency = getCurrencyConfig();
 
 	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
 		return <AppSpinner />;
@@ -93,7 +89,10 @@ const AllProgramsTableCard = ( props ) => {
 			return {
 				id: el.id,
 				title: el.name,
-				dailyBudget: formatAmountWithCode( adsCurrency, el.amount ),
+				dailyBudget: formatAmountWithCode(
+					adsCurrencyConfig,
+					el.amount
+				),
 				country: map[ el.country ],
 				active: el.status === 'enabled',
 			};
