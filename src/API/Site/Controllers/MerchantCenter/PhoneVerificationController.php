@@ -76,7 +76,7 @@ class PhoneVerificationController extends BaseOptionsController {
 						'phone_number'        => [
 							'description'       => __( 'The phone number to verify.', 'google-listings-and-ads' ),
 							'required'          => true,
-							'type'              => [ 'integer', 'string' ],
+							'type'              => 'string',
 							'validate_callback' => 'rest_validate_request_arg',
 						],
 						'verification_method' => $verification_method,
@@ -122,7 +122,7 @@ class PhoneVerificationController extends BaseOptionsController {
 			try {
 				$verification_id = $this->phone_verification->request_phone_verification(
 					$request->get_param( 'phone_region_code' ),
-					new PhoneNumber( (string) $request->get_param( 'phone_number' ) ),
+					new PhoneNumber( $request->get_param( 'phone_number' ) ),
 					$request->get_param( 'verification_method' ),
 				);
 				return [
