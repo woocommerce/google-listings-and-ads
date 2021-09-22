@@ -1,5 +1,5 @@
 .wcdl-subsection {
-	&:not(:last-child) {
-		margin-bottom: var(--main-gap);
+	&:not(:first-child) {
+		margin-top: var(--main-gap);
 	}
 }
