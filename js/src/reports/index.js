@@ -8,7 +8,7 @@ export { default as ProductsReport } from './products';
  * @typedef {Object} Metric Metric item structure for disaplying label and its currency type.
  * @property {string} key Metric key.
  * @property {string} label Metric label to display.
- * @property {(currencyConfig: Object, value: number) => string} formatFn Function to format given number to the displayed text.
+ * @property {(value: number, storeCurrencyConfig: Object, adsCurrencyConfig: Object) => string} formatFn Function to format given number to the displayed text.
  * @property {boolean} [isCurrency] Metric is a currency if true. Needed to adjust Chart's valueType => y-axis labels.
  */
 

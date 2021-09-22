@@ -23,7 +23,11 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 import ReportsNavigation from '../reports-navigation';
-import { formatCurrencyCell, formatNumericCell } from '../format-amount';
+import {
+	formatNumericCell,
+	formatAdsCurrencyCell,
+	formatStoreCurrencyCell,
+} from '../format-amount';
 
 /**
  * Available metrics and their human-readable labels.
@@ -46,7 +50,7 @@ const paidMetrics = [
 	{
 		key: 'sales',
 		label: __( 'Total Sales', 'google-listings-and-ads' ),
-		formatFn: formatCurrencyCell,
+		formatFn: formatStoreCurrencyCell,
 		isCurrency: true,
 	},
 	{
@@ -58,7 +62,7 @@ const paidMetrics = [
 	{
 		key: 'spend',
 		label: __( 'Spend', 'google-listings-and-ads' ),
-		formatFn: formatCurrencyCell,
+		formatFn: formatAdsCurrencyCell,
 		isCurrency: true,
 	},
 ];

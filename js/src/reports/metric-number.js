@@ -16,6 +16,7 @@ import GridiconInfoOutline from 'gridicons/dist/info-outline';
 import './metric-number.scss';
 import AppTooltip from '.~/components/app-tooltip';
 import TrackableLink from '.~/components/trackable-link';
+import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import { MISSING_FREE_LISTINGS_DATA } from '.~/data/utils';
 
@@ -46,12 +47,22 @@ const MetricNumber = ( {
 	data: { value, prevValue, delta, missingFreeListingsData },
 } ) => {
 	const storeCurrencyConfig = useStoreCurrency();
+	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
 	const valueProps = useMemo( () => {
+		// debugger
 		return {
-			value: metric.formatFn( storeCurrencyConfig, value ),
-			prevValue: metric.formatFn( storeCurrencyConfig, prevValue ),
+			value: metric.formatFn(
+				value,
+				storeCurrencyConfig,
+				adsCurrencyConfig
+			),
+			prevValue: metric.formatFn(
+				prevValue,
+				storeCurrencyConfig,
+				adsCurrencyConfig
+			),
 		};
-	}, [ metric, storeCurrencyConfig, value, prevValue ] );
+	}, [ metric, storeCurrencyConfig, adsCurrencyConfig, value, prevValue ] );
 
 	let markedLabel = metric.label;
 	const infos = [];

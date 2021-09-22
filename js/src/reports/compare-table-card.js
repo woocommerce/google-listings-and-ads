@@ -11,6 +11,7 @@ import { onQueryChange } from '@woocommerce/navigation';
  */
 import { getIdsFromQuery } from './utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
+import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppTableCard from '.~/components/app-table-card';
 
@@ -43,6 +44,7 @@ const CompareTableCard = ( {
 	nameCell,
 	...restProps
 } ) => {
+	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
 	const storeCurrencyConfig = useStoreCurrency();
 	const query = useUrlQuery();
 
@@ -113,7 +115,11 @@ const CompareTableCard = ( {
 		metrics.map( ( metric ) => {
 			const value = row.subtotals[ metric.key ];
 			return {
-				display: metric.formatFn( storeCurrencyConfig, value ),
+				display: metric.formatFn(
+					value,
+					storeCurrencyConfig,
+					adsCurrencyConfig
+				),
 			};
 		} );
 	/**
