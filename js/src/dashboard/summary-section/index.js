@@ -8,10 +8,10 @@ import { SummaryNumber } from '@woocommerce/components';
  * Internal dependencies
  */
 import { glaData, REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
-import useAdsCurrency from '.~/hooks/useAdsCurrency';
+import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
 import formatAmountWithCode from '.~/utils/formatAmountWithCode';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import usePerformance from './usePerformance';
 import PerformanceCard from './performance-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
@@ -58,13 +58,9 @@ const FreePerformanceCard = () => {
 const PaidPerformanceCard = () => {
 	// Spend amount is given in the Ads' currency, but Total Sales is in store's currency.
 	// We use codes to make sure it's nonambiguous.
-	// Use just `formatAmount`s once https://github.com/woocommerce/woocommerce-admin/pull/7575 is released and accessible.
-	const { getCurrencyConfig } = useCurrencyFactory();
-	const {
-		currency: { getCurrencyConfig: getAdsCurrencyConfig },
-	} = useAdsCurrency();
-	const currency = getCurrencyConfig();
-	const adsCurrency = getAdsCurrencyConfig();
+	// Use just `useAdsCurrency`'s/`getCurrencyConfig`'s  `formatAmount`s once https://github.com/woocommerce/woocommerce-admin/pull/7575 is released and accessible.
+	const { currencyConfig: adsCurrency } = useAdsCurrencyConfig();
+	const storeCurrencyConfig = useStoreCurrency();
 	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
 	return (
@@ -78,11 +74,11 @@ const PaidPerformanceCard = () => {
 					key="1"
 					label={ __( 'Total Sales', 'google-listings-and-ads' ) }
 					value={ formatAmountWithCode(
-						currency,
+						storeCurrencyConfig,
 						loadedData.sales.value
 					) }
 					prevValue={ formatAmountWithCode(
-						currency,
+						storeCurrencyConfig,
 						loadedData.sales.prevValue
 					) }
 					delta={ loadedData.sales.delta }
