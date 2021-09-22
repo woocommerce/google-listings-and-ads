@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
 use Exception;
 use WP_REST_Request as Request;
+use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -146,6 +147,7 @@ class PhoneVerificationController extends BaseOptionsController {
 					$request->get_param( 'verification_code' ),
 					$request->get_param( 'verification_method' ),
 				);
+				return new Response( [], 204 );
 			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}

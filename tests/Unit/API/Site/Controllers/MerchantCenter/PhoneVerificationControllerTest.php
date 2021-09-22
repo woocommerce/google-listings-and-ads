@@ -101,7 +101,7 @@ class PhoneVerificationControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_VERIFY_PHONE, 'POST', self::TEST_VERIFY_PHONE_ARGS );
 
-		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 204, $response->get_status() );
 		$this->assertNull( $response->get_data() );
 	}
 
