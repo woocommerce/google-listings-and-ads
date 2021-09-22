@@ -62,11 +62,11 @@ class PhoneVerificationController extends BaseOptionsController {
 			'/mc/phone-verification/request',
 			[
 				[
-					'methods'              => TransportMethods::CREATABLE,
+					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_request_phone_verification_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => [
-						'phone_region_code' => [
+						'phone_region_code'   => [
 							'description'       => __( 'Two-letter country code (ISO 3166-1 alpha-2) for the phone number.', 'google-listings-and-ads' ),
 							'required'          => true,
 							'type'              => 'string',
@@ -80,7 +80,7 @@ class PhoneVerificationController extends BaseOptionsController {
 						],
 						'verification_method' => $verification_method,
 					],
-				]
+				],
 			]
 		);
 
@@ -88,17 +88,17 @@ class PhoneVerificationController extends BaseOptionsController {
 			'/mc/phone-verification/verify',
 			[
 				[
-					'methods'              => TransportMethods::CREATABLE,
+					'methods'             => TransportMethods::CREATABLE,
 					'callback'            => $this->get_verify_phone_callback(),
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => [
-						'verification_id'           => [
+						'verification_id'     => [
 							'description'       => __( 'The verification ID returned by the /request call.', 'google-listings-and-ads' ),
 							'required'          => true,
 							'type'              => 'string',
 							'validate_callback' => 'rest_validate_request_arg',
 						],
-						'verification_code' => [
+						'verification_code'   => [
 							'description'       => __( 'The verification code that was sent to the phone number for validation.', 'google-listings-and-ads' ),
 							'required'          => true,
 							'type'              => 'string',
@@ -106,7 +106,7 @@ class PhoneVerificationController extends BaseOptionsController {
 						],
 						'verification_method' => $verification_method,
 					],
-				]
+				],
 			]
 		);
 	}
@@ -125,10 +125,9 @@ class PhoneVerificationController extends BaseOptionsController {
 					$request->get_param( 'verification_method' ),
 				);
 				return [
-					'verification_id' => $verification_id
+					'verification_id' => $verification_id,
 				];
-			}
-			catch ( Exception $e ) {
+			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};
@@ -147,8 +146,7 @@ class PhoneVerificationController extends BaseOptionsController {
 					$request->get_param( 'verification_code' ),
 					$request->get_param( 'verification_method' ),
 				);
-			}
-			catch ( Exception $e ) {
+			} catch ( Exception $e ) {
 				return $this->response_from_exception( $e );
 			}
 		};

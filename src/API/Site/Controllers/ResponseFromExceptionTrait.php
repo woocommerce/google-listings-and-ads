@@ -24,7 +24,7 @@ trait ResponseFromExceptionTrait {
 	 * @return Response
 	 */
 	protected function response_from_exception( Exception $exception ): Response {
-		$code = $exception->getCode();
+		$code   = $exception->getCode();
 		$status = $code && is_numeric( $code ) ? $code : 400;
 
 		if ( $exception instanceof ExceptionWithResponseData ) {
