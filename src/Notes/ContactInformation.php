@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\RunDaily;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.4.0
  */
-class ContactInformation extends Note implements MerchantCenterAwareInterface {
+class ContactInformation extends Note implements MerchantCenterAwareInterface, RunDaily {
 
 	use MerchantCenterAwareTrait;
 	use PluginHelper;
@@ -34,9 +35,9 @@ class ContactInformation extends Note implements MerchantCenterAwareInterface {
 	}
 
 	/**
-	 * Possibly add the note
+	 * Check if the note should be added each day.
 	 */
-	public function possibly_add_note(): void {
+	public function run(): void {
 		if ( ! $this->can_add_note() ) {
 			return;
 		}

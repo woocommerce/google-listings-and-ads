@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use WC_Data_Store;
@@ -19,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-abstract class Note implements Service, Registerable, Deactivateable, OptionsAwareInterface {
+abstract class Note implements Service, Deactivateable, OptionsAwareInterface {
 
 	/**
 	 * Get the note's unique name.
@@ -27,23 +26,6 @@ abstract class Note implements Service, Registerable, Deactivateable, OptionsAwa
 	 * @return string
 	 */
 	abstract protected function get_note_name(): string;
-
-	/**
-	 * Possibly add the note
-	 */
-	abstract public function possibly_add_note(): void;
-
-	/**
-	 * Register a service.
-	 */
-	public function register(): void {
-		add_action(
-			'admin_init',
-			function() {
-				$this->possibly_add_note();
-			}
-		);
-	}
 
 	/**
 	 * Deactivate the service.

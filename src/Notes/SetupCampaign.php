@@ -7,6 +7,7 @@ use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\RunDaily;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
@@ -16,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class SetupCampaign extends Note implements AdsAwareInterface {
+class SetupCampaign extends Note implements AdsAwareInterface, RunDaily {
 
 	use AdsAwareTrait;
 	use PluginHelper;
@@ -32,9 +33,9 @@ class SetupCampaign extends Note implements AdsAwareInterface {
 	}
 
 	/**
-	 * Possibly add the note
+	 * Check if the note should be added each day.
 	 */
-	public function possibly_add_note(): void {
+	public function run(): void {
 		if ( ! $this->can_add_note() ) {
 			return;
 		}
