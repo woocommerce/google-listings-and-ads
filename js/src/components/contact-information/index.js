@@ -9,16 +9,13 @@ import { getHistory } from '@woocommerce/navigation';
  */
 import { getEditPhoneNumberUrl, getEditStoreAddressUrl } from '.~/utils/urls';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
-import useStoreAddress from '.~/hooks/useStoreAddress';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import SpinnerCard from '.~/components/spinner-card';
 import PhoneNumberCard from './phone-number-card';
 import StoreAddressCard, {
 	StoreAddressCardPreview,
 } from './store-address-card';
-import NoContactInformationCard from './no-contact-information-card';
 import usePhoneNumberCheckTrackEventEffect from './usePhoneNumberCheckTrackEventEffect';
 
 const learnMoreLinkId = 'contact-information-read-more';
@@ -39,43 +36,33 @@ const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
  */
 export function ContactInformationPreview() {
 	const phone = useGoogleMCPhoneNumber();
-	const address = useStoreAddress( 'mc' );
 
 	const handleEditClick = () => {
 		getHistory().push( getEditPhoneNumberUrl() );
 	};
 
-	let sectionContent = <SpinnerCard />;
-
-	if ( phone.loaded && address.loaded ) {
-		if ( phone.data.isValid && address.data.isAddressFilled ) {
-			sectionContent = (
-				<VerticalGapLayout size="overlap">
-					<PhoneNumberCard
-						view="settings"
-						isPreview
-						phoneNumber={ phone }
-						onEditClick={ handleEditClick }
-					/>
-					<StoreAddressCardPreview
-						href={ getEditStoreAddressUrl() }
-					/>
-				</VerticalGapLayout>
-			);
-		} else {
-			sectionContent = (
-				<NoContactInformationCard
-					onEditClick={ handleEditClick }
-					learnMoreUrl={ learnMoreUrl }
-					learnMoreLinkId={ learnMoreLinkId }
-				/>
-			);
-		}
-	}
-
 	return (
 		<Section title={ settingsTitle } description={ description }>
-			{ sectionContent }
+			<VerticalGapLayout size="overlap">
+				<PhoneNumberCard
+					view="settings"
+					isPreview
+					phoneNumber={ phone }
+					onEditClick={ handleEditClick }
+				/>
+				<StoreAddressCardPreview
+					href={ getEditStoreAddressUrl() }
+					learnMore={
+						<AppDocumentationLink
+							context="settings-no-store-address-notice"
+							linkId={ learnMoreLinkId }
+							href={ learnMoreUrl }
+						>
+							{ __( 'Learn more', 'google-listings-and-ads' ) }
+						</AppDocumentationLink>
+					}
+				/>
+			</VerticalGapLayout>
 		</Section>
 	);
 }

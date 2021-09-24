@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
-import { external as externalIcon } from '@wordpress/icons';
+import { external as externalIcon, Icon, warning } from '@wordpress/icons';
 import GridiconRefresh from 'gridicons/dist/refresh';
 import { getPath, getQuery } from '@woocommerce/navigation';
 
@@ -110,9 +110,10 @@ export default function StoreAddressCard() {
  *
  * @param {Object} props React props
  * @param {string} props.href URL where Edit button should point to.
+ * @param {JSX.Element} props.learnMore Link to be shown at the end of missing data message.
  * @return {JSX.Element} Filled AccountCard component.
  */
-export function StoreAddressCardPreview( { href } ) {
+export function StoreAddressCardPreview( { href, learnMore } ) {
 	const { loaded, data } = useStoreAddress();
 	const { subpath } = getQuery();
 	const editButton = (
@@ -127,21 +128,58 @@ export function StoreAddressCardPreview( { href } ) {
 		/>
 	);
 	let description = '';
+	let appearance = APPEARANCE.ADDRESS;
 
 	if ( loaded ) {
-		const { address, address2, city, state, country, postcode } = data;
+		const {
+			isAddressFilled,
+			address,
+			address2,
+			city,
+			state,
+			country,
+			postcode,
+		} = data;
 		const stateAndCountry = state ? `${ state } - ${ country }` : country;
 
-		description = [ address, address2, city, stateAndCountry, postcode ]
-			.filter( Boolean )
-			.join( ', ' );
+		if ( isAddressFilled ) {
+			description = [ address, address2, city, stateAndCountry, postcode ]
+				.filter( Boolean )
+				.join( ', ' );
+		} else {
+			appearance = {
+				title: (
+					<>
+						{ /* <GridiconNotice className="gla-store-address__notice-icon" /> */ }
+						<Icon
+							icon={ warning }
+							size={ 24 }
+							className="gla-store-address__notice-icon"
+						/>
+						{ __(
+							'Please add your store address',
+							'google-listings-and-ads'
+						) }
+					</>
+				),
+			};
+			description = (
+				<span className="gla-store-address__notice-details">
+					{ __(
+						'Google requires the store address for all stores using Google Merchant Center. ',
+						'google-listings-and-ads'
+					) }
+					{ learnMore }
+				</span>
+			);
+		}
 	} else {
 		description = <span className="gla-store-address__placeholder"></span>;
 	}
 
 	return (
 		<AccountCard
-			appearance={ APPEARANCE.ADDRESS }
+			appearance={ appearance }
 			className="gla-store-address"
 			description={ description }
 			hideIcon
