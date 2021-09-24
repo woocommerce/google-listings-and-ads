@@ -2,3 +2,20 @@
 @import "node_modules/@wordpress/base-styles/mixins";
 
 // Add other mixins or adjustments we want below
+
+// Adds animation to placeholder section
+// Copied from WC-admin
+// https://github.com/woocommerce/woocommerce-admin/blob/9f68059c7df466ee7a559c555bcb5a7b9e421e6d/packages/style-build/abstracts/_mixins.scss#L22-L35
+@mixin placeholder( $lighten-percentage: 30% ) {
+	animation: loading-fade 1.6s ease-in-out infinite;
+	background-color: $gray-100;
+	color: transparent;
+
+	&::after {
+		content: "\00a0";
+	}
+
+	@media screen and ( prefers-reduced-motion: reduce ) {
+		animation: none;
+	}
+}
