@@ -63,6 +63,41 @@ class ActionSchedulerJobMonitor implements Service {
 	}
 
 	/**
+	 * Calls a function if the job has failed due to timeout.
+	 *
+	 * @param callable $callback The function to be called on job timeout.
+	 * @param array    $args     The parameters to be passed to the function, as an indexed array.
+	 *
+	 * @since x.x.x
+	 */
+	public function monitor_timeout( callable $callback, array $args = [] ) {
+		register_shutdown_function(
+			function () use ( $callback, $args ) {
+				$error = error_get_last();
+				if ( ! empty( $error ) && $this->is_timeout_error( $error ) ) {
+					call_user_func_array( $callback, $args );
+				}
+			}
+		);
+	}
+
+	/**
+	 * Determines whether the given error is an execution "timeout" error.
+	 *
+	 * @param array $error An associative array describing the error with keys "type", "message", "file" and "line".
+	 *
+	 * @return bool
+	 *
+	 * @link https://www.php.net/manual/en/function.error-get-last.php
+	 *
+	 * @since x.x.x
+	 */
+	protected function is_timeout_error( array $error ): bool {
+		return isset( $error['type'] ) && $error['type'] === E_ERROR &&
+			   isset( $error['message'] ) && strpos( $error ['message'], 'Maximum execution time' ) !== false;
+	}
+
+	/**
 	 * Get the job failure rate threshold (per timeframe).
 	 *
 	 * @return int

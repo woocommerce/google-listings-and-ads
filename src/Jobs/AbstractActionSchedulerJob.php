@@ -72,6 +72,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 */
 	public function handle_process_items_action( array $items ) {
 		$this->monitor->validate_failure_rate( $this, $this->get_process_item_hook(), [ $items ] );
+		$this->monitor->monitor_timeout( [ $this, 'schedule' ], [ [ $items ] ] );
 
 		try {
 			$this->process_items( $items );
