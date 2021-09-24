@@ -7,7 +7,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { getEditPhoneNumberUrl } from '.~/utils/urls';
+import { getEditPhoneNumberUrl, getEditStoreAddressUrl } from '.~/utils/urls';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import Section from '.~/wcdl/section';
@@ -15,7 +15,9 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import SpinnerCard from '.~/components/spinner-card';
 import PhoneNumberCard from './phone-number-card';
-import StoreAddressCard from './store-address-card';
+import StoreAddressCard, {
+	StoreAddressCardPreview,
+} from './store-address-card';
 import NoContactInformationCard from './no-contact-information-card';
 import usePhoneNumberCheckTrackEventEffect from './usePhoneNumberCheckTrackEventEffect';
 
@@ -55,7 +57,9 @@ export function ContactInformationPreview() {
 						phoneNumber={ phone }
 						onEditClick={ handleEditClick }
 					/>
-					<StoreAddressCard isPreview />
+					<StoreAddressCardPreview
+						href={ getEditStoreAddressUrl() }
+					/>
 				</VerticalGapLayout>
 			);
 		} else {

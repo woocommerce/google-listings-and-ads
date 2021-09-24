@@ -32,11 +32,9 @@ import './store-address-card.scss';
  *
  * @fires gla_edit_mc_store_address Whenever "Edit in Settings" is clicked.
  *
- * @param {Object} props React props
- * @param {boolean} props.isPreview Is that a short preview or more formatted view?
  * @return {JSX.Element} Filled AccountCard component.
  */
-export default function StoreAddressCard( { isPreview } ) {
+export default function StoreAddressCard() {
 	const { loaded, data, refetch } = useStoreAddress();
 	const { subpath } = getQuery();
 	const editButton = (
@@ -56,34 +54,26 @@ export default function StoreAddressCard( { isPreview } ) {
 	let addressContent;
 	let description = '';
 
-	if ( ! isPreview ) {
-		description = __(
-			'Please confirm your store address for verification.',
-			'google-listings-and-ads'
-		);
-	}
+	description = __(
+		'Please confirm your store address for verification.',
+		'google-listings-and-ads'
+	);
 
 	if ( loaded ) {
 		const { address, address2, city, state, country, postcode } = data;
 		const stateAndCountry = state ? `${ state } - ${ country }` : country;
 
-		if ( isPreview ) {
-			description = [ address, address2, city, stateAndCountry, postcode ]
-				.filter( Boolean )
-				.join( ', ' );
-		} else {
-			const rest = [ city, stateAndCountry, postcode ]
-				.filter( Boolean )
-				.join( ', ' );
+		const rest = [ city, stateAndCountry, postcode ]
+			.filter( Boolean )
+			.join( ', ' );
 
-			addressContent = (
-				<div>
-					<div>{ address }</div>
-					{ address2 && <div>{ address2 }</div> }
-					<div>{ rest }</div>
-				</div>
-			);
-		}
+		addressContent = (
+			<div>
+				<div>{ address }</div>
+				{ address2 && <div>{ address2 }</div> }
+				<div>{ rest }</div>
+			</div>
+		);
 	} else {
 		addressContent = <Spinner />;
 	}
@@ -92,27 +82,71 @@ export default function StoreAddressCard( { isPreview } ) {
 		<AccountCard
 			appearance={ APPEARANCE.ADDRESS }
 			description={ description }
-			hideIcon={ isPreview }
 			indicator={ editButton }
 		>
-			{ ! isPreview && (
-				<>
-					<CardDivider />
-					<Section.Card.Body>
-						<Subsection.Title>
-							{ __( 'Store address', 'google-listings-and-ads' ) }
-							<AppButton
-								className="gla-store-address__refresh-button"
-								icon={ GridiconRefresh }
-								iconSize={ 16 }
-								onClick={ refetch }
-								disabled={ ! loaded }
-							/>
-						</Subsection.Title>
-						{ addressContent }
-					</Section.Card.Body>
-				</>
-			) }
+			<CardDivider />
+			<Section.Card.Body>
+				<Subsection.Title>
+					{ __( 'Store address', 'google-listings-and-ads' ) }
+					<AppButton
+						className="gla-store-address__refresh-button"
+						icon={ GridiconRefresh }
+						iconSize={ 16 }
+						onClick={ refetch }
+						disabled={ ! loaded }
+					/>
+				</Subsection.Title>
+				{ addressContent }
+			</Section.Card.Body>
 		</AccountCard>
+	);
+}
+
+/**
+ * Renders a component with a given store address.
+ * In preview mode, meaning there will be no refresh button, just the edit link.
+ *
+ * @fires gla_edit_mc_store_address Whenever "Edit" is clicked.
+ *
+ * @param {Object} props React props
+ * @param {string} props.href URL where Edit button should point to.
+ * @return {JSX.Element} Filled AccountCard component.
+ */
+export function StoreAddressCardPreview( { href } ) {
+	const { loaded, data } = useStoreAddress();
+	const { subpath } = getQuery();
+	const editButton = (
+		<AppButton
+			isSecondary
+			iconSize={ 16 }
+			iconPosition="right"
+			target="_blank"
+			href={ href }
+			text={ __( 'Edit', 'google-listings-and-ads' ) }
+			eventName="gla_edit_mc_store_address"
+			eventProps={ { path: getPath(), subpath } }
+		/>
+	);
+	let description = '';
+
+	if ( loaded ) {
+		const { address, address2, city, state, country, postcode } = data;
+		const stateAndCountry = state ? `${ state } - ${ country }` : country;
+
+		description = [ address, address2, city, stateAndCountry, postcode ]
+			.filter( Boolean )
+			.join( ', ' );
+	} else {
+		description = <span className="gla-store-address__placeholder"></span>;
+	}
+
+	return (
+		<AccountCard
+			appearance={ APPEARANCE.ADDRESS }
+			className="gla-store-address"
+			description={ description }
+			hideIcon
+			indicator={ editButton }
+		></AccountCard>
 	);
 }
