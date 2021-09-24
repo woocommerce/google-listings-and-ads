@@ -74,7 +74,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @return int
 	 */
 	protected function get_failure_timeframe(): int {
-		return absint( apply_filters( 'woocommerce_gla_job_failure_timeframe', HOUR_IN_SECONDS ) );
+		return absint( apply_filters( 'woocommerce_gla_job_failure_timeframe', 2 * HOUR_IN_SECONDS ) );
 	}
 
 }
