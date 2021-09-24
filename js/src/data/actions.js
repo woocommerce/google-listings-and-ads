@@ -524,26 +524,13 @@ export function receiveGoogleMCContactInformation( data ) {
 
 /**
  * Update the contact information to user's account of Google Merchant Center.
- * The phone number will be updated only if `countryCallingCode` and `nationalNumber` are not falsy.
- *
- * @param {string} [countryCallingCode] The country calling code. Example: '1'.
- * @param {string} [nationalNumber] The national (significant) number. Example: '2133734253'.
+ * It will update the store address of WooCommerce Settings to Google Merchant Center if they are different.
  */
-export function* updateGoogleMCContactInformation(
-	countryCallingCode,
-	nationalNumber
-) {
-	const data = {};
-
-	if ( countryCallingCode && nationalNumber ) {
-		data.phone_number = `+${ countryCallingCode }${ nationalNumber }`;
-	}
-
+export function* updateGoogleMCContactInformation() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/contact-information`,
 			method: 'POST',
-			data,
 		} );
 
 		yield receiveGoogleMCContactInformation( response );
