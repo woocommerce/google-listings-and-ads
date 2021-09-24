@@ -48,7 +48,7 @@ class ActionSchedulerJobMonitor implements Service {
 				'hook'         => $job->get_process_item_hook(),
 				'status'       => $this->action_scheduler::STATUS_FAILED,
 				'per_page'     => $this->get_failure_rate_threshold(),
-				'date'         => gmdate( 'U' ) - HOUR_IN_SECONDS,
+				'date'         => gmdate( 'U' ) - $this->get_failure_timeframe(),
 				'date_compare' => '>',
 			],
 			'ids'
@@ -60,12 +60,21 @@ class ActionSchedulerJobMonitor implements Service {
 	}
 
 	/**
-	 * Get the batched job failure rate threshold (per hour).
+	 * Get the job failure rate threshold (per timeframe).
 	 *
 	 * @return int
 	 */
 	protected function get_failure_rate_threshold(): int {
 		return absint( apply_filters( 'woocommerce_gla_job_failure_rate_threshold', 3 ) );
+	}
+
+	/**
+	 * Get the job failure timeframe (in seconds).
+	 *
+	 * @return int
+	 */
+	protected function get_failure_timeframe(): int {
+		return absint( apply_filters( 'woocommerce_gla_job_failure_timeframe', HOUR_IN_SECONDS ) );
 	}
 
 }
