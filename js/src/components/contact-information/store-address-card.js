@@ -120,7 +120,6 @@ export function StoreAddressCardPreview( { href } ) {
 			isSecondary
 			iconSize={ 16 }
 			iconPosition="right"
-			target="_blank"
 			href={ href }
 			text={ __( 'Edit', 'google-listings-and-ads' ) }
 			eventName="gla_edit_mc_store_address"
