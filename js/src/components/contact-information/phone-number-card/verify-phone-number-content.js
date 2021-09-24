@@ -100,14 +100,14 @@ const appearanceDict = {
  * @param {string} props.country The country code. Example: 'US'.
  * @param {string} props.number The phone number string in E.164 format. Example: '+12133734253'.
  * @param {string} props.display The phone number string in international format. Example: '+1 213 373 4253'.
- * @param {Function} props.onPhoneNumberVerified Called when the phone number is verified.
+ * @param {(isVerifying: boolean, isVerified: boolean) => void} props.onVerificationStateChange Called when the verification state is changed.
  */
 export default function VerifyPhoneNumberContent( {
 	verificationMethod,
 	country,
 	number,
 	display,
-	onPhoneNumberVerified,
+	onVerificationStateChange,
 } ) {
 	const isMounted = useIsMounted();
 	const [ method, setMethod ] = useState( verificationMethod );
@@ -146,17 +146,19 @@ export default function VerifyPhoneNumberContent( {
 	const handleVerifyClick = () => {
 		setError( null );
 		setVerifying( true );
+		onVerificationStateChange( true, false );
 
 		const id = verificationIdRef.current[ method ];
 		verifyPhoneNumber( id, verification.code, method )
 			.then( () => {
-				onPhoneNumberVerified();
+				onVerificationStateChange( false, true );
 			} )
 			.catch( ( e ) => {
 				// TODO: [full-contact-info] align to the real error data structure.
 				if ( isMounted() ) {
 					setError( e );
 					setVerifying( false );
+					onVerificationStateChange( false, false );
 				}
 			} );
 	};

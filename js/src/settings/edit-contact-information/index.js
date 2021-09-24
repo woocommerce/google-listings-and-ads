@@ -24,33 +24,21 @@ export default function EditContactInformation() {
 	const { data: address } = useStoreAddress();
 	const [ isSaving, setSaving ] = useState( false );
 
-	// The initial `isValid: true` is to avoid blocking the submission when only the store address is changed.
-	// And the prevention of saving invalid phone number can be checked by initial `isDirty: false`.
-	const [ phoneNumber, setPhoneNumber ] = useState( {
-		isValid: true,
-		isDirty: false,
-	} );
-
 	const handleSaveClick = () => {
-		const { isDirty, countryCallingCode, nationalNumber } = phoneNumber;
-		const args = isDirty ? [ countryCallingCode, nationalNumber ] : [];
-
 		setSaving( true );
-		updateGoogleMCContactInformation( ...args )
+		updateGoogleMCContactInformation()
 			.then( () => getHistory().push( getSettingsUrl() ) )
 			.catch( () => setSaving( false ) );
 	};
 
 	const isReadyToSave =
-		phoneNumber.isValid &&
-		address.isAddressFilled &&
-		( phoneNumber.isDirty || address.isMCAddressDifferent );
+		address.isAddressFilled && address.isMCAddressDifferent;
 
 	return (
 		<FullContainer>
 			<TopBar
 				title={ __(
-					'Add contact information',
+					'Edit contact information',
 					'google-listings-and-ads'
 				) }
 				helpButton={
@@ -59,10 +47,7 @@ export default function EditContactInformation() {
 				backHref={ getSettingsUrl() }
 			/>
 			<div className="gla-settings">
-				<ContactInformation
-					view="settings"
-					onPhoneNumberChange={ setPhoneNumber }
-				/>
+				<ContactInformation view="settings" />
 				<Section>
 					<Flex justify="flex-end">
 						<AppButton

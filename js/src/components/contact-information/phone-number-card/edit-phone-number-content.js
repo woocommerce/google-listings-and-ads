@@ -1,21 +1,21 @@
 /**
  * External dependencies
  */
-import {
-	getCountryCallingCode,
-	parsePhoneNumberFromString as parsePhoneNumber,
-} from 'libphonenumber-js';
+import { parsePhoneNumberFromString as parsePhoneNumber } from 'libphonenumber-js';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
-import { Flex, FlexItem, FlexBlock } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
+import { Flex, FlexItem, FlexBlock, RadioControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import useCountryCallingCodeOptions from '.~/hooks/useCountryCallingCodeOptions';
 import Section from '.~/wcdl/section';
+import Subsection from '.~/wcdl/subsection';
 import SelectControl from '.~/wcdl/select-control';
 import AppInputControl from '.~/components/app-input-control';
+import AppButton from '.~/components/app-button';
+import { VERIFICATION_METHOD } from './constants';
 
 /**
  * @typedef { import(".~/hooks/useGoogleMCPhoneNumber").PhoneNumberData } PhoneNumberData
@@ -23,15 +23,28 @@ import AppInputControl from '.~/components/app-input-control';
 
 /**
  * @typedef {Object} ExtraPhoneNumberData
- * @property {boolean} isDirty Whether the phone number data contain unsaved changes.
+ * @property {string} number The phone number string in E.164 format. Example: '+12133734253'. Available if the input data is parsable.
+ * @property {string} display The phone number string in international format. Example: '+1 213 373 4253'.
+ * @property {string} verificationMethod Selected verification method.
  *
  * @typedef {PhoneNumberData & ExtraPhoneNumberData} CallbackPhoneNumberData
  */
 
 /**
- * @callback onPhoneNumberChange
+ * @callback onSendVerificationCodeClick
  * @param {CallbackPhoneNumberData} phoneNumberData The changed phone number data.
  */
+
+const verificationOptions = [
+	{
+		label: __( 'Text message', 'google-listings-and-ads' ),
+		value: VERIFICATION_METHOD.SMS,
+	},
+	{
+		label: __( 'Phone call', 'google-listings-and-ads' ),
+		value: VERIFICATION_METHOD.PHONE_CALL,
+	},
+];
 
 /**
  * Renders inputs for editing phone number in Card.Body UI.
@@ -39,58 +52,44 @@ import AppInputControl from '.~/components/app-input-control';
  * @param {Object} props React props.
  * @param {string} props.initCountry The initial country code for the country selection. Example: 'US'.
  * @param {string} props.initNationalNumber The initial national (significant) number for its input field. Example: '2133734253'.
- * @param {onPhoneNumberChange} props.onPhoneNumberChange Called when inputs of phone number are changed.
+ * @param {onSendVerificationCodeClick} props.onSendVerificationCodeClick Called when clicking on the "Send verification code" button.
  */
 export default function EditPhoneNumberContent( {
 	initCountry,
 	initNationalNumber,
-	onPhoneNumberChange,
+	onSendVerificationCodeClick,
 } ) {
 	const countryCallingCodeOptions = useCountryCallingCodeOptions();
 	const [ country, setCountry ] = useState( initCountry );
 	const [ number, setNumber ] = useState( initNationalNumber );
+	const [ verificationMethod, setVerificationMethod ] = useState(
+		VERIFICATION_METHOD.SMS
+	);
+	const [ phoneNumber, setPhoneNumber ] = useState( null );
 
-	const handleChange = ( nextCountry, nextNumber ) => {
-		setCountry( nextCountry );
-		setNumber( nextNumber );
-
-		const parsed = parsePhoneNumber( nextNumber, nextCountry );
+	useEffect( () => {
+		const parsed = parsePhoneNumber( number, country );
 		const isValid = parsed ? parsed.isValid() : false;
 
 		if ( parsed ) {
-			const isDirty =
-				nextCountry !== initCountry ||
-				parsed.nationalNumber !== initNationalNumber;
-
-			onPhoneNumberChange( {
+			setPhoneNumber( {
 				...parsed,
 				isValid,
-				isDirty,
+				display: parsed.formatInternational(),
+				verificationMethod,
 			} );
 		} else {
-			const isDirty =
-				nextCountry !== initCountry ||
-				nextNumber !== initNationalNumber;
-
-			const countryCallingCode = nextCountry
-				? getCountryCallingCode( nextCountry )
-				: '';
-
-			onPhoneNumberChange( {
+			setPhoneNumber( {
 				isValid,
-				isDirty,
-				countryCallingCode,
-				nationalNumber: nextNumber,
-				country: nextCountry,
+				country,
+				number: '',
+				display: '',
+				verificationMethod,
 			} );
 		}
-	};
+	}, [ number, country, verificationMethod ] );
 
-	const handleCountryChange = ( nextCountry ) =>
-		handleChange( nextCountry, number );
-
-	const handleNumberChange = ( nextNumber ) =>
-		handleChange( country, nextNumber );
+	const onSendClick = () => onSendVerificationCodeClick( phoneNumber );
 
 	return (
 		<Section.Card.Body>
@@ -105,7 +104,7 @@ export default function EditPhoneNumberContent( {
 						excludeSelectedOptions={ false }
 						options={ countryCallingCodeOptions }
 						selected={ country }
-						onChange={ handleCountryChange }
+						onChange={ setCountry }
 					/>
 				</FlexItem>
 				<FlexBlock>
@@ -115,10 +114,34 @@ export default function EditPhoneNumberContent( {
 							'google-listings-and-ads'
 						) }
 						value={ number }
-						onChange={ handleNumberChange }
+						onChange={ setNumber }
 					/>
 				</FlexBlock>
 			</Flex>
+			<Subsection>
+				<Subsection.Title>
+					{ __(
+						'Select verification method',
+						'google-listings-and-ads'
+					) }
+				</Subsection.Title>
+				<RadioControl
+					selected={ verificationMethod }
+					options={ verificationOptions }
+					onChange={ setVerificationMethod }
+				/>
+			</Subsection>
+			<Subsection>
+				<AppButton
+					isSecondary
+					disabled={ ! phoneNumber?.isValid }
+					text={ __(
+						'Send verification code',
+						'google-listings-and-ads'
+					) }
+					onClick={ onSendClick }
+				/>
+			</Subsection>
 		</Section.Card.Body>
 	);
 }
