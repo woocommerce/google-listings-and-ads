@@ -19,7 +19,7 @@ import Section from '.~/wcdl/section';
 import AppButton from '.~/components/app-button';
 import ContactInformation from '.~/components/contact-information';
 
-export default function EditContactInformation() {
+export default function EditStoreAddress() {
 	const { updateGoogleMCContactInformation } = useAppDispatch();
 	const { data: address } = useStoreAddress();
 	const [ isSaving, setSaving ] = useState( false );
@@ -37,12 +37,9 @@ export default function EditContactInformation() {
 	return (
 		<FullContainer>
 			<TopBar
-				title={ __(
-					'Edit contact information',
-					'google-listings-and-ads'
-				) }
+				title={ __( 'Edit store address', 'google-listings-and-ads' ) }
 				helpButton={
-					<HelpIconButton eventContext="edit-contact-information" />
+					<HelpIconButton eventContext="edit-store-address" />
 				}
 				backHref={ getSettingsUrl() }
 			/>

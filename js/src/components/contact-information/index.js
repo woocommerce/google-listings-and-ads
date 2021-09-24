@@ -7,7 +7,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { getEditContactInformationUrl } from '.~/utils/urls';
+import { getEditPhoneNumberUrl } from '.~/utils/urls';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import Section from '.~/wcdl/section';
@@ -40,7 +40,7 @@ export function ContactInformationPreview() {
 	const address = useStoreAddress( 'mc' );
 
 	const handleEditClick = () => {
-		getHistory().push( getEditContactInformationUrl() );
+		getHistory().push( getEditPhoneNumberUrl() );
 	};
 
 	let sectionContent = <SpinnerCard />;

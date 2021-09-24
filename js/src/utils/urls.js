@@ -11,6 +11,8 @@ export const subpaths = {
 	editCampaign: '/campaigns/edit',
 	createCampaign: '/campaigns/create',
 	editContactInformation: '/edit-contact-information',
+	editPhoneNumber: '/edit-phone-number',
+	editStoreAddress: '/edit-store-address',
 	reconnectAccounts: '/reconnect-accounts',
 };
 
@@ -40,6 +42,21 @@ export const getSettingsUrl = () => {
 export const getEditContactInformationUrl = () => {
 	return getNewPath(
 		{ subpath: subpaths.editContactInformation },
+		settingsPath,
+		null
+	);
+};
+
+export const getEditPhoneNumberUrl = () => {
+	return getNewPath(
+		{ subpath: subpaths.editPhoneNumber },
+		settingsPath,
+		null
+	);
+};
+export const getEditStoreAddressUrl = () => {
+	return getNewPath(
+		{ subpath: subpaths.editStoreAddress },
 		settingsPath,
 		null
 	);
