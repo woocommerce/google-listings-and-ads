@@ -53,7 +53,7 @@ const appearanceDict = {
  *
  * @param {Object} props React props.
  * @param {string} [props.className] Additional CSS class name to be appended.
- * @param {APPEARANCE} props.appearance Kind of account to indicate the card appearance.
+ * @param {APPEARANCE | {icon, title}} props.appearance Kind of account to indicate the card appearance, or a tuple with icon and title to be used.
  * @param {JSX.Element} props.description Content below the card title.
  * @param {boolean} [props.hideIcon=false] Whether hide the leading icon.
  * @param {JSX.Element} [props.indicator] Indicator of actions or status on the right side of the card.
@@ -67,7 +67,10 @@ export default function AccountCard( {
 	indicator,
 	children,
 } ) {
-	const { icon, title } = appearanceDict[ appearance ];
+	const { icon, title } =
+		typeof appearance === 'object'
+			? appearance
+			: appearanceDict[ appearance ];
 
 	return (
 		<Section.Card className={ classnames( 'gla-account-card', className ) }>
