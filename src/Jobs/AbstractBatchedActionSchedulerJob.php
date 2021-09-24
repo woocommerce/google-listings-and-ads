@@ -138,7 +138,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * @return bool
 	 */
-	protected function is_running( $args = [] ): bool {
+	protected function is_running( ?array $args = [] ): bool {
 		return $this->action_scheduler->has_scheduled_action( $this->get_create_batch_hook(), $args );
 	}
 
