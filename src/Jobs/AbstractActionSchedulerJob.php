@@ -71,7 +71,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 * @throws Exception If an error occurs.
 	 */
 	public function handle_process_items_action( array $items ) {
-		$this->monitor->validate_failure_rate( $this );
+		$this->monitor->validate_failure_rate( $this, $this->get_process_item_hook(), [ $items ] );
 
 		try {
 			$this->process_items( $items );

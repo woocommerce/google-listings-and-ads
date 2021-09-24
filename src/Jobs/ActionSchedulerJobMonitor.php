@@ -39,13 +39,16 @@ class ActionSchedulerJobMonitor implements Service {
 	 * By default, a job is stopped if it has 5 failures in the last hour.
 	 *
 	 * @param ActionSchedulerJobInterface $job
+	 * @param string                      $hook The job action hook.
+	 * @param array|null                  $args The job arguments.
 	 *
 	 * @throws JobException If the job's error rate is above the threshold.
 	 */
-	public function validate_failure_rate( ActionSchedulerJobInterface $job ) {
+	public function validate_failure_rate( ActionSchedulerJobInterface $job, string $hook, ?array $args = null ) {
 		$failed_actions = $this->action_scheduler->search(
 			[
-				'hook'         => $job->get_process_item_hook(),
+				'hook'         => $hook,
+				'args'         => $args,
 				'status'       => $this->action_scheduler::STATUS_FAILED,
 				'per_page'     => $this->get_failure_rate_threshold(),
 				'date'         => gmdate( 'U' ) - $this->get_failure_timeframe(),

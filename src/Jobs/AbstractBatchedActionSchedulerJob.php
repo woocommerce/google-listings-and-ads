@@ -64,7 +64,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * @throws JobException If the job failure rate is too high.
 	 */
 	public function handle_create_batch_action( int $batch_number ) {
-		$this->monitor->validate_failure_rate( $this );
+		$this->monitor->validate_failure_rate( $this, $this->get_create_batch_hook(), [ $batch_number ] );
 
 		$items = $this->get_batch( $batch_number );
 
