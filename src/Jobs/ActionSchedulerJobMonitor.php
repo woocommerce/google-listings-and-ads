@@ -65,7 +65,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @return int
 	 */
 	protected function get_failure_rate_threshold(): int {
-		return absint( apply_filters( 'woocommerce_gla/batched_job_monitor/failure_rate_threshold', 5 ) );
+		return absint( apply_filters( 'woocommerce_gla_job_failure_rate_threshold', 5 ) );
 	}
 
 }
