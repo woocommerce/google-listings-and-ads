@@ -298,7 +298,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$gallery_image_links = array_unique( $gallery_image_links, SORT_REGULAR );
 		
 		// Limit addtional image link up to 10
-		$gallery_image_links = array_slice( $gallery_image_links, 0, 10);
+		$gallery_image_links = array_slice( $gallery_image_links, 0, 10 );
 		
 		$this->setAdditionalImageLinks( $gallery_image_links );
 
