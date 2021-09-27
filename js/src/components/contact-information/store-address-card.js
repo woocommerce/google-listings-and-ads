@@ -114,12 +114,13 @@ export default function StoreAddressCard() {
  * @return {JSX.Element} Filled AccountCard component.
  */
 export function StoreAddressCardPreview( { editHref, learnMore } ) {
-	const { loaded, data } = useStoreAddress();
+	const { loaded, data } = useStoreAddress( 'mc' );
 	let content, warning;
 
 	if ( loaded ) {
 		const {
 			isAddressFilled,
+			isMCAddressDifferent,
 			address,
 			address2,
 			city,
@@ -129,7 +130,7 @@ export function StoreAddressCardPreview( { editHref, learnMore } ) {
 		} = data;
 		const stateAndCountry = state ? `${ state } - ${ country }` : country;
 
-		if ( isAddressFilled ) {
+		if ( isAddressFilled && ! isMCAddressDifferent ) {
 			content = [ address, address2, city, stateAndCountry, postcode ]
 				.filter( Boolean )
 				.join( ', ' );
