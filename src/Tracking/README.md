@@ -69,8 +69,13 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `edit_mc_store_address` - Trigger when store address edit button is clicked.
 
-    - `path`: The path used in the page, e.g. `"/google/settings"`.
-    - `subpath`: The subpath used in the page, e.g. `"/edit-contact-information"` or `undefined` when there is no subpath.
+    -   `path`: The path used in the page, e.g. `"/google/settings"`.
+    -   `subpath`: The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
+
+-   `edit_mc_phone_number` - Trigger when phone number edit button is clicked.
+
+    -   `path`: The path used in the page, e.g. `"/google/settings"`.
+    -   `subpath`: The subpath used in the page, or `undefined` when there is no subpath.
 
 -   `edit_product_click` - Trigger when edit links are clicked from product feed table
 
