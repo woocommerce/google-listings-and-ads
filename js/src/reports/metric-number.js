@@ -47,7 +47,7 @@ const MetricNumber = ( {
 	data: { value, prevValue, delta, missingFreeListingsData },
 } ) => {
 	const storeCurrencyConfig = useStoreCurrency();
-	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
+	const { adsCurrencyConfig } = useAdsCurrencyConfig();
 	const valueProps = useMemo( () => {
 		return {
 			value: metric.formatFn(

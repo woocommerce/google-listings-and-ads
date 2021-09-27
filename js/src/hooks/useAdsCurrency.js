@@ -31,13 +31,13 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
  *
  * @see useStoreCurrency
  *
- * @return {{currencyConfig: Object, hasFinishedResolution: boolean | undefined}} The currency object.
+ * @return {{adsCurrencyConfig: Object, hasFinishedResolution: boolean | undefined}} The currency object.
  */
 export const useAdsCurrencyConfig = () => {
 	const storeCurrencySetting = useStoreCurrency();
 	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
-	const currencyConfig = useMemo( () => {
+	const adsCurrencyConfig = useMemo( () => {
 		// Apply store's foramtting data without the Ad's currency.
 		if ( googleAdsAccount && googleAdsAccount.currency ) {
 			return {
@@ -56,7 +56,7 @@ export const useAdsCurrencyConfig = () => {
 	}, [ storeCurrencySetting, googleAdsAccount ] );
 
 	return {
-		currencyConfig,
+		adsCurrencyConfig,
 		hasFinishedResolution,
 	};
 };

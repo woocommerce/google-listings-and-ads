@@ -59,7 +59,7 @@ const PaidPerformanceCard = () => {
 	// Spend amount is given in the Ads' currency, but Total Sales is in store's currency.
 	// We use codes to make sure it's nonambiguous.
 	// Use just `useAdsCurrency`'s/`getCurrencyConfig`'s  `formatAmount`s once https://github.com/woocommerce/woocommerce-admin/pull/7575 is released and accessible.
-	const { currencyConfig: adsCurrency } = useAdsCurrencyConfig();
+	const { adsCurrencyConfig } = useAdsCurrencyConfig();
 	const storeCurrencyConfig = useStoreCurrency();
 	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
@@ -87,11 +87,11 @@ const PaidPerformanceCard = () => {
 					key="2"
 					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
 					value={ formatAmountWithCode(
-						adsCurrency,
+						adsCurrencyConfig,
 						loadedData.spend.value
 					) }
 					prevValue={ formatAmountWithCode(
-						adsCurrency,
+						adsCurrencyConfig,
 						loadedData.spend.prevValue
 					) }
 					delta={ loadedData.spend.delta }

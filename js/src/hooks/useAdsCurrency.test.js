@@ -30,7 +30,7 @@ jest.mock( './useStoreCurrency', () => ( {
 } ) );
 
 describe( 'useAdsCurrencyConfig', () => {
-	test( 'initially should return `{ currencyConfig: Object, hasFinishedResolution: undefined }`', () => {
+	test( 'initially should return `{ adsCurrencyConfig: Object, hasFinishedResolution: undefined }`', () => {
 		const { result } = renderHook( () => useAdsCurrencyConfig() );
 
 		// assert initial state
@@ -38,8 +38,8 @@ describe( 'useAdsCurrencyConfig', () => {
 			'hasFinishedResolution',
 			undefined
 		);
-		expect( result.current ).toHaveProperty( 'currencyConfig' );
-		expect( result.current.currencyConfig ).toEqual(
+		expect( result.current ).toHaveProperty( 'adsCurrencyConfig' );
+		expect( result.current.adsCurrencyConfig ).toEqual(
 			expect.objectContaining( {
 				code: expect.any( String ),
 				precision: expect.any( Number ),
@@ -52,15 +52,15 @@ describe( 'useAdsCurrencyConfig', () => {
 		);
 	} );
 
-	test( "initially should return store's currencyConfig w/ `code` and `symbol` set to empty", () => {
+	test( "initially should return store's currency config w/ `code` and `symbol` set to empty", () => {
 		const { result } = renderHook( () => useAdsCurrencyConfig() );
 		const {
 			result: { current: storesCurrencyConfig },
 		} = renderHook( () => useStoreCurrency() );
 
 		// assert initial state
-		expect( result.current ).toHaveProperty( 'currencyConfig' );
-		expect( result.current.currencyConfig ).toEqual( {
+		expect( result.current ).toHaveProperty( 'adsCurrencyConfig' );
+		expect( result.current.adsCurrencyConfig ).toEqual( {
 			...storesCurrencyConfig,
 			code: '',
 			symbol: '',
@@ -107,7 +107,7 @@ describe( 'useAdsCurrencyConfig', () => {
 			);
 		} );
 
-		test( 'should return currencyConfig with Ads account code and symbol', async () => {
+		test( 'should return currency config with Ads account code and symbol', async () => {
 			const { result, waitFor } = renderHook( () =>
 				useAdsCurrencyConfig()
 			);
@@ -116,11 +116,11 @@ describe( 'useAdsCurrencyConfig', () => {
 			// expect( result.current.hasFinishedResolution ).toEqual( undefined );
 			// Unfortunately, tests are not atomic, as the state is perserved between them.
 
-			const initialConfig = result.current.currencyConfig;
+			const initialConfig = result.current.adsCurrencyConfig;
 
 			// Assert eventual value.
 			await waitFor( () =>
-				expect( result.current.currencyConfig ).toEqual( {
+				expect( result.current.adsCurrencyConfig ).toEqual( {
 					...initialConfig,
 					code: adsAccountData.currency,
 					symbol: adsAccountData.symbol,

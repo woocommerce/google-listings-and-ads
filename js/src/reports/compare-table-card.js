@@ -44,7 +44,7 @@ const CompareTableCard = ( {
 	nameCell,
 	...restProps
 } ) => {
-	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
+	const { adsCurrencyConfig } = useAdsCurrencyConfig();
 	const storeCurrencyConfig = useStoreCurrency();
 	const query = useUrlQuery();
 

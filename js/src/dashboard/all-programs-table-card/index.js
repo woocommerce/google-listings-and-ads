@@ -56,7 +56,7 @@ const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 	// Budget is given in the currency that is used by Google Ads, which may differ from the current store's currency.
 	// We will still use the store's currency **formatting** settings.
-	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
+	const { adsCurrencyConfig } = useAdsCurrencyConfig();
 	const {
 		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();

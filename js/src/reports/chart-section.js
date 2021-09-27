@@ -28,7 +28,7 @@ const emptyMessage = __(
  */
 export default function ChartSection( { metrics, loaded, intervals } ) {
 	const query = useUrlQuery();
-	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
+	const { adsCurrencyConfig } = useAdsCurrencyConfig();
 	const storeCurrencyConfig = useStoreCurrency();
 
 	const { selectedMetric } = query;
