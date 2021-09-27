@@ -10,7 +10,6 @@ export const subpaths = {
 	editFreeListings: '/free-listings/edit',
 	editCampaign: '/campaigns/edit',
 	createCampaign: '/campaigns/create',
-	editContactInformation: '/edit-contact-information',
 	editPhoneNumber: '/edit-phone-number',
 	editStoreAddress: '/edit-store-address',
 	reconnectAccounts: '/reconnect-accounts',
@@ -37,14 +36,6 @@ export const getDashboardUrl = () => {
 
 export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
-};
-
-export const getEditContactInformationUrl = () => {
-	return getNewPath(
-		{ subpath: subpaths.editContactInformation },
-		settingsPath,
-		null
-	);
 };
 
 export const getEditPhoneNumberUrl = () => {
