@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,7 +11,7 @@ import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import PhoneNumberCard from './phone-number-card';
+import PhoneNumberCard, { PhoneNumberCardPreview } from './phone-number-card';
 import StoreAddressCard, {
 	StoreAddressCardPreview,
 } from './store-address-card';
@@ -35,20 +34,20 @@ const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
  * or a <NoContactInformationCard> if contact informations are not saved yet.
  */
 export function ContactInformationPreview() {
-	const phone = useGoogleMCPhoneNumber();
-
-	const handleEditClick = () => {
-		getHistory().push( getEditPhoneNumberUrl() );
-	};
-
 	return (
 		<Section title={ settingsTitle } description={ description }>
 			<VerticalGapLayout size="overlap">
-				<PhoneNumberCard
-					view="settings"
-					isPreview
-					phoneNumber={ phone }
-					onEditClick={ handleEditClick }
+				<PhoneNumberCardPreview
+					editHref={ getEditPhoneNumberUrl() }
+					learnMore={
+						<AppDocumentationLink
+							context="settings-no-phone-number-notice"
+							linkId={ learnMoreLinkId }
+							href={ learnMoreUrl }
+						>
+							{ __( 'Learn more', 'google-listings-and-ads' ) }
+						</AppDocumentationLink>
+					}
 				/>
 				<StoreAddressCardPreview
 					editHref={ getEditStoreAddressUrl() }
