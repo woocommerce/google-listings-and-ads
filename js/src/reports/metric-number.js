@@ -49,7 +49,6 @@ const MetricNumber = ( {
 	const storeCurrencyConfig = useStoreCurrency();
 	const { currencyConfig: adsCurrencyConfig } = useAdsCurrencyConfig();
 	const valueProps = useMemo( () => {
-		// debugger
 		return {
 			value: metric.formatFn(
 				value,
