@@ -51,7 +51,7 @@ export function ContactInformationPreview() {
 					onEditClick={ handleEditClick }
 				/>
 				<StoreAddressCardPreview
-					href={ getEditStoreAddressUrl() }
+					editHref={ getEditStoreAddressUrl() }
 					learnMore={
 						<AppDocumentationLink
 							context="settings-no-store-address-notice"

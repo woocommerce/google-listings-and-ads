@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
-import { external as externalIcon, Icon, warning } from '@wordpress/icons';
+import { external as externalIcon } from '@wordpress/icons';
 import GridiconRefresh from 'gridicons/dist/refresh';
 import { getPath, getQuery } from '@woocommerce/navigation';
 
@@ -16,7 +16,7 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
-import './store-address-card.scss';
+import ContactInformationPreviewCard from './contact-information-preview-card';
 
 /**
  * "Edit MC store address" Tracking event
@@ -103,32 +103,19 @@ export default function StoreAddressCard() {
 }
 
 /**
- * Renders a component with a given store address.
+ * Renders a component with the store address.
  * In preview mode, meaning there will be no refresh button, just the edit link.
  *
  * @fires gla_edit_mc_store_address Whenever "Edit" is clicked.
  *
  * @param {Object} props React props
- * @param {string} props.href URL where Edit button should point to.
+ * @param {string} props.editHref URL where Edit button should point to.
  * @param {JSX.Element} props.learnMore Link to be shown at the end of missing data message.
  * @return {JSX.Element} Filled AccountCard component.
  */
-export function StoreAddressCardPreview( { href, learnMore } ) {
+export function StoreAddressCardPreview( { editHref, learnMore } ) {
 	const { loaded, data } = useStoreAddress();
-	const { subpath } = getQuery();
-	const editButton = (
-		<AppButton
-			isSecondary
-			iconSize={ 16 }
-			iconPosition="right"
-			href={ href }
-			text={ __( 'Edit', 'google-listings-and-ads' ) }
-			eventName="gla_edit_mc_store_address"
-			eventProps={ { path: getPath(), subpath } }
-		/>
-	);
-	let description = '';
-	let appearance = APPEARANCE.ADDRESS;
+	let content, warning;
 
 	if ( loaded ) {
 		const {
@@ -143,47 +130,34 @@ export function StoreAddressCardPreview( { href, learnMore } ) {
 		const stateAndCountry = state ? `${ state } - ${ country }` : country;
 
 		if ( isAddressFilled ) {
-			description = [ address, address2, city, stateAndCountry, postcode ]
+			content = [ address, address2, city, stateAndCountry, postcode ]
 				.filter( Boolean )
 				.join( ', ' );
 		} else {
-			appearance = {
-				title: (
-					<>
-						{ /* <GridiconNotice className="gla-store-address__notice-icon" /> */ }
-						<Icon
-							icon={ warning }
-							size={ 24 }
-							className="gla-store-address__notice-icon"
-						/>
-						{ __(
-							'Please add your store address',
-							'google-listings-and-ads'
-						) }
-					</>
-				),
-			};
-			description = (
-				<span className="gla-store-address__notice-details">
+			warning = __(
+				'Please add your store address',
+				'google-listings-and-ads'
+			);
+			content = (
+				<>
 					{ __(
 						'Google requires the store address for all stores using Google Merchant Center. ',
 						'google-listings-and-ads'
 					) }
 					{ learnMore }
-				</span>
+				</>
 			);
 		}
-	} else {
-		description = <span className="gla-store-address__placeholder"></span>;
 	}
 
 	return (
-		<AccountCard
-			appearance={ appearance }
-			className="gla-store-address"
-			description={ description }
-			hideIcon
-			indicator={ editButton }
-		></AccountCard>
+		<ContactInformationPreviewCard
+			appearance={ APPEARANCE.ADDRESS }
+			editHref={ editHref }
+			editEventName="gla_edit_mc_store_address"
+			loading={ ! loaded }
+			warning={ warning }
+			content={ content }
+		></ContactInformationPreviewCard>
 	);
 }
