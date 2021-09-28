@@ -55,8 +55,13 @@ class Activated extends BaseEvent {
 		}
 
 		$url_components = wp_parse_url( $this->server_vars['HTTP_REFERER'] );
-		// Only continue for Add Plugins page activations
-		if ( false === strstr( $url_components['path'], self::ACTIVATION_PAGE ) || ! $url_components || empty( $url_components['query'] ) ) {
+		// Skip invalid URLs or URLs missing parts
+		if ( ! is_array( $url_components ) || empty( $url_components['query'] ) || empty( $url_components['path'] ) ) {
+			return;
+		}
+
+		// Skip activations from anywhere except the Add Plugins page
+		if ( false === strstr( $url_components['path'], self::ACTIVATION_PAGE ) ) {
 			return;
 		}
 
