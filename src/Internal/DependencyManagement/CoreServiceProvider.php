@@ -280,7 +280,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PHPViewFactory::class );
 
 		// Share other classes.
-		$this->conditionally_share_with_tags( Activated::class );
+		$this->conditionally_share_with_tags( Activated::class, $_SERVER );
 		$this->conditionally_share_with_tags( Loaded::class );
 		$this->conditionally_share_with_tags( SiteVerificationEvents::class );
 		$this->conditionally_share_with_tags( SiteClaimEvents::class );

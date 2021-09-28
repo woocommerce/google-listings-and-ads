@@ -61,7 +61,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 		/** @var Activated $activated_event */
 		$activated_event = $this->container->get( Activated::class );
 		if ( ! empty( $activated_event ) ) {
-			$activated_event->maybe_track_activation_source( $_SERVER );
+			$activated_event->maybe_track_activation_source();
 		}
 	}
 

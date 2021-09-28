@@ -25,6 +25,20 @@ class Activated extends BaseEvent {
 	];
 
 	/**
+	 * @var array The request SERVER variables.
+	 */
+	private $server_vars;
+
+	/**
+	 * Activated constructor.
+	 *
+	 * @param array $server_vars The request SERVER variables.
+	 */
+	public function __construct( array $server_vars ) {
+		$this->server_vars = $server_vars;
+	}
+
+	/**
 	 * Register the tracking class.
 	 */
 	public function register(): void {
@@ -33,21 +47,14 @@ class Activated extends BaseEvent {
 
 	/**
 	 * Track when the extension is activated from a source.
-	 *
-	 * @param array $server_vars The server variables to check for source information.
 	 */
-	public function maybe_track_activation_source( array $server_vars = [] ): void {
-		// Default to $_SERVER
-		if ( empty( $server_vars ) ) {
-			$server_vars = $_SERVER;
-		}
-
+	public function maybe_track_activation_source(): void {
 		// Skip WP-CLI activations
-		if ( empty( $server_vars['HTTP_REFERER'] ) ) {
+		if ( empty( $this->server_vars['HTTP_REFERER'] ) ) {
 			return;
 		}
 
-		$url_components = wp_parse_url( $server_vars['HTTP_REFERER'] );
+		$url_components = wp_parse_url( $this->server_vars['HTTP_REFERER'] );
 		// Only continue for Add Plugins page activations
 		if ( false === strstr( $url_components['path'], self::ACTIVATION_PAGE ) || ! $url_components || empty( $url_components['query'] ) ) {
 			return;
