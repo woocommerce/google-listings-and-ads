@@ -549,6 +549,11 @@ export function* updateGoogleMCContactInformation() {
 /**
  * Requests a phone verification code and returns a `verificationId` which is used for the next verification step.
  *
+ * Important note:
+ *   This action communicates with Google's production API.
+ *   It will REALLY send the verification code to the phone number via SMS/phone call.
+ *   When developing/testing, please make sure the passed number is your own or belongs to someone you know.
+ *
  * @param {CountryCode} country The country code. Example: 'US'.
  * @param {string} phoneNumber The phone number string in E.164 format. Example: '+12133734253'.
  * @param {'SMS'|'PHONE_CALL'} method The verification method.
