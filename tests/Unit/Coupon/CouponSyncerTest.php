@@ -42,12 +42,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
     public function test_update_succeed() {
         $coupon = $this->create_ready_to_sync_coupon();
         $this->mock_google_service( $coupon );
-        $coupon_syncer = new CouponSyncer( 
-            $this->google_service,
-            $this->coupon_helper,
-            $this->validator,
-            $this->merchant_center,
-            $this->wc );
 
         $this->coupon_syncer->update( $coupon );
 
@@ -59,12 +53,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
         $invalid_coupon = $this->create_ready_to_sync_coupon();
         $exist_coupon = $this->create_ready_to_sync_coupon();
         $this->mock_google_service( $exist_coupon );
-        $coupon_syncer = new CouponSyncer( 
-            $this->google_service,
-            $this->coupon_helper,
-            $this->validator,
-            $this->merchant_center,
-            $this->wc );
 
         $this->coupon_syncer->update( $invalid_coupon );
 
@@ -77,12 +65,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
     public function test_delete_succeed() {
         $coupon = $this->create_ready_to_delete_coupon();
         $this->mock_google_service( $coupon );
-        $coupon_syncer = new CouponSyncer( 
-            $this->google_service,
-            $this->coupon_helper,
-            $this->validator,
-            $this->merchant_center,
-            $this->wc );
 
         $this->coupon_syncer->delete( 
             $this->generate_delete_coupon_entry( $coupon ) );
@@ -97,12 +79,6 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
         $invalid_coupon = $this->create_ready_to_delete_coupon();
         $exist_coupon = $this->create_ready_to_delete_coupon();
         $this->mock_google_service( $exist_coupon );
-        $coupon_syncer = new CouponSyncer( 
-            $this->google_service,
-            $this->coupon_helper,
-            $this->validator,
-            $this->merchant_center,
-            $this->wc );
 
         $this->coupon_syncer->delete( 
             $this->generate_delete_coupon_entry( $invalid_coupon ) );

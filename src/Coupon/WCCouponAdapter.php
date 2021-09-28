@@ -47,6 +47,8 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
     public const COUPON_VALUE_TYPE_MONEY_OFF = 'MONEY_OFF';
 
     public const COUPON_VALUE_TYPE_PERCENT_OFF = 'PERCENT_OFF';
+    
+    protected const DATE_TIME_FORMAT = 'Y-m-d h:i:sa';
 
     /**
      *
@@ -138,9 +140,11 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
                     $coupon_amount,
                     get_woocommerce_currency() ) );
         }
-
+        
+        $post_time = get_post_time( self::DATE_TIME_FORMAT, true, $wc_coupon->get_id(), false);
         $this->setPromotionEffectiveDates( 
-            $this->get_wc_coupon_effective_dates( 
+            $this->get_wc_coupon_effective_dates(
+                $post_time,
                 $wc_coupon->get_date_expires() ) );
 
         return $this;
@@ -152,23 +156,28 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
      *
      * @return WC_DateTime|null
      */
-    protected function get_wc_coupon_effective_dates( $expiring_date ): ?string {
-        // TODO: Get start effective date when allows to upload coupons that start in the future.
-        $now = new WC_DateTime();
+    protected function get_wc_coupon_effective_dates( string $post_time, $expiring_date ): ?string {
+        $start_date = new WC_DateTime();
+        if ( ! empty( $post_time) ) {
+            $start_date = new WC_DateTime( $post_time );
+        }
+        
         $end_date = $expiring_date;
-
         // If there is no expiring date, set to promotion maximumal effective days allowed by Google.\
         // Refer to https://support.google.com/merchants/answer/2906014?hl=en
         if ( empty( $expiring_date ) ) {
-            $end_date = $now->add( new DateInterval( 'P183D' ) );
+            $end_date = clone $start_date;
+            $end_date->add( new DateInterval( 'P183D' ) );
         }
 
         // If the coupon is already expired. set the effective date to a past period.
-        if ( ! empty( $end_date ) && $end_date < $now ) {
-            $end_date = $now;
-            $now = $end_date->sub( new DateInterval( 'P1D' ) );
+        if ( $end_date < $start_date ) {
+            $start_date = new WC_DateTime();
+            $start_date->sub( new DateInterval( 'P2D' ) );
+            $end_date = new WC_DateTime();
+            $end_date->sub( new DateInterval( 'P1D' ) );
         }
-        return sprintf( '%s/%s', (string) $now, (string) $end_date );
+        return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
     }
 
     /**
@@ -240,8 +249,29 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
      * @param ClassMetadata $metadata
      */
     public static function load_validator_metadata( ClassMetadata $metadata ) {
+        $metadata->addPropertyConstraint(
+            'targetCountry',
+            new Assert\NotBlank() );
         $metadata->addPropertyConstraint( 
+            'promotionId',
+            new Assert\NotBlank() );
+        $metadata->addPropertyConstraint(
             'genericRedemptionCode',
+            new Assert\NotBlank() );
+        $metadata->addPropertyConstraint(
+            'productApplicability',
+            new Assert\NotBlank() );
+        $metadata->addPropertyConstraint(
+            'offerType',
+            new Assert\NotBlank() );
+        $metadata->addPropertyConstraint(
+            'promotionEffectiveDates',
+            new Assert\NotBlank() );
+        $metadata->addPropertyConstraint(
+            'redemptionChannel',
+            new Assert\NotBlank() );
+        $metadata->addPropertyConstraint(
+            'couponValueType',
             new Assert\NotBlank() );
     }
 
@@ -259,8 +289,10 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
      * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
      */
     public function disable_coupon() {
-        $end_date = new WC_DateTime();
-        $start_date = $end_date;
+        $start_date = new WC_DateTime();
+        $start_date->sub( new DateInterval( 'P2D' ) );
+        $end_date = new WC_DateTime();  
+        $end_date->sub( new DateInterval( 'P1D' ) );
         $this->setPromotionEffectiveDates( 
             sprintf( '%s/%s', (string) $start_date, (string) $end_date ) );
     }
