@@ -49,7 +49,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
 
         $this->update_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [$coupon->get_id()] ) );
+            ->with( $this->equalTo( [[$coupon->get_id()]] ) );
         $coupon->add_meta_data( 'test_coupon_field', 'testing', true );
         $coupon->save();
     }
@@ -76,7 +76,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [$expected_coupon_entry] ) );
+            ->with( $this->equalTo( [[$expected_coupon_entry]] ) );
 
         wp_trash_post( $coupon->get_id() );
     }
@@ -89,23 +89,20 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [$expected_coupon_entry] ) );
+            ->with( $this->equalTo( [[$expected_coupon_entry]] ) );
 
         // force delete post
         wp_delete_post( $coupon->get_id(), true );
     }
 
     public function test_untrash_simple_coupon_schedules_update_job() {
-        $string_code = 'test_coupon_codes';
-        $coupon = new WC_Coupon();
-        $coupon->set_code( $string_code );
-        $coupon->save();
+        $coupon = $this->create_ready_to_delete_coupon();
         $coupon_id = $coupon->get_id();
         $coupon->delete();
 
         $this->update_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [$coupon_id] ) );
+            ->with( $this->equalTo( [[$coupon_id]] ) );
         // untrash coupon
         wp_untrash_post( $coupon_id );
     }

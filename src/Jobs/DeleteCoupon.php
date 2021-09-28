@@ -36,7 +36,7 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 */
 	public function process_items( array $coupons ) {
 		foreach ( $coupons as $coupon ) {
-			$this->$coupon_syncer->delete( $coupon );
+			$this->coupon_syncer->delete( $coupon );
 		}
 	}
 
@@ -48,18 +48,25 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function schedule( array $args = [] ) {
-		$coupon = $args[0] ?? null;
+		$args = $args[0] ?? null;
 
-		if ( ! $coupon instanceof DeleteCouponEntry ) {
+		$coupons = [];
+		foreach ( $args as $arg ) {
+			if ( $arg instanceof DeleteCouponEntry ) {
+				array_push( $coupons, $arg );
+			}
+		}
+
+		if ( empty( $coupons ) ) {
 			throw JobException::item_not_provided(
-				'DeleteCouponEntry for the coupon to delete'
+				'DeleteCouponEntrys for the coupons to delete'
 			);
 		}
 
-		if ( $this->can_schedule( [ $coupon ] ) ) {
+		if ( $this->can_schedule( [ $coupons ] ) ) {
 			$this->action_scheduler->schedule_immediate(
 				$this->get_process_item_hook(),
-				[ $coupon ]
+				[ $coupons ]
 			);
 		}
 	}

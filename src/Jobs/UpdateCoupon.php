@@ -35,10 +35,10 @@ class UpdateCoupon extends AbstractCouponSyncerJob implements
 	 */
 	public function process_items( $coupon_ids ) {
 		foreach ( $coupon_ids as $coupon_id ) {
-			$coupon = $this->$wc->may_get_coupon( $coupon_id );
+			$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 			if ( $coupon instanceof WC_Coupon &&
 				$this->coupon_helper->is_sync_ready( $coupon ) ) {
-				$this->$coupon_syncer->update( $coupon );
+				$this->coupon_syncer->update( $coupon );
 			}
 		}
 	}
@@ -51,16 +51,17 @@ class UpdateCoupon extends AbstractCouponSyncerJob implements
 	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function schedule( array $args = [] ) {
-		$coupon_id = $args[0] ?? null;
+		$args       = $args[0] ?? null;
+		$coupon_ids = array_filter( $args, 'is_integer' );
 
-		if ( ! is_int( $coupon_id ) ) {
+		if ( empty( $coupon_ids ) ) {
 			throw JobException::item_not_provided( 'WooCommerce Coupon IDs' );
 		}
 
-		if ( $this->can_schedule( [ $coupon_id ] ) ) {
+		if ( $this->can_schedule( [ $coupon_ids ] ) ) {
 			$this->action_scheduler->schedule_immediate(
 				$this->get_process_item_hook(),
-				[ $coupon_id ]
+				[ $coupon_ids ]
 			);
 		}
 	}

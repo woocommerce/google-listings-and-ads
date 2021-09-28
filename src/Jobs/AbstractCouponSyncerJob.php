@@ -25,7 +25,7 @@ abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implem
 	protected $coupon_helper;
 
 	/**
-	 * @var CouponSyncher
+	 * @var CouponSyncer
 	 */
 	protected $coupon_syncer;
 

@@ -144,6 +144,15 @@ class CouponSyncer implements Service {
 		}
 
 		try {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf(
+					'Start to upload coupon (ID: %s) as promotion structure: %s',
+					$coupon->get_id(),
+					json_encode( $adapted_coupon )
+				),
+				__METHOD__
+			);
 			$response = $this->google_service->create( $adapted_coupon );
 			$this->coupon_helper->mark_as_synced(
 				$coupon,
@@ -245,7 +254,7 @@ class CouponSyncer implements Service {
 				$adapted_coupon->disable_coupon();
 
 				$response = $this->google_service->create( $adapted_coupon );
-				array_push( $deleted_promotions, $adapted_coupon );
+				array_push( $deleted_promotions, $response );
 				// Remove synced google id
 				if ( $wc_coupon_exist ) {
 					$this->coupon_helper->remove_google_id(

@@ -111,11 +111,7 @@ class SyncerHooks implements Service, Registerable {
 		$update_by_id = function ( int $coupon_id ) {
 			$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 			if ( $coupon instanceof WC_Coupon ) {
-				$this->update_coupon_job->schedule(
-					[
-						$coupon_id,
-					]
-				);
+				$this->handle_update_coupon( $coupon );
 			}
 		};
 
@@ -163,7 +159,7 @@ class SyncerHooks implements Service, Registerable {
 			$this->coupon_helper->mark_as_pending( $coupon );
 			$this->update_coupon_job->schedule(
 				[
-					$coupon_id,
+					[ $coupon_id ],
 				]
 			);
 		} elseif ( $this->coupon_helper->is_coupon_synced( $coupon ) ) {
@@ -178,7 +174,7 @@ class SyncerHooks implements Service, Registerable {
 			);
 			$this->delete_coupon_job->schedule(
 				[
-					$coupon_to_delete,
+					[ $coupon_to_delete ],
 				]
 			);
 
@@ -229,7 +225,7 @@ class SyncerHooks implements Service, Registerable {
 				! $this->is_already_scheduled_to_delete( $coupon_id ) ) {
 				$this->delete_coupon_job->schedule(
 					[
-						$coupon_to_delete,
+						[ $coupon_to_delete ],
 					]
 				);
 				$this->set_already_scheduled_to_delete( $coupon_id );
