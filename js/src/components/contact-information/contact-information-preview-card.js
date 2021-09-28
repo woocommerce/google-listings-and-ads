@@ -37,8 +37,6 @@ export default function ContactInformationPreviewCard( {
 	const editButton = (
 		<AppButton
 			isSecondary
-			iconSize={ 16 }
-			iconPosition="right"
 			href={ editHref }
 			text={ __( 'Edit', 'google-listings-and-ads' ) }
 			eventName={ editEventName }
