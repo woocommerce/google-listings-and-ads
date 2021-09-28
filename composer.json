@@ -1,7 +1,7 @@
 {
 	"name": "woocommerce/google-listings-and-ads",
 	"type": "wordpress-plugin",
-	"description": "Native integration with Google that allows merchants to easily display their products across Google\u2019s network.",
+	"description": "Native integration with Google that allows merchants to easily display their products across Google’s network.",
 	"prefer-stable": true,
 	"minimum-stability": "dev",
 	"require": {
