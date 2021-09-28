@@ -62,10 +62,10 @@ class JobServiceProvider extends AbstractServiceProvider {
 		ActionSchedulerInterface::class  => true,
 		AsyncActionRunner::class         => true,
 		ActionSchedulerJobMonitor::class => true,
-	    Coupon\SyncerHooks::class        => true,
+		Coupon\SyncerHooks::class        => true,
 		PluginUpdate::class              => true,
-	    Product\SyncerHooks::class       => true,
-		ProductSyncStats::class          => true,	
+		Product\SyncerHooks::class       => true,
+		ProductSyncStats::class          => true,
 		Service::class                   => true,
 		JobRepository::class             => true,
 	];
@@ -94,7 +94,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 		$this->share_product_syncer_job( DeleteProducts::class );
 		$this->share_product_syncer_job( ResubmitExpiringProducts::class );
 		$this->share_product_syncer_job( CleanupProductsJob::class );
-		
+
 		// share coupon syncer jobs.
 		$this->share_coupon_syncer_job( UpdateCoupon::class );
 		$this->share_coupon_syncer_job( DeleteCoupon::class );
@@ -110,20 +110,20 @@ class JobServiceProvider extends AbstractServiceProvider {
 		);
 
 		$this->share_with_tags(
-		    Product\SyncerHooks::class,
-		    BatchProductHelper::class,
-		    ProductHelper::class,
-		    JobRepository::class,
-		    MerchantCenterService::class,
-		    WC::class
+			Product\SyncerHooks::class,
+			BatchProductHelper::class,
+			ProductHelper::class,
+			JobRepository::class,
+			MerchantCenterService::class,
+			WC::class
 		);
-		
+
 		$this->share_with_tags(
-		    Coupon\SyncerHooks::class,
-		    CouponHelper::class,
-		    JobRepository::class,
-		    MerchantCenterService::class,
-		    WC::class
+			Coupon\SyncerHooks::class,
+			CouponHelper::class,
+			JobRepository::class,
+			MerchantCenterService::class,
+			WC::class
 		);
 
 		$this->share_with_tags( StartProductSync::class, JobRepository::class );
@@ -180,7 +180,7 @@ class JobServiceProvider extends AbstractServiceProvider {
 			);
 		}
 	}
-	
+
 	/**
 	 * Share a coupon syncer job class
 	 *
@@ -189,17 +189,16 @@ class JobServiceProvider extends AbstractServiceProvider {
 	 *
 	 * @throws InvalidClass When the given class does not implement the ProductSyncerJobInterface.
 	 */
-	protected function share_coupon_syncer_job(string $class, ...$arguments)
-    {
-        // Coupon related jobs also should implement ProductSyncerJobInterface.
-        $this->validate_interface($class, ProductSyncerJobInterface::class);
-        $this->share_action_scheduler_job(
-            $class,
-            CouponHelper::class,
-            CouponSyncer::class,
-            WC::class,
-            MerchantCenterService::class,
-            ...$arguments
-        );
-    }
+	protected function share_coupon_syncer_job( string $class, ...$arguments ) {
+		// Coupon related jobs also should implement ProductSyncerJobInterface.
+		$this->validate_interface( $class, ProductSyncerJobInterface::class );
+		$this->share_action_scheduler_job(
+			$class,
+			CouponHelper::class,
+			CouponSyncer::class,
+			WC::class,
+			MerchantCenterService::class,
+			...$arguments
+		);
+	}
 }

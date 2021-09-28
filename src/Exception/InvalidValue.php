@@ -92,9 +92,9 @@ class InvalidValue extends LogicException implements GoogleListingsAndAdsExcepti
 	 * @return static
 	 */
 	public static function not_valid_coupon_id( $value ): InvalidValue {
-	    return new static( sprintf( 'Invalid coupon ID: %s', $value ) );
+		return new static( sprintf( 'Invalid coupon ID: %s', $value ) );
 	}
-	
+
 	/**
 	 * Create a new instance of the exception when a value isn't a valid product ID.
 	 *

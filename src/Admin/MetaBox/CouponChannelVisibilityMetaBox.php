@@ -36,18 +36,18 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @var MerchantCenterService
 	 */
 	protected $merchant_center;
-	
+
 	/**
 	 * CouponChannelVisibilityMetaBox constructor.
 	 *
-	 * @param Admin              $admin
-	 * @param CouponMetaHandler $meta_handler
-	 * @param CouponHelper      $coupon_helper
+	 * @param Admin                 $admin
+	 * @param CouponMetaHandler     $meta_handler
+	 * @param CouponHelper          $coupon_helper
 	 * @param MerchantCenterService $merchant_center
 	 */
 	public function __construct( Admin $admin, CouponMetaHandler $meta_handler, CouponHelper $coupon_helper, MerchantCenterService $merchant_center ) {
-		$this->meta_handler   = $meta_handler;
-		$this->coupon_helper = $coupon_helper;
+		$this->meta_handler    = $meta_handler;
+		$this->coupon_helper   = $coupon_helper;
 		$this->merchant_center = $merchant_center;
 		parent::__construct( $admin );
 	}
@@ -78,7 +78,7 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @return string
 	 */
 	public function get_screen(): string {
-	    return self::SCREEN_COUPON;
+		return self::SCREEN_COUPON;
 	}
 
 	/**
@@ -131,13 +131,13 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 
 		return [
 			'field_id'           => $this->get_visibility_field_id(),
-			'coupon_id'         => $coupon_id,
-			'coupon'            => $coupon,
+			'coupon_id'          => $coupon_id,
+			'coupon'             => $coupon,
 			'channel_visibility' => $this->coupon_helper->get_channel_visibility( $coupon ),
 			'sync_status'        => $this->meta_handler->get_sync_status( $coupon ),
 			'issues'             => $this->coupon_helper->get_validation_errors( $coupon ),
-		    'is_setup_complete'  => $this->merchant_center->is_setup_complete(),
-		    'get_started_url'    => $this->get_start_url(),
+			'is_setup_complete'  => $this->merchant_center->is_setup_complete(),
+			'get_started_url'    => $this->get_start_url(),
 		];
 	}
 
@@ -150,8 +150,8 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	}
 
 	/**
-	 * @param int        $coupon_id
-	 * @param WC_Coupon  $coupon
+	 * @param int       $coupon_id
+	 * @param WC_Coupon $coupon
 	 */
 	public function handle_submission( int $coupon_id, WC_Coupon $coupon ) {
 		/**
@@ -169,13 +169,13 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 		}
 
 		// Only update the value for supported coupon types
-		if (!CouponSyncer::is_coupon_supported($coupon)) {
+		if ( ! CouponSyncer::is_coupon_supported( $coupon ) ) {
 			return;
 		}
 
 		try {
 			$visibility = empty( $_POST[ $field_id ] ) ?
-			    ChannelVisibility::cast( ChannelVisibility::DONT_SYNC_AND_SHOW ) :
+				ChannelVisibility::cast( ChannelVisibility::DONT_SYNC_AND_SHOW ) :
 				ChannelVisibility::cast( sanitize_key( $_POST[ $field_id ] ) );
 			// phpcs:enable WordPress.Security.NonceVerification
 

@@ -109,9 +109,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ContactInformationNote::class => true,
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
-	    CouponHelper::class           => true,
-	    CouponMetaHandler::class      => true,
-	    CouponSyncer::class           => true, 
+		CouponHelper::class           => true,
+		CouponMetaHandler::class      => true,
+		CouponSyncer::class           => true,
 		Dashboard::class              => true,
 		DateTimeUtility::class        => true,
 		EventTracking::class          => true,
@@ -267,22 +267,22 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			MerchantCenterService::class,
 			WC::class
 		);
-		
+
 		// Coupon management classes
 		$this->share_with_tags( CouponMetaHandler::class );
 		$this->share_with_tags(
-		    CouponHelper::class,
-		    CouponMetaHandler::class,
-		    WC::class,
-		    MerchantCenterService::class
+			CouponHelper::class,
+			CouponMetaHandler::class,
+			WC::class,
+			MerchantCenterService::class
 		);
 		$this->share_with_tags(
-		    CouponSyncer::class,
-		    GooglePromotionService::class,
-		    CouponHelper::class,
-		    ValidatorInterface::class,
-		    MerchantCenterService::class,
-		    WC::class
+			CouponSyncer::class,
+			GooglePromotionService::class,
+			CouponHelper::class,
+			ValidatorInterface::class,
+			MerchantCenterService::class,
+			WC::class
 		);
 
 		// Set up inflector for tracks classes.

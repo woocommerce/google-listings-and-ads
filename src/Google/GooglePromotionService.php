@@ -10,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Exception as GoogleException;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\Promotion as GooglePromotion;
-defined('ABSPATH') || exit();
+defined( 'ABSPATH' ) || exit();
 
 /**
  * Class GooglePromotionService
@@ -19,42 +19,44 @@ defined('ABSPATH') || exit();
  */
 class GooglePromotionService implements OptionsAwareInterface, Service {
 
-    use OptionsAwareTrait;
-    use ValidateInterface;
+	use OptionsAwareTrait;
+	use ValidateInterface;
 
-    public const INTERNAL_ERROR_CODE = 500;
-    
-    public const INTERNAL_ERROR_MSG = 'Internal error';
+	public const INTERNAL_ERROR_CODE = 500;
 
-    public const NOT_FOUND_ERROR_MSG = 'notFound';
+	public const INTERNAL_ERROR_MSG = 'Internal error';
 
-    /**
-     *
-     * @var ShoppingContent
-     */
-    protected $shopping_service;
+	public const NOT_FOUND_ERROR_MSG = 'notFound';
 
-    /**
-     * GooglePromotionService constructor.
-     *
-     * @param ShoppingContent $shopping_service
-     */
-    public function __construct(ShoppingContent $shopping_service) {
-        $this->shopping_service = $shopping_service;
-    }
+	/**
+	 *
+	 * @var ShoppingContent
+	 */
+	protected $shopping_service;
 
-    /**
-     *
-     * @param GooglePromotion $promotion
-     *
-     * @return GooglePromotion
-     *
-     * @throws GoogleException If there are any Google API errors.
-     */
-    public function create(GooglePromotion $promotion): GooglePromotion {
-        $merchant_id = $this->options->get_merchant_id();
+	/**
+	 * GooglePromotionService constructor.
+	 *
+	 * @param ShoppingContent $shopping_service
+	 */
+	public function __construct( ShoppingContent $shopping_service ) {
+		$this->shopping_service = $shopping_service;
+	}
 
-        return $this->shopping_service->promotions->create($merchant_id,
-            $promotion);
-    }
+	/**
+	 *
+	 * @param GooglePromotion $promotion
+	 *
+	 * @return GooglePromotion
+	 *
+	 * @throws GoogleException If there are any Google API errors.
+	 */
+	public function create( GooglePromotion $promotion ): GooglePromotion {
+		$merchant_id = $this->options->get_merchant_id();
+
+		return $this->shopping_service->promotions->create(
+			$merchant_id,
+			$promotion
+		);
+	}
 }

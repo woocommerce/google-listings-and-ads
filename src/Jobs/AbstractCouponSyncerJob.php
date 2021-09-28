@@ -19,20 +19,20 @@ defined( 'ABSPATH' ) || exit;
  */
 abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implements ProductSyncerJobInterface {
 
-    /**
-     * @var CouponHelper
-     */
-    protected $coupon_helper;
-    
-    /**
-     * @var CouponSyncher
-     */
-    protected $coupon_syncer;
-    
 	/**
-     * @var WC
-     */
-    protected $wc;
+	 * @var CouponHelper
+	 */
+	protected $coupon_helper;
+
+	/**
+	 * @var CouponSyncher
+	 */
+	protected $coupon_syncer;
+
+	/**
+	 * @var WC
+	 */
+	protected $wc;
 
 	/**
 	 * @var MerchantCenterService
@@ -44,6 +44,7 @@ abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implem
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
 	 * @param ActionSchedulerJobMonitor $monitor
+	 * @param CouponHelper              $coupon_helper
 	 * @param CouponSyncer              $coupon_syncer
 	 * @param WC                        $wc
 	 * @param MerchantCenterService     $merchant_center
@@ -51,15 +52,15 @@ abstract class AbstractCouponSyncerJob extends AbstractActionSchedulerJob implem
 	public function __construct(
 		ActionSchedulerInterface $action_scheduler,
 		ActionSchedulerJobMonitor $monitor,
-	    CouponHelper $coupon_helper,
+		CouponHelper $coupon_helper,
 		CouponSyncer $coupon_syncer,
-	    WC $wc,
+		WC $wc,
 		MerchantCenterService $merchant_center
 	) {
-	    $this->coupon_helper = $coupon_helper;
-	    $this->coupon_syncer = $coupon_syncer;
-	    $this->wc  = $wc;
-		$this->merchant_center    = $merchant_center;
+		$this->coupon_helper   = $coupon_helper;
+		$this->coupon_syncer   = $coupon_syncer;
+		$this->wc              = $wc;
+		$this->merchant_center = $merchant_center;
 		parent::__construct( $action_scheduler, $monitor );
 	}
 

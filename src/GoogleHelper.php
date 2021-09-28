@@ -131,7 +131,7 @@ trait GoogleHelper {
 
 		return $supported;
 	}
-	
+
 	/**
 	 * Get an array of Google Merchant Center supported countries.
 	 *
@@ -145,35 +145,35 @@ trait GoogleHelper {
 	protected function get_mc_supported_countries( bool $include_beta = true ): array {
 		return array_keys( $this->get_mc_supported_countries_currencies( $include_beta ) );
 	}
-	
+
 	/**
 	 * Get an array of Google Merchant Center supported countries and currencies for promotions.
 	 *
 	 * @return array
 	 */
 	protected function get_mc_promotion_supported_countries_currencies(): array {
-	    $supported_countries = [
-	        'AU' => 'AUD', // Australia
-	        'CA' => 'CAD', // Canada
-	        'DE' => 'EUR', // Germany
-	        'FR' => 'EUR', // France
-	        'GB' => 'GBP', // United Kingdom
-	        'IN' => 'INR', // India
-	        'US' => 'USD', // United States
-	    ];
-	    
-	    return $supported_countries;
+		$supported_countries = [
+			'AU' => 'AUD', // Australia
+			'CA' => 'CAD', // Canada
+			'DE' => 'EUR', // Germany
+			'FR' => 'EUR', // France
+			'GB' => 'GBP', // United Kingdom
+			'IN' => 'INR', // India
+			'US' => 'USD', // United States
+		];
+
+		return $supported_countries;
 	}
 
 	/**
 	 * Get an array of Google Merchant Center supported countries for promotions.
-     *
+	 *
 	 * @return string[]
 	 */
 	protected function get_mc_promotion_supported_countries(): array {
-	    return array_keys( $this->get_mc_promotion_supported_countries_currencies() );
+		return array_keys( $this->get_mc_promotion_supported_countries_currencies() );
 	}
-	
+
 	/**
 	 * Get an array of Google Merchant Center supported languages (ISO 639-1).
 	 *
