@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit();
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Coupon
  *
- * @method update_synced_at( WC_Coupon c, $value )
+ * @method update_synced_at( WC_Coupon $coupon, $value )
  * @method delete_synced_at( WC_Coupon $coupon )
  * @method get_synced_at( WC_Coupon $coupon ): int|null
  * @method update_google_ids( WC_Coupon $coupon, array $value )
