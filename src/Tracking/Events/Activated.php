@@ -20,8 +20,11 @@ class Activated extends BaseEvent {
 	 * The query parameters used to determine activation source details.
 	 */
 	public const SOURCE_PARAMS = [
-		'traffic_source',
-		'traffic_type',
+		'utm_source',
+		'utm_medium',
+		'utm_campaign',
+		'utm_term',
+		'utm_content',
 	];
 
 	/**
