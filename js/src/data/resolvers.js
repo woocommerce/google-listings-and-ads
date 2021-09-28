@@ -124,6 +124,10 @@ export function* getGoogleMCContactInformation() {
 	}
 }
 
+getGoogleMCContactInformation.shouldInvalidate = ( action ) => {
+	return action.type === TYPES.VERIFIED_MC_PHONE_NUMBER;
+};
+
 export function* getCountries() {
 	yield fetchCountries();
 }
