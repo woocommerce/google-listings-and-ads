@@ -58,11 +58,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 
 		flush_rewrite_rules();
 
-		/** @var Activated $activated_event */
-		$activated_event = $this->container->get( Activated::class );
-		if ( ! empty( $activated_event ) ) {
-			$activated_event->maybe_track_activation_source();
-		}
+		$this->container->get( Activated::class )->maybe_track_activation_source();
 	}
 
 	/**
