@@ -549,11 +549,11 @@ export function* updateGoogleMCContactInformation() {
 /**
  * Requests a phone verification code and returns a `verificationId` which is used for the next verification step.
  *
- * @param {string} country The country code. Example: 'US'.
+ * @param {CountryCode} country The country code. Example: 'US'.
  * @param {string} phoneNumber The phone number string in E.164 format. Example: '+12133734253'.
  * @param {'SMS'|'PHONE_CALL'} method The verification method.
- * @return {Object} `{ verificationId: string }`
- * @throws {Object} `{ display: string }` Will throws an identifiable error with the next step instruction for users.
+ * @return { { verificationId: string } } Verification id to be used for another call.
+ * @throws { { display: string } } Will throws an identifiable error with the next step instruction for users.
  */
 export function* requestPhoneVerificationCode( country, phoneNumber, method ) {
 	try {
@@ -597,7 +597,7 @@ export function* requestPhoneVerificationCode( country, phoneNumber, method ) {
  * @param {string} verificationId The verification ID got from the `requestPhoneVerificationCode` action.
  * @param {string} code The six-digit verification code sent/call to the user's phone.
  * @param {'SMS'|'PHONE_CALL'} method The verification method. It should correspond with the verification ID got from the `requestPhoneVerificationCode` action.
- * @throws {Object} `{ display: string }` Will throws an identifiable error with the next step instruction for users.
+ * @throws { { display: string } } Will throws an identifiable error with the next step instruction for users.
  */
 export function* verifyPhoneNumber( verificationId, code, method ) {
 	try {
