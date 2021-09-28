@@ -9,7 +9,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
-class Activated extends BaseEvent {
+class ActivatedEvents extends BaseEvent {
 
 	/**
 	 * The page where activation with a source can occur.
@@ -33,7 +33,7 @@ class Activated extends BaseEvent {
 	private $server_vars;
 
 	/**
-	 * Activated constructor.
+	 * ActivatedEvents constructor.
 	 *
 	 * @param array $server_vars The request SERVER variables.
 	 */
