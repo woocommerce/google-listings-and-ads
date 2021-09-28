@@ -39,11 +39,9 @@ class Activated extends BaseEvent {
 	}
 
 	/**
-	 * Register the tracking class.
+	 * Nothing to register (method invoked manually).
 	 */
-	public function register(): void {
-		add_action( 'woocommerce_gla_extension_activated', [ $this, 'maybe_track_activation_source' ] );
-	}
+	public function register(): void {}
 
 	/**
 	 * Track when the extension is activated from a source.
