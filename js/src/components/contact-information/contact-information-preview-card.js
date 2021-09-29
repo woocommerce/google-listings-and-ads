@@ -43,7 +43,7 @@ export default function ContactInformationPreviewCard( {
 			eventProps={ { path: getPath(), subpath } }
 		/>
 	);
-	let description = loading;
+	let description;
 
 	if ( loading ) {
 		description = (
