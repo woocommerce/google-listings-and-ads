@@ -218,7 +218,7 @@ class CouponSyncer implements Service {
 
 		if ( ! empty( $violations ) ) {
 			$invalid_promotion = new InvalidCouponEntry(
-				$coupon->get_wc_coupon()->get_id()
+				$coupon->get_wc_coupon_id()
 			);
 			$invalid_promotion->map_validation_violations( $violations );
 

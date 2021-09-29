@@ -106,23 +106,6 @@ class WC {
 	}
 
 	/**
-	 * Get a WooCommerce coupon and confirm it exists.
-	 *
-	 * @param int $coupon_id
-	 *
-	 * @return WC_Coupon
-	 *
-	 * @throws InvalidValue When the coupon does not exist.
-	 */
-	public function get_coupon( int $coupon_id ): WC_Coupon {
-		$coupon = new WC_Coupon( $coupon_id );
-		if ( $coupon->get_id() === 0 ) {
-			throw InvalidValue::not_valid_coupon_id( $coupon_id );
-		}
-		return $coupon;
-	}
-
-	/**
 	 * Get a WooCommerce coupon if it exists or return null if it doesn't
 	 *
 	 * @param int $coupon_id

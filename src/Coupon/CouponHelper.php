@@ -186,7 +186,13 @@ class CouponHelper implements Service {
 	 * @throws InvalidValue If the given ID doesn't reference a valid coupon.
 	 */
 	public function get_wc_coupon( int $coupon_id ): WC_Coupon {
-		return $this->wc->get_coupon( $coupon_id );
+		$coupon = $this->wc->maybe_get_coupon( $coupon_id );
+
+		if ( ! $coupon instanceof WC_Coupon ) {
+			throw InvalidValue::not_valid_coupon_id( $coupon_id );
+		}
+
+		return $coupon;
 	}
 
 	/**
