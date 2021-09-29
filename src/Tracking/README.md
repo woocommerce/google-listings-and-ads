@@ -68,11 +68,13 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `href`: link's URL
 
 -   `edit_wc_store_address` - Trigger when store address "Edit in settings" button is clicked.
+    Before `1.5.0` it was called `edit_mc_store_address`.
 
     -   `path`: The path used in the page, e.g. `"/google/settings"`.
     -   `subpath`: The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 
 -   `edit_mc_store_address` - Trigger when store address edit button is clicked.
+    Before `1.5.0` this name was used for tracking clicking "Edit in settings" to edit the WC address. As of `>1.5.0`, that event is now tracked as `edit_wc_store_address`.
 
     -   `path`: The path used in the page, e.g. `"/google/settings"`.
     -   `subpath`: The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.

@@ -46,7 +46,7 @@ export default function StoreAddressCard() {
 			target="_blank"
 			href="admin.php?page=wc-settings"
 			text={ __( 'Edit in Settings', 'google-listings-and-ads' ) }
-			eventName="gla_edit_mc_store_address"
+			eventName="gla_edit_wc_store_address"
 			eventProps={ { path: getPath(), subpath } }
 		/>
 	);
