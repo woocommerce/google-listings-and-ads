@@ -226,18 +226,6 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			$this->setItemId( $wc_exclued_product_ids );
 		}
 
-		$wc_product_categories = $wc_coupon->get_product_categories();
-		if ( ! empty( $wc_product_categories ) ) {
-			$has_product_restriction = true;
-			// TODO: add proudct category resriction mappings.
-		}
-
-		$wc_exclued_product_categories = $wc_coupon->get_excluded_product_categories();
-		if ( ! empty( $wc_exclued_product_categories ) ) {
-			$has_product_restriction = true;
-			// TODO: add proudct category resriction mappings.
-		}
-
 		if ( $has_product_restriction ) {
 			$this->setProductApplicability(
 				self::PRODUCT_APPLICABILITY_PRODUCT_SPECIFIC

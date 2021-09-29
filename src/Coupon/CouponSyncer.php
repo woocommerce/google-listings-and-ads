@@ -337,6 +337,10 @@ class CouponSyncer implements Service {
 			$coupon->get_exclude_sale_items() ) {
 			return false;
 		}
+		// TODO: add proudct category resriction mappings.
+		if ( ! empty( $coupon->get_product_categories() || ! empty( $coupon->get_excluded_product_categories() ) ) ) {
+			return false;
+		}
 		return true;
 	}
 
