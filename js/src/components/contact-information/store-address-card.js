@@ -2,10 +2,10 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 import { CardDivider } from '@wordpress/components';
 import { Spinner } from '@woocommerce/components';
-import { external as externalIcon } from '@wordpress/icons';
-import GridiconRefresh from 'gridicons/dist/refresh';
+import { update as updateIcon } from '@wordpress/icons';
 import { getPath, getQuery } from '@woocommerce/navigation';
 
 /**
@@ -17,6 +17,8 @@ import Subsection from '.~/wcdl/subsection';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import ContactInformationPreviewCard from './contact-information-preview-card';
+import TrackableLink from '.~/components/trackable-link';
+import './store-address-card.scss';
 
 /**
  * "Edit WC store address" Tracking event
@@ -30,7 +32,7 @@ import ContactInformationPreviewCard from './contact-information-preview-card';
 /**
  * Renders a component with a given store address.
  *
- * @fires gla_edit_wc_store_address Whenever "Edit in Settings" is clicked.
+ * @fires gla_edit_wc_store_address Whenever "Edit in WooCommerce Settings" button is clicked.
  *
  * @return {JSX.Element} Filled AccountCard component.
  */
@@ -40,23 +42,44 @@ export default function StoreAddressCard() {
 	const editButton = (
 		<AppButton
 			isSecondary
-			icon={ externalIcon }
-			iconSize={ 16 }
+			icon={ updateIcon }
+			iconSize={ 20 }
 			iconPosition="right"
-			target="_blank"
-			href="admin.php?page=wc-settings"
-			text={ __( 'Edit in Settings', 'google-listings-and-ads' ) }
-			eventName="gla_edit_wc_store_address"
-			eventProps={ { path: getPath(), subpath } }
+			text={ __( 'Refresh to sync', 'google-listings-and-ads' ) }
+			onClick={ refetch }
+			disabled={ ! loaded }
 		/>
 	);
 
 	let addressContent;
-	let description = '';
-
-	description = __(
-		'Please confirm your store address for verification.',
-		'google-listings-and-ads'
+	const description = (
+		<>
+			<p>
+				{ createInterpolateElement(
+					__(
+						'Edit your store address in your <link>WooCommerce settings</link>.',
+						'google-listings-and-ads'
+					),
+					{
+						link: (
+							<TrackableLink
+								target="_blank"
+								type="external"
+								href="admin.php?page=wc-settings"
+								eventName="gla_edit_wc_store_address"
+								eventProps={ { path: getPath(), subpath } }
+							/>
+						),
+					}
+				) }
+			</p>
+			<p>
+				{ __(
+					'Once you’ve saved your new address there, refresh to sync your new address with Google.',
+					'google-listings-and-ads'
+				) }
+			</p>
+		</>
 	);
 
 	if ( loaded ) {
@@ -80,6 +103,7 @@ export default function StoreAddressCard() {
 
 	return (
 		<AccountCard
+			className="gla-store-address-card"
 			appearance={ APPEARANCE.ADDRESS }
 			description={ description }
 			indicator={ editButton }
@@ -88,13 +112,6 @@ export default function StoreAddressCard() {
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __( 'Store address', 'google-listings-and-ads' ) }
-					<AppButton
-						className="gla-store-address__refresh-button"
-						icon={ GridiconRefresh }
-						iconSize={ 16 }
-						onClick={ refetch }
-						disabled={ ! loaded }
-					/>
 				</Subsection.Title>
 				{ addressContent }
 			</Section.Card.Body>

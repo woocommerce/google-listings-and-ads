@@ -67,7 +67,7 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `context`: indicate which link is clicked
     -   `href`: link's URL
 
--   `edit_wc_store_address` - Trigger when store address "Edit in settings" button is clicked.
+-   `edit_wc_store_address` - Trigger when store address "Edit in WooCommerce Settings" button is clicked.
     Before `1.5.0` it was called `edit_mc_store_address`.
 
     -   `path`: The path used in the page, e.g. `"/google/settings"`.
