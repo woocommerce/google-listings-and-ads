@@ -44,7 +44,7 @@
 		"@types/jest": "^26.0.23",
 		"@types/puppeteer": "^5.4.3",
 		"@woocommerce/api": "^0.2.0",
-		"@woocommerce/e2e-environment": "^0.2.3",
+		"@woocommerce/e2e-environment": "^0.2.2",
 		"@woocommerce/e2e-utils": "^0.1.5",
 		"@woocommerce/eslint-plugin": "^1.2.0",
 		"@wordpress/dependency-extraction-webpack-plugin": "^2.7.0",
