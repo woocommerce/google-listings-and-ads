@@ -19,9 +19,9 @@ import AppButton from '.~/components/app-button';
 import ContactInformationPreviewCard from './contact-information-preview-card';
 
 /**
- * "Edit MC store address" Tracking event
+ * "Edit WC store address" Tracking event
  *
- * @event gla_edit_mc_store_address
+ * @event gla_edit_wc_store_address
  * @type {Object} TrackingEvent
  * @property {string} path A page from which the link was clicked.
  * @property {string|undefined} [subpath] A subpage from which the link was clicked.
@@ -30,7 +30,7 @@ import ContactInformationPreviewCard from './contact-information-preview-card';
 /**
  * Renders a component with a given store address.
  *
- * @fires gla_edit_mc_store_address Whenever "Edit in Settings" is clicked.
+ * @fires gla_edit_wc_store_address Whenever "Edit in Settings" is clicked.
  *
  * @return {JSX.Element} Filled AccountCard component.
  */
@@ -101,6 +101,15 @@ export default function StoreAddressCard() {
 		</AccountCard>
 	);
 }
+
+/**
+ * "Edit MC store address" Tracking event
+ *
+ * @event gla_edit_mc_store_address
+ * @type {Object} TrackingEvent
+ * @property {string} path A page from which the link was clicked.
+ * @property {string|undefined} [subpath] A subpage from which the link was clicked.
+ */
 
 /**
  * Renders a component with the store address.
