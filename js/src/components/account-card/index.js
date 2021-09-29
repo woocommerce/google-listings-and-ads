@@ -51,6 +51,12 @@ const appearanceDict = {
 /**
  * Renders a Card component with account info and status.
  *
+ * ## CSS Parts:
+ * `icon` - area with the icon fetched for respective appearence.
+ * `title` - area with the title fetched for respective appearence.
+ * `indicator` - indicator/action area
+ * `description` - description area
+ *
  * @param {Object} props React props.
  * @param {string} [props.className] Additional CSS class name to be appended.
  * @param {APPEARANCE | {icon, title}} props.appearance Kind of account to indicate the card appearance, or a tuple with icon and title to be used.
@@ -76,12 +82,20 @@ export default function AccountCard( {
 		<Section.Card className={ classnames( 'gla-account-card', className ) }>
 			<Section.Card.Body>
 				<Flex gap={ 4 }>
-					{ ! hideIcon && <FlexItem>{ icon }</FlexItem> }
+					{ ! hideIcon && (
+						<FlexItem className="part--icon">{ icon }</FlexItem>
+					) }
 					<FlexBlock>
-						<Subsection.Title>{ title }</Subsection.Title>
-						<div>{ description }</div>
+						<Subsection.Title className="part--title">
+							{ title }
+						</Subsection.Title>
+						<div className="part--description">{ description }</div>
 					</FlexBlock>
-					{ indicator && <FlexItem>{ indicator }</FlexItem> }
+					{ indicator && (
+						<FlexItem className="part--indicator">
+							{ indicator }
+						</FlexItem>
+					) }
 				</Flex>
 			</Section.Card.Body>
 			{ children }

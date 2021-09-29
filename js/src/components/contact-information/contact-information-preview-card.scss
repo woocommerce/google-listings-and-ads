@@ -1,18 +1,27 @@
+// :host
 .gla-contact-info-preview-card {
 	// Vertically align icon inside the title.
-	.wcdl-subsection-title {
+	// :host::part( title ) - if we use inheritance
+	// account-card::part( title ) - if we use composition
+	.part--title {
 		display: flex;
 		align-items: center;
 	}
-	&__notice-icon {
+
+	// :--warning::part( icon )
+	&.state--warning {
 		fill: $alert-red;
 		margin: calc(var(--main-gap) / -8) 0;
 	}
-	&__notice-details {
+	// :--warning>[slot="description"]
+	// :--warning::part( description )
+	&.state--warning .part--description {
 		color: $gray-700;
 	}
 
-	&__placeholder {
+	// :--loading>[slot="description"]
+	// :--loading::part( description )
+	&.state--loading .part--description {
 		@include placeholder();
 		display: inline-block;
 		width: 18em;

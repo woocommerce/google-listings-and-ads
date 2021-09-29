@@ -25,6 +25,9 @@ export function PhoneNumberCardPreview( { editHref, learnMore } ) {
 	const { loaded, data } = useGoogleMCPhoneNumber();
 	let content, warning;
 
+	// Mock invalid data for testing.
+	data.isValid = false;
+
 	if ( loaded ) {
 		if ( data.isValid ) {
 			content = data.display;

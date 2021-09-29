@@ -1,22 +1,28 @@
+// :host
 .gla-store-address-card {
-	// We could've used `StoreAddressCard'`s selectors,
-	// but the elements are wrapped with `<FlexItem>`,
-	// which does not have accessible semantic selector.
-	// So we have to rely on `<AccountCard>`'s internal implementation details.
-	.components-flex__item {
+
+	// ::part( icon )
+	.part--icon {
 		align-self: start;
 	}
 
-	.components-flex__item:nth-child(3) {
+	// ::part( indicator )
+	.part--indicator {
+		align-self: start;
 		svg {
 			margin-left: 4px;
 		}
 	}
 
-	p {
-		margin: 1em 0;
-	}
-	p:last-child {
-		margin-bottom: 0;
+	// ::part( description )
+	.part--description {
+		display: flex;
+		flex-direction: column;
+		gap: 1em;
+
+		// [slot="description"]
+		> p {
+			margin: 0;
+		}
 	}
 }
