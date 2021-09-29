@@ -13,8 +13,8 @@ import AppButton from '.~/components/app-button';
 import './contact-information-preview-card.scss';
 
 /**
- * Renders a component with a given store address.
- * In preview mode, meaning there will be no refresh button, just the edit link.
+ * Renders a contact information card component.
+ * It adds loading & warning state to the regular `AccountCard`, and an edit button link.
  *
  * @param {Object} props React props
  * @param {import('.~/components/account-card').APPEARANCE}  props.appearance
