@@ -101,9 +101,7 @@ class CouponSyncer implements Service {
 		}
 
 		$target_country = $this->merchant_center->get_main_target_country();
-		if ( ! $this->merchant_center->is_promotion_supported_country(
-			$target_country
-		) ) {
+		if ( ! $this->merchant_center->is_promotion_supported_country( $target_country ) ) {
 			do_action(
 				'woocommerce_gla_debug_message',
 				sprintf(
@@ -216,7 +214,7 @@ class CouponSyncer implements Service {
 	protected function validate_coupon( WCCouponAdapter $coupon ) {
 		$violations = $this->validator->validate( $coupon );
 
-		if ( ! empty( $violations ) ) {
+		if ( 0 !== count( $violations ) ) {
 			$invalid_promotion = new InvalidCouponEntry(
 				$coupon->get_wc_coupon_id()
 			);
@@ -337,8 +335,7 @@ class CouponSyncer implements Service {
 			$coupon->get_exclude_sale_items() ) {
 			return false;
 		}
-		// TODO: add proudct category resriction mappings.
-		if ( ! empty( $coupon->get_product_categories() || ! empty( $coupon->get_excluded_product_categories() ) ) ) {
+		if ( ! empty( $coupon->get_product_categories() ) || ! empty( $coupon->get_excluded_product_categories() ) ) {
 			return false;
 		}
 		return true;

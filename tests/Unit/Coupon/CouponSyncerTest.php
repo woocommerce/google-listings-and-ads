@@ -2,21 +2,16 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Coupon;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\InvalidCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
-use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncerException;
-use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\WCCouponAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\ContainerAwareUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\SettingsTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\SyncStatus;
-use Google\Service\ShoppingContent\Promotion as GooglePromotion;
-use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Google\Exception as GoogleException;
 use WC_Coupon;
@@ -42,6 +37,9 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
     public function test_update_succeed() {
         $coupon = $this->create_ready_to_sync_coupon();
         $this->mock_google_service( $coupon );
+        $this->validator->expects( $this->any() )
+            ->method( 'validate' )
+            ->willReturn( [] );
 
         $this->coupon_syncer->update( $coupon );
 
@@ -53,6 +51,9 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
         $invalid_coupon = $this->create_ready_to_sync_coupon();
         $exist_coupon = $this->create_ready_to_sync_coupon();
         $this->mock_google_service( $exist_coupon );
+        $this->validator->expects( $this->any() )
+            ->method( 'validate' )
+            ->willReturn( [] );
 
         $this->coupon_syncer->update( $invalid_coupon );
 

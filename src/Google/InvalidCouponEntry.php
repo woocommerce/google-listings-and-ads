@@ -108,10 +108,13 @@ class InvalidCouponEntry implements JsonSerializable {
 		ConstraintViolationListInterface $violations ): InvalidCouponEntry {
 		$validation_errors = [];
 		foreach ( $violations as $violation ) {
-			$validation_errors[] = sprintf(
-				'[%s] %s',
-				$violation->getPropertyPath(),
-				$violation->getMessage()
+			array_push(
+				$validation_errors,
+				sprintf(
+					'[%s] %s',
+					$violation->getPropertyPath(),
+					$violation->getMessage()
+				)
 			);
 		}
 

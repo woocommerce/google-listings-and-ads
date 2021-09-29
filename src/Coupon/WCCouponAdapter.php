@@ -200,14 +200,14 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	 */
 	protected function map_wc_usage_restriction( WC_Coupon $wc_coupon ): WCCouponAdapter {
 		$minimal_spend = $wc_coupon->get_minimum_amount();
-		if ( isset( $minimal_spend ) ) {
+		if ( ! empty( $minimal_spend ) ) {
 			$this->setMinimumPurchaseAmount(
 				$this->map_google_price_amount( $minimal_spend )
 			);
 		}
 
 		$maximal_spend = $wc_coupon->get_maximum_amount();
-		if ( isset( $maximal_spend ) ) {
+		if ( ! empty( $maximal_spend ) ) {
 			$this->setLimitValue(
 				$this->map_google_price_amount( $maximal_spend )
 			);

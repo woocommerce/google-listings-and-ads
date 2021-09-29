@@ -104,10 +104,6 @@ class SyncerHooks implements Service, Registerable {
 			return;
 		}
 
-		$update_by_object = function ( int $coupon_id, WC_Coupon $coupon ) {
-			$this->handle_update_coupon( $coupon );
-		};
-
 		$update_by_id = function ( int $coupon_id ) {
 			$coupon = $this->wc->maybe_get_coupon( $coupon_id );
 			if ( $coupon instanceof WC_Coupon ) {
@@ -124,8 +120,8 @@ class SyncerHooks implements Service, Registerable {
 		};
 
 		// when a coupon is added / updated, schedule a update job.
-		add_action( 'woocommerce_new_coupon', $update_by_object, 90, 2 );
-		add_action( 'woocommerce_update_coupon', $update_by_object, 90, 2 );
+		add_action( 'woocommerce_new_coupon', $update_by_id, 90, 2 );
+		add_action( 'woocommerce_update_coupon', $update_by_id, 90, 2 );
 		// when a coupon is trashed or removed, schedule a delete job.
 		add_action( 'wp_trash_post', $pre_delete, 90 );
 		add_action( 'before_delete_post', $pre_delete, 90 );

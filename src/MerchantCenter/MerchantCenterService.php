@@ -199,7 +199,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$country = $this->container->get( WC::class )->get_base_country();
 		}
 
-		return array_key_exists( $country, $this->get_mc_promotion_supported_countries() );
+		return in_array( $country, $this->get_mc_promotion_supported_countries(), true );
 	}
 
 	/**
