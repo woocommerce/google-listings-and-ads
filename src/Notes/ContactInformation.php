@@ -53,7 +53,7 @@ class ContactInformation extends Note implements MerchantCenterAwareInterface {
 		$note->add_action(
 			'contact-information',
 			__( 'Add contact information', 'google-listings-and-ads' ),
-			$this->get_contact_information_setup_url()
+			$this->get_settings_url()
 		);
 		$note->save();
 	}
