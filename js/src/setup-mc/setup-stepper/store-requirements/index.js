@@ -113,7 +113,6 @@ export default function StoreRequirements() {
 					return (
 						<>
 							<ContactInformation
-								view="setup-mc"
 								onPhoneNumberVerified={ () =>
 									setPhoneNumberReady( true )
 								}
