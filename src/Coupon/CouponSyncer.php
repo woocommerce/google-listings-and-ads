@@ -2,7 +2,6 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\InvalidCouponEntry;
@@ -335,7 +334,7 @@ class CouponSyncer implements Service {
 			return false;
 		}
 		if ( ! empty( $coupon->get_exclude_sale_items() ) &&
-			get_exclude_sale_items() ) {
+			$coupon->get_exclude_sale_items() ) {
 			return false;
 		}
 		return true;

@@ -219,17 +219,19 @@ class SyncerHooks implements Service, Registerable {
 	 * @param int $coupon_id
 	 */
 	protected function handle_delete_coupon( int $coupon_id ) {
-		if ( isset( $this->delete_requests_map[ $coupon_id ] ) ) {
-			$coupon_to_delete = $this->delete_requests_map[ $coupon_id ];
-			if ( ! empty( $coupon_to_delete->get_synced_google_ids() ) &&
+		if ( ! isset( $this->delete_requests_map[ $coupon_id ] ) ) {
+			return;
+		}
+
+		$coupon_to_delete = $this->delete_requests_map[ $coupon_id ];
+		if ( ! empty( $coupon_to_delete->get_synced_google_ids() ) &&
 				! $this->is_already_scheduled_to_delete( $coupon_id ) ) {
-				$this->delete_coupon_job->schedule(
-					[
-						[ $coupon_to_delete ],
-					]
-				);
-				$this->set_already_scheduled_to_delete( $coupon_id );
-			}
+			$this->delete_coupon_job->schedule(
+				[
+					[ $coupon_to_delete ],
+				]
+			);
+			$this->set_already_scheduled_to_delete( $coupon_id );
 		}
 	}
 

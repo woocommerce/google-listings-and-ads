@@ -145,7 +145,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			);
 			$this->setLongtitle(
 				sprintf(
-					'%d %s% off',
+					'%d %s off',
 					$coupon_amount,
 					get_woocommerce_currency()
 				)

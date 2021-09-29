@@ -2,7 +2,9 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
+
 defined( 'ABSPATH' ) || exit();
 
 /**
@@ -32,7 +34,6 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 * @param DeleteCouponEntry[] $coupons
 	 *
 	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.
-	 * @throws JobException If invalid or non-existing coupon are provided. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $coupons ) {
 		foreach ( $coupons as $coupon ) {
@@ -45,7 +46,7 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 *
 	 * @param array[] $args
 	 *
-	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
+	 * @throws JobException If no coupon is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function schedule( array $args = [] ) {
 		$args = $args[0] ?? null;

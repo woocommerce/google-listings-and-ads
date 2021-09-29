@@ -38,7 +38,7 @@ class InvalidCouponEntry implements JsonSerializable {
 	protected $errors;
 
 	/**
-	 * InvalidPromotionEntry constructor.
+	 * InvalidCouponEntry constructor.
 	 *
 	 * @param int         $wc_coupon_id
 	 * @param string[]    $errors
@@ -102,10 +102,10 @@ class InvalidCouponEntry implements JsonSerializable {
 	 *
 	 * @param ConstraintViolationListInterface $violations
 	 *
-	 * @return InvalidPromotionEntry
+	 * @return InvalidCouponEntry
 	 */
 	public function map_validation_violations(
-		ConstraintViolationListInterface $violations ): InvalidPromotionEntry {
+		ConstraintViolationListInterface $violations ): InvalidCouponEntry {
 		$validation_errors = [];
 		foreach ( $violations as $violation ) {
 			$validation_errors[] = sprintf(
@@ -124,7 +124,7 @@ class InvalidCouponEntry implements JsonSerializable {
 	 *
 	 * @return array
 	 */
-	public function jsonSerialize(): array { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
+	public function jsonSerialize(): array {
 		$data = [
 			'woocommerce_id' => $this->get_wc_coupon_id(),
 			'errors'         => $this->get_errors(),

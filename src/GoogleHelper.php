@@ -152,7 +152,7 @@ trait GoogleHelper {
 	 * @return array
 	 */
 	protected function get_mc_promotion_supported_countries_currencies(): array {
-		$supported_countries = [
+		return [
 			'AU' => 'AUD', // Australia
 			'CA' => 'CAD', // Canada
 			'DE' => 'EUR', // Germany
@@ -161,8 +161,6 @@ trait GoogleHelper {
 			'IN' => 'INR', // India
 			'US' => 'USD', // United States
 		];
-
-		return $supported_countries;
 	}
 
 	/**

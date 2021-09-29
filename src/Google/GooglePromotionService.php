@@ -2,8 +2,6 @@
 declare(strict_types = 1);
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -20,13 +18,10 @@ defined( 'ABSPATH' ) || exit();
 class GooglePromotionService implements OptionsAwareInterface, Service {
 
 	use OptionsAwareTrait;
-	use ValidateInterface;
 
 	public const INTERNAL_ERROR_CODE = 500;
 
 	public const INTERNAL_ERROR_MSG = 'Internal error';
-
-	public const NOT_FOUND_ERROR_MSG = 'notFound';
 
 	/**
 	 *
