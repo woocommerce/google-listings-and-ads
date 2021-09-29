@@ -11,8 +11,6 @@ import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import ContactInformationPreviewCard from '../contact-information-preview-card';
 
 /**
- * Renders phone number data in Card UI and is able to edit.
- *
  * Renders a component with the MC's phone number.
  * In preview mode, meaning there will be no editing features, just the number and edit link.
  *

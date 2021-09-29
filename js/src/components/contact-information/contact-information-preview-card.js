@@ -20,7 +20,7 @@ import './contact-information-preview-card.scss';
  * @param {import('.~/components/account-card').APPEARANCE}  props.appearance
  * @param {string} props.editHref URL where Edit button should point to.
  * @param {string} props.editEventName Tracing event name used when the "Edit" button is clicked.
- * @param {boolean} props.loading Set ti `true` if the card should be rendered in the loading state.
+ * @param {boolean} props.loading Set to `true` if the card should be rendered in the loading state.
  * @param {JSX.Element} props.content Main content of the card to be rendered once the data is loaded.
  * @param {string} [props.warning] Warning title, to be used instead of the default one.
  * @return {JSX.Element} Filled AccountCard component.
