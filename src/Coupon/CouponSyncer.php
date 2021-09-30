@@ -176,9 +176,7 @@ class CouponSyncer implements Service {
 			);
 			$this->coupon_helper->mark_as_invalid(
 				$coupon,
-				[
-					$invalid_promotion,
-				]
+				$invalid_promotion->get_errors()
 			);
 
 			$this->handle_update_errors( [ $invalid_promotion ] );
@@ -254,9 +252,9 @@ class CouponSyncer implements Service {
 				array_push( $deleted_promotions, $response );
 				// Remove synced google id
 				if ( $wc_coupon_exist ) {
-					$this->coupon_helper->remove_google_id(
+					$this->coupon_helper->remove_google_id_by_country(
 						$wc_coupon,
-						$google_id
+						$target_country
 					);
 				}
 			} catch ( GoogleException $google_exception ) {
