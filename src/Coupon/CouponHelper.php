@@ -145,6 +145,7 @@ class CouponHelper implements Service {
 	 */
 	public function mark_as_pending( WC_Coupon $coupon ) {
 		$this->meta_handler->update_sync_status( $coupon, SyncStatus::PENDING );
+		$this->meta_handler->delete_errors( $coupon );
 	}
 
 	/**
@@ -244,24 +245,25 @@ class CouponHelper implements Service {
 	 *
 	 * @param WC_Coupon $coupon
 	 *
-	 * @return string|null
+	 * @return string
 	 */
 	public function get_channel_visibility( WC_Coupon $coupon ): ?string {
-		try {
-			return $this->meta_handler->get_visibility( $coupon );
-		} catch ( InvalidValue $exception ) {
+		$visibility = $this->meta_handler->get_visibility( $coupon );
+
+		if ( empty( $visibility ) ) {
 			do_action(
 				'woocommerce_gla_debug_message',
 				sprintf(
-					'Channel visibility forced to "%s" for invalid coupon (ID: %s).',
+					'Channel visibility forced to "%s" for visibility unknown (Post ID: %s).',
 					ChannelVisibility::DONT_SYNC_AND_SHOW,
 					$coupon->get_id()
 				),
 				__METHOD__
 			);
-
 			return ChannelVisibility::DONT_SYNC_AND_SHOW;
 		}
+
+		return $visibility;
 	}
 
 	/**
