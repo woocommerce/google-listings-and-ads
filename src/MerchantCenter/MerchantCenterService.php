@@ -299,7 +299,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 				'code'       => 'missing_contact_information',
 				'issue'      => __( 'No contact information.', 'google-listings-and-ads' ),
 				'action'     => __( 'Add store contact information', 'google-listings-and-ads' ),
-				'action_url' => $this->get_contact_information_setup_url(),
+				'action_url' => $this->get_settings_url(),
 				'created_at' => $cache_created_time->format( 'Y-m-d H:i:s' ),
 				'type'       => MerchantStatuses::TYPE_ACCOUNT,
 				'severity'   => 'error',

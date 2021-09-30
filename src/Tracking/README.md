@@ -67,10 +67,22 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `context`: indicate which link is clicked
     -   `href`: link's URL
 
--   `edit_mc_store_address` - Trigger when store address edit button is clicked.
+-   `edit_wc_store_address` - Trigger when store address "Edit in settings" button is clicked.
+    Before `1.5.0` it was called `edit_mc_store_address`.
 
-    - `path`: The path used in the page, e.g. `"/google/settings"`.
-    - `subpath`: The subpath used in the page, e.g. `"/edit-contact-information"` or `undefined` when there is no subpath.
+    -   `path`: The path used in the page, e.g. `"/google/settings"`.
+    -   `subpath`: The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
+
+-   `edit_mc_store_address` - Trigger when store address edit button is clicked.
+    Before `1.5.0` this name was used for tracking clicking "Edit in settings" to edit the WC address. As of `>1.5.0`, that event is now tracked as `edit_wc_store_address`.
+
+    -   `path`: The path used in the page, e.g. `"/google/settings"`.
+    -   `subpath`: The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
+
+-   `edit_mc_phone_number` - Trigger when phone number edit button is clicked.
+
+    -   `path`: The path used in the page, e.g. `"/google/settings"`.
+    -   `subpath`: The subpath used in the page, or `undefined` when there is no subpath.
 
 -   `edit_product_click` - Trigger when edit links are clicked from product feed table
 
