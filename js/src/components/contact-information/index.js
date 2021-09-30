@@ -76,11 +76,11 @@ export default function ContactInformation( { onPhoneNumberVerified } ) {
 	const phone = useGoogleMCPhoneNumber();
 
 	/**
-	 * Since it still lacking the phone verification state,
+	 * Since it is still lacking the phone verification state,
 	 * all onboarding accounts are considered unverified phone numbers.
 	 *
 	 * TODO: replace the code at next line back to the original logic with
-	 * `const initEditing = isSetupMC ? null : true;`
+	 * `const initEditing = null;`
 	 * after the phone verification state can be detected.
 	 */
 	const initEditing = true;
