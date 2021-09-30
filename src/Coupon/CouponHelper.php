@@ -145,6 +145,7 @@ class CouponHelper implements Service {
 	 */
 	public function mark_as_pending( WC_Coupon $coupon ) {
 		$this->meta_handler->update_sync_status( $coupon, SyncStatus::PENDING );
+		$this->meta_handler->delete_errors( $coupon );
 	}
 
 	/**
