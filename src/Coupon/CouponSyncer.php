@@ -176,9 +176,7 @@ class CouponSyncer implements Service {
 			);
 			$this->coupon_helper->mark_as_invalid(
 				$coupon,
-				[
-					$invalid_promotion,
-				]
+                $invalid_promotion->get_errors()
 			);
 
 			$this->handle_update_errors( [ $invalid_promotion ] );
