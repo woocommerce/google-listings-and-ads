@@ -233,11 +233,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 
 		// Inbox Notes
-		$this->conditionally_share_with_tags( ContactInformationNote::class );
-		$this->conditionally_share_with_tags( CompleteSetupNote::class );
-		$this->conditionally_share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
-		$this->conditionally_share_with_tags( SetupCampaignNote::class );
-		$this->conditionally_share_with_tags( SetupCampaign2Note::class );
+		$this->share_with_tags( ContactInformationNote::class );
+		$this->share_with_tags( CompleteSetupNote::class );
+		$this->share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
+		$this->share_with_tags( SetupCampaignNote::class );
+		$this->share_with_tags( SetupCampaign2Note::class );
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );
