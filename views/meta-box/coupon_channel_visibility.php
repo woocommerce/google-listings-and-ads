@@ -58,11 +58,7 @@ if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
 } elseif ( ! is_null( $this->sync_status ) ) {  
     $sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
 }
-$show_status = 
-    $channel_visibility ===
-    ChannelVisibility::SYNC_AND_SHOW &&
-    $this->sync_status !==
-    SyncStatus::SYNCED;
+$show_status = ! empty( $this->sync_status );
 
 /**
  *
