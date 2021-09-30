@@ -51,7 +51,11 @@ $get_started_url = $this->get_started_url;
  */
 if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
     $sync_status = __( 'Issues detected', 'google-listings-and-ads' );
-} elseif ( ! is_null( $this->sync_status ) ) {
+} elseif ( SyncStatus::PENDING === $this->sync_status ){
+    $sync_status = __( 'Pending for sync', 'google-listings-and-ads' );
+} elseif ( SyncStatus::SYNCED === $this->sync_status ){
+    $sync_status = __( 'Sent to Google', 'google-listings-and-ads' );
+} elseif ( ! is_null( $this->sync_status ) ) {  
     $sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
 }
 $show_status = 
@@ -107,21 +111,19 @@ if ( $input_disabled ) {
     	<?php if ( $show_status ) : ?>
     	<div class="sync-status notice-alt notice-large notice-warning"
 		style="border-left-style: solid">
-		<p>
-			<strong><?php esc_html_e( 'Google sync status', 'google-listings-and-ads' ); ?></strong>
-		</p>
-		<p><?php echo esc_html( $sync_status ); ?></p>
     		<?php if ( $has_issues ) : ?>
     			<div class="gla-product-issues">
-			<p>
-				<strong><?php esc_html_e( 'Issues', 'google-listings-and-ads' ); ?></strong>
-			</p>
-			<ul>
-    					<?php foreach ( $issues as $issue ) : ?>
-    					<li><?php echo esc_html( $issue ); ?></li>
-    					<?php endforeach; ?>
+        			<p>
+        				<strong><?php esc_html_e( 'Coupon issues', 'google-listings-and-ads' ); ?></strong>
+        			</p>
+        			<ul>
+            					<?php foreach ( $issues as $issue ) : ?>
+            					<li><?php echo esc_html( $issue ); ?></li>
+            					<?php endforeach; ?>
     				</ul>
-		</div>
+				</div>
+			<?php else : ?>
+			<p><strong><?php echo esc_html( $sync_status ); ?></strong></p>
     		<?php endif; ?>
     	</div>
     	<?php endif; ?>
