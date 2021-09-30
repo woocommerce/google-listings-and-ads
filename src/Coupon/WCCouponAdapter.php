@@ -4,17 +4,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\Condition;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeSystem;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\SizeType;
-use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AgeGroup;
-use Automattic\WooCommerce\GoogleListingsAndAds\Validator\GooglePriceConstraint;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
 use Google\Service\ShoppingContent\PriceAmount as GooglePriceAmount;
 use Google\Service\ShoppingContent\Promotion as GooglePromotion;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Coupon;
@@ -300,21 +294,6 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	 */
 	public function get_wc_coupon_id(): int {
 		return $this->wc_coupon_id;
-	}
-
-	/**
-	 * Update google promotion for a deleted or disabled WooCommerce coupon.
-	 *
-     * phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
-	 */
-	public function disable_coupon() {
-		$start_date = new WC_DateTime();
-		$start_date->sub( new DateInterval( 'P2D' ) );
-		$end_date = new WC_DateTime();
-		$end_date->sub( new DateInterval( 'P1D' ) );
-		$this->setPromotionEffectiveDates(
-			sprintf( '%s/%s', (string) $start_date, (string) $end_date )
-		);
 	}
 
 	/**

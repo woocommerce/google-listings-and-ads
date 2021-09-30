@@ -8,10 +8,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\InvalidCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use DateInterval;
 use Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Exception;
 use WC_Coupon;
+use WC_DateTime;
 defined( 'ABSPATH' ) || exit();
 
 /**
@@ -176,7 +178,7 @@ class CouponSyncer implements Service {
 			);
 			$this->coupon_helper->mark_as_invalid(
 				$coupon,
-                $invalid_promotion->get_errors()
+				$invalid_promotion->get_errors()
 			);
 
 			$this->handle_update_errors( [ $invalid_promotion ] );
@@ -238,15 +240,15 @@ class CouponSyncer implements Service {
 		$invalid_promotions = [];
 		$synced_google_ids  = $coupon->get_synced_google_ids();
 		$wc_coupon          = $this->wc->maybe_get_coupon(
-			$coupon->get_coupon()
-				->get_wc_coupon_id()
+			$coupon->get_wc_coupon_id()
 		);
 		$wc_coupon_exist    = $wc_coupon instanceof WC_Coupon;
 		foreach ( $synced_google_ids as $target_country => $google_id ) {
 			try {
-				$adapted_coupon = $coupon->get_coupon();
+				$adapted_coupon = $coupon->get_google_promotion();
 				$adapted_coupon->setTargetCountry( $target_country );
-				$adapted_coupon->disable_coupon();
+				// Disable the coupon.
+				$adapted_coupon->setPromotionEffectiveDates( self::get_disabled_effective_dates() );
 
 				$response = $this->google_service->create( $adapted_coupon );
 				array_push( $deleted_promotions, $response );
@@ -260,7 +262,7 @@ class CouponSyncer implements Service {
 				array_push(
 					$invalid_promotions,
 					new InvalidCouponEntry(
-						$coupon->get_coupon()->get_wc_coupon_id(),
+						$coupon->get_wc_coupon_id(),
 						[
 							$google_exception->getCode() => $google_exception->getMessage(),
 						],
@@ -312,6 +314,19 @@ class CouponSyncer implements Service {
 			),
 			__METHOD__
 		);
+	}
+
+	/**
+	 * Return a string of a past period to disable coupon.
+	 *
+	 * @return string
+	 */
+	protected static function get_disabled_effective_dates(): string {
+		$start_date = new WC_DateTime();
+		$start_date->sub( new DateInterval( 'P2D' ) );
+		$end_date = new WC_DateTime();
+		$end_date->sub( new DateInterval( 'P1D' ) );
+		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
 	}
 
 	/**

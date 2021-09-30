@@ -72,11 +72,12 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
         $coupon = $this->create_ready_to_delete_coupon();
 
         $expected_coupon_entry = new DeleteCouponEntry( 
+            $coupon->get_id(),
             new WCCouponAdapter( ['wc_coupon' => $coupon] ),
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [[$expected_coupon_entry]] ) );
+            ->with( $this->equalTo( [$expected_coupon_entry] ) );
 
         wp_trash_post( $coupon->get_id() );
     }
@@ -85,11 +86,12 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
         $coupon = $this->create_ready_to_delete_coupon();
 
         $expected_coupon_entry = new DeleteCouponEntry( 
+            $coupon->get_id(),
             new WCCouponAdapter( ['wc_coupon' => $coupon] ),
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
-            ->with( $this->equalTo( [[$expected_coupon_entry]] ) );
+            ->with( $this->equalTo( [$expected_coupon_entry] ) );
 
         // force delete post
         wp_delete_post( $coupon->get_id(), true );

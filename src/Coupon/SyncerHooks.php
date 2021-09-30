@@ -161,6 +161,7 @@ class SyncerHooks implements Service, Registerable {
 		} elseif ( $this->coupon_helper->is_coupon_synced( $coupon ) ) {
 			// Delete the coupon from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
 			$coupon_to_delete = new DeleteCouponEntry(
+				$coupon_id,
 				new WCCouponAdapter(
 					[
 						'wc_coupon' => $coupon,
@@ -170,7 +171,7 @@ class SyncerHooks implements Service, Registerable {
 			);
 			$this->delete_coupon_job->schedule(
 				[
-					[ $coupon_to_delete ],
+					$coupon_to_delete,
 				]
 			);
 
@@ -199,6 +200,7 @@ class SyncerHooks implements Service, Registerable {
 		if ( $coupon instanceof WC_Coupon &&
 			$this->coupon_helper->is_coupon_synced( $coupon ) ) {
 			$this->delete_requests_map[ $coupon_id ] = new DeleteCouponEntry(
+				$coupon_id,
 				new WCCouponAdapter(
 					[
 						'wc_coupon' => $coupon,
@@ -224,7 +226,7 @@ class SyncerHooks implements Service, Registerable {
 				! $this->is_already_scheduled_to_delete( $coupon_id ) ) {
 			$this->delete_coupon_job->schedule(
 				[
-					[ $coupon_to_delete ],
+					$coupon_to_delete,
 				]
 			);
 			$this->set_already_scheduled_to_delete( $coupon_id );

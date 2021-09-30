@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\DeleteCouponEntry;
+use Google\Service\ShoppingContent\Promotion as GooglePromotion;
 
 defined( 'ABSPATH' ) || exit();
 
@@ -31,14 +32,28 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	/**
 	 * Process an item.
 	 *
-	 * @param DeleteCouponEntry[] $coupons
+	 * @param array[] $coupon_entry
 	 *
+	 * @throws JobException If no valid coupon data is provided as argument. The exception will be logged by ActionScheduler.
 	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	public function process_items( $coupons ) {
-		foreach ( $coupons as $coupon ) {
-			$this->coupon_syncer->delete( $coupon );
+	public function process_items( array $coupon_entry ) {
+		$wc_coupon_id     = $coupon_entry[0] ?? null;
+		$google_promotion = $coupon_entry[1] ?? null;
+		$google_ids       = $coupon_entry[2] ?? null;
+		if ( ( ! is_int( $wc_coupon_id ) ) || empty( $google_promotion ) || empty( $google_ids ) ) {
+			throw JobException::item_not_provided(
+				'Required data for the coupon to delete'
+			);
 		}
+
+		$this->coupon_syncer->delete(
+			new DeleteCouponEntry(
+				$wc_coupon_id,
+				new GooglePromotion( $google_promotion ),
+				$google_ids
+			)
+		);
 	}
 
 	/**
@@ -49,25 +64,24 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 * @throws JobException If no coupon is provided as argument. The exception will be logged by ActionScheduler.
 	 */
 	public function schedule( array $args = [] ) {
-		$args = $args[0] ?? null;
+		$coupon_entry = $args[0] ?? null;
 
-		$coupons = [];
-		foreach ( $args as $arg ) {
-			if ( $arg instanceof DeleteCouponEntry ) {
-				array_push( $coupons, $arg );
-			}
-		}
-
-		if ( empty( $coupons ) ) {
+		if ( ! $coupon_entry instanceof DeleteCouponEntry ) {
 			throw JobException::item_not_provided(
 				'DeleteCouponEntrys for the coupons to delete'
 			);
 		}
 
-		if ( $this->can_schedule( [ $coupons ] ) ) {
+		if ( $this->can_schedule( [ $coupon_entry ] ) ) {
 			$this->action_scheduler->schedule_immediate(
 				$this->get_process_item_hook(),
-				[ $coupons ]
+				[
+					[
+						$coupon_entry->get_wc_coupon_id(),
+						$coupon_entry->get_google_promotion(),
+						$coupon_entry->get_synced_google_ids(),
+					],
+				]
 			);
 		}
 	}
