@@ -35,7 +35,7 @@ class DeleteCoupon extends AbstractCouponSyncerJob implements
 	 *
 	 * @throws CouponSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
-	public function process_items( array $coupons ) {
+	public function process_items( $coupons ) {
 		foreach ( $coupons as $coupon ) {
 			$this->coupon_syncer->delete( $coupon );
 		}
