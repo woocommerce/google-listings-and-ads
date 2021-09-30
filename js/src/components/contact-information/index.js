@@ -67,30 +67,26 @@ export function ContactInformationPreview() {
 }
 
 /**
- * Renders a contact information section with specified initial state and texts, determined by the `view` prop.
+ * Renders a contact information section with specified initial state and texts.
  *
  * @param {Object} props React props.
- * @param {'setup-mc'|'settings'} props.view Indicate where this component is used.
  * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified.
  */
-export default function ContactInformation( { view, onPhoneNumberVerified } ) {
+export default function ContactInformation( { onPhoneNumberVerified } ) {
 	const phone = useGoogleMCPhoneNumber();
-	const isSetupMC = view === 'setup-mc';
 
 	/**
-	 * Since it still lacking the phone verification state,
+	 * Since it is still lacking the phone verification state,
 	 * all onboarding accounts are considered unverified phone numbers.
 	 *
 	 * TODO: replace the code at next line back to the original logic with
-	 * `const initEditing = isSetupMC ? null : true;`
+	 * `const initEditing = null;`
 	 * after the phone verification state can be detected.
 	 */
 	const initEditing = true;
 
-	const title = isSetupMC ? mcTitle : settingsTitle;
-	const trackContext = isSetupMC
-		? 'setup-mc-contact-information'
-		: 'settings-contact-information';
+	const title = mcTitle;
+	const trackContext = 'setup-mc-contact-information';
 
 	usePhoneNumberCheckTrackEventEffect( phone );
 
@@ -114,7 +110,7 @@ export default function ContactInformation( { view, onPhoneNumberVerified } ) {
 		>
 			<VerticalGapLayout size="large">
 				<PhoneNumberCard
-					view={ view }
+					view="setup-mc"
 					phoneNumber={ phone }
 					initEditing={ initEditing }
 					onPhoneNumberVerified={ onPhoneNumberVerified }

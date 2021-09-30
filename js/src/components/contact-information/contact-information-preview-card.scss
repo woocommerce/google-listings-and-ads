@@ -1,15 +1,4 @@
 .gla-contact-info-preview-card {
-	&__refresh-button {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		margin: auto;
-
-		.gridicons-refresh {
-			fill: var(--wp-admin-theme-color);
-		}
-	}
-
 	// Vertically align icon inside the title.
 	.wcdl-subsection-title {
 		display: flex;
