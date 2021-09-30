@@ -58,7 +58,8 @@ if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
 } elseif ( ! is_null( $this->sync_status ) ) {  
     $sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
 }
-$show_status = ! empty( $this->sync_status );
+
+$show_status = ! is_null( $this->sync_status );
 
 /**
  *
