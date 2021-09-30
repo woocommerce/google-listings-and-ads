@@ -253,7 +253,7 @@ class CouponSyncer implements Service {
 				if ( $wc_coupon_exist ) {
 					$this->coupon_helper->remove_google_id_by_country(
 						$wc_coupon,
-					    $target_country
+						$target_country
 					);
 				}
 			} catch ( GoogleException $google_exception ) {

@@ -56,10 +56,12 @@ class CouponHelper implements Service {
 	}
 
 	/**
+	 * Mark a coupon as synced. This function accepts nullable $google_id,
+	 * which guarantees version compatibility for Alpha, Beta and stable verison promtoion APIs.
 	 *
-	 * @param WC_Coupon $coupon
-	 * @param string|null    $google_id
-	 * @param string    $target_country
+	 * @param WC_Coupon   $coupon
+	 * @param string|null $google_id
+	 * @param string      $target_country
 	 */
 	public function mark_as_synced(
 		WC_Coupon $coupon,
@@ -309,7 +311,7 @@ class CouponHelper implements Service {
 		$errors = $this->meta_handler->get_errors( $coupon ) ?: [];
 
 		$first_key = array_key_first( $errors );
-		if ( ! empty( $errors ) && is_numeric( $first_key ) && 0 !== $first_key ) {
+		if ( ! empty( $errors ) && is_array( $errors[ $first_key ] ) ) {
 			$errors = array_unique( array_merge( ...$errors ) );
 		}
 

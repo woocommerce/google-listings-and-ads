@@ -109,7 +109,7 @@ class CouponSyncerTest extends ContainerAwareUnitTest {
         $this->assertNotEmpty( 
             $this->coupon_meta->get_errors( $reloaded_coupon ) );
         $this->assertEquals(
-            [ GooglePromotionService::INTERNAL_ERROR_CODE => GooglePromotionService::INTERNAL_ERROR_MSG ],
+            [GooglePromotionService::INTERNAL_ERROR_CODE => GooglePromotionService::INTERNAL_ERROR_MSG],
             $this->coupon_meta->get_errors( $reloaded_coupon ) );
         $this->assertEquals( 
             SyncStatus::HAS_ERRORS,
