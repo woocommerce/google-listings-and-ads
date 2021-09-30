@@ -250,11 +250,10 @@ class CouponSyncer implements Service {
 
 				$response = $this->google_service->create( $adapted_coupon );
 				array_push( $deleted_promotions, $response );
-				// Remove synced google id
 				if ( $wc_coupon_exist ) {
-					$this->coupon_helper->remove_google_id(
+					$this->coupon_helper->remove_google_id_by_country(
 						$wc_coupon,
-						$google_id
+					    $target_country
 					);
 				}
 			} catch ( GoogleException $google_exception ) {

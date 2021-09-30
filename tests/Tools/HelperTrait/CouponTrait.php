@@ -103,11 +103,7 @@ trait CouponTrait {
 
         $target_country = $target_country ?: $this->get_sample_target_country();
         $promotion_id = $coupon_id ?: rand();
-        $google_id = rand();
 
-        $promotion->expects( $this->any() )
-        ->method( 'getId' )
-        ->willReturn( sprintf( '%d', $google_id ) );
         $promotion->expects( $this->any() )
             ->method( 'getPromotionId' )
             ->willReturn( sprintf( 'slug_%d', $promotion_id ) );

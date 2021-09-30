@@ -58,12 +58,12 @@ class CouponHelper implements Service {
 	/**
 	 *
 	 * @param WC_Coupon $coupon
-	 * @param string    $google_id
+	 * @param string|null    $google_id
 	 * @param string    $target_country
 	 */
 	public function mark_as_synced(
 		WC_Coupon $coupon,
-		string $google_id,
+		?string $google_id,
 		string $target_country ) {
 		$this->meta_handler->update_synced_at( $coupon, time() );
 		$this->meta_handler->update_sync_status( $coupon, SyncStatus::SYNCED );
@@ -99,20 +99,15 @@ class CouponHelper implements Service {
 	/**
 	 *
 	 * @param WC_Coupon $coupon
-	 * @param string    $google_id
+	 * @param string    $target_country
 	 */
-	public function remove_google_id( WC_Coupon $coupon, string $google_id ) {
+	public function remove_google_id_by_country( WC_Coupon $coupon, string $target_country ) {
 		$google_ids = $this->meta_handler->get_google_ids( $coupon );
 		if ( empty( $google_ids ) ) {
 			return;
 		}
 
-		$idx = array_search( $google_id, $google_ids, true );
-		if ( false === $idx ) {
-			return;
-		}
-
-		unset( $google_ids[ $idx ] );
+		unset( $google_ids[ $target_country ] );
 
 		if ( ! empty( $google_ids ) ) {
 			$this->meta_handler->update_google_ids( $coupon, $google_ids );
