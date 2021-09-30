@@ -149,7 +149,7 @@ class WP {
 	 *
 	 * @since x.x.x
 	 */
-	public function wp_timezone() {
+	public function wp_timezone(): DateTimeZone {
 		return wp_timezone();
 	}
 
