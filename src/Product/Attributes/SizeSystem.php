@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\SizeSystemInput;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -23,24 +25,6 @@ class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface 
 	 */
 	public static function get_id(): string {
 		return 'sizeSystem';
-	}
-
-	/**
-	 * Returns a name for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_name(): string {
-		return __( 'Size system', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns a short description for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_description(): string {
-		return __( 'System in which the size is specified. Recommended for apparel items.', 'google-listings-and-ads' );
 	}
 
 	/**
@@ -74,4 +58,18 @@ class SizeSystem extends AbstractAttribute implements WithValueOptionsInterface 
 			'MEX' => __( 'MEX', 'google-listings-and-ads' ),
 		];
 	}
+
+	/**
+	 * Return the attribute's input class. Must be an instance of `AttributeInputInterface`.
+	 *
+	 * @return string
+	 *
+	 * @see AttributeInputInterface
+	 *
+	 * @since 1.5.0
+	 */
+	public static function get_input_type(): string {
+		return SizeSystemInput::class;
+	}
+
 }

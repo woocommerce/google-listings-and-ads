@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\SizeTypeInput;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -23,24 +25,6 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 	 */
 	public static function get_id(): string {
 		return 'sizeType';
-	}
-
-	/**
-	 * Returns a name for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_name(): string {
-		return __( 'Size type', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns a short description for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_description(): string {
-		return __( 'The cut of the item. Recommended for apparel items.', 'google-listings-and-ads' );
 	}
 
 	/**
@@ -69,4 +53,18 @@ class SizeType extends AbstractAttribute implements WithValueOptionsInterface {
 			'maternity'    => __( 'Maternity', 'google-listings-and-ads' ),
 		];
 	}
+
+	/**
+	 * Return the attribute's input class. Must be an instance of `AttributeInputInterface`.
+	 *
+	 * @return string
+	 *
+	 * @see AttributeInputInterface
+	 *
+	 * @since 1.5.0
+	 */
+	public static function get_input_type(): string {
+		return SizeTypeInput::class;
+	}
+
 }

@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\ConditionInput;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -23,24 +25,6 @@ class Condition extends AbstractAttribute implements WithValueOptionsInterface {
 	 */
 	public static function get_id(): string {
 		return 'condition';
-	}
-
-	/**
-	 * Returns a name for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_name(): string {
-		return __( 'Condition', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns a short description for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_description(): string {
-		return __( 'Condition or state of the item.', 'google-listings-and-ads' );
 	}
 
 	/**
@@ -66,4 +50,18 @@ class Condition extends AbstractAttribute implements WithValueOptionsInterface {
 			'used'        => __( 'Used', 'google-listings-and-ads' ),
 		];
 	}
+
+	/**
+	 * Return the attribute's input class. Must be an instance of `AttributeInputInterface`.
+	 *
+	 * @return string
+	 *
+	 * @see AttributeInputInterface
+	 *
+	 * @since 1.5.0
+	 */
+	public static function get_input_type(): string {
+		return ConditionInput::class;
+	}
+
 }

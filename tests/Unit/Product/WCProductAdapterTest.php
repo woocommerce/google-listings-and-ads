@@ -506,11 +506,16 @@ DESCRIPTION;
 	public function test_images_are_set() {
 		$product = WC_Helper_Product::create_simple_product();
 
-		$image_1 = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $product->get_id() );
-		$image_2 = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-2.png' ), $product->get_id() );
+		$main_image = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-1.png' ), $product->get_id() );
 
-		$product->set_image_id( $image_1 );
-		$product->set_gallery_image_ids( [ $image_2 ] );
+		$additional_images = [];
+		// Intentionally add more than 10 images to test the limiting functionality.
+		for ($i = 0; $i < 12; $i++) {
+			$additional_images[$i] = $this->factory()->attachment->create_upload_object( $this->get_data_file_path( 'test-image-2.png' ), $product->get_id() );
+		}
+
+		$product->set_image_id( $main_image );
+		$product->set_gallery_image_ids( $additional_images );
 		$product->save();
 
 		$adapted_product = new WCProductAdapter(
@@ -520,11 +525,12 @@ DESCRIPTION;
 			]
 		);
 
-		$this->assertEquals( wp_get_attachment_image_url( $image_1 ), $adapted_product->getImageLink() );
-		$this->assertEquals(
-			[
-				wp_get_attachment_image_url( $image_2 ),
-			],
+		$this->assertEquals( wp_get_attachment_image_url( $main_image ), $adapted_product->getImageLink() );
+
+		// Assert that only up to 10 additional images are added.
+		$additional_images = array_slice( $additional_images, 0, 10 );
+		$this->assertEqualSets(
+			array_map( 'wp_get_attachment_image_url', $additional_images ),
 			$adapted_product->getAdditionalImageLinks()
 		);
 	}
@@ -600,6 +606,23 @@ DESCRIPTION;
 			]
 		);
 		$this->assertEquals( WCProductAdapter::AVAILABILITY_IN_STOCK, $adapted_product->getAvailability() );
+	}
+
+	public function test_availability_is_set_to_backorder_if_0_stock_and_backorder_enabled() {
+		$product = WC_Helper_Product::create_simple_product( false );
+		$product->set_manage_stock( true );
+
+		$product->set_stock_status( 'instock' );
+		$product->set_backorders( 'yes' );
+		$product->set_stock_quantity( 0 );
+
+		$adapted_product = new WCProductAdapter(
+			[
+				'wc_product'    => $product,
+				'targetCountry' => 'US',
+			]
+		);
+		$this->assertEquals( WCProductAdapter::AVAILABILITY_BACKORDER, $adapted_product->getAvailability() );
 	}
 
 	public function test_shipping_country_is_set_based_on_target_country() {

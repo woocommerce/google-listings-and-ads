@@ -16,6 +16,7 @@ import {
 import useProductsReport from './useProductsReport';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
+import DifferentCurrencyNotice from '.~/components/different-currency-notice';
 import NavigationClassic from '.~/components/navigation-classic';
 import ProductsReportFilters from './products-report-filters';
 import SummarySection from '../summary-section';
@@ -116,6 +117,7 @@ const ProductsReportPage = () => {
 
 	return (
 		<>
+			<DifferentCurrencyNotice context="reports-products" />
 			<NavigationClassic />
 			<ReportsNavigation />
 			{ loaded ? (

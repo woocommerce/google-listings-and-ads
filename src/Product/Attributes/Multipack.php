@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\MultipackInput;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,24 +28,6 @@ class Multipack extends AbstractAttribute {
 	}
 
 	/**
-	 * Returns a name for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_name(): string {
-		return __( 'Multipack', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns a short description for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_description(): string {
-		return __( 'The number of identical products in a multipack. Use this attribute to indicate that you\'ve grouped multiple identical products for sale as one item.', 'google-listings-and-ads' );
-	}
-
-	/**
 	 * Return an array of WooCommerce product types that this attribute can be applied to.
 	 *
 	 * @return array
@@ -61,6 +45,19 @@ class Multipack extends AbstractAttribute {
 	 */
 	public static function get_value_type(): string {
 		return 'integer';
+	}
+
+	/**
+	 * Return the attribute's input class. Must be an instance of `AttributeInputInterface`.
+	 *
+	 * @return string
+	 *
+	 * @see AttributeInputInterface
+	 *
+	 * @since 1.5.0
+	 */
+	public static function get_input_type(): string {
+		return MultipackInput::class;
 	}
 
 }

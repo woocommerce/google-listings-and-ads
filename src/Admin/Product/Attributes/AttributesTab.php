@@ -140,6 +140,16 @@ class AttributesTab implements Service, Registerable, Conditional {
 	 * @param WC_Product $product
 	 */
 	private function handle_update_product( WC_Product $product ) {
+		/**
+		 * Array of `true` values for each product IDs already handled by this method. Used to prevent double submission.
+		 *
+		 * @var bool[] $already_updated
+		 */
+		static $already_updated = [];
+		if ( isset( $already_updated[ $product->get_id() ] ) ) {
+			return;
+		}
+
 		$form           = $this->get_form( $product );
 		$form_view_data = $form->get_view_data();
 
@@ -153,6 +163,8 @@ class AttributesTab implements Service, Registerable, Conditional {
 
 		$form->submit( $submitted_data );
 		$this->update_data( $product, $form->get_data() );
+
+		$already_updated[ $product->get_id() ] = true;
 	}
 
 	/**

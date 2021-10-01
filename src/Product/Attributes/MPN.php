@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\MPNInput;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,30 +28,25 @@ class MPN extends AbstractAttribute {
 	}
 
 	/**
-	 * Returns a name for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_name(): string {
-		return __( 'Manufacturer Part Number (MPN)', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns a short description for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_description(): string {
-		return __( 'This code uniquely identifies the product to its manufacturer', 'google-listings-and-ads' );
-	}
-
-	/**
 	 * Return an array of WooCommerce product types that this attribute can be applied to.
 	 *
 	 * @return array
 	 */
 	public static function get_applicable_product_types(): array {
 		return [ 'simple', 'variation' ];
+	}
+
+	/**
+	 * Return the attribute's input class. Must be an instance of `AttributeInputInterface`.
+	 *
+	 * @return string
+	 *
+	 * @see AttributeInputInterface
+	 *
+	 * @since 1.5.0
+	 */
+	public static function get_input_type(): string {
+		return MPNInput::class;
 	}
 
 }

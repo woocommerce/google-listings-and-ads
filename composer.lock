@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d5ed98dfe3518046e391db16a3d3d9dd",
+    "content-hash": "20773c0eb40754596a49e0af2f484e21",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -538,21 +538,21 @@
         },
         {
             "name": "google/apiclient",
-            "version": "v2.10.0",
+            "version": "v2.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client.git",
-                "reference": "b86b0c974bc998499e080f3d3178aaab06d07ee3"
+                "reference": "11871e94006ce7a419bb6124d51b6f9ace3f679b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client/zipball/b86b0c974bc998499e080f3d3178aaab06d07ee3",
-                "reference": "b86b0c974bc998499e080f3d3178aaab06d07ee3",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client/zipball/11871e94006ce7a419bb6124d51b6f9ace3f679b",
+                "reference": "11871e94006ce7a419bb6124d51b6f9ace3f679b",
                 "shasum": ""
             },
             "require": {
                 "firebase/php-jwt": "~2.0||~3.0||~4.0||~5.0",
-                "google/apiclient-services": "^0.200.0",
+                "google/apiclient-services": "~0.200",
                 "google/auth": "^1.10",
                 "guzzlehttp/guzzle": "~5.3.3||~6.0||~7.0",
                 "guzzlehttp/psr7": "^1.2",
@@ -601,22 +601,22 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client/issues",
-                "source": "https://github.com/googleapis/google-api-php-client/tree/v2.10.0"
+                "source": "https://github.com/googleapis/google-api-php-client/tree/v2.10.1"
             },
-            "time": "2021-06-23T18:16:21+00:00"
+            "time": "2021-06-25T14:25:44+00:00"
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.200.0",
+            "version": "v0.210.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/googleapis/google-api-php-client-services.git",
-                "reference": "0375af405757b36f3bcc82e19d7daf61e0b4cfd8"
+                "reference": "2be187c5c7c6b6325ddc99015ac6b00ebb8ec764"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/0375af405757b36f3bcc82e19d7daf61e0b4cfd8",
-                "reference": "0375af405757b36f3bcc82e19d7daf61e0b4cfd8",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/2be187c5c7c6b6325ddc99015ac6b00ebb8ec764",
+                "reference": "2be187c5c7c6b6325ddc99015ac6b00ebb8ec764",
                 "shasum": ""
             },
             "require": {
@@ -645,9 +645,9 @@
             ],
             "support": {
                 "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
-                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.200.0"
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.210.0"
             },
-            "time": "2021-06-18T15:00:35+00:00"
+            "time": "2021-08-29T11:20:24+00:00"
         },
         {
             "name": "google/auth",
@@ -4942,5 +4942,5 @@
     "platform-overrides": {
         "php": "7.3.27"
     },
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.0.0"
 }

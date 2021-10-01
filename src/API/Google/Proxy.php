@@ -5,15 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
-use DateTime;
-use DateTimeZone;
 use Exception;
 use Google\Ads\GoogleAds\Util\V8\ResourceNames;
 use Google\ApiCore\ApiException;
@@ -82,22 +83,51 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Create a new Merchant Center account.
 	 *
-	 * @return int
+	 * @return int Created merchant account ID
+	 *
 	 * @throws Exception When an Exception is caught or we receive an invalid response.
 	 */
 	public function create_merchant_account(): int {
+		$user = wp_get_current_user();
+		$tos  = $this->mark_tos_accepted( 'google-mc', $user->user_email );
+		if ( ! $tos->accepted() ) {
+			throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
+		}
+
+		$site_url = esc_url_raw( $this->get_site_url() );
+		if ( ! wc_is_valid_url( $site_url ) ) {
+			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
+		}
+
 		try {
-			$user = wp_get_current_user();
-			$tos  = $this->mark_tos_accepted( 'google-mc', $user->user_email );
-			if ( ! $tos->accepted() ) {
-				throw new Exception( __( 'Unable to log accepted TOS', 'google-listings-and-ads' ) );
-			}
+			return $this->create_merchant_account_request(
+				$this->new_account_name(),
+				$site_url
+			);
+		} catch ( InvalidTerm $e ) {
+			// Try again with a default account name.
+			return $this->create_merchant_account_request(
+				$this->default_account_name(),
+				$site_url
+			);
+		}
+	}
 
-			$site_url = esc_url_raw( $this->get_site_url() );
-			if ( ! wc_is_valid_url( $site_url ) ) {
-				throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
-			}
-
+	/**
+	 * Send a request to create a merchant account.
+	 *
+	 * @since 1.5.0
+	 *
+	 * @param string $name     Site name
+	 * @param string $site_url Website URL
+	 *
+	 * @return int Created merchant account ID
+	 *
+	 * @throws Exception   When an Exception is caught or we receive an invalid response.
+	 * @throws InvalidTerm When the account name contains invalid terms.
+	 */
+	protected function create_merchant_account_request( string $name, string $site_url ): int {
+		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
@@ -105,7 +135,7 @@ class Proxy implements OptionsAwareInterface {
 				[
 					'body' => json_encode(
 						[
-							'name'       => $this->new_account_name(),
+							'name'       => $name,
 							'websiteUrl' => $site_url,
 						]
 					),
@@ -125,12 +155,14 @@ class Proxy implements OptionsAwareInterface {
 			$error = $response['message'] ?? __( 'Invalid response when creating account', 'google-listings-and-ads' );
 			throw new Exception( $error, $result->getStatusCode() );
 		} catch ( ClientExceptionInterface $e ) {
-			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+			$message = $this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) );
 
-			throw new Exception(
-				$this->client_exception_message( $e, __( 'Error creating account', 'google-listings-and-ads' ) ),
-				$e->getCode()
-			);
+			if ( preg_match( '/terms?.* are|is not allowed/', $message ) ) {
+				throw InvalidTerm::contains_invalid_terms( $name );
+			}
+
+			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
+			throw new Exception( $message, $e->getCode() );
 		}
 	}
 
@@ -391,7 +423,8 @@ class Proxy implements OptionsAwareInterface {
 
 		$status = [
 			'id'       => $id,
-			'currency' => $this->get_ads_currency(),
+			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
+			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 
@@ -599,11 +632,26 @@ class Proxy implements OptionsAwareInterface {
 
 	/**
 	 * Generate a descriptive name for a new account.
+	 * Use site name if available.
 	 *
 	 * @return string
 	 */
 	protected function new_account_name(): string {
-		return get_bloginfo( 'name' );
+		$site_name = get_bloginfo( 'name' );
+		return ! empty( $site_name ) ? $site_name : $this->default_account_name();
+	}
+
+	/**
+	 * Generate a default account name based on the date.
+	 *
+	 * @return string
+	 */
+	protected function default_account_name(): string {
+		return sprintf(
+			/* translators: 1: current date in the format Y-m-d */
+			__( 'Account %1$s', 'google-listings-and-ads' ),
+			( new DateTime() )->format( 'Y-m-d' )
+		);
 	}
 
 	/**
@@ -613,22 +661,13 @@ class Proxy implements OptionsAwareInterface {
 	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	protected function get_site_timezone_string(): string {
-		$timezone = wp_timezone_string();
+		/** @var WP $wp */
+		$wp       = $this->container->get( WP::class );
+		$timezone = $wp->wp_timezone_string();
 
-		// Convert a timezone offset to the closest match.
-		if ( false !== strpos( $timezone, ':' ) ) {
-			list( $hours, $minutes ) = explode( ':', $timezone );
+		/** @var DateTimeUtility $datetime_util */
+		$datetime_util = $this->container->get( DateTimeUtility::class );
 
-			$dst      = (int) ( new DateTime( 'now', new DateTimeZone( $timezone ) ) )->format( 'I' );
-			$seconds  = $hours * 60 * 60 + $minutes * 60;
-			$tz_name  = timezone_name_from_abbr( '', $seconds, $dst );
-			$timezone = $tz_name !== false ? $tz_name : date_default_timezone_get();
-		}
-
-		if ( 'UTC' === $timezone ) {
-			$timezone = 'Etc/GMT';
-		}
-
-		return $timezone;
+		return $datetime_util->maybe_convert_tz_string( $timezone );
 	}
 }

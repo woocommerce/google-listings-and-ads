@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\AttributeInputInterface;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -24,13 +26,6 @@ interface AttributeInterface {
 	public static function get_id(): string;
 
 	/**
-	 * Returns a name for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_name(): string;
-
-	/**
 	 * Return the attribute's value type. Must be a valid PHP type.
 	 *
 	 * @return string
@@ -40,11 +35,15 @@ interface AttributeInterface {
 	public static function get_value_type(): string;
 
 	/**
-	 * Returns a short description for the attribute. Used in attribute's input.
+	 * Return the attribute's input class. Must be an instance of `AttributeInputInterface`.
 	 *
 	 * @return string
+	 *
+	 * @see AttributeInputInterface
+	 *
+	 * @since 1.5.0
 	 */
-	public static function get_description(): string;
+	public static function get_input_type(): string;
 
 	/**
 	 * Return an array of WooCommerce product types that this attribute can be applied to.

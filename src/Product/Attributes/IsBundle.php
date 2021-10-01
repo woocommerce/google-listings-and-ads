@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input\IsBundleInput;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -26,24 +28,6 @@ class IsBundle extends AbstractAttribute {
 	}
 
 	/**
-	 * Returns a name for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_name(): string {
-		return __( 'Is Bundle?', 'google-listings-and-ads' );
-	}
-
-	/**
-	 * Returns a short description for the attribute. Used in attribute's input.
-	 *
-	 * @return string
-	 */
-	public static function get_description(): string {
-		return __( 'Whether the item is a bundle of products. A bundle is a custom grouping of different products sold by a merchant for a single price.', 'google-listings-and-ads' );
-	}
-
-	/**
 	 * Return an array of WooCommerce product types that this attribute can be applied to.
 	 *
 	 * @return array
@@ -61,6 +45,19 @@ class IsBundle extends AbstractAttribute {
 	 */
 	public static function get_value_type(): string {
 		return 'boolean';
+	}
+
+	/**
+	 * Return the attribute's input class. Must be an instance of `AttributeInputInterface`.
+	 *
+	 * @return string
+	 *
+	 * @see AttributeInputInterface
+	 *
+	 * @since 1.5.0
+	 */
+	public static function get_input_type(): string {
+		return IsBundleInput::class;
 	}
 
 }

@@ -3,15 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\BooleanSelect;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Decimal;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Form;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\FormException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\InputInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Integer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Select;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\SelectWithTextInput;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input\Text;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\Attributes\AttributeInterface;
@@ -103,8 +99,6 @@ class AttributesForm extends Form {
 	 */
 	protected function init_input( InputInterface $input, AttributeInterface $attribute ) {
 		$input->set_id( $attribute::get_id() )
-			  ->set_label( $attribute::get_name() )
-			  ->set_description( $attribute::get_description() )
 			  ->set_name( $attribute::get_id() );
 
 		$value_options = [];
@@ -115,7 +109,11 @@ class AttributesForm extends Form {
 
 		if ( ! empty( $value_options ) ) {
 			if ( ! $input instanceof Select && ! $input instanceof SelectWithTextInput ) {
-				return $this->init_input( new SelectWithTextInput(), $attribute );
+				$new_input = new SelectWithTextInput();
+				$new_input->set_label( $input->get_label() )
+						  ->set_description( $input->get_description() );
+
+				return $this->init_input( $new_input, $attribute );
 			}
 
 			// add a 'default' value option
@@ -125,38 +123,6 @@ class AttributesForm extends Form {
 		}
 
 		return $input;
-	}
-
-	/**
-	 * Guesses what kind of input does the attribute need based on its value type and returns the input class name.
-	 *
-	 * @param AttributeInterface $attribute
-	 *
-	 * @return string Input class name
-	 */
-	protected function guess_input_type( AttributeInterface $attribute ): string {
-		if ( $attribute instanceof WithValueOptionsInterface ) {
-			return Select::class;
-		}
-
-		switch ( $attribute::get_value_type() ) {
-			case 'integer':
-			case 'int':
-				$input_type = Integer::class;
-				break;
-			case 'float':
-			case 'double':
-				$input_type = Decimal::class;
-				break;
-			case 'bool':
-			case 'boolean':
-				$input_type = BooleanSelect::class;
-				break;
-			default:
-				$input_type = Text::class;
-		}
-
-		return $input_type;
 	}
 
 	/**
@@ -172,20 +138,18 @@ class AttributesForm extends Form {
 	 */
 	public function add_attribute( string $attribute_type, ?string $input_type = null ): AttributesForm {
 		$this->validate_interface( $attribute_type, AttributeInterface::class );
-		$attribute = new $attribute_type();
 
-		// check if input type is provided or guess it for the attribute
-		if ( ! empty( $input_type ) ) {
-			$this->validate_interface( $input_type, InputInterface::class );
-		} else {
-			$input_type = $this->guess_input_type( $attribute );
+		// use the attribute's default input type if none provided.
+		if ( empty( $input_type ) ) {
+			$input_type = call_user_func( [ $attribute_type, 'get_input_type' ] );
 		}
 
-		$attribute_input = $this->init_input( new $input_type(), $attribute );
+		$this->validate_interface( $input_type, InputInterface::class );
 
-		$attribute_id = call_user_func( [ $attribute_type, 'get_id' ] );
+		$attribute_input = $this->init_input( new $input_type(), new $attribute_type() );
 		$this->add( $attribute_input );
 
+		$attribute_id                           = call_user_func( [ $attribute_type, 'get_id' ] );
 		$this->attribute_types[ $attribute_id ] = $attribute_type;
 
 		return $this;

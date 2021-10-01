@@ -1,11 +1,16 @@
-const { merchant } = require( '@woocommerce/e2e-utils' );
+/**
+ * External dependencies
+ */
+import {
+	merchant, // eslint-disable-line import/named
+} from '@woocommerce/e2e-utils';
 
 describe( 'Merchant who is getting started', () => {
 	beforeAll( async () => {
 		await merchant.login();
 	} );
 
-	it( 'Clicks on the Marketing > GLA link, clicks on the call-to-action setup button to go to the Setup MC page', async () => {
+	it( 'Clicks on the Marketing > GLA link, clicks on the call-to-action setup button to go to the Setup MC page, should get to the accounts setup', async () => {
 		// hover at the marketing link to open popup submenu.
 		const marketingLink = (
 			await page.$x( "//a[contains(., 'Marketing')]" )
@@ -26,8 +31,9 @@ describe( 'Merchant who is getting started', () => {
 		await glaLink.click();
 
 		await page.waitForNavigation();
-		const pageTitle = await page.title();
-		expect( pageTitle ).toContain( 'Google Listings & Ads' );
+		await expect( page.title() ).resolves.toContain(
+			'Google Listings & Ads'
+		);
 
 		// click on the call-to-action button.
 		const setupButton = (
@@ -36,19 +42,20 @@ describe( 'Merchant who is getting started', () => {
 		await setupButton.click();
 		await page.waitForNavigation();
 
-		// check we are in the Setup MC Step 1 page.
-		const topBarText = (
-			await page.$x(
+		// Check we are in the Setup MC page.
+		await expect(
+			page.waitForXPath(
 				"//*[text()='Get started with Google Listings & Ads']"
 			)
-		 )[ 0 ];
-		expect( topBarText ).toBeTruthy();
+		).resolves.toBeTruthy();
 
-		// there are some API calls running in the page before the steps are displayed.
-		// wait for the text in Step 1 to show up.
-		const step1Text = await page.waitForXPath(
-			"//*[text()='Set up your accounts']"
-		);
-		expect( step1Text ).toBeTruthy();
+		// There are some API calls running in the page before the steps are displayed.
+		// Assert we eventually see the setup page Step 1 header.
+		await expect(
+			page.waitForXPath( "//*[text()='Set up your accounts']" )
+		).resolves.toBeTruthy();
+
+		// Expect to land on the setup page URL.
+		expect( page.url() ).toMatch( /path=%2Fgoogle%2Fsetup-mc/ );
 	} );
 } );

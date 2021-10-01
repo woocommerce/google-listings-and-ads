@@ -44,6 +44,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformatio
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
@@ -79,6 +80,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Tracks;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\TracksInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Utility\ISOUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Automattic\WooCommerce\GoogleListingsAndAds\View\PHPViewFactory;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -104,9 +108,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		CompleteSetup::class          => true,
 		CompleteSetupNote::class      => true,
 		Dashboard::class              => true,
+		DateTimeUtility::class        => true,
 		EventTracking::class          => true,
 		GetStarted::class             => true,
 		GlobalSiteTag::class          => true,
+		ISOUtility::class             => true,
 		Loaded::class                 => true,
 		SiteVerificationEvents::class => true,
 		OptionsInterface::class       => true,
@@ -135,6 +141,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		ViewFactory::class            => true,
 		DebugLogger::class            => true,
 		MerchantStatuses::class       => true,
+		PhoneVerification::class      => true,
 		ContactInformation::class     => true,
 		MerchantCenterService::class  => true,
 		MerchantAccountState::class   => true,
@@ -193,6 +200,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share utility classes
 		$this->share_with_tags( AddressUtility::class );
+		$this->share_with_tags( DateTimeUtility::class );
+		$this->share_with_tags( ISOUtility::class, ISO3166DataProvider::class );
 
 		// Share our regular service classes.
 		$this->conditionally_share_with_tags(
@@ -234,6 +243,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( MerchantStatuses::class );
+		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
 		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MerchantCenterService::class );

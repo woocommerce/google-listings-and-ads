@@ -30,8 +30,9 @@ const useGoogleAdsAccount = () => {
 				};
 			}
 
-			const acc = select( STORE_KEY )[ googleAdsAccountSelector ]();
-			const isResolvingGoogleAdsAccount = select( STORE_KEY ).isResolving(
+			const selector = select( STORE_KEY );
+			const acc = selector[ googleAdsAccountSelector ]();
+			const isResolvingGoogleAdsAccount = selector.isResolving(
 				googleAdsAccountSelector
 			);
 
@@ -39,6 +40,9 @@ const useGoogleAdsAccount = () => {
 				googleAdsAccount: acc,
 				isResolving: isResolvingGoogleAdsAccount,
 				refetchGoogleAdsAccount,
+				hasFinishedResolution: selector.hasFinishedResolution(
+					googleAdsAccountSelector
+				),
 			};
 		},
 		[ google, isResolving, refetchGoogleAdsAccount ]
