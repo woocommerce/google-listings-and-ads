@@ -12,6 +12,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Product
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 class PhoneVerificationException extends ExceptionWithResponseData {}

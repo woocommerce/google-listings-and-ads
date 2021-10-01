@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.8
 Requires PHP: 7.3
-Stable tag: 1.4.3
+Stable tag: 1.5.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -115,7 +115,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.5.0 - 2021-xx-xx =
+= 1.5.0 - 2021-10-01 =
 * Add - Verify user's phone number via SMS or phone call at the last step of the onboarding flow and on the settings page. And update the verified phone number to user's connected Google Merchant Center account.
 * Add - Allow backorder stock availability for products.
 * Add - Set pre-order availability for products using the WooCommerce Pre-Orders extension.
