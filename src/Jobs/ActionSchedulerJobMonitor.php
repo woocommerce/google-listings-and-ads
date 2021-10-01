@@ -71,13 +71,15 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @since x.x.x
 	 */
 	public function monitor_timeout( callable $callback, array $args = [] ) {
-		register_shutdown_function(
-			function () use ( $callback, $args ) {
-				$error = error_get_last();
+		add_action(
+			'action_scheduler_unexpected_shutdown',
+			function ( $action_id, $error ) use ( $callback, $args ) {
 				if ( ! empty( $error ) && $this->is_timeout_error( $error ) ) {
 					call_user_func_array( $callback, $args );
 				}
-			}
+			},
+			10,
+			2
 		);
 	}
 
