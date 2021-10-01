@@ -31,6 +31,13 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	protected $monitor;
 
 	/**
+	 * Whether the job should be rescheduled on timeout.
+	 *
+	 * @var bool
+	 */
+	protected $retry_on_timeout = true;
+
+	/**
 	 * AbstractActionSchedulerJob constructor.
 	 *
 	 * @param ActionSchedulerInterface  $action_scheduler
@@ -72,7 +79,10 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 */
 	public function handle_process_items_action( array $items ) {
 		$this->monitor->validate_failure_rate( $this, $this->get_process_item_hook(), [ $items ] );
-		$this->monitor->monitor_timeout( [ $this, 'schedule' ], [ [ $items ] ] );
+
+		if ( $this->retry_on_timeout ) {
+			$this->monitor->monitor_timeout( [ $this, 'schedule' ], [ [ $items ] ] );
+		}
 
 		try {
 			$this->process_items( $items );
