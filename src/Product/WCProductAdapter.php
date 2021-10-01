@@ -24,6 +24,7 @@ use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
+use function Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\json_encode;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -176,6 +177,23 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			$this->setItemGroupId( $this->parent_wc_product->get_id() );
 		}
 
+		// set product type using merchants defined product categories
+		$base_product_id      = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
+		$product_category_ids = wc_get_product_cat_ids( $base_product_id );
+		if ( ! empty( $product_category_ids ) ) {
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf(
+					'Product category (ID: %s): %s. expected: %s',
+					$base_product_id,
+					json_encode( $product_category_ids ),
+					json_encode( wc_get_product_category_list( $base_product_id, ' > ' ) )
+				),
+				__METHOD__
+			);
+			$this->setProductType( wc_get_product_category_list( $base_product_id, ' > ' ) );
+		}
+
 		return $this;
 	}
 
@@ -185,10 +203,18 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_id(): WCProductAdapter {
-		$offer_id = "{$this->get_slug()}_{$this->wc_product->get_id()}";
-		$this->setOfferId( $offer_id );
-
+		$this->setOfferId( self::get_google_product_offer_id( $this->get_slug(), $this->wc_product->get_id() ) );
 		return $this;
+	}
+
+	/**
+	 *
+	 * @param string $slug
+	 * @param int    $product_id
+	 * @return string
+	 */
+	public static function get_google_product_offer_id( string $slug, int $product_id ): string {
+		return "{$slug}_{$product_id}";
 	}
 
 	/**

@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Coupon;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\WCProductAdapter;
 use Automattic\WooCommerce\GoogleListingsAndAds\Validator\Validatable;
 use DateInterval;
 use Google\Service\ShoppingContent\PriceAmount as GooglePriceAmount;
@@ -208,16 +209,22 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		}
 
 		$has_product_restriction = false;
-		$wc_product_ids          = $wc_coupon->get_product_ids();
+		$get_offer_id            = function ( int $product_id ) {
+			return WCProductAdapter::get_google_product_offer_id( $this->get_slug(), $product_id );
+		};
+
+		$wc_product_ids = $wc_coupon->get_product_ids();
 		if ( ! empty( $wc_product_ids ) ) {
+			$google_product_ids      = array_map( $get_offer_id, $wc_product_ids );
 			$has_product_restriction = true;
-			$this->setItemId( $wc_product_ids );
+			$this->setItemId( $google_product_ids );
 		}
 
-		$wc_exclued_product_ids = $wc_coupon->get_excluded_product_ids();
-		if ( ! empty( $wc_exclued_product_ids ) ) {
+		$wc_excluded_product_ids = $wc_coupon->get_excluded_product_ids();
+		if ( ! empty( $wc_excluded_product_ids ) ) {
+			$google_product_ids      = array_map( $get_offer_id, $wc_excluded_product_ids );
 			$has_product_restriction = true;
-			$this->setItemId( $wc_exclued_product_ids );
+			$this->setItemIdExclusion( $google_product_ids );
 		}
 
 		if ( $has_product_restriction ) {

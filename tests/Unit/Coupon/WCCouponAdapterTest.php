@@ -91,7 +91,7 @@ class WCCouponAdapterTest extends UnitTest {
 		$this->assertEquals( "{$this->get_slug()}_{$coupon->get_id()}", $adapted_coupon->getPromotionId() );
 	}
 
-	public function test_coupn_code_and_amount_are_set() {
+	public function test_coupon_code_and_amount_are_set() {
 	    $coupon = $this->create_ready_to_sync_coupon();
 	    $adapted_coupon = new WCCouponAdapter(
 	        [
@@ -105,7 +105,7 @@ class WCCouponAdapterTest extends UnitTest {
 	    $this->assertEquals( 'PERCENT_OFF', $adapted_coupon->getCouponValueType() );
 	}
 
-	public function test_coupn_effective_dates_are_set() {
+	public function test_effective_dates_are_set() {
 	    $coupon = $this->create_ready_to_sync_coupon();
 	    $postdate = '2021-01-01T02:03:45';
 	    $post_args = array(
@@ -122,6 +122,25 @@ class WCCouponAdapterTest extends UnitTest {
 	        ]
 	        );
 	    $this->assertEquals( '2021-01-01T02:03:45+00:00/2021-07-03T02:03:45+00:00', $adapted_coupon->getPromotionEffectiveDates() );
+	}
+	
+	public function test_product_id_restrictions() {
+	    $product_id_1 = rand();
+	    $product_id_2 = rand();
+	    $coupon = $this->create_ready_to_sync_coupon();
+	    $coupon->set_product_ids([$product_id_1]);
+	    $coupon->set_excluded_product_ids([$product_id_2]);
+	    $coupon->save();
+	    
+	    $adapted_coupon = new WCCouponAdapter(
+	        [
+	            'wc_coupon'     => $coupon,
+	            'targetCountry' => 'US',
+	        ]
+	        );
+	    
+	    $this->assertEquals( ["gla_{$product_id_1}"], $adapted_coupon->getItemId() );
+	    $this->assertEquals( ["gla_{$product_id_2}"], $adapted_coupon->getItemIdExclusion() );
 	}
 	
 	public function test_load_validator_metadata() {

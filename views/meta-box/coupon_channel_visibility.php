@@ -101,7 +101,7 @@ if ( $input_disabled ) {
                     'Show coupon on Google',
                     'google-listings-and-ads' ),
                 ChannelVisibility::DONT_SYNC_AND_SHOW => __( 
-                    'Don\'t show coupn on Google',
+                    'Don\'t show coupon on Google',
                     'google-listings-and-ads' )],
             'custom_attributes' => $custom_attributes,
             'wrapper_class' => 'form-row form-row-full'] );
