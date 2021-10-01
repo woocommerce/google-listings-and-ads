@@ -127,13 +127,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Remove all "STEP [NUMBER]" texts from step headers on the onboarding setup, paid campaign setup, and free listings edit pages.
 * Tweak - WC 5.5 compatibility.
 
-= 1.4.1 - 2021-08-16 =
-* Fix - Allow connection test page for other admin users.
-* Fix - Allow spaces in paths when prefixing vendor namespaces.
-* Fix - Database error: "Specified key was too long". i.e. removed the `product_issue` index from the `merchant_issues` table.
-* Fix - Fatal error when activating plugin with no Merchant Center account connected.
-* Fix - Some pre-sync errors being skipped in the product issues table.
-* Fix - display the correct currency actually used for the paid campaign budget.
-* Tweak - Limit the product descriptions to 5000 characters when syncing.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
