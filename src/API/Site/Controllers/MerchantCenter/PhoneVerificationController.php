@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class PhoneVerificationController
  *
- * @since x.x.x
+ * @since 1.5.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */

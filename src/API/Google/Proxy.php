@@ -116,7 +116,7 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Send a request to create a merchant account.
 	 *
-	 * @since x.x.x
+	 * @since 1.5.0
 	 *
 	 * @param string $name     Site name
 	 * @param string $site_url Website URL

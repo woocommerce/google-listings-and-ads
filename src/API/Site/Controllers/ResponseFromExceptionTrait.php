@@ -12,7 +12,7 @@ use WP_REST_Response as Response;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 trait ResponseFromExceptionTrait {
 

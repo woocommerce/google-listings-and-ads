@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Input
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 class DateTime extends Input {
 	/**
