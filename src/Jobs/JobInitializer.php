@@ -45,7 +45,7 @@ class JobInitializer implements Registerable, Conditional {
 	 */
 	public function register(): void {
 		foreach ( $this->job_repository->list() as $job ) {
-			$job->init();
+			$job->register();
 
 			if ( $job instanceof StartOnHookInterface ) {
 				add_action(

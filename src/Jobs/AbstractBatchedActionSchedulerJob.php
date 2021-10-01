@@ -26,9 +26,9 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 *
 	 * The job name is used to generate the schedule event name.
 	 */
-	public function init(): void {
+	public function register(): void {
 		add_action( $this->get_create_batch_hook(), [ $this, 'handle_create_batch_action' ] );
-		parent::init();
+		parent::register();
 	}
 
 	/**

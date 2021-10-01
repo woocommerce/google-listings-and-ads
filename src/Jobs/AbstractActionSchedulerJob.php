@@ -46,7 +46,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 *
 	 * The job name is used to generate the schedule event name.
 	 */
-	public function init(): void {
+	public function register(): void {
 		add_action( $this->get_process_item_hook(), [ $this, 'handle_process_items_action' ] );
 	}
 

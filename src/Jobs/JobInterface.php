@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Jobs;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement\JobServiceProvider;
 
@@ -17,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-interface JobInterface extends Service {
+interface JobInterface extends Service, Registerable {
 
 	/**
 	 * Get the name of the job.
@@ -25,10 +26,5 @@ interface JobInterface extends Service {
 	 * @return string
 	 */
 	public function get_name(): string;
-
-	/**
-	 * Init the job.
-	 */
-	public function init(): void;
 
 }
