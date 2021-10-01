@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-interface RecurringJobInterface extends StartOnHookInterface {
+interface RecurringJobInterface extends ActionSchedulerJobInterface {
 
 	/**
 	 * Return the recurring job's interval in seconds.

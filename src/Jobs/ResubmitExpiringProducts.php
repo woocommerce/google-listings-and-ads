@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Jobs
  */
-class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implements RecurringJobInterface {
+class ResubmitExpiringProducts extends AbstractProductSyncerBatchedJob implements RecurringJobInterface, StartOnHookInterface {
 
 	/**
 	 * Get the name of the job.
