@@ -29,6 +29,8 @@ class Settings implements Service, Registerable {
 						'nav_args' => [
 							'order'  => 40,
 							'parent' => 'google-listings-and-ads-category',
+							// Highlight this menu item for other subpages.
+							'matchExpression' => '/google/settings(/[^/]+)?',
 						],
 					]
 				);
