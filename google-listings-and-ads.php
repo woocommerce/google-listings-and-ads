@@ -11,7 +11,7 @@
  * Tested up to: 5.8
  * Requires PHP: 7.3
  *
- * WC requires at least: 5.4
+ * WC requires at least: 5.5
  * WC tested up to: 5.7
  * Woo:
  *
@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
 
 define( 'WC_GLA_VERSION', '1.5.0' ); // WRCS: DEFINED_VERSION.
 define( 'WC_GLA_MIN_PHP_VER', '7.3' );
-define( 'WC_GLA_MIN_WC_VER', '5.4' );
+define( 'WC_GLA_MIN_WC_VER', '5.5' );
 
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';

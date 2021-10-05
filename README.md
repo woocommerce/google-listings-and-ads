@@ -19,8 +19,10 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 ## Prerequisites
 
+We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
+
 -   WordPress 5.6+
--   WooCommerce 5.4+
+-   WooCommerce 5.5+
 -   PHP 7.3+
 
 ## Browsers supported
