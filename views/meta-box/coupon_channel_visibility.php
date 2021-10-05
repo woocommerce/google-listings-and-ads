@@ -49,11 +49,13 @@ $get_started_url = $this->get_started_url;
  *
  * @var string $sync_status
  */
+$is_synced = false;
 if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
     $sync_status = __( 'Issues detected', 'google-listings-and-ads' );
 } elseif ( SyncStatus::PENDING === $this->sync_status ){
     $sync_status = __( 'Pending for sync', 'google-listings-and-ads' );
 } elseif ( SyncStatus::SYNCED === $this->sync_status ){
+    $is_synced = true;
     $sync_status = __( 'Sent to Google', 'google-listings-and-ads' );
 } elseif ( ! is_null( $this->sync_status ) ) {  
     $sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
@@ -62,6 +64,8 @@ if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
 $show_status = $channel_visibility ===
     ChannelVisibility::SYNC_AND_SHOW && ( ! is_null( $this->sync_status ) );
 
+$check_email_notice = __( 'Check your email for updates.', 'google-listings-and-ads' );
+    
 /**
  *
  * @var array $issues
@@ -107,9 +111,9 @@ if ( $input_disabled ) {
             'wrapper_class' => 'form-row form-row-full'] );
     ?>
     	<?php if ( $show_status ) : ?>
-    	<div class="sync-status notice-alt notice-large notice-warning"
-		style="border-left-style: solid">
     		<?php if ( $has_issues ) : ?>
+    		<div class="sync-status notice-alt notice-large notice-warning"
+				style="border-left-style: solid">
     			<div class="gla-product-issues">
         			<p>
         				<strong><?php esc_html_e( 'Coupon issues', 'google-listings-and-ads' ); ?></strong>
@@ -120,10 +124,18 @@ if ( $input_disabled ) {
             					<?php endforeach; ?>
     				</ul>
 				</div>
+			</div>
 			<?php else : ?>
-			<p><strong><?php echo esc_html( $sync_status ); ?></strong></p>
+			<div class="sync-status notice-alt notice-large" style="background-color:#efefef">
+				<p><strong><?php echo esc_html( $sync_status ); ?></strong></p>
+			</div>
+    			<?php if ( $is_synced ) : ?>
+        			<div style="padding: 10px 0px" >
+        				<?php echo esc_html( $check_email_notice); ?>
+        			</div>
+    			<?php endif;?>
     		<?php endif; ?>
-    	</div>
+    	
     	<?php endif; ?>
 	<?php else : ?>
 		<p>
