@@ -46,7 +46,10 @@ jobs:
         run: npm ci
 
       - name: Build production bundle
-        run: npm run build
+        run: |
+          echo "::group::Build log"
+          npm run build
+          echo "::endgroup::"
 
       - name: Run BundleWatch
         env:
