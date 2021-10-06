@@ -1,0 +1,61 @@
+name: Bundle Size
+
+on:
+  pull_request:
+
+jobs:
+  BundleSize:
+    name: Bundle size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "7.4"
+          coverage: none
+
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "12.21.0"
+          cache: "npm"
+
+      - name: Log debug information
+        run: |
+          php --version
+          composer --version
+          node --version
+          npm --version
+
+      - name: Get Composer cache directory
+        id: composer-cache-config
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Set up Composer caching
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache-config.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: |
+          echo "::group::Build log"
+          npm run build
+          echo "::endgroup::"
+
+      - name: Run BundleWatch
+        env:
+          BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.BUNDLEWATCH_GITHUB_TOKEN }}
+          # Workaround of https://github.com/bundlewatch/bundlewatch/issues/423
+          CI_BRANCH_BASE: ${{ github.base_ref }}
+          # Workaround of https://github.com/bundlewatch/bundlewatch/issues/220
+          CI_COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node ./node_modules/bundlewatch/lib/bin/index.js
