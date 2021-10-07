@@ -15,39 +15,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+      - name: Prepare PHP
+        uses: ./.github/actions/prepare-php
         with:
-          php-version: "7.4"
-          coverage: none
+          install-deps: "maybe"
 
-      - name: Set up Node
-        uses: actions/setup-node@v2
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
         with:
-          node-version: "12.21.0"
-          cache: "npm"
-
-      - name: Log debug information
-        run: |
-          php --version
-          composer --version
-          node --version
-          npm --version
-
-      - name: Get Composer cache directory
-        id: composer-cache-config
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Set up Composer caching
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.composer-cache-config.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Install Node dependencies
-        run: npm ci
+          ignore-scripts: "no"
 
       - name: Build production bundle
         run: |
