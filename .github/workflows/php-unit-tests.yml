@@ -20,26 +20,10 @@ jobs:
         with:
           install-deps: "maybe"
 
-      - name: Log debug information
-        run: |
-          composer --version
-
-      - name: Get Composer cache directory
-        id: composer-cache-config
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Set up Composer caching
-        id: composer-cache
-        uses: actions/cache@v2
+      - name: Prepare PHP
+        uses: ./.github/actions/prepare-php
         with:
-          path: ${{ steps.composer-cache-config.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Update Composer cache directory # if composer-lock has changed
-        if: steps.composer-cache.outputs.cache-hit != 'true'
-        run: composer install --prefer-dist --no-suggest --no-progress --no-ansi --no-interaction
+          install-deps: "maybe"
 
   UnitTests:
     name: PHP unit tests - PHP ${{ matrix.php }}, WP ${{ matrix.wp-version }}
@@ -60,17 +44,10 @@ jobs:
       - name: Prepare node
         uses: ./.github/actions/prepare-node
 
-      - name: Get Composer cache directory
-        id: composer-cache-config
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Set up Composer caching
-        uses: actions/cache@v2
+      - name: Prepare PHP
+        uses: ./.github/actions/prepare-php
         with:
-          path: ${{ steps.composer-cache-config.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
+          php-version: "${{ matrix.php }}"
 
       - name: Set up MySQL
         # MySQL 8.0 uses the `caching_sha2_password` authentication method by default.
@@ -79,15 +56,6 @@ jobs:
         run: |
           sudo systemctl start mysql.service
           mysql -u root -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          coverage: none
-
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-suggest --no-progress --no-ansi --no-interaction
 
       - name: Build client bundles
         run: npm run dev
