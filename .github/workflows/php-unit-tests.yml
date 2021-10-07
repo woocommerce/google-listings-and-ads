@@ -15,24 +15,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+        with:
+          install-deps: "maybe"
+
       - name: Log debug information
         run: |
-          node --version
-          npm --version
           composer --version
-
-      - name: Get npm cache directory
-        id: npm-cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Update npm cache directory # if package-lock has changed
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
 
       - name: Get Composer cache directory
         id: composer-cache-config
@@ -67,13 +57,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get npm cache directory
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
 
       - name: Get Composer cache directory
         id: composer-cache-config
@@ -104,10 +89,8 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-suggest --no-progress --no-ansi --no-interaction
 
-      - name: Install Node dependencies and build
-        run: |
-          npm ci
-          npm run dev
+      - name: Build client bundles
+        run: npm run dev
 
       - name: Install WP tests
         shell: bash

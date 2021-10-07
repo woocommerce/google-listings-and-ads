@@ -15,23 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Log debug information
-        run: |
-          node --version
-          npm --version
-
-      - name: Get npm cache directory
-        id: npm-cache
-        uses: actions/cache@v2
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Update npm cache directory # if package-lock has changed
-        if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
+          install-deps: "maybe"
 
   JSLintingCheck:
     name: Lint JavaScript
@@ -41,16 +28,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get npm cache directory
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install Node dependencies
-        run: npm ci --ignore-scripts
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
 
       - name: Save code linting report JSON
         run: npm run lint:js -- --quiet --output-file eslint_report.json --format json
@@ -77,16 +56,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get npm cache directory
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install Node dependencies
-        run: npm ci --ignore-scripts
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
 
       - name: Lint CSS
         run: npm run lint:css

@@ -15,21 +15,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Log debug information
-        run: |
-          node --version
-          npm --version
-
-      - name: Get npm cache directory
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install Node dependencies
-        run: npm ci --ignore-scripts
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
 
       - name: Run JavaScript unit tests
         run: npm run test-unit
