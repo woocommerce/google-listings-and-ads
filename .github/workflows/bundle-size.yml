@@ -43,15 +43,16 @@ jobs:
           BRANCH=$(echo '${{ github.event.ref }}' | sed 's/^refs\/heads\///')
           echo "CI_BRANCH=$BRANCH" >> $GITHUB_ENV
           echo "CI_BRANCH_BASE=$BRANCH" >> $GITHUB_ENV
+          echo "CI_COMMIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Prepare BundleWatch env values - pull request
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           echo "CI_BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV
           echo "CI_BRANCH_BASE=${{ github.base_ref }}" >> $GITHUB_ENV
+          echo "CI_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
 
       - name: Run BundleWatch
         env:
           BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.BUNDLEWATCH_GITHUB_TOKEN }}
-          CI_COMMIT_SHA: ${{ github.sha }}
         run: node ./node_modules/bundlewatch/lib/bin/index.js
