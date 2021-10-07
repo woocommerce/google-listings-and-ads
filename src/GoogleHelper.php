@@ -153,12 +153,6 @@ trait GoogleHelper {
 	 */
 	protected function get_mc_promotion_supported_countries_currencies(): array {
 		return [
-			'AU' => 'AUD', // Australia
-			'CA' => 'CAD', // Canada
-			'DE' => 'EUR', // Germany
-			'FR' => 'EUR', // France
-			'GB' => 'GBP', // United Kingdom
-			'IN' => 'INR', // India
 			'US' => 'USD', // United States
 		];
 	}

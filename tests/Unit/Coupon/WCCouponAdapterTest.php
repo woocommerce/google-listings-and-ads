@@ -79,6 +79,17 @@ class WCCouponAdapterTest extends UnitTest {
 
 		$this->assertEquals( 'fr', $adapted_coupon->getContentLanguage() );
 	}
+	
+	public function test_destination_ids_are_set() {
+	    $coupon = $this->create_ready_to_sync_coupon();
+	    $adapted_coupon = new WCCouponAdapter(
+	        [
+	            'wc_coupon'     => $coupon,
+	            'targetCountry' => 'US',
+	        ]
+	        );
+	    $this->assertEquals( ['Shopping_ads', 'Free_listings'], $adapted_coupon->getPromotionDestinationIds() );
+	}
 
 	public function test_promotion_id_is_set() {
 	    $coupon = $this->create_ready_to_sync_coupon();

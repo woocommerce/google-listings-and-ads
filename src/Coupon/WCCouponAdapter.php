@@ -33,6 +33,10 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 
 	public const OFFER_TYPE_GENERIC_CODE = 'GENERIC_CODE';
 
+	public const PROMOTION_DESTINATION_ADS = 'Shopping_ads';
+
+	public const PROMOTION_DESTINATION_FREE_LISTING = 'Free_listings';
+
 	public const WC_DISCOUNT_TYPE_PERCENT = 'percent';
 
 	public const WC_DISCOUNT_TYPE_FIXED_CART = 'fixed_cart';
@@ -86,6 +90,9 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	 */
 	protected function map_woocommerce_coupon( WC_Coupon $wc_coupon ) {
 		$this->setRedemptionChannel( self::CHANNEL_ONLINE );
+		$this->setPromotionDestinationIds(
+			[ self::PROMOTION_DESTINATION_ADS, self::PROMOTION_DESTINATION_FREE_LISTING ]
+		);
 
 		$content_language = empty( get_locale() ) ? 'en' : strtolower(
 			substr( get_locale(), 0, 2 )
