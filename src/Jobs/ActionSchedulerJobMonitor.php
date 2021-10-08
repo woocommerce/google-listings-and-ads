@@ -63,19 +63,16 @@ class ActionSchedulerJobMonitor implements Service {
 	}
 
 	/**
-	 * Calls a function if the job has failed due to timeout.
-	 *
-	 * @param callable $callback The function to be called on job timeout.
-	 * @param array    $args     The parameters to be passed to the function, as an indexed array.
+	 * Runs the registered actions if the job has failed due to timeout.
 	 *
 	 * @since x.x.x
 	 */
-	public function monitor_timeout( callable $callback, array $args = [] ) {
+	public function attach_timeout_monitor() {
 		add_action(
 			'action_scheduler_unexpected_shutdown',
-			function ( $action_id, $error ) use ( $callback, $args ) {
+			function ( $action_id, $error ) {
 				if ( ! empty( $error ) && $this->is_timeout_error( $error ) ) {
-					call_user_func_array( $callback, $args );
+					do_action( 'woocommerce_gla_action_scheduler_timeout', $action_id );
 				}
 			},
 			10,

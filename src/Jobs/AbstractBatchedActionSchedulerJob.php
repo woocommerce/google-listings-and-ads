@@ -65,10 +65,7 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 */
 	public function handle_create_batch_action( int $batch_number ) {
 		$this->monitor->validate_failure_rate( $this, $this->get_create_batch_hook(), [ $batch_number ] );
-
-		if ( $this->retry_on_timeout ) {
-			$this->monitor->monitor_timeout( [ $this, 'schedule' ], [ [ $batch_number ] ] );
-		}
+		$this->maybe_attach_schedule_action_on_timeout( [ $batch_number ] );
 
 		$items = $this->get_batch( $batch_number );
 
@@ -84,6 +81,8 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 				$this->schedule_create_batch_action( $batch_number + 1 );
 			}
 		}
+
+		$this->detach_schedule_action_on_timeout( [ $batch_number ] );
 	}
 
 	/**
