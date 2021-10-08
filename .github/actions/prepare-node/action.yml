@@ -4,10 +4,12 @@ description: Load npm cache, install Node dependencies
 inputs:
   install-deps:
     description: Whether to run `npm ci`. Set "maybe" to install deps if cache is missing. "yes" by default.
+    required: false
     default: "yes"
 
   ignore-scripts:
     description: Whether to run `npm ci` with --ignore-scripts. "yes" by default.
+    required: false
     default: "yes"
 
 runs:

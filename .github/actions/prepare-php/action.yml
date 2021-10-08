@@ -4,14 +4,17 @@ description: Set up PHP, load Composer cache, install Composer dependencies
 inputs:
   php-version:
     description: Specify PHP version. "7.4" by default.
+    required: false
     default: "7.4"
 
   tools:
     description: Specify the tools parameter of shivammathur/setup-php@v2. null by default.
+    required: false
     default: null
 
   install-deps:
     description: Whether to run `composer install`. Set "maybe" to install deps if cache is missing. "yes" by default.
+    required: false
     default: "yes"
 
 runs:
