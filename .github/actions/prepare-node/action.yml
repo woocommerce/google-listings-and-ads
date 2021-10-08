@@ -1,0 +1,41 @@
+name: Prepare Node
+description: Load npm cache, install Node dependencies
+
+inputs:
+  install-deps:
+    description: Whether to run `npm ci`. Set "maybe" to install deps if cache is missing. "yes" by default.
+    required: false
+    default: "yes"
+
+  ignore-scripts:
+    description: Whether to run `npm ci` with --ignore-scripts. "yes" by default.
+    required: false
+    default: "yes"
+
+runs:
+  using: composite
+  steps:
+    # Log debug information
+    - shell: sh -e {0}
+      run: |
+        node --version
+        npm --version
+
+    # Get npm cache directory
+    - uses: actions/cache@v2
+      id: npm-cache
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    # Install node dependencies
+    - shell: sh -e {0}
+      # Update npm cache directory if package-lock has changed
+      run: |
+        if [ "${{ inputs.install-deps }}" = "yes" ] || [ "${{ steps.npm-cache.outputs.cache-hit }}" != "true" ]; then
+          npm ci `if [ "${{ inputs.ignore-scripts }}" = "yes" ]; then printf %s "--ignore-scripts"; fi`
+        else
+          echo "Skip npm ci"
+        fi

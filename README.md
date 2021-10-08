@@ -1,4 +1,10 @@
-# Google Listings & Ads [![Build Status](https://travis-ci.com/woocommerce/google-listings-and-ads.svg?branch=trunk)](https://travis-ci.com/woocommerce/google-listings-and-ads)
+# Google Listings & Ads
+
+[![PHP Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-unit-tests.yml)
+[![JavaScript Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml)
+[![PHP Coding Standards](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml)
+[![JavaScript and CSS Linting](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml)
+[![Bundle Size](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml)
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
