@@ -2,21 +2,19 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import { getEditContactInformationUrl } from '.~/utils/urls';
+import { getEditPhoneNumberUrl, getEditStoreAddressUrl } from '.~/utils/urls';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
-import useStoreAddress from '.~/hooks/useStoreAddress';
 import Section from '.~/wcdl/section';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import SpinnerCard from '.~/components/spinner-card';
-import PhoneNumberCard from './phone-number-card';
-import StoreAddressCard from './store-address-card';
-import NoContactInformationCard from './no-contact-information-card';
+import PhoneNumberCard, { PhoneNumberCardPreview } from './phone-number-card';
+import StoreAddressCard, {
+	StoreAddressCardPreview,
+} from './store-address-card';
 import usePhoneNumberCheckTrackEventEffect from './usePhoneNumberCheckTrackEventEffect';
 
 const learnMoreLinkId = 'contact-information-read-more';
@@ -36,71 +34,59 @@ const settingsTitle = __( 'Contact information', 'google-listings-and-ads' );
  * or a <NoContactInformationCard> if contact informations are not saved yet.
  */
 export function ContactInformationPreview() {
-	const phone = useGoogleMCPhoneNumber();
-	const address = useStoreAddress( 'mc' );
-
-	const handleEditClick = () => {
-		getHistory().push( getEditContactInformationUrl() );
-	};
-
-	let sectionContent = <SpinnerCard />;
-
-	if ( phone.loaded && address.loaded ) {
-		if ( phone.data.isValid && address.data.isAddressFilled ) {
-			sectionContent = (
-				<VerticalGapLayout size="overlap">
-					<PhoneNumberCard
-						view="settings"
-						isPreview
-						phoneNumber={ phone }
-						onEditClick={ handleEditClick }
-					/>
-					<StoreAddressCard isPreview />
-				</VerticalGapLayout>
-			);
-		} else {
-			sectionContent = (
-				<NoContactInformationCard
-					onEditClick={ handleEditClick }
-					learnMoreUrl={ learnMoreUrl }
-					learnMoreLinkId={ learnMoreLinkId }
-				/>
-			);
-		}
-	}
-
 	return (
 		<Section title={ settingsTitle } description={ description }>
-			{ sectionContent }
+			<VerticalGapLayout size="overlap">
+				<PhoneNumberCardPreview
+					editHref={ getEditPhoneNumberUrl() }
+					learnMore={
+						<AppDocumentationLink
+							context="settings-no-phone-number-notice"
+							linkId={ learnMoreLinkId }
+							href={ learnMoreUrl }
+						>
+							{ __( 'Learn more', 'google-listings-and-ads' ) }
+						</AppDocumentationLink>
+					}
+				/>
+				<StoreAddressCardPreview
+					editHref={ getEditStoreAddressUrl() }
+					learnMore={
+						<AppDocumentationLink
+							context="settings-no-store-address-notice"
+							linkId={ learnMoreLinkId }
+							href={ learnMoreUrl }
+						>
+							{ __( 'Learn more', 'google-listings-and-ads' ) }
+						</AppDocumentationLink>
+					}
+				/>
+			</VerticalGapLayout>
 		</Section>
 	);
 }
 
 /**
- * Renders a contact information section with specified initial state and texts, determined by the `view` prop.
+ * Renders a contact information section with specified initial state and texts.
  *
  * @param {Object} props React props.
- * @param {'setup-mc'|'settings'} props.view Indicate where this component is used.
  * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified.
  */
-export default function ContactInformation( { view, onPhoneNumberVerified } ) {
+export default function ContactInformation( { onPhoneNumberVerified } ) {
 	const phone = useGoogleMCPhoneNumber();
-	const isSetupMC = view === 'setup-mc';
 
 	/**
-	 * Since it still lacking the phone verification state,
+	 * Since it is still lacking the phone verification state,
 	 * all onboarding accounts are considered unverified phone numbers.
 	 *
 	 * TODO: replace the code at next line back to the original logic with
-	 * `const initEditing = isSetupMC ? null : true;`
+	 * `const initEditing = null;`
 	 * after the phone verification state can be detected.
 	 */
 	const initEditing = true;
 
-	const title = isSetupMC ? mcTitle : settingsTitle;
-	const trackContext = isSetupMC
-		? 'setup-mc-contact-information'
-		: 'settings-contact-information';
+	const title = mcTitle;
+	const trackContext = 'setup-mc-contact-information';
 
 	usePhoneNumberCheckTrackEventEffect( phone );
 
@@ -124,7 +110,7 @@ export default function ContactInformation( { view, onPhoneNumberVerified } ) {
 		>
 			<VerticalGapLayout size="large">
 				<PhoneNumberCard
-					view={ view }
+					view="setup-mc"
 					phoneNumber={ phone }
 					initEditing={ initEditing }
 					onPhoneNumberVerified={ onPhoneNumberVerified }

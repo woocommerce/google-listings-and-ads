@@ -1,0 +1,20 @@
+.gla-contact-info-preview-card {
+	// Vertically align icon inside the title.
+	.wcdl-subsection-title {
+		display: flex;
+		align-items: center;
+	}
+	&__notice-icon {
+		fill: $alert-red;
+		margin: calc(var(--main-gap) / -8) 0;
+	}
+	&__notice-details {
+		color: $gray-700;
+	}
+
+	&__placeholder {
+		@include placeholder();
+		display: inline-block;
+		width: 18em;
+	}
+}

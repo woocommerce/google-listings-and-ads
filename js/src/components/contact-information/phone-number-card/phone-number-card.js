@@ -91,8 +91,7 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
  * @param {Object} props React props.
  * @param {string} props.view The view the card is in.
  * @param {PhoneNumber} props.phoneNumber Phone number data.
- * @param {boolean} [props.isPreview=false] Whether to display as preview UI.
- * @param {boolean|null} [props.initEditing=null] Specify the inital UI state. This prop would be ignored if `isPreview` is true.
+ * @param {boolean|null} [props.initEditing=null] Specify the inital UI state.
  *     `true`: initialize with the editing UI.
  *     `false`: initialize with the viewing UI.
  *     `null`: determine the initial UI state according to the `data.isValid` after the `phoneNumber` loaded.
@@ -103,15 +102,12 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
 export default function PhoneNumberCard( {
 	view,
 	phoneNumber,
-	isPreview = false,
 	initEditing = null,
 	onEditClick,
 	onPhoneNumberVerified = noop,
 } ) {
 	const { loaded, data } = phoneNumber;
-	const [ isEditing, setEditing ] = useState(
-		isPreview ? false : initEditing
-	);
+	const [ isEditing, setEditing ] = useState( initEditing );
 
 	// Handle the initial UI state of `initEditing = null`.
 	// The `isEditing` state is on hold. Determine it after the `phoneNumber` loaded.
@@ -173,7 +169,6 @@ export default function PhoneNumberCard( {
 		<AccountCard
 			{ ...basePhoneNumberCardProps }
 			description={ description }
-			hideIcon={ isPreview }
 			indicator={ indicator }
 		/>
 	);

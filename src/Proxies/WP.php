@@ -133,7 +133,7 @@ class WP {
 	 *
 	 * @return string PHP timezone string or a ±HH:MM offset.
 	 *
-	 * @since x.x.x
+	 * @since 1.5.0
 	 */
 	public function wp_timezone_string(): string {
 		return wp_timezone_string();

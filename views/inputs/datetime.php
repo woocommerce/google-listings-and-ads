@@ -2,7 +2,7 @@
 /**
  * Datetime input template
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 
 declare( strict_types=1 );

@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Input
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 interface AttributeInputInterface {
 

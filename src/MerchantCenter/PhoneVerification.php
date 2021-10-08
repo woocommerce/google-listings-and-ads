@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 class PhoneVerification implements Service {
 

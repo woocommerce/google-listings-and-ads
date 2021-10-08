@@ -524,26 +524,13 @@ export function receiveGoogleMCContactInformation( data ) {
 
 /**
  * Update the contact information to user's account of Google Merchant Center.
- * The phone number will be updated only if `countryCallingCode` and `nationalNumber` are not falsy.
- *
- * @param {string} [countryCallingCode] The country calling code. Example: '1'.
- * @param {string} [nationalNumber] The national (significant) number. Example: '2133734253'.
+ * It will update the store address of WooCommerce Settings to Google Merchant Center if they are different.
  */
-export function* updateGoogleMCContactInformation(
-	countryCallingCode,
-	nationalNumber
-) {
-	const data = {};
-
-	if ( countryCallingCode && nationalNumber ) {
-		data.phone_number = `+${ countryCallingCode }${ nationalNumber }`;
-	}
-
+export function* updateGoogleMCContactInformation() {
 	try {
 		const response = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/contact-information`,
 			method: 'POST',
-			data,
 		} );
 
 		yield receiveGoogleMCContactInformation( response );
@@ -556,6 +543,114 @@ export function* updateGoogleMCContactInformation(
 			)
 		);
 		throw error;
+	}
+}
+
+/**
+ * Requests a phone verification code and returns a `verificationId` which is used for the next verification step.
+ *
+ * Important note:
+ *   This action communicates with Google's production API.
+ *   It will REALLY send the verification code to the phone number via SMS/phone call.
+ *   When developing/testing, please make sure the passed number is your own or belongs to someone you know.
+ *
+ * @param {CountryCode} country The country code. Example: 'US'.
+ * @param {string} phoneNumber The phone number string in E.164 format. Example: '+12133734253'.
+ * @param {'SMS'|'PHONE_CALL'} method The verification method.
+ * @return { { verificationId: string } } Verification id to be used for another call.
+ * @throws { { display: string } } Will throws an identifiable error with the next step instruction for users.
+ */
+export function* requestPhoneVerificationCode( country, phoneNumber, method ) {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/phone-verification/request`,
+			method: 'POST',
+			data: {
+				phone_region_code: country,
+				phone_number: phoneNumber,
+				verification_method: method,
+			},
+		} );
+
+		return {
+			verificationId: response.verification_id,
+		};
+	} catch ( error ) {
+		if ( error.reason === 'rateLimitExceeded' ) {
+			throw {
+				...error,
+				display: __(
+					'Unable to initiate the verification code request. A maximum of five attempts to verify the same phone number every four hours. Please try again later.',
+					'google-listings-and-ads'
+				),
+			};
+		}
+
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to request the phone verification code. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+/**
+ * Verifies the phone number for users by passing the corresponding data used from the `requestPhoneVerificationCode` action.
+ *
+ * @param {string} verificationId The verification ID got from the `requestPhoneVerificationCode` action.
+ * @param {string} code The six-digit verification code sent/call to the user's phone.
+ * @param {'SMS'|'PHONE_CALL'} method The verification method. It should correspond with the verification ID got from the `requestPhoneVerificationCode` action.
+ * @throws { { display: string } } Will throws an identifiable error with the next step instruction for users.
+ */
+export function* verifyPhoneNumber( verificationId, code, method ) {
+	try {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/phone-verification/verify`,
+			method: 'POST',
+			data: {
+				verification_id: verificationId,
+				verification_code: code,
+				verification_method: method,
+			},
+		} );
+
+		return {
+			type: TYPES.VERIFIED_MC_PHONE_NUMBER,
+		};
+	} catch ( error ) {
+		const { reason, message = '' } = error;
+
+		if ( reason === 'badRequest' ) {
+			// Example of message format: '[verificationCode] Wrong code.'
+			const [ , errorCode ] = message.match( /^\[(\w+)\]/ ) || [];
+			const displayDict = {
+				verificationCode: __(
+					'Wrong verification code. Please try again.',
+					'google-listings-and-ads'
+				),
+				verificationId: __(
+					'The verification code has expired. Please initiate a new verification request by the resend button.',
+					'google-listings-and-ads'
+				),
+			};
+
+			if ( errorCode in displayDict ) {
+				throw {
+					...error,
+					display: displayDict[ errorCode ],
+				};
+			}
+		}
+
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to verify your phone number. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
 	}
 }
 

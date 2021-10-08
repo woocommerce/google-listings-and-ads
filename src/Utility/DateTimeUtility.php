@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Utility
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 class DateTimeUtility implements Service {
 
