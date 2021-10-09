@@ -25,8 +25,10 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 ## Prerequisites
 
--   WordPress 5.5+
--   WooCommerce 5.2+
+We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
+
+-   WordPress 5.6+
+-   WooCommerce 5.5+
 -   PHP 7.3+
 
 ## Browsers supported
@@ -102,7 +104,7 @@ $ ./bin/install-wp-tests.sh wordpress_tests root root localhost
 ```
 
 This script installs the test dependencies into your system's temporary directory and also creates a test database.
-  
+
 You can also specify the path to their directories by setting the following environment variables:
 
 -   `WP_TESTS_DIR`: WordPress Unit Test lib directory
