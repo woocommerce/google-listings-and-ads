@@ -21,7 +21,14 @@ const useCountryKeyNameMap = () => {
 	return useSelect( ( select ) => {
 		const { getSetting } = select( SETTINGS_STORE_NAME );
 		const countries = {
-			...getSetting( 'wc_admin', 'countries' ),
+			...getSetting(
+				'wc_admin',
+				'countries',
+				// Use global settings as a fallback value,
+				// to hotfix lack of countries in Settings Store in WC 5.8
+				// See https://github.com/woocommerce/woocommerce-admin/issues/7781
+				window.wcSettings.countries
+			),
 		};
 
 		/*
