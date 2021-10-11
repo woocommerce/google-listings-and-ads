@@ -29,7 +29,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 
 	public const PRODUCT_APPLICABILITY_ALL_PRODUCTS = 'ALL_PRODUCTS';
 
-	public const PRODUCT_APPLICABILITY_PRODUCT_SPECIFIC = 'PRODUCT_SPECIFIC';
+	public const PRODUCT_APPLICABILITY_SPECIFIC_PRODUCTS = 'SPECIFIC_PRODUCTS';
 
 	public const OFFER_TYPE_GENERIC_CODE = 'GENERIC_CODE';
 
@@ -236,7 +236,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 
 		if ( $has_product_restriction ) {
 			$this->setProductApplicability(
-				self::PRODUCT_APPLICABILITY_PRODUCT_SPECIFIC
+			    self::PRODUCT_APPLICABILITY_SPECIFIC_PRODUCTS
 			);
 		} else {
 			$this->setProductApplicability(
