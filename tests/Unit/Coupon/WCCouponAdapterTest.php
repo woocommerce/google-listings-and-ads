@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTr
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use WC_DateTime;
 use WC_Coupon;
+use function Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\json_encode;
 
 /**
  * Class WCProductAdapterTest
@@ -152,6 +153,27 @@ class WCCouponAdapterTest extends UnitTest {
 	    
 	    $this->assertEquals( ["gla_{$product_id_1}"], $adapted_coupon->getItemId() );
 	    $this->assertEquals( ["gla_{$product_id_2}"], $adapted_coupon->getItemIdExclusion() );
+	}
+	
+	public function test_product_type_restrictions() {
+	    $category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
+	    $category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
+	    $category_3 = wp_insert_term(
+	        'Beta Category', 'product_cat', array('parent' => $category_2['term_id']) );
+	    $coupon = $this->create_ready_to_sync_coupon();
+	    $coupon->set_product_categories( [$category_1['term_id'], $category_2['term_id']] );
+	    $coupon->set_excluded_product_categories( [$category_3['term_id']] );
+	    $coupon->save();
+	    
+	    $adapted_coupon = new WCCouponAdapter(
+	        [
+	            'wc_coupon'     => $coupon,
+	            'targetCountry' => 'US',
+	        ]
+	        );
+	    
+	    $this->assertEquals( ["Zulu Category","Alpha Category"], $adapted_coupon->getProductType() );
+	    $this->assertEquals( ['Alpha Category > Beta Category'], $adapted_coupon->getProductTypeExclusion() );
 	}
 	
 	public function test_load_validator_metadata() {

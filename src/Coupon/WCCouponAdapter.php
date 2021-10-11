@@ -234,9 +234,25 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			$this->setItemIdExclusion( $google_product_ids );
 		}
 
+		$wc_product_catetories = $wc_coupon->get_product_categories();
+		if ( ! empty( $wc_product_catetories ) ) {
+			$str_product_categories  =
+				WCProductAdapter::convert_product_types( $wc_product_catetories );
+			$has_product_restriction = true;
+			$this->setProductType( $str_product_categories );
+		}
+
+		$wc_excluded_product_catetories = $wc_coupon->get_excluded_product_categories();
+		if ( ! empty( $wc_excluded_product_catetories ) ) {
+			$str_product_categories  =
+				WCProductAdapter::convert_product_types( $wc_excluded_product_catetories );
+			$has_product_restriction = true;
+			$this->setProductTypeExclusion( $str_product_categories );
+		}
+
 		if ( $has_product_restriction ) {
 			$this->setProductApplicability(
-			    self::PRODUCT_APPLICABILITY_SPECIFIC_PRODUCTS
+				self::PRODUCT_APPLICABILITY_SPECIFIC_PRODUCTS
 			);
 		} else {
 			$this->setProductApplicability(

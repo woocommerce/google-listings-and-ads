@@ -181,20 +181,68 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		$base_product_id      = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
 		$product_category_ids = wc_get_product_cat_ids( $base_product_id );
 		if ( ! empty( $product_category_ids ) ) {
+			$google_product_types = self::convert_product_types( $product_category_ids );
 			do_action(
 				'woocommerce_gla_debug_message',
 				sprintf(
-					'Product category (ID: %s): %s. expected: %s',
+					'Product category (ID: %s): %s.',
 					$base_product_id,
-					json_encode( $product_category_ids ),
-					json_encode( wc_get_product_category_list( $base_product_id, ' > ' ) )
+					json_encode( $google_product_types )
 				),
 				__METHOD__
 			);
-			$this->setProductType( wc_get_product_category_list( $base_product_id, ' > ' ) );
+			$this->setProductTypes( $google_product_types );
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Covert WooCommerce product categories to product_type, which follows Google requirements:
+	 * https://support.google.com/merchants/answer/6324406?hl=en#
+	 *
+	 * @param int[] $category_ids
+	 *
+	 * @return array
+	 */
+	public static function convert_product_types( $category_ids ): array {
+		$product_types = [];
+		foreach ( array_unique( $category_ids ) as $category_id ) {
+			if ( ! is_int( $category_id ) ) {
+				continue;
+			}
+
+			$str_category = self::get_category_path_by_id( $category_id );
+
+			array_push( $product_types, $str_category );
+
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf(
+					'Product category path: catigory_id:%s;\n path:%s.',
+					json_encode( $category_id ),
+					$str_category
+				),
+				__METHOD__
+			);
+		}
+		return $product_types;
+	}
+
+	/**
+	 *
+	 * @param int $category_id
+	 *
+	 * @return string
+	 */
+	protected static function get_category_path_by_id( int $category_id ): string {
+		$term = get_term_by( 'id', $category_id, 'product_cat', 'ARRAY_A' );
+
+		if ( empty( $term['parent'] ) ) {
+			return $term['name'];
+		} else {
+			return sprintf( '%s > %s', self::get_category_path_by_id( $term['parent'] ), $term['name'] );
+		}
 	}
 
 	/**

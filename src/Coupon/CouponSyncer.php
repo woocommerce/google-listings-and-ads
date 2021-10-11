@@ -317,15 +317,14 @@ class CouponSyncer implements Service {
 	}
 
 	/**
-	 * Return a string of a past period to disable coupon.
+	 * Return a string of a period that will expire in 5 minutes.
 	 *
 	 * @return string
 	 */
 	protected static function get_disabled_effective_dates(): string {
 		$start_date = new WC_DateTime();
-		$start_date->sub( new DateInterval( 'P2D' ) );
-		$end_date = new WC_DateTime();
-		$end_date->sub( new DateInterval( 'P1D' ) );
+		$end_date   = new WC_DateTime();
+		$end_date->add( new DateInterval( 'P5M' ) );
 		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
 	}
 
@@ -345,9 +344,6 @@ class CouponSyncer implements Service {
 		}
 		if ( ! empty( $coupon->get_exclude_sale_items() ) &&
 			$coupon->get_exclude_sale_items() ) {
-			return false;
-		}
-		if ( ! empty( $coupon->get_product_categories() ) || ! empty( $coupon->get_excluded_product_categories() ) ) {
 			return false;
 		}
 		return true;
