@@ -104,11 +104,11 @@
 		"files": [
 			{
 				"path": "./js/build/*.js",
-				"maxSize": "3 kB"
+				"maxSize": "2.3 kB"
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "3 mB"
+				"maxSize": "743 kb"
 			},
 			{
 				"path": "./js/build/*.css",
