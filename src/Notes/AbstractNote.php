@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-abstract class Note implements Service, Registerable, Deactivateable, OptionsAwareInterface {
+abstract class AbstractNote implements Service, Registerable, Deactivateable, OptionsAwareInterface {
 
 	/**
 	 * Get the note's unique name.

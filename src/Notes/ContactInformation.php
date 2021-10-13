@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.4.0
  */
-class ContactInformation extends Note implements MerchantCenterAwareInterface {
+class ContactInformation extends AbstractNote implements MerchantCenterAwareInterface {
 
 	use MerchantCenterAwareTrait;
 	use PluginHelper;

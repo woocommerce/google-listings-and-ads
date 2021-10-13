@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class SetupCampaignTwoWeeks extends Note implements AdsAwareInterface {
+class SetupCampaignTwoWeeks extends AbstractNote implements AdsAwareInterface {
 
 	use AdsAwareTrait;
 	use PluginHelper;
