@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.8
 Requires PHP: 7.3
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -115,7 +115,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.5.1 - 2021-xx-xx =
+= 1.5.1 - 2021-10-13 =
 * Update - Changed minimum version of WordPress to 5.6 and WooCommerce to 5.5.
 * Fix - Change the way of getting WooCommerce admin settings to fix a compatibility issue in WooCommerce 5.8.
 * Tweak - WooCommerce 5.8 compatibility.
