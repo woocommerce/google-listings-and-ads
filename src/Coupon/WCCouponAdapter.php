@@ -74,9 +74,13 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		$wc_coupon          = $array['wc_coupon'];
 		$this->wc_coupon_id = $wc_coupon->get_id();
 		$this->map_woocommerce_coupon( $wc_coupon );
+		if ( ! empty( $array['delete'] ) && $array['delete'] === true ) {
+			$this->disable_promotion( $wc_coupon );
+		}
 
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_coupon'] );
+		unset( $array['delete'] );
 
 		parent::mapTypes( $array );
 	}
@@ -162,18 +166,14 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	}
 
 	/**
-	 * Return the effective dates for the WooCommerce couopon.
+	 * Return the effective dates for the WooCommerce coupon.
 	 *
 	 * @param WC_Coupon $wc_coupon
 	 *
 	 * @return string|null
 	 */
 	protected function get_wc_coupon_effective_dates( WC_Coupon $wc_coupon ): ?string {
-		$start_date = new WC_DateTime();
-		$post_time  = get_post_time( self::DATE_TIME_FORMAT, true, $wc_coupon->get_id(), false );
-		if ( ! empty( $post_time ) ) {
-			$start_date = new WC_DateTime( $post_time );
-		}
+		$start_date = $this->get_wc_coupon_start_date( $wc_coupon );
 
 		$end_date = $wc_coupon->get_date_expires();
 		// If there is no expiring date, set to promotion maximumal effective days allowed by Google.\
@@ -183,14 +183,29 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			$end_date->add( new DateInterval( 'P183D' ) );
 		}
 
-		// If the coupon is already expired. set the effective date to a past period.
+		// If the coupon is already expired. set the coupon expires immediately after start date.
 		if ( $end_date < $start_date ) {
-			$start_date = new WC_DateTime();
-			$start_date->sub( new DateInterval( 'P2D' ) );
-			$end_date = new WC_DateTime();
-			$end_date->sub( new DateInterval( 'P1D' ) );
+			$end_date = clone $start_date;
+			$end_date->add( new DateInterval( 'PT1S' ) );
 		}
 		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
+	}
+
+	/**
+	 * Return the start date for the WooCommerce coupon.
+	 *
+	 * @param WC_Coupon $wc_coupon
+	 *
+	 * @return WC_DateTime
+	 */
+	protected function get_wc_coupon_start_date( $wc_coupon ): WC_DateTime {
+		new WC_DateTime();
+		$post_time = get_post_time( self::DATE_TIME_FORMAT, true, $wc_coupon->get_id(), false );
+		if ( ! empty( $post_time ) ) {
+			return new WC_DateTime( $post_time );
+		} else {
+			return new WC_DateTime();
+		}
 	}
 
 	/**
@@ -276,6 +291,28 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 				'currency' => get_woocommerce_currency(),
 				'value'    => $wc_amount,
 			]
+		);
+	}
+
+	/**
+	 * Disable promotion shared in Google.
+	 *
+	 * @param WC_Coupon $wc_coupon
+	 */
+	protected function disable_promotion( WC_Coupon $wc_coupon ) {
+		$start_date = $this->get_wc_coupon_start_date( $wc_coupon );
+		// Set promotion to be disabled in 5 mins.
+		$end_date = new WC_DateTime();
+		$end_date->add( new DateInterval( 'PT5M' ) );
+
+		// If this coupon is scheduled in the future, disable it right after start date.
+		if ( $start_date >= $end_date ) {
+			$end_date = clone $start_date;
+			$end_date->add( new DateInterval( 'PT1S' ) );
+		}
+
+		$this->setPromotionEffectiveDates(
+			sprintf( '%s/%s', (string) $start_date, (string) $end_date )
 		);
 	}
 

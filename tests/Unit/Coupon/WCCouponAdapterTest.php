@@ -136,6 +136,28 @@ class WCCouponAdapterTest extends UnitTest {
 	    $this->assertEquals( '2021-01-01T02:03:45+00:00/2021-07-03T02:03:45+00:00', $adapted_coupon->getPromotionEffectiveDates() );
 	}
 	
+	public function test_disable_promotion() {
+	    $coupon = $this->create_ready_to_sync_coupon();
+	    $postdate = '2022-01-01T02:03:45';
+	    $post_args = array(
+	        'ID' => $coupon->get_id(),
+	        'post_date' => $postdate,
+	        'post_date_gmt' => $postdate,
+	    );
+	    wp_update_post( $post_args);
+	    
+	    $adapted_coupon = new WCCouponAdapter(
+	        [
+	            'wc_coupon'     => $coupon,
+	            'targetCountry' => 'US',
+	            'delete'        => true,
+	        ]
+	        );
+	    $this->assertEquals(
+	        '2022-01-01T02:03:45+00:00/2022-01-01T02:03:46+00:00',
+	        $adapted_coupon->getPromotionEffectiveDates() );
+	}
+	
 	public function test_product_id_restrictions() {
 	    $product_id_1 = rand();
 	    $product_id_2 = rand();

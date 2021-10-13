@@ -165,6 +165,7 @@ class SyncerHooks implements Service, Registerable {
 				new WCCouponAdapter(
 					[
 						'wc_coupon' => $coupon,
+						'delete'    => true,
 					]
 				),
 				$this->coupon_helper->get_synced_google_ids( $coupon )
@@ -204,6 +205,7 @@ class SyncerHooks implements Service, Registerable {
 				new WCCouponAdapter(
 					[
 						'wc_coupon' => $coupon,
+						'delete'    => true,
 					]
 				),
 				$this->coupon_helper->get_synced_google_ids( $coupon )

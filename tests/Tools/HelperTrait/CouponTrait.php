@@ -85,7 +85,7 @@ trait CouponTrait {
     public function generate_delete_coupon_entry( WC_Coupon $coupon ) {
         return new DeleteCouponEntry( 
             $coupon->get_id(),
-            new WCCouponAdapter( ['wc_coupon' => $coupon] ),
+            new WCCouponAdapter( ['wc_coupon' => $coupon, 'delete' => true ] ),
             $this->coupon_helper->get_synced_google_ids( $coupon ) );
     }
 

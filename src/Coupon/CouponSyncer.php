@@ -247,9 +247,16 @@ class CouponSyncer implements Service {
 			try {
 				$adapted_coupon = $coupon->get_google_promotion();
 				$adapted_coupon->setTargetCountry( $target_country );
-				// Disable the coupon.
-				$adapted_coupon->setPromotionEffectiveDates( self::get_disabled_effective_dates() );
 
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf(
+						'Start to delete coupon (ID: %s) as promotion structure: %s',
+						$coupon->get_wc_coupon_id(),
+						json_encode( $adapted_coupon )
+					),
+					__METHOD__
+				);
 				$response = $this->google_service->create( $adapted_coupon );
 				array_push( $deleted_promotions, $response );
 				if ( $wc_coupon_exist ) {
@@ -314,18 +321,6 @@ class CouponSyncer implements Service {
 			),
 			__METHOD__
 		);
-	}
-
-	/**
-	 * Return a string of a period that will expire in 5 minutes.
-	 *
-	 * @return string
-	 */
-	protected static function get_disabled_effective_dates(): string {
-		$start_date = new WC_DateTime();
-		$end_date   = new WC_DateTime();
-		$end_date->add( new DateInterval( 'P5M' ) );
-		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
 	}
 
 	/**
