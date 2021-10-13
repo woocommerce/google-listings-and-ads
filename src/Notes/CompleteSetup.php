@@ -7,8 +7,6 @@ use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
 defined( 'ABSPATH' ) || exit;
@@ -29,18 +27,14 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 	 *
 	 * @return string
 	 */
-	public function get_note_name(): string {
+	public function get_name(): string {
 		return 'gla-complete-setup';
 	}
 
 	/**
 	 * Possibly add the note
 	 */
-	public function possibly_add_note(): void {
-		if ( ! $this->can_add_note() ) {
-			return;
-		}
-
+	public function add(): void {
 		$note = new NoteEntry();
 		$note->set_title( __( 'Complete your setup on Google', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Finish setting up Google Listings & Ads to list your products on Google for free and promote them with paid ads.', 'google-listings-and-ads' ) );
@@ -48,7 +42,7 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
 		$note->set_image( '' );
-		$note->set_name( $this->get_note_name() );
+		$note->set_name( $this->get_name() );
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
 			'complete-setup',
@@ -67,7 +61,7 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 	 *
 	 * @return bool
 	 */
-	public function can_add_note(): bool {
+	public function should_be_added(): bool {
 		if ( $this->has_been_added() ) {
 			return false;
 		}
