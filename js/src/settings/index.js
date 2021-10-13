@@ -7,6 +7,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountsUrl } from '.~/utils/urls';
 import NavigationClassic from '.~/components/navigation-classic';
@@ -19,6 +20,9 @@ import './index.scss';
 
 const Settings = () => {
 	const { subpath } = getQuery();
+	// Make the component highlight GLA entry in the WC legacy menu.
+	useLegacyMenuEffect();
+
 	const { google } = useGoogleAccount();
 	const isReconnectAccountsPage = subpath === subpaths.reconnectAccounts;
 
