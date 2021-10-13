@@ -1,21 +1,15 @@
 /**
  * External dependencies
  */
-import { SETTINGS_STORE_NAME } from '@woocommerce/data';
-import { useSelect } from '@wordpress/data';
+import { getSetting } from '@woocommerce/wc-admin-settings'; // eslint-disable-line import/no-unresolved
+// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+// See https://github.com/woocommerce/woocommerce-admin/issues/7781
 
 /**
  * Get the base URL of WP admin. For example: 'https://example.com/wp-admin/'
  *
  * @return {string} The base URL of WP admin.
  */
-const useAdminUrl = () => {
-	return useSelect( ( select ) => {
-		return select( SETTINGS_STORE_NAME ).getSetting(
-			'wc_admin',
-			'adminUrl'
-		);
-	}, [] );
-};
+const useAdminUrl = () => getSetting( 'adminUrl' );
 
 export default useAdminUrl;
