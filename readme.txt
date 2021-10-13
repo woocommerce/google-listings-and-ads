@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.8
 Requires PHP: 7.3
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -62,8 +62,8 @@ Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaig
 
 = Minimum Requirements =
 
-* WordPress 5.5 or greater
-* WooCommerce 5.2 or greater
+* WordPress 5.6 or greater
+* WooCommerce 5.5 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
 
@@ -115,6 +115,11 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.5.1 - 2021-10-13 =
+* Update - Changed minimum version of WordPress to 5.6 and WooCommerce to 5.5.
+* Fix - Change the way of getting WooCommerce admin settings to fix a compatibility issue in WooCommerce 5.8.
+* Tweak - WooCommerce 5.8 compatibility.
+
 = 1.5.0 - 2021-10-01 =
 * Add - Verify user's phone number via SMS or phone call at the last step of the onboarding flow and on the settings page. And update the verified phone number to user's connected Google Merchant Center account.
 * Add - Allow backorder stock availability for products.
@@ -137,13 +142,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 1.4.3 - 2021-09-08 =
 * Fix - PHP notice when creating a product variation.
 * Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
-
-= 1.4.2 - 2021-08-24 =
-* Fix - Fix a potential fatal error when WooCommerce isn't active while activating Google Listings and Ads.
-* Fix - Fix margin/padding styles for the AppButton when having spinner/icon/text.
-* Fix - Make audience country searchable in Setup Ads.
-* Fix - Remove file autoloads for namespaced packages.
-* Tweak - Remove all "STEP [NUMBER]" texts from step headers on the onboarding setup, paid campaign setup, and free listings edit pages.
-* Tweak - WC 5.5 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

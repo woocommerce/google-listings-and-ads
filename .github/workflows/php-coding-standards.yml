@@ -1,0 +1,27 @@
+name: PHP Coding Standards
+
+on:
+  push:
+    branches:
+      - trunk
+      - develop
+  pull_request:
+
+jobs:
+  phpcs:
+    name: PHP coding standards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare PHP
+        uses: ./.github/actions/prepare-php
+        with:
+          tools: cs2pr
+
+      - name: Log PHPCS debug information
+        run: vendor/bin/phpcs -i
+
+      - name: Run PHPCS on all files
+        run: vendor/bin/phpcs ./src -q -n --report=checkstyle | cs2pr
