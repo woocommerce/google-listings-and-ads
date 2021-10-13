@@ -39,24 +39,12 @@ export const getSettingsUrl = () => {
 };
 
 export const getEditPhoneNumberUrl = () => {
-	return getNewPath(
-		{ subpath: subpaths.editPhoneNumber },
-		settingsPath,
-		null
-	);
+	return getNewPath( null, settingsPath + subpaths.editPhoneNumber, null );
 };
 export const getEditStoreAddressUrl = () => {
-	return getNewPath(
-		{ subpath: subpaths.editStoreAddress },
-		settingsPath,
-		null
-	);
+	return getNewPath( null, settingsPath + subpaths.editStoreAddress, null );
 };
 
 export const getReconnectAccountsUrl = () => {
-	return getNewPath(
-		{ subpath: subpaths.reconnectAccounts },
-		settingsPath,
-		null
-	);
+	return getNewPath( null, settingsPath + subpaths.reconnectAccounts, null );
 };

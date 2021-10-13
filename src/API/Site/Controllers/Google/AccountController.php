@@ -88,7 +88,7 @@ class AccountController extends BaseController {
 		return function( Request $request ) {
 			try {
 				$next = $request->get_param( 'next' );
-				$path = $next === 'setup-mc' ? '/google/setup-mc' : '/google/settings&subpath=/reconnect-accounts';
+				$path = $next === 'setup-mc' ? '/google/setup-mc' : '/google/settings/reconnect-accounts';
 
 				return [
 					'url' => $this->connection->connect( admin_url( "admin.php?page=wc-admin&path={$path}" ) ),

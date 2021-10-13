@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import { getQuery, getHistory } from '@woocommerce/navigation';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -17,8 +17,15 @@ import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import './index.scss';
 
-const Settings = () => {
-	const { subpath } = getQuery();
+/**
+ * Settings page component.
+ *
+ * @param {Object} [props] React props
+ * @param {Object} [props.params = {}] `path` params extracted by React `<Router>`.
+ * @param {string} [props.params.subpath] Sub path of a nested settings page.
+ * @return {JSX.Element} Settings page component.
+ */
+const Settings = ( { params: { subpath } = {} } ) => {
 	const { google } = useGoogleAccount();
 	const isReconnectAccountsPage = subpath === subpaths.reconnectAccounts;
 
@@ -31,7 +38,7 @@ const Settings = () => {
 	}, [ isReconnectAccountsPage, google ] );
 
 	// Navigate to subpath is any.
-	switch ( subpath ) {
+	switch ( '/' + subpath ) {
 		case subpaths.reconnectAccounts:
 			return <ReconnectAccounts />;
 		case subpaths.editPhoneNumber:

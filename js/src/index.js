@@ -116,7 +116,7 @@ addFilter(
 					__( 'Settings', 'google-listings-and-ads' ),
 				],
 				container: Settings,
-				path: '/google/settings',
+				path: '/google/settings/:subpath?',
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 				navArgs: {
 					id: 'google-settings',
