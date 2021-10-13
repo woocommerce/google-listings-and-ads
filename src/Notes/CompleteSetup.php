@@ -32,7 +32,7 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 	}
 
 	/**
-	 * Possibly add the note
+	 * Add the note.
 	 */
 	public function add(): void {
 		$note = new NoteEntry();

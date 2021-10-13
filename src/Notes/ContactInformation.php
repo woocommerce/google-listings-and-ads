@@ -34,7 +34,7 @@ class ContactInformation extends AbstractNote implements MerchantCenterAwareInte
 	}
 
 	/**
-	 * Possibly add the note
+	 * Add the note.
 	 */
 	public function add(): void {
 		$note = new NoteEntry();

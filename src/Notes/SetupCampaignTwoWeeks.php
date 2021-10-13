@@ -32,7 +32,7 @@ class SetupCampaignTwoWeeks extends AbstractNote implements AdsAwareInterface {
 	}
 
 	/**
-	 * Possibly add the note
+	 * Add the note.
 	 */
 	public function add(): void {
 		$note = new NoteEntry();
