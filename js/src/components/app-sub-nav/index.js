@@ -36,7 +36,11 @@ const AppSubNav = ( props ) => {
 					<>
 						<Link
 							key={ tab.key }
-							className={ classnames( { current: isCurrent } ) }
+							className={ classnames( {
+								current: isCurrent,
+								// Workaround for https://github.com/woocommerce/woocommerce-admin/issues/7772.
+								'gla-sub-nav__item--current': isCurrent,
+							} ) }
 							tabIndex={ isCurrent ? null : -1 }
 							id={ `${ tab.key }` }
 							href={ tab.href }
