@@ -83,8 +83,6 @@ class NoteInitializer implements Deactivateable, InstallableInterface, Service, 
 	 * Deactivate the service.
 	 *
 	 * Delete the notes cron job and all notes.
-	 *
-	 * @return void
 	 */
 	public function deactivate(): void {
 		$this->action_scheduler->cancel( self::CRON_HOOK );

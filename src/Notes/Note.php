@@ -2,6 +2,7 @@
 declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
+
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 defined( 'ABSPATH' ) || exit;
