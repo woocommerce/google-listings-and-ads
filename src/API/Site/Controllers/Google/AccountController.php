@@ -147,6 +147,7 @@ class AccountController extends BaseController {
 				return [
 					'active' => array_key_exists( 'status', $status ) && ( 'connected' === $status['status'] ) ? 'yes' : 'no',
 					'email'  => array_key_exists( 'email', $status ) ? $status['email'] : '',
+					'scope'  => array_key_exists( 'scope', $status ) ? $status['scope'] : [],
 				];
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
