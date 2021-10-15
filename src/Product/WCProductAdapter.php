@@ -212,20 +212,10 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 				continue;
 			}
 
-			$str_category = self::get_category_path_by_id( $category_id );
-
-			array_push( $product_types, $str_category );
-
-			do_action(
-				'woocommerce_gla_debug_message',
-				sprintf(
-					'Product category path: catigory_id:%s;\n path:%s.',
-					json_encode( $category_id ),
-					$str_category
-				),
-				__METHOD__
-			);
+			$product_type = self::get_product_type_by_id( $category_id );
+			array_push( $product_types, $product_type );
 		}
+
 		return $product_types;
 	}
 
@@ -235,14 +225,15 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 *
 	 * @return string
 	 */
-	protected static function get_category_path_by_id( int $category_id ): string {
-		$term = get_term_by( 'id', $category_id, 'product_cat', 'ARRAY_A' );
+	protected static function get_product_type_by_id( int $category_id ): string {
+		$categorie_names = [];
+		do {
+			$term = get_term_by( 'id', $category_id, 'product_cat', 'ARRAY_A' );
+			array_push( $categorie_names, $term['name'] );
+			$category_id = $term['parent'];
+		} while ( ! empty( $term['parent'] ) );
 
-		if ( empty( $term['parent'] ) ) {
-			return $term['name'];
-		} else {
-			return sprintf( '%s > %s', self::get_category_path_by_id( $term['parent'] ), $term['name'] );
-		}
+		return implode( ' > ', array_reverse( $categorie_names ) );
 	}
 
 	/**
