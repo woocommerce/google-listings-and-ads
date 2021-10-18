@@ -22,7 +22,11 @@ import Settings from './settings';
 import './data';
 import isWCNavigationEnabled from './utils/isWCNavigationEnabled';
 
-const woocommerceTranslation = getSetting( 'woocommerceTranslation' );
+const woocommerceTranslation =
+	// Pre WC 5.8
+	getSetting( 'woocommerceTranslation' ) ||
+	// WC 5.8+
+	getSetting( 'admin' )?.woocommerceTranslation;
 
 addFilter(
 	'woocommerce_admin_pages_list',
