@@ -15,7 +15,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import WordPressDotComAccount from './wordpressdotcom-account';
-import GoogleAccount from '.~/components/google-account';
+import GoogleAccountCard from '.~/components/google-account-card';
 import GoogleMCAccount from './google-mc-account';
 import Faqs from './faqs';
 
@@ -50,7 +50,7 @@ const SetupAccounts = ( props ) => {
 				) }
 			/>
 			<WordPressDotComAccount />
-			<GoogleAccount disabled={ isGoogleAccountDisabled } />
+			<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
 			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
 			<Faqs />
 			<StepContentFooter>
