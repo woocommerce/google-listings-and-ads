@@ -6,5 +6,8 @@
 	line-height: 20px;
 	letter-spacing: 0;
 	text-align: left;
-	margin-bottom: 8px;
+
+	&:not(:empty) {
+		margin-bottom: 8px;
+	}
 }

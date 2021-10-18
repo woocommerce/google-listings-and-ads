@@ -1,4 +1,20 @@
 .gla-account-card {
+	&--is-disabled {
+		opacity: 0.5;
+	}
+
+	&__description {
+		p:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	&__icon {
+		&--align-top {
+			align-self: flex-start;
+		}
+	}
+
 	.components-notice.is-error {
 		margin: 0;
 		background-color: #f8ebea;
