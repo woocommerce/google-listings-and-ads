@@ -1,19 +1,22 @@
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
-import CardContent from './card-content';
+import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import AppSpinner from '.~/components/app-spinner';
+import AccountCard from '.~/components/account-card';
+import AuthGoogleAccountCard from './auth-google-account-card';
+import ConnectedGoogleAccountCard from './connected-google-account-card';
 
-const GoogleAccount = ( props ) => {
-	const { disabled = false } = props;
+export default function GoogleAccountCard( { disabled = false } ) {
+	const { google, hasFinishedResolution } = useGoogleAccount();
 
-	return (
-		<Section.Card>
-			<Section.Card.Body>
-				<CardContent disabled={ disabled } />
-			</Section.Card.Body>
-		</Section.Card>
-	);
-};
+	if ( ! hasFinishedResolution ) {
+		return <AccountCard appearance={ {} } description={ <AppSpinner /> } />;
+	}
 
-export default GoogleAccount;
+	if ( google?.active === 'yes' ) {
+		return <ConnectedGoogleAccountCard googleAccount={ google } />;
+	}
+
+	return <AuthGoogleAccountCard disabled={ disabled } />;
+}
