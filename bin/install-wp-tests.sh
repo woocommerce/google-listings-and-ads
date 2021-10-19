@@ -185,7 +185,14 @@ install_wc() {
     mkdir -p $WC_DIR
     echo "Installing WooCommerce ($WC_VERSION)."
     # Grab the necessary plugins.
-    git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${WC_DIR}"
+    if [ $WC_VERSION == 'trunk' ]; then
+      rm -rf $TMPDIR/woocommerce-trunk
+      git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${TMPDIR}/woocommerce-trunk"
+      mv $TMPDIR/woocommerce-trunk/plugins/woocommerce/* $WC_DIR
+    else
+      echo "Test with specified WooCommerce version ${WC_VERSION} is not yet supported."
+      exit 1
+    fi
 
     # Install composer for WooCommerce
     cd "${WC_DIR}"
