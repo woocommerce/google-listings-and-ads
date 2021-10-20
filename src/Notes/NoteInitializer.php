@@ -62,7 +62,7 @@ class NoteInitializer implements Deactivateable, InstallableInterface, Service, 
 	public function add_notes(): void {
 		foreach ( $this->notes as $note ) {
 			if ( $note->should_be_added() ) {
-				$note->add();
+				$note->get_entry()->save();
 			}
 		}
 	}

@@ -32,9 +32,9 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 	}
 
 	/**
-	 * Add the note.
+	 * Get the note entry.
 	 */
-	public function add(): void {
+	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
 		$note->set_title( __( 'Complete your setup on Google', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Finish setting up Google Listings & Ads to list your products on Google for free and promote them with paid ads.', 'google-listings-and-ads' ) );
@@ -49,7 +49,8 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 			__( 'Finish setup', 'google-listings-and-ads' ),
 			$this->get_start_url()
 		);
-		$note->save();
+
+		return $note;
 	}
 
 	/**

@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
+use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 defined( 'ABSPATH' ) || exit;
@@ -29,8 +30,8 @@ interface Note extends Service {
 	public function should_be_added(): bool;
 
 	/**
-	 * Add the note.
+	 * Get the note entry.
 	 */
-	public function add(): void;
+	public function get_entry(): NoteEntry;
 
 }

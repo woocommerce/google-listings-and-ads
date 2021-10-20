@@ -34,9 +34,9 @@ class ContactInformation extends AbstractNote implements MerchantCenterAwareInte
 	}
 
 	/**
-	 * Add the note.
+	 * Get the note entry.
 	 */
-	public function add(): void {
+	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
 		$note->set_title( __( 'Please add your contact information', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Google requires the phone number and store address for all stores using Google Merchant Center. This is required to verify your store, and it will not be shown to customers. If you do not add your contact information, your listings may not appear on Google.', 'google-listings-and-ads' ) );
@@ -51,7 +51,8 @@ class ContactInformation extends AbstractNote implements MerchantCenterAwareInte
 			__( 'Add contact information', 'google-listings-and-ads' ),
 			$this->get_settings_url()
 		);
-		$note->save();
+
+		return $note;
 	}
 
 	/**

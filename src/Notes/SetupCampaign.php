@@ -32,9 +32,9 @@ class SetupCampaign extends AbstractNote implements AdsAwareInterface {
 	}
 
 	/**
-	 * Add the note.
+	 * Get the note entry.
 	 */
-	public function add(): void {
+	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
 		$note->set_title( __( 'Create your first campaign to boost sales', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Leverage the power of paid ads to list products on Google Search, Shopping, YouTube, Gmail and the Display Network and drive sales.', 'google-listings-and-ads' ) );
@@ -49,7 +49,8 @@ class SetupCampaign extends AbstractNote implements AdsAwareInterface {
 			__( 'Get started', 'google-listings-and-ads' ),
 			$this->get_setup_ads_url()
 		);
-		$note->save();
+
+		return $note;
 	}
 
 	/**
