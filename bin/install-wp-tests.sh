@@ -60,30 +60,30 @@ set -ex
 
 install_wp() {
 
-  if [ -d $WP_CORE_DIR ]; then
+  if [ -d "$WP_CORE_DIR" ]; then
     return
   fi
 
-  mkdir -p $WP_CORE_DIR
+  mkdir -p "$WP_CORE_DIR"
 
   if [[ $WP_VERSION == 'nightly' || $WP_VERSION == 'trunk' ]]; then
-    mkdir -p $TMPDIR/wordpress-trunk
-    rm -rf $TMPDIR/wordpress-trunk/*
-    svn export --quiet https://core.svn.wordpress.org/trunk $TMPDIR/wordpress-trunk/wordpress
-    mv $TMPDIR/wordpress-trunk/wordpress/* $WP_CORE_DIR
+    mkdir -p "$TMPDIR"/wordpress-trunk
+    rm -rf "$TMPDIR"/wordpress-trunk/*
+    svn export --quiet https://core.svn.wordpress.org/trunk "$TMPDIR"/wordpress-trunk/wordpress
+    mv "$TMPDIR"/wordpress-trunk/wordpress/* "$WP_CORE_DIR"
   else
     if [ $WP_VERSION == 'latest' ]; then
       local ARCHIVE_NAME='latest'
     elif [[ $WP_VERSION =~ [0-9]+\.[0-9]+ ]]; then
       # https serves multiple offers, whereas http serves single.
-      download https://api.wordpress.org/core/version-check/1.7/ $TMPDIR/wp-latest.json
+      download https://api.wordpress.org/core/version-check/1.7/ "$TMPDIR"/wp-latest.json
       if [[ $WP_VERSION =~ [0-9]+\.[0-9]+\.[0] ]]; then
         # version x.x.0 means the first release of the major version, so strip off the .0 and download version x.x
         LATEST_VERSION=${WP_VERSION%??}
       else
         # otherwise, scan the releases and get the most up to date minor version of the major release
         local VERSION_ESCAPED=$(echo $WP_VERSION | sed 's/\./\\\\./g')
-        LATEST_VERSION=$(grep -o '"version":"'$VERSION_ESCAPED'[^"]*' $TMPDIR/wp-latest.json | sed 's/"version":"//' | head -1)
+        LATEST_VERSION=$(grep -o '"version":"'$VERSION_ESCAPED'[^"]*' "$TMPDIR"/wp-latest.json | sed 's/"version":"//' | head -1)
       fi
       if [[ -z "$LATEST_VERSION" ]]; then
         local ARCHIVE_NAME="wordpress-$WP_VERSION"
@@ -93,11 +93,11 @@ install_wp() {
     else
       local ARCHIVE_NAME="wordpress-$WP_VERSION"
     fi
-    download https://wordpress.org/${ARCHIVE_NAME}.tar.gz $TMPDIR/wordpress.tar.gz
-    tar --strip-components=1 -zxmf $TMPDIR/wordpress.tar.gz -C $WP_CORE_DIR
+    download https://wordpress.org/${ARCHIVE_NAME}.tar.gz "$TMPDIR"/wordpress.tar.gz
+    tar --strip-components=1 -zxmf "$TMPDIR"/wordpress.tar.gz -C "$WP_CORE_DIR"
   fi
 
-  download https://raw.github.com/markoheijnen/wp-mysqli/master/db.php $WP_CORE_DIR/wp-content/db.php
+  download https://raw.github.com/markoheijnen/wp-mysqli/master/db.php "$WP_CORE_DIR"/wp-content/db.php
 }
 
 install_test_suite() {
@@ -109,12 +109,12 @@ install_test_suite() {
   fi
 
   # set up testing suite if it doesn't yet exist
-  if [ ! -d $WP_TESTS_DIR ]; then
+  if [ ! -d "$WP_TESTS_DIR" ]; then
     # set up testing suite
-    mkdir -p $WP_TESTS_DIR
-    rm -rf $WP_TESTS_DIR/{includes,data}
-    svn export --quiet --ignore-externals https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
-    svn export --quiet --ignore-externals https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
+    mkdir -p "$WP_TESTS_DIR"
+    rm -rf "$WP_TESTS_DIR"/{includes,data}
+    svn export --quiet --ignore-externals https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ "$WP_TESTS_DIR"/includes
+    svn export --quiet --ignore-externals https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ "$WP_TESTS_DIR"/data
   fi
 
   if [ ! -f wp-tests-config.php ]; then
@@ -180,15 +180,15 @@ install_db() {
 }
 
 install_wc() {
-  if [ ! -d $WC_DIR ]; then
+  if [ ! -d "$WC_DIR" ]; then
     # set up testing suite
-    mkdir -p $WC_DIR
+    mkdir -p "$WC_DIR"
     echo "Installing WooCommerce ($WC_VERSION)."
     # Grab the necessary plugins.
     if [ $WC_VERSION == 'trunk' ]; then
-      rm -rf $TMPDIR/woocommerce-trunk
+      rm -rf "$TMPDIR"/woocommerce-trunk
       git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${TMPDIR}/woocommerce-trunk"
-      mv $TMPDIR/woocommerce-trunk/plugins/woocommerce/* $WC_DIR
+      mv "$TMPDIR"/woocommerce-trunk/plugins/woocommerce/* "$WC_DIR"
     else
       echo "Test with specified WooCommerce version ${WC_VERSION} is not yet supported."
       exit 1
