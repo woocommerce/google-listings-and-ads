@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * AbstractNote class.
  *
- * @since 1.5.0
+ * @since x.x.x
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
