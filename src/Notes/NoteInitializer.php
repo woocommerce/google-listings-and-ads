@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -20,6 +21,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
 class NoteInitializer implements Deactivateable, InstallableInterface, Service, Registerable {
+
+	use ValidateInterface;
 
 	/**
 	 * Hook name for daily cron.
@@ -45,6 +48,10 @@ class NoteInitializer implements Deactivateable, InstallableInterface, Service, 
 	 * @param Note[]                   $notes
 	 */
 	public function __construct( ActionSchedulerInterface $action_scheduler, array $notes ) {
+		foreach ( $notes as $note ) {
+			$this->validate_instanceof( $note, Note::class );
+		}
+
 		$this->action_scheduler = $action_scheduler;
 		$this->notes            = $notes;
 	}
