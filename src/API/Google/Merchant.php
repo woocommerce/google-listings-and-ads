@@ -119,7 +119,7 @@ class Merchant implements OptionsAwareInterface {
 	 * @see https://wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements ISO 3166-1 alpha-2
 	 *      officially assigned codes.
 	 *
-	 * @since x.x.x
+	 * @since 1.5.0
 	 */
 	public function request_phone_verification( string $region_code, string $phone_number, string $verification_method, string $language_code = 'en-US' ): string {
 		$merchant_id = $this->options->get_merchant_id();
@@ -152,7 +152,7 @@ class Merchant implements OptionsAwareInterface {
 	 *
 	 * @throws GoogleServiceException If there are any Google API errors.
 	 *
-	 * @since x.x.x
+	 * @since 1.5.0
 	 */
 	public function verify_phone_number( string $verification_id, string $verification_code, string $verification_method ): string {
 		$merchant_id = $this->options->get_merchant_id();

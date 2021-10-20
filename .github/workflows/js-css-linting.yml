@@ -1,0 +1,63 @@
+name: JavaScript and CSS Linting
+
+on:
+  push:
+    branches:
+      - trunk
+      - develop
+  pull_request:
+
+jobs:
+  Setup:
+    name: Setup for jobs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+        with:
+          install-deps: "maybe"
+
+  JSLintingCheck:
+    name: Lint JavaScript
+    needs: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+
+      - name: Save code linting report JSON
+        run: npm run lint:js -- --quiet --output-file eslint_report.json --format json
+        # Continue to the next step even if this fails
+        continue-on-error: true
+
+      - name: Annotate code linting results
+        uses: ataylorme/eslint-annotate-action@1.2.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          report-json: "eslint_report.json"
+
+      - name: Upload ESLint report
+        uses: actions/upload-artifact@v2
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
+
+  CSSLintingCheck:
+    name: Lint CSS
+    needs: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+
+      - name: Lint CSS
+        run: npm run lint:css

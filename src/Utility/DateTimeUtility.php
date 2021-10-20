@@ -4,9 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Utility;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use DateTime;
-use DateTimeZone;
-use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Utility
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 class DateTimeUtility implements Service {
 
@@ -25,16 +22,15 @@ class DateTimeUtility implements Service {
 	 * @param string $timezone
 	 *
 	 * @return string
-	 *
-	 * @throws Exception If the DateTime instantiation fails.
 	 */
 	public function maybe_convert_tz_string( string $timezone ): string {
-		if ( false !== strpos( $timezone, ':' ) ) {
-			[ $hours, $minutes ] = explode( ':', $timezone );
+		if ( preg_match( '/^([+-]\d{1,2}):?(\d{1,2})$/', $timezone, $matches ) ) {
+			[ $timezone, $hours, $minutes ] = $matches;
 
-			$dst      = (int) ( new DateTime( 'now', new DateTimeZone( $timezone ) ) )->format( 'I' );
-			$seconds  = $hours * 60 * 60 + $minutes * 60;
-			$tz_name  = timezone_name_from_abbr( '', $seconds, $dst );
+			$sign    = (int) $hours >= 0 ? 1 : - 1;
+			$seconds = $sign * ( absint( $hours ) * 60 * 60 + absint( $minutes ) * 60 );
+			$tz_name = timezone_name_from_abbr( '', $seconds, 0 );
+
 			$timezone = $tz_name !== false ? $tz_name : date_default_timezone_get();
 		}
 

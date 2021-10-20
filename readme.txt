@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.8
 Requires PHP: 7.3
-Stable tag: 1.4.3
+Stable tag: 1.5.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -62,8 +62,8 @@ Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaig
 
 = Minimum Requirements =
 
-* WordPress 5.5 or greater
-* WooCommerce 5.2 or greater
+* WordPress 5.6 or greater
+* WooCommerce 5.5 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
 
@@ -115,25 +115,32 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.5.1 - 2021-10-13 =
+* Update - Changed minimum version of WordPress to 5.6 and WooCommerce to 5.5.
+* Fix - Change the way of getting WooCommerce admin settings to fix a compatibility issue in WooCommerce 5.8.
+* Tweak - WooCommerce 5.8 compatibility.
+
+= 1.5.0 - 2021-10-01 =
+* Add - Verify user's phone number via SMS or phone call at the last step of the onboarding flow and on the settings page. And update the verified phone number to user's connected Google Merchant Center account.
+* Add - Allow backorder stock availability for products.
+* Add - Set pre-order availability for products using the WooCommerce Pre-Orders extension.
+* Add - Warning notice when the Ads' currency is different from the store's one.
+* Add - Unit tests for the Merchant Google Service class.
+* Fix - Retry Merchant account creation after detecting invalid terms.
+* Fix - Render Ads Account's currency in Dashboard's table.
+* Fix - Don't render `DifferentCurrencyNotice` when the Ads account is disconnected.
+* Fix - Limit the number of synced additional product images to 10.
+* Fix - Split contact information settings page to phone and address settings.
+* Fix - Update phone number and store address pages flow.
+* Fix - Correct spelling/capitalization of "WordPress.com".
+* Fix - PHP notice when creating a product variation.
+* Fix - Bump E2E-related devDeps, bump tested WC version.
+* Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
+* Tweak - Added a few more e2e tests and utils.
+* Tweak - WC 5.7 compatibility.
+
 = 1.4.3 - 2021-09-08 =
 * Fix - PHP notice when creating a product variation.
 * Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
-
-= 1.4.2 - 2021-08-24 =
-* Fix - Fix a potential fatal error when WooCommerce isn't active while activating Google Listings and Ads.
-* Fix - Fix margin/padding styles for the AppButton when having spinner/icon/text.
-* Fix - Make audience country searchable in Setup Ads.
-* Fix - Remove file autoloads for namespaced packages.
-* Tweak - Remove all "STEP [NUMBER]" texts from step headers on the onboarding setup, paid campaign setup, and free listings edit pages.
-* Tweak - WC 5.5 compatibility.
-
-= 1.4.1 - 2021-08-16 =
-* Fix - Allow connection test page for other admin users.
-* Fix - Allow spaces in paths when prefixing vendor namespaces.
-* Fix - Database error: "Specified key was too long". i.e. removed the `product_issue` index from the `merchant_issues` table.
-* Fix - Fatal error when activating plugin with no Merchant Center account connected.
-* Fix - Some pre-sync errors being skipped in the product issues table.
-* Fix - display the correct currency actually used for the paid campaign budget.
-* Tweak - Limit the product descriptions to 5000 characters when syncing.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

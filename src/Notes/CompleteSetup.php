@@ -59,9 +59,8 @@ class CompleteSetup extends Note implements MerchantCenterAwareInterface {
 	/**
 	 * Checks if a note can and should be added.
 	 *
-	 * Check if a stores done 5 sales
 	 * Check if setup IS NOT complete
-	 * Check if it is > 3 days ago from DATE OF START OF SETUP (installation date)
+	 * Check if a stores done 5 sales
 	 * Send notification
 	 *
 	 * @return bool

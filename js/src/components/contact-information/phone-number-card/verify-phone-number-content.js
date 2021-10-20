@@ -14,6 +14,7 @@ import { Notice, Flex } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '.~/data';
 import useIsMounted from '.~/hooks/useIsMounted';
 import useCountdown from './useCountdown';
 import Section from '.~/wcdl/section';
@@ -21,30 +22,6 @@ import Subsection from '.~/wcdl/subsection';
 import AppButton from '.~/components/app-button';
 import VerificationCodeControl from './verification-code-control';
 import { VERIFICATION_METHOD } from './constants';
-
-// TODO: [full-contact-info] remove mock functions
-const requestVerificationCode = ( country, phoneNumber, method ) => {
-	// eslint-disable-next-line no-console
-	console.log( 'requestVerificationCode', { country, phoneNumber, method } );
-	return new Promise( ( resolve ) =>
-		setTimeout( () => resolve( `${ method }-12345` ), 1000 )
-	);
-};
-
-// TODO: [full-contact-info] remove mock functions
-const verifyPhoneNumber = ( id, code, method ) => {
-	// eslint-disable-next-line no-console
-	console.log( 'verifyPhoneNumber', { id, code, method } );
-	return new Promise( ( resolve, reject ) => {
-		setTimeout( () => {
-			if ( code === '000000' ) {
-				resolve();
-			} else {
-				reject( 'Incorrect verification code. Please try again.' );
-			}
-		}, 2000 );
-	} );
-};
 
 const appearanceDict = {
 	[ VERIFICATION_METHOD.SMS ]: {
@@ -100,14 +77,14 @@ const appearanceDict = {
  * @param {string} props.country The country code. Example: 'US'.
  * @param {string} props.number The phone number string in E.164 format. Example: '+12133734253'.
  * @param {string} props.display The phone number string in international format. Example: '+1 213 373 4253'.
- * @param {Function} props.onPhoneNumberVerified Called when the phone number is verified.
+ * @param {(isVerifying: boolean, isVerified: boolean) => void} props.onVerificationStateChange Called when the verification state is changed.
  */
 export default function VerifyPhoneNumberContent( {
 	verificationMethod,
 	country,
 	number,
 	display,
-	onPhoneNumberVerified,
+	onVerificationStateChange,
 } ) {
 	const isMounted = useIsMounted();
 	const [ method, setMethod ] = useState( verificationMethod );
@@ -116,6 +93,10 @@ export default function VerifyPhoneNumberContent( {
 	const [ verifying, setVerifying ] = useState( false );
 	const [ error, setError ] = useState( null );
 	const verificationIdRef = useRef( {} );
+	const {
+		requestPhoneVerificationCode,
+		verifyPhoneNumber,
+	} = useAppDispatch();
 
 	const isSMS = method === VERIFICATION_METHOD.SMS;
 
@@ -130,33 +111,42 @@ export default function VerifyPhoneNumberContent( {
 	const handleVerificationCodeRequest = useCallback( () => {
 		setError( null );
 		startCountdown( 60 );
+		verificationIdRef.current[ method ] = null;
 
-		requestVerificationCode( country, number, method )
-			.then( ( id ) => {
-				verificationIdRef.current[ method ] = id;
+		requestPhoneVerificationCode( country, number, method )
+			.then( ( { verificationId } ) => {
+				verificationIdRef.current[ method ] = verificationId;
 			} )
-			.catch( () => {
+			.catch( ( e ) => {
 				if ( isMounted() ) {
+					setError( e );
 					startCountdown( 0 );
 				}
-				// TODO: [full-contact-info] add error handling.
 			} );
-	}, [ country, number, method, startCountdown, isMounted ] );
+	}, [
+		country,
+		number,
+		method,
+		startCountdown,
+		requestPhoneVerificationCode,
+		isMounted,
+	] );
 
 	const handleVerifyClick = () => {
 		setError( null );
 		setVerifying( true );
+		onVerificationStateChange( true, false );
 
 		const id = verificationIdRef.current[ method ];
 		verifyPhoneNumber( id, verification.code, method )
 			.then( () => {
-				onPhoneNumberVerified();
+				onVerificationStateChange( false, true );
 			} )
 			.catch( ( e ) => {
-				// TODO: [full-contact-info] align to the real error data structure.
 				if ( isMounted() ) {
 					setError( e );
 					setVerifying( false );
+					onVerificationStateChange( false, false );
 				}
 			} );
 	};
@@ -176,13 +166,16 @@ export default function VerifyPhoneNumberContent( {
 		textSwitch,
 	} = appearanceDict[ method ];
 
+	const verificationId = verificationIdRef.current[ method ];
+	const disableVerify = ! ( verification?.isFilled && verificationId );
+
 	return (
 		<>
 			<Section.Card.Body>
 				{ error && (
 					<Subsection>
 						<Notice status="error" isDismissible={ false }>
-							{ error }
+							{ error.display }
 						</Notice>
 					</Subsection>
 				) }
@@ -205,7 +198,7 @@ export default function VerifyPhoneNumberContent( {
 					<Flex justify="normal" gap={ 4 }>
 						<AppButton
 							isSecondary
-							disabled={ ! verification?.isFilled }
+							disabled={ disableVerify }
 							loading={ verifying }
 							text={ __(
 								'Verify phone number',

@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Value
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 class PhoneNumber implements CastableValueInterface, ValueInterface {
 

@@ -10,7 +10,8 @@ export const subpaths = {
 	editFreeListings: '/free-listings/edit',
 	editCampaign: '/campaigns/edit',
 	createCampaign: '/campaigns/create',
-	editContactInformation: '/edit-contact-information',
+	editPhoneNumber: '/edit-phone-number',
+	editStoreAddress: '/edit-store-address',
 	reconnectAccounts: '/reconnect-accounts',
 };
 
@@ -37,9 +38,16 @@ export const getSettingsUrl = () => {
 	return getNewPath( null, settingsPath, null );
 };
 
-export const getEditContactInformationUrl = () => {
+export const getEditPhoneNumberUrl = () => {
 	return getNewPath(
-		{ subpath: subpaths.editContactInformation },
+		{ subpath: subpaths.editPhoneNumber },
+		settingsPath,
+		null
+	);
+};
+export const getEditStoreAddressUrl = () => {
+	return getNewPath(
+		{ subpath: subpaths.editStoreAddress },
 		settingsPath,
 		null
 	);

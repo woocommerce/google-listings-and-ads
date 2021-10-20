@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @link https://woocommerce.com/products/woocommerce-pre-orders/
  *
- * @since x.x.x
+ * @since 1.5.0
  */
 class WooCommercePreOrders implements IntegrationInterface {
 
