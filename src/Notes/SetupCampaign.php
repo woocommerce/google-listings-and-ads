@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class SetupCampaign extends Note implements AdsAwareInterface {
+class SetupCampaign extends AbstractNote implements AdsAwareInterface {
 
 	use AdsAwareTrait;
 	use PluginHelper;
@@ -27,18 +27,14 @@ class SetupCampaign extends Note implements AdsAwareInterface {
 	 *
 	 * @return string
 	 */
-	public function get_note_name(): string {
+	public function get_name(): string {
 		return 'gla-setup-campaign';
 	}
 
 	/**
-	 * Possibly add the note
+	 * Get the note entry.
 	 */
-	public function possibly_add_note(): void {
-		if ( ! $this->can_add_note() ) {
-			return;
-		}
-
+	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
 		$note->set_title( __( 'Create your first campaign to boost sales', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Leverage the power of paid ads to list products on Google Search, Shopping, YouTube, Gmail and the Display Network and drive sales.', 'google-listings-and-ads' ) );
@@ -46,14 +42,15 @@ class SetupCampaign extends Note implements AdsAwareInterface {
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
 		$note->set_image( '' );
-		$note->set_name( $this->get_note_name() );
+		$note->set_name( $this->get_name() );
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
 			'setup-campaign',
 			__( 'Get started', 'google-listings-and-ads' ),
 			$this->get_setup_ads_url()
 		);
-		$note->save();
+
+		return $note;
 	}
 
 	/**
@@ -65,7 +62,7 @@ class SetupCampaign extends Note implements AdsAwareInterface {
 	 *
 	 * @return bool
 	 */
-	public function can_add_note(): bool {
+	public function should_be_added(): bool {
 		if ( $this->has_been_added() ) {
 			return false;
 		}

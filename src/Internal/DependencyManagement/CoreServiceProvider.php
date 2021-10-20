@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionScheduler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\ActivationRedirect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\MetaBox\ChannelVisibilityMetaBox;
@@ -47,6 +48,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\Note;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -230,10 +233,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 
 		// Inbox Notes
-		$this->conditionally_share_with_tags( ContactInformationNote::class );
-		$this->conditionally_share_with_tags( CompleteSetupNote::class );
-		$this->conditionally_share_with_tags( SetupCampaignNote::class );
-		$this->conditionally_share_with_tags( SetupCampaign2Note::class );
+		$this->share_with_tags( ContactInformationNote::class );
+		$this->share_with_tags( CompleteSetupNote::class );
+		$this->share_with_tags( SetupCampaignNote::class );
+		$this->share_with_tags( SetupCampaign2Note::class );
+		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class, Note::class );
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );

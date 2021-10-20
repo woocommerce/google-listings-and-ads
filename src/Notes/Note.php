@@ -3,77 +3,35 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
-use Automattic\WooCommerce\Admin\Notes\Notes;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
+use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use WC_Data_Store;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Note base class.
+ * Note interface.
  *
- * @since 1.5.0
+ * @since x.x.x
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-abstract class Note implements Service, Registerable, Deactivateable, OptionsAwareInterface {
+interface Note extends Service {
 
 	/**
 	 * Get the note's unique name.
 	 *
 	 * @return string
 	 */
-	abstract protected function get_note_name(): string;
+	public function get_name(): string;
 
 	/**
-	 * Possibly add the note
+	 * Check whether the note should be added.
 	 */
-	abstract public function possibly_add_note(): void;
+	public function should_be_added(): bool;
 
 	/**
-	 * Register a service.
+	 * Get the note entry.
 	 */
-	public function register(): void {
-		add_action(
-			'admin_init',
-			function() {
-				$this->possibly_add_note();
-			}
-		);
-	}
-
-	/**
-	 * Deactivate the service.
-	 */
-	public function deactivate(): void {
-		if ( ! class_exists( Notes::class ) ) {
-			return;
-		}
-
-		Notes::delete_notes_with_name( $this->get_note_name() );
-	}
-
-	/**
-	 * Get note data store.
-	 *
-	 * @return WC_Data_Store
-	 */
-	protected function get_data_store(): WC_Data_Store {
-		return WC_Data_Store::load( 'admin-note' );
-	}
-
-	/**
-	 * Check if the note has already been added.
-	 *
-	 * @return bool
-	 */
-	protected function has_been_added(): bool {
-		$note_ids = $this->get_data_store()->get_notes_with_name( $this->get_note_name() );
-
-		return ! empty( $note_ids );
-	}
+	public function get_entry(): NoteEntry;
 
 }
