@@ -40,7 +40,7 @@ const requestToHandle = ( request ) => {
 	const wcHandleMap = {
 		'@woocommerce/components': 'wc-components',
 		'@woocommerce/navigation': 'wc-navigation',
-		'@woocommerce/wc-settings': 'wc-settings',
+		'@woocommerce/settings': 'wc-settings',
 	};
 
 	return wcHandleMap[ request ];
