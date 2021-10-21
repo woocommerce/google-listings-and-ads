@@ -6,5 +6,10 @@
 	line-height: 20px;
 	letter-spacing: 0;
 	text-align: left;
-	margin-bottom: 8px;
+
+	&:not(:empty) {
+		// Do not have bottom margin when the title is empty. For example:
+		// the <Subsection.Title> usage at the js/src/components/account-card/index.js
+		margin-bottom: 8px;
+	}
 }
