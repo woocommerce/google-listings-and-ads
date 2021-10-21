@@ -106,10 +106,6 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 			return false;
 		}
 
-		if ( ! $this->merchant_center->is_connected() ) {
-			return false;
-		}
-
 		$clicks_count = $this->get_cached_free_listing_clicks();
 		if ( $clicks_count <= 100 ) {
 			return false;
@@ -120,6 +116,8 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 
 	/**
 	 * Get number of free listing clicks, cached for current request.
+	 *
+	 * Will return 0 if account is note connected.
 	 *
 	 * @throws Exception When unable to get clicks data.
 	 *
