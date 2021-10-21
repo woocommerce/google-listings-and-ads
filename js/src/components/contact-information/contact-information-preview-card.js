@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { Icon, warning as warningIcon } from '@wordpress/icons';
 import { getPath, getQuery } from '@woocommerce/navigation';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -43,15 +44,11 @@ export default function ContactInformationPreviewCard( {
 			eventProps={ { path: getPath(), subpath } }
 		/>
 	);
-	let description;
+	let description = content;
 
 	if ( loading ) {
 		description = (
-			<span
-				className="gla-contact-info-preview-card__placeholder"
-				aria-busy="true"
-				title={ __( 'Loading…', 'google-listings-and-ads' ) }
-			></span>
+			<div title={ __( 'Loading…', 'google-listings-and-ads' ) }></div>
 		);
 	} else if ( warning ) {
 		appearance = {
@@ -66,19 +63,16 @@ export default function ContactInformationPreviewCard( {
 				</>
 			),
 		};
-		description = (
-			<span className="gla-contact-info-preview-card__notice-details">
-				{ content }
-			</span>
-		);
-	} else {
-		description = content;
 	}
 
 	return (
 		<AccountCard
 			appearance={ appearance }
-			className="gla-contact-info-preview-card"
+			aria-busy={ loading }
+			className={ classNames( 'gla-contact-info-preview-card', {
+				'state--loading': loading,
+				'state--warning': warning,
+			} ) }
 			description={ description }
 			hideIcon
 			indicator={ editButton }
