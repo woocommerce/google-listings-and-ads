@@ -31,9 +31,8 @@ export default function AuthGoogleAccountCard( { disabled = false } ) {
 
 	const handleConnectClick = async () => {
 		try {
-			const d = await fetchGoogleConnect();
-
-			window.location.href = d.url;
+			const { url } = await fetchGoogleConnect();
+			window.location.href = url;
 		} catch ( error ) {
 			createNotice(
 				'error',
