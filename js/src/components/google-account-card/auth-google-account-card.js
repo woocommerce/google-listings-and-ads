@@ -13,15 +13,13 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
-const conversionMap = {
-	link: (
-		<AppDocumentationLink
-			context="setup-mc-accounts"
-			linkId="required-google-permissions"
-			href="https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions"
-		/>
-	),
-};
+const readMoreLink = (
+	<AppDocumentationLink
+		context="setup-mc-accounts"
+		linkId="required-google-permissions"
+		href="https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions"
+	/>
+);
 
 export default function AuthGoogleAccountCard( { disabled = false } ) {
 	const { createNotice } = useDispatchCoreNotices();
@@ -57,7 +55,7 @@ export default function AuthGoogleAccountCard( { disabled = false } ) {
 							'You will be prompted to give WooCommerce access to your Google account. Please check all the checkboxes to give WooCommerce all required permissions. <link>Read more</link>',
 							'google-listings-and-ads'
 						),
-						conversionMap
+						{ link: readMoreLink }
 					) }
 				</em>
 			</p>
