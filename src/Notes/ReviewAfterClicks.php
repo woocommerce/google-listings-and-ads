@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class ReviewAfterClicks extends Note implements MerchantCenterAwareInterface {
+class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInterface {
 
 	use LeaveReviewActionTrait;
 	use MerchantCenterAwareTrait;
@@ -53,23 +54,17 @@ class ReviewAfterClicks extends Note implements MerchantCenterAwareInterface {
 	 *
 	 * @return string
 	 */
-	public function get_note_name(): string {
+	public function get_name(): string {
 		return 'gla-review-after-clicks';
 	}
 
 	/**
 	 * Possibly add the note.
+	 *
+	 * @throws Exception when unable to get clicks data
 	 */
-	public function possibly_add_note(): void {
-		if ( ! $this->can_add_note() ) {
-			return;
-		}
-
-		// Check "click logic" here to avoid multiple calls to count clicks. Currently not cached.
-		$clicks_count = $this->merchant_metrics->get_free_listing_clicks();
-		if ( $clicks_count <= 100 ) {
-			return;
-		}
+	public function get_entry(): NoteEntry {
+		$clicks_count = $this->get_cached_free_listing_clicks();
 
 		// Round to nearest 100
 		$clicks_count_rounded = floor( $clicks_count / 100 ) * 100;
@@ -89,20 +84,24 @@ class ReviewAfterClicks extends Note implements MerchantCenterAwareInterface {
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
 		$note->set_image( '' );
-		$note->set_name( $this->get_note_name() );
+		$note->set_name( $this->get_name() );
 		$note->set_source( $this->get_slug() );
 		$this->add_leave_review_note_action( $note );
-		$note->save();
+
+		return $note;
 	}
 
 	/**
 	 * Checks if a note can and should be added.
 	 *
 	 * - checks that the plugin is setup
+	 * - checks there is more than 100 clicks
+	 *
+	 * @throws Exception when unable to get clicks data
 	 *
 	 * @return bool
 	 */
-	public function can_add_note(): bool {
+	public function should_be_added(): bool {
 		if ( $this->has_been_added() ) {
 			return false;
 		}
@@ -111,6 +110,35 @@ class ReviewAfterClicks extends Note implements MerchantCenterAwareInterface {
 			return false;
 		}
 
+		$clicks_count = $this->get_cached_free_listing_clicks();
+		if ( $clicks_count <= 100 ) {
+			return false;
+		}
+
 		return true;
+	}
+
+	/**
+	 * Get number of free listing clicks, cached for current request.
+	 *
+	 * @throws Exception when unable to get clicks data
+	 *
+	 * @return int
+	 */
+	protected function get_cached_free_listing_clicks(): int {
+		static $clicks = null;
+
+		if ( $clicks !== null ) {
+			return $clicks;
+		}
+
+		// Ensure MC is connected before running any queries
+		if ( ! $this->merchant_center->is_connected() ) {
+			$clicks = 0;
+		} else {
+			$clicks = $this->merchant_metrics->get_free_listing_clicks();
+		}
+
+		return $clicks;
 	}
 }

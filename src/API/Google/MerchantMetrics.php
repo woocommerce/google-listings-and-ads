@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use DateTime;
+use Exception;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\SearchResponse;
 
@@ -51,6 +52,8 @@ class MerchantMetrics implements OptionsAwareInterface {
 	 * Get number of free listing clicks.
 	 *
 	 * @return int
+	 *
+	 * @throws Exception when unable to get clicks data
 	 */
 	public function get_free_listing_clicks(): int {
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range

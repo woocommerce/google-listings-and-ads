@@ -1,0 +1,40 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use WC_Data_Store;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * AbstractNote class.
+ *
+ * @since x.x.x
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
+ */
+abstract class AbstractNote implements Note, OptionsAwareInterface {
+
+	/**
+	 * Get note data store.
+	 *
+	 * @return WC_Data_Store
+	 */
+	protected function get_data_store(): WC_Data_Store {
+		return WC_Data_Store::load( 'admin-note' );
+	}
+
+	/**
+	 * Check if the note has already been added.
+	 *
+	 * @return bool
+	 */
+	protected function has_been_added(): bool {
+		$note_ids = $this->get_data_store()->get_notes_with_name( $this->get_name() );
+
+		return ! empty( $note_ids );
+	}
+
+}
