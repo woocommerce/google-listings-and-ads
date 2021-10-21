@@ -85,12 +85,9 @@ const webpackConfig = {
 				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
 		),
 		new DependencyExtractionWebpackPlugin( {
-			combineAssets: false,
-			outputFormat: 'json',
 			injectPolyfill: true,
 			requestToExternal,
 			requestToHandle,
-			externalizedReportFile: 'externalized.json',
 		} ),
 	],
 	entry: {
