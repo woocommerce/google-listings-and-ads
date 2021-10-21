@@ -61,7 +61,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	/**
 	 * Possibly add the note.
 	 *
-	 * @throws Exception when unable to get clicks data
+	 * @throws Exception When unable to get clicks data.
 	 */
 	public function get_entry(): NoteEntry {
 		$clicks_count = $this->get_cached_free_listing_clicks();
@@ -97,7 +97,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	 * - checks that the plugin is setup
 	 * - checks there is more than 100 clicks
 	 *
-	 * @throws Exception when unable to get clicks data
+	 * @throws Exception When unable to get clicks data.
 	 *
 	 * @return bool
 	 */
@@ -121,7 +121,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	/**
 	 * Get number of free listing clicks, cached for current request.
 	 *
-	 * @throws Exception when unable to get clicks data
+	 * @throws Exception When unable to get clicks data.
 	 *
 	 * @return int
 	 */

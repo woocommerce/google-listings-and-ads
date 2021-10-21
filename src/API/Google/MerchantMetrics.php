@@ -53,7 +53,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 	 *
 	 * @return int
 	 *
-	 * @throws Exception when unable to get clicks data
+	 * @throws Exception When unable to get clicks data.
 	 */
 	public function get_free_listing_clicks(): int {
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
