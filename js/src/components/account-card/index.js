@@ -49,9 +49,9 @@ const appearanceDict = {
 };
 
 // The `center` is the default alignment, and no need to append any additional class name.
-const iconStyleName = {
+const alignStyleName = {
 	center: false,
-	top: `gla-account-card__icon--align-top`,
+	top: `gla-account-card__styled--align-top`,
 };
 
 /**
@@ -65,6 +65,7 @@ const iconStyleName = {
  * @param {boolean} [props.hideIcon=false] Whether hide the leading icon.
  * @param {'center'|'top'} [props.alignIcon='center'] Specify the vertical alignment of leading icon.
  * @param {JSX.Element} [props.indicator] Indicator of actions or status on the right side of the card.
+ * @param {'center'|'top'} [props.alignIndicator='center'] Specify the vertical alignment of `indicator`.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
  */
 export default function AccountCard( {
@@ -75,6 +76,7 @@ export default function AccountCard( {
 	hideIcon = false,
 	alignIcon = 'center',
 	indicator,
+	alignIndicator = 'center',
 	children,
 } ) {
 	const { icon, title } =
@@ -90,7 +92,12 @@ export default function AccountCard( {
 
 	const iconClassName = classnames(
 		'gla-account-card__icon',
-		iconStyleName[ alignIcon ]
+		alignStyleName[ alignIcon ]
+	);
+
+	const indicatorClassName = classnames(
+		'gla-account-card__indicator',
+		alignStyleName[ alignIndicator ]
 	);
 
 	return (
@@ -111,7 +118,7 @@ export default function AccountCard( {
 						</div>
 					</FlexBlock>
 					{ indicator && (
-						<FlexItem className="gla-account-card__indicator">
+						<FlexItem className={ indicatorClassName }>
 							{ indicator }
 						</FlexItem>
 					) }

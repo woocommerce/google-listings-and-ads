@@ -3,15 +3,19 @@
 		opacity: 0.5;
 	}
 
-	&__description {
-		p:last-child {
-			margin-bottom: 0;
+	&__styled {
+		&--align-top {
+			align-self: flex-start;
 		}
 	}
 
-	&__icon {
-		&--align-top {
-			align-self: flex-start;
+	&__description {
+		display: flex;
+		flex-direction: column;
+		gap: 1em;
+
+		> p {
+			margin: 0;
 		}
 	}
 

@@ -105,6 +105,8 @@ export default function StoreAddressCard() {
 		<AccountCard
 			className="gla-store-address-card"
 			appearance={ APPEARANCE.ADDRESS }
+			alignIcon="top"
+			alignIndicator="top"
 			description={ description }
 			indicator={ editButton }
 		>
