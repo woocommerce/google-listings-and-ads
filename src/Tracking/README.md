@@ -19,6 +19,13 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 
 All event names are prefixed by `wcadmin_gla_`.
 
+- `activated_from_source` - Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
+    - 	`utm_source`
+    - 	`utm_medium`
+    - 	`utm_campaign`
+    - 	`utm_term`
+    - 	`utm_content` 
+
 -   `add_paid_campaign_clicked` - "Add paid campaign" button is clicked.
 
     -   `context`: indicate the place where the button is located.
