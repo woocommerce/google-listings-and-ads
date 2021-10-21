@@ -21,7 +21,7 @@ const readMoreLink = (
 	/>
 );
 
-export default function AuthGoogleAccountCard( { disabled = false } ) {
+export default function AuthorizeGoogleAccountCard( { disabled = false } ) {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, { loading, data } ] = useApiFetchCallback( {
 		path: '/wc/gla/google/connect',

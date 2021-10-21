@@ -4,7 +4,7 @@
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import AppSpinner from '.~/components/app-spinner';
 import AccountCard from '.~/components/account-card';
-import AuthGoogleAccountCard from './auth-google-account-card';
+import AuthorizeGoogleAccountCard from './authorize-google-account-card';
 import ConnectedGoogleAccountCard from './connected-google-account-card';
 
 export default function GoogleAccountCard( { disabled = false } ) {
@@ -18,5 +18,5 @@ export default function GoogleAccountCard( { disabled = false } ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
-	return <AuthGoogleAccountCard disabled={ disabled } />;
+	return <AuthorizeGoogleAccountCard disabled={ disabled } />;
 }
