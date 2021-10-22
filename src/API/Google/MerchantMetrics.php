@@ -3,7 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeListingReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -24,11 +26,18 @@ class MerchantMetrics implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 
 	/**
-	 * The shopping service.
+	 * The Google shopping client.
 	 *
 	 * @var ShoppingContent
 	 */
-	protected $service;
+	protected $shopping_client;
+
+	/**
+	 * The Google ads client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $ads_client;
 
 	/**
 	 * @var WP
@@ -40,12 +49,14 @@ class MerchantMetrics implements OptionsAwareInterface {
 	/**
 	 * MerchantMetrics constructor.
 	 *
-	 * @param ShoppingContent $service
+	 * @param ShoppingContent $shopping_client
+	 * @param GoogleAdsClient $ads_client
 	 * @param WP              $wp
 	 */
-	public function __construct( ShoppingContent $service, WP $wp ) {
-		$this->service = $service;
-		$this->wp      = $wp;
+	public function __construct( ShoppingContent $shopping_client, GoogleAdsClient $ads_client, WP $wp ) {
+		$this->shopping_client = $shopping_client;
+		$this->ads_client      = $ads_client;
+		$this->wp              = $wp;
 	}
 
 	/**
@@ -58,7 +69,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 	public function get_free_listing_clicks(): int {
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = ( new MerchantFreeListingReportQuery( [] ) )
-			->set_client( $this->service, $this->options->get_merchant_id() )
+			->set_client( $this->shopping_client, $this->options->get_merchant_id() )
 			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_today() )
 			->fields( [ 'clicks' ] );
 
