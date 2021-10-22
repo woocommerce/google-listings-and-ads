@@ -140,7 +140,7 @@ describe( 'At setup page', () => {
 			).resolves.toBeTruthy();
 
 			await expect(
-				page.waitForXPath( "//*[text()='Connect your Google account']" )
+				page.waitForXPath( "//*[text()='Google account']" )
 			).resolves.toBeTruthy();
 
 			await expect(
