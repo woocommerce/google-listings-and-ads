@@ -91,22 +91,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 			throw $exception;
 		}
 
-		$this->detach_schedule_action_on_timeout( [ $items ] );
-	}
-
-	/**
-	 * Returns a callable to use for the timeout action.
-	 *
-	 * @param array $args
-	 *
-	 * @return callable
-	 *
-	 * @since x.x.x
-	 */
-	protected function get_schedule_action_callback( array $args ): callable {
-		return function () use ( $args ) {
-			$this->schedule( $args );
-		};
+		$this->detach_schedule_action_on_timeout();
 	}
 
 	/**
@@ -118,10 +103,10 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 */
 	protected function maybe_attach_schedule_action_on_timeout( array $args ) {
 		if ( $this->retry_on_timeout ) {
-			$this->monitor->attach_timeout_monitor();
+			$this->monitor->attach_timeout_monitor( $args );
 			add_action(
 				'woocommerce_gla_action_scheduler_timeout',
-				$this->get_schedule_action_callback( $args )
+				[ $this, 'schedule' ]
 			);
 		}
 	}
@@ -129,14 +114,12 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	/**
 	 * Detaches the previously registered schedule action from the timeout hook.
 	 *
-	 * @param array $args
-	 *
 	 * @since x.x.x
 	 */
-	protected function detach_schedule_action_on_timeout( array $args ) {
+	protected function detach_schedule_action_on_timeout() {
 		remove_action(
 			'woocommerce_gla_action_scheduler_timeout',
-			$this->get_schedule_action_callback( $args )
+			[ $this, 'schedule' ]
 		);
 	}
 
