@@ -218,10 +218,115 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( $ads_id, $response->data['id'] );
 	}
 
+	public function test_continue_link_existing_account() {
+		$ads_id = 12345;
+
+		$this->options->expects( $this->any() )
+					  ->method( 'get_ads_id' )
+					  ->willReturn( $ads_id );
+
+		$this->ads->expects( $this->any() )
+				  ->method( 'get_billing_status' )
+				  ->willReturn( BillingSetupStatus::APPROVED );
+
+		$this->options->expects( $this->any() )
+					  ->method( 'get_merchant_id' )
+					  ->willReturn( 23456 );
+
+		$this->expected_account_state(
+			[
+				'set_id'            => [
+					'status' => AdsAccountState::STEP_DONE,
+				],
+				'billing'           => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+				'link_merchant'     => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+				'conversion_action' => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+			],
+		);
+
+		$response = $this->do_request(
+			'/wc/gla/ads/accounts',
+			'POST',
+			[ 'id' => $ads_id ]
+		);
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( $ads_id, $response->data['id'] );
+	}
+
+	public function test_continue_link_new_account() {
+		$ads_id = 12345;
+
+		$this->options->expects( $this->any() )
+					  ->method( 'get_ads_id' )
+					  ->willReturn( $ads_id );
+
+		$this->ads->expects( $this->any() )
+				  ->method( 'get_billing_status' )
+				  ->willReturn( BillingSetupStatus::APPROVED );
+
+		$this->options->expects( $this->any() )
+					  ->method( 'get_merchant_id' )
+					  ->willReturn( 23456 );
+
+		$this->expected_account_state(
+			[
+				'set_id'            => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+				'billing'           => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+				'link_merchant'     => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+				'conversion_action' => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+			],
+		);
+
+		$response = $this->do_request( '/wc/gla/ads/accounts', 'POST' );
+		$this->assertExpectedResponse( $response, 200 );
+		$this->assertEquals( $ads_id, $response->data['id'] );
+	}
+
 	public function test_link_invalid_merchant() {
 		$this->options->expects( $this->any() )
-			->method( 'get_merchant_id' )
-			->willReturn( 0 );
+					  ->method( 'get_merchant_id' )
+					  ->willReturn( 0 );
+
+		$this->expected_account_state(
+			[
+				'set_id'        => [
+					'status' => AdsAccountState::STEP_DONE,
+				],
+				'billing'       => [
+					'status' => AdsAccountState::STEP_DONE,
+				],
+				'link_merchant' => [
+					'status' => AdsAccountState::STEP_PENDING,
+				],
+			]
+		);
+
+		$response = $this->do_request( '/wc/gla/ads/accounts', 'POST' );
+		$this->assertExpectedResponse( $response, 400 );
+	}
+
+	public function test_link_merchant_with_ads_account() {
+		$this->options->expects( $this->any() )
+					  ->method( 'get_merchant_id' )
+					  ->willReturn( 23456 );
+
+		$this->options->expects( $this->any() )
+					  ->method( 'get_ads_id' )
+					  ->willReturn( 0 );
 
 		$this->expected_account_state(
 			[
