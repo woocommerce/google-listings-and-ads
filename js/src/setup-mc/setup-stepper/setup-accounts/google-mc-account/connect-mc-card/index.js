@@ -20,7 +20,7 @@ import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 
 const ConnectMCCard = ( props ) => {
-	const { onCreateNew = () => {} } = props;
+	const { onCreateNew = () => {}, disabled = false } = props;
 	const [ value, setValue ] = useState();
 	const { createNotice } = useDispatchCoreNotices();
 	const [
@@ -88,13 +88,14 @@ const ConnectMCCard = ( props ) => {
 				</Subsection.Title>
 				<ContentButtonLayout>
 					<MerchantCenterSelectControl
+						disabled={ disabled }
 						value={ value }
 						onChange={ setValue }
 					/>
 					<AppButton
 						isSecondary
 						loading={ loading }
-						disabled={ ! value }
+						disabled={ ! value || disabled }
 						eventName="gla_mc_account_connect_button_click"
 						onClick={ handleConnectClick }
 					>
@@ -103,7 +104,11 @@ const ConnectMCCard = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<Button disabled={ loading } isLink onClick={ onCreateNew }>
+				<Button
+					disabled={ loading || disabled }
+					isLink
+					onClick={ onCreateNew }
+				>
 					{ __(
 						'Or, create a new Merchant Center account',
 						'google-listings-and-ads'
