@@ -43,6 +43,17 @@ export default function AuthorizeGoogleAccountCard( {
 	const handleConnectClick = async () => {
 		try {
 			const { url } = await fetchGoogleConnect();
+
+			// To demo the full process of partial auth temporarily,
+			// here is a hack to append a `login_hint` parameter to
+			// skip the account selection step after going to Google Oauth page.
+			const u = new URL( url );
+			if ( isAskingScope && ! u.searchParams.has( 'login_hint' ) ) {
+				u.searchParams.append( 'login_hint', additionalScopeEmail );
+				window.location.href = u.toString();
+				return;
+			}
+
 			window.location.href = url;
 		} catch ( error ) {
 			createNotice(
