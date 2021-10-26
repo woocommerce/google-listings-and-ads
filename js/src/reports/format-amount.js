@@ -12,6 +12,10 @@ import formatAmountWithCode from '.~/utils/formatAmountWithCode';
 const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
 
 /**
+ * @typedef {import('.~/utils/formatAmountWithCode').CurencyConfig} CurencyConfig
+ */
+
+/**
  * Formats given number as currency
  * according to given config, or return `"Unavailable"` if the value is undefined.
  *
@@ -19,7 +23,7 @@ const unavailable = __( 'Unavailable', 'google-listings-and-ads' );
  * https://github.com/woocommerce/woocommerce-admin/pull/7575 is released and accessible.
  *
  * @param {number} value Value to be formatted.
- * @param {Object} currencyConfig Currency config object returned by `@woocommerce/currency`.
+ * @param {CurencyConfig} currencyConfig Currency config used to format amount.
  * @return {string} Formatted currency or "Unavailable".
  */
 function formatCurrencyCell( value, currencyConfig ) {
@@ -33,8 +37,8 @@ function formatCurrencyCell( value, currencyConfig ) {
  * or return `"Unavailable"` if the value is undefined.
  *
  * @param {number} value Value to be formatted.
- * @param {Object} storeCurrencyConfig Store's currency config object returned by `@woocommerce/currency`.
- * @param {Object} adsCurrencyConfig Ads' currency config object returned by `@woocommerce/currency`.
+ * @param {CurencyConfig} storeCurrencyConfig Store's currency config. It's not used, it's kept to conform Metric.formatFn API.
+ * @param {CurencyConfig} adsCurrencyConfig Ads' currency config. May be fetched from {@link .~/hooks/useAdsCurrency.useAdsCurrencyConfig}.
  * @return {string} Formatted currency or "Unavailable".
  */
 export function formatAdsCurrencyCell(
@@ -49,7 +53,7 @@ export function formatAdsCurrencyCell(
  * or return `"Unavailable"` if the value is undefined.
  *
  * @param {number} value Value to be formatted.
- * @param {Object} storeCurrencyConfig Store's currency config object returned by `@woocommerce/currency`.
+ * @param {CurencyConfig} storeCurrencyConfig Store's currency config.
  * @return {string} Formatted currency or "Unavailable".
  */
 export function formatStoreCurrencyCell( value, storeCurrencyConfig ) {
@@ -62,7 +66,7 @@ export function formatStoreCurrencyCell( value, storeCurrencyConfig ) {
  * We do not use currency code or symbol, but decimal separators, etc.
  *
  * @param {number} value Value to be formatted.
- * @param {Object} currencyConfig Currency config object returned by `@woocommerce/currency`.
+ * @param {CurencyConfig} currencyConfig Currency config.
  * @return {string} Formatted number or "Unavailable".
  */
 export function formatNumericCell( value, currencyConfig ) {
