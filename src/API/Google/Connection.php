@@ -34,18 +34,25 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Get the connection URL for performing a connection redirect.
 	 *
 	 * @param string $return_url The return URL.
+	 * @param string $login_hint Suggested Google account to use for connection.
 	 *
 	 * @return string
 	 * @throws Exception When a ClientException is caught or the response doesn't contain the oauthUrl.
 	 */
-	public function connect( string $return_url ): string {
+	public function connect( string $return_url, string $login_hint = '' ): string {
 		try {
+
+			$post_body = [ 'returnUrl' => $return_url ];
+			if ( ! empty( $login_hint ) ) {
+				$post_body['loginHint'] = $login_hint;
+			}
+
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
 			$result = $client->post(
 				$this->get_connection_url(),
 				[
-					'body' => json_encode( [ 'returnUrl' => $return_url ] ),
+					'body' => json_encode( $post_body ),
 				]
 			);
 
