@@ -18,7 +18,7 @@ export default function GoogleAccountCard( { disabled = false } ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
-	const additionalScopeEmail = scope.gmcRequired ? undefined : google.email;
+	const additionalScopeEmail = scope.gmcRequired ? undefined : google?.email;
 
 	return (
 		<AuthorizeGoogleAccountCard
