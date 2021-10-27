@@ -14,11 +14,14 @@ export default function GoogleAccountCard( { disabled = false } ) {
 		return <AccountCard appearance={ {} } description={ <AppSpinner /> } />;
 	}
 
-	if ( google?.active === 'yes' && scope.gmcRequired ) {
+	const isConnected = google?.active === 'yes';
+
+	if ( isConnected && scope.gmcRequired ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
-	const additionalScopeEmail = scope.gmcRequired ? undefined : google?.email;
+	const additionalScopeEmail =
+		isConnected && ! scope.gmcRequired ? google.email : undefined;
 
 	return (
 		<AuthorizeGoogleAccountCard
