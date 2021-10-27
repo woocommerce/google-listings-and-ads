@@ -78,7 +78,7 @@ export default function AuthorizeGoogleAccountCard( {
 						),
 						{
 							alert: (
-								<span className="gla-authorize-google-account-card__alter-text" />
+								<span className="gla-authorize-google-account-card__error-text" />
 							),
 							link: readMoreLink,
 						}
