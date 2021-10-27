@@ -40,7 +40,7 @@ const SetupAccounts = ( props ) => {
 	const isGoogleMCAccountDisabled = ! (
 		isGoogleConnected && scope.gmcRequired
 	);
-	const maybePreviewExistingGoogleMCAccounts =
+	const isGoogleConnectedInsufficientGMCScope =
 		isGoogleConnected && ! scope.gmcRequired;
 	const isContinueButtonDisabled = googleMCAccount?.status !== 'connected';
 
@@ -71,7 +71,7 @@ const SetupAccounts = ( props ) => {
 			<GoogleMCAccount
 				disabled={ isGoogleMCAccountDisabled }
 				maybePreviewExistingAccounts={
-					maybePreviewExistingGoogleMCAccounts
+					isGoogleConnectedInsufficientGMCScope
 				}
 			/>
 			<Faqs />
