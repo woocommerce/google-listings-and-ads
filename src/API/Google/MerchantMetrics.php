@@ -70,7 +70,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = ( new MerchantFreeListingReportQuery( [] ) )
 			->set_client( $this->shopping_client, $this->options->get_merchant_id() )
-			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_today() )
+			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_tomorrow() )
 			->fields( [ 'clicks' ] );
 
 		/** @var SearchResponse $response */
@@ -86,12 +86,12 @@ class MerchantMetrics implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get today's date.
+	 * Get tomorrow's date to ensure we include any metrics from the current day.
 	 *
 	 * @return string
 	 */
-	protected function get_today(): string {
-		return ( new DateTime( 'now', $this->wp->wp_timezone() ) )->format( 'Y-m-d' );
+	protected function get_tomorrow(): string {
+		return ( new DateTime( 'tomorrow', $this->wp->wp_timezone() ) )->format( 'Y-m-d' );
 	}
 
 }

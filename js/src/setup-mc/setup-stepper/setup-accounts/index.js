@@ -14,8 +14,10 @@ import AppSpinner from '.~/components/app-spinner';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
+import Section from '.~/wcdl/section';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import WordPressDotComAccount from './wordpressdotcom-account';
-import GoogleAccount from '.~/components/google-account';
+import GoogleAccountCard from '.~/components/google-account-card';
 import GoogleMCAccount from './google-mc-account';
 import Faqs from './faqs';
 
@@ -49,8 +51,18 @@ const SetupAccounts = ( props ) => {
 					'google-listings-and-ads'
 				) }
 			/>
-			<WordPressDotComAccount />
-			<GoogleAccount disabled={ isGoogleAccountDisabled } />
+			<Section
+				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
+				description={ __(
+					'The following accounts are required to use the Google Listings & Ads plugin.',
+					'google-listings-and-ads'
+				) }
+			>
+				<VerticalGapLayout size="large">
+					<WordPressDotComAccount />
+					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
+				</VerticalGapLayout>
+			</Section>
 			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
 			<Faqs />
 			<StepContentFooter>
