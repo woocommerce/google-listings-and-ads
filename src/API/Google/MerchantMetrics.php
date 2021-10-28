@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeLis
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use DateTime;
 use Exception;
@@ -46,19 +47,26 @@ class MerchantMetrics implements OptionsAwareInterface {
 	 */
 	protected $wp;
 
+	/**
+	 * @var TransientsInterface
+	 */
+	protected $transients;
+
 	protected const MAX_QUERY_START_DATE = '2020-01-01';
 
 	/**
 	 * MerchantMetrics constructor.
 	 *
-	 * @param ShoppingContent $shopping_client
-	 * @param GoogleAdsClient $ads_client
-	 * @param WP              $wp
+	 * @param ShoppingContent     $shopping_client
+	 * @param GoogleAdsClient     $ads_client
+	 * @param WP                  $wp
+	 * @param TransientsInterface $transients
 	 */
-	public function __construct( ShoppingContent $shopping_client, GoogleAdsClient $ads_client, WP $wp ) {
+	public function __construct( ShoppingContent $shopping_client, GoogleAdsClient $ads_client, WP $wp, TransientsInterface $transients ) {
 		$this->shopping_client = $shopping_client;
 		$this->ads_client      = $ads_client;
 		$this->wp              = $wp;
+		$this->transients      = $transients;
 	}
 
 	/**
@@ -130,6 +138,26 @@ class MerchantMetrics implements OptionsAwareInterface {
 		}
 
 		return [];
+	}
+
+	/**
+	 * Get ads metrics across all campaigns but cached for 12 hours.
+	 *
+	 * PLEASE NOTE: These metrics will not be 100% accurate since there is no invalidation apart from the 12 hour refresh.
+	 *
+	 * @return array Of metrics or empty if no metrics were available.
+	 *
+	 * @throws Exception When unable to get data.
+	 */
+	public function get_cached_ads_metrics(): array {
+		$value = $this->transients->get( TransientsInterface::ADS_METRICS );
+
+		if ( $value === null ) {
+			$value = $this->get_ads_metrics();
+			$this->transients->set( TransientsInterface::ADS_METRICS, $value, HOUR_IN_SECONDS * 12 );
+		}
+
+		return $value;
 	}
 
 	/**
