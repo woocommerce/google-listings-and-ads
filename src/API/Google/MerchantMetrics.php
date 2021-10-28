@@ -121,13 +121,13 @@ class MerchantMetrics implements OptionsAwareInterface {
 
 		/** @var PagedListResponse $response */
 		$response = $query->get_results();
+		$page     = $response->getPage();
 
-		$page = $response->getPage();
-		if ( $page ) {
+		if ( $page && $page->getIterator()->current() ) {
 			/** @var GoogleAdsRow $row */
 			$row = $page->getIterator()->current();
-			$metrics = $row->getMetrics();
 
+			$metrics = $row->getMetrics();
 			if ( $metrics ) {
 				return [
 					'clicks'      => $metrics->getClicks(),
