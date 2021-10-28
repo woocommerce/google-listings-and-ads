@@ -10,7 +10,7 @@ import { getHistory } from '@woocommerce/navigation';
 import { getDashboardUrl } from '.~/utils/urls';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import AppSpinner from '.~/components/app-spinner';
-import ReconnectGoogleAccount from './reconnect-google-account';
+import DisconnectAccountCard from './disconnect-account-card';
 
 export default function ReconnectAccounts() {
 	const { data } = useAppSelectDispatch( 'getGoogleAccountAccess' );
@@ -31,7 +31,7 @@ export default function ReconnectAccounts() {
 	}
 
 	if ( ! googleHasFullAccess ) {
-		return <ReconnectGoogleAccount { ...data } />;
+		return <DisconnectAccountCard { ...data } />;
 	}
 
 	// Renders nothing because it's waiting for the redirection process above.
