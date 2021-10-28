@@ -67,6 +67,11 @@ class MerchantMetrics implements OptionsAwareInterface {
 	 * @throws Exception When unable to get clicks data.
 	 */
 	public function get_free_listing_clicks(): int {
+		if ( ! $this->options->get_merchant_id() ) {
+			// Merchant account not set up
+			return 0;
+		}
+
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = ( new MerchantFreeListingReportQuery( [] ) )
 			->set_client( $this->shopping_client, $this->options->get_merchant_id() )
