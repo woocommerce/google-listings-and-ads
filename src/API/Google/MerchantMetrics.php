@@ -11,6 +11,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use DateTime;
 use Exception;
+use Google\Ads\GoogleAds\V8\Services\GoogleAdsRow;
+use Google\ApiCore\PagedListResponse;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\SearchResponse;
 
@@ -88,6 +90,46 @@ class MerchantMetrics implements OptionsAwareInterface {
 		$report_row = $response->getResults()[0];
 
 		return (int) $report_row->getMetrics()->getClicks();
+	}
+
+	/**
+	 * Get ads metrics across all campaigns.
+	 *
+	 * @return array Of metrics or empty if no metrics were available.
+	 *
+	 * @throws Exception When unable to get data.
+	 */
+	public function get_ads_metrics(): array {
+		if ( ! $this->options->get_ads_id() ) {
+			// Ads account not set up
+			return [];
+		}
+
+		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
+		$query = ( new AdsCampaignReportQuery( [] ) )
+			->set_client( $this->ads_client, $this->options->get_ads_id() )
+			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_tomorrow() )
+			->fields( [ 'clicks', 'conversions', 'impressions' ] );
+
+		/** @var PagedListResponse $response */
+		$response = $query->get_results();
+
+		$page = $response->getPage();
+		if ( $page ) {
+			/** @var GoogleAdsRow $row */
+			$row = $page->getIterator()->current();
+			$metrics = $row->getMetrics();
+
+			if ( $metrics ) {
+				return [
+					'clicks'      => $metrics->getClicks(),
+					'conversions' => $metrics->getConversions(),
+					'impressions' => $metrics->getImpressions(),
+				];
+			}
+		}
+
+		return [];
 	}
 
 	/**
