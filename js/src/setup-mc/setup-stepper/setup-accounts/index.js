@@ -20,7 +20,7 @@ import WordPressDotComAccount from './wordpressdotcom-account';
 import GoogleAccountCard from '.~/components/google-account-card';
 import GoogleMCAccount from './google-mc-account';
 import Faqs from './faqs';
-import WPComAccountCard from './wpcom-account-card';
+import WPComAccountCard from './wordpressdotcom-account/wpcom-account-card';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
