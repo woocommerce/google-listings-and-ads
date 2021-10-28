@@ -8,15 +8,25 @@ import AuthorizeGoogleAccountCard from './authorize-google-account-card';
 import ConnectedGoogleAccountCard from './connected-google-account-card';
 
 export default function GoogleAccountCard( { disabled = false } ) {
-	const { google, hasFinishedResolution } = useGoogleAccount();
+	const { google, scope, hasFinishedResolution } = useGoogleAccount();
 
 	if ( ! hasFinishedResolution ) {
 		return <AccountCard appearance={ {} } description={ <AppSpinner /> } />;
 	}
 
-	if ( google?.active === 'yes' ) {
+	const isConnected = google?.active === 'yes';
+
+	if ( isConnected && scope.gmcRequired ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
-	return <AuthorizeGoogleAccountCard disabled={ disabled } />;
+	const additionalScopeEmail =
+		isConnected && ! scope.gmcRequired ? google.email : undefined;
+
+	return (
+		<AuthorizeGoogleAccountCard
+			additionalScopeEmail={ additionalScopeEmail }
+			disabled={ disabled }
+		/>
+	);
 }
