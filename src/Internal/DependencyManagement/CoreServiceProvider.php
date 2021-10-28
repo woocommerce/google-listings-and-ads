@@ -52,6 +52,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteS
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as ReviewAfterClicksNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions as ReviewAfterConversionsNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -238,6 +239,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ContactInformationNote::class );
 		$this->share_with_tags( CompleteSetupNote::class );
 		$this->share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
+		$this->share_with_tags( ReviewAfterConversionsNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( SetupCampaignNote::class );
 		$this->share_with_tags( SetupCampaign2Note::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class, Note::class );
