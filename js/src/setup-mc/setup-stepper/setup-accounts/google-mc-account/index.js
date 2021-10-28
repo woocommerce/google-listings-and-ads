@@ -11,7 +11,7 @@ import DisabledDiv from '.~/components/disabled-div';
 import SectionContent from './section-content';
 
 const GoogleMCAccount = ( props ) => {
-	const { disabled = false, maybePreviewExistingAccounts = false } = props;
+	const { disabled = false } = props;
 
 	return (
 		<Section
@@ -25,12 +25,7 @@ const GoogleMCAccount = ( props ) => {
 			) }
 		>
 			<DisabledDiv disabled={ disabled }>
-				<SectionContent
-					disabled={ disabled }
-					maybePreviewExistingAccounts={
-						maybePreviewExistingAccounts
-					}
-				/>
+				<SectionContent disabled={ disabled } />
 			</DisabledDiv>
 		</Section>
 	);

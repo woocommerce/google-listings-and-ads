@@ -24,7 +24,7 @@ import Faqs from './faqs';
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { jetpack } = useJetpackAccount();
-	const { google, scope } = useGoogleAccount();
+	const { google } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
 
 	if (
@@ -36,12 +36,7 @@ const SetupAccounts = ( props ) => {
 	}
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
-	const isGoogleConnected = google?.active === 'yes';
-	const isGoogleMCAccountDisabled = ! (
-		isGoogleConnected && scope.gmcRequired
-	);
-	const maybePreviewExistingGoogleMCAccounts =
-		isGoogleConnected && ! scope.gmcRequired;
+	const isGoogleMCAccountDisabled = google?.active !== 'yes';
 	const isContinueButtonDisabled = googleMCAccount?.status !== 'connected';
 
 	return (
@@ -68,12 +63,7 @@ const SetupAccounts = ( props ) => {
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
 				</VerticalGapLayout>
 			</Section>
-			<GoogleMCAccount
-				disabled={ isGoogleMCAccountDisabled }
-				maybePreviewExistingAccounts={
-					maybePreviewExistingGoogleMCAccounts
-				}
-			/>
+			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
 			<Faqs />
 			<StepContentFooter>
 				<Button

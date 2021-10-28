@@ -8,19 +8,16 @@ import { useSelect } from '@wordpress/data';
  */
 import { STORE_KEY } from '.~/data/constants';
 
-const selectorName = 'getExistingGoogleMCAccounts';
-
 const useExistingGoogleMCAccounts = () => {
 	return useSelect( ( select ) => {
-		const selector = select( STORE_KEY );
+		const existingAccounts = select(
+			STORE_KEY
+		).getExistingGoogleMCAccounts();
+		const isResolving = select( STORE_KEY ).isResolving(
+			'getExistingGoogleMCAccounts'
+		);
 
-		return {
-			existingAccounts: selector[ selectorName ](),
-			isResolving: selector.isResolving( selectorName ),
-			hasFinishedResolution: selector.hasFinishedResolution(
-				selectorName
-			),
-		};
+		return { existingAccounts, isResolving };
 	}, [] );
 };
 

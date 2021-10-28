@@ -1,13 +1,5 @@
 .gla_disabled_div {
 	&.gla_disabled_div__disabled {
 		filter: opacity(0.5);
-
-		// Avoid overlapping opacity multiple times
-		select,
-		button {
-			&:disabled {
-				opacity: 1;
-			}
-		}
 	}
 }
