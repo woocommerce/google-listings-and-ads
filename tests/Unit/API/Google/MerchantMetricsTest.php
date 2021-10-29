@@ -37,7 +37,7 @@ class MerchantMetricsTest extends UnitTest {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->wp               = $this->createMock( WP::class );
+		$this->wp               = new WP();
 		$this->service          = $this->createMock( ShoppingContent::class );
 		$this->service->reports = $this->createMock( Reports::class );
 
@@ -87,6 +87,5 @@ class MerchantMetricsTest extends UnitTest {
 
 		$this->assertSame( 0, $this->metrics->get_free_listing_clicks() );
 	}
-
 
 }
