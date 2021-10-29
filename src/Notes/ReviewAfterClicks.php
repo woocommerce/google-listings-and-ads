@@ -105,11 +105,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 		}
 
 		$clicks_count = $this->get_cached_free_listing_clicks();
-		if ( $clicks_count <= 100 ) {
-			return false;
-		}
-
-		return true;
+		return $clicks_count > 100;
 	}
 
 	/**
