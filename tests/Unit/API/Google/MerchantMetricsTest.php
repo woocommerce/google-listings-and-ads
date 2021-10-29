@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
@@ -24,7 +25,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
- * @property  MockObject|ShoppingContent  $service
+ * @property  MockObject|ShoppingContent  $shopping_client
+ * @property  MockObject|GoogleAdsClient  $ads_client
  * @property  MockObject|OptionsInterface $options
  * @property  MerchantMetrics             $metrics
  * @property  string                      $tomorrow
@@ -38,11 +40,12 @@ class MerchantMetricsTest extends UnitTest {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->service          = $this->createMock( ShoppingContent::class );
-		$this->service->reports = $this->createMock( Reports::class );
+		$this->shopping_client          = $this->createMock( ShoppingContent::class );
+		$this->ads_client               = $this->createMock( GoogleAdsClient::class );
+		$this->shopping_client->reports = $this->createMock( Reports::class );
 
 		$this->options = $this->createMock( OptionsInterface::class );
-		$this->metrics = new MerchantMetrics( $this->service, new WP(), new Transients() );
+		$this->metrics = new MerchantMetrics( $this->shopping_client, $this->ads_client, new WP(), new Transients() );
 		$this->metrics->set_options_object( $this->options );
 
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
@@ -68,7 +71,7 @@ class MerchantMetricsTest extends UnitTest {
 			"SELECT metrics.clicks,metrics.impressions FROM MerchantPerformanceView WHERE segments.program = 'FREE_PRODUCT_LISTING' AND segments.date BETWEEN '2020-01-01' AND '{$this->tomorrow}'"
 		);
 
-		$this->service->reports->expects( $this->once() )
+		$this->shopping_client->reports->expects( $this->once() )
 		                       ->method( 'search' )
 		                       ->with( self::TEST_MERCHANT_ID, $search_request )
 		                       ->willReturn( $response );
@@ -88,7 +91,7 @@ class MerchantMetricsTest extends UnitTest {
 		         ->method( 'getResults' )
 		         ->willReturn( [] );
 
-		$this->service->reports->expects( $this->once() )
+		$this->shopping_client->reports->expects( $this->once() )
 		                       ->method( 'search' )
 		                       ->willReturn( $response );
 
