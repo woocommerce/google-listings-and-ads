@@ -62,7 +62,6 @@ const CreateAccount = ( props ) => {
 					) }
 					button={
 						<CreateAccountButton
-							isSecondary
 							loading={ createLoading || fetchAccountLoading }
 							onCreateAccount={ handleCreateAccount }
 						/>
