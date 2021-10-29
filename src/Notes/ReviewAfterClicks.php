@@ -111,7 +111,7 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	/**
 	 * Get number of free listing clicks, cached for current request.
 	 *
-	 * Will return 0 if account is note connected.
+	 * Will return 0 if account is not connected.
 	 *
 	 * @throws Exception When unable to get clicks data.
 	 *
