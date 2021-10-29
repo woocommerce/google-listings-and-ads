@@ -25,7 +25,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @property  MockObject|ShoppingContent  $service
  * @property  MockObject|OptionsInterface $options
- * @property  MockObject|WP               $wp
  * @property  MerchantMetrics             $metrics
  */
 class MerchantMetricsTest extends UnitTest {
@@ -37,12 +36,11 @@ class MerchantMetricsTest extends UnitTest {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->wp               = new WP();
 		$this->service          = $this->createMock( ShoppingContent::class );
 		$this->service->reports = $this->createMock( Reports::class );
 
 		$this->options = $this->createMock( OptionsInterface::class );
-		$this->metrics = new MerchantMetrics( $this->service, $this->wp );
+		$this->metrics = new MerchantMetrics( $this->service, new WP() );
 		$this->metrics->set_options_object( $this->options );
 
 		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
