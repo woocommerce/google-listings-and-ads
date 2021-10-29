@@ -72,7 +72,9 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 */
 	public function handle_create_batch_action( int $batch_number ) {
 		$this->monitor->validate_failure_rate( $this, $this->get_create_batch_hook(), [ $batch_number ] );
-		$this->maybe_attach_schedule_action_on_timeout( [ $batch_number ] );
+		if ( $this->retry_on_timeout ) {
+			$this->monitor->attach_timeout_monitor();
+		}
 
 		$items = $this->get_filtered_batch( $batch_number );
 
@@ -91,7 +93,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 			}
 		}
 
-		$this->detach_schedule_action_on_timeout( [ $batch_number ] );
+		$this->monitor->detach_timeout_monitor();
 	}
 
 	/**

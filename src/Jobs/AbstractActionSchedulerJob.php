@@ -79,7 +79,9 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 */
 	public function handle_process_items_action( array $items ) {
 		$this->monitor->validate_failure_rate( $this, $this->get_process_item_hook(), [ $items ] );
-		$this->maybe_attach_schedule_action_on_timeout( [ $items ] );
+		if ( $this->retry_on_timeout ) {
+			$this->monitor->attach_timeout_monitor();
+		}
 
 		try {
 			$this->process_items( $items );
@@ -91,36 +93,7 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 			throw $exception;
 		}
 
-		$this->detach_schedule_action_on_timeout();
-	}
-
-	/**
-	 * Registers a schedule action to be run when the job times out.
-	 *
-	 * @param array $args
-	 *
-	 * @since x.x.x
-	 */
-	protected function maybe_attach_schedule_action_on_timeout( array $args ) {
-		if ( $this->retry_on_timeout ) {
-			$this->monitor->attach_timeout_monitor( $args );
-			add_action(
-				'woocommerce_gla_action_scheduler_timeout',
-				[ $this, 'schedule' ]
-			);
-		}
-	}
-
-	/**
-	 * Detaches the previously registered schedule action from the timeout hook.
-	 *
-	 * @since x.x.x
-	 */
-	protected function detach_schedule_action_on_timeout() {
-		remove_action(
-			'woocommerce_gla_action_scheduler_timeout',
-			[ $this, 'schedule' ]
-		);
+		$this->monitor->detach_timeout_monitor();
 	}
 
 	/**
