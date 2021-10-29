@@ -18,6 +18,8 @@ const SCOPE = {
  * @property {boolean} gmcRequired Whether has the required scopes of Google Merchant Center.
  * @property {boolean} adsRequired Whether has the required scopes of Google Ads.
  * @property {boolean} glaRequired Whether has the required scopes of GLA plugin based on the current GLA setup.
+ *     If the user has completed Google Ads setup, all scopes are required,
+ *     otherwise only Google Merchant Center scopes are required.
  */
 
 /**
