@@ -26,4 +26,15 @@ module.exports = {
 	},
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [ '/node_modules/', '/tests/e2e/' ],
+	globals: {
+		glaData: {
+			mcSetupComplete: true,
+			mcSupportedCountry: true,
+			mcSupportedLanguage: true,
+			adsSetupComplete: true,
+			enableReports: true,
+			dateFormat: 'F j, Y',
+			timeFormat: 'g:i a',
+		},
+	},
 };

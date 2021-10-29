@@ -10,15 +10,13 @@ import { getNewPath } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
-import { API_NAMESPACE } from '.~/data/constants';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import Section from '.~/wcdl/section';
 import DisconnectModal, { ALL_ACCOUNTS } from '../disconnect-modal';
 
-function DisconnectContent( { email } ) {
+export default function DisconnectAccountCard( { email } ) {
 	const adminUrl = useAdminUrl();
 	const [ openedModal, setOpenedModal ] = useState( null );
 	const handleAllDisconnected = () => {
@@ -37,7 +35,7 @@ function DisconnectContent( { email } ) {
 	};
 
 	return (
-		<>
+		<AccountCard appearance={ APPEARANCE.GOOGLE } description={ email }>
 			<CardDivider />
 			<Section.Card.Body>
 				<Notice status="error" isDismissible={ false }>
@@ -96,55 +94,6 @@ function DisconnectContent( { email } ) {
 					) }
 				</AppButton>
 			</Section.Card.Footer>
-		</>
-	);
-}
-
-export default function ReconnectGoogleAccount( { active, email } ) {
-	const [ fetchGoogleConnect, { loading } ] = useApiFetchCallback( {
-		path: `${ API_NAMESPACE }/google/connect?next=reconnect`,
-	} );
-
-	let description = email;
-	let button = null;
-	let disconnectContent = null;
-
-	if ( active === 'no' ) {
-		// No connected Google account actived. Needs to reconnect.
-		description = __(
-			'Required to sync with Google Merchant Center and Google Ads',
-			'google-listings-and-ads'
-		);
-
-		const handleConnectClick = async () => {
-			const { url } = await fetchGoogleConnect();
-			window.location.href = url;
-		};
-
-		button = (
-			<AppButton
-				isSecondary
-				loading={ loading }
-				onClick={ handleConnectClick }
-			>
-				{ __( 'Connect', 'google-listings-and-ads' ) }
-			</AppButton>
-		);
-	} else {
-		// The connected Google account has no access to currently connected Google MC and/or Ads account.
-		// Needs to disconnect Google or All accounts then re-enter the reconnection or onboarding flow.
-		disconnectContent = <DisconnectContent email={ email } />;
-	}
-
-	return (
-		<Section title={ __( 'Connect account', 'google-listings-and-ads' ) }>
-			<AccountCard
-				appearance={ APPEARANCE.GOOGLE }
-				description={ description }
-				indicator={ button }
-			>
-				{ disconnectContent }
-			</AccountCard>
-		</Section>
+		</AccountCard>
 	);
 }
