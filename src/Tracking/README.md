@@ -126,6 +126,11 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `google_account_connect_button_click` - Clicking on the button to connect Google account.
 
+    -   `context`: (`setup-mc`|`setup-ads`|`reconnect`) - indicate the button is clicked from which page.
+    -   `action`: (`authorization`|`scope`)
+        -   `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.
+        -   `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
+
 -   `google_ads_account_link_click` - Clicking on a Google Ads account text link.
 
     -   `context`: indicate which page / module the link is in

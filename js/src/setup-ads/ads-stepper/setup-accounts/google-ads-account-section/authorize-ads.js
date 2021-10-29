@@ -46,6 +46,7 @@ export default function AuthorizeAds( { additionalScopeEmail } ) {
 					loading={ loading || data }
 					onBeforeAskTerms={ handleBeforeAskTerms }
 					eventName="gla_google_account_connect_button_click"
+					eventProps={ { context: pageName, action: 'scope' } }
 				/>
 			}
 		/>
