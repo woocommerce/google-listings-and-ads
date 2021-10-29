@@ -95,4 +95,10 @@ class MerchantMetricsTest extends UnitTest {
 		$this->assertSame( [], $this->metrics->get_free_listing_metrics() );
 	}
 
+	public function test_get_free_listing_metrics_with_no_merchant_id() {
+		$this->options->method( 'get_merchant_id' )->willReturn( null );
+
+		$this->assertSame( [], $this->metrics->get_free_listing_metrics() );
+	}
+
 }
