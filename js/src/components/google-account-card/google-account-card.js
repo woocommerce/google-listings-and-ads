@@ -16,12 +16,12 @@ export default function GoogleAccountCard( { disabled = false } ) {
 
 	const isConnected = google?.active === 'yes';
 
-	if ( isConnected && scope.gmcRequired ) {
+	if ( isConnected && scope.glaRequired ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
 	const additionalScopeEmail =
-		isConnected && ! scope.gmcRequired ? google.email : undefined;
+		isConnected && ! scope.glaRequired ? google.email : undefined;
 
 	return (
 		<AuthorizeGoogleAccountCard
