@@ -62,7 +62,7 @@ const SetupAccounts = ( props ) => {
 				) }
 			>
 				<VerticalGapLayout size="large">
-					<WordPressDotComAccount />
+					<WordPressDotComAccount jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
 				</VerticalGapLayout>
 			</Section>

@@ -7,11 +7,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '.~/components/app-button';
-import TitleButtonLayout from '.~/components/title-button-layout';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
+import WPComAccountCard from './wpcom-account-card';
 
-const ConnectAccount = () => {
+const ConnectWPComAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchJetpackConnect, { loading, data } ] = useApiFetchCallback( {
 		path: '/wc/gla/jetpack/connect',
@@ -33,12 +33,12 @@ const ConnectAccount = () => {
 	};
 
 	return (
-		<TitleButtonLayout
-			title={ __(
-				'Connect your WordPress.com account',
+		<WPComAccountCard
+			description={ __(
+				'Required to connect with Google',
 				'google-listings-and-ads'
 			) }
-			button={
+			indicator={
 				<AppButton
 					isSecondary
 					loading={ loading || data }
@@ -52,4 +52,4 @@ const ConnectAccount = () => {
 	);
 };
 
-export default ConnectAccount;
+export default ConnectWPComAccountCard;
