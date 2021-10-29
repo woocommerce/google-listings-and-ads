@@ -70,34 +70,61 @@ class MerchantMetrics implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get number of free listing clicks.
+	 * Get free listing metrics.
 	 *
-	 * @return int
+	 * @return array Of metrics or empty if no metrics were available.
+	 *      @type int $clicks Number of free clicks.
+	 *      @type int $impressions NUmber of free impressions.
 	 *
 	 * @throws Exception When unable to get clicks data.
 	 */
-	public function get_free_listing_clicks(): int {
+	public function get_free_listing_metrics(): array {
 		if ( ! $this->options->get_merchant_id() ) {
 			// Merchant account not set up
-			return 0;
+			return [];
 		}
 
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = ( new MerchantFreeListingReportQuery( [] ) )
 			->set_client( $this->shopping_client, $this->options->get_merchant_id() )
 			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_tomorrow() )
-			->fields( [ 'clicks' ] );
+			->fields( [ 'clicks', 'impressions' ] );
 
 		/** @var SearchResponse $response */
 		$response = $query->get_results();
 
 		if ( empty( $response ) || empty( $response->getResults() ) ) {
-			return 0;
+			return [];
 		}
 
 		$report_row = $response->getResults()[0];
 
-		return (int) $report_row->getMetrics()->getClicks();
+		return [
+			'clicks' => (int) $report_row->getMetrics()->getClicks(),
+			'impressions' => (int) $report_row->getMetrics()->getImpressions(),
+		];
+	}
+
+	/**
+	 * Get free listing metrics but cached for 12 hours.
+	 *
+	 * PLEASE NOTE: These metrics will not be 100% accurate since there is no invalidation apart from the 12 hour refresh.
+	 *
+	 * @return array Of metrics or empty if no metrics were available.
+	 *      @type int $clicks Number of free clicks.
+	 *      @type int $impressions NUmber of free impressions.
+	 *
+	 * @throws Exception When unable to get data.
+	 */
+	public function get_cached_free_listing_metrics(): array {
+		$value = $this->transients->get( TransientsInterface::FREE_LISTING_METRICS );
+
+		if ( $value === null ) {
+			$value = $this->get_free_listing_metrics();
+			$this->transients->set( TransientsInterface::FREE_LISTING_METRICS, $value, HOUR_IN_SECONDS * 12 );
+		}
+
+		return $value;
 	}
 
 	/**

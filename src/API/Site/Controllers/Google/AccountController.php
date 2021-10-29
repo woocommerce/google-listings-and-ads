@@ -87,11 +87,15 @@ class AccountController extends BaseController {
 	protected function get_connect_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$next = $request->get_param( 'next' );
-				$path = $next === 'setup-mc' ? '/google/setup-mc' : '/google/settings&subpath=/reconnect-accounts';
+				$next       = $request->get_param( 'next' );
+				$login_hint = $request->get_param( 'login_hint' ) ?: '';
+				$path       = $next === 'setup-mc' ? '/google/setup-mc' : '/google/settings&subpath=/reconnect-accounts';
 
 				return [
-					'url' => $this->connection->connect( admin_url( "admin.php?page=wc-admin&path={$path}" ) ),
+					'url' => $this->connection->connect(
+						admin_url( "admin.php?page=wc-admin&path={$path}" ),
+						$login_hint
+					),
 				];
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
@@ -106,13 +110,18 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connect_params(): array {
 		return [
-			'context' => $this->get_context_param( [ 'default' => 'view' ] ),
-			'next'    => [
+			'context'    => $this->get_context_param( [ 'default' => 'view' ] ),
+			'next'       => [
 				'description'       => __( 'Indicate the next page name to map the redirect URI when back from Google authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => 'setup-mc',
 				'enum'              => [ 'setup-mc', 'reconnect' ],
 				'validate_callback' => 'rest_validate_request_arg',
+			],
+			'login_hint' => [
+				'description'       => __( 'Indicate the Google account to suggest for authorization.', 'google-listings-and-ads' ),
+				'type'              => 'string',
+				'validate_callback' => 'is_email',
 			],
 		];
 	}

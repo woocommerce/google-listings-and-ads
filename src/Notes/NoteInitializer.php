@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Notes;
+use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
@@ -97,7 +98,11 @@ class NoteInitializer implements Deactivateable, InstallableInterface, Service, 
 	 * Delete the notes cron job and all notes.
 	 */
 	public function deactivate(): void {
-		$this->action_scheduler->cancel( self::CRON_HOOK );
+		try {
+			$this->action_scheduler->cancel( self::CRON_HOOK );
+		} catch ( ActionSchedulerException $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+		}
 
 		// Ensure all note names are deleted
 		if ( class_exists( Notes::class ) ) {

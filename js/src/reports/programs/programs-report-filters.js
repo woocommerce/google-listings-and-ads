@@ -11,7 +11,7 @@ import {
 // https://github.com/woocommerce/woocommerce-admin/issues/6890
 // https://github.com/woocommerce/woocommerce-admin/issues/6062
 // import { ReportFilters } from '@woocommerce/components';
-import { getSetting } from '@woocommerce/wc-admin-settings'; // eslint-disable-line import/no-unresolved, @woocommerce/dependency-group
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved, @woocommerce/dependency-group
 // The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
 // See https://github.com/woocommerce/woocommerce-admin/issues/7781
 

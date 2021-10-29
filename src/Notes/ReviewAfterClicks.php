@@ -59,12 +59,12 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	}
 
 	/**
-	 * Possibly add the note.
+	 * Get the note entry.
 	 *
 	 * @throws Exception When unable to get clicks data.
 	 */
 	public function get_entry(): NoteEntry {
-		$clicks_count = $this->get_cached_free_listing_clicks();
+		$clicks_count = $this->get_free_listing_clicks_count();
 
 		// Round to nearest 100
 		$clicks_count_rounded = floor( $clicks_count / 100 ) * 100;
@@ -82,8 +82,6 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 		);
 		$note->set_content_data( (object) [] );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
-		$note->set_layout( 'plain' );
-		$note->set_image( '' );
 		$note->set_name( $this->get_name() );
 		$note->set_source( $this->get_slug() );
 		$this->add_leave_review_note_action( $note );
@@ -106,37 +104,27 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 			return false;
 		}
 
-		$clicks_count = $this->get_cached_free_listing_clicks();
-		if ( $clicks_count <= 100 ) {
-			return false;
-		}
-
-		return true;
+		$clicks_count = $this->get_free_listing_clicks_count();
+		return $clicks_count > 100;
 	}
 
 	/**
-	 * Get number of free listing clicks, cached for current request.
+	 * Get free listing clicks count.
 	 *
-	 * Will return 0 if account is note connected.
-	 *
-	 * @throws Exception When unable to get clicks data.
+	 * Will return 0 if account is not connected.
 	 *
 	 * @return int
+	 *
+	 * @throws Exception When unable to get data.
 	 */
-	protected function get_cached_free_listing_clicks(): int {
-		static $clicks = null;
-
-		if ( $clicks !== null ) {
-			return $clicks;
-		}
-
-		// Ensure MC is connected before running any queries
+	protected function get_free_listing_clicks_count(): int {
 		if ( ! $this->merchant_center->is_connected() ) {
-			$clicks = 0;
-		} else {
-			$clicks = $this->merchant_metrics->get_free_listing_clicks();
+			return 0;
 		}
 
-		return $clicks;
+		$metrics = $this->merchant_metrics->get_cached_free_listing_metrics();
+
+		return empty( $metrics ) ? 0 : $metrics['clicks'];
 	}
+
 }

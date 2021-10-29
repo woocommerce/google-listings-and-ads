@@ -3,6 +3,7 @@ const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extrac
 const path = require( 'path' );
 
 const requestToExternal = ( request ) => {
+	// Opt-out WordPress packages.
 	// The following default externals are bundled for compatibility with older versions of WP
 	// Note CSS for specific components is bundled via admin/assets/src/index.scss
 	// WP 5.4 is the min version for <Card* />, <TabPanel />
@@ -15,14 +16,21 @@ const requestToExternal = ( request ) => {
 		return false;
 	}
 
+	// Opt-in WooCommerce packages.
+	// To switch to opt-out, we would have to use '@woocommerce/dependency-extraction-webpack-plugin'.
 	const wcDepMap = {
 		'@woocommerce/components': [ 'wc', 'components' ],
 		'@woocommerce/navigation': [ 'wc', 'navigation' ],
 		// Since WooCommerce 5.8, the Settings store no longer contains "countries", "currency" and "adminURL",
-		// to be able to fetch that, we use unpublished `@woocommerce/wc-admin-settings` package.
-		// It's delivered with WC, so we use DEWP to import it.
-		// See https://github.com/woocommerce/woocommerce-admin/issues/7781
-		'@woocommerce/wc-admin-settings': [ 'wc', 'wcSettings' ],
+		// to be able to fetch that, we use unpublished `'@woocommerce/settings': 'wc-settings` package.
+		// It's delivered with WC, so we use Dependency Extraction Webpack Plugin to import it.
+		// See https://github.com/woocommerce/woocommerce-admin/issues/7781,
+		// https://github.com/woocommerce/woocommerce-admin/issues/7810
+		// Please note, that this is NOT https://www.npmjs.com/package/@woocommerce/settings,
+		// or https://github.com/woocommerce/woocommerce-admin/tree/main/packages/wc-admin-settings
+		// but https://github.com/woocommerce/woocommerce-gutenberg-products-block/blob/trunk/assets/js/settings/shared/index.ts
+		// (at an unknown version).
+		'@woocommerce/settings': [ 'wc', 'wcSettings' ],
 	};
 
 	return wcDepMap[ request ];
@@ -32,7 +40,7 @@ const requestToHandle = ( request ) => {
 	const wcHandleMap = {
 		'@woocommerce/components': 'wc-components',
 		'@woocommerce/navigation': 'wc-navigation',
-		'@woocommerce/wc-admin-settings': 'wc-settings',
+		'@woocommerce/settings': 'wc-settings',
 	};
 
 	return wcHandleMap[ request ];
