@@ -78,22 +78,25 @@ abstract class AbstractActionSchedulerJob implements ActionSchedulerJobInterface
 	 * @throws Exception If an error occurs.
 	 */
 	public function handle_process_items_action( array $items ) {
-		$this->monitor->validate_failure_rate( $this, $this->get_process_item_hook(), [ $items ] );
+		$process_hook = $this->get_process_item_hook();
+		$process_args = [ $items ];
+
+		$this->monitor->validate_failure_rate( $this, $process_hook, $process_args );
 		if ( $this->retry_on_timeout ) {
-			$this->monitor->attach_timeout_monitor();
+			$this->monitor->attach_timeout_monitor( $process_hook, $process_args );
 		}
 
 		try {
 			$this->process_items( $items );
 		} catch ( Exception $exception ) {
 			// reschedule on failure
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $items ] );
+			$this->action_scheduler->schedule_immediate( $process_hook, $process_args );
 
 			// throw the exception again so that it can be logged
 			throw $exception;
 		}
 
-		$this->monitor->detach_timeout_monitor();
+		$this->monitor->detach_timeout_monitor( $process_hook, $process_args );
 	}
 
 	/**
