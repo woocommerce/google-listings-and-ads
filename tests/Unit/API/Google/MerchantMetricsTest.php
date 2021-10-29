@@ -60,11 +60,11 @@ class MerchantMetricsTest extends UnitTest {
 		         ->method( 'getResults' )
 		         ->willReturn( [ $report_row ] );
 
-		$today = ( new DateTime( 'now', wp_timezone() ) )->format( 'Y-m-d' );
+		$tomorrow = ( new DateTime( 'tomorrow', wp_timezone() ) )->format( 'Y-m-d' );
 
 		$search_request = new SearchRequest();
 		$search_request->setQuery(
-			"SELECT metrics.clicks FROM MerchantPerformanceView WHERE segments.program = 'FREE_PRODUCT_LISTING' AND segments.date BETWEEN '2020-01-01' AND '{$today}'"
+			"SELECT metrics.clicks FROM MerchantPerformanceView WHERE segments.program = 'FREE_PRODUCT_LISTING' AND segments.date BETWEEN '2020-01-01' AND '{$tomorrow}'"
 		);
 
 		$this->service->reports->expects( $this->once() )
