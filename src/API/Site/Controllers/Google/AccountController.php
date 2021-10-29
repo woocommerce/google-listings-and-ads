@@ -26,6 +26,17 @@ class AccountController extends BaseController {
 	protected $connection;
 
 	/**
+	 * Mapping between the client page name and its path.
+	 *
+	 * @var string
+	 */
+	private const NEXT_PATH_MAPPING = [
+		'setup-mc'  => '/google/setup-mc',
+		'setup-ads' => '/google/setup-ads',
+		'reconnect' => '/google/settings&subpath=/reconnect-accounts',
+	];
+
+	/**
 	 * BaseController constructor.
 	 *
 	 * @param RESTServer $server
@@ -89,8 +100,7 @@ class AccountController extends BaseController {
 			try {
 				$next       = $request->get_param( 'next' );
 				$login_hint = $request->get_param( 'login_hint' ) ?: '';
-				$path       = $next === 'setup-mc' ? '/google/setup-mc' : '/google/settings&subpath=/reconnect-accounts';
-
+				$path       = self::NEXT_PATH_MAPPING[ $next ];
 				return [
 					'url' => $this->connection->connect(
 						admin_url( "admin.php?page=wc-admin&path={$path}" ),
@@ -114,8 +124,8 @@ class AccountController extends BaseController {
 			'next'       => [
 				'description'       => __( 'Indicate the next page name to map the redirect URI when back from Google authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
-				'default'           => 'setup-mc',
-				'enum'              => [ 'setup-mc', 'reconnect' ],
+				'default'           => array_key_first( self::NEXT_PATH_MAPPING ),
+				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'login_hint' => [
