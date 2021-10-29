@@ -15,16 +15,18 @@ const ConnectedIconLabel = ( props ) => {
 	const { className } = props;
 
 	return (
-		<div className={ classnames( 'gla-connected-icon-label', className ) }>
-			<Flex align="center" gap={ 1 }>
-				<FlexItem>
-					<GridiconCheckmarkCircle />
-				</FlexItem>
-				<FlexItem>
-					{ __( 'Connected', 'google-listings-and-ads' ) }
-				</FlexItem>
-			</Flex>
-		</div>
+		<Flex
+			className={ classnames( 'gla-connected-icon-label', className ) }
+			align="center"
+			gap={ 1 }
+		>
+			<FlexItem>
+				<GridiconCheckmarkCircle />
+			</FlexItem>
+			<FlexItem>
+				{ __( 'Connected', 'google-listings-and-ads' ) }
+			</FlexItem>
+		</Flex>
 	);
 };
 
