@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
@@ -26,19 +27,18 @@ const readMoreLink = (
  * Renders an AccountCard based on Google appearance for requesting Google authorization from user.
  *
  * @param {Object} props React props.
- * @param {import('.~/hooks/useGoogleAuthorization').NextPageName} props.nextPageName Indicate the next page name to map the redirect URI when back from Google authorization.
  * @param {string} [props.additionalScopeEmail] Specify the email to be requested additional scopes. Set this prop only if wants to request a partial oauth to Google.
  * @param {boolean} [props.disabled=false] Whether display in disabled style and disable all controllable elements within this component.
  */
 export default function AuthorizeGoogleAccountCard( {
-	nextPageName,
 	additionalScopeEmail,
 	disabled = false,
 } ) {
+	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const isAskingScope = Boolean( additionalScopeEmail );
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, { loading, data } ] = useGoogleAuthorization(
-		nextPageName,
+		pageName,
 		additionalScopeEmail
 	);
 

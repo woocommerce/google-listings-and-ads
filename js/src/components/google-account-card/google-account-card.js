@@ -1,7 +1,6 @@
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import AppSpinner from '.~/components/app-spinner';
 import AccountCard from '.~/components/account-card';
@@ -21,13 +20,11 @@ export default function GoogleAccountCard( { disabled = false } ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
-	const nextPageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const additionalScopeEmail =
 		isConnected && ! scope.glaRequired ? google.email : undefined;
 
 	return (
 		<AuthorizeGoogleAccountCard
-			nextPageName={ nextPageName }
 			additionalScopeEmail={ additionalScopeEmail }
 			disabled={ disabled }
 		/>
