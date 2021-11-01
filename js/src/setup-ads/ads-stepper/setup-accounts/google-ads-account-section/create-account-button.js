@@ -16,7 +16,7 @@ import AppButton from '.~/components/app-button';
  *
  * @param {Object} props React props.
  * @param {() => boolean|void} [props.onBeforeAskTerms] Called before showing the terms agreement modal.
- *     Return `true` to interrupt the ask for terms agreement and the subsequent process.
+ *     Return `false` to interrupt the ask for terms agreement and the subsequent process.
  * @param {Function} [props.onCreateAccount] Called after the user accept the terms agreement.
  */
 const CreateAccountButton = ( props ) => {
