@@ -2,13 +2,14 @@
  * Internal dependencies
  */
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import ConnectedIconLabel from '.~/components/connected-icon-label';
 
 export default function ConnectedGoogleAccountCard( { googleAccount } ) {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
-			hideIcon
 			description={ googleAccount.email }
+			indicator={ <ConnectedIconLabel /> }
 		/>
 	);
 }
