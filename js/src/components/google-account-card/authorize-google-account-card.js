@@ -105,7 +105,6 @@ export default function AuthorizeGoogleAccountCard( {
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE }
 			disabled={ disabled }
-			hideIcon
 			alignIcon="top"
 			description={ description }
 			alignIndicator="top"
