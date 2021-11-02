@@ -92,7 +92,6 @@ class ReviewAfterClicks extends AbstractNote implements MerchantCenterAwareInter
 	/**
 	 * Checks if a note can and should be added.
 	 *
-	 * - checks that the plugin is setup
 	 * - checks there is more than 100 clicks
 	 *
 	 * @throws Exception When unable to get clicks data.

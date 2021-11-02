@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
@@ -33,10 +34,11 @@ export default function AuthorizeGoogleAccountCard( {
 	additionalScopeEmail,
 	disabled = false,
 } ) {
+	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const isAskingScope = Boolean( additionalScopeEmail );
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, { loading, data } ] = useGoogleAuthorization(
-		'setup-mc',
+		pageName,
 		additionalScopeEmail
 	);
 
