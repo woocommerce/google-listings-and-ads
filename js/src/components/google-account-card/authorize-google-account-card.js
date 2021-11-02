@@ -9,19 +9,11 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
+import readMoreLink from './read-more-link';
 import './authorize-google-account-card.scss';
-
-const readMoreLink = (
-	<AppDocumentationLink
-		context="setup-mc-accounts"
-		linkId="required-google-permissions"
-		href="https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions"
-	/>
-);
 
 /**
  * Renders an AccountCard based on Google appearance for requesting Google authorization from user.

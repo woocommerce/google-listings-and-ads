@@ -12,7 +12,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import AppButton from '.~/components/app-button';
-import AppDocumentationLink from '.~/components/app-documentation-link';
+import readMoreLink from './read-more-link';
 
 export default function ConnectGoogleAccountCard( { disabled } ) {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
@@ -55,13 +55,7 @@ export default function ConnectGoogleAccountCard( { disabled } ) {
 									'google-listings-and-ads'
 								),
 								{
-									link: (
-										<AppDocumentationLink
-											context="setup-mc-accounts"
-											linkId="required-google-permissions"
-											href="https://docs.woocommerce.com/document/google-listings-and-ads/#required-google-permissions"
-										/>
-									),
+									link: readMoreLink,
 								}
 							) }
 						</em>
