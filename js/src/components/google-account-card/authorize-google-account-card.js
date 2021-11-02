@@ -23,7 +23,6 @@ import './authorize-google-account-card.scss';
  */
 export default function AuthorizeGoogleAccountCard( { additionalScopeEmail } ) {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
-	const isAskingScope = Boolean( additionalScopeEmail );
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, { loading, data } ] = useGoogleAuthorization(
 		pageName,
@@ -74,7 +73,7 @@ export default function AuthorizeGoogleAccountCard( { additionalScopeEmail } ) {
 			indicator={
 				<AppButton
 					isSecondary
-					isDestructive={ isAskingScope }
+					isDestructive
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
 					text={ __(
