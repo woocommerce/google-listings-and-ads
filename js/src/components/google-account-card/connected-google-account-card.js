@@ -8,11 +8,11 @@ import { __ } from '@wordpress/i18n';
  */
 import { glaData } from '.~/constants';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import AppButton from '.~/components/app-button';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import Section from '.~/wcdl/section';
-import AppButton from '../app-button';
 
 export default function ConnectedGoogleAccountCard( { googleAccount } ) {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
