@@ -7,12 +7,10 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
 import readMoreLink from './read-more-link';
+import useGoogleConnectFlow from './use-google-connect-flow';
 import './authorize-google-account-card.scss';
 
 /**
@@ -22,27 +20,9 @@ import './authorize-google-account-card.scss';
  * @param {string} [props.additionalScopeEmail] Specify the email to be requested additional scopes. Set this prop only if wants to request a partial oauth to Google.
  */
 export default function AuthorizeGoogleAccountCard( { additionalScopeEmail } ) {
-	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
-	const { createNotice } = useDispatchCoreNotices();
-	const [ fetchGoogleConnect, { loading, data } ] = useGoogleAuthorization(
-		pageName,
+	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow(
 		additionalScopeEmail
 	);
-
-	const handleConnectClick = async () => {
-		try {
-			const { url } = await fetchGoogleConnect();
-			window.location.href = url;
-		} catch ( error ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to connect your Google account. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		}
-	};
 
 	return (
 		<AccountCard
@@ -80,7 +60,7 @@ export default function AuthorizeGoogleAccountCard( { additionalScopeEmail } ) {
 						'Allow full access',
 						'google-listings-and-ads'
 					) }
-					onClick={ handleConnectClick }
+					onClick={ handleConnect }
 				/>
 			}
 		/>
