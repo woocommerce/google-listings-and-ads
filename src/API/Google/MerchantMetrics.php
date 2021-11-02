@@ -87,7 +87,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 		$report_row = $response->getResults()[0];
 
 		return [
-			'clicks' => (int) $report_row->getMetrics()->getClicks(),
+			'clicks'      => (int) $report_row->getMetrics()->getClicks(),
 			'impressions' => (int) $report_row->getMetrics()->getImpressions(),
 		];
 	}
