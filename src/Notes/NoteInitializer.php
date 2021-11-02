@@ -7,6 +7,7 @@ use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerException;
 use Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler\ActionSchedulerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Activateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -22,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class NoteInitializer implements Deactivateable, InstallableInterface, Service, Registerable {
+class NoteInitializer implements Activateable, Deactivateable, InstallableInterface, Service, Registerable {
 
 	use ValidateInterface;
 
@@ -81,12 +82,28 @@ class NoteInitializer implements Deactivateable, InstallableInterface, Service, 
 	}
 
 	/**
-	 * Check that note cron job exists when plugin is first installed or is updated.
+	 * Activate the service.
+	 *
+	 * @return void
+	 */
+	public function activate(): void {
+		$this->maybe_add_cron_job();
+	}
+
+	/**
+	 * Run's when plugin is installed or updated.
 	 *
 	 * @param string $old_version Previous version before updating.
 	 * @param string $new_version Current version after updating.
 	 */
 	public function install( string $old_version, string $new_version ): void {
+		$this->maybe_add_cron_job();
+	}
+
+	/**
+	 * Add notes cron job if it doesn't already exist.
+	 */
+	protected function maybe_add_cron_job(): void {
 		if ( ! $this->action_scheduler->has_scheduled_action( self::CRON_HOOK ) ) {
 			$this->action_scheduler->schedule_recurring( time(), DAY_IN_SECONDS, self::CRON_HOOK );
 		}
