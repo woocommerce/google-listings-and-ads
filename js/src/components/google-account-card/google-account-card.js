@@ -23,10 +23,7 @@ export default function GoogleAccountCard( { disabled = false } ) {
 
 	if ( isConnected && ! scope.glaRequired ) {
 		return (
-			<AuthorizeGoogleAccountCard
-				additionalScopeEmail={ google.email }
-				disabled={ disabled }
-			/>
+			<AuthorizeGoogleAccountCard additionalScopeEmail={ google.email } />
 		);
 	}
 
