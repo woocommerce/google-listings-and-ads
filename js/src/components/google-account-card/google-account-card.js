@@ -6,6 +6,7 @@ import AppSpinner from '.~/components/app-spinner';
 import AccountCard from '.~/components/account-card';
 import AuthorizeGoogleAccountCard from './authorize-google-account-card';
 import ConnectedGoogleAccountCard from './connected-google-account-card';
+import ConnectGoogleAccountCard from './connect-google-account-card';
 
 export default function GoogleAccountCard( { disabled = false } ) {
 	const { google, scope, hasFinishedResolution } = useGoogleAccount();
@@ -20,13 +21,14 @@ export default function GoogleAccountCard( { disabled = false } ) {
 		return <ConnectedGoogleAccountCard googleAccount={ google } />;
 	}
 
-	const additionalScopeEmail =
-		isConnected && ! scope.glaRequired ? google.email : undefined;
+	if ( isConnected && ! scope.glaRequired ) {
+		return (
+			<AuthorizeGoogleAccountCard
+				additionalScopeEmail={ google.email }
+				disabled={ disabled }
+			/>
+		);
+	}
 
-	return (
-		<AuthorizeGoogleAccountCard
-			additionalScopeEmail={ additionalScopeEmail }
-			disabled={ disabled }
-		/>
-	);
+	return <ConnectGoogleAccountCard disabled={ disabled } />;
 }
