@@ -15,7 +15,7 @@ import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
  *
  * The `handleConnect` handler is meant to be used in button click handler. Upon button click, the handler will:
  *
- * 1. Call `fetchGoogleConnect` from `useGoogleAuthorization` hook to get the Google OAUth URL.
+ * 1. Call `fetchGoogleConnect` from `useGoogleAuthorization` hook to get the Google OAuth URL.
  * 2. Redirect the browser to the URL.
  * 3. If there is an error in the above process, it will display an error notice.
  *
