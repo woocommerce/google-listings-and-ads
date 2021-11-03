@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
 
@@ -19,14 +18,14 @@ import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
  * 2. Redirect the browser to the URL.
  * 3. If there is an error in the above process, it will display an error notice.
  *
+ * @param {'setup-mc'|'reconnect'} pageName Indicate the next page name to map the redirect URI when back from Google authorization.
  * @param {string} [loginHint] Specify the email to be requested additional scopes. Set this parameter only if wants to request a partial oauth to Google.
  * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#login-hint
  * @return {Array} `[ handleConnect, fetchResult ]`
  * 		- `handleConnect` is meant to be used as button click handler.
  * 		- `fetchResult` is the same returned object from `useApiFetchCallback`.
  */
-const useGoogleConnectFlow = ( loginHint ) => {
-	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
+const useGoogleConnectFlow = ( pageName, loginHint ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchGoogleConnect, fetchResult ] = useGoogleAuthorization(
 		pageName,

@@ -25,6 +25,7 @@ export default function RequestFullAccessGoogleAccountCard( {
 } ) {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow(
+		pageName,
 		additionalScopeEmail
 	);
 

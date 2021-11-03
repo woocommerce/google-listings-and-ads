@@ -15,7 +15,9 @@ import useGoogleConnectFlow from './use-google-connect-flow';
 
 export default function ConnectGoogleAccountCard( { disabled } ) {
 	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
-	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow();
+	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow(
+		pageName
+	);
 
 	return (
 		<AccountCard
