@@ -247,7 +247,7 @@ class CouponHelper implements Service {
 	 *
 	 * @return string
 	 */
-	public function get_channel_visibility( WC_Coupon $coupon ): ?string {
+	public function get_channel_visibility( WC_Coupon $coupon ): string {
 		$visibility = $this->meta_handler->get_visibility( $coupon );
 
 		if ( empty( $visibility ) ) {

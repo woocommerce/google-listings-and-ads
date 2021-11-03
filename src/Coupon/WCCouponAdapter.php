@@ -68,12 +68,17 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	public function mapTypes( $array ) {
 		if ( empty( $array['wc_coupon'] ) ||
 			! $array['wc_coupon'] instanceof WC_Coupon ) {
-			throw InvalidValue::not_instance_of( WC_Coupon::class, 'wc_coupon' );
+				throw InvalidValue::not_instance_of( WC_Coupon::class, 'wc_coupon' );
 		}
 
 		$wc_coupon          = $array['wc_coupon'];
 		$this->wc_coupon_id = $wc_coupon->get_id();
-		$this->map_woocommerce_coupon( $wc_coupon );
+			$this->map_woocommerce_coupon( $wc_coupon );
+
+		// Promotion stored in Google can only be soft-deleted to keep historical records.
+		// Hence, instead of 'delete', we use update API to update the promotion with effective dates expired.
+		// And we need to regenerate an expired the promotion structure based on WooCommerce coupon source,
+		// before the coupon is completely deleted from WooCommerce store db.
 		if ( ! empty( $array['delete'] ) && $array['delete'] === true ) {
 			$this->disable_promotion( $wc_coupon );
 		}
@@ -252,7 +257,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		$wc_product_catetories = $wc_coupon->get_product_categories();
 		if ( ! empty( $wc_product_catetories ) ) {
 			$str_product_categories  =
-				WCProductAdapter::convert_product_types( $wc_product_catetories );
+			WCProductAdapter::convert_product_types( $wc_product_catetories );
 			$has_product_restriction = true;
 			$this->setProductType( $str_product_categories );
 		}
@@ -260,7 +265,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		$wc_excluded_product_catetories = $wc_coupon->get_excluded_product_categories();
 		if ( ! empty( $wc_excluded_product_catetories ) ) {
 			$str_product_categories  =
-				WCProductAdapter::convert_product_types( $wc_excluded_product_catetories );
+			WCProductAdapter::convert_product_types( $wc_excluded_product_catetories );
 			$has_product_restriction = true;
 			$this->setProductTypeExclusion( $str_product_categories );
 		}
@@ -295,15 +300,15 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	}
 
 	/**
-	 * Disable promotion shared in Google.
+	 * Disable promotion shared in Google by only updating promotion effective end_date
+	 * to make the promotion expired.
 	 *
 	 * @param WC_Coupon $wc_coupon
 	 */
 	protected function disable_promotion( WC_Coupon $wc_coupon ) {
 		$start_date = $this->get_wc_coupon_start_date( $wc_coupon );
-		// Set promotion to be disabled in 5 mins.
+		// Set promotion to be disabled immediately.
 		$end_date = new WC_DateTime();
-		$end_date->add( new DateInterval( 'PT5M' ) );
 
 		// If this coupon is scheduled in the future, disable it right after start date.
 		if ( $start_date >= $end_date ) {

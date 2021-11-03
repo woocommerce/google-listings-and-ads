@@ -24,7 +24,6 @@ use WC_DateTime;
 use WC_Product;
 use WC_Product_Variable;
 use WC_Product_Variation;
-use function Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\json_encode;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -118,6 +117,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		$this->map_wc_product_id()
 			 ->map_wc_general_attributes()
+			 ->map_product_categories()
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
 			 ->map_wc_availability()
 			 ->map_wc_product_shipping()
@@ -176,7 +176,15 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		if ( $this->is_variation() ) {
 			$this->setItemGroupId( $this->parent_wc_product->get_id() );
 		}
+		return $this;
+	}
 
+	/**
+	 * Map WooCommerce product categories to Google product types.
+	 *
+	 * @return $this
+	 */
+	protected function map_product_categories() {
 		// set product type using merchants defined product categories
 		$base_product_id      = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
 		$product_category_ids = wc_get_product_cat_ids( $base_product_id );
@@ -193,10 +201,8 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 			);
 			$this->setProductTypes( $google_product_types );
 		}
-
 		return $this;
 	}
-
 	/**
 	 * Covert WooCommerce product categories to product_type, which follows Google requirements:
 	 * https://support.google.com/merchants/answer/6324406?hl=en#
@@ -226,14 +232,14 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return string
 	 */
 	protected static function get_product_type_by_id( int $category_id ): string {
-		$categorie_names = [];
+		$category_names = [];
 		do {
 			$term = get_term_by( 'id', $category_id, 'product_cat', 'ARRAY_A' );
-			array_push( $categorie_names, $term['name'] );
+			array_push( $category_names, $term['name'] );
 			$category_id = $term['parent'];
 		} while ( ! empty( $term['parent'] ) );
 
-		return implode( ' > ', array_reverse( $categorie_names ) );
+		return implode( ' > ', array_reverse( $category_names ) );
 	}
 
 	/**

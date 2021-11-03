@@ -257,6 +257,10 @@ class CouponSyncer implements Service {
 					),
 					__METHOD__
 				);
+				// DeleteCouponEntry is generated with promotion effective date expired
+				// when WC coupon is able to be deleted.
+				// To soft-delete the promotion from Google side,
+				// we will update Google promotion with expired effective date.
 				$response = $this->google_service->create( $adapted_coupon );
 				array_push( $deleted_promotions, $response );
 				if ( $wc_coupon_exist ) {

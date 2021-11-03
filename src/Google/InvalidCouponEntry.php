@@ -127,7 +127,7 @@ class InvalidCouponEntry implements JsonSerializable {
 	 *
 	 * @return array
 	 */
-	public function jsonSerialize(): array {
+	public function jsonSerialize(): array { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
 		$data = [
 			'woocommerce_id' => $this->get_wc_coupon_id(),
 			'errors'         => $this->get_errors(),
