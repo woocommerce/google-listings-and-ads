@@ -158,7 +158,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 			if ( $metrics ) {
 				return [
 					'clicks'      => $metrics->getClicks(),
-					'conversions' => $metrics->getConversions(),
+					'conversions' => (int) $metrics->getConversions(),
 					'impressions' => $metrics->getImpressions(),
 				];
 			}
