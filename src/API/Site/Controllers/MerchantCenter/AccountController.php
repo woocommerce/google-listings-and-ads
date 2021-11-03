@@ -166,7 +166,7 @@ class AccountController extends BaseOptionsController {
 						$data = $this->prepare_item_for_response( $account, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->middleware->get_merchant_ids()
+					$this->middleware->get_merchant_accounts()
 				);
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
@@ -572,7 +572,7 @@ class AccountController extends BaseOptionsController {
 		// Maybe the existing account is sub-account!
 		$state                               = $this->account_state->get();
 		$state['set_id']['data']['from_mca'] = false;
-		foreach ( $this->middleware->get_merchant_ids() as $existing_account ) {
+		foreach ( $this->middleware->get_merchant_accounts() as $existing_account ) {
 			if ( $existing_account['id'] === $account_id ) {
 				$state['set_id']['data']['from_mca'] = $existing_account['subaccount'];
 				break;
