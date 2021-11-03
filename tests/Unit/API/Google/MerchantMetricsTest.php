@@ -38,8 +38,6 @@ defined( 'ABSPATH' ) || exit;
  */
 class MerchantMetricsTest extends UnitTest {
 
-	protected const TEST_MERCHANT_ID = 123;
-
 	/**
 	 * Runs before each test is executed.
 	 */
@@ -53,12 +51,13 @@ class MerchantMetricsTest extends UnitTest {
 		$this->metrics = new MerchantMetrics( $this->shopping_client, $this->ads_client, new WP(), new Transients() );
 		$this->metrics->set_options_object( $this->options );
 
-		$this->options->method( 'get_merchant_id' )->willReturn( self::TEST_MERCHANT_ID );
-
 		$this->tomorrow = ( new DateTime( 'tomorrow', wp_timezone() ) )->format( 'Y-m-d' );
 	}
 
 	public function test_get_free_listing_metrics() {
+		$test_merchant_id = 432;
+		$this->options->method( 'get_merchant_id' )->willReturn( $test_merchant_id );
+
 		$metrics = new Metrics();
 		$metrics->setClicks( 3 );
 		$metrics->setImpressions( 123 );
@@ -78,7 +77,7 @@ class MerchantMetricsTest extends UnitTest {
 
 		$this->shopping_client->reports->expects( $this->once() )
 		                               ->method( 'search' )
-		                               ->with( self::TEST_MERCHANT_ID, $search_request )
+		                               ->with( $test_merchant_id, $search_request )
 		                               ->willReturn( $response );
 
 		$this->assertSame(
@@ -91,6 +90,8 @@ class MerchantMetricsTest extends UnitTest {
 	}
 
 	public function test_get_free_listing_metrics_with_no_results() {
+		$this->options->method( 'get_merchant_id' )->willReturn( 1 );
+
 		$response = $this->createMock( SearchResponse::class );
 		$response->expects( $this->once() )
 		         ->method( 'getResults' )
@@ -104,7 +105,7 @@ class MerchantMetricsTest extends UnitTest {
 	}
 
 	public function test_get_free_listing_metrics_with_no_merchant_id() {
-		$this->options->method( 'get_merchant_id' )->willReturn( null );
+		$this->options->method( 'get_merchant_id' )->willReturn( 0 );
 
 		$this->assertSame( [], $this->metrics->get_free_listing_metrics() );
 	}
