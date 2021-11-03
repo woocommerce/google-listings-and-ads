@@ -10,10 +10,10 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
 import Section from '.~/wcdl/section';
-import useGoogleConnectFlow from './use-google-connect-flow';
+import useSwitchGoogleAccount from './useSwitchGoogleAccount';
 
 export default function ConnectedGoogleAccountCard( { googleAccount } ) {
-	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow();
+	const [ handleSwitch, loading ] = useSwitchGoogleAccount();
 
 	return (
 		<AccountCard
@@ -24,12 +24,12 @@ export default function ConnectedGoogleAccountCard( { googleAccount } ) {
 			<Section.Card.Footer>
 				<AppButton
 					isLink
-					disabled={ loading || data }
+					disabled={ loading }
 					text={ __(
 						'Or, connect to a different Google account',
 						'google-listings-and-ads'
 					) }
-					onClick={ handleConnect }
+					onClick={ handleSwitch }
 				/>
 			</Section.Card.Footer>
 		</AccountCard>
