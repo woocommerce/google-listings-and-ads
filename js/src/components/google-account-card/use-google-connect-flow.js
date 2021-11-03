@@ -21,13 +21,13 @@ import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
  * @param {'setup-mc'|'reconnect'} pageName Indicate the next page name to map the redirect URI when back from Google authorization.
  * @param {string} [loginHint] Specify the email to be requested additional scopes. Set this parameter only if wants to request a partial oauth to Google.
  * @see https://developers.google.com/identity/protocols/oauth2/openid-connect#login-hint
- * @return {Array} `[ handleConnect, fetchResult ]`
+ * @return {Array} `[ handleConnect, result ]`
  * 		- `handleConnect` is meant to be used as button click handler.
- * 		- `fetchResult` is the same returned object from `useApiFetchCallback`.
+ * 		- `result` is the same returned object from `useApiFetchCallback`.
  */
 const useGoogleConnectFlow = ( pageName, loginHint ) => {
 	const { createNotice } = useDispatchCoreNotices();
-	const [ fetchGoogleConnect, fetchResult ] = useGoogleAuthorization(
+	const [ fetchGoogleConnect, result ] = useGoogleAuthorization(
 		pageName,
 		loginHint
 	);
@@ -47,7 +47,7 @@ const useGoogleConnectFlow = ( pageName, loginHint ) => {
 		}
 	};
 
-	return [ handleConnect, fetchResult ];
+	return [ handleConnect, result ];
 };
 
 export default useGoogleConnectFlow;
