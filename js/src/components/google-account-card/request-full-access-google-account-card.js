@@ -7,6 +7,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import readMoreLink from './read-more-link';
@@ -22,6 +23,7 @@ import './request-full-access-google-account-card.scss';
 export default function RequestFullAccessGoogleAccountCard( {
 	additionalScopeEmail,
 } ) {
+	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow(
 		additionalScopeEmail
 	);
@@ -58,6 +60,10 @@ export default function RequestFullAccessGoogleAccountCard( {
 					isDestructive
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
+					eventProps={ {
+						context: pageName,
+						action: 'scope',
+					} }
 					text={ __(
 						'Allow full access',
 						'google-listings-and-ads'

@@ -7,12 +7,14 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import readMoreLink from './read-more-link';
 import useGoogleConnectFlow from './use-google-connect-flow';
 
 export default function ConnectGoogleAccountCard( { disabled } ) {
+	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow();
 
 	return (
@@ -48,6 +50,10 @@ export default function ConnectGoogleAccountCard( { disabled } ) {
 					disabled={ disabled }
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
+					eventProps={ {
+						context: pageName,
+						action: 'authorization',
+					} }
 					text={ __( 'Connect', 'google-listings-and-ads' ) }
 					onClick={ handleConnect }
 				/>
