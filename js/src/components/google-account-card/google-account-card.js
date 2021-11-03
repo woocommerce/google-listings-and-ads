@@ -4,7 +4,7 @@
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import AppSpinner from '.~/components/app-spinner';
 import AccountCard from '.~/components/account-card';
-import AuthorizeGoogleAccountCard from './authorize-google-account-card';
+import RequestFullAccessGoogleAccountCard from './request-full-access-google-account-card';
 import ConnectedGoogleAccountCard from './connected-google-account-card';
 import ConnectGoogleAccountCard from './connect-google-account-card';
 
@@ -23,7 +23,9 @@ export default function GoogleAccountCard( { disabled = false } ) {
 
 	if ( isConnected && ! scope.glaRequired ) {
 		return (
-			<AuthorizeGoogleAccountCard additionalScopeEmail={ google.email } />
+			<RequestFullAccessGoogleAccountCard
+				additionalScopeEmail={ google.email }
+			/>
 		);
 	}
 

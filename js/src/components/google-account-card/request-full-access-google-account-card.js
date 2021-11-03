@@ -11,15 +11,17 @@ import AppButton from '.~/components/app-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import readMoreLink from './read-more-link';
 import useGoogleConnectFlow from './use-google-connect-flow';
-import './authorize-google-account-card.scss';
+import './request-full-access-google-account-card.scss';
 
 /**
- * Renders an AccountCard based on Google appearance for requesting Google authorization from user.
+ * Renders an AccountCard based on Google appearance for requesting full access permission from user.
  *
  * @param {Object} props React props.
  * @param {string} props.additionalScopeEmail Specify the email to be requested additional permission scopes to Google.
  */
-export default function AuthorizeGoogleAccountCard( { additionalScopeEmail } ) {
+export default function RequestFullAccessGoogleAccountCard( {
+	additionalScopeEmail,
+} ) {
 	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow(
 		additionalScopeEmail
 	);
