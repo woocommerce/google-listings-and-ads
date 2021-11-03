@@ -103,8 +103,7 @@ class ReviewAfterConversions extends AbstractNote implements MerchantCenterAware
 	/**
 	 * Checks if a note can and should be added.
 	 *
-	 * - checks that the plugin is setup
-	 * - checks there is more than 10 ad conversions
+	 * - checks there are more than 10 ad conversions
 	 *
 	 * @throws Exception When unable to get data.
 	 *
