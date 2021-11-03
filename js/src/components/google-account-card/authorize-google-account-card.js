@@ -17,7 +17,7 @@ import './authorize-google-account-card.scss';
  * Renders an AccountCard based on Google appearance for requesting Google authorization from user.
  *
  * @param {Object} props React props.
- * @param {string} [props.additionalScopeEmail] Specify the email to be requested additional scopes. Set this prop only if wants to request a partial oauth to Google.
+ * @param {string} props.additionalScopeEmail Specify the email to be requested additional permission scopes to Google.
  */
 export default function AuthorizeGoogleAccountCard( { additionalScopeEmail } ) {
 	const [ handleConnect, { loading, data } ] = useGoogleConnectFlow(
