@@ -3,14 +3,26 @@
  */
 import toScopeState from './toScopeState';
 
-const SCOPE = {
-	// Manage product listings and accounts for Google Shopping
-	CONTENT: 'https://www.googleapis.com/auth/content',
-	// Manage new site verifications with Google
-	SITE_VERIFICATION_VERIFY_ONLY:
-		'https://www.googleapis.com/auth/siteverification.verify_only',
-	// Manage AdWords campaigns
-	AD_WORDS: 'https://www.googleapis.com/auth/adwords',
+// Simulate the scopes array returned from Google API.
+const genScopes = ( ...names ) => {
+	const scopeMap = new Map( [
+		// Manage product listings and accounts for Google Shopping
+		[ 'content', 'https://www.googleapis.com/auth/content' ],
+		// Manage AdWords campaigns
+		[ 'ad_words', 'https://www.googleapis.com/auth/adwords' ],
+		// Manage new site verifications with Google
+		[
+			'site_verification_verify_only',
+			'https://www.googleapis.com/auth/siteverification.verify_only',
+		],
+	] );
+
+	return names.reduce( ( acc, name ) => {
+		if ( scopeMap.has( name ) ) {
+			acc.push( scopeMap.get( name ) );
+		}
+		return acc;
+	}, [] );
 };
 
 describe( 'toScopeState', () => {
@@ -21,15 +33,15 @@ describe( 'toScopeState', () => {
 	let allScopes;
 
 	beforeEach( () => {
-		contentScopes = [ SCOPE.CONTENT ];
-		siteVerificationScopes = [ SCOPE.SITE_VERIFICATION_VERIFY_ONLY ];
-		gmcScopes = [ SCOPE.CONTENT, SCOPE.SITE_VERIFICATION_VERIFY_ONLY ];
-		adsScopes = [ SCOPE.AD_WORDS ];
-		allScopes = [
-			SCOPE.CONTENT,
-			SCOPE.SITE_VERIFICATION_VERIFY_ONLY,
-			SCOPE.AD_WORDS,
-		];
+		contentScopes = genScopes( 'content' );
+		siteVerificationScopes = genScopes( 'site_verification_verify_only' );
+		gmcScopes = genScopes( 'content', 'site_verification_verify_only' );
+		adsScopes = genScopes( 'ad_words' );
+		allScopes = genScopes(
+			'content',
+			'site_verification_verify_only',
+			'ad_words'
+		);
 	} );
 
 	it( 'should return an object structure containing three properties', () => {
