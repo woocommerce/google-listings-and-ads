@@ -32,20 +32,16 @@ export default function ConnectedGoogleAccountCard( { googleAccount } ) {
 	] = useGoogleAuthorization( pageName );
 
 	const handleSwitch = async () => {
-		let notice;
+		const { notice } = await createNotice(
+			'info',
+			__(
+				'Disconnecting your current Google account, please wait…',
+				'google-listings-and-ads'
+			)
+		);
 
 		try {
-			const result = await createNotice(
-				'info',
-				__(
-					'Disconnecting your current Google account, please wait…',
-					'google-listings-and-ads'
-				)
-			);
-			notice = result.notice;
-
 			await fetchGoogleDisconnect();
-
 			const { url } = await fetchGoogleConnect();
 			window.location.href = url;
 		} catch ( error ) {
