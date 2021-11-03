@@ -10,14 +10,14 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Options;
  */
 interface TransientsInterface {
 
-	public const MC_STATUSES          = 'mc_statuses';
-	public const FREE_LISTING_METRICS = 'free_listing_metrics';
 	public const ADS_METRICS          = 'ads_metrics';
+	public const FREE_LISTING_METRICS = 'free_listing_metrics';
+	public const MC_STATUSES          = 'mc_statuses';
 
 	public const VALID_OPTIONS = [
+		self::ADS_METRICS          => true,
 		self::FREE_LISTING_METRICS => true,
 		self::MC_STATUSES          => true,
-		self::ADS_METRICS          => true,
 	];
 
 	/**
