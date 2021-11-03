@@ -6,6 +6,7 @@ import { useSelect } from '@wordpress/data';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import { STORE_KEY } from '.~/data/constants';
 import toScopeState from '.~/utils/toScopeState';
 import useJetpackAccount from './useJetpackAccount';
@@ -22,7 +23,7 @@ const useGoogleAccount = () => {
 			if ( ! jetpack || jetpack.active === 'no' ) {
 				return {
 					google: undefined,
-					scope: toScopeState(),
+					scope: toScopeState( glaData.adsSetupComplete ),
 					isResolving: isResolvingJetpack,
 					hasFinishedResolution: hasFinishedResolutionJetpack,
 				};
@@ -37,7 +38,7 @@ const useGoogleAccount = () => {
 
 			return {
 				google,
-				scope: toScopeState( google?.scope ),
+				scope: toScopeState( glaData.adsSetupComplete, google?.scope ),
 				isResolving: isResolving( 'getGoogleAccount' ),
 				hasFinishedResolution: hasFinishedResolution(
 					'getGoogleAccount'

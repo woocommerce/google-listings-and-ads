@@ -1,8 +1,3 @@
-/**
- * Internal dependencies
- */
-import { glaData } from '.~/constants';
-
 const SCOPE = {
 	// Manage product listings and accounts for Google Shopping
 	CONTENT: 'https://www.googleapis.com/auth/content',
@@ -25,14 +20,12 @@ const SCOPE = {
 /**
  * Convert the authorization scopes to a state that whether the minimum required scopes for each function are met.
  *
+ * @param {boolean} adsSetupComplete Whether Google Ads setup has been completed.
+ *     It should be the `glaData.adsSetupComplete` value imported from {@link .~/constants.glaData}.
  * @param {Array<string>} [scopes=[]] User authorized scopes returned from Google OAuth API.
- * @param {boolean} [adsSetupComplete=glaData.adsSetupComplete] Whether Google Ads setup has been completed.
  * @return {ScopeState} A state that whether the minimum required scopes for each function are met.
  */
-export default function toScopeState(
-	scopes = [],
-	adsSetupComplete = glaData.adsSetupComplete
-) {
+export default function toScopeState( adsSetupComplete, scopes = [] ) {
 	const state = {
 		adsRequired: scopes.includes( SCOPE.AD_WORDS ),
 	};
