@@ -285,6 +285,18 @@ class AccountController extends BaseOptionsController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
+			'name'       => [
+				'type'        => 'string',
+				'description' => __( 'The Merchant Center Account name.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'required'    => false,
+			],
+			'domain'     => [
+				'type'        => 'string',
+				'description' => __( 'The domain registered with the Merchant Center Account.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
 		];
 	}
 
