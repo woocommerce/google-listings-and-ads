@@ -102,23 +102,33 @@ class ActionSchedulerJobMonitor implements Service {
 	public function reschedule_if_timeout( $action_id, $error ) {
 		if ( ! empty( $error ) && $this->is_timeout_error( $error ) ) {
 			$action = $this->action_scheduler->fetch_action( $action_id );
+			$hook   = $action->get_hook();
+			$args   = $action->get_args();
 
-			// Confirm that the job is monitored by this instance.
+			// Confirm that the job is initiated by GLA and monitored by this instance.
 			// The `self::attach_timeout_monitor` method will register the job's hook and arguments hash into the $monitored_hooks variable.
-			if ( ! isset( $this->monitored_hooks[ self::get_job_hash( $action->get_hook(), $action->get_args() ) ] ) ) {
+			if ( $this->get_slug() !== $action->get_group() || ! $this->is_monitored_for_timeout( $hook, $args ) ) {
 				return;
 			}
 
-			// Check if job is initiated by GLA, and if they have not failed more than the allowed threshold.
-			if ( $this->get_slug() === $action->get_group() && ! $this->is_failure_rate_above_threshold( $action->get_hook(), $action->get_args() ) ) {
+			// Check if the job has not failed more than the allowed threshold.
+			if ( $this->is_failure_rate_above_threshold( $hook, $args ) ) {
 				do_action(
 					'woocommerce_gla_debug_message',
-					sprintf( 'The %s job has failed due to a timeout error. Rescheduling...', $action->get_hook() ),
+					sprintf( 'The %s job failed too many times, not rescheduling.', $hook ),
 					__METHOD__
 				);
 
-				$this->action_scheduler->schedule_immediate( $action->get_hook(), $action->get_args() );
+				return;
 			}
+
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf( 'The %s job has failed due to a timeout error, rescheduling...', $hook ),
+				__METHOD__
+			);
+
+			$this->action_scheduler->schedule_immediate( $hook, $args );
 		}
 	}
 
@@ -197,6 +207,20 @@ class ActionSchedulerJobMonitor implements Service {
 	 */
 	protected static function get_job_hash( string $hook, ?array $args = null ): string {
 		return hash( 'crc32b', $hook . json_encode( $args ) );
+	}
+
+	/**
+	 * Determines whether the given set of job hook and arguments is monitored for timeout.
+	 *
+	 * @param string     $hook
+	 * @param array|null $args
+	 *
+	 * @return bool
+	 *
+	 * @since x.x.x
+	 */
+	protected function is_monitored_for_timeout( string $hook, ?array $args = null ): bool {
+		return isset( $this->monitored_hooks[ self::get_job_hash( $hook, $args ) ] );
 	}
 
 }
