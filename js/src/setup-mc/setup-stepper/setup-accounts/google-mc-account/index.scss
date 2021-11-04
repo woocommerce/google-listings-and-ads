@@ -1,7 +1,7 @@
 .gla-google-mc-account {
 	.wcdl-section {
 		header {
-			box-shadow: inset 0px 1px 0px #DDDDDD;
+			box-shadow: inset 0 1px 0 #ddd;
 			padding-top: var(--main-gap);
 
 			.components-tip {
@@ -24,7 +24,7 @@
 					/*
 					* Make the "Source" text color blue.
 					*/
-					color: #007CBA;
+					color: #007cba;
 
 					.components-popover {
 						&__content {
