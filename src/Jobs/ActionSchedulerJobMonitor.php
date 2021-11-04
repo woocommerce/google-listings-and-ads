@@ -111,6 +111,12 @@ class ActionSchedulerJobMonitor implements Service {
 
 			// Check if job is initiated by GLA, and if they have not failed more than the allowed threshold.
 			if ( $this->get_slug() === $action->get_group() && ! $this->is_failure_rate_above_threshold( $action->get_hook(), $action->get_args() ) ) {
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'The %s job has failed due to a timeout error. Rescheduling...', $action->get_hook() ),
+					__METHOD__
+				);
+
 				$this->action_scheduler->schedule_immediate( $action->get_hook(), $action->get_args() );
 			}
 		}
