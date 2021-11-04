@@ -32,7 +32,7 @@ const GoogleMCAccount = ( props ) => {
 								tooltip: (
 									<AppTooltip
 										text={ __(
-											'Google Internal Data, July 2020, based on an A/B test comparing performance for users seeing the updated layout on the Shopping property vs a control group not seeing the new experience',
+											'Google Internal Data, July 2020, based on an A/B test comparing performance for users seeing the updated layout on the Shopping property vs a control group not seeing the new experience.',
 											'google-listings-and-ads'
 										) }
 									></AppTooltip>
