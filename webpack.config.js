@@ -76,7 +76,17 @@ const webpackConfig = {
 		alias: {
 			'.~': path.resolve( process.cwd(), 'js/src/' ),
 		},
-		// Resolve jsx/tsx files for `@woocommerce/data`...`/with-plugins-hydration`
+		/**
+		 * Resolve jsx/tsx files for `@woocommerce/data@1.3.*`.
+		 *
+		 * It could be removed if one of conditions is met:
+		 *   - The L-2 support version no longer covers 1.3.* versions.
+		 *   - `@woocommerce/data` is imported from DEWP instead.
+		 *
+		 * Checking method:
+		 * Whether the module not found error of the below path is no longer occur after `npm start`.
+		 *   - `./node_modules/@woocommerce/data/build/plugins/with-plugins-hydration.js`
+		 */
 		extensions: [ '.ts', '.tsx', '.js', '.jsx', '.json' ],
 	},
 	plugins: [
