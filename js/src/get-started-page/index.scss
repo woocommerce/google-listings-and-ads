@@ -2,7 +2,7 @@
 	max-width: 824px;
 	margin: 0 auto;
 
-	.components-card {
+	> * {
 		margin-bottom: calc(var(--main-gap) * 1.5);
 	}
 }
