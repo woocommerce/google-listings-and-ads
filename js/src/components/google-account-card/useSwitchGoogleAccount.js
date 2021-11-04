@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { glaData } from '.~/constants';
 import { API_NAMESPACE } from '.~/data/constants';
 import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
@@ -28,7 +27,6 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  * 		- `loading` is a state to indicate that the process is running.
  */
 const useSwitchGoogleAccount = () => {
-	const pageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 
 	/**
@@ -49,7 +47,7 @@ const useSwitchGoogleAccount = () => {
 	const [
 		fetchGoogleConnect,
 		{ loading: loadingGoogleConnect, data: dataGoogleConnect },
-	] = useGoogleAuthorization( pageName );
+	] = useGoogleAuthorization( 'setup-mc' );
 
 	const handleSwitch = async () => {
 		const { notice } = await createNotice(
