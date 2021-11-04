@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Variati
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\RESTControllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandler;
@@ -50,6 +51,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as Cont
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as ReviewAfterClicksNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
@@ -120,6 +122,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		OptionsInterface::class       => true,
 		TransientsInterface::class    => true,
 		ProductFeed::class            => true,
+		ReviewAfterClicksNote::class  => true,
 		RESTControllers::class        => true,
 		Service::class                => true,
 		Settings::class               => true,
@@ -234,6 +237,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
 		$this->share_with_tags( CompleteSetupNote::class );
+		$this->share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( SetupCampaignNote::class );
 		$this->share_with_tags( SetupCampaign2Note::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class, Note::class );

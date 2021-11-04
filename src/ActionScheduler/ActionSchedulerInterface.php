@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler;
 
+use ActionScheduler_Action;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -130,5 +132,16 @@ interface ActionSchedulerInterface {
 	 * @throws ActionSchedulerException If no matching action found.
 	 */
 	public function cancel( string $hook, $args = [] ): string;
+
+	/**
+	 * Retrieve an action.
+	 *
+	 * @param int $action_id Action ID.
+	 *
+	 * @return ActionScheduler_Action
+	 *
+	 * @since x.x.x
+	 */
+	public function fetch_action( int $action_id ): ActionScheduler_Action;
 
 }

@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query;
 
+use DateTime;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -27,7 +29,13 @@ trait ReportQueryTrait {
 		}
 
 		if ( ! empty( $args['after'] ) && ! empty( $args['before'] ) ) {
-			$this->where( 'segments.date', [ $args['after'], $args['before'] ], 'BETWEEN' );
+			$after  = $args['after'];
+			$before = $args['before'];
+
+			$this->where_date_between(
+				$after instanceof DateTime ? $after->format( 'Y-m-d' ) : $after,
+				$before instanceof DateTime ? $before->format( 'Y-m-d' ) : $before
+			);
 		}
 
 		if ( ! empty( $args['ids'] ) ) {

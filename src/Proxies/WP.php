@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use DateTimeZone;
 use WP as WPCore;
 use WP_Error;
 use WP_Post;
@@ -137,5 +138,32 @@ class WP {
 	 */
 	public function wp_timezone_string(): string {
 		return wp_timezone_string();
+	}
+
+	/**
+	 * Retrieves the timezone from site settings as a `DateTimeZone` object.
+	 *
+	 * Timezone can be based on a PHP timezone string or a ±HH:MM offset.
+	 *
+	 * @return DateTimeZone Timezone object.
+	 *
+	 * @since x.x.x
+	 */
+	public function wp_timezone(): DateTimeZone {
+		return wp_timezone();
+	}
+
+	/**
+	 * Convert float number to format based on the locale.
+	 *
+	 * @param float $number   The number to convert based on locale.
+	 * @param int   $decimals Optional. Precision of the number of decimal places. Default 0.
+	 *
+	 * @return string Converted number in string format.
+	 *
+	 * @since x.x.x
+	 */
+	public function number_format_i18n( float $number, int $decimals = 0 ): string {
+		return number_format_i18n( $number, $decimals );
 	}
 }
