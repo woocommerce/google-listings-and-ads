@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\ActionScheduler;
 
+use ActionScheduler as ActionSchedulerCore;
+use ActionScheduler_Action;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 
@@ -167,6 +169,19 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 		}
 
 		return $action_id;
+	}
+
+	/**
+	 * Retrieve an action.
+	 *
+	 * @param int $action_id Action ID.
+	 *
+	 * @return ActionScheduler_Action
+	 *
+	 * @since x.x.x
+	 */
+	public function fetch_action( int $action_id ): ActionScheduler_Action {
+		return ActionSchedulerCore::store()->fetch_action( $action_id );
 	}
 
 }
