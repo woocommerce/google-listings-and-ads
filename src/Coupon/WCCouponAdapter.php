@@ -75,17 +75,8 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		$this->wc_coupon_id = $wc_coupon->get_id();
 			$this->map_woocommerce_coupon( $wc_coupon );
 
-		// Promotion stored in Google can only be soft-deleted to keep historical records.
-		// Hence, instead of 'delete', we use update API to update the promotion with effective dates expired.
-		// And we need to regenerate an expired the promotion structure based on WooCommerce coupon source,
-		// before the coupon is completely deleted from WooCommerce store db.
-		if ( ! empty( $array['delete'] ) && $array['delete'] === true ) {
-			$this->disable_promotion( $wc_coupon );
-		}
-
 		// Google doesn't expect extra fields, so it's best to remove them
 		unset( $array['wc_coupon'] );
-		unset( $array['delete'] );
 
 		parent::mapTypes( $array );
 	}
@@ -305,7 +296,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 	 *
 	 * @param WC_Coupon $wc_coupon
 	 */
-	protected function disable_promotion( WC_Coupon $wc_coupon ) {
+	public function disable_promotion( WC_Coupon $wc_coupon ) {
 		$start_date = $this->get_wc_coupon_start_date( $wc_coupon );
 		// Set promotion to be disabled immediately.
 		$end_date = new WC_DateTime();

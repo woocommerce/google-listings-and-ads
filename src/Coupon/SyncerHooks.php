@@ -162,12 +162,7 @@ class SyncerHooks implements Service, Registerable {
 			// Delete the coupon from Google Merchant Center if it's already synced BUT it is not sync ready after the edit.
 			$coupon_to_delete = new DeleteCouponEntry(
 				$coupon_id,
-				new WCCouponAdapter(
-					[
-						'wc_coupon' => $coupon,
-						'delete'    => true,
-					]
-				),
+				$this->get_coupon_to_delete( $coupon ),
 				$this->coupon_helper->get_synced_google_ids( $coupon )
 			);
 			$this->delete_coupon_job->schedule(
@@ -202,15 +197,30 @@ class SyncerHooks implements Service, Registerable {
 			$this->coupon_helper->is_coupon_synced( $coupon ) ) {
 			$this->delete_requests_map[ $coupon_id ] = new DeleteCouponEntry(
 				$coupon_id,
-				new WCCouponAdapter(
-					[
-						'wc_coupon' => $coupon,
-						'delete'    => true,
-					]
-				),
+				$this->get_coupon_to_delete( $coupon ),
 				$this->coupon_helper->get_synced_google_ids( $coupon )
 			);
 		}
+	}
+
+	/**
+	 * @param WC_Coupon $coupon
+	 *
+	 * @return WCCouponAdapter
+	 */
+	protected function get_coupon_to_delete( WC_Coupon $coupon ): WCCouponAdapter {
+		$adapted_coupon_to_delete = new WCCouponAdapter(
+			[
+				'wc_coupon' => $coupon,
+			]
+		);
+
+		// Promotion stored in Google can only be soft-deleted to keep historical records.
+		// Instead of 'delete', we update the promotion with effective dates expired.
+		// Here we reset an expiring date based on WooCommerce coupon source.
+		$adapted_coupon_to_delete->disable_promotion( $coupon );
+
+		return $adapted_coupon_to_delete;
 	}
 
 	/**

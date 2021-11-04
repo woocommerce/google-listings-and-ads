@@ -71,9 +71,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
     public function test_trash_simple_coupon_schedules_delete_job() {
         $coupon = $this->create_ready_to_delete_coupon();
 
+        $adapted_coupon = new WCCouponAdapter( [ 'wc_coupon' => $coupon ] );
+        $adapted_coupon->disable_promotion( $coupon );
         $expected_coupon_entry = new DeleteCouponEntry( 
             $coupon->get_id(),
-            new WCCouponAdapter( ['wc_coupon' => $coupon, 'delete' => true ] ),
+            $adapted_coupon,
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
@@ -85,9 +87,11 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
     public function test_delete_simple_coupon_schedules_delete_job() {
         $coupon = $this->create_ready_to_delete_coupon();
 
+        $adapted_coupon = new WCCouponAdapter( [ 'wc_coupon' => $coupon ] );
+        $adapted_coupon->disable_promotion( $coupon );
         $expected_coupon_entry = new DeleteCouponEntry( 
             $coupon->get_id(),
-            new WCCouponAdapter( ['wc_coupon' => $coupon, 'delete' => true ] ),
+            $adapted_coupon,
             ['US' => 'google_id'] );
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )

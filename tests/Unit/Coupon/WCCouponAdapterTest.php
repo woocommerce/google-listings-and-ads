@@ -150,9 +150,10 @@ class WCCouponAdapterTest extends UnitTest {
 	        [
 	            'wc_coupon'     => $coupon,
 	            'targetCountry' => 'US',
-	            'delete'        => true,
 	        ]
 	        );
+	    $adapted_coupon->disable_promotion( $coupon );
+	    
 	    $this->assertEquals(
 	        '2022-01-01T02:03:45+00:00/2022-01-01T02:03:46+00:00',
 	        $adapted_coupon->getPromotionEffectiveDates() );
