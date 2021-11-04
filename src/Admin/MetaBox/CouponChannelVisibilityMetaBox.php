@@ -126,18 +126,20 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	 * @return array
 	 */
 	protected function get_view_context( WP_Post $post, array $args ): array {
-		$coupon_id = absint( $post->ID );
-		$coupon    = $this->coupon_helper->get_wc_coupon( $coupon_id );
+		$coupon_id      = absint( $post->ID );
+		$coupon         = $this->coupon_helper->get_wc_coupon( $coupon_id );
+		$target_country = $this->merchant_center->get_main_target_country();
 
 		return [
-			'field_id'           => $this->get_visibility_field_id(),
-			'coupon_id'          => $coupon_id,
-			'coupon'             => $coupon,
-			'channel_visibility' => $this->coupon_helper->get_channel_visibility( $coupon ),
-			'sync_status'        => $this->meta_handler->get_sync_status( $coupon ),
-			'issues'             => $this->coupon_helper->get_validation_errors( $coupon ),
-			'is_setup_complete'  => $this->merchant_center->is_setup_complete(),
-			'get_started_url'    => $this->get_start_url(),
+			'field_id'             => $this->get_visibility_field_id(),
+			'coupon_id'            => $coupon_id,
+			'coupon'               => $coupon,
+			'channel_visibility'   => $this->coupon_helper->get_channel_visibility( $coupon ),
+			'sync_status'          => $this->meta_handler->get_sync_status( $coupon ),
+			'issues'               => $this->coupon_helper->get_validation_errors( $coupon ),
+			'is_setup_complete'    => $this->merchant_center->is_setup_complete(),
+			'is_channel_supported' => $this->merchant_center->is_promotion_supported_country( $target_country ),
+			'get_started_url'      => $this->get_start_url(),
 		];
 	}
 
@@ -162,7 +164,7 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 		static $already_updated = [];
 
 		$field_id = $this->get_visibility_field_id();
-		// phpcs:disable WordPress.Security.NonceVerification
+        // phpcs:disable WordPress.Security.NonceVerification
 		// nonce is verified by self::verify_nonce
 		if ( ! $this->verify_nonce() || ! isset( $_POST[ $field_id ] ) || isset( $already_updated[ $coupon_id ] ) ) {
 			return;
@@ -175,9 +177,9 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 
 		try {
 			$visibility = empty( $_POST[ $field_id ] ) ?
-				ChannelVisibility::cast( ChannelVisibility::DONT_SYNC_AND_SHOW ) :
-				ChannelVisibility::cast( sanitize_key( $_POST[ $field_id ] ) );
-			// phpcs:enable WordPress.Security.NonceVerification
+			ChannelVisibility::cast( ChannelVisibility::DONT_SYNC_AND_SHOW ) :
+			ChannelVisibility::cast( sanitize_key( $_POST[ $field_id ] ) );
+            // phpcs:enable WordPress.Security.NonceVerification
 
 			$this->meta_handler->update_visibility( $coupon, $visibility );
 

@@ -41,6 +41,12 @@ $is_setup_complete = $this->is_setup_complete;
 
 /**
  *
+ * @var bool
+ */
+$is_channel_supported = $this->is_channel_supported;
+
+/**
+ *
  * @var string
  */
 $get_started_url = $this->get_started_url;
@@ -57,15 +63,15 @@ if ( SyncStatus::HAS_ERRORS === $this->sync_status ) {
 } elseif ( SyncStatus::SYNCED === $this->sync_status ){
     $is_synced = true;
     $sync_status = __( 'Sent to Google', 'google-listings-and-ads' );
-} elseif ( ! is_null( $this->sync_status ) ) {  
+} elseif ( ! is_null( $this->sync_status ) ) {
     $sync_status = ucfirst( str_replace( '-', ' ', $this->sync_status ) );
 }
 
 $show_status = $channel_visibility ===
-    ChannelVisibility::SYNC_AND_SHOW && ( ! is_null( $this->sync_status ) );
+ChannelVisibility::SYNC_AND_SHOW && ( ! is_null( $this->sync_status ) );
 
 $check_email_notice = __( 'Check your email for updates.', 'google-listings-and-ads' );
-    
+
 /**
  *
  * @var array $issues
@@ -79,8 +85,15 @@ if ( ! CouponSyncer::is_coupon_supported( $coupon ) ) {
     $channel_visibility = ChannelVisibility::DONT_SYNC_AND_SHOW;
     $show_status = false;
     $input_disabled = true;
-    $input_description = __( 
+    $input_description = __(
         $coupon->get_virtual() ? 'This coupon cannot be shown on public channel because it is hidden from your store.' : 'This coupon cannot be shown because the coupon restrictions are not supported to share in Google channel.',
+        'google-listings-and-ads' );
+} else if (! $is_channel_supported ) {
+    $channel_visibility = ChannelVisibility::DONT_SYNC_AND_SHOW;
+    $show_status = false;
+    $input_disabled = true;
+    $input_description = __(
+        'This coupon visibility channel has not been supported in your store base country yet.',
         'google-listings-and-ads' );
 }
 
