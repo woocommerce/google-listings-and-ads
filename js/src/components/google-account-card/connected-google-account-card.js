@@ -13,7 +13,7 @@ import Section from '.~/wcdl/section';
 import useSwitchGoogleAccount from './useSwitchGoogleAccount';
 
 export default function ConnectedGoogleAccountCard( { googleAccount } ) {
-	const [ handleSwitch, loading ] = useSwitchGoogleAccount();
+	const [ handleSwitch, { loading } ] = useSwitchGoogleAccount();
 
 	return (
 		<AccountCard

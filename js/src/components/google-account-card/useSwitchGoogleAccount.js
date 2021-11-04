@@ -22,7 +22,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  * 4. Redirect the browser to the URL.
  * 5. If there is an error in the above process, it will display an error notice.
  *
- * @return {Array} `[ handleSwitch, loading ]`
+ * @return {Array} `[ handleSwitch, { loading } ]`
  * 		- `handleSwitch` is meant to be used as button click handler.
  * 		- `loading` is a state to indicate that the process is running.
  */
@@ -77,7 +77,7 @@ const useSwitchGoogleAccount = () => {
 	const loading =
 		loadingGoogleDisconnect || loadingGoogleConnect || dataGoogleConnect;
 
-	return [ handleSwitch, loading ];
+	return [ handleSwitch, { loading } ];
 };
 
 export default useSwitchGoogleAccount;
