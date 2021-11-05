@@ -34,7 +34,7 @@ const getPanelToggleHandler = ( trackName, id ) => ( isOpened ) => {
 export default function FaqsPanel( { trackName, faqItems } ) {
 	return (
 		<Panel
-			className="gla-fags-panel"
+			className="gla-faqs-panel"
 			header={ __(
 				'Frequently asked questions',
 				'google-listings-and-ads'
