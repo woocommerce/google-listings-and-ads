@@ -12,12 +12,9 @@
 					* 	fill: $alert-yellow;
 					*
 					* See: https://github.com/WordPress/gutenberg/blob/ba5f6d061934625027beab9d2bf600ae42a63be9/packages/components/src/tip/style.scss.
-					*
-					* We change the fill color to $gray-700 so that it is same as Tip component text color:
-					* See: https://github.com/WordPress/gutenberg/blob/ba5f6d061934625027beab9d2bf600ae42a63be9/packages/components/src/tip/style.scss#L3
 					*/
 					align-self: flex-start;
-					fill: $gray-700;
+					fill: currentColor;
 				}
 
 				.app-tooltip__children-container {
