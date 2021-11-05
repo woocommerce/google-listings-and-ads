@@ -131,6 +131,23 @@ const faqItems = [
 		),
 	},
 	{
+		trackId: 'will-my-deals-and-promotions-display-on-google',
+		question: __(
+			'Will my deals and promotions display on Google?',
+			'google-listings-and-ads'
+		),
+		answer: (
+			<>
+				<p>
+					{ __(
+						'To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select "Show coupon on Google" to enable. This is currently available in the US only.',
+						'google-listings-and-ads'
+					) }
+				</p>
+			</>
+		),
+	},
+	{
 		trackId: 'what-are-smart-shopping-campaigns',
 		question: __(
 			'What are Smart Shopping campaigns?',
