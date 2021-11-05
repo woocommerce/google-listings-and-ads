@@ -37,8 +37,8 @@ defined( 'ABSPATH' ) || exit;
 class WCProductAdapter extends GoogleProduct implements Validatable {
 	use PluginHelper;
 
-	public const AVAILABILITY_IN_STOCK     = 'in stock';
-	public const AVAILABILITY_OUT_OF_STOCK = 'out of stock';
+	public const AVAILABILITY_IN_STOCK     = 'in_stock';
+	public const AVAILABILITY_OUT_OF_STOCK = 'out_of_stock';
 	public const AVAILABILITY_BACKORDER    = 'backorder';
 	public const AVAILABILITY_PREORDER     = 'preorder';
 
