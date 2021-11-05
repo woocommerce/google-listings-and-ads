@@ -2,7 +2,11 @@
 	max-width: 824px;
 	margin: 0 auto;
 
-	.components-card {
+	> * {
 		margin-bottom: calc(var(--main-gap) * 1.5);
+	}
+
+	.gla-get-started-notice {
+		margin: 0 0 $grid-unit-40;
 	}
 }
