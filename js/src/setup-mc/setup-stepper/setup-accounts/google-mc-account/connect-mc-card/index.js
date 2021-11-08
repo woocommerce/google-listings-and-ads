@@ -19,6 +19,7 @@ import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import './index.scss';
 
 const ConnectMCCard = ( props ) => {
 	const { onCreateNew = () => {} } = props;
@@ -80,6 +81,7 @@ const ConnectMCCard = ( props ) => {
 
 	return (
 		<AccountCard
+			className="gla-connect-mc-card"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
 			description={ __(
 				'Required to sync products and list on Google Shopping',
