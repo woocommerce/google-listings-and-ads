@@ -117,6 +117,7 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 
 		$this->map_wc_product_id()
 			 ->map_wc_general_attributes()
+			 ->map_product_categories()
 			 ->map_wc_product_image( self::IMAGE_SIZE_FULL )
 			 ->map_wc_availability()
 			 ->map_wc_product_shipping()
@@ -175,8 +176,70 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 		if ( $this->is_variation() ) {
 			$this->setItemGroupId( $this->parent_wc_product->get_id() );
 		}
-
 		return $this;
+	}
+
+	/**
+	 * Map WooCommerce product categories to Google product types.
+	 *
+	 * @return $this
+	 */
+	protected function map_product_categories() {
+		// set product type using merchants defined product categories
+		$base_product_id      = $this->is_variation() ? $this->parent_wc_product->get_id() : $this->wc_product->get_id();
+		$product_category_ids = wc_get_product_cat_ids( $base_product_id );
+		if ( ! empty( $product_category_ids ) ) {
+			$google_product_types = self::convert_product_types( $product_category_ids );
+			do_action(
+				'woocommerce_gla_debug_message',
+				sprintf(
+					'Product category (ID: %s): %s.',
+					$base_product_id,
+					json_encode( $google_product_types )
+				),
+				__METHOD__
+			);
+			$this->setProductTypes( $google_product_types );
+		}
+		return $this;
+	}
+	/**
+	 * Covert WooCommerce product categories to product_type, which follows Google requirements:
+	 * https://support.google.com/merchants/answer/6324406?hl=en#
+	 *
+	 * @param int[] $category_ids
+	 *
+	 * @return array
+	 */
+	public static function convert_product_types( $category_ids ): array {
+		$product_types = [];
+		foreach ( array_unique( $category_ids ) as $category_id ) {
+			if ( ! is_int( $category_id ) ) {
+				continue;
+			}
+
+			$product_type = self::get_product_type_by_id( $category_id );
+			array_push( $product_types, $product_type );
+		}
+
+		return $product_types;
+	}
+
+	/**
+	 *
+	 * @param int $category_id
+	 *
+	 * @return string
+	 */
+	protected static function get_product_type_by_id( int $category_id ): string {
+		$category_names = [];
+		do {
+			$term = get_term_by( 'id', $category_id, 'product_cat', 'ARRAY_A' );
+			array_push( $category_names, $term['name'] );
+			$category_id = $term['parent'];
+		} while ( ! empty( $term['parent'] ) );
+
+		return implode( ' > ', array_reverse( $category_names ) );
 	}
 
 	/**
@@ -185,10 +248,18 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 	 * @return $this
 	 */
 	protected function map_wc_product_id(): WCProductAdapter {
-		$offer_id = "{$this->get_slug()}_{$this->wc_product->get_id()}";
-		$this->setOfferId( $offer_id );
-
+		$this->setOfferId( self::get_google_product_offer_id( $this->get_slug(), $this->wc_product->get_id() ) );
 		return $this;
+	}
+
+	/**
+	 *
+	 * @param string $slug
+	 * @param int    $product_id
+	 * @return string
+	 */
+	public static function get_google_product_offer_id( string $slug, int $product_id ): string {
+		return "{$slug}_{$product_id}";
 	}
 
 	/**
