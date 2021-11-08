@@ -18,6 +18,11 @@ const requestToExternal = ( request ) => {
 	const wcDepMap = {
 		'@woocommerce/components': [ 'wc', 'components' ],
 		'@woocommerce/navigation': [ 'wc', 'navigation' ],
+		// Since WooCommerce 5.8, the Settings store no longer contains "countries", "currency" and "adminURL",
+		// to be able to fetch that, we use unpublished `@woocommerce/wc-admin-settings` package.
+		// It's delivered with WC, so we use DEWP to import it.
+		// See https://github.com/woocommerce/woocommerce-admin/issues/7781
+		'@woocommerce/wc-admin-settings': [ 'wc', 'wcSettings' ],
 	};
 
 	return wcDepMap[ request ];
@@ -27,6 +32,7 @@ const requestToHandle = ( request ) => {
 	const wcHandleMap = {
 		'@woocommerce/components': 'wc-components',
 		'@woocommerce/navigation': 'wc-navigation',
+		'@woocommerce/wc-admin-settings': 'wc-settings',
 	};
 
 	return wcHandleMap[ request ];

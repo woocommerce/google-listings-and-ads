@@ -1,0 +1,22 @@
+name: JavaScript Unit Tests
+
+on:
+  push:
+    branches:
+      - trunk
+      - develop
+  pull_request:
+
+jobs:
+  UnitTests:
+    name: JavaScript unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+
+      - name: Run JavaScript unit tests
+        run: npm run test-unit

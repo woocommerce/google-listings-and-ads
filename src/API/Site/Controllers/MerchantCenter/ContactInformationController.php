@@ -5,14 +5,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ResponseFromExceptionTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
 use Google\Service\ShoppingContent\AccountAddress;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
-use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -26,6 +28,8 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class ContactInformationController extends BaseOptionsController {
+
+	use ResponseFromExceptionTrait;
 
 	/**
 	 * @var ContactInformation $contact_information
@@ -93,7 +97,7 @@ class ContactInformationController extends BaseOptionsController {
 					$request
 				);
 			} catch ( MerchantApiException $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -106,16 +110,12 @@ class ContactInformationController extends BaseOptionsController {
 	protected function get_contact_information_endpoint_edit_callback(): callable {
 		return function ( Request $request ) {
 			try {
-				if ( $request->has_param( 'phone_number' ) ) {
-					$this->contact_information->update_phone_number( $request['phone_number'] );
-				}
-
 				return $this->get_contact_information_response(
 					$this->contact_information->update_address_based_on_store_settings(),
 					$request
 				);
 			} catch ( MerchantApiException $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -134,10 +134,9 @@ class ContactInformationController extends BaseOptionsController {
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'phone_number'            => [
-				'type'              => 'string',
-				'description'       => __( 'The phone number associated with the Merchant Center account.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
+				'type'        => 'string',
+				'description' => __( 'The phone number associated with the Merchant Center account.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
 			],
 			'mc_address'              => [
 				'type'        => 'object',
@@ -201,13 +200,7 @@ class ContactInformationController extends BaseOptionsController {
 	 */
 	public function get_update_args(): array {
 		return [
-			'context'      => $this->get_context_param( [ 'default' => 'view' ] ),
-			'phone_number' => [
-				'description'       => __( 'The new phone number to assign to the account.', 'google-listings-and-ads' ),
-				'type'              => [ 'integer', 'string' ],
-				'validate_callback' => $this->get_phone_number_validate_callback(),
-				'sanitize_callback' => $this->get_phone_number_sanitize_callback(),
-			],
+			'context' => $this->get_context_param( [ 'default' => 'view' ] ),
 		];
 	}
 
@@ -231,7 +224,14 @@ class ContactInformationController extends BaseOptionsController {
 		}
 
 		if ( $contact_information instanceof AccountBusinessInformation ) {
-			$phone_number = $contact_information->getPhoneNumber();
+			if ( ! empty( $contact_information->getPhoneNumber() ) ) {
+				try {
+					$phone_number = PhoneNumber::cast( $contact_information->getPhoneNumber() )->get();
+				} catch ( InvalidValue $exception ) {
+					// log and fail silently
+					do_action( 'woocommerce_gla_exception', $exception, __METHOD__ );
+				}
+			}
 
 			if ( $contact_information->getAddress() instanceof AccountAddress ) {
 				$mc_address      = $contact_information->getAddress();
@@ -283,30 +283,5 @@ class ContactInformationController extends BaseOptionsController {
 	 */
 	protected function get_schema_title(): string {
 		return 'merchant_center_contact_information';
-	}
-
-	/**
-	 * Get the callback to sanitize the phone number, leaving only `+` (plus) and numbers.
-	 *
-	 * @return callable
-	 */
-	protected function get_phone_number_sanitize_callback(): callable {
-		return function ( $phone_number ) {
-			return $this->contact_information->sanitize_phone_number( $phone_number );
-		};
-	}
-
-	/**
-	 * Validate that the phone number doesn't contain invalid characters.
-	 * Allowed: ()-.0123456789 and space
-	 *
-	 * @return callable
-	 */
-	protected function get_phone_number_validate_callback() {
-		return function ( $value, $request, $param ) {
-			return $this->contact_information->validate_phone_number( $value )
-				? rest_validate_request_arg( $value, $request, $param )
-				: new WP_Error( 'rest_empty_phone_number', __( 'Invalid phone number.', 'google-listings-and-ads' ) );
-		};
 	}
 }

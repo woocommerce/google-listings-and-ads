@@ -1,0 +1,58 @@
+name: Bundle Size
+
+on:
+  push:
+    branches:
+      - trunk
+      - develop
+  pull_request:
+
+jobs:
+  BundleSize:
+    name: Bundle size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare PHP
+        uses: ./.github/actions/prepare-php
+        with:
+          install-deps: "maybe"
+
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+        with:
+          ignore-scripts: "no"
+
+      - name: Build production bundle
+        run: |
+          echo "::group::Build log"
+          npm run build
+          echo "::endgroup::"
+
+      # Since BundleWatch is having issues when getting some environment variables from GitHub Actions,
+      # it needs some workarounds to specify `CI_COMMIT_SHA`, `CI_BRANCH`, and `CI_BRANCH_BASE` here.
+      # References:
+      # - https://github.com/bundlewatch/bundlewatch/blob/v0.3.2/src/app/config/getCIVars.js#L8-L10
+      # - https://github.com/bundlewatch/bundlewatch/issues/423
+      # - https://github.com/bundlewatch/bundlewatch/issues/220
+      - name: Prepare BundleWatch env values - push
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          BRANCH=$(echo '${{ github.event.ref }}' | sed 's/^refs\/heads\///')
+          echo "CI_BRANCH=$BRANCH" >> $GITHUB_ENV
+          echo "CI_BRANCH_BASE=$BRANCH" >> $GITHUB_ENV
+          echo "CI_COMMIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Prepare BundleWatch env values - pull request
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo "CI_BRANCH=${{ github.head_ref }}" >> $GITHUB_ENV
+          echo "CI_BRANCH_BASE=${{ github.base_ref }}" >> $GITHUB_ENV
+          echo "CI_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+
+      - name: Run BundleWatch
+        env:
+          BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.BUNDLEWATCH_GITHUB_TOKEN }}
+        run: node ./node_modules/bundlewatch/lib/bin/index.js

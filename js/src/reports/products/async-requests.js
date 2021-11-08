@@ -13,9 +13,9 @@ import apiFetch from '@wordpress/api-fetch';
 import { identity } from 'lodash';
 import { getIdsFromQuery } from '@woocommerce/navigation';
 import { NAMESPACE } from '@woocommerce/data';
-
-const variationTitleAttributesSeparator =
-	wcSettings.variationTitleAttributesSeparator;
+import { getSetting } from '@woocommerce/wc-admin-settings'; // eslint-disable-line import/no-unresolved
+// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+// See https://github.com/woocommerce/woocommerce-admin/issues/7781
 
 /**
  * Get a function that accepts ids as they are found in url parameter and
@@ -62,7 +62,7 @@ export const getProductLabels = getRequestByIdString(
  * @return {string} - formatted variation name
  */
 export function getVariationName( { attributes, name } ) {
-	const separator = variationTitleAttributesSeparator;
+	const separator = getSetting( 'variationTitleAttributesSeparator', ' - ' );
 
 	if ( name.indexOf( separator ) > -1 ) {
 		return name;

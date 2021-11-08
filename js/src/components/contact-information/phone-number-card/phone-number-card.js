@@ -12,6 +12,7 @@ import { Spinner } from '@woocommerce/components';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import AppSpinner from '.~/components/app-spinner';
+import VerifyPhoneNumberContent from './verify-phone-number-content';
 import EditPhoneNumberContent from './edit-phone-number-content';
 import './phone-number-card.scss';
 
@@ -24,28 +25,59 @@ const basePhoneNumberCardProps = {
 
 /**
  * @typedef { import(".~/hooks/useGoogleMCPhoneNumber").PhoneNumber } PhoneNumber
- * @typedef { import("./edit-phone-number-content").onPhoneNumberChange } onPhoneNumberChange
  */
 
-function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
+function EditPhoneNumberCard( { phoneNumber, onPhoneNumberVerified } ) {
 	const { loaded, data } = phoneNumber;
-	const cardContent = loaded ? (
-		<EditPhoneNumberContent
-			initCountry={ data.country }
-			initNationalNumber={ data.nationalNumber }
-			onPhoneNumberChange={ onPhoneNumberChange }
-		/>
-	) : (
-		<AppSpinner />
+	const [ verifying, setVerifying ] = useState( false );
+	const [ unverifiedPhoneNumber, setUnverifiedPhoneNumber ] = useState(
+		null
 	);
+
+	let cardContent = <AppSpinner />;
+
+	if ( loaded ) {
+		cardContent = unverifiedPhoneNumber ? (
+			<VerifyPhoneNumberContent
+				{ ...unverifiedPhoneNumber }
+				onVerificationStateChange={ ( isVerifying, isVerified ) => {
+					setVerifying( isVerifying );
+
+					if ( isVerified ) {
+						onPhoneNumberVerified();
+					}
+				} }
+			/>
+		) : (
+			<EditPhoneNumberContent
+				initCountry={ data.country }
+				initNationalNumber={ data.nationalNumber }
+				onSendVerificationCodeClick={ setUnverifiedPhoneNumber }
+			/>
+		);
+	}
+
+	const description = unverifiedPhoneNumber
+		? unverifiedPhoneNumber.display
+		: __(
+				'Please enter a phone number to be used for verification.',
+				'google-listings-and-ads'
+		  );
+
+	const indicator = unverifiedPhoneNumber ? (
+		<AppButton
+			isSecondary
+			text={ __( 'Edit', 'google-listings-and-ads' ) }
+			disabled={ verifying }
+			onClick={ () => setUnverifiedPhoneNumber( null ) }
+		/>
+	) : null;
 
 	return (
 		<AccountCard
 			{ ...basePhoneNumberCardProps }
-			description={ __(
-				'Please enter a phone number to be used for verification.',
-				'google-listings-and-ads'
-			) }
+			description={ description }
+			indicator={ indicator }
 		>
 			<CardDivider />
 			{ cardContent }
@@ -59,27 +91,23 @@ function EditPhoneNumberCard( { phoneNumber, onPhoneNumberChange } ) {
  * @param {Object} props React props.
  * @param {string} props.view The view the card is in.
  * @param {PhoneNumber} props.phoneNumber Phone number data.
- * @param {boolean} [props.isPreview=false] Whether to display as preview UI.
- * @param {boolean|null} [props.initEditing=null] Specify the inital UI state. This prop would be ignored if `isPreview` is true.
+ * @param {boolean|null} [props.initEditing=null] Specify the inital UI state.
  *     `true`: initialize with the editing UI.
  *     `false`: initialize with the viewing UI.
  *     `null`: determine the initial UI state according to the `data.isValid` after the `phoneNumber` loaded.
  * @param {Function} [props.onEditClick] Called when clicking on "Edit" button.
  *     If this callback is omitted, it will enter edit mode when clicking on "Edit" button.
- * @param {onPhoneNumberChange} [props.onPhoneNumberChange] Called when inputs of phone number are changed in edit mode.
+ * @param {Function} [props.onPhoneNumberVerified] Called when the phone number is verified in edit mode.
  */
 export default function PhoneNumberCard( {
 	view,
 	phoneNumber,
-	isPreview = false,
 	initEditing = null,
 	onEditClick,
-	onPhoneNumberChange = noop,
+	onPhoneNumberVerified = noop,
 } ) {
 	const { loaded, data } = phoneNumber;
-	const [ isEditing, setEditing ] = useState(
-		isPreview ? false : initEditing
-	);
+	const [ isEditing, setEditing ] = useState( initEditing );
 
 	// Handle the initial UI state of `initEditing = null`.
 	// The `isEditing` state is on hold. Determine it after the `phoneNumber` loaded.
@@ -100,10 +128,14 @@ export default function PhoneNumberCard( {
 	}
 
 	if ( isEditing ) {
+		const handlePhoneNumberVerified = () => {
+			setEditing( false );
+			onPhoneNumberVerified();
+		};
 		return (
 			<EditPhoneNumberCard
 				phoneNumber={ phoneNumber }
-				onPhoneNumberChange={ onPhoneNumberChange }
+				onPhoneNumberVerified={ handlePhoneNumberVerified }
 			/>
 		);
 	}
@@ -137,7 +169,6 @@ export default function PhoneNumberCard( {
 		<AccountCard
 			{ ...basePhoneNumberCardProps }
 			description={ description }
-			hideIcon={ isPreview }
 			indicator={ indicator }
 		/>
 	);

@@ -24,8 +24,12 @@ export default function DifferentCurrencyNotice( { context } ) {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const { code: storeCurrency } = useStoreCurrency();
 
-	// Do not render if data is not available, or the same currencies are used.
-	if ( ! googleAdsAccount || googleAdsAccount.currency === storeCurrency ) {
+	// Do not render if data is not available, account not connected, or the same currencies are used.
+	if (
+		! googleAdsAccount ||
+		googleAdsAccount.status !== 'connected' ||
+		googleAdsAccount.currency === storeCurrency
+	) {
 		return null;
 	}
 

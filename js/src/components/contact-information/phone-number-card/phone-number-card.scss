@@ -39,4 +39,9 @@
 			border-color: $gray-600;
 		}
 	}
+
+	// Verification method radio
+	.components-radio-control__option:not(:last-child) {
+		margin-bottom: 8px;
+	}
 }

@@ -1,5 +1,29 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.5.1 - 2021-10-13 =
+* Update - Changed minimum version of WordPress to 5.6 and WooCommerce to 5.5.
+* Fix - Change the way of getting WooCommerce admin settings to fix a compatibility issue in WooCommerce 5.8.
+* Tweak - WooCommerce 5.8 compatibility.
+
+= 1.5.0 - 2021-10-01 =
+* Add - Verify user's phone number via SMS or phone call at the last step of the onboarding flow and on the settings page. And update the verified phone number to user's connected Google Merchant Center account.
+* Add - Allow backorder stock availability for products.
+* Add - Set pre-order availability for products using the WooCommerce Pre-Orders extension.
+* Add - Warning notice when the Ads' currency is different from the store's one.
+* Add - Unit tests for the Merchant Google Service class.
+* Fix - Retry Merchant account creation after detecting invalid terms.
+* Fix - Render Ads Account's currency in Dashboard's table.
+* Fix - Don't render `DifferentCurrencyNotice` when the Ads account is disconnected.
+* Fix - Limit the number of synced additional product images to 10.
+* Fix - Split contact information settings page to phone and address settings.
+* Fix - Update phone number and store address pages flow.
+* Fix - Correct spelling/capitalization of "WordPress.com".
+* Fix - PHP notice when creating a product variation.
+* Fix - Bump E2E-related devDeps, bump tested WC version.
+* Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
+* Tweak - Added a few more e2e tests and utils.
+* Tweak - WC 5.7 compatibility.
+
 = 1.4.3 - 2021-09-08 =
 * Fix - PHP notice when creating a product variation.
 * Tweak - Hide channel visibility box and attributes tab if the setup is not completed.

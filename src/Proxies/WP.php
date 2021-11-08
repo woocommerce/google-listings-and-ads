@@ -67,6 +67,15 @@ class WP {
 	}
 
 	/**
+	 * Get the locale of the current user.
+	 *
+	 * @return string
+	 */
+	public function get_user_locale(): string {
+		return get_user_locale();
+	}
+
+	/**
 	 * Run the WP dbDelta() function.
 	 *
 	 * @param string|string[] $sql The query or queries to run.
@@ -124,7 +133,7 @@ class WP {
 	 *
 	 * @return string PHP timezone string or a ±HH:MM offset.
 	 *
-	 * @since x.x.x
+	 * @since 1.5.0
 	 */
 	public function wp_timezone_string(): string {
 		return wp_timezone_string();

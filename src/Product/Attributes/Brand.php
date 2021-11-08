@@ -43,7 +43,7 @@ class Brand extends AbstractAttribute {
 	 *
 	 * @see AttributeInputInterface
 	 *
-	 * @since x.x.x
+	 * @since 1.5.0
 	 */
 	public static function get_input_type(): string {
 		return BrandInput::class;

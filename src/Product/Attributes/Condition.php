@@ -58,7 +58,7 @@ class Condition extends AbstractAttribute implements WithValueOptionsInterface {
 	 *
 	 * @see AttributeInputInterface
 	 *
-	 * @since x.x.x
+	 * @since 1.5.0
 	 */
 	public static function get_input_type(): string {
 		return ConditionInput::class;

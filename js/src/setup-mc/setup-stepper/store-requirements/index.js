@@ -12,7 +12,6 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import { useAppDispatch } from '.~/data';
 import useAdminUrl from '.~/hooks/useAdminUrl';
-import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import useStoreAddress from '.~/hooks/useStoreAddress';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
@@ -29,15 +28,15 @@ export default function StoreRequirements() {
 	const adminUrl = useAdminUrl();
 	const { updateGoogleMCContactInformation, saveSettings } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
-	const { data: initPhoneNumber } = useGoogleMCPhoneNumber();
 	const { data: address } = useStoreAddress();
 	const { settings } = useSettings();
 
+	/**
+	 * Since it still lacking the phone verification state,
+	 * all onboarding accounts are considered unverified phone numbers.
+	 */
+	const [ isPhoneNumberReady, setPhoneNumberReady ] = useState( false );
 	const [ completing, setCompleting ] = useState( false );
-	const [ phoneNumber, setPhoneNumber ] = useState( {
-		isValid: false,
-		isDirty: false,
-	} );
 
 	const handleChangeCallback = ( _, values ) => {
 		saveSettings( values );
@@ -45,12 +44,9 @@ export default function StoreRequirements() {
 
 	const handleSubmitCallback = async () => {
 		try {
-			const { isDirty, countryCallingCode, nationalNumber } = phoneNumber;
-			const args = isDirty ? [ countryCallingCode, nationalNumber ] : [];
-
 			setCompleting( true );
 
-			await updateGoogleMCContactInformation( ...args );
+			await updateGoogleMCContactInformation();
 
 			await apiFetch( {
 				path: '/wc/gla/mc/settings/sync',
@@ -109,10 +105,6 @@ export default function StoreRequirements() {
 				{ ( formProps ) => {
 					const { handleSubmit, isValidForm } = formProps;
 
-					const isPhoneNumberReady = phoneNumber.isDirty
-						? phoneNumber.isValid
-						: initPhoneNumber.isValid;
-
 					const isReadyToComplete =
 						isValidForm &&
 						isPhoneNumberReady &&
@@ -121,8 +113,9 @@ export default function StoreRequirements() {
 					return (
 						<>
 							<ContactInformation
-								view="setup-mc"
-								onPhoneNumberChange={ setPhoneNumber }
+								onPhoneNumberVerified={ () =>
+									setPhoneNumberReady( true )
+								}
 							/>
 							<PreLaunchChecklist formProps={ formProps } />
 							<StepContentFooter>

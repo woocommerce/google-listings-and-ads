@@ -48,6 +48,12 @@ export default function VerificationCodeControl( {
 
 	onCodeChangeRef.current = onCodeChange;
 
+	/**
+	 * Moves focus to the input at given input
+	 * if it exists.
+	 *
+	 * @param {number} targetIdx Index of the node to move the focus to.
+	 */
 	const maybeMoveFocus = ( targetIdx ) => {
 		const node = inputsRef.current[ targetIdx ];
 		if ( node ) {
@@ -56,13 +62,13 @@ export default function VerificationCodeControl( {
 	};
 
 	const handleKeyDown = ( e ) => {
-		const { dataset, selectionStart, value } = e.target;
+		const { dataset, selectionStart, selectionEnd, value } = e.target;
 		const idx = Number( dataset.idx );
 
 		switch ( e.keyCode ) {
 			case KEY_CODE_LEFT:
 			case KEY_CODE_BACKSPACE:
-				if ( selectionStart === 0 ) {
+				if ( selectionStart === 0 && selectionEnd === 0 ) {
 					maybeMoveFocus( idx - 1 );
 				}
 				break;
@@ -75,6 +81,7 @@ export default function VerificationCodeControl( {
 		}
 	};
 
+	// Track the cursor's position.
 	const handleBeforeInput = ( e ) => {
 		cursorRef.current = e.target.selectionStart;
 	};
@@ -103,17 +110,38 @@ export default function VerificationCodeControl( {
 		}
 	};
 
-	useEffect( () => {
-		maybeMoveFocus( 0 );
-	}, [] );
-
+	// Update the inputs' values.
 	useEffect( () => {
 		inputsRef.current.forEach( ( el ) => ( el.value = '' ) );
-		maybeMoveFocus( 0 );
 
 		setDigits( initDigits );
 		onCodeChangeRef.current( toCallbackData( initDigits ) );
 	}, [ resetNeedle ] );
+
+	/**
+	 * Set the focus to the first input if the control's value is (back) at the initial state.
+	 *
+	 * Since the <InputControl> has an internal state management that always controls the actual `value` prop of the <input>,
+	 * the <InputControl> is forced the <input> to be a controlled input.
+	 * When using it, it's always necessary to specify `value` prop from the below <AppInputControl>
+	 * to avoid the warning - A component is changing an uncontrolled input to be controlled.
+	 *
+	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L47-L68
+	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L115-L118
+	 *
+	 * But after specifying the `value` prop,
+	 * the synchronization of external and internal `value` state will depend on whether the input is focused.
+	 * It'd sync external to internal only if the input is not focused.
+	 * So here we await the `digits` is reset back to `initDigits` by above useEffect and sync to internal value,
+	 * then move the focus calling after the synchronization tick finished.
+	 *
+	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L73-L90
+	 */
+	useEffect( () => {
+		if ( digits === initDigits ) {
+			maybeMoveFocus( 0 );
+		}
+	}, [ resetNeedle, digits ] );
 
 	return (
 		<Flex

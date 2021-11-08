@@ -32,9 +32,9 @@ env:
     - WC_LATEST=trunk
   matrix:
     - WP_VERSION="${WP_LATEST}" WC_VERSION="${WC_LATEST}"
-    - WP_VERSION="${WP_LATEST}" WC_VERSION=5.2
-    - WP_VERSION=5.7 WC_VERSION=5.2
-    - WP_VERSION=5.6 WC_VERSION=5.2
+    - WP_VERSION="${WP_LATEST}" WC_VERSION=5.5
+    - WP_VERSION=5.7 WC_VERSION=5.5
+    - WP_VERSION=5.6 WC_VERSION=5.5
 
 # Additional tests
 matrix:

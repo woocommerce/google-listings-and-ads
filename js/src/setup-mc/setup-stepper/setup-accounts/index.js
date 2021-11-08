@@ -45,7 +45,7 @@ const SetupAccounts = ( props ) => {
 					'google-listings-and-ads'
 				) }
 				description={ __(
-					'Connect your Wordpress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.',
+					'Connect your WordPress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.',
 					'google-listings-and-ads'
 				) }
 			/>

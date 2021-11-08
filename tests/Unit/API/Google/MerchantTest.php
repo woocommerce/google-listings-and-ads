@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Exception;
 use Google\Exception as GoogleException;
+use Google\Service\Exception as GoogleServiceException;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountAdsLink;
@@ -18,10 +19,12 @@ use Google\Service\ShoppingContent\Product;
 use Google\Service\ShoppingContent\ProductsListResponse;
 use Google\Service\ShoppingContent\ProductstatusesCustomBatchRequest;
 use Google\Service\ShoppingContent\ProductstatusesCustomBatchResponse;
+use Google\Service\ShoppingContent\RequestPhoneVerificationResponse;
 use Google\Service\ShoppingContent\Resource\Accounts;
 use Google\Service\ShoppingContent\Resource\Accountstatuses;
 use Google\Service\ShoppingContent\Resource\Products;
 use Google\Service\ShoppingContent\Resource\Productstatuses;
+use Google\Service\ShoppingContent\VerifyPhoneNumberResponse;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -160,6 +163,42 @@ class MerchantTest extends UnitTest {
 		$this->expectException( Exception::class );
         $this->expectExceptionCode( 403 );
 		$this->merchant->claimwebsite();
+	}
+
+	public function test_request_phone_verification() {
+		$this->service->accounts->expects( $this->once() )
+								->method( 'requestphoneverification' )
+								->willReturn( new RequestPhoneVerificationResponse( [ 'verificationId' => 'some_verification_id' ] ) );
+		$this->assertEquals(
+			'some_verification_id',
+			$this->merchant->request_phone_verification( 'US', '8772733049', 'SMS' )
+		);
+	}
+
+	public function test_request_phone_verification_throws_exception() {
+		$this->service->accounts->expects( $this->once() )
+								->method( 'requestphoneverification' )
+								->willThrowException( new GoogleServiceException( 'Internal error!' ) );
+		$this->expectException( GoogleServiceException::class );
+		$this->merchant->request_phone_verification( 'US', '8772733049', 'SMS' );
+	}
+
+	public function test_verify_phone_number() {
+		$this->service->accounts->expects( $this->once() )
+								->method( 'verifyphonenumber' )
+								->willReturn( new VerifyPhoneNumberResponse( [ 'verifiedPhoneNumber' => '8772733049' ] ) );
+		$this->assertEquals(
+			'8772733049',
+			$this->merchant->verify_phone_number( 'some_verification_id', '123456', 'SMS' )
+		);
+	}
+
+	public function test_verify_phone_number_throws_exception() {
+		$this->service->accounts->expects( $this->once() )
+								->method( 'verifyphonenumber' )
+								->willThrowException( new GoogleServiceException( 'Internal error!' ) );
+		$this->expectException( GoogleServiceException::class );
+		$this->merchant->verify_phone_number( 'some_verification_id', '123456', 'SMS' );
 	}
 
 	public function test_get_account() {

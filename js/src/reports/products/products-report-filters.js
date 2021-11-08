@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-
 import { omitBy, isUndefined } from 'lodash';
 import { ReportFilters } from '@woocommerce/components';
 import {
@@ -11,6 +10,10 @@ import {
 	isoDateFormat,
 } from '@woocommerce/date';
 import { ITEMS_STORE_NAME } from '@woocommerce/data';
+
+import { getSetting } from '@woocommerce/wc-admin-settings'; // eslint-disable-line import/no-unresolved
+// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+// See https://github.com/woocommerce/woocommerce-admin/issues/7781
 
 /**
  * Internal dependencies
@@ -21,9 +24,8 @@ import {
 } from '.~/utils/recordEvent';
 import { productsFilter, advancedFilters } from './filter-config';
 
-// TODO: Consider importing it from something like '@woocommerce/wc-admin-settings'.
-const currency = wcSettings.currency;
-const siteLocale = wcSettings.locale.siteLocale;
+const currency = getSetting( 'currency' );
+const siteLocale = getSetting( 'locale' ).siteLocale;
 
 /**
  * Set of filters to be used in Products Report page.

@@ -1,4 +1,10 @@
-# Google Listings & Ads [![Build Status](https://travis-ci.com/woocommerce/google-listings-and-ads.svg?branch=trunk)](https://travis-ci.com/woocommerce/google-listings-and-ads)
+# Google Listings & Ads
+
+[![PHP Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-unit-tests.yml)
+[![JavaScript Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml)
+[![PHP Coding Standards](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml)
+[![JavaScript and CSS Linting](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml)
+[![Bundle Size](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml)
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
 
@@ -19,8 +25,10 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 ## Prerequisites
 
--   WordPress 5.5+
--   WooCommerce 5.2+
+We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
+
+-   WordPress 5.6+
+-   WooCommerce 5.5+
 -   PHP 7.3+
 
 ## Browsers supported
@@ -96,7 +104,7 @@ $ ./bin/install-wp-tests.sh wordpress_tests root root localhost
 ```
 
 This script installs the test dependencies into your system's temporary directory and also creates a test database.
-  
+
 You can also specify the path to their directories by setting the following environment variables:
 
 -   `WP_TESTS_DIR`: WordPress Unit Test lib directory
