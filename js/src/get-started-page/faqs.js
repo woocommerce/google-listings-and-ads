@@ -140,7 +140,7 @@ const faqItems = [
 			<>
 				<p>
 					{ __(
-						'To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select "Show coupon on Google" to enable. This is currently available in the US only.',
+						'To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads. When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select "Show coupon on Google" to enable. This is currently available in the US only.',
 						'google-listings-and-ads'
 					) }
 				</p>
