@@ -22,6 +22,7 @@ import './index.scss';
  */
 export const APPEARANCE = {
 	GOOGLE: 'google',
+	GOOGLE_MERCHANT_CENTER: 'google_merchant_center',
 	PHONE: 'phone',
 	ADDRESS: 'address',
 };
@@ -37,6 +38,17 @@ const appearanceDict = {
 			/>
 		),
 		title: __( 'Google account', 'google-listings-and-ads' ),
+	},
+	[ APPEARANCE.GOOGLE_MERCHANT_CENTER ]: {
+		icon: (
+			<img
+				src={ googleLogoURL }
+				alt={ __( 'Google Logo', 'google-listings-and-ads' ) }
+				width="40"
+				height="40"
+			/>
+		),
+		title: __( 'Google Merchant Center', 'google-listings-and-ads' ),
 	},
 	[ APPEARANCE.PHONE ]: {
 		icon: <GridiconPhone size={ 32 } />,
