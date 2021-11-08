@@ -20,6 +20,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
@@ -59,23 +60,24 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	 * @var array
 	 */
 	protected $provides = [
-		Client::class               => true,
-		ShoppingContent::class      => true,
-		GoogleAdsClient::class      => true,
-		GuzzleClient::class         => true,
-		Proxy::class                => true,
-		Merchant::class             => true,
-		Ads::class                  => true,
-		AdsCampaign::class          => true,
-		AdsCampaignBudget::class    => true,
-		AdsConversionAction::class  => true,
-		AdsGroup::class             => true,
-		AdsReport::class            => true,
-		'connect_server_root'       => true,
-		Connection::class           => true,
-		GoogleProductService::class => true,
-		SiteVerification::class     => true,
-		Settings::class             => true,
+		Client::class                 => true,
+		ShoppingContent::class        => true,
+		GoogleAdsClient::class        => true,
+		GuzzleClient::class           => true,
+		Proxy::class                  => true,
+		Merchant::class               => true,
+		Ads::class                    => true,
+		AdsCampaign::class            => true,
+		AdsCampaignBudget::class      => true,
+		AdsConversionAction::class    => true,
+		AdsGroup::class               => true,
+		AdsReport::class              => true,
+		'connect_server_root'         => true,
+		Connection::class             => true,
+		GoogleProductService::class   => true,
+		GooglePromotionService::class => true,
+		SiteVerification::class       => true,
+		Settings::class               => true,
 	];
 
 	/**
@@ -168,6 +170,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 			$this->get_connect_server_url_root( 'google/google-sv' )
 		);
 		$this->share( GoogleProductService::class, ShoppingContent::class );
+		$this->share( GooglePromotionService::class, ShoppingContent::class );
 	}
 
 	/**

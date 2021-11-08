@@ -4,8 +4,9 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Proxies;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use WC_Product;
 use WC_Countries;
+use WC_Coupon;
+use WC_Product;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -102,5 +103,20 @@ class WC {
 		}
 
 		return $product;
+	}
+
+	/**
+	 * Get a WooCommerce coupon if it exists or return null if it doesn't
+	 *
+	 * @param int $coupon_id
+	 *
+	 * @return WC_Coupon|null
+	 */
+	public function maybe_get_coupon( int $coupon_id ): ?WC_Coupon {
+		$coupon = new WC_Coupon( $coupon_id );
+		if ( $coupon->get_id() === 0 ) {
+			return null;
+		}
+		return $coupon;
 	}
 }
