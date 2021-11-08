@@ -36,7 +36,6 @@ const AppSubNav = ( props ) => {
 				return (
 					<Fragment key={ tab.key }>
 						<Link
-							key={ tab.key }
 							className={ classnames( {
 								current: isCurrent,
 								// Workaround for https://github.com/woocommerce/woocommerce-admin/issues/7772.
