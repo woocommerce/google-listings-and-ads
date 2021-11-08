@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Button } from '@wordpress/components';
+import { CardDivider } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
@@ -18,6 +18,7 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
 
 const ConnectMCCard = ( props ) => {
 	const { onCreateNew = () => {} } = props;
@@ -78,11 +79,18 @@ const ConnectMCCard = ( props ) => {
 	}
 
 	return (
-		<Section.Card>
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
+			description={ __(
+				'Required to sync products and list on Google Shopping',
+				'google-listings-and-ads'
+			) }
+		>
+			<CardDivider />
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
-						'You have existing Merchant Center accounts',
+						'Select an existing account',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
@@ -103,14 +111,17 @@ const ConnectMCCard = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<Button disabled={ loading } isLink onClick={ onCreateNew }>
-					{ __(
+				<AppButton
+					isLink
+					disabled={ loading }
+					text={ __(
 						'Or, create a new Merchant Center account',
 						'google-listings-and-ads'
 					) }
-				</Button>
+					onClick={ onCreateNew }
+				/>
 			</Section.Card.Footer>
-		</Section.Card>
+		</AccountCard>
 	);
 };
 
