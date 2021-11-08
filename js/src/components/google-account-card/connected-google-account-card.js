@@ -19,10 +19,12 @@ import useSwitchGoogleAccount from './useSwitchGoogleAccount';
  * @param {Object} props React props.
  * @param {{ email: string }} props.googleAccount A data payload object contains user's Google account email.
  * @param {JSX.Element} [props.helper] Helper content below the Google account email.
+ * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
  */
 export default function ConnectedGoogleAccountCard( {
 	googleAccount,
 	helper,
+	hideAccountSwitch = false,
 } ) {
 	const [ handleSwitch, { loading } ] = useSwitchGoogleAccount();
 
@@ -33,17 +35,19 @@ export default function ConnectedGoogleAccountCard( {
 			helper={ helper }
 			indicator={ <ConnectedIconLabel /> }
 		>
-			<Section.Card.Footer>
-				<AppButton
-					isLink
-					disabled={ loading }
-					text={ __(
-						'Or, connect to a different Google account',
-						'google-listings-and-ads'
-					) }
-					onClick={ handleSwitch }
-				/>
-			</Section.Card.Footer>
+			{ ! hideAccountSwitch && (
+				<Section.Card.Footer>
+					<AppButton
+						isLink
+						disabled={ loading }
+						text={ __(
+							'Or, connect to a different Google account',
+							'google-listings-and-ads'
+						) }
+						onClick={ handleSwitch }
+					/>
+				</Section.Card.Footer>
+			) }
 		</AccountCard>
 	);
 }
