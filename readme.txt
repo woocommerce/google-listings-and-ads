@@ -2,7 +2,7 @@
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
-Tested up to: 5.9
+Tested up to: 5.8
 Requires PHP: 7.3
 Stable tag: 1.5.1
 License: GPLv3
@@ -141,9 +141,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
 * Tweak - Added a few more e2e tests and utils.
 * Tweak - WC 5.7 compatibility.
-
-= 1.4.3 - 2021-09-08 =
-* Fix - PHP notice when creating a product variation.
-* Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
