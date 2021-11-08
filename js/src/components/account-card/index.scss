@@ -9,10 +9,16 @@
 		}
 	}
 
+	&__title:not(:empty) {
+		margin-bottom: 4px;
+		color: $black;
+	}
+
 	&__description {
 		display: flex;
 		flex-direction: column;
 		gap: 1em;
+		color: $gray-900;
 
 		> p {
 			margin: 0;
