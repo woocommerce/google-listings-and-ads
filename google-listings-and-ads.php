@@ -12,7 +12,7 @@
  * Requires PHP: 7.3
  *
  * WC requires at least: 5.5
- * WC tested up to: 5.8
+ * WC tested up to: 5.9
  * Woo:
  *
  * @package WooCommerce\Admin

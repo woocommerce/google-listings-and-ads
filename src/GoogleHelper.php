@@ -147,6 +147,26 @@ trait GoogleHelper {
 	}
 
 	/**
+	 * Get an array of Google Merchant Center supported countries and currencies for promotions.
+	 *
+	 * @return array
+	 */
+	protected function get_mc_promotion_supported_countries_currencies(): array {
+		return [
+			'US' => 'USD', // United States
+		];
+	}
+
+	/**
+	 * Get an array of Google Merchant Center supported countries for promotions.
+	 *
+	 * @return string[]
+	 */
+	protected function get_mc_promotion_supported_countries(): array {
+		return array_keys( $this->get_mc_promotion_supported_countries_currencies() );
+	}
+
+	/**
 	 * Get an array of Google Merchant Center supported languages (ISO 639-1).
 	 *
 	 * WooCommerce Languages -> https://translate.wordpress.org/projects/wp-plugins/woocommerce/
