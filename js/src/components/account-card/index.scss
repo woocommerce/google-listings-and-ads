@@ -19,6 +19,13 @@
 		}
 	}
 
+	&__helper {
+		margin-top: 4px;
+		font-style: italic;
+		font-size: 12px;
+		color: $gray-700;
+	}
+
 	.components-notice.is-error {
 		margin: 0;
 		background-color: #f8ebea;

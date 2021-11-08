@@ -62,6 +62,7 @@ const alignStyleName = {
  * @param {APPEARANCE | {icon, title}} props.appearance Kind of account to indicate the card appearance, or a tuple with icon and title to be used.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
  * @param {JSX.Element} props.description Content below the card title.
+ * @param {JSX.Element} [props.helper] Helper content below the card description.
  * @param {boolean} [props.hideIcon=false] Whether hide the leading icon.
  * @param {'center'|'top'} [props.alignIcon='center'] Specify the vertical alignment of leading icon.
  * @param {JSX.Element} [props.indicator] Indicator of actions or status on the right side of the card.
@@ -73,6 +74,7 @@ export default function AccountCard( {
 	appearance,
 	disabled = false,
 	description,
+	helper,
 	hideIcon = false,
 	alignIcon = 'center',
 	indicator,
@@ -116,6 +118,11 @@ export default function AccountCard( {
 						<div className="gla-account-card__description">
 							{ description }
 						</div>
+						{ helper && (
+							<div className="gla-account-card__helper">
+								{ helper }
+							</div>
+						) }
 					</FlexBlock>
 					{ indicator && (
 						<FlexItem className={ indicatorClassName }>
