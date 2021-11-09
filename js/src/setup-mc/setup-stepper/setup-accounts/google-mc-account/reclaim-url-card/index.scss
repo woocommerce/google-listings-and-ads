@@ -1,10 +1,23 @@
 .gla-reclaim-url-card {
 	.gla-content-button-layout {
-		align-items: flex-start;
+		margin: 16px 0;
+
+		.app-input-control {
+			flex-grow: 1;
+
+			svg {
+				display: block;
+				margin: 6px;
+				margin-right: 0;
+				fill: currentColor;
+			}
+		}
 	}
 
-	&__warning {
-		color: $alert-red;
-		margin-bottom: 8px;
+	.wcdl-subsection-helper-text {
+		font-style: normal;
+		font-weight: 600;
+		font-size: 13px;
+		line-height: 16px;
 	}
 }
