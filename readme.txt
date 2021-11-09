@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.5.1
+Stable tag: 1.6.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -104,6 +104,9 @@ If you’re selling in the US, then eligible free listings can appear in search 
 
 If you’re running a Smart Shopping campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
 
+= Will my deals and promotions display on Google? =
+To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select “Show coupon on Google” to enable. This is currently available in the US only.
+
 = What are Smart Shopping campaigns? =
 Smart Shopping campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
 
@@ -114,6 +117,10 @@ Smart Shopping campaigns are pay-per-click, meaning you only pay when someone cl
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
 
 == Changelog ==
+
+= 1.6.0 - 2021-11-09 =
+* Add - Coupon/promotion integration with Merchant Center.
+* Tweak - WooCommerce 5.9 compatibility.
 
 = 1.5.1 - 2021-10-13 =
 * Update - Changed minimum version of WordPress to 5.6 and WooCommerce to 5.5.
@@ -138,9 +145,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
 * Tweak - Added a few more e2e tests and utils.
 * Tweak - WC 5.7 compatibility.
-
-= 1.4.3 - 2021-09-08 =
-* Fix - PHP notice when creating a product variation.
-* Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
