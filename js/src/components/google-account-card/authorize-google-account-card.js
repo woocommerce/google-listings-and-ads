@@ -116,6 +116,10 @@ export default function AuthorizeGoogleAccountCard( {
 					disabled={ disabled }
 					loading={ loading || data }
 					eventName="gla_google_account_connect_button_click"
+					eventProps={ {
+						context: pageName,
+						action: isAskingScope ? 'scope' : 'authorization',
+					} }
 					text={ buttonText }
 					onClick={ handleConnectClick }
 				/>
