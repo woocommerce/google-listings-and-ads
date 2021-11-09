@@ -3,6 +3,7 @@
  */
 import { getNewPath } from '@woocommerce/navigation';
 
+const getStartedUrl = '/google/start';
 const dashboardPath = '/google/dashboard';
 const settingsPath = '/google/settings';
 
@@ -28,6 +29,10 @@ export const getEditCampaignUrl = ( programId ) => {
 
 export const getCreateCampaignUrl = () => {
 	return getNewPath( { subpath: subpaths.createCampaign }, dashboardPath );
+};
+
+export const getGetStartedUrl = () => {
+	return getNewPath( null, getStartedUrl, null );
 };
 
 export const getDashboardUrl = () => {
