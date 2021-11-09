@@ -63,7 +63,11 @@ const SwitchUrlCard = ( props ) => {
 
 	if ( response && response.status === 403 ) {
 		return (
-			<ReclaimUrlCard id={ error.id } websiteUrl={ error.website_url } />
+			<ReclaimUrlCard
+				id={ error.id }
+				websiteUrl={ error.website_url }
+				onSwitchAccount={ handleUseDifferentMCClick }
+			/>
 		);
 	}
 

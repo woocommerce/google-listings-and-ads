@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { CardDivider } from '@wordpress/components';
 import { Icon, link as linkIcon } from '@wordpress/icons';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -24,7 +25,7 @@ import AppInputControl from '.~/components/app-input-control';
 import './index.scss';
 
 const ReclaimUrlCard = ( props ) => {
-	const { id, websiteUrl } = props;
+	const { id, websiteUrl, onSwitchAccount = noop } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
@@ -67,7 +68,11 @@ const ReclaimUrlCard = ( props ) => {
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
 			description={ toAccountText( id ) }
 			indicator={
-				<AppButton isSecondary loading={ loading } onClick={ () => {} }>
+				<AppButton
+					isSecondary
+					loading={ loading }
+					onClick={ onSwitchAccount }
+				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }
 				</AppButton>
 			}
