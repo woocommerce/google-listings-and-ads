@@ -21,6 +21,7 @@ const requestToExternal = ( request ) => {
 	const wcDepMap = {
 		'@woocommerce/components': [ 'wc', 'components' ],
 		'@woocommerce/navigation': [ 'wc', 'navigation' ],
+		'@woocommerce/data': [ 'wc', 'data' ],
 		// Since WooCommerce 5.8, the Settings store no longer contains "countries", "currency" and "adminURL",
 		// to be able to fetch that, we use unpublished `'@woocommerce/settings': 'wc-settings` package.
 		// It's delivered with WC, so we use Dependency Extraction Webpack Plugin to import it.
@@ -40,6 +41,7 @@ const requestToHandle = ( request ) => {
 	const wcHandleMap = {
 		'@woocommerce/components': 'wc-components',
 		'@woocommerce/navigation': 'wc-navigation',
+		'@woocommerce/data': 'wc-store-data',
 		'@woocommerce/settings': 'wc-settings',
 	};
 
@@ -76,18 +78,6 @@ const webpackConfig = {
 		alias: {
 			'.~': path.resolve( process.cwd(), 'js/src/' ),
 		},
-		/**
-		 * Resolve jsx/tsx files for `@woocommerce/data@1.3.*`.
-		 *
-		 * It could be removed if one of conditions is met:
-		 *   - The L-2 support version no longer covers 1.3.* versions.
-		 *   - `@woocommerce/data` is imported from DEWP instead.
-		 *
-		 * Checking method:
-		 * Whether the module not found error of the below path is no longer occur after `npm start`.
-		 *   - `./node_modules/@woocommerce/data/build/plugins/with-plugins-hydration.js`
-		 */
-		extensions: [ '.ts', '.tsx', '.js', '.jsx', '.json' ],
 	},
 	plugins: [
 		...defaultConfig.plugins.filter(
