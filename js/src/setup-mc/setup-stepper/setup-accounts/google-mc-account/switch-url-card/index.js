@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+import { CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -18,6 +18,7 @@ import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ReclaimUrlCard from '../reclaim-url-card';
 import './index.scss';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
 
 const SwitchUrlCard = ( props ) => {
 	const {
@@ -67,14 +68,30 @@ const SwitchUrlCard = ( props ) => {
 	}
 
 	return (
-		<Section.Card className="gla-switch-url-card">
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
+			description={ toAccountText( id ) }
+			indicator={
+				<AppButton
+					isSecondary
+					loading={ loading }
+					onClick={ handleUseDifferentMCClick }
+				>
+					{ __( 'Switch account', 'google-listings-and-ads' ) }
+				</AppButton>
+			}
+		>
+			<CardDivider />
 			<Section.Card.Body>
 				<ContentButtonLayout>
-					<Subsection.Title>{ toAccountText( id ) }</Subsection.Title>
-				</ContentButtonLayout>
-				<ContentButtonLayout>
 					<div>
-						<Subsection.Title>{ message }</Subsection.Title>
+						<Subsection.Title>
+							{ __(
+								'Switch your claimed URL',
+								'google-listings-and-ads'
+							) }
+						</Subsection.Title>
+						<p>{ message }</p>
 						<Subsection.HelperText>
 							{ createInterpolateElement(
 								__(
@@ -102,15 +119,7 @@ const SwitchUrlCard = ( props ) => {
 					</div>
 				</ContentButtonLayout>
 			</Section.Card.Body>
-			<Section.Card.Footer>
-				<Button isLink onClick={ handleUseDifferentMCClick }>
-					{ __(
-						'Or, use a different Merchant Center account',
-						'google-listings-and-ads'
-					) }
-				</Button>
-			</Section.Card.Footer>
-		</Section.Card>
+		</AccountCard>
 	);
 };
 
