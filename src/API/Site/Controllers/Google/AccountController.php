@@ -27,8 +27,10 @@ class AccountController extends BaseController {
 
 	/**
 	 * Mapping between the client page name and its path.
+	 * The first value is also used as a default,
+	 * and changing the order of keys/values may affect things below.
 	 *
-	 * @var string
+	 * @var string[]
 	 */
 	private const NEXT_PATH_MAPPING = [
 		'setup-mc'  => '/google/setup-mc',
