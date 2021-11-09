@@ -108,7 +108,7 @@
 			},
 			{
 				"path": "./js/build/index.js",
-				"maxSize": "265 kB"
+				"maxSize": "248 kB"
 			},
 			{
 				"path": "./js/build/*.css",
