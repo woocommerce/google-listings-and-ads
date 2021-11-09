@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { CardDivider } from '@wordpress/components';
+import { CardDivider, Notice } from '@wordpress/components';
 import { Icon, link as linkIcon } from '@wordpress/icons';
 import { noop } from 'lodash';
 
@@ -16,21 +16,19 @@ import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
-import ReclaimUrlFailCard from './reclaim-url-fail-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppInputControl from '.~/components/app-input-control';
 import './index.scss';
 
 const ReclaimUrlCard = ( props ) => {
 	const { id, websiteUrl, onSwitchAccount = noop } = props;
-	const { createNotice } = useDispatchCoreNotices();
+	// const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
 		fetchClaimOverwrite,
-		{ loading, response, reset },
+		{ loading, error, reset },
 	] = useApiFetchCallback( {
 		path: `/wc/gla/mc/accounts/claim-overwrite`,
 		method: 'POST',
@@ -38,29 +36,10 @@ const ReclaimUrlCard = ( props ) => {
 	} );
 
 	const handleReclaimClick = async () => {
-		try {
-			await fetchClaimOverwrite( { parse: false } );
-			invalidateResolution( 'getGoogleMCAccount', [] );
-		} catch ( e ) {
-			if ( e.status !== 406 ) {
-				createNotice(
-					'error',
-					__(
-						'Unable to reclaim your URL. Please try again later.',
-						'google-listings-and-ads'
-					)
-				);
-			}
-		}
-	};
-
-	const handleRetry = () => {
 		reset();
+		await fetchClaimOverwrite( { parse: false } );
+		invalidateResolution( 'getGoogleMCAccount', [] );
 	};
-
-	if ( response && response.status === 406 ) {
-		return <ReclaimUrlFailCard onRetry={ handleRetry } />;
-	}
 
 	return (
 		<AccountCard
@@ -121,6 +100,19 @@ const ReclaimUrlCard = ( props ) => {
 						}
 					) }
 				</Subsection.HelperText>
+				{ error && (
+					<Notice status="error" isDismissible={ false }>
+						{ createInterpolateElement(
+							__(
+								'<strong>We were unable to reclaim this URL.</strong> You may not have permission to reclaim this URL, or an error might have occurred. Try again later or contact your Google account administrator.',
+								'google-listings-and-ads'
+							),
+							{
+								strong: <strong></strong>,
+							}
+						) }
+					</Notice>
+				) }
 			</Section.Card.Body>
 		</AccountCard>
 	);
