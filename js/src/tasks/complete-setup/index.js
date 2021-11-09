@@ -4,7 +4,12 @@
 
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
-import { getHistory, getNewPath } from '@woocommerce/navigation';
+import { getHistory } from '@woocommerce/navigation';
+
+/**
+ * Internal dependencies
+ */
+import { getGetStartedUrl, getDashboardUrl } from '.~/utils/urls';
 
 /* global glaTaskData */
 
@@ -25,8 +30,11 @@ addFilter(
 				),
 				completed: glaTaskData.isComplete,
 				onClick: () => {
-					// Redirect to the GLA get started page.
-					getHistory().push( getNewPath( {}, '/google/start' ) );
+					// Redirect to the GLA get started or dashboard page.
+					const nextUrl = glaTaskData.isComplete
+						? getDashboardUrl()
+						: getGetStartedUrl();
+					getHistory().push( nextUrl );
 				},
 				visible: true,
 				time: __( '20 minutes', 'google-listings-and-ads' ),
