@@ -19,6 +19,7 @@ import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import CreateAccountButton from './create-account-button';
 import './index.scss';
 
 const ConnectMCCard = ( props ) => {
@@ -117,14 +118,10 @@ const ConnectMCCard = ( props ) => {
 				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
-				<AppButton
+				<CreateAccountButton
 					isLink
 					disabled={ loading }
-					text={ __(
-						'Or, create a new Merchant Center account',
-						'google-listings-and-ads'
-					) }
-					onClick={ onCreateNew }
+					onCreateAccount={ onCreateNew }
 				/>
 			</Section.Card.Footer>
 		</AccountCard>
