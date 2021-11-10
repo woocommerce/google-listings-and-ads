@@ -6,11 +6,17 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import Section from '.~/wcdl/section';
 import CreateAccountButton from './create-account-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import AppButton from '.~/components/app-button';
 
 const CreateAccountCard = ( props ) => {
-	const { onCreateAccount } = props;
+	const {
+		allowShowExisting,
+		onShowExisting = () => {},
+		onCreateAccount,
+	} = props;
 
 	return (
 		<AccountCard
@@ -22,7 +28,18 @@ const CreateAccountCard = ( props ) => {
 			indicator={
 				<CreateAccountButton onCreateAccount={ onCreateAccount } />
 			}
-		></AccountCard>
+		>
+			{ allowShowExisting && (
+				<Section.Card.Footer>
+					<AppButton isLink onClick={ onShowExisting }>
+						{ __(
+							'Or, use your existing Google Merchant Center account',
+							'google-listings-and-ads'
+						) }
+					</AppButton>
+				</Section.Card.Footer>
+			) }
+		</AccountCard>
 	);
 };
 
