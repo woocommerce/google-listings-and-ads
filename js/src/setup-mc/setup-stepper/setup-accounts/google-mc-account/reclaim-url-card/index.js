@@ -24,7 +24,6 @@ import './index.scss';
 
 const ReclaimUrlCard = ( props ) => {
 	const { id, websiteUrl, onSwitchAccount = noop } = props;
-	// const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
 		fetchClaimOverwrite,
