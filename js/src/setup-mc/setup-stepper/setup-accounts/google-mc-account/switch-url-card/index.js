@@ -17,17 +17,12 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ReclaimUrlCard from '../reclaim-url-card';
-import './index.scss';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import AppInputLinkControl from '.~/components/app-input-link-control';
+import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
-	const {
-		id,
-		message,
-		claimedUrl,
-		newUrl,
-		onSelectAnotherAccount = () => {},
-	} = props;
+	const { id, claimedUrl, newUrl, onSelectAnotherAccount = () => {} } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
@@ -73,6 +68,7 @@ const SwitchUrlCard = ( props ) => {
 
 	return (
 		<AccountCard
+			className="gla-switch-url-card"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
 			description={ toAccountText( id ) }
 			indicator={
@@ -87,41 +83,49 @@ const SwitchUrlCard = ( props ) => {
 		>
 			<CardDivider />
 			<Section.Card.Body>
+				<Subsection.Title>
+					{ __(
+						'Switch to this new URL',
+						'google-listings-and-ads'
+					) }
+				</Subsection.Title>
+				<Subsection.Body>
+					{ createInterpolateElement(
+						__(
+							'This Merchant Center account already has a verified and claimed URL, <claimedurl/>.',
+							'google-listings-and-ads'
+						),
+						{
+							claimedurl: <span>{ claimedUrl }</span>,
+						}
+					) }
+				</Subsection.Body>
 				<ContentButtonLayout>
-					<div>
-						<Subsection.Title>
-							{ __(
-								'Switch your claimed URL',
-								'google-listings-and-ads'
-							) }
-						</Subsection.Title>
-						<p>{ message }</p>
-						<Subsection.HelperText>
-							{ createInterpolateElement(
-								__(
-									'If you switch your claimed URL to <newurl />, you will lose your claim to <claimedurl />. This will cause any existing product listings tied to <claimedurl /> to stop running.',
-									'google-listings-and-ads'
-								),
-								{
-									newurl: <span>{ newUrl }</span>,
-									claimedurl: <span>{ claimedUrl }</span>,
-								}
-							) }
-						</Subsection.HelperText>
-					</div>
-					<div className="buttons">
-						<AppButton
-							isSecondary
-							loading={ loading }
-							onClick={ handleSwitch }
-						>
-							{ __(
-								'Switch to my new URL',
-								'google-listings-and-ads'
-							) }
-						</AppButton>
-					</div>
+					<AppInputLinkControl disabled value={ newUrl } />
+					<AppButton
+						isSecondary
+						loading={ loading }
+						eventName="gla_mc_account_reclaim_url_button_click"
+						onClick={ handleSwitch }
+					>
+						{ __(
+							'Switch to this new URL',
+							'google-listings-and-ads'
+						) }
+					</AppButton>
 				</ContentButtonLayout>
+				<Subsection.HelperText>
+					{ createInterpolateElement(
+						__(
+							'If you switch your claimed URL to <newurl />, you will lose your claim to <claimedurl />. This will cause any existing product listings tied to <claimedurl /> to stop running.',
+							'google-listings-and-ads'
+						),
+						{
+							newurl: <span>{ newUrl }</span>,
+							claimedurl: <span>{ claimedUrl }</span>,
+						}
+					) }
+				</Subsection.HelperText>
 			</Section.Card.Body>
 		</AccountCard>
 	);
