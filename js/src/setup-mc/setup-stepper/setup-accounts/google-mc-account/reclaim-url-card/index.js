@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { CardDivider, Notice } from '@wordpress/components';
-import { Icon, link as linkIcon } from '@wordpress/icons';
 import { noop } from 'lodash';
 
 /**
@@ -19,8 +18,8 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
-import AppInputControl from '.~/components/app-input-control';
 import './index.scss';
+import AppInputLinkControl from '.~/components/app-input-link-control';
 
 const ReclaimUrlCard = ( props ) => {
 	const { id, websiteUrl, onSwitchAccount = noop } = props;
@@ -67,11 +66,7 @@ const ReclaimUrlCard = ( props ) => {
 					) }
 				</p>
 				<ContentButtonLayout>
-					<AppInputControl
-						disabled
-						prefix={ <Icon icon={ linkIcon } size={ 24 } /> }
-						value={ websiteUrl }
-					></AppInputControl>
+					<AppInputLinkControl disabled value={ websiteUrl } />
 					<AppButton
 						isSecondary
 						isDestructive
