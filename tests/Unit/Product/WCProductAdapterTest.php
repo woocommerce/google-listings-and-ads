@@ -503,6 +503,26 @@ DESCRIPTION;
 		$this->assertEquals( $expected_description, $adapted_product->getDescription() );
 	}
 
+	public function test_product_types_are_set_when_categories_defined() {
+	    $product = WC_Helper_Product::create_simple_product();
+	    $category_1 = wp_insert_term( 'Zulu Category', 'product_cat' );
+	    $category_2 = wp_insert_term( 'Alpha Category', 'product_cat' );
+	    $category_3 = wp_insert_term(
+	        'Beta Category', 'product_cat', array('parent' => $category_2['term_id']) );
+	    $product->set_category_ids([$category_1['term_id'], $category_3['term_id']] );
+	    $product->save();
+	    
+	    $adapted_product = new WCProductAdapter(
+	        [
+	            'wc_product'    => $product,
+	            'targetCountry' => 'US',
+	        ]
+	    );
+	    $this->assertContains( 'Alpha Category > Beta Category', $adapted_product->getProductTypes() );
+	    $this->assertContains( 'Zulu Category', $adapted_product->getProductTypes() );
+	    $this->assertContains( 'Alpha Category', $adapted_product->getProductTypes() );
+	}
+
 	public function test_images_are_set() {
 		$product = WC_Helper_Product::create_simple_product();
 

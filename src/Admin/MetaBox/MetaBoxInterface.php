@@ -11,6 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 interface MetaBoxInterface extends Service, Conditional, Renderable {
 	public const SCREEN_PRODUCT = 'product';
+	public const SCREEN_COUPON  = 'shop_coupon';
 
 	public const CONTEXT_NORMAL   = 'normal';
 	public const CONTEXT_SIDE     = 'side';
