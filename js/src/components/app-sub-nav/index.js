@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { Fragment } from '@wordpress/element';
 import { NavigableMenu } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import classnames from 'classnames';
@@ -33,9 +34,8 @@ const AppSubNav = ( props ) => {
 				const isCurrent = tab.key === selectedKey;
 
 				return (
-					<>
+					<Fragment key={ tab.key }>
 						<Link
-							key={ tab.key }
 							className={ classnames( {
 								current: isCurrent,
 								// Workaround for https://github.com/woocommerce/woocommerce-admin/issues/7772.
@@ -52,7 +52,7 @@ const AppSubNav = ( props ) => {
 							{ tab.title + ' ' }
 						</Link>
 						{ index < tabs.length - 1 ? ' | ' : ' ' }
-					</>
+					</Fragment>
 				);
 			} ) }
 		</NavigableMenu>

@@ -3,13 +3,17 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\MerchantFreeListingReportQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use DateTime;
 use Exception;
+use Google\Ads\GoogleAds\V8\Services\GoogleAdsRow;
+use Google\ApiCore\PagedListResponse;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\SearchResponse;
 
@@ -25,11 +29,18 @@ class MerchantMetrics implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 
 	/**
-	 * The shopping service.
+	 * The Google shopping client.
 	 *
 	 * @var ShoppingContent
 	 */
-	protected $service;
+	protected $shopping_client;
+
+	/**
+	 * The Google ads client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $ads_client;
 
 	/**
 	 * @var WP
@@ -46,14 +57,16 @@ class MerchantMetrics implements OptionsAwareInterface {
 	/**
 	 * MerchantMetrics constructor.
 	 *
-	 * @param ShoppingContent     $service
+	 * @param ShoppingContent     $shopping_client
+	 * @param GoogleAdsClient     $ads_client
 	 * @param WP                  $wp
 	 * @param TransientsInterface $transients
 	 */
-	public function __construct( ShoppingContent $service, WP $wp, TransientsInterface $transients ) {
-		$this->service    = $service;
-		$this->wp         = $wp;
-		$this->transients = $transients;
+	public function __construct( ShoppingContent $shopping_client, GoogleAdsClient $ads_client, WP $wp, TransientsInterface $transients ) {
+		$this->shopping_client = $shopping_client;
+		$this->ads_client      = $ads_client;
+		$this->wp              = $wp;
+		$this->transients      = $transients;
 	}
 
 	/**
@@ -73,7 +86,7 @@ class MerchantMetrics implements OptionsAwareInterface {
 
 		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
 		$query = ( new MerchantFreeListingReportQuery( [] ) )
-			->set_client( $this->service, $this->options->get_merchant_id() )
+			->set_client( $this->shopping_client, $this->options->get_merchant_id() )
 			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_tomorrow() )
 			->fields( [ 'clicks', 'impressions' ] );
 
@@ -109,6 +122,66 @@ class MerchantMetrics implements OptionsAwareInterface {
 		if ( $value === null ) {
 			$value = $this->get_free_listing_metrics();
 			$this->transients->set( TransientsInterface::FREE_LISTING_METRICS, $value, HOUR_IN_SECONDS * 12 );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Get ads metrics across all campaigns.
+	 *
+	 * @return array Of metrics or empty if no metrics were available.
+	 *
+	 * @throws Exception When unable to get data.
+	 */
+	public function get_ads_metrics(): array {
+		if ( ! $this->options->get_ads_id() ) {
+			// Ads account not set up
+			return [];
+		}
+
+		// Google API requires a date clause to be set but there doesn't seem to be any limits on how wide the range
+		$query = ( new AdsCampaignReportQuery( [] ) )
+			->set_client( $this->ads_client, $this->options->get_ads_id() )
+			->where_date_between( self::MAX_QUERY_START_DATE, $this->get_tomorrow() )
+			->fields( [ 'clicks', 'conversions', 'impressions' ] );
+
+		/** @var PagedListResponse $response */
+		$response = $query->get_results();
+		$page     = $response->getPage();
+
+		if ( $page && $page->getIterator()->current() ) {
+			/** @var GoogleAdsRow $row */
+			$row = $page->getIterator()->current();
+
+			$metrics = $row->getMetrics();
+			if ( $metrics ) {
+				return [
+					'clicks'      => $metrics->getClicks(),
+					'conversions' => (int) $metrics->getConversions(),
+					'impressions' => $metrics->getImpressions(),
+				];
+			}
+		}
+
+		return [];
+	}
+
+	/**
+	 * Get ads metrics across all campaigns but cached for 12 hours.
+	 *
+	 * PLEASE NOTE: These metrics will not be 100% accurate since there is no invalidation apart from the 12 hour refresh.
+	 *
+	 * @return array Of metrics or empty if no metrics were available.
+	 *
+	 * @throws Exception When unable to get data.
+	 */
+	public function get_cached_ads_metrics(): array {
+		$value = $this->transients->get( TransientsInterface::ADS_METRICS );
+
+		if ( $value === null ) {
+			$value = $this->get_ads_metrics();
+			$this->transients->set( TransientsInterface::ADS_METRICS, $value, HOUR_IN_SECONDS * 12 );
 		}
 
 		return $value;
