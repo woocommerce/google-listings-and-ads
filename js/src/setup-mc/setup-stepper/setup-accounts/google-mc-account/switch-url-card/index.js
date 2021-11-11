@@ -78,7 +78,7 @@ const SwitchUrlCard = ( props ) => {
 			indicator={
 				<AppButton
 					isSecondary
-					loading={ loading }
+					disabled={ loading }
 					onClick={ handleUseDifferentMCClick }
 				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }

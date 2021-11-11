@@ -48,7 +48,7 @@ const ReclaimUrlCard = ( props ) => {
 			indicator={
 				<AppButton
 					isSecondary
-					loading={ loading }
+					disabled={ loading }
 					onClick={ onSwitchAccount }
 				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }
