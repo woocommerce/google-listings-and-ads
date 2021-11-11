@@ -59,17 +59,16 @@ const ReclaimUrlCard = ( props ) => {
 				<Subsection.Title>
 					{ __( 'Reclaim your URL', 'google-listings-and-ads' ) }
 				</Subsection.Title>
-				<p>
+				<Subsection.Body>
 					{ __(
 						'Your URL is currently claimed by another Merchant Center account.',
 						'google-listings-and-ads'
 					) }
-				</p>
+				</Subsection.Body>
 				<ContentButtonLayout>
 					<AppInputLinkControl disabled value={ websiteUrl } />
 					<AppButton
 						isSecondary
-						isDestructive
 						loading={ loading }
 						eventName="gla_mc_account_reclaim_url_button_click"
 						onClick={ handleReclaimClick }
