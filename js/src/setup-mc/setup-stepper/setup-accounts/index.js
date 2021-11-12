@@ -28,8 +28,6 @@ const SetupAccounts = ( props ) => {
 		hasFinishedResolution: hasFinishedResolutionJetpack,
 	} = useJetpackAccount();
 	const {
-		google,
-		scope,
 		hasFinishedResolution: hasFinishedResolutionGoogle,
 	} = useGoogleAccount();
 	const {
@@ -48,10 +46,6 @@ const SetupAccounts = ( props ) => {
 	}
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
-	const isGoogleConnected = google?.active === 'yes';
-	const isGoogleMCAccountDisabled = ! (
-		isGoogleConnected && scope.gmcRequired
-	);
 	const isContinueButtonDisabled = googleMCAccount?.status !== 'connected';
 
 	return (
@@ -78,7 +72,7 @@ const SetupAccounts = ( props ) => {
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
 				</VerticalGapLayout>
 			</Section>
-			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
+			<GoogleMCAccount googleMCAccount={ googleMCAccount } />
 			<Faqs />
 			<StepContentFooter>
 				<Button

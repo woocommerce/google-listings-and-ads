@@ -1,22 +1,20 @@
 /**
  * Internal dependencies
  */
-import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import ConnectedCard from './connected-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
-import SpinnerCard from '.~/components/spinner-card';
 
 const SectionContent = ( props ) => {
-	const { disabled } = props;
-	const { hasFinishedResolution, googleMCAccount } = useGoogleMCAccount();
+	const { googleMCAccount } = props;
 
-	if ( disabled ) {
+	/**
+	 * If there is no googleMCAccount, this means users have not connected their Google account,
+	 * or have not granted necessary access permissions for Google Merchant Center,
+	 * so we show a DisabledCard here.
+	 */
+	if ( ! googleMCAccount ) {
 		return <DisabledCard />;
-	}
-
-	if ( ! hasFinishedResolution ) {
-		return <SpinnerCard />;
 	}
 
 	if ( googleMCAccount.id === 0 || googleMCAccount.status !== 'connected' ) {

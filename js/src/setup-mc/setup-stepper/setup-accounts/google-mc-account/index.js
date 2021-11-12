@@ -14,7 +14,7 @@ import SectionContent from './section-content';
 import './index.scss';
 
 const GoogleMCAccount = ( props ) => {
-	const { disabled = false } = props;
+	const { googleMCAccount } = props;
 
 	return (
 		<div className="gla-google-mc-account">
@@ -41,7 +41,7 @@ const GoogleMCAccount = ( props ) => {
 					</Tip>
 				}
 			>
-				<SectionContent disabled={ disabled } />
+				<SectionContent googleMCAccount={ googleMCAccount } />
 			</Section>
 		</div>
 	);
