@@ -10,34 +10,28 @@ import { noop } from 'lodash';
  * Internal dependencies
  */
 import WarningModal from '../warning-modal';
+import TermsModal from '../terms-modal';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
+import getMatchingDomainAccount from '../getMatchingDomainAccount';
 
 const MODALS = Object.freeze( {
-	NONE: 0,
-	WARNING: 1,
+	NONE: 'NONE',
+	WARNING: 'WARNING',
+	TERMS: 'TERMS',
 } );
 
 const CreateAccountButton = ( props ) => {
 	const { onCreateAccount = noop, ...rest } = props;
 	const [ activeModal, setActiveModal ] = useState( MODALS.NONE );
 	const { data: existingAccounts } = useExistingGoogleMCAccounts();
-
-	// TODO: logic for finding the real existing account.
-	const existingAccount = existingAccounts.find( ( el ) => {
-		return el.id === 0;
-	} );
+	const matchingDomainAccount = getMatchingDomainAccount( existingAccounts );
 
 	const handleCreateAccountClick = () => {
-		if ( ! existingAccount ) {
-			onCreateAccount();
-			return;
-		}
-
-		setActiveModal( MODALS.WARNING );
+		setActiveModal( matchingDomainAccount ? MODALS.WARNING : MODALS.TERMS );
 	};
 
 	const handleWarningContinue = () => {
-		onCreateAccount();
+		setActiveModal( MODALS.TERMS );
 	};
 
 	const handleModalRequestClose = () => {
@@ -58,8 +52,14 @@ const CreateAccountButton = ( props ) => {
 			</Button>
 			{ activeModal === MODALS.WARNING && (
 				<WarningModal
-					existingAccount={ existingAccount }
+					existingAccount={ matchingDomainAccount }
 					onContinue={ handleWarningContinue }
+					onRequestClose={ handleModalRequestClose }
+				/>
+			) }
+			{ activeModal === MODALS.TERMS && (
+				<TermsModal
+					onCreateAccount={ onCreateAccount }
 					onRequestClose={ handleModalRequestClose }
 				/>
 			) }
