@@ -2,6 +2,9 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
+// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+// See https://github.com/woocommerce/woocommerce-admin/issues/7781
 
 /**
  * Internal dependencies
@@ -23,6 +26,12 @@ const MODALS = Object.freeze( {
 	TERMS: 'TERMS',
 } );
 
+const getMatchingDomainAccount = ( existingAccounts = [] ) => {
+	const homeUrl = getSetting( 'homeUrl' );
+
+	return existingAccounts.find( ( el ) => el.domain === homeUrl );
+};
+
 /**
  * A component that handles the state to display the card and modal flow.
  *
@@ -31,6 +40,7 @@ const MODALS = Object.freeze( {
  */
 const NonConnectedWithState = ( props ) => {
 	const { existingAccounts } = props;
+	const matchingDomainAccount = getMatchingDomainAccount( existingAccounts );
 
 	/**
 	 * When we first load, we will only be in one of two possible states,
@@ -52,10 +62,16 @@ const NonConnectedWithState = ( props ) => {
 		}
 
 		if ( val === CARDS.CONNECT ) {
-			// TODO: optionally display warning modal, and then display terms modal.
-			// should not change to CREATE card.
 			return (
-				<ConnectMCCard onCreateNew={ () => setCard( CARDS.CREATE ) } />
+				<ConnectMCCard
+					onCreateNew={ () =>
+						setModal(
+							matchingDomainAccount
+								? MODALS.WARNING
+								: MODALS.TERMS
+						)
+					}
+				/>
 			);
 		}
 
@@ -64,14 +80,9 @@ const NonConnectedWithState = ( props ) => {
 
 	const modalUI = ( ( val ) => {
 		if ( val === MODALS.WARNING ) {
-			// TODO: logic for finding the real existing account.
-			const existingAccount = existingAccounts.find( ( el ) => {
-				return el.id === 412140014;
-			} );
-
 			return (
 				<WarningModal
-					existingAccount={ existingAccount }
+					existingAccount={ matchingDomainAccount }
 					onContinue={ () => setModal( MODALS.TERMS ) }
 					onRequestClose={ () => setModal( MODALS.NONE ) }
 				/>
