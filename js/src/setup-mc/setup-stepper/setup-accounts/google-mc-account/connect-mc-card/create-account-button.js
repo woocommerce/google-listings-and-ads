@@ -9,7 +9,7 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import WarningModal from './warning-modal/warning-modal';
+import WarningModal from '../warning-modal';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 
 const MODALS = Object.freeze( {
