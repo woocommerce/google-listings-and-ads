@@ -20,7 +20,7 @@ const MODALS = Object.freeze( {
 const CreateAccountButton = ( props ) => {
 	const { onCreateAccount = noop, ...rest } = props;
 	const [ activeModal, setActiveModal ] = useState( MODALS.NONE );
-	const { existingAccounts } = useExistingGoogleMCAccounts();
+	const { data: existingAccounts } = useExistingGoogleMCAccounts();
 
 	// TODO: logic for finding the real existing account.
 	const existingAccount = existingAccounts.find( ( el ) => {

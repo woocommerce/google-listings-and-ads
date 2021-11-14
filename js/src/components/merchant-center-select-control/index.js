@@ -5,7 +5,7 @@ import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import AccountSelectControl from '../account-select-control';
 
 const MerchantCenterSelectControl = ( props ) => {
-	const { existingAccounts } = useExistingGoogleMCAccounts();
+	const { data: existingAccounts } = useExistingGoogleMCAccounts();
 
 	const accounts =
 		existingAccounts && existingAccounts.map( ( acc ) => acc.id );
