@@ -63,8 +63,8 @@ const WarningModal = ( props ) => {
 						'google-listings-and-ads'
 					),
 					{
-						storename: <span>{ existingAccount.name }</span>,
-						storeurl: <span>{ existingAccount.domain }</span>,
+						storename: <strong>{ existingAccount.name }</strong>,
+						storeurl: <strong>{ existingAccount.domain }</strong>,
 					}
 				) }
 			</p>
