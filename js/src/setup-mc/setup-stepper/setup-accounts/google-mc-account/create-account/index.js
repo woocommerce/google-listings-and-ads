@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { useAppDispatch } from '.~/data';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import CreateAccountCard from './create-account-card';
-import CreatingCard from './creating-card';
+import CreatingCard from '../creating-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
