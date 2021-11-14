@@ -18,38 +18,56 @@ import ReclaimUrlCard from '../reclaim-url-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
 import useConnectMCAccount from '../useConnectMCAccount';
+import useCreateMCAccount from '../useCreateMCAccount';
+import CreatingCard from '../creating-card';
 import './index.scss';
 
-const ConnectMC = ( props ) => {
-	const { onCreateNew = () => {} } = props;
+const ConnectMC = () => {
 	const [ value, setValue ] = useState();
-	const [
-		handleConnectClick,
-		{ loading, error, response, reset },
-	] = useConnectMCAccount( value );
+	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
+	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
 
-	const handleSelectAnotherAccount = () => {
-		reset();
-	};
-
-	if ( response && response.status === 409 ) {
+	if ( resultConnectMC.response?.status === 409 ) {
 		return (
 			<SwitchUrlCard
-				id={ error.id }
-				message={ error.message }
-				claimedUrl={ error.claimed_url }
-				newUrl={ error.new_url }
-				onSelectAnotherAccount={ handleSelectAnotherAccount }
+				id={ resultConnectMC.error.id }
+				message={ resultConnectMC.error.message }
+				claimedUrl={ resultConnectMC.error.claimed_url }
+				newUrl={ resultConnectMC.error.new_url }
+				onSelectAnotherAccount={ resultConnectMC.reset }
 			/>
 		);
 	}
 
-	if ( response && response.status === 403 ) {
+	if (
+		resultConnectMC.response?.status === 403 ||
+		resultCreateAccount.response?.status === 403
+	) {
 		return (
 			<ReclaimUrlCard
-				id={ error.id }
-				websiteUrl={ error.website_url }
-				onSwitchAccount={ handleSelectAnotherAccount }
+				id={
+					resultConnectMC.error?.id || resultCreateAccount.error?.id
+				}
+				websiteUrl={
+					resultConnectMC.error?.website_url ||
+					resultCreateAccount.error?.website_url
+				}
+				onSwitchAccount={ () => {
+					resultConnectMC.reset();
+					resultCreateAccount.reset();
+				} }
+			/>
+		);
+	}
+
+	if (
+		resultCreateAccount.loading ||
+		resultCreateAccount.response?.status === 503
+	) {
+		return (
+			<CreatingCard
+				retryAfter={ resultCreateAccount.error?.retry_after }
+				onRetry={ handleCreateAccount }
 			/>
 		);
 	}
@@ -78,10 +96,10 @@ const ConnectMC = ( props ) => {
 					/>
 					<AppButton
 						isSecondary
-						loading={ loading }
+						loading={ resultConnectMC.loading }
 						disabled={ ! value }
 						eventName="gla_mc_account_connect_button_click"
-						onClick={ handleConnectClick }
+						onClick={ handleConnectMC }
 					>
 						{ __( 'Connect', 'google-listings-and-ads' ) }
 					</AppButton>
@@ -90,8 +108,8 @@ const ConnectMC = ( props ) => {
 			<Section.Card.Footer>
 				<CreateAccountButton
 					isLink
-					disabled={ loading }
-					onCreateAccount={ onCreateNew }
+					disabled={ resultConnectMC.loading }
+					onCreateAccount={ handleCreateAccount }
 				/>
 			</Section.Card.Footer>
 		</AccountCard>
