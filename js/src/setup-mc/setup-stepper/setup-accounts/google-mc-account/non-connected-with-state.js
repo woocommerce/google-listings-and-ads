@@ -9,7 +9,7 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
-import ConnectMCCard from './connect-mc-card';
+import ConnectMC from './connect-mc';
 import CreateAccount from './create-account';
 import WarningModal from './warning-modal';
 import TermsModal from './terms-modal';
@@ -63,7 +63,7 @@ const NonConnectedWithState = ( props ) => {
 
 		if ( val === CARDS.CONNECT ) {
 			return (
-				<ConnectMCCard
+				<ConnectMC
 					onCreateNew={ () =>
 						setModal(
 							matchingDomainAccount

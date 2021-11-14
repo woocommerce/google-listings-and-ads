@@ -22,7 +22,7 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
 import './index.scss';
 
-const ConnectMCCard = ( props ) => {
+const ConnectMC = ( props ) => {
 	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
 	const { createNotice } = useDispatchCoreNotices();
@@ -128,4 +128,4 @@ const ConnectMCCard = ( props ) => {
 	);
 };
 
-export default ConnectMCCard;
+export default ConnectMC;
