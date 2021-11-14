@@ -12,51 +12,21 @@ import MerchantCenterSelectControl from '.~/components/merchant-center-select-co
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
-import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
+import useConnectMCAccount from '../useConnectMCAccount';
 import './index.scss';
 
 const ConnectMC = ( props ) => {
 	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
-	const { createNotice } = useDispatchCoreNotices();
 	const [
-		fetchMCAccounts,
+		handleConnectClick,
 		{ loading, error, response, reset },
-	] = useApiFetchCallback( {
-		path: `/wc/gla/mc/accounts`,
-		method: 'POST',
-		data: { id: value },
-	} );
-	const { invalidateResolution } = useAppDispatch();
-
-	const handleConnectClick = async () => {
-		if ( ! value ) {
-			return;
-		}
-
-		try {
-			await fetchMCAccounts( { parse: false } );
-			invalidateResolution( 'getGoogleMCAccount', [] );
-		} catch ( e ) {
-			if ( ! [ 409, 403 ].includes( e.status ) ) {
-				const body = await e.json();
-				const message =
-					body.message ||
-					__(
-						'Unable to connect Merchant Center account. Please try again later.',
-						'google-listings-and-ads'
-					);
-				createNotice( 'error', message );
-			}
-		}
-	};
+	] = useConnectMCAccount( value );
 
 	const handleSelectAnotherAccount = () => {
 		reset();
