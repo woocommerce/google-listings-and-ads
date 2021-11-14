@@ -3,19 +3,25 @@
  */
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
 import SpinnerCard from '.~/components/spinner-card';
-import NonConnectedWithState from './non-connected-with-state';
+import ConnectMC from './connect-mc';
+import CreateAccount from './create-account';
 
 const NonConnected = () => {
 	const {
 		data: existingAccounts,
 		hasFinishedResolution,
+		invalidateResolution,
 	} = useExistingGoogleMCAccounts();
 
 	if ( ! hasFinishedResolution ) {
 		return <SpinnerCard />;
 	}
 
-	return <NonConnectedWithState existingAccounts={ existingAccounts } />;
+	if ( existingAccounts.length > 0 ) {
+		return <ConnectMC />;
+	}
+
+	return <CreateAccount onShowExisting={ invalidateResolution } />;
 };
 
 export default NonConnected;
