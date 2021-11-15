@@ -10,6 +10,11 @@ import classNames from 'classnames';
 import AppInputControl from '.~/components/app-input-control';
 import './index.scss';
 
+/**
+ * Renders an `AppInputControl` with a link icon prefix.
+ *
+ * @param {Object} props Props to be passed down to AppInputControl.
+ */
 const AppInputLinkControl = ( props ) => {
 	const { className, ...rest } = props;
 
