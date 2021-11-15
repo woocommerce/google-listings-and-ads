@@ -50,26 +50,28 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get merchant IDs associated with the connected Merchant Center account.
+	 * Get all Merchant Accounts associated with the connected account.
 	 *
-	 * @return int[]
+	 * @since x.x.x
+	 *
+	 * @return array
 	 * @throws Exception When an Exception is caught.
 	 */
-	public function get_merchant_ids(): array {
+	public function get_merchant_accounts(): array {
 		try {
 			/** @var Client $client */
 			$client   = $this->container->get( Client::class );
 			$result   = $client->get( $this->get_manager_url( 'merchant-accounts' ) );
 			$response = json_decode( $result->getBody()->getContents(), true );
-			$ids      = [];
+			$accounts = [];
 
 			if ( 200 === $result->getStatusCode() && is_array( $response ) ) {
-				foreach ( $response as $id ) {
-					$ids[] = $id;
+				foreach ( $response as $account ) {
+					$accounts[] = $account;
 				}
 			}
 
-			return $ids;
+			return $accounts;
 		} catch ( ClientExceptionInterface $e ) {
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
 
@@ -78,6 +80,15 @@ class Proxy implements OptionsAwareInterface {
 				$e->getCode()
 			);
 		}
+	}
+
+	/**
+	 * Get merchant IDs associated with the connected Merchant Center account.
+	 *
+	 * @return int[]
+	 */
+	public function get_merchant_ids(): array {
+		return array_column( $this->get_merchant_accounts(), 'id' );
 	}
 
 	/**

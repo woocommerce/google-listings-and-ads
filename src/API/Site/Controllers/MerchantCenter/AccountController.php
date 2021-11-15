@@ -166,7 +166,7 @@ class AccountController extends BaseOptionsController {
 						$data = $this->prepare_item_for_response( $account, $request );
 						return $this->prepare_response_for_collection( $data );
 					},
-					$this->middleware->get_merchant_ids()
+					$this->middleware->get_merchant_accounts()
 				);
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
@@ -282,6 +282,18 @@ class AccountController extends BaseOptionsController {
 			'subaccount' => [
 				'type'        => 'boolean',
 				'description' => __( 'Is a MCA sub account.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'readonly'    => true,
+			],
+			'name'       => [
+				'type'        => 'string',
+				'description' => __( 'The Merchant Center Account name.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'required'    => false,
+			],
+			'domain'     => [
+				'type'        => 'string',
+				'description' => __( 'The domain registered with the Merchant Center Account.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
@@ -560,7 +572,7 @@ class AccountController extends BaseOptionsController {
 		// Maybe the existing account is sub-account!
 		$state                               = $this->account_state->get();
 		$state['set_id']['data']['from_mca'] = false;
-		foreach ( $this->middleware->get_merchant_ids() as $existing_account ) {
+		foreach ( $this->middleware->get_merchant_accounts() as $existing_account ) {
 			if ( $existing_account['id'] === $account_id ) {
 				$state['set_id']['data']['from_mca'] = $existing_account['subaccount'];
 				break;
