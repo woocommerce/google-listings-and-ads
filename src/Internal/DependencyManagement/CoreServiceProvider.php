@@ -60,6 +60,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as Revie
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions as ReviewAfterConversionsNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaignTwoWeeks as SetupCampaign2Note;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCouponSharing as SetupCouponSharing;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsSetupCompleted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -139,6 +140,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		SetupMerchantCenter::class    => true,
 		SetupCampaignNote::class      => true,
 		SetupCampaign2Note::class     => true,
+		SetupCouponSharing::class     => true,
 		TableManager::class           => true,
 		TrackerSnapshot::class        => true,
 		Tracks::class                 => true,
@@ -250,6 +252,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( ReviewAfterConversionsNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( SetupCampaignNote::class );
 		$this->share_with_tags( SetupCampaign2Note::class );
+		$this->share_with_tags( SetupCouponSharing::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class, Note::class );
 
 		// Product attributes
