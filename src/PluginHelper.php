@@ -129,15 +129,6 @@ trait PluginHelper {
 	}
 
 	/**
-	 * Get the plugin documentation URL related to Google product feed.
-	 *
-	 * @return string
-	 */
-	protected function get_mc_promotion_help_center_url(): string {
-		return 'https://support.google.com/merchants/answer/11338950';
-	}
-
-	/**
 	 * Get the coupon list view URL
 	 *
 	 * @return string

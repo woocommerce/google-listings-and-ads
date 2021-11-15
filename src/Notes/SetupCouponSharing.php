@@ -53,7 +53,7 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 		$note->add_action(
 			'coupon-more-info',
 			__( 'Learn more', 'google-listings-and-ads' ),
-			$this->get_mc_promotion_help_center_url()
+		    $this->get_documentation_url()
 		);
 		$note->save();
 	}
