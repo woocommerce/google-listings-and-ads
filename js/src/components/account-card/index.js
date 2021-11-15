@@ -112,9 +112,11 @@ export default function AccountCard( {
 						</FlexItem>
 					) }
 					<FlexBlock>
-						<Subsection.Title className="gla-account-card__title">
-							{ title }
-						</Subsection.Title>
+						{ title && (
+							<Subsection.Title className="gla-account-card__title">
+								{ title }
+							</Subsection.Title>
+						) }
 						<div className="gla-account-card__description">
 							{ description }
 						</div>
