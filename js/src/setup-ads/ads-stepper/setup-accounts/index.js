@@ -10,13 +10,13 @@ import { __ } from '@wordpress/i18n';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
-import AccountCard from '.~/components/account-card';
+import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import GoogleAdsAccountSection from './google-ads-account-section';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
-import './index.scss';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
@@ -42,20 +42,22 @@ const SetupAccounts = ( props ) => {
 				) }
 			/>
 			<Section
-				title={ __( 'Google account', 'google-listings-and-ads' ) }
+				title={ __( 'Connect accounts', 'google-listings-and-ads' ) }
 				description={ __(
-					'WooCommerce uses your Google account to sync with Google Merchant Center and Google Ads.',
+					'Any campaigns created through this app will appear in your Google Ads account. You will be billed directly through Google.',
 					'google-listings-and-ads'
 				) }
 			>
-				<AccountCard
-					className="gla-setup-ads-accounts__google-card"
-					appearance={ { title: google.email } }
-					description={ __(
-						'This Google account is connected to your store’s product feed.',
-						'google-listings-and-ads'
-					) }
-				/>
+				<VerticalGapLayout size="large">
+					<ConnectedGoogleAccountCard
+						googleAccount={ google }
+						hideAccountSwitch
+						helper={ __(
+							'This Google account is connected to your store’s product feed.',
+							'google-listings-and-ads'
+						) }
+					/>
+				</VerticalGapLayout>
 			</Section>
 			<GoogleAdsAccountSection />
 			<StepContentFooter>
