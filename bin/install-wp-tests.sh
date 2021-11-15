@@ -182,13 +182,12 @@ install_db() {
 install_wc() {
   if [ ! -d "$WC_DIR" ]; then
     # set up testing suite
-    mkdir -p "$WC_DIR"
     echo "Installing WooCommerce ($WC_VERSION)."
     # Grab the necessary plugins.
     if [ $WC_VERSION == 'trunk' ]; then
       rm -rf "$TMPDIR"/woocommerce-trunk
       git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${TMPDIR}/woocommerce-trunk"
-      mv "$TMPDIR"/woocommerce-trunk/plugins/woocommerce/* "$WC_DIR"
+      ln -s "$TMPDIR"/woocommerce-trunk/plugins/woocommerce "$WC_DIR"
     else
       echo "Test with specified WooCommerce version ${WC_VERSION} is not yet supported."
       exit 1
