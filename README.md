@@ -50,7 +50,7 @@ As per [WordPress Core Handbook](https://make.wordpress.org/core/handbook/best-p
 ## Development
 
 After cloning the repo, install dependencies:
-
+-   `nvm use` to be sure you're using the recommended node version in `.nvmrc`
 -   `npm install` to install JavaScript dependencies.
 -   `composer install` to gather PHP dependencies.
 
@@ -79,12 +79,18 @@ After running `composer install` to install PHP dependencies you can use the fol
 
 ### Prerequisites
 
-Install [`composer`](https://getcomposer.org/), `git`, `svn`, and either `wget` or `curl`.
+Install [`composer`](https://getcomposer.org/), `git`, `npm`, `svn`, and either `wget` or `curl`.
 
 Change to the plugin root directory and type:
 
 ```bash
 $ composer install
+```
+
+Change to the plugin root directory and type:
+
+```bash
+$ npm install && npm run dev
 ```
 
 ### Install Test Dependencies
@@ -146,7 +152,7 @@ To remove the Docker container and images (this will **delete everything** in th
 
 -   [Usage Tracking](./src/Tracking/README.md)
 
-<p align="center">
+<p style="text-align: center">
 	<br/><br/>
 	Made with 💜 by <a href="https://woocommerce.com/">WooCommerce</a>.<br/>
 	<a href="https://woocommerce.com/careers/">We're hiring</a>! Come work with us!
