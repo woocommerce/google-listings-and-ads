@@ -898,7 +898,7 @@ class ConnectionTest implements Service, Registerable {
 
 				/** @var Proxy $proxy */
 				$proxy = $this->container->get( Proxy::class );
-				foreach ( $proxy->get_merchant_ids() as $account ) {
+				foreach ( $proxy->get_merchant_accounts() as $account ) {
 					$this->response     .= sprintf(
 						"Merchant ID: %s%s\n",
 						$account['id'],
