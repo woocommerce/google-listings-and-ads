@@ -152,7 +152,7 @@ To remove the Docker container and images (this will **delete everything** in th
 
 -   [Usage Tracking](./src/Tracking/README.md)
 
-<p style="text-align: center">
+<p align="center">
 	<br/><br/>
 	Made with 💜 by <a href="https://woocommerce.com/">WooCommerce</a>.<br/>
 	<a href="https://woocommerce.com/careers/">We're hiring</a>! Come work with us!
