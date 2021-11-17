@@ -132,7 +132,8 @@ export default function VerifyPhoneNumberContent( {
 		isMounted,
 	] );
 
-	const handleVerifyClick = () => {
+	const handleVerification = () => {
+		if ( disabledVerify ) return;
 		setError( null );
 		setVerifying( true );
 		onVerificationStateChange( true, false );
@@ -167,7 +168,7 @@ export default function VerifyPhoneNumberContent( {
 	} = appearanceDict[ method ];
 
 	const verificationId = verificationIdRef.current[ method ];
-	const disableVerify = ! ( verification?.isFilled && verificationId );
+	const disabledVerify = ! ( verification?.isFilled && verificationId );
 
 	return (
 		<>
@@ -192,19 +193,20 @@ export default function VerifyPhoneNumberContent( {
 					<VerificationCodeControl
 						resetNeedle={ method + callCount }
 						onCodeChange={ setVerification }
+						onSubmitKeyPressed={ handleVerification }
 					/>
 				</Subsection>
 				<Subsection>
 					<Flex justify="normal" gap={ 4 }>
 						<AppButton
 							isSecondary
-							disabled={ disableVerify }
+							disabled={ disabledVerify }
 							loading={ verifying }
 							text={ __(
 								'Verify phone number',
 								'google-listings-and-ads'
 							) }
-							onClick={ handleVerifyClick }
+							onClick={ handleVerification }
 						/>
 						<AppButton
 							isSecondary
