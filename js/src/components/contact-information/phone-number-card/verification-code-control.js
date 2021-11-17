@@ -13,6 +13,7 @@ import './verification-code-control.scss';
 const KEY_CODE_LEFT = 37;
 const KEY_CODE_RIGHT = 39;
 const KEY_CODE_BACKSPACE = 8;
+const SUBMIT_KEY = 'Enter';
 
 const DIGIT_LENGTH = 6;
 const initDigits = Array( DIGIT_LENGTH ).fill( '' );
@@ -25,6 +26,7 @@ const toCallbackData = ( digits ) => {
 
 /**
  * @callback onCodeChange
+ * @callback onSubmitKeyPressed
  * @param {Object} verification Data payload.
  * @param {string} verification.code The current entered verification code.
  * @param {boolean} verification.isFilled Whether all digits of validation code are filled.
@@ -36,10 +38,12 @@ const toCallbackData = ( digits ) => {
  * @param {Object} props React props.
  * @param {onCodeChange} props.onCodeChange Called when the verification code are changed.
  * @param {string} [props.resetNeedle=''] When the passed value changes, it will trigger internal state resetting for this component.
+ * @param {onSubmitKeyPressed} props.onSubmitKeyPressed Called when user press the submit keyboard key
  */
 export default function VerificationCodeControl( {
 	onCodeChange,
 	resetNeedle = '',
+	onSubmitKeyPressed,
 } ) {
 	const inputsRef = useRef( [] );
 	const cursorRef = useRef( 0 );
@@ -110,6 +114,12 @@ export default function VerificationCodeControl( {
 		}
 	};
 
+	const handleKeyPress = ( e ) => {
+		if ( onSubmitKeyPressed && e.key === SUBMIT_KEY ) {
+			onSubmitKeyPressed();
+		}
+	};
+
 	// Update the inputs' values.
 	useEffect( () => {
 		inputsRef.current.forEach( ( el ) => ( el.value = '' ) );
@@ -156,6 +166,7 @@ export default function VerificationCodeControl( {
 						ref={ ( el ) => ( inputsRef.current[ idx ] = el ) }
 						data-idx={ idx }
 						value={ value }
+						onKeyPress={ handleKeyPress }
 						onKeyDown={ handleKeyDown }
 						onBeforeInput={ handleBeforeInput }
 						onInput={ handleInput }
