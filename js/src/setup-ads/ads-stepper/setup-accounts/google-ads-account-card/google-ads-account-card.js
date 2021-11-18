@@ -8,7 +8,7 @@ import Connected from './connected';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
 
-const SectionContent = () => {
+export default function GoogleAdsAccountCard() {
 	const { google, scope } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
@@ -25,6 +25,4 @@ const SectionContent = () => {
 	}
 
 	return <Connected googleAdsAccount={ googleAdsAccount } />;
-};
-
-export default SectionContent;
+}
