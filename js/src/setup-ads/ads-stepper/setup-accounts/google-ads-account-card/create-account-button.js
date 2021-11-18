@@ -10,25 +10,18 @@ import { useState } from '@wordpress/element';
 import TermsModal from './terms-modal';
 import AppButton from '.~/components/app-button';
 
-const noop = () => {};
-
 /**
  * Renders a Google Ads account creaton button.
  * When clicking on the button, it will pop up a modal first to ask for terms agreement.
  *
  * @param {Object} props React props.
- * @param {() => boolean|void} [props.onBeforeAskTerms] Called before showing the terms agreement modal.
- *     Return `false` to interrupt the ask for terms agreement and the subsequent process.
  * @param {Function} [props.onCreateAccount] Called after the user accept the terms agreement.
  */
 const CreateAccountButton = ( props ) => {
-	const { onBeforeAskTerms = noop, onCreateAccount, ...rest } = props;
+	const { onCreateAccount, ...rest } = props;
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleButtonClick = () => {
-		if ( onBeforeAskTerms() === false ) {
-			return;
-		}
 		setOpen( true );
 	};
 
