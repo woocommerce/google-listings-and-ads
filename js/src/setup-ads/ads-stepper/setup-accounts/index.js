@@ -57,9 +57,9 @@ const SetupAccounts = ( props ) => {
 							'google-listings-and-ads'
 						) }
 					/>
+					<GoogleAdsAccountSection />
 				</VerticalGapLayout>
 			</Section>
-			<GoogleAdsAccountSection />
 			<StepContentFooter>
 				<Button
 					isPrimary
