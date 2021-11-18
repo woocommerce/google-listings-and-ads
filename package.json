@@ -39,8 +39,10 @@
 	},
 	"devDependencies": {
 		"@hapi/hapi": "^20.1.3",
+		"@testing-library/jest-dom": "^5.15.0",
 		"@testing-library/react": "^11.1.0",
 		"@testing-library/react-hooks": "^5.1.1",
+		"@testing-library/user-event": "^13.5.0",
 		"@types/jest": "^26.0.23",
 		"@types/puppeteer": "^5.4.4",
 		"@woocommerce/api": "^0.2.0",
