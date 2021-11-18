@@ -132,7 +132,7 @@ export default function VerifyPhoneNumberContent( {
 		isMounted,
 	] );
 
-	const handleVerifyClick = () => {
+	const handleVerifySubmit = () => {
 		setError( null );
 		setVerifying( true );
 		onVerificationStateChange( true, false );
@@ -170,7 +170,7 @@ export default function VerifyPhoneNumberContent( {
 	const disableVerify = ! ( verification?.isFilled && verificationId );
 
 	return (
-		<>
+		<form onSubmit={ handleVerifySubmit }>
 			<Section.Card.Body>
 				{ error && (
 					<Subsection>
@@ -204,7 +204,7 @@ export default function VerifyPhoneNumberContent( {
 								'Verify phone number',
 								'google-listings-and-ads'
 							) }
-							onClick={ handleVerifyClick }
+							type="submit"
 						/>
 						<AppButton
 							isSecondary
@@ -227,6 +227,6 @@ export default function VerifyPhoneNumberContent( {
 					onClick={ switchMethod }
 				/>
 			</Section.Card.Footer>
-		</>
+		</form>
 	);
 }
