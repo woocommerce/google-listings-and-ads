@@ -132,7 +132,8 @@ export default function VerifyPhoneNumberContent( {
 		isMounted,
 	] );
 
-	const handleVerifySubmit = () => {
+	const handleVerifySubmit = ( event ) => {
+		event.preventDefault();
 		setError( null );
 		setVerifying( true );
 		onVerificationStateChange( true, false );
