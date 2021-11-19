@@ -3,14 +3,15 @@
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button, CardDivider, Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
-import ContentButtonLayout from '.~/components/content-button-layout';
+import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
@@ -48,7 +49,8 @@ const ConnectAds = ( props ) => {
 	};
 
 	return (
-		<Section.Card>
+		<AccountCard appearance={ APPEARANCE.GOOGLE_ADS }>
+			<CardDivider />
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
@@ -56,21 +58,29 @@ const ConnectAds = ( props ) => {
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
-				<ContentButtonLayout>
+				<Flex>
 					<AdsAccountSelectControl
 						value={ value }
 						onChange={ setValue }
 					/>
-					<AppButton
-						isSecondary
-						loading={ loading || isResolving }
-						disabled={ ! value }
-						eventName="gla_ads_account_connect_button_click"
-						onClick={ handleConnectClick }
-					>
-						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</AppButton>
-				</ContentButtonLayout>
+					{ loading || isResolving ? (
+						<LoadingLabel
+							text={ __(
+								'Connecting…',
+								'google-listings-and-ads'
+							) }
+						/>
+					) : (
+						<AppButton
+							isSecondary
+							disabled={ ! value }
+							eventName="gla_ads_account_connect_button_click"
+							onClick={ handleConnectClick }
+						>
+							{ __( 'Connect', 'google-listings-and-ads' ) }
+						</AppButton>
+					) }
+				</Flex>
 			</Section.Card.Body>
 			<Section.Card.Footer>
 				<Button isLink onClick={ onCreateNew }>
@@ -80,7 +90,7 @@ const ConnectAds = ( props ) => {
 					) }
 				</Button>
 			</Section.Card.Footer>
-		</Section.Card>
+		</AccountCard>
 	);
 };
 
