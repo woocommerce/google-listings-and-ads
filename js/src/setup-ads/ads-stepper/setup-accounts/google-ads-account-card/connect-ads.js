@@ -21,12 +21,13 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 const ConnectAds = ( props ) => {
 	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
-	const [ fetchConnectAdsAccount, { loading } ] = useApiFetchCallback( {
+	const [ isLoading, setLoading ] = useState( false );
+	const [ fetchConnectAdsAccount ] = useApiFetchCallback( {
 		path: `/wc/gla/ads/accounts`,
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { refetchGoogleAdsAccount, isResolving } = useGoogleAdsAccount();
+	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
@@ -34,10 +35,12 @@ const ConnectAds = ( props ) => {
 			return;
 		}
 
+		setLoading( true );
 		try {
 			await fetchConnectAdsAccount();
-			refetchGoogleAdsAccount();
+			await refetchGoogleAdsAccount();
 		} catch ( error ) {
+			setLoading( false );
 			createNotice(
 				'error',
 				__(
@@ -46,6 +49,8 @@ const ConnectAds = ( props ) => {
 				)
 			);
 		}
+		// Wait for the upper layer component to switch to connected account card,
+		// so here doesn't reset the `isLoading` to false.
 	};
 
 	return (
@@ -63,7 +68,7 @@ const ConnectAds = ( props ) => {
 						value={ value }
 						onChange={ setValue }
 					/>
-					{ loading || isResolving ? (
+					{ isLoading ? (
 						<LoadingLabel
 							text={ __(
 								'Connecting…',
