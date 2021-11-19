@@ -107,19 +107,4 @@ describe( 'VerificationCodeControl component', () => {
 		// Notice the initial render calls it one time due a useEffect function
 		expect( onChange ).toHaveBeenCalledTimes( 3 );
 	} );
-
-	test( 'typing Enter calls onSubmitKeyPressed callback', async () => {
-		const onSubmitKeyPressed = jest.fn();
-		render(
-			<VerificationCodeControl
-				onCodeChange={ () => {} }
-				onSubmitKeyPressed={ onSubmitKeyPressed }
-			/>
-		);
-		const inputs = screen.getAllByRole( 'textbox' );
-
-		await userEvent.type( inputs[ 0 ], '{enter}' );
-
-		expect( onSubmitKeyPressed ).toHaveBeenCalledTimes( 1 );
-	} );
 } );
