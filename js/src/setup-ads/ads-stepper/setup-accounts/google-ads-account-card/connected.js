@@ -2,20 +2,18 @@
  * Internal dependencies
  */
 import toAccountText from '.~/utils/toAccountText';
-import TitleButtonLayout from '.~/components/title-button-layout';
-import Section from '.~/wcdl/section';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import ConnectedIconLabel from '.~/components/connected-icon-label';
 
 const Connected = ( props ) => {
 	const { googleAdsAccount } = props;
 
 	return (
-		<Section.Card>
-			<Section.Card.Body>
-				<TitleButtonLayout
-					title={ toAccountText( googleAdsAccount.id ) }
-				/>
-			</Section.Card.Body>
-		</Section.Card>
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE_ADS }
+			description={ toAccountText( googleAdsAccount.id ) }
+			indicator={ <ConnectedIconLabel /> }
+		/>
 	);
 };
 
