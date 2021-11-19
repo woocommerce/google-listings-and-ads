@@ -9,7 +9,7 @@ import { Button } from '@wordpress/components';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import TitleButtonLayout from '.~/components/title-button-layout';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import CreateAccountButton from './create-account-button';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
@@ -60,23 +60,13 @@ const ClaimTermsAndCreateAccountButton = () => {
 };
 
 const CreateAccount = ( props ) => {
-	const {
-		allowShowExisting,
-		onShowExisting,
-		button = <ClaimTermsAndCreateAccountButton />,
-	} = props;
+	const { allowShowExisting, onShowExisting } = props;
 
 	return (
-		<Section.Card>
-			<Section.Card.Body>
-				<TitleButtonLayout
-					title={ __(
-						'Create your Google Ads account',
-						'google-listings-and-ads'
-					) }
-					button={ button }
-				/>
-			</Section.Card.Body>
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE_ADS }
+			indicator={ <ClaimTermsAndCreateAccountButton /> }
+		>
 			{ allowShowExisting && (
 				<Section.Card.Footer>
 					<Button isLink onClick={ onShowExisting }>
@@ -87,7 +77,7 @@ const CreateAccount = ( props ) => {
 					</Button>
 				</Section.Card.Footer>
 			) }
-		</Section.Card>
+		</AccountCard>
 	);
 };
 

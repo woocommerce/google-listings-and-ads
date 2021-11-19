@@ -9,6 +9,7 @@ import { useState } from '@wordpress/element';
  */
 import TermsModal from './terms-modal';
 import AppButton from '.~/components/app-button';
+import LoadingLabel from '.~/components/loading-label';
 
 /**
  * Renders a Google Ads account creaton button.
@@ -31,9 +32,18 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			<AppButton isSecondary { ...rest } onClick={ handleButtonClick }>
-				{ __( 'Create account', 'google-listings-and-ads' ) }
-			</AppButton>
+			{ rest.loading ? (
+				<LoadingLabel
+					text={ __( 'Creating…', 'google-listings-and-ads' ) }
+				/>
+			) : (
+				<AppButton
+					isSecondary
+					{ ...rest }
+					text={ __( 'Create account', 'google-listings-and-ads' ) }
+					onClick={ handleButtonClick }
+				/>
+			) }
 			{ isOpen && (
 				<TermsModal
 					onCreateAccount={ onCreateAccount }
