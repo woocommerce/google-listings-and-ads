@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { Button } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import { noop } from 'lodash';
 
@@ -42,12 +41,7 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			<Button onClick={ handleCreateAccountClick } { ...rest }>
-				{ __(
-					'Or, create a new Merchant Center account',
-					'google-listings-and-ads'
-				) }
-			</Button>
+			<Button onClick={ handleCreateAccountClick } { ...rest } />
 			{ activeModal === MODALS.WARNING && (
 				<WarningModal
 					existingAccount={ matchingDomainAccount }
