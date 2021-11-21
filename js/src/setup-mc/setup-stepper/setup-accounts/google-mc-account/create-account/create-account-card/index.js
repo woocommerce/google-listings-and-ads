@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import CreateAccountButton from './create-account-button';
+import CreateAccountButton from '../../create-account-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 
 const CreateAccountCard = ( props ) => {
@@ -20,7 +20,12 @@ const CreateAccountCard = ( props ) => {
 				'google-listings-and-ads'
 			) }
 			indicator={
-				<CreateAccountButton onCreateAccount={ onCreateAccount } />
+				<CreateAccountButton
+					isSecondary
+					onCreateAccount={ onCreateAccount }
+				>
+					{ __( 'Create Account', 'google-listings-and-ads' ) }
+				</CreateAccountButton>
 			}
 		/>
 	);
