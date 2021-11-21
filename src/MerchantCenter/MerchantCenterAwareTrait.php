@@ -19,10 +19,23 @@ trait MerchantCenterAwareTrait {
 	 */
 	protected $merchant_center;
 
+
+	/**
+	 * The MerchantStatuses object.
+	 */
+	protected $merchant_statuses;
+
 	/**
 	 * @param MerchantCenterService $merchant_center
 	 */
 	public function set_merchant_center_object( MerchantCenterService $merchant_center ): void {
 		$this->merchant_center = $merchant_center;
+	}
+
+	/**
+	 * @param MerchantStatuses $merchant_statuses
+	 */
+	public function set_merchant_statuses_object( MerchantStatuses $merchant_statuses ): void {
+		$this->merchant_statuses = $merchant_statuses;
 	}
 }

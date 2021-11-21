@@ -4,10 +4,14 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
+use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -16,8 +20,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInterface {
+class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInterface, AdsAwareInterface {
 
+	use AdsAwareTrait;
 	use MerchantCenterAwareTrait;
 	use PluginHelper;
 	use Utilities;
@@ -53,9 +58,10 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 		$note->add_action(
 			'coupon-more-info',
 			__( 'Learn more', 'google-listings-and-ads' ),
-		    $this->get_documentation_url()
+			$this->get_documentation_url()
 		);
-		$note->save();
+
+		return $note;
 	}
 
 
@@ -72,12 +78,37 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 			return false;
 		}
 
-		if ( ! $this->gla_setup_for( 7 * DAY_IN_SECONDS ) ) {
+		if ( ! $this->merchant_center->is_promotion_supported_country() ) {
 			return false;
 		}
 
-		if ( ! $this->merchant_center->is_promotion_supported_country() ) {
+		// Check if there are synced products.
+		$statuses = $this->merchant_statuses->get_product_statistics();
+		if ( $statuses['statistics']['active'] <= 0 ) {
 			return false;
+		}
+
+		// Check if merchants have created coupons.
+		$coupons        = get_posts( [ 'post_type' => 'shop_coupon' ] );
+		$shared_coupons = get_posts(
+			[
+				'post_type'  => 'shop_coupon',
+				'meta_key'   => CouponMetaHandler::KEY_VISIBILITY,
+				'meta_value' => ChannelVisibility::SYNC_AND_SHOW,
+			]
+		);
+		if ( empty( $coupons ) || ! empty( $shared_coupons ) ) {
+			return false;
+		}
+
+		if ( $this->ads_service->is_setup_complete() ) {
+			if ( ! $this->gla_setup_for( 3 * DAY_IN_SECONDS ) ) {
+				return false;
+			}
+		} else {
+			if ( ! $this->gla_setup_for( 17 * DAY_IN_SECONDS ) ) {
+				return false;
+			}
 		}
 
 		return true;
