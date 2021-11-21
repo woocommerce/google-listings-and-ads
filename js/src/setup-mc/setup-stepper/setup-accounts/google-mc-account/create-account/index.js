@@ -6,6 +6,17 @@ import CreatingCard from '../creating-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import useCreateMCAccount from '../useCreateMCAccount';
 
+/**
+ * Create Account flow.
+ *
+ * During the account creation process, this will display the `CreatingCard`,
+ * and if there is a reclaim URL error, it will display the `ReclaimUrlCard`.
+ *
+ * @param {Object} props Props
+ * @param {Function} props.onSwitchAccount
+ * Called when users click on "Switch account" button in the ReclaimUrlCard,
+ * when there is a reclaim URL error during account creation process.
+ */
 const CreateAccount = ( props ) => {
 	const { onSwitchAccount } = props;
 	const [
