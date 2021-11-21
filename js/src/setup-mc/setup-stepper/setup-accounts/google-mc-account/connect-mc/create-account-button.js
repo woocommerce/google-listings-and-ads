@@ -27,6 +27,7 @@ const CreateAccountButton = ( props ) => {
 	const matchingDomainAccount = getMatchingDomainAccount( existingAccounts );
 
 	const handleCreateAccountClick = () => {
+		// Display the warning modal only when there is an account with matching domain.
 		setActiveModal( matchingDomainAccount ? MODALS.WARNING : MODALS.TERMS );
 	};
 
