@@ -16,7 +16,7 @@ import ContentButtonLayout from '.~/components/content-button-layout';
 import SwitchUrlCard from '../switch-url-card';
 import ReclaimUrlCard from '../reclaim-url-card';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
-import CreateAccountButton from './create-account-button';
+import CreateAccountButton from '../create-account-button';
 import useConnectMCAccount from '../useConnectMCAccount';
 import useCreateMCAccount from '../useCreateMCAccount';
 import CreatingCard from '../creating-card';
@@ -108,9 +108,15 @@ const ConnectMC = () => {
 			<Section.Card.Footer>
 				<CreateAccountButton
 					isLink
+					isSecondary
 					disabled={ resultConnectMC.loading }
 					onCreateAccount={ handleCreateAccount }
-				/>
+				>
+					{ __(
+						'Or, create a new Merchant Center account',
+						'google-listings-and-ads'
+					) }
+				</CreateAccountButton>
 			</Section.Card.Footer>
 		</AccountCard>
 	);

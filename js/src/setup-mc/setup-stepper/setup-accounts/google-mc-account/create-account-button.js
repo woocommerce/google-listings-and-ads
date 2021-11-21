@@ -9,10 +9,10 @@ import { noop } from 'lodash';
 /**
  * Internal dependencies
  */
-import WarningModal from '../warning-modal';
-import TermsModal from '../terms-modal';
+import WarningModal from './warning-modal';
+import TermsModal from './terms-modal';
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
-import getMatchingDomainAccount from '../getMatchingDomainAccount';
+import getMatchingDomainAccount from './getMatchingDomainAccount';
 
 const MODALS = Object.freeze( {
 	NONE: 'NONE',
@@ -21,7 +21,7 @@ const MODALS = Object.freeze( {
 } );
 
 const CreateAccountButton = ( props ) => {
-	const { onCreateAccount = noop, ...rest } = props;
+	const { onCreateAccount = noop, onClick = noop, ...rest } = props;
 	const [ activeModal, setActiveModal ] = useState( MODALS.NONE );
 	const { data: existingAccounts } = useExistingGoogleMCAccounts();
 	const matchingDomainAccount = getMatchingDomainAccount( existingAccounts );
@@ -29,6 +29,7 @@ const CreateAccountButton = ( props ) => {
 	const handleCreateAccountClick = () => {
 		// Display the warning modal only when there is an account with matching domain.
 		setActiveModal( matchingDomainAccount ? MODALS.WARNING : MODALS.TERMS );
+		onClick();
 	};
 
 	const handleWarningContinue = () => {
@@ -41,11 +42,7 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			<Button
-				isSecondary
-				onClick={ handleCreateAccountClick }
-				{ ...rest }
-			>
+			<Button onClick={ handleCreateAccountClick } { ...rest }>
 				{ __(
 					'Or, create a new Merchant Center account',
 					'google-listings-and-ads'
