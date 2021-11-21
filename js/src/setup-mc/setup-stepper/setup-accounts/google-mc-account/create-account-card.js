@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import CreateAccountButton from '../../create-account-button';
+import CreateAccountButton from './create-account-button';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 
 const CreateAccountCard = ( props ) => {
