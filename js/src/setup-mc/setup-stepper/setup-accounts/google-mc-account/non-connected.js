@@ -21,7 +21,7 @@ const NonConnected = () => {
 		return <ConnectMC />;
 	}
 
-	return <CreateAccount onShowExisting={ invalidateResolution } />;
+	return <CreateAccount onSwitchAccount={ invalidateResolution } />;
 };
 
 export default NonConnected;

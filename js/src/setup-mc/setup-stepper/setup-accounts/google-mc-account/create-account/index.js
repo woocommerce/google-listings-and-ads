@@ -7,7 +7,7 @@ import ReclaimUrlCard from '../reclaim-url-card';
 import useCreateMCAccount from '../useCreateMCAccount';
 
 const CreateAccount = ( props ) => {
-	const { allowShowExisting, onShowExisting } = props;
+	const { onSwitchAccount } = props;
 	const [
 		handleCreateAccount,
 		{ loading, error, response },
@@ -27,17 +27,11 @@ const CreateAccount = ( props ) => {
 			<ReclaimUrlCard
 				id={ error.id }
 				websiteUrl={ error.website_url }
-				onSwitchAccount={ onShowExisting }
+				onSwitchAccount={ onSwitchAccount }
 			/>
 		);
 	}
 
-	return (
-		<CreateAccountCard
-			allowShowExisting={ allowShowExisting }
-			onShowExisting={ onShowExisting }
-			onCreateAccount={ handleCreateAccount }
-		/>
-	);
+	return <CreateAccountCard onCreateAccount={ handleCreateAccount } />;
 };
 export default CreateAccount;
