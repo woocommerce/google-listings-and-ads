@@ -8,8 +8,8 @@ import { __ } from '@wordpress/i18n';
  */
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAuthorization from '.~/hooks/useGoogleAuthorization';
-import CreateAccount from './create-account';
-import CreateAccountButton from './create-account-button';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import AppButton from '.~/components/app-button';
 
 const pageName = 'setup-ads';
 
@@ -20,7 +20,7 @@ export default function AuthorizeAds( { additionalScopeEmail } ) {
 		additionalScopeEmail
 	);
 
-	const handleBeforeAskTerms = () => {
+	const handleClick = () => {
 		fetchGoogleConnect()
 			.then( ( { url } ) => {
 				window.location.href = url;
@@ -34,17 +34,20 @@ export default function AuthorizeAds( { additionalScopeEmail } ) {
 					)
 				);
 			} );
-
-		// Do not continue to ask for terms agreement when requesting needed permission.
-		return false;
 	};
 
 	return (
-		<CreateAccount
-			button={
-				<CreateAccountButton
+		<AccountCard
+			appearance={ APPEARANCE.GOOGLE_ADS }
+			indicator={
+				<AppButton
+					isSecondary
 					loading={ loading || data }
-					onBeforeAskTerms={ handleBeforeAskTerms }
+					onClick={ handleClick }
+					text={ __(
+						'Allow full access',
+						'google-listings-and-ads'
+					) }
 					eventName="gla_google_account_connect_button_click"
 					eventProps={ { context: pageName, action: 'scope' } }
 				/>

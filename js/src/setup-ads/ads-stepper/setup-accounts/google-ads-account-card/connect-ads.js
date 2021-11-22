@@ -3,14 +3,15 @@
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button, CardDivider, Flex } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
-import ContentButtonLayout from '.~/components/content-button-layout';
+import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
@@ -20,12 +21,13 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 const ConnectAds = ( props ) => {
 	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
-	const [ fetchConnectAdsAccount, { loading } ] = useApiFetchCallback( {
+	const [ isLoading, setLoading ] = useState( false );
+	const [ fetchConnectAdsAccount ] = useApiFetchCallback( {
 		path: `/wc/gla/ads/accounts`,
 		method: 'POST',
 		data: { id: value },
 	} );
-	const { refetchGoogleAdsAccount, isResolving } = useGoogleAdsAccount();
+	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleConnectClick = async () => {
@@ -33,10 +35,12 @@ const ConnectAds = ( props ) => {
 			return;
 		}
 
+		setLoading( true );
 		try {
 			await fetchConnectAdsAccount();
-			refetchGoogleAdsAccount();
+			await refetchGoogleAdsAccount();
 		} catch ( error ) {
+			setLoading( false );
 			createNotice(
 				'error',
 				__(
@@ -45,10 +49,13 @@ const ConnectAds = ( props ) => {
 				)
 			);
 		}
+		// Wait for the upper layer component to switch to connected account card,
+		// so here doesn't reset the `isLoading` to false.
 	};
 
 	return (
-		<Section.Card>
+		<AccountCard appearance={ APPEARANCE.GOOGLE_ADS }>
+			<CardDivider />
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
@@ -56,21 +63,29 @@ const ConnectAds = ( props ) => {
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
-				<ContentButtonLayout>
+				<Flex>
 					<AdsAccountSelectControl
 						value={ value }
 						onChange={ setValue }
 					/>
-					<AppButton
-						isSecondary
-						loading={ loading || isResolving }
-						disabled={ ! value }
-						eventName="gla_ads_account_connect_button_click"
-						onClick={ handleConnectClick }
-					>
-						{ __( 'Connect', 'google-listings-and-ads' ) }
-					</AppButton>
-				</ContentButtonLayout>
+					{ isLoading ? (
+						<LoadingLabel
+							text={ __(
+								'Connecting…',
+								'google-listings-and-ads'
+							) }
+						/>
+					) : (
+						<AppButton
+							isSecondary
+							disabled={ ! value }
+							eventName="gla_ads_account_connect_button_click"
+							onClick={ handleConnectClick }
+						>
+							{ __( 'Connect', 'google-listings-and-ads' ) }
+						</AppButton>
+					) }
+				</Flex>
 			</Section.Card.Body>
 			<Section.Card.Footer>
 				<Button isLink onClick={ onCreateNew }>
@@ -80,7 +95,7 @@ const ConnectAds = ( props ) => {
 					) }
 				</Button>
 			</Section.Card.Footer>
-		</Section.Card>
+		</AccountCard>
 	);
 };
 
