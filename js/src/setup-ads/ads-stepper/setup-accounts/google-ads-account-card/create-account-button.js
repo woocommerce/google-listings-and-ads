@@ -9,26 +9,20 @@ import { useState } from '@wordpress/element';
  */
 import TermsModal from './terms-modal';
 import AppButton from '.~/components/app-button';
-
-const noop = () => {};
+import LoadingLabel from '.~/components/loading-label';
 
 /**
  * Renders a Google Ads account creaton button.
  * When clicking on the button, it will pop up a modal first to ask for terms agreement.
  *
  * @param {Object} props React props.
- * @param {() => boolean|void} [props.onBeforeAskTerms] Called before showing the terms agreement modal.
- *     Return `false` to interrupt the ask for terms agreement and the subsequent process.
  * @param {Function} [props.onCreateAccount] Called after the user accept the terms agreement.
  */
 const CreateAccountButton = ( props ) => {
-	const { onBeforeAskTerms = noop, onCreateAccount, ...rest } = props;
+	const { onCreateAccount, ...rest } = props;
 	const [ isOpen, setOpen ] = useState( false );
 
 	const handleButtonClick = () => {
-		if ( onBeforeAskTerms() === false ) {
-			return;
-		}
 		setOpen( true );
 	};
 
@@ -38,9 +32,18 @@ const CreateAccountButton = ( props ) => {
 
 	return (
 		<>
-			<AppButton isSecondary { ...rest } onClick={ handleButtonClick }>
-				{ __( 'Create account', 'google-listings-and-ads' ) }
-			</AppButton>
+			{ rest.loading ? (
+				<LoadingLabel
+					text={ __( 'Creating…', 'google-listings-and-ads' ) }
+				/>
+			) : (
+				<AppButton
+					isSecondary
+					{ ...rest }
+					text={ __( 'Create account', 'google-listings-and-ads' ) }
+					onClick={ handleButtonClick }
+				/>
+			) }
 			{ isOpen && (
 				<TermsModal
 					onCreateAccount={ onCreateAccount }
