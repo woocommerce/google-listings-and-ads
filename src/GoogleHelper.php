@@ -196,6 +196,8 @@ trait GoogleHelper {
 			'ja' => 'ja', // Japanese
 			'ko' => 'ko', // Korean
 			'el' => 'el', // Modern Greek
+			'nb' => 'nb', // Norwegian (Norsk Bokmål)
+			'nn' => 'nn', // Norwegian (Norsk Nynorsk)
 			'no' => 'no', // Norwegian
 			'pl' => 'pl', // Polish
 			'pt' => 'pt', // Portuguese
