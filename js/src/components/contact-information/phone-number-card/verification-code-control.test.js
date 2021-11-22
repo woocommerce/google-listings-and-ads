@@ -97,14 +97,34 @@ describe( 'VerificationCodeControl component', () => {
 	} );
 
 	test( 'typing calls onChange callback', async () => {
-		const onChange = jest.fn();
+		const onChange = jest.fn().mockName( 'On change callback' );
 		render( <VerificationCodeControl onCodeChange={ onChange } /> );
 		const inputs = screen.getAllByRole( 'textbox' );
 
-		await userEvent.type( inputs[ 0 ], '1' );
-		await userEvent.type( inputs[ 1 ], '1' );
-
 		// Notice the initial render calls it one time due a useEffect function
+		expect( onChange ).toHaveBeenCalledTimes( 1 );
+
+		await userEvent.type( inputs[ 0 ], '1' );
+		expect( onChange ).toHaveBeenCalledTimes( 2 );
+
+		await userEvent.type( inputs[ 1 ], '1' );
 		expect( onChange ).toHaveBeenCalledTimes( 3 );
+	} );
+
+	test( 'typing Enter submits enclosing form', async () => {
+		const onSubmit = jest.fn().mockName( 'On form submit callback' );
+		render(
+			<form onSubmit={ onSubmit }>
+				<VerificationCodeControl onCodeChange={ () => {} } />
+				<button type="submit">submit</button>
+			</form>
+		);
+
+		await userEvent.type(
+			screen.getAllByRole( 'textbox' )[ 0 ],
+			'{enter}'
+		);
+
+		expect( onSubmit ).toHaveBeenCalled();
 	} );
 } );
