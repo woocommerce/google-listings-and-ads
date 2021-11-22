@@ -22,6 +22,8 @@ trait MerchantCenterAwareTrait {
 
 	/**
 	 * The MerchantStatuses object.
+	 * 
+	 * @var MerchantStatuses
 	 */
 	protected $merchant_statuses;
 
