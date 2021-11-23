@@ -62,7 +62,7 @@ const SetupAccounts = ( props ) => {
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
 				</VerticalGapLayout>
 			</Section>
-			<GoogleMCAccount googleMCAccount={ googleMCAccount } />
+			<GoogleMCAccount />
 			<Faqs />
 			<StepContentFooter>
 				<Button

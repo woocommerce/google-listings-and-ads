@@ -13,9 +13,7 @@ import AppTooltip from '.~/components/app-tooltip';
 import SectionContent from './section-content';
 import './index.scss';
 
-const GoogleMCAccount = ( props ) => {
-	const { googleMCAccount } = props;
-
+const GoogleMCAccount = () => {
 	return (
 		<div className="gla-google-mc-account">
 			<Section
@@ -41,7 +39,7 @@ const GoogleMCAccount = ( props ) => {
 					</Tip>
 				}
 			>
-				<SectionContent googleMCAccount={ googleMCAccount } />
+				<SectionContent />
 			</Section>
 		</div>
 	);
