@@ -177,7 +177,7 @@ export default function VerificationCodeControl( {
 	 * So here we await the `digits` is reset back to `initDigits` by above useEffect and sync to internal value,
 	 * then move the focus calling after the synchronization tick finished.
 	 *
-	 * Note the above also impacts in the stat updates for the focused element...
+	 * Note the above also impacts in the state updates for the focused element...
 	 *
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L73-L90
 	 */
