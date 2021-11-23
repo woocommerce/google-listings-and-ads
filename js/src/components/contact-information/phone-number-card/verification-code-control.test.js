@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom/extend-expect';
 
@@ -126,5 +126,53 @@ describe( 'VerificationCodeControl component', () => {
 		);
 
 		expect( onSubmit ).toHaveBeenCalled();
+	} );
+
+	test( 'it is possible to paste multiple digits', async () => {
+		render( <VerificationCodeControl onCodeChange={ () => {} } /> );
+		const inputs = screen.getAllByRole( 'textbox' );
+
+		const paste = createEvent.paste( inputs[ 0 ], {
+			clipboardData: {
+				getData: () => '222222',
+			},
+		} );
+
+		fireEvent( inputs[ 0 ], paste );
+
+		inputs.forEach( ( el ) => expect( el.value ).toBe( '2' ) );
+	} );
+
+	test( 'it pastes a maximum of {DIGIT_LENGTH} digits', async () => {
+		render( <VerificationCodeControl onCodeChange={ () => {} } /> );
+		const inputs = screen.getAllByRole( 'textbox' );
+
+		const paste = createEvent.paste( inputs[ 0 ], {
+			clipboardData: {
+				getData: () => '22222233333333',
+			},
+		} );
+
+		fireEvent( inputs[ 0 ], paste );
+
+		inputs.forEach( ( el ) => expect( el.value ).toBe( '2' ) );
+	} );
+
+	test( 'it pastes with other indexes and number of digits', async () => {
+		render( <VerificationCodeControl onCodeChange={ () => {} } /> );
+		const inputs = screen.getAllByRole( 'textbox' );
+
+		const paste = createEvent.paste( inputs[ 1 ], {
+			clipboardData: {
+				getData: () => '22',
+			},
+		} );
+
+		fireEvent( inputs[ 1 ], paste );
+
+		inputs.forEach( ( el, idx ) => {
+			const expectedValue = idx > 0 && idx < 3 ? '2' : '';
+			expect( el.value ).toBe( expectedValue );
+		} );
 	} );
 } );
