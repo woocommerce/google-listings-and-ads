@@ -61,6 +61,27 @@ export default function VerificationCodeControl( {
 		}
 	};
 
+	const getEventData = ( e ) => {
+		const { value, dataset } = e.target;
+		const idx = Number( dataset.idx );
+
+		return {
+			idx,
+			value: e.clipboardData?.getData( 'text/plain' ) ?? value,
+		};
+	};
+
+	const updateInputRefs = ( nextDigits ) => {
+		inputsRef.current.forEach(
+			( el, idx ) => ( el.value = nextDigits[ idx ] )
+		);
+	};
+
+	const updateState = ( nextDigits ) => {
+		setDigits( nextDigits );
+		onCodeChangeRef.current( toCallbackData( digits ) );
+	};
+
 	const handleKeyDown = ( e ) => {
 		const { dataset, selectionStart, selectionEnd, value } = e.target;
 		const idx = Number( dataset.idx );
@@ -86,36 +107,57 @@ export default function VerificationCodeControl( {
 		cursorRef.current = e.target.selectionStart;
 	};
 
+	const handleUpdate = ( e ) => {
+		e.preventDefault();
+
+		const { nextDigits, nextFocusIdx } = e.clipboardData
+			? handlePaste( e )
+			: handleInput( e );
+
+		maybeMoveFocus( nextFocusIdx );
+		updateState( nextDigits );
+	};
+
 	const handleInput = ( e ) => {
-		const { value, dataset } = e.target;
-		const idx = Number( dataset.idx );
+		const { value, idx } = getEventData( e );
 
 		// Only keep the first entered char from the starting position of key cursor.
-		// If that char is not a digit, then clear the input to empty.
 		const digit = value.substr( cursorRef.current, 1 ).replace( /\D/, '' );
+
+		// If that char is not a digit, then clear the input to empty.
 		if ( digit !== value ) {
 			e.target.value = digit;
 		}
 
-		if ( digit ) {
-			maybeMoveFocus( idx + 1 );
-		}
+		const nextDigits = [ ...digits ];
+		nextDigits[ idx ] = digit;
 
-		if ( digit !== digits[ idx ] ) {
-			const nextDigits = [ ...digits ];
-			nextDigits[ idx ] = digit;
-			setDigits( nextDigits );
-
-			onCodeChange( toCallbackData( nextDigits ) );
-		}
+		// always increase focus index by one except for digit deletions
+		return { nextDigits, nextFocusIdx: digit ? idx + 1 : idx };
 	};
 
-	// Update the inputs' values.
-	useEffect( () => {
-		inputsRef.current.forEach( ( el ) => ( el.value = '' ) );
+	const handlePaste = ( e ) => {
+		const { idx, value } = getEventData( e );
 
-		setDigits( initDigits );
-		onCodeChangeRef.current( toCallbackData( initDigits ) );
+		// only allow n digits, from the current idx position until the end
+		const newDigits = [
+			...value.replace( /\D/g, '' ).substr( 0, DIGIT_LENGTH - idx ),
+		];
+
+		const nextDigits = [ ...digits ];
+
+		newDigits.forEach(
+			( digit, i ) => ( nextDigits[ i + idx ] = newDigits[ i ] )
+		);
+
+		// set next focus index to the last inserted digit
+		return { nextDigits, nextFocusIdx: newDigits.length + idx - 1 };
+	};
+
+	// Reset the inputs' refs and state when resetNeedle changes.
+	useEffect( () => {
+		updateInputRefs( initDigits );
+		updateState( initDigits );
 	}, [ resetNeedle ] );
 
 	/**
@@ -135,13 +177,18 @@ export default function VerificationCodeControl( {
 	 * So here we await the `digits` is reset back to `initDigits` by above useEffect and sync to internal value,
 	 * then move the focus calling after the synchronization tick finished.
 	 *
+	 * Note the above also impacts in the stat updates for the focused element...
+	 *
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L73-L90
 	 */
 	useEffect( () => {
 		if ( digits === initDigits ) {
 			maybeMoveFocus( 0 );
+		} else {
+			// Update internal AppInputControl values
+			updateInputRefs( digits );
 		}
-	}, [ resetNeedle, digits ] );
+	}, [ digits ] );
 
 	return (
 		<Flex
@@ -158,7 +205,8 @@ export default function VerificationCodeControl( {
 						value={ value }
 						onKeyDown={ handleKeyDown }
 						onBeforeInput={ handleBeforeInput }
-						onInput={ handleInput }
+						onInput={ handleUpdate }
+						onPaste={ handleUpdate }
 						autoComplete="off"
 					/>
 				);
