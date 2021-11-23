@@ -23,24 +23,14 @@ import Faqs from './faqs';
 
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
-	const {
-		jetpack,
-		hasFinishedResolution: hasFinishedResolutionJetpack,
-	} = useJetpackAccount();
-	const {
-		hasFinishedResolution: hasFinishedResolutionGoogle,
-	} = useGoogleAccount();
-	const {
-		googleMCAccount,
-		hasFinishedResolution: hasFinishedResolutionGoogleMC,
-	} = useGoogleMCAccount();
+	const { jetpack } = useJetpackAccount();
+	const { google } = useGoogleAccount();
+	const { googleMCAccount } = useGoogleMCAccount();
 
 	if (
-		! (
-			hasFinishedResolutionJetpack &&
-			hasFinishedResolutionGoogle &&
-			hasFinishedResolutionGoogleMC
-		)
+		! jetpack ||
+		( jetpack.active === 'yes' &&
+			( ! google || ( google.active === 'yes' && ! googleMCAccount ) ) )
 	) {
 		return <AppSpinner />;
 	}
