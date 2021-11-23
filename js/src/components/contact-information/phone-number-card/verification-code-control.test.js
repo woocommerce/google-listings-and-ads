@@ -175,4 +175,68 @@ describe( 'VerificationCodeControl component', () => {
 			expect( el.value ).toBe( expectedValue );
 		} );
 	} );
+
+	test( 'updates validation code prop on paste', async () => {
+		const onCodeChange = jest
+			.fn( ( data ) => data )
+			.mockName( 'onCodeChange' );
+
+		render( <VerificationCodeControl onCodeChange={ onCodeChange } /> );
+		const inputs = screen.getAllByRole( 'textbox' );
+
+		expect( onCodeChange.mock.results[ 0 ].value ).toStrictEqual( {
+			code: '',
+			isFilled: false,
+		} );
+
+		let paste = createEvent.paste( inputs[ 0 ], {
+			clipboardData: {
+				getData: () => '222',
+			},
+		} );
+
+		fireEvent( inputs[ 0 ], paste );
+
+		expect( onCodeChange.mock.results[ 1 ].value ).toStrictEqual( {
+			code: '222',
+			isFilled: false,
+		} );
+
+		paste = createEvent.paste( inputs[ 0 ], {
+			clipboardData: {
+				getData: () => '333333',
+			},
+		} );
+
+		fireEvent( inputs[ 0 ], paste );
+
+		expect( onCodeChange.mock.results[ 2 ].value ).toStrictEqual( {
+			code: '333333',
+			isFilled: true,
+		} );
+	} );
+	test( 'updates validation code prop on input', async () => {
+		const onCodeChange = jest
+			.fn( ( data ) => data )
+			.mockName( 'onCodeChange' );
+
+		render( <VerificationCodeControl onCodeChange={ onCodeChange } /> );
+		const inputs = screen.getAllByRole( 'textbox' );
+
+		expect( onCodeChange.mock.results[ 0 ].value ).toStrictEqual( {
+			code: '',
+			isFilled: false,
+		} );
+
+		let currentCode = '';
+		for ( const input of inputs ) {
+			const i = inputs.indexOf( input ) + 1;
+			await userEvent.type( input, '1' );
+			currentCode += '1';
+			expect( onCodeChange.mock.results[ i ].value ).toStrictEqual( {
+				code: currentCode,
+				isFilled: i === 6,
+			} );
+		}
+	} );
 } );
