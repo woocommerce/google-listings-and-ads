@@ -45,7 +45,7 @@ const ConnectedCard = ( props ) => {
 			createNotice(
 				'error',
 				__(
-					'Unable to your Google Merchant Center account. Please try again later.',
+					'Unable to disconnect your Google Merchant Center account. Please try again later.',
 					'google-listings-and-ads'
 				)
 			);
