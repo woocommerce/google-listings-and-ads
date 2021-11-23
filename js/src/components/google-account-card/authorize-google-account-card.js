@@ -64,7 +64,7 @@ export default function AuthorizeGoogleAccountCard( {
 				<em>
 					{ createInterpolateElement(
 						__(
-							'<alert>Error:</alert> You did not allow WooCommerce sufficient access to your Google account. You must select all checkboxes in the Google account modal to proceed. <link>Read more</link>',
+							'<alert>Uh-oh!</alert> You did not allow WooCommerce sufficient access to your Google account. You must allow all required permissions in the Google authorization page to proceed. <link>Read more</link>',
 							'google-listings-and-ads'
 						),
 						{
