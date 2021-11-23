@@ -108,7 +108,6 @@ const ConnectMC = () => {
 			<Section.Card.Footer>
 				<CreateAccountButton
 					isLink
-					isSecondary
 					disabled={ resultConnectMC.loading }
 					onCreateAccount={ handleCreateAccount }
 				>
