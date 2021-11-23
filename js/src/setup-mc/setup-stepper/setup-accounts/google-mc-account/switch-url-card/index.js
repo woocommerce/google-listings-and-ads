@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 import { CardDivider } from '@wordpress/components';
 
 /**
@@ -90,14 +89,13 @@ const SwitchUrlCard = ( props ) => {
 					) }
 				</Subsection.Title>
 				<Subsection.Body>
-					{ createInterpolateElement(
+					{ sprintf(
+						// translators: %s: claimed URL.
 						__(
-							'This Merchant Center account already has a verified and claimed URL, <claimedurl/>.',
+							'This Merchant Center account already has a verified and claimed URL, %s.',
 							'google-listings-and-ads'
 						),
-						{
-							claimedurl: <span>{ claimedUrl }</span>,
-						}
+						claimedUrl
 					) }
 				</Subsection.Body>
 				<ContentButtonLayout>
@@ -115,15 +113,14 @@ const SwitchUrlCard = ( props ) => {
 					</AppButton>
 				</ContentButtonLayout>
 				<Subsection.HelperText>
-					{ createInterpolateElement(
+					{ sprintf(
+						/* translators: 1: new URL. 2: claimed URL. */
 						__(
-							'If you switch your claimed URL to <newurl />, you will lose your claim to <claimedurl />. This will cause any existing product listings tied to <claimedurl /> to stop running.',
+							'If you switch your claimed URL to %1$s, you will lose your claim to %2$s. This will cause any existing product listings tied to %2$s to stop running.',
 							'google-listings-and-ads'
 						),
-						{
-							newurl: <span>{ newUrl }</span>,
-							claimedurl: <span>{ claimedUrl }</span>,
-						}
+						newUrl,
+						claimedUrl
 					) }
 				</Subsection.HelperText>
 			</Section.Card.Body>
