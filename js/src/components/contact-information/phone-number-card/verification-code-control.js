@@ -43,10 +43,7 @@ export default function VerificationCodeControl( {
 } ) {
 	const inputsRef = useRef( [] );
 	const cursorRef = useRef( 0 );
-	const onCodeChangeRef = useRef();
 	const [ digits, setDigits ] = useState( initDigits );
-
-	onCodeChangeRef.current = onCodeChange;
 
 	/**
 	 * Moves focus to the input at given input
@@ -79,7 +76,7 @@ export default function VerificationCodeControl( {
 
 	const updateState = ( nextDigits ) => {
 		setDigits( nextDigits );
-		onCodeChangeRef.current( toCallbackData( digits ) );
+		onCodeChange( toCallbackData( nextDigits ) );
 	};
 
 	const handleKeyDown = ( e ) => {
@@ -185,7 +182,6 @@ export default function VerificationCodeControl( {
 		if ( digits === initDigits ) {
 			maybeMoveFocus( 0 );
 		} else {
-			// Update internal AppInputControl values
 			updateInputRefs( digits );
 		}
 	}, [ digits ] );
