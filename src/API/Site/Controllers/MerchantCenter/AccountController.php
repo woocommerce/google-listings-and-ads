@@ -9,12 +9,13 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptions
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
-use Google\Service\ShoppingContent\Account as MC_Account;
+use Google\Service\ShoppingContent\Account;
 use Exception;
 use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
@@ -61,7 +62,6 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected $overwrite_claim = false;
 
-
 	/**
 	 * @var bool Whether to allow changes to the existing website URL.
 	 */
@@ -76,7 +76,7 @@ class AccountController extends BaseOptionsController {
 		parent::__construct( $container->get( RESTServer::class ) );
 		$this->middleware    = $container->get( Middleware::class );
 		$this->merchant      = $container->get( Merchant::class );
-		$this->account_state = $container->get( MerchantAccountState::class );
+		$this->account_state = $container->get( AccountState::class );
 		$this->mc_service    = $container->get( MerchantCenterService::class );
 		$this->container     = $container;
 	}
@@ -183,8 +183,8 @@ class AccountController extends BaseOptionsController {
 		return function( Request $request ) {
 			$state               = $this->account_state->get( false );
 			$overwrite_necessary = ! empty( $state['claim']['data']['overwrite_required'] );
-			$claim_status        = $state['claim']['status'] ?? MerchantAccountState::STEP_PENDING;
-			if ( MerchantAccountState::STEP_DONE === $claim_status || ! $overwrite_necessary ) {
+			$claim_status        = $state['claim']['status'] ?? AccountState::STEP_PENDING;
+			if ( AccountState::STEP_DONE === $claim_status || ! $overwrite_necessary ) {
 				return $this->prepare_error_response(
 					[ 'message' => __( 'Attempting invalid claim overwrite.', 'google-listings-and-ads' ) ]
 				);
@@ -204,8 +204,8 @@ class AccountController extends BaseOptionsController {
 		return function( Request $request ) {
 			$state            = $this->account_state->get();
 			$switch_necessary = ! empty( $state['set_id']['data']['old_url'] );
-			$set_id_status    = $state['set_id']['status'] ?? MerchantAccountState::STEP_PENDING;
-			if ( empty( $request['id'] ) || MerchantAccountState::STEP_DONE === $set_id_status || ! $switch_necessary ) {
+			$set_id_status    = $state['set_id']['status'] ?? AccountState::STEP_PENDING;
+			if ( empty( $request['id'] ) || AccountState::STEP_DONE === $set_id_status || ! $switch_necessary ) {
 				return $this->prepare_error_response(
 					[ 'message' => __( 'Attempting invalid URL switch.', 'google-listings-and-ads' ) ]
 				);
@@ -387,7 +387,7 @@ class AccountController extends BaseOptionsController {
 		$merchant_id = intval( $this->options->get( OptionsInterface::MERCHANT_ID ) );
 
 		foreach ( $state as $name => &$step ) {
-			if ( MerchantAccountState::STEP_DONE === $step['status'] ) {
+			if ( AccountState::STEP_DONE === $step['status'] ) {
 				continue;
 			}
 
@@ -437,11 +437,11 @@ class AccountController extends BaseOptionsController {
 							)
 						);
 				}
-				$step['status']  = MerchantAccountState::STEP_DONE;
+				$step['status']  = AccountState::STEP_DONE;
 				$step['message'] = '';
 				$this->account_state->update( $state );
 			} catch ( Exception $e ) {
-				$step['status']  = MerchantAccountState::STEP_ERROR;
+				$step['status']  = AccountState::STEP_ERROR;
 				$step['message'] = $e->getMessage();
 
 				// URL already claimed.
@@ -546,8 +546,6 @@ class AccountController extends BaseOptionsController {
 		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
 	}
 
-
-
 	/**
 	 * Use an existing MC account. Mark the 'set_id' step as done, update the MC account's website URL,
 	 * and sets the Merchant ID.
@@ -561,7 +559,7 @@ class AccountController extends BaseOptionsController {
 		$state = $this->account_state->get();
 
 		// Don't do anything if this step was already finished.
-		if ( MerchantAccountState::STEP_DONE === $state['set_id']['status'] ) {
+		if ( AccountState::STEP_DONE === $state['set_id']['status'] ) {
 			return;
 		}
 
@@ -580,7 +578,7 @@ class AccountController extends BaseOptionsController {
 		}
 
 		$this->middleware->link_merchant_account( $account_id );
-		$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
+		$state['set_id']['status'] = AccountState::STEP_DONE;
 		$this->account_state->update( $state );
 	}
 
@@ -611,7 +609,7 @@ class AccountController extends BaseOptionsController {
 			if ( ! empty( $account_website_url ) && $is_website_claimed && ! $this->allow_switch_url ) {
 				$state                              = $this->account_state->get();
 				$state['set_id']['data']['old_url'] = $account_website_url;
-				$state['set_id']['status']          = MerchantAccountState::STEP_ERROR;
+				$state['set_id']['status']          = AccountState::STEP_ERROR;
 				$this->account_state->update( $state );
 
 				$clean_account_website_url = $this->strip_url_protocol( $account_website_url );
