@@ -158,6 +158,7 @@ class Proxy implements OptionsAwareInterface {
 			if ( 200 === $result->getStatusCode() && isset( $response['id'] ) ) {
 				$id = absint( $response['id'] );
 				$this->update_merchant_id( $id );
+				$this->options->update( OptionsInterface::SITE_NAME, $name );
 				return $id;
 			}
 

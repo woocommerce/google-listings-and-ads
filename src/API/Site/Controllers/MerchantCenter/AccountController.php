@@ -568,10 +568,10 @@ class AccountController extends BaseOptionsController {
 		$this->maybe_add_merchant_center_website_url( $account_id, $site_url );
 
 		// Maybe the existing account is sub-account!
-		$state                               = $this->account_state->get();
 		$state['set_id']['data']['from_mca'] = false;
 		foreach ( $this->middleware->get_merchant_accounts() as $existing_account ) {
 			if ( $existing_account['id'] === $account_id ) {
+				$this->options->update( OptionsInterface::SITE_NAME, $existing_account['name'] );
 				$state['set_id']['data']['from_mca'] = $existing_account['subaccount'];
 				break;
 			}

@@ -212,6 +212,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$status = [
 			'id'     => $id,
 			'status' => $id ? 'connected' : 'disconnected',
+			'name'   => $id ? $this->options->get( OptionsInterface::SITE_NAME ) : '',
 		];
 
 		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
