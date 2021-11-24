@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useEffect, useRef } from '@wordpress/element';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { Flex } from '@wordpress/components';
 
 /**
@@ -74,11 +74,6 @@ export default function VerificationCodeControl( {
 		);
 	};
 
-	const updateState = ( nextDigits ) => {
-		setDigits( nextDigits );
-		onCodeChange( toCallbackData( nextDigits ) );
-	};
-
 	const handleKeyDown = ( e ) => {
 		const { dataset, selectionStart, selectionEnd, value } = e.target;
 		const idx = Number( dataset.idx );
@@ -99,6 +94,14 @@ export default function VerificationCodeControl( {
 		}
 	};
 
+	const updateState = useCallback(
+		( nextDigits ) => {
+			setDigits( nextDigits );
+			onCodeChange( toCallbackData( nextDigits ) );
+		},
+		[ onCodeChange ]
+	);
+
 	// Track the cursor's position.
 	const handleBeforeInput = ( e ) => {
 		cursorRef.current = e.target.selectionStart;
@@ -112,7 +115,10 @@ export default function VerificationCodeControl( {
 			: handleInput( e );
 
 		maybeMoveFocus( nextFocusIdx );
-		updateState( nextDigits );
+
+		if ( nextDigits !== digits ) {
+			updateState( nextDigits );
+		}
 	};
 
 	const handleInput = ( e ) => {
@@ -155,7 +161,7 @@ export default function VerificationCodeControl( {
 	useEffect( () => {
 		updateInputRefs( initDigits );
 		updateState( initDigits );
-	}, [ resetNeedle ] );
+	}, [ resetNeedle, updateState ] );
 
 	/**
 	 * Set the focus to the first input if the control's value is (back) at the initial state.
@@ -181,9 +187,12 @@ export default function VerificationCodeControl( {
 	useEffect( () => {
 		if ( digits === initDigits ) {
 			maybeMoveFocus( 0 );
-		} else {
-			updateInputRefs( digits );
 		}
+	}, [ digits, resetNeedle ] );
+
+	// update internal state values on InputControl
+	useEffect( () => {
+		updateInputRefs( digits );
 	}, [ digits ] );
 
 	return (
