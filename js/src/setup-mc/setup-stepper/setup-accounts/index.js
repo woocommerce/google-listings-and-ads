@@ -24,13 +24,16 @@ import Faqs from './faqs';
 const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { jetpack } = useJetpackAccount();
-	const { google } = useGoogleAccount();
+	const { google, scope } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
 
 	if (
 		! jetpack ||
 		( jetpack.active === 'yes' &&
-			( ! google || ( google.active === 'yes' && ! googleMCAccount ) ) )
+			( ! google ||
+				( google.active === 'yes' &&
+					scope.gmcRequired &&
+					! googleMCAccount ) ) )
 	) {
 		return <AppSpinner />;
 	}
