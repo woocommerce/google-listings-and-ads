@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\DateTimeUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
+use DateTime;
 use Exception;
 use Google\Ads\GoogleAds\Util\V8\ResourceNames;
 use Google\ApiCore\ApiException;
