@@ -22,6 +22,7 @@ import './index.scss';
  */
 export const APPEARANCE = {
 	GOOGLE: 'google',
+	GOOGLE_MERCHANT_CENTER: 'google_merchant_center',
 	GOOGLE_ADS: 'google-ads',
 	PHONE: 'phone',
 	ADDRESS: 'address',
@@ -40,6 +41,10 @@ const appearanceDict = {
 	[ APPEARANCE.GOOGLE ]: {
 		icon: googleLogo,
 		title: __( 'Google account', 'google-listings-and-ads' ),
+	},
+	[ APPEARANCE.GOOGLE_MERCHANT_CENTER ]: {
+		icon: googleLogo,
+		title: __( 'Google Merchant Center', 'google-listings-and-ads' ),
 	},
 	[ APPEARANCE.GOOGLE_ADS ]: {
 		icon: googleLogo,

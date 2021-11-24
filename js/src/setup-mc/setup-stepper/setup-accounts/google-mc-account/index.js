@@ -10,13 +10,10 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import Section from '.~/wcdl/section';
 import AppTooltip from '.~/components/app-tooltip';
-import DisabledDiv from '.~/components/disabled-div';
 import SectionContent from './section-content';
 import './index.scss';
 
-const GoogleMCAccount = ( props ) => {
-	const { disabled = false } = props;
-
+const GoogleMCAccount = () => {
 	return (
 		<div className="gla-google-mc-account">
 			<Section
@@ -42,9 +39,7 @@ const GoogleMCAccount = ( props ) => {
 					</Tip>
 				}
 			>
-				<DisabledDiv disabled={ disabled }>
-					<SectionContent disabled={ disabled } />
-				</DisabledDiv>
+				<SectionContent />
 			</Section>
 		</div>
 	);

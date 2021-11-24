@@ -1,9 +1,8 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import { CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -17,16 +16,12 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import ReclaimUrlCard from '../reclaim-url-card';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
+import AppInputLinkControl from '.~/components/app-input-link-control';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
-	const {
-		id,
-		message,
-		claimedUrl,
-		newUrl,
-		onSelectAnotherAccount = () => {},
-	} = props;
+	const { id, claimedUrl, newUrl, onSelectAnotherAccount = () => {} } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
@@ -62,55 +57,74 @@ const SwitchUrlCard = ( props ) => {
 
 	if ( response && response.status === 403 ) {
 		return (
-			<ReclaimUrlCard id={ error.id } websiteUrl={ error.website_url } />
+			<ReclaimUrlCard
+				id={ error.id }
+				websiteUrl={ error.website_url }
+				onSwitchAccount={ handleUseDifferentMCClick }
+			/>
 		);
 	}
 
 	return (
-		<Section.Card className="gla-switch-url-card">
+		<AccountCard
+			className="gla-switch-url-card"
+			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
+			description={ toAccountText( id ) }
+			indicator={
+				<AppButton
+					isSecondary
+					disabled={ loading }
+					onClick={ handleUseDifferentMCClick }
+				>
+					{ __( 'Switch account', 'google-listings-and-ads' ) }
+				</AppButton>
+			}
+		>
+			<CardDivider />
 			<Section.Card.Body>
-				<ContentButtonLayout>
-					<Subsection.Title>{ toAccountText( id ) }</Subsection.Title>
-				</ContentButtonLayout>
-				<ContentButtonLayout>
-					<div>
-						<Subsection.Title>{ message }</Subsection.Title>
-						<Subsection.HelperText>
-							{ createInterpolateElement(
-								__(
-									'If you switch your claimed URL to <newurl />, you will lose your claim to <claimedurl />. This will cause any existing product listings tied to <claimedurl /> to stop running.',
-									'google-listings-and-ads'
-								),
-								{
-									newurl: <span>{ newUrl }</span>,
-									claimedurl: <span>{ claimedUrl }</span>,
-								}
-							) }
-						</Subsection.HelperText>
-					</div>
-					<div className="buttons">
-						<AppButton
-							isSecondary
-							loading={ loading }
-							onClick={ handleSwitch }
-						>
-							{ __(
-								'Switch to my new URL',
-								'google-listings-and-ads'
-							) }
-						</AppButton>
-					</div>
-				</ContentButtonLayout>
-			</Section.Card.Body>
-			<Section.Card.Footer>
-				<Button isLink onClick={ handleUseDifferentMCClick }>
+				<Subsection.Title>
 					{ __(
-						'Or, use a different Merchant Center account',
+						'Switch to this new URL',
 						'google-listings-and-ads'
 					) }
-				</Button>
-			</Section.Card.Footer>
-		</Section.Card>
+				</Subsection.Title>
+				<Subsection.Body>
+					{ sprintf(
+						// translators: %s: claimed URL.
+						__(
+							'This Merchant Center account already has a verified and claimed URL, %s.',
+							'google-listings-and-ads'
+						),
+						claimedUrl
+					) }
+				</Subsection.Body>
+				<ContentButtonLayout>
+					<AppInputLinkControl disabled value={ newUrl } />
+					<AppButton
+						isSecondary
+						loading={ loading }
+						eventName="gla_mc_account_reclaim_url_button_click"
+						onClick={ handleSwitch }
+					>
+						{ __(
+							'Switch to this new URL',
+							'google-listings-and-ads'
+						) }
+					</AppButton>
+				</ContentButtonLayout>
+				<Subsection.HelperText>
+					{ sprintf(
+						/* translators: 1: new URL. 2: claimed URL. */
+						__(
+							'If you switch your claimed URL to %1$s, you will lose your claim to %2$s. This will cause any existing product listings tied to %2$s to stop running.',
+							'google-listings-and-ads'
+						),
+						newUrl,
+						claimedUrl
+					) }
+				</Subsection.HelperText>
+			</Section.Card.Body>
+		</AccountCard>
 	);
 };
 

@@ -152,6 +152,20 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 					? data
 					: response;
 			} catch ( e ) {
+				/**
+				 * If browser is offline.
+				 * See: https://github.com/WordPress/gutenberg/blob/bbbe3263a5ca72464e2b713e57639c628fc8d66d/packages/api-fetch/src/index.js#L126-L131
+				 */
+				if ( e.code === 'fetch_error' ) {
+					dispatch( {
+						type: TYPES.ERROR,
+						error: e,
+						response: undefined,
+						options: mergedOptions,
+					} );
+					throw e;
+				}
+
 				const response = e;
 
 				const responseClone = response.clone();
