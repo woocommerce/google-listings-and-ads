@@ -30,6 +30,7 @@ interface OptionsInterface {
 	public const REDIRECT_TO_ONBOARDING = 'redirect_to_onboarding';
 	public const SHIPPING_RATES         = 'shipping_rates';
 	public const SHIPPING_TIMES         = 'shipping_times';
+	public const SITE_NAME              = 'site_name';
 	public const SITE_VERIFICATION      = 'site_verification';
 	public const TARGET_AUDIENCE        = 'target_audience';
 	public const WP_TOS_ACCEPTED        = 'wp_tos_accepted';
@@ -50,9 +51,10 @@ interface OptionsInterface {
 		self::MERCHANT_ACCOUNT_STATE => true,
 		self::MERCHANT_CENTER        => true,
 		self::MERCHANT_ID            => true,
+		self::REDIRECT_TO_ONBOARDING => true,
 		self::SHIPPING_RATES         => true,
 		self::SHIPPING_TIMES         => true,
-		self::REDIRECT_TO_ONBOARDING => true,
+		self::SITE_NAME              => true,
 		self::SITE_VERIFICATION      => true,
 		self::TARGET_AUDIENCE        => true,
 		self::WP_TOS_ACCEPTED        => true,
