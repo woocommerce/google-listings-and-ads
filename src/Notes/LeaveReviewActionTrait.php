@@ -8,7 +8,7 @@ use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 /**
  * Trait LeaveReviewActionTrait
  *
- * @since x.x.x
+ * @since 1.7.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */

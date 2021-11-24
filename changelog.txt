@@ -1,5 +1,17 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.7.0 - 2021-11-24 =
+* Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
+* Add - Accept login_hint when generating OAuth URL.
+* Add - Review request inbox notification after 10 conversions and 100 free listing clicks
+* Update – Add support for retrieving the name and domain from the Google API
+* Fix - Add support for Norwegian language, nb and nn
+* Fix - Report tabs lose active state when changing chart.
+* Tweak - Update `in_stock` and `out_of_stock` availability enums
+* Tweak - Retry async jobs on timeout
+* Tweak - Reduce the bundle size of the index.js file.
+* Tweak - refactored legacy WC menu highlighting effect.
+
 = 1.6.0 - 2021-11-09 =
 * Add - Coupon/promotion integration with Merchant Center.
 * Tweak - WooCommerce 5.9 compatibility.
