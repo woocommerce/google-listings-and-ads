@@ -12,14 +12,13 @@ import useGoogleAccount from './useGoogleAccount';
 const useGoogleMCAccount = () => {
 	const {
 		google,
-		scope,
 		isResolving: isResolvingGoogle,
 		hasFinishedResolution: hasFinishedResolutionGoogle,
 	} = useGoogleAccount();
 
 	return useSelect(
 		( select ) => {
-			if ( ! google || google.active === 'no' || ! scope.gmcRequired ) {
+			if ( ! google || google.active === 'no' ) {
 				return {
 					googleMCAccount: undefined,
 					isResolving: isResolvingGoogle,
@@ -41,12 +40,7 @@ const useGoogleMCAccount = () => {
 				),
 			};
 		},
-		[
-			google,
-			scope.gmcRequired,
-			isResolvingGoogle,
-			hasFinishedResolutionGoogle,
-		]
+		[ google, isResolvingGoogle, hasFinishedResolutionGoogle ]
 	);
 };
 
