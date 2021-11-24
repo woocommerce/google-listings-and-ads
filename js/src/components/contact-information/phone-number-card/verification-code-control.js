@@ -154,7 +154,10 @@ export default function VerificationCodeControl( {
 		);
 
 		// set next focus index to the last inserted digit
-		return { nextDigits, nextFocusIdx: newDigits.length + idx - 1 };
+		return {
+			nextDigits,
+			nextFocusIdx: Math.min( newDigits.length + idx, DIGIT_LENGTH - 1 ),
+		};
 	};
 
 	// Reset the inputs' refs and state when resetNeedle changes.
