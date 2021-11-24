@@ -1,6 +1,6 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
-= 1.7.0 - 2021-xx-xx =
+= 1.7.0 - 2021-11-24 =
 * Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
 * Add - Accept login_hint when generating OAuth URL.
 * Add - Review request inbox notification after 10 conversions and 100 free listing clicks

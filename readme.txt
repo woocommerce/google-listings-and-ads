@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -118,7 +118,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.7.0 - 2021-xx-xx =
+= 1.7.0 - 2021-11-24 =
 * Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
 * Add - Accept login_hint when generating OAuth URL.
 * Add - Review request inbox notification after 10 conversions and 100 free listing clicks
