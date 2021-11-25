@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import { SelectControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
+import AppSelectControl from '.~/components/app-select-control';
 
 const MerchantCenterSelectControl = ( props ) => {
 	const { data: existingAccounts = [] } = useExistingGoogleMCAccounts();
@@ -26,11 +26,7 @@ const MerchantCenterSelectControl = ( props ) => {
 		label: __( 'Select one', 'google-listings-and-ads' ),
 	} );
 
-	return (
-		<div className="gla-account-select-control">
-			<SelectControl options={ options } { ...props } />
-		</div>
-	);
+	return <AppSelectControl options={ options } { ...props } />;
 };
 
 export default MerchantCenterSelectControl;
