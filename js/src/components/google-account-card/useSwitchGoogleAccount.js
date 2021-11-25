@@ -13,14 +13,16 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 
 /**
  * A hook that returns a handler that initiates Google account disconnect and connect, to support switching to a different Google account.
+ * This will also disconnect Google Merchant Center account, since Google Merchant Center account depends on Google account.
  *
  * The `handleSwitch` handler is meant to be used in button click handler. Upon button click, the handler will:
  *
  * 1. Display an info notice that the process is running and request the users to wait.
- * 2. Call `DELETE /google/connect` API to disconnect the existing connected Google account.
- * 3. Call `GET /google/connect` API to get the Google OAuth URL.
- * 4. Redirect the browser to the URL.
- * 5. If there is an error in the above process, it will display an error notice.
+ * 2. Call `DELETE /mc/connection` API to disconnect the existing connected Google Merchant Center account.
+ * 3. Call `DELETE /google/connect` API to disconnect the existing connected Google account.
+ * 4. Call `GET /google/connect` API to get the Google OAuth URL.
+ * 5. Redirect the browser to the URL.
+ * 6. If there is an error in the above process, it will display an error notice.
  *
  * @return {Array} `[ handleSwitch, { loading } ]`
  * 		- `handleSwitch` is meant to be used as button click handler.
@@ -28,6 +30,14 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
  */
 const useSwitchGoogleAccount = () => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
+
+	const [
+		fetchGoogleMCDisconnect,
+		{ loading: loadingGoogleMCDisconnect },
+	] = useApiFetchCallback( {
+		path: `${ API_NAMESPACE }/mc/connection`,
+		method: 'DELETE',
+	} );
 
 	/**
 	 * Note: we are manually calling `DELETE /google/connect` instead of using
@@ -59,6 +69,7 @@ const useSwitchGoogleAccount = () => {
 		);
 
 		try {
+			await fetchGoogleMCDisconnect();
 			await fetchGoogleDisconnect();
 			const { url } = await fetchGoogleConnect();
 			window.location.href = url;
@@ -75,7 +86,10 @@ const useSwitchGoogleAccount = () => {
 	};
 
 	const loading =
-		loadingGoogleDisconnect || loadingGoogleConnect || dataGoogleConnect;
+		loadingGoogleMCDisconnect ||
+		loadingGoogleDisconnect ||
+		loadingGoogleConnect ||
+		dataGoogleConnect;
 
 	return [ handleSwitch, { loading } ];
 };
