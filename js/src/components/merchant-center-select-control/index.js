@@ -1,16 +1,36 @@
 /**
+ * External dependencies
+ */
+import { SelectControl } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import useExistingGoogleMCAccounts from '.~/hooks/useExistingGoogleMCAccounts';
-import AccountSelectControl from '../account-select-control';
 
 const MerchantCenterSelectControl = ( props ) => {
-	const { data: existingAccounts } = useExistingGoogleMCAccounts();
+	const { data: existingAccounts = [] } = useExistingGoogleMCAccounts();
 
-	const accounts =
-		existingAccounts && existingAccounts.map( ( acc ) => acc.id );
+	const options = existingAccounts.map( ( acc ) => {
+		return {
+			value: acc.id,
+			label: `${ acc.name } ・ ${ acc.domain } (${ acc.id })`,
+		};
+	} );
+	options.sort( ( a, b ) => {
+		return a.label.localeCompare( b.label );
+	} );
+	options.unshift( {
+		value: '',
+		label: __( 'Select one', 'google-listings-and-ads' ),
+	} );
 
-	return <AccountSelectControl accounts={ accounts } { ...props } />;
+	return (
+		<div className="gla-account-select-control">
+			<SelectControl options={ options } { ...props } />
+		</div>
+	);
 };
 
 export default MerchantCenterSelectControl;
