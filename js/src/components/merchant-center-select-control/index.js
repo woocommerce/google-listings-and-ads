@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -15,7 +15,13 @@ const MerchantCenterSelectControl = ( props ) => {
 	const options = existingAccounts.map( ( acc ) => {
 		return {
 			value: acc.id,
-			label: `${ acc.name } ・ ${ acc.domain } (${ acc.id })`,
+			label: sprintf(
+				// translators: 1: account name, 2: account domain, 3: account ID.
+				__( '%1$s ・ %2$s (%3$s)', 'google-listings-and-ads' ),
+				acc.name,
+				acc.domain,
+				acc.id
+			),
 		};
 	} );
 	options.sort( ( a, b ) => {

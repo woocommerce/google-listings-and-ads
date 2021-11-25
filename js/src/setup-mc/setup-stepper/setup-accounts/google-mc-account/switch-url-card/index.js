@@ -72,7 +72,12 @@ const SwitchUrlCard = ( props ) => {
 		<AccountCard
 			className="gla-switch-url-card"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
-			description={ `${ newUrl } (${ id })` }
+			description={ sprintf(
+				// translators: 1: the new URL, 2: account ID.
+				__( '%1$s (%2$s)', 'google-listings-and-ads' ),
+				newUrl,
+				id
+			) }
 			indicator={
 				<AppButton
 					isSecondary
