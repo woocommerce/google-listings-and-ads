@@ -44,6 +44,7 @@ export default function VerificationCodeControl( {
 	const inputsRef = useRef( [] );
 	const cursorRef = useRef( 0 );
 	const [ digits, setDigits ] = useState( initDigits );
+	const [ focus, setFocus ] = useState( 0 );
 
 	/**
 	 * Moves focus to the input at given input
@@ -66,12 +67,6 @@ export default function VerificationCodeControl( {
 			idx,
 			value: e.clipboardData?.getData( 'text/plain' ) ?? value,
 		};
-	};
-
-	const updateInputRefs = ( nextDigits ) => {
-		inputsRef.current.forEach(
-			( el, idx ) => ( el.value = nextDigits[ idx ] )
-		);
 	};
 
 	const handleKeyDown = ( e ) => {
@@ -114,7 +109,7 @@ export default function VerificationCodeControl( {
 			? handlePaste( e )
 			: handleInput( e );
 
-		maybeMoveFocus( nextFocusIdx );
+		setFocus( nextFocusIdx );
 
 		if ( nextDigits !== digits ) {
 			updateState( nextDigits );
@@ -148,7 +143,6 @@ export default function VerificationCodeControl( {
 		];
 
 		const nextDigits = [ ...digits ];
-
 		newDigits.forEach(
 			( digit, i ) => ( nextDigits[ i + idx ] = newDigits[ i ] )
 		);
@@ -162,7 +156,6 @@ export default function VerificationCodeControl( {
 
 	// Reset the inputs' refs and state when resetNeedle changes.
 	useEffect( () => {
-		updateInputRefs( initDigits );
 		updateState( initDigits );
 	}, [ resetNeedle, updateState ] );
 
@@ -184,6 +177,7 @@ export default function VerificationCodeControl( {
 	 * then move the focus calling after the synchronization tick finished.
 	 *
 	 * Note the above also impacts in the state updates for the focused element...
+	 * That's why we need setFocus state in order to sync these internal values.
 	 *
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L73-L90
 	 */
@@ -193,10 +187,9 @@ export default function VerificationCodeControl( {
 		}
 	}, [ digits, resetNeedle ] );
 
-	// update internal state values on InputControl
 	useEffect( () => {
-		updateInputRefs( digits );
-	}, [ digits ] );
+		maybeMoveFocus( focus );
+	}, [ focus ] );
 
 	return (
 		<Flex
