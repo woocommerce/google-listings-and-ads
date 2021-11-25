@@ -154,11 +154,6 @@ export default function VerificationCodeControl( {
 		};
 	};
 
-	// Reset the inputs' refs and state when resetNeedle changes.
-	useEffect( () => {
-		updateState( initDigits );
-	}, [ resetNeedle, updateState ] );
-
 	/**
 	 * Set the focus to the first input if the control's value is (back) at the initial state.
 	 *
@@ -182,10 +177,9 @@ export default function VerificationCodeControl( {
 	 * @see https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/input-field.js#L73-L90
 	 */
 	useEffect( () => {
-		if ( digits === initDigits ) {
-			maybeMoveFocus( 0 );
-		}
-	}, [ digits, resetNeedle ] );
+		updateState( initDigits );
+		setFocus( 0 );
+	}, [ resetNeedle, updateState ] );
 
 	useEffect( () => {
 		maybeMoveFocus( focus );
