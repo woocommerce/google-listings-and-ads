@@ -3,7 +3,7 @@
  */
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import { Button, CardDivider, Flex } from '@wordpress/components';
+import { Button, CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -11,12 +11,14 @@ import { Button, CardDivider, Flex } from '@wordpress/components';
 import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
+import ContentButtonLayout from '.~/components/content-button-layout';
 import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import './index.scss';
 
 const ConnectAds = ( props ) => {
 	const { onCreateNew = () => {} } = props;
@@ -54,7 +56,10 @@ const ConnectAds = ( props ) => {
 	};
 
 	return (
-		<AccountCard appearance={ APPEARANCE.GOOGLE_ADS }>
+		<AccountCard
+			className="gla-connect-ads"
+			appearance={ APPEARANCE.GOOGLE_ADS }
+		>
 			<CardDivider />
 			<Section.Card.Body>
 				<Subsection.Title>
@@ -63,7 +68,7 @@ const ConnectAds = ( props ) => {
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
-				<Flex>
+				<ContentButtonLayout>
 					<AdsAccountSelectControl
 						value={ value }
 						onChange={ setValue }
@@ -85,7 +90,7 @@ const ConnectAds = ( props ) => {
 							{ __( 'Connect', 'google-listings-and-ads' ) }
 						</AppButton>
 					) }
-				</Flex>
+				</ContentButtonLayout>
 			</Section.Card.Body>
 			<Section.Card.Footer>
 				<Button isLink onClick={ onCreateNew }>
