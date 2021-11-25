@@ -46,6 +46,10 @@ export default function VerificationCodeControl( {
 	const [ digits, setDigits ] = useState( initDigits );
 	const [ focus, setFocus ] = useState( 0 );
 
+	// prevent potential undesired re-renders
+	const onCodeChangeRef = useRef( null );
+	onCodeChangeRef.current = onCodeChange;
+
 	/**
 	 * Moves focus to the input at given input
 	 * if it exists.
@@ -53,6 +57,9 @@ export default function VerificationCodeControl( {
 	 * @param {number} targetIdx Index of the node to move the focus to.
 	 */
 	const maybeMoveFocus = ( targetIdx ) => {
+		// prevent index overflow
+		targetIdx = Math.min( targetIdx, DIGIT_LENGTH - 1 );
+
 		const node = inputsRef.current[ targetIdx ];
 		if ( node ) {
 			node.focus();
@@ -92,9 +99,9 @@ export default function VerificationCodeControl( {
 	const updateState = useCallback(
 		( nextDigits ) => {
 			setDigits( nextDigits );
-			onCodeChange( toCallbackData( nextDigits ) );
+			onCodeChangeRef.current( toCallbackData( nextDigits ) );
 		},
-		[ onCodeChange ]
+		[ onCodeChangeRef ]
 	);
 
 	// Track the cursor's position.
@@ -111,14 +118,13 @@ export default function VerificationCodeControl( {
 
 		setFocus( nextFocusIdx );
 
-		if ( nextDigits !== digits ) {
+		if ( nextDigits.toString() !== digits.toString() ) {
 			updateState( nextDigits );
 		}
 	};
 
 	const handleInput = ( e ) => {
 		const { value, idx } = getEventData( e );
-
 		// Only keep the first entered char from the starting position of key cursor.
 		const digit = value.substr( cursorRef.current, 1 ).replace( /\D/, '' );
 
@@ -142,15 +148,23 @@ export default function VerificationCodeControl( {
 			...value.replace( /\D/g, '' ).substr( 0, DIGIT_LENGTH - idx ),
 		];
 
+		// edge case: blur when pasting on last item
+		if (
+			newDigits.length === 1 &&
+			newDigits[ 0 ] !== digits[ idx ] &&
+			idx === DIGIT_LENGTH - 1
+		) {
+			e.target.blur();
+		}
+
 		const nextDigits = [ ...digits ];
 		newDigits.forEach(
 			( digit, i ) => ( nextDigits[ i + idx ] = newDigits[ i ] )
 		);
 
-		// set next focus index to the last inserted digit
 		return {
 			nextDigits,
-			nextFocusIdx: Math.min( newDigits.length + idx, DIGIT_LENGTH - 1 ),
+			nextFocusIdx: newDigits.length + idx,
 		};
 	};
 
@@ -183,7 +197,7 @@ export default function VerificationCodeControl( {
 
 	useEffect( () => {
 		maybeMoveFocus( focus );
-	}, [ focus ] );
+	}, [ digits, resetNeedle, focus ] );
 
 	return (
 		<Flex
