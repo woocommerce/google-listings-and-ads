@@ -6,14 +6,16 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 // See https://github.com/woocommerce/woocommerce-admin/issues/7781
 
 const getMatchingDomainAccount = ( existingAccounts = [] ) => {
-	const homeUrl = getSetting( 'homeUrl' );
-
 	/**
 	 * `homeUrl` has a trailing slash,
-	 * while `el.domain` has no trailing slash,
-	 * so we append a slash before we do the comparison.
+	 * while `existingAccounts`'s `domain` has no trailing slash.
+	 * To be more defensive, we normalize the URLs with `new URL()` first
+	 * before doing the comparison.
 	 */
-	return existingAccounts.find( ( el ) => el.domain + '/' === homeUrl );
+	const homeUrl = new URL( getSetting( 'homeUrl' ) ).toString();
+	return existingAccounts.find(
+		( el ) => new URL( el.domain ).toString() === homeUrl
+	);
 };
 
 export default getMatchingDomainAccount;
