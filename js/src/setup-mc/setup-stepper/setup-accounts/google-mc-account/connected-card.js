@@ -1,12 +1,14 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
+// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+// See https://github.com/woocommerce/woocommerce-admin/issues/7781
 
 /**
  * Internal dependencies
  */
-import toAccountText from '.~/utils/toAccountText';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import ConnectedIconLabel from '.~/components/connected-icon-label';
@@ -28,6 +30,8 @@ const ConnectedCard = ( props ) => {
 		path: `${ API_NAMESPACE }/mc/connection`,
 		method: 'DELETE',
 	} );
+
+	const domain = new URL( getSetting( 'homeUrl' ) ).host;
 
 	const handleSwitch = async () => {
 		const { notice } = await createNotice(
@@ -57,7 +61,12 @@ const ConnectedCard = ( props ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
-			description={ toAccountText( googleMCAccount.id ) }
+			description={ sprintf(
+				// translators: 1: account domain, 2: account ID.
+				__( '%1$s (%2$s)', 'google-listings-and-ads' ),
+				domain,
+				googleMCAccount.id
+			) }
 			indicator={ <ConnectedIconLabel /> }
 		>
 			<Section.Card.Footer>
