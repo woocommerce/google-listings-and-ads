@@ -1,15 +1,17 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { CardDivider, Notice } from '@wordpress/components';
 import { noop } from 'lodash';
+import { getSetting } from '@woocommerce/settings'; // eslint-disable-line import/no-unresolved
+// The above is an unpublished package, delivered with WC, we use Dependency Extraction Webpack Plugin to import it.
+// See https://github.com/woocommerce/woocommerce-admin/issues/7781
 
 /**
  * Internal dependencies
  */
-import toAccountText from '.~/utils/toAccountText';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import Section from '.~/wcdl/section';
@@ -32,6 +34,7 @@ const ReclaimUrlCard = ( props ) => {
 		method: 'POST',
 		data: { id },
 	} );
+	const homeUrl = getSetting( 'homeUrl' );
 
 	const handleReclaimClick = async () => {
 		reset();
@@ -43,7 +46,12 @@ const ReclaimUrlCard = ( props ) => {
 		<AccountCard
 			className="gla-reclaim-url-card"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
-			description={ toAccountText( id ) }
+			description={ sprintf(
+				// translators: 1: website URL, 2: account ID.
+				__( '%1$s (%2$s)', 'google-listings-and-ads' ),
+				websiteUrl,
+				id
+			) }
 			indicator={
 				<AppButton
 					isSecondary
@@ -66,7 +74,7 @@ const ReclaimUrlCard = ( props ) => {
 					) }
 				</Subsection.Body>
 				<ContentButtonLayout>
-					<AppInputLinkControl disabled value={ websiteUrl } />
+					<AppInputLinkControl disabled value={ homeUrl } />
 					<AppButton
 						isSecondary
 						loading={ loading }
