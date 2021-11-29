@@ -131,6 +131,8 @@ All event names are prefixed by `wcadmin_gla_`.
         -   `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.
         -   `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
 
+-   `google_account_connect_different_account_button_click` - Clicking on the "connect to a different Google account" button.
+
 -   `google_ads_account_link_click` - Clicking on a Google Ads account text link.
 
     -   `context`: indicate which page / module the link is in
