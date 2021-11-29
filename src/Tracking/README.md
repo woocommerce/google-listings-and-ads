@@ -170,6 +170,8 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `mc_account_switch_url_button_click` - Clicking on the button to switch URL for a Google Merchant Center account.
 
+-   `mc_account_warning_modal_confirm_button_click` - Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
+
 -   `mc_phone_number_check` - Check for whether the phone number for Merchant Center exists or not.
 
     -   `path`: the path where the check is in.

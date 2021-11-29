@@ -34,6 +34,7 @@ const WarningModal = ( props ) => {
 				<AppButton
 					key="confirm"
 					isSecondary
+					eventName="gla_mc_account_warning_modal_confirm_button_click"
 					onClick={ handleCreateAccountClick }
 				>
 					{ __(
