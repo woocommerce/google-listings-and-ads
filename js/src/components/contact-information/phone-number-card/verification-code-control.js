@@ -118,21 +118,26 @@ export default function VerificationCodeControl( {
 	const handleInput = ( e ) => {
 		const { value, dataset } = e.target;
 		const idx = Number( dataset.idx );
+		const nextDigits = [ ...digits ];
 
-		// Only keep the first entered char from the starting position of key cursor.
-		// If that char is not a digit, then clear the input to empty.
-		const digit = value.substr( cursorRef.current, 1 ).replace( /\D/, '' );
-		if ( digit !== value ) {
-			e.target.value = digit;
+		// Only keep the entered/pasted digits from the starting position of input cursor.
+		const enteredDigits = value
+			.substring( cursorRef.current, e.target.selectionStart )
+			.replace( /\D/g, '' )
+			.slice( 0, DIGIT_LENGTH - idx )
+			.split( '' );
+
+		if ( enteredDigits.length === 0 ) {
+			// If no number is entered, add an empty string for subsequent processes to clear the current input to empty.
+			enteredDigits.push( '' );
+		} else {
+			maybeMoveFocus( idx + enteredDigits.length );
 		}
 
-		if ( digit ) {
-			maybeMoveFocus( idx + 1 );
-		}
+		e.target.value = enteredDigits[ 0 ];
+		nextDigits.splice( idx, enteredDigits.length, ...enteredDigits );
 
-		if ( digit !== digits[ idx ] ) {
-			const nextDigits = [ ...digits ];
-			nextDigits[ idx ] = digit;
+		if ( nextDigits.join() !== digits.join() ) {
 			setDigits( nextDigits );
 
 			onCodeChange( toCallbackData( nextDigits ) );
