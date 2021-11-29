@@ -154,6 +154,8 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
 
+-   `mc_account_connect_different_account_button_click` - Clicking on the "connect to a different Google Merchant Center account" button.
+
 -   `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 
 -   `mc_account_reclaim_url_agreement_check` - Clicking on the checkbox to agree with the implications of reclaiming URL.

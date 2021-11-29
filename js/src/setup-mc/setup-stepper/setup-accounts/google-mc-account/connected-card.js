@@ -77,6 +77,7 @@ const ConnectedCard = ( props ) => {
 						'Or, connect to a different Google Merchant Center account',
 						'google-listings-and-ads'
 					) }
+					eventName="gla_mc_account_connect_different_account_button_click"
 					onClick={ handleSwitch }
 				/>
 			</Section.Card.Footer>
