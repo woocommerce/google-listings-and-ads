@@ -33,6 +33,17 @@ const ConnectedCard = ( props ) => {
 
 	const domain = new URL( getSetting( 'homeUrl' ) ).host;
 
+	/**
+	 * Event handler to switch GMC account. Upon click, it will:
+	 *
+	 * 1. Display a notice to indicate disconnection in progress, and advise users to wait.
+	 * 2. Call API to disconnect the current connected GMC account.
+	 * 3. Call API to refetch list of GMC accounts.
+	 * Users may have just created a new account,
+	 * and we want that new account to show up in the list.
+	 * 4. Call API to refetch GMC account connection status.
+	 * 5. If there is an error in the above API calls, display an error notice.
+	 */
 	const handleSwitch = async () => {
 		const { notice } = await createNotice(
 			'info',
@@ -44,6 +55,7 @@ const ConnectedCard = ( props ) => {
 
 		try {
 			await fetchGoogleMCDisconnect();
+			invalidateResolution( 'getExistingGoogleMCAccounts', [] );
 			invalidateResolution( 'getGoogleMCAccount', [] );
 		} catch ( error ) {
 			createNotice(
