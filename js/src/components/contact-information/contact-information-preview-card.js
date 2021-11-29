@@ -44,6 +44,7 @@ export default function ContactInformationPreviewCard( {
 		/>
 	);
 	let description;
+	let title;
 
 	if ( loading ) {
 		description = (
@@ -54,18 +55,16 @@ export default function ContactInformationPreviewCard( {
 			></span>
 		);
 	} else if ( warning ) {
-		appearance = {
-			title: (
-				<>
-					<Icon
-						icon={ warningIcon }
-						size={ 24 }
-						className="gla-contact-info-preview-card__notice-icon"
-					/>
-					{ warning }
-				</>
-			),
-		};
+		title = (
+			<>
+				<Icon
+					icon={ warningIcon }
+					size={ 24 }
+					className="gla-contact-info-preview-card__notice-icon"
+				/>
+				{ warning }
+			</>
+		);
 		description = (
 			<span className="gla-contact-info-preview-card__notice-details">
 				{ content }
@@ -79,8 +78,9 @@ export default function ContactInformationPreviewCard( {
 		<AccountCard
 			appearance={ appearance }
 			className="gla-contact-info-preview-card"
+			icon={ null }
+			title={ title }
 			description={ description }
-			hideIcon
 			indicator={ editButton }
 		></AccountCard>
 	);

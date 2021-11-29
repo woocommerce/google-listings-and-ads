@@ -12,20 +12,18 @@ import wpLogoURL from './wp-logo.svg';
 const WPComAccountCard = ( props ) => {
 	return (
 		<AccountCard
-			appearance={ {
-				icon: (
-					<img
-						src={ wpLogoURL }
-						alt={ __(
-							'WordPress.com Logo',
-							'google-listings-and-ads'
-						) }
-						width="40"
-						height="40"
-					/>
-				),
-				title: 'WordPress.com',
-			} }
+			icon={
+				<img
+					src={ wpLogoURL }
+					alt={ __(
+						'WordPress.com Logo',
+						'google-listings-and-ads'
+					) }
+					width="40"
+					height="40"
+				/>
+			}
+			title="WordPress.com"
 			{ ...props }
 		/>
 	);

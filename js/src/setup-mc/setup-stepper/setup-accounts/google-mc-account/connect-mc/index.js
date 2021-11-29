@@ -76,10 +76,6 @@ const ConnectMC = () => {
 		<AccountCard
 			className="gla-connect-mc-card"
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
-			description={ __(
-				'Required to sync products and list on Google Shopping',
-				'google-listings-and-ads'
-			) }
 		>
 			<CardDivider />
 			<Section.Card.Body>
