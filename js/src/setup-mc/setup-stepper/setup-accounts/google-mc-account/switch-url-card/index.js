@@ -111,7 +111,7 @@ const SwitchUrlCard = ( props ) => {
 					<AppButton
 						isSecondary
 						loading={ loading }
-						eventName="gla_mc_account_reclaim_url_button_click"
+						eventName="gla_mc_account_switch_url_button_click"
 						onClick={ handleSwitch }
 					>
 						{ __(
