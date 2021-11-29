@@ -56,6 +56,10 @@ const ReclaimUrlCard = ( props ) => {
 				<AppButton
 					isSecondary
 					disabled={ loading }
+					eventName="gla_mc_account_switch_account_button_click"
+					eventProps={ {
+						context: 'reclaim-url',
+					} }
 					onClick={ onSwitchAccount }
 				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }

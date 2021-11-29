@@ -82,6 +82,10 @@ const SwitchUrlCard = ( props ) => {
 				<AppButton
 					isSecondary
 					disabled={ loading }
+					eventName="gla_mc_account_switch_account_button_click"
+					eventProps={ {
+						context: 'switch-url',
+					} }
 					onClick={ handleUseDifferentMCClick }
 				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }

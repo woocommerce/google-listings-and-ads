@@ -164,6 +164,10 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `mc_account_reclaim_url_button_click` - Clicking on the button to reclaim URL for a Google Merchant Center account.
 
+-   `mc_account_switch_account_button_click` - Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
+
+    -   `context`: (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
+
 -   `mc_account_switch_url_button_click` - Clicking on the button to switch URL for a Google Merchant Center account.
 
 -   `mc_phone_number_check` - Check for whether the phone number for Merchant Center exists or not.
