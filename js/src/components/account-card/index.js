@@ -98,7 +98,7 @@ const alignStyleName = {
 export default function AccountCard( {
 	className,
 	disabled = false,
-	appearance = 'empty',
+	appearance = APPEARANCE.EMPTY,
 	icon = appearanceDict[ appearance ].icon,
 	title = appearanceDict[ appearance ].title,
 	description = appearanceDict[ appearance ].description,
