@@ -21,9 +21,10 @@ import './index.scss';
  * @enum {string}
  */
 export const APPEARANCE = {
+	EMPTY: 'empty',
 	GOOGLE: 'google',
 	GOOGLE_MERCHANT_CENTER: 'google_merchant_center',
-	GOOGLE_ADS: 'google-ads',
+	GOOGLE_ADS: 'google_ads',
 	PHONE: 'phone',
 	ADDRESS: 'address',
 };
@@ -38,6 +39,7 @@ const googleLogo = (
 );
 
 const appearanceDict = {
+	[ APPEARANCE.EMPTY ]: {},
 	[ APPEARANCE.GOOGLE ]: {
 		icon: googleLogo,
 		title: __( 'Google account', 'google-listings-and-ads' ),
@@ -49,7 +51,7 @@ const appearanceDict = {
 	[ APPEARANCE.GOOGLE_ADS ]: {
 		icon: googleLogo,
 		title: __( 'Google Ads', 'google-listings-and-ads' ),
-		defaultDescription: __(
+		description: __(
 			'Required to create paid campaigns with your product listings',
 			'google-listings-and-ads'
 		),
@@ -75,33 +77,33 @@ const alignStyleName = {
  *
  * @param {Object} props React props.
  * @param {string} [props.className] Additional CSS class name to be appended.
- * @param {APPEARANCE | {icon, title, defaultDescription}} props.appearance Kind of account to indicate the card appearance, or a tuple with icon, title and optional defaultDescription to be used.
  * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
- * @param {JSX.Element} [props.description] Content below the card title. It will fall back to `appearance.defaultDescription` if not specified and the default is applicable.
+ * @param {APPEARANCE} [props.appearance=APPEARANCE.EMPTY]
+ *   Kind of account to indicate the default card appearance, which could include icon, title, and description.
+ *   If didn't specify this prop, all properties of appearance will be `undefined` (nothing shown),
+ *   and it's usually used for full customization.
+ * @param {JSX.Element} [props.icon] Card icon. It will fall back to the icon of respective `appearance` config if not specified.
+ * @param {JSX.Element} [props.title] Card title. It will fall back to the title of respective `appearance` config if not specified.
+ * @param {JSX.Element} [props.description] Description content below the card title. It will fall back to the description of respective `appearance` config if not specified.
  * @param {JSX.Element} [props.helper] Helper content below the card description.
- * @param {boolean} [props.hideIcon=false] Whether hide the leading icon.
- * @param {'center'|'top'} [props.alignIcon='center'] Specify the vertical alignment of leading icon.
  * @param {JSX.Element} [props.indicator] Indicator of actions or status on the right side of the card.
+ * @param {'center'|'top'} [props.alignIcon='center'] Specify the vertical alignment of leading icon.
  * @param {'center'|'top'} [props.alignIndicator='center'] Specify the vertical alignment of `indicator`.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
  */
 export default function AccountCard( {
 	className,
-	appearance,
 	disabled = false,
-	description,
+	appearance = 'empty',
+	icon = appearanceDict[ appearance ].icon,
+	title = appearanceDict[ appearance ].title,
+	description = appearanceDict[ appearance ].description,
 	helper,
-	hideIcon = false,
 	alignIcon = 'center',
 	indicator,
 	alignIndicator = 'center',
 	children,
 } ) {
-	const { icon, title, defaultDescription } =
-		typeof appearance === 'object'
-			? appearance
-			: appearanceDict[ appearance ];
-
 	const cardClassName = classnames(
 		'gla-account-card',
 		disabled ? 'gla-account-card--is-disabled' : false,
@@ -122,7 +124,7 @@ export default function AccountCard( {
 		<Section.Card className={ cardClassName }>
 			<Section.Card.Body>
 				<Flex gap={ 4 }>
-					{ ! hideIcon && (
+					{ icon && (
 						<FlexItem className={ iconClassName }>
 							{ icon }
 						</FlexItem>
@@ -133,9 +135,11 @@ export default function AccountCard( {
 								{ title }
 							</Subsection.Title>
 						) }
-						<div className="gla-account-card__description">
-							{ description || defaultDescription }
-						</div>
+						{ description && (
+							<div className="gla-account-card__description">
+								{ description }
+							</div>
+						) }
 						{ helper && (
 							<div className="gla-account-card__helper">
 								{ helper }
