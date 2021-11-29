@@ -17,7 +17,6 @@ import ReconnectAccounts from './reconnect-accounts';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import './index.scss';
-import AccountCardsDemo from './account-cards-demo'; // For temporary demo.
 
 const Settings = () => {
 	const { subpath } = getQuery();
@@ -44,18 +43,6 @@ const Settings = () => {
 		case subpaths.editStoreAddress:
 			return <EditStoreAddress />;
 		default:
-	}
-
-	// For temporary demo.
-	if ( true ) {
-		return (
-			<div className="gla-settings">
-				<NavigationClassic />
-				<DisconnectAccounts />
-				<ContactInformationPreview />
-				<AccountCardsDemo />
-			</div>
-		);
 	}
 
 	return (
