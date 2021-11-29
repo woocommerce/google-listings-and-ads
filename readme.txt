@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.6.0
+Stable tag: 1.7.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -118,6 +118,18 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.7.0 - 2021-11-24 =
+* Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
+* Add - Accept login_hint when generating OAuth URL.
+* Add - Review request inbox notification after 10 conversions and 100 free listing clicks
+* Update – Add support for retrieving the name and domain from the Google API
+* Fix - Add support for Norwegian language, nb and nn
+* Fix - Report tabs lose active state when changing chart.
+* Tweak - Update `in_stock` and `out_of_stock` availability enums
+* Tweak - Retry async jobs on timeout
+* Tweak - Reduce the bundle size of the index.js file.
+* Tweak - refactored legacy WC menu highlighting effect.
+
 = 1.6.0 - 2021-11-09 =
 * Add - Coupon/promotion integration with Merchant Center.
 * Tweak - WooCommerce 5.9 compatibility.
@@ -126,24 +138,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Changed minimum version of WordPress to 5.6 and WooCommerce to 5.5.
 * Fix - Change the way of getting WooCommerce admin settings to fix a compatibility issue in WooCommerce 5.8.
 * Tweak - WooCommerce 5.8 compatibility.
-
-= 1.5.0 - 2021-10-01 =
-* Add - Verify user's phone number via SMS or phone call at the last step of the onboarding flow and on the settings page. And update the verified phone number to user's connected Google Merchant Center account.
-* Add - Allow backorder stock availability for products.
-* Add - Set pre-order availability for products using the WooCommerce Pre-Orders extension.
-* Add - Warning notice when the Ads' currency is different from the store's one.
-* Add - Unit tests for the Merchant Google Service class.
-* Fix - Retry Merchant account creation after detecting invalid terms.
-* Fix - Render Ads Account's currency in Dashboard's table.
-* Fix - Don't render `DifferentCurrencyNotice` when the Ads account is disconnected.
-* Fix - Limit the number of synced additional product images to 10.
-* Fix - Split contact information settings page to phone and address settings.
-* Fix - Update phone number and store address pages flow.
-* Fix - Correct spelling/capitalization of "WordPress.com".
-* Fix - PHP notice when creating a product variation.
-* Fix - Bump E2E-related devDeps, bump tested WC version.
-* Tweak - Hide channel visibility box and attributes tab if the setup is not completed.
-* Tweak - Added a few more e2e tests and utils.
-* Tweak - WC 5.7 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

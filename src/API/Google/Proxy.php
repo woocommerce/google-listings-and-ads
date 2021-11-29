@@ -52,7 +52,7 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Get all Merchant Accounts associated with the connected account.
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 *
 	 * @return array
 	 * @throws Exception When an Exception is caught.

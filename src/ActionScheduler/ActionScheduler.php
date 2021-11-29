@@ -178,7 +178,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return ActionScheduler_Action
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	public function fetch_action( int $action_id ): ActionScheduler_Action {
 		return ActionSchedulerCore::store()->fetch_action( $action_id );
