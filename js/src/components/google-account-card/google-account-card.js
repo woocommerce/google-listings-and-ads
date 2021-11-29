@@ -12,7 +12,7 @@ export default function GoogleAccountCard( { disabled = false } ) {
 	const { google, scope, hasFinishedResolution } = useGoogleAccount();
 
 	if ( ! hasFinishedResolution ) {
-		return <AccountCard appearance={ {} } description={ <AppSpinner /> } />;
+		return <AccountCard description={ <AppSpinner /> } />;
 	}
 
 	const isConnected = google?.active === 'yes';
