@@ -47,6 +47,10 @@ const appearanceDict = {
 	[ APPEARANCE.GOOGLE_MERCHANT_CENTER ]: {
 		icon: googleLogo,
 		title: __( 'Google Merchant Center', 'google-listings-and-ads' ),
+		description: __(
+			'Required to sync products and list on Google Shopping',
+			'google-listings-and-ads'
+		),
 	},
 	[ APPEARANCE.GOOGLE_ADS ]: {
 		icon: googleLogo,

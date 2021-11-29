@@ -15,10 +15,6 @@ const CreateAccountCard = ( props ) => {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
-			description={ __(
-				'Create your Google Merchant Center account',
-				'google-listings-and-ads'
-			) }
 			indicator={
 				<CreateAccountButton
 					isSecondary

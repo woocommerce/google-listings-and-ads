@@ -14,10 +14,6 @@ const DisabledCard = () => {
 		<AccountCard
 			disabled
 			appearance={ APPEARANCE.GOOGLE_MERCHANT_CENTER }
-			description={ __(
-				'Required to sync products and list on Google',
-				'google-listings-and-ads'
-			) }
 			indicator={
 				<Button isSecondary disabled>
 					{ __( 'Connect', 'google-listings-and-ads' ) }
