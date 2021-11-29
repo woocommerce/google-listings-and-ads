@@ -571,13 +571,13 @@ class AccountController extends BaseOptionsController {
 		$state['set_id']['data']['from_mca'] = false;
 		foreach ( $this->middleware->get_merchant_accounts() as $existing_account ) {
 			if ( $existing_account['id'] === $account_id ) {
-				$this->options->update( OptionsInterface::SITE_NAME, $existing_account['name'] );
+				$existing_account_name               = $existing_account['name'];
 				$state['set_id']['data']['from_mca'] = $existing_account['subaccount'];
 				break;
 			}
 		}
 
-		$this->middleware->link_merchant_account( $account_id );
+		$this->middleware->link_merchant_account( $account_id, $existing_account_name ?? '' );
 		$state['set_id']['status'] = AccountState::STEP_DONE;
 		$this->account_state->update( $state );
 	}

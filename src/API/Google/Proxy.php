@@ -159,7 +159,7 @@ class Proxy implements OptionsAwareInterface {
 			if ( 200 === $result->getStatusCode() && isset( $response['id'] ) ) {
 				$id = absint( $response['id'] );
 				$this->update_merchant_id( $id );
-				$this->options->update( OptionsInterface::SITE_NAME, $name );
+				$this->update_merchant_name( $name );
 				return $id;
 			}
 
@@ -182,14 +182,14 @@ class Proxy implements OptionsAwareInterface {
 	/**
 	 * Link an existing Merchant Center account.
 	 *
-	 * @param int $id Existing account ID.
+	 * @since x.x.x Added $name parameter.
 	 *
-	 * @return int
+	 * @param int         $id   Existing account ID.
+	 * @param string|null $name The account name.
 	 */
-	public function link_merchant_account( int $id ): int {
+	public function link_merchant_account( int $id, ?string $name ): void {
 		$this->update_merchant_id( $id );
-
-		return $id;
+		$this->update_merchant_name( $name ?? __( 'Unknown Account Name', 'google-listings-and-ads' ) );
 	}
 
 	/**
@@ -586,6 +586,19 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	protected function update_merchant_id( int $id ): bool {
 		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
+	}
+
+	/**
+	 * Update the Merchant Center account name to use for requests.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $name The Merchant Center account name.
+	 *
+	 * @return bool
+	 */
+	protected function update_merchant_name( string $name ): bool {
+		return $this->options->update( OptionsInterface::SITE_NAME, $name );
 	}
 
 	/**
