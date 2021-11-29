@@ -264,6 +264,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
 		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
 		$this->options->delete( OptionsInterface::MERCHANT_ID );
+		$this->options->delete( OptionsInterface::SITE_NAME );
 
 		$this->container->get( MerchantStatuses::class )->delete();
 
