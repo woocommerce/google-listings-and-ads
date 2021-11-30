@@ -131,6 +131,8 @@ All event names are prefixed by `wcadmin_gla_`.
         -   `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.
         -   `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
 
+-   `google_account_connect_different_account_button_click` - Clicking on the "connect to a different Google account" button.
+
 -   `google_ads_account_link_click` - Clicking on a Google Ads account text link.
 
     -   `context`: indicate which page / module the link is in
@@ -152,6 +154,8 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
 
+-   `mc_account_connect_different_account_button_click` - Clicking on the "connect to a different Google Merchant Center account" button.
+
 -   `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 
 -   `mc_account_reclaim_url_agreement_check` - Clicking on the checkbox to agree with the implications of reclaiming URL.
@@ -159,6 +163,14 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `checked`: indicate whether the checkbox is checked or unchecked.
 
 -   `mc_account_reclaim_url_button_click` - Clicking on the button to reclaim URL for a Google Merchant Center account.
+
+-   `mc_account_switch_account_button_click` - Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
+
+    -   `context`: (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
+
+-   `mc_account_switch_url_button_click` - Clicking on the button to switch URL for a Google Merchant Center account.
+
+-   `mc_account_warning_modal_confirm_button_click` - Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
 
 -   `mc_phone_number_check` - Check for whether the phone number for Merchant Center exists or not.
 

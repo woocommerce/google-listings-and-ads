@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.7.0
+Stable tag: 1.8.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -118,6 +118,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.8.0 - 2021-11-30 =
+* Update - UX improvements on account connections in Setup Merchant Center flow.
+
 = 1.7.0 - 2021-11-24 =
 * Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
 * Add - Accept login_hint when generating OAuth URL.
@@ -133,10 +136,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 = 1.6.0 - 2021-11-09 =
 * Add - Coupon/promotion integration with Merchant Center.
 * Tweak - WooCommerce 5.9 compatibility.
-
-= 1.5.1 - 2021-10-13 =
-* Update - Changed minimum version of WordPress to 5.6 and WooCommerce to 5.5.
-* Fix - Change the way of getting WooCommerce admin settings to fix a compatibility issue in WooCommerce 5.8.
-* Tweak - WooCommerce 5.8 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

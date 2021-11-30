@@ -1,0 +1,13 @@
+.gla-mc-warning-modal {
+	max-width: 600px;
+
+	&__warning-text {
+		font-weight: bold;
+		display: flex;
+		gap: 8px;
+
+		svg {
+			flex-shrink: 0;
+		}
+	}
+}
