@@ -1,5 +1,8 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.8.0 - 2021-11-30 =
+* Update - UX improvements on account connections in Setup Merchant Center flow.
+
 = 1.7.0 - 2021-11-24 =
 * Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
 * Add - Accept login_hint when generating OAuth URL.
