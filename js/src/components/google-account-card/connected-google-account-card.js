@@ -44,6 +44,7 @@ export default function ConnectedGoogleAccountCard( {
 							'Or, connect to a different Google account',
 							'google-listings-and-ads'
 						) }
+						eventName="gla_google_account_connect_different_account_button_click"
 						onClick={ handleSwitch }
 					/>
 				</Section.Card.Footer>
