@@ -18,7 +18,7 @@ const NonConnected = () => {
 	}
 
 	if ( existingAccounts.length > 0 ) {
-		return <ConnectMC />;
+		return <ConnectMC onSwitchAccount={ invalidateResolution } />;
 	}
 
 	return <CreateAccount onSwitchAccount={ invalidateResolution } />;

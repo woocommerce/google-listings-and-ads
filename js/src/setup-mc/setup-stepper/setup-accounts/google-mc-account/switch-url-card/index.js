@@ -23,7 +23,7 @@ import AppInputLinkControl from '.~/components/app-input-link-control';
 import './index.scss';
 
 const SwitchUrlCard = ( props ) => {
-	const { id, claimedUrl, newUrl, onSelectAnotherAccount = () => {} } = props;
+	const { id, claimedUrl, newUrl, onSwitchAccount } = props;
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [
@@ -54,16 +54,12 @@ const SwitchUrlCard = ( props ) => {
 		}
 	};
 
-	const handleUseDifferentMCClick = () => {
-		onSelectAnotherAccount();
-	};
-
 	if ( response && response.status === 403 ) {
 		return (
 			<ReclaimUrlCard
 				id={ error.id }
 				websiteUrl={ error.website_url }
-				onSwitchAccount={ handleUseDifferentMCClick }
+				onSwitchAccount={ onSwitchAccount }
 			/>
 		);
 	}
@@ -86,7 +82,7 @@ const SwitchUrlCard = ( props ) => {
 					eventProps={ {
 						context: 'switch-url',
 					} }
-					onClick={ handleUseDifferentMCClick }
+					onClick={ onSwitchAccount }
 				>
 					{ __( 'Switch account', 'google-listings-and-ads' ) }
 				</AppButton>

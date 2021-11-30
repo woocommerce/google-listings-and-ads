@@ -22,7 +22,8 @@ import useCreateMCAccount from '../useCreateMCAccount';
 import CreatingCard from '../creating-card';
 import './index.scss';
 
-const ConnectMC = () => {
+const ConnectMC = ( props ) => {
+	const { onSwitchAccount } = props;
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
 	const [ handleCreateAccount, resultCreateAccount ] = useCreateMCAccount();
@@ -34,7 +35,7 @@ const ConnectMC = () => {
 				message={ resultConnectMC.error.message }
 				claimedUrl={ resultConnectMC.error.claimed_url }
 				newUrl={ resultConnectMC.error.new_url }
-				onSelectAnotherAccount={ resultConnectMC.reset }
+				onSwitchAccount={ onSwitchAccount }
 			/>
 		);
 	}
@@ -52,10 +53,7 @@ const ConnectMC = () => {
 					resultConnectMC.error?.website_url ||
 					resultCreateAccount.error?.website_url
 				}
-				onSwitchAccount={ () => {
-					resultConnectMC.reset();
-					resultCreateAccount.reset();
-				} }
+				onSwitchAccount={ onSwitchAccount }
 			/>
 		);
 	}
