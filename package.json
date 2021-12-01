@@ -36,7 +36,7 @@
 		"test-unit": "wp-scripts test-unit-js --coverage",
 		"test-unit:watch": "npm run test-unit -- --watch",
 		"test-proxy": "node ./tests/proxy",
-		"dewp:outdated": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true"
+		"outdated:dewp": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true"
 	},
 	"devDependencies": {
 		"@hapi/hapi": "^20.1.3",
