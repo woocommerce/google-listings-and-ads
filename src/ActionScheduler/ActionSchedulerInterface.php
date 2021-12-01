@@ -140,7 +140,7 @@ interface ActionSchedulerInterface {
 	 *
 	 * @return ActionScheduler_Action
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	public function fetch_action( int $action_id ): ActionScheduler_Action;
 

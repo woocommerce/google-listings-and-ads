@@ -1,0 +1,44 @@
+.gla-google-mc-account {
+	.wcdl-section {
+		header {
+			box-shadow: inset 0 1px 0 #ddd;
+			padding-top: var(--main-gap);
+
+			.components-tip {
+				svg {
+					/*
+					* Original values below are:
+					* 	align-self: center;
+					* 	fill: $alert-yellow;
+					*
+					* See: https://github.com/WordPress/gutenberg/blob/ba5f6d061934625027beab9d2bf600ae42a63be9/packages/components/src/tip/style.scss.
+					*/
+					align-self: flex-start;
+					fill: currentColor;
+				}
+
+				.app-tooltip__children-container {
+					/*
+					* Make the "Source" text color blue.
+					*/
+					color: #007cba;
+
+					.components-popover {
+						&__content {
+							/*
+							* Specify these so that the text wraps around within a box with 250px width.
+							* Without these, the popover text will show up in one long horizontal line.
+							* Original values below are:
+							* 	width: (not specified);
+							* 	white-space: nowrap;
+							*/
+							width: 250px;
+							white-space: normal;
+							text-align: left;
+						}
+					}
+				}
+			}
+		}
+	}
+}

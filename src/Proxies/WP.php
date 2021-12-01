@@ -147,7 +147,7 @@ class WP {
 	 *
 	 * @return DateTimeZone Timezone object.
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	public function wp_timezone(): DateTimeZone {
 		return wp_timezone();
@@ -161,7 +161,7 @@ class WP {
 	 *
 	 * @return string Converted number in string format.
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	public function number_format_i18n( float $number, int $decimals = 0 ): string {
 		return number_format_i18n( $number, $decimals );

@@ -27,19 +27,26 @@ const SetupAccounts = ( props ) => {
 	const { google, scope } = useGoogleAccount();
 	const { googleMCAccount } = useGoogleMCAccount();
 
-	if (
-		! jetpack ||
-		( jetpack.active === 'yes' &&
-			( ! google || ( google.active === 'yes' && ! googleMCAccount ) ) )
-	) {
+	/**
+	 * When jetpack is loading, or when google account is loading,
+	 * or when GMC account is loading, we display the AppSpinner.
+	 *
+	 * The account loading is in sequential manner, one after another.
+	 *
+	 * Note that we can't use hasFinishedResolution here.
+	 * If we do, when GMC account is connected, resolution would be fired again,
+	 * and the whole page would display this AppSpinner, which is not desired.
+	 */
+	const isLoadingJetpack = ! jetpack;
+	const isLoadingGoogle = jetpack?.active === 'yes' && ! google;
+	const isLoadingGoogleMCAccount =
+		google?.active === 'yes' && scope.gmcRequired && ! googleMCAccount;
+
+	if ( isLoadingJetpack || isLoadingGoogle || isLoadingGoogleMCAccount ) {
 		return <AppSpinner />;
 	}
 
 	const isGoogleAccountDisabled = jetpack?.active !== 'yes';
-	const isGoogleConnected = google?.active === 'yes';
-	const isGoogleMCAccountDisabled = ! (
-		isGoogleConnected && scope.gmcRequired
-	);
 	const isContinueButtonDisabled = googleMCAccount?.status !== 'connected';
 
 	return (
@@ -62,11 +69,11 @@ const SetupAccounts = ( props ) => {
 				) }
 			>
 				<VerticalGapLayout size="large">
-					<WordPressDotComAccount />
+					<WordPressDotComAccount jetpack={ jetpack } />
 					<GoogleAccountCard disabled={ isGoogleAccountDisabled } />
 				</VerticalGapLayout>
 			</Section>
-			<GoogleMCAccount disabled={ isGoogleMCAccountDisabled } />
+			<GoogleMCAccount />
 			<Faqs />
 			<StepContentFooter>
 				<Button

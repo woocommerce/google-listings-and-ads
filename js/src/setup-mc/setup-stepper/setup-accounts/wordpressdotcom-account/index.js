@@ -1,17 +1,15 @@
 /**
  * Internal dependencies
  */
-import Section from '.~/wcdl/section';
-import CardContent from './card-content';
+import ConnectedWPComAccountCard from './connected-wpcom-account-card';
+import ConnectWPComAccountCard from './connect-wpcom-account-card';
 
-const WordPressDotComAccount = () => {
-	return (
-		<Section.Card>
-			<Section.Card.Body>
-				<CardContent />
-			</Section.Card.Body>
-		</Section.Card>
-	);
+const WordPressDotComAccount = ( { jetpack } ) => {
+	if ( jetpack.active === 'yes' ) {
+		return <ConnectedWPComAccountCard jetpack={ jetpack } />;
+	}
+
+	return <ConnectWPComAccountCard />;
 };
 
 export default WordPressDotComAccount;

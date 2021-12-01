@@ -62,7 +62,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @param string     $hook The job action hook.
 	 * @param array|null $args The job arguments.
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	public function attach_timeout_monitor( string $hook, ?array $args = null ) {
 		$this->monitored_hooks[ self::get_job_hash( $hook, $args ) ] = true;
@@ -80,7 +80,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @param string     $hook The job action hook.
 	 * @param array|null $args The job arguments.
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	public function detach_timeout_monitor( string $hook, ?array $args = null ) {
 		unset( $this->monitored_hooks[ self::get_job_hash( $hook, $args ) ] );
@@ -97,7 +97,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @param int   $action_id
 	 * @param array $error
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	public function reschedule_if_timeout( $action_id, $error ) {
 		if ( ! empty( $error ) && $this->is_timeout_error( $error ) ) {
@@ -141,7 +141,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 *
 	 * @link https://www.php.net/manual/en/function.error-get-last.php
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	protected function is_timeout_error( array $error ): bool {
 		return isset( $error['type'] ) && $error['type'] === E_ERROR &&
@@ -159,7 +159,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 * @see ActionSchedulerJobMonitor::get_failure_rate_threshold()
 	 * @see ActionSchedulerJobMonitor::get_failure_timeframe()
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	protected function is_failure_rate_above_threshold( string $hook, ?array $args = null ): bool {
 		$failed_actions = $this->action_scheduler->search(
@@ -203,7 +203,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 *
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	protected static function get_job_hash( string $hook, ?array $args = null ): string {
 		return hash( 'crc32b', $hook . json_encode( $args ) );
@@ -217,7 +217,7 @@ class ActionSchedulerJobMonitor implements Service {
 	 *
 	 * @return bool
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 */
 	protected function is_monitored_for_timeout( string $hook, ?array $args = null ): bool {
 		return isset( $this->monitored_hooks[ self::get_job_hash( $hook, $args ) ] );

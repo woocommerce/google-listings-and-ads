@@ -1,11 +1,5 @@
 .gla-switch-url-card {
-	div.buttons {
-		display: flex;
-		flex-direction: column;
-		gap: calc(var(--main-gap) / 3);
-
-		button {
-			justify-content: center;
-		}
+	.gla-content-button-layout {
+		margin: 16px 0;
 	}
 }

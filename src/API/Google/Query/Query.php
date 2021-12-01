@@ -130,7 +130,7 @@ abstract class Query implements QueryInterface {
 	/**
 	 * Add a where date between clause to the query.
 	 *
-	 * @since x.x.x
+	 * @since 1.7.0
 	 *
 	 * @link https://developers.google.com/shopping-content/guides/reports/query-language/date-ranges
 	 *
