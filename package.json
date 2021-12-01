@@ -37,7 +37,7 @@
 		"test-unit:watch": "npm run test-unit -- --watch",
 		"test-proxy": "node ./tests/proxy",
 		"outdated:dewp": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true",
-		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\""
+		"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\""
 	},
 	"devDependencies": {
 		"@hapi/hapi": "^20.1.3",
