@@ -19,4 +19,4 @@ jobs:
         uses: ./.github/actions/prepare-node
 
       - name: Run JavaScript unit tests
-        run: npm run test-unit
+        run: npm run test:js

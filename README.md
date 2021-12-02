@@ -66,8 +66,8 @@ There are a number of helper scripts exposed via our package.json (below list is
 
 -   `npm run lint:js` : Run eslint over the javascript files
 -   `npm run lint:css` : Run stylelint over the javascript files
--   `npm run test-unit` : Run the JS test suite
--   `npm run test-unit:watch` : Run the JS test suite, watch for changes
+-   `npm run test:js` : Run the JS test suite
+-   `npm run test:js:watch` : Run the JS test suite, watch for changes
 
 ## WordPress Code Standards
 
