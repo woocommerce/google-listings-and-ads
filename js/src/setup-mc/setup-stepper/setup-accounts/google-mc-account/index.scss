@@ -19,17 +19,9 @@
 
 				.app-tooltip__children-container {
 					/*
-					* Make the "Source" text color blue with help cursor.
+					* Make the "Source" text color blue.
 					*/
 					color: #007cba;
-					cursor: help;
-
-					span {
-						/*
-						* Specify this so that the help cursor is not applied to the tooltip content.
-						*/
-						cursor: auto;
-					}
 
 					.components-popover {
 						&__content {
