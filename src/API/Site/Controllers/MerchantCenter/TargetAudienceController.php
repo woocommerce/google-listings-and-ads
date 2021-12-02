@@ -198,7 +198,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 		$countries    = $this->shipping_zone->get_shipping_countries();
 		$base_country = $this->wc->get_base_country();
 		// Add WooCommerce store country if it's supported and not already in the list.
-		if ( ! in_array( $base_country, $countries ) && $this->is_country_supported( $base_country ) ) {
+		if ( ! in_array( $base_country, $countries, true ) && $this->is_country_supported( $base_country ) ) {
 			$countries[] = $base_country;
 		}
 

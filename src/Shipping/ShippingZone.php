@@ -29,7 +29,6 @@ class ShippingZone implements Service {
 	 * ShippingZone constructor.
 	 *
 	 * @param WC $wc
-	 *
 	 */
 	public function __construct( WC $wc ) {
 		$this->wc = $wc;
