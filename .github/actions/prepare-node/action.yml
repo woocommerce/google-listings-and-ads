@@ -16,14 +16,14 @@ runs:
         node-version-file: '.nvmrc'
         cache: 'npm'
 
-    # Log debug information
+    # Log debug information.
     - shell: sh -e {0}
       run: |
         node --version
         npm --version
 
-    # Install node dependencies
+    # Install node dependencies.
     - shell: sh -e {0}
-      # actions/setup-node should update npm cache directory if package-lock has changed
+      # `actions/setup-node` should update npm cache directory if `package-lock` has changed.
       run: |
         npm ci `if [ "${{ inputs.ignore-scripts }}" = "yes" ]; then printf %s "--ignore-scripts"; fi`
