@@ -17,8 +17,6 @@ jobs:
 
       - name: Prepare node
         uses: ./.github/actions/prepare-node
-        with:
-          install-deps: "maybe"
 
   JSLintingCheck:
     name: Lint JavaScript
