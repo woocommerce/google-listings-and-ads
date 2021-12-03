@@ -10,7 +10,7 @@ on:
 jobs:
   E2ETests:
     name: E2E Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 2
     steps:
@@ -20,9 +20,9 @@ jobs:
             access_token: ${{ github.token }}
 
       # Needed for Ubuntu 20.04.
-      # - name: Kill mono to free 8084
-      #   run: |
-      #     sudo killall mono
+      - name: Kill mono to free 8084
+        run: |
+          sudo killall mono
 
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -49,5 +49,15 @@ jobs:
           sleep 10
 
       - name: Run tests
+        env:
+            WC_E2E_SCREENSHOTS: 1
         run: |
           WP_ENV_TESTS_PORT=8085 npm run test:e2e
+      - name: Archive e2e test screenshots
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+            name: e2e-screenshots
+            path: tests/e2e/screenshots
+            if-no-files-found: ignore
+            retention-days: 5
