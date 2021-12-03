@@ -39,7 +39,7 @@ describe( 'At setup page', () => {
 
 			await expect(
 				page.waitForXPath(
-					"//*[text()='Connect your WordPress.com account']"
+					"//*[text()='Connect your WordPress.com account, Google account, and Google Merchant Center account to use Google Listings & Ads.']"
 				)
 			).resolves.toBeTruthy();
 
