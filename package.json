@@ -75,7 +75,6 @@
 		"@wordpress/data": "^4.26.1",
 		"@wordpress/data-controls": "^1.20.1",
 		"@wordpress/date": "^3.9.0",
-		"@wordpress/dom": "^3.1.1",
 		"@wordpress/element": "^2.18.0",
 		"@wordpress/hooks": "^3.1.1",
 		"@wordpress/html-entities": "^3.2.1",
@@ -88,7 +87,6 @@
 		"libphonenumber-js": "^1.9.22",
 		"lodash": "^4.17.20",
 		"md5": "^2.3.0",
-		"prop-types": "^15.7.2",
 		"rememo": "^3.0.0",
 		"use-debounce": "^5.2.0"
 	},
