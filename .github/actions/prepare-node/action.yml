@@ -12,6 +12,7 @@ runs:
   steps:
     # Setup node version from .`nvmrc, and caching.
     - uses: actions/setup-node@v2
+      id: setup-node
       with:
         node-version-file: '.nvmrc'
         cache: 'npm'
@@ -26,4 +27,8 @@ runs:
     - shell: sh -e {0}
       # `actions/setup-node` should update npm cache directory if `package-lock` has changed.
       run: |
-        npm ci `if [ "${{ inputs.ignore-scripts }}" = "yes" ]; then printf %s "--ignore-scripts"; fi`
+        if [ [ "${{ steps.setup-node.outputs.cache-hit }}" != "true" ]; then
+          npm ci `if [ "${{ inputs.ignore-scripts }}" = "yes" ]; then printf %s "--ignore-scripts"; fi`
+        else
+          echo "Skip npm ci"
+        fi
