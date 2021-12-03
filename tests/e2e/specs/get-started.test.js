@@ -3,11 +3,14 @@
  */
 import {
 	merchant, // eslint-disable-line import/named
+	WP_ADMIN_DASHBOARD, // eslint-disable-line import/named
 } from '@woocommerce/e2e-utils';
 
 describe( 'Merchant who is getting started', () => {
 	beforeAll( async () => {
 		await merchant.login();
+		// Skip OonBoardingWizzard, if any.
+		await page.goto( WP_ADMIN_DASHBOARD );
 	} );
 
 	it( 'Clicks on the Marketing > GLA link, clicks on the call-to-action setup button to go to the Setup MC page, should get to the accounts setup', async () => {

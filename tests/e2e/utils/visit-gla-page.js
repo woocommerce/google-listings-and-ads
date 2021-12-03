@@ -21,6 +21,7 @@ import { createURL } from './create-url';
 
 /**
  * Visits admin page; if user is not logged in then it logging in it first, then visits admin page.
+ * If no specific page or path is given in the query, visits `WP_ADMIN_WC_HOME`.
  *
  * @param {string|Object|Array} [query]     	Search query params, in the format acceptable by `SearchParams`.
  * @param {string} 				[query.path]  	Path to the page.
