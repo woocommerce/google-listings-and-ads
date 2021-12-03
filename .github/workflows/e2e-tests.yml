@@ -1,0 +1,53 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - trunk
+      - develop
+  pull_request:
+
+jobs:
+  E2ETests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 2
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+            access_token: ${{ github.token }}
+
+      # Needed for Ubuntu 20.04.
+      - name: Kill mono to free 8084
+        run: |
+          sudo killall mono
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Prepare PHP
+        uses: ./.github/actions/prepare-php
+        with:
+          install-deps: "maybe"
+
+      - name: Prepare node
+        uses: ./.github/actions/prepare-node
+        with:
+          ignore-scripts: "no"
+
+      - name: Build production bundle
+        run: |
+          echo "::group::Build log"
+          npm run build
+          echo "::endgroup::"
+
+      - name: Start docker container
+        run: |
+          npm run docker:up
+          sleep 10
+
+      - name: Run tests
+        run: |
+          WP_ENV_TESTS_PORT=8085 npm run test:e2e
