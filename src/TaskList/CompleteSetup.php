@@ -6,6 +6,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\TaskList;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AdminScriptWithBuiltDependenciesAsset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\Asset;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -19,8 +21,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\BuiltScriptDependencyArray
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\TaskList
  */
-class CompleteSetup implements Deactivateable, Service, Registerable, MerchantCenterAwareInterface {
+class CompleteSetup implements Deactivateable, Service, Registerable, Conditional, MerchantCenterAwareInterface {
 
+	use AdminConditional;
 	use MerchantCenterAwareTrait;
 	use PluginHelper;
 	use TaskListTrait;
