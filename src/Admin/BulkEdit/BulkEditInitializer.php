@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,12 +28,12 @@ class BulkEditInitializer implements Service, Registerable {
 	 * when bulk saving info.
 	 *
 	 * @since 3.0.0
-	 * @param int    $post_id Post ID being saved.
-	 * @param object $post Post object being saved.
+	 * @param int     $post_id Post ID being saved.
+	 * @param WP_Post $post Post object being saved.
 	 */
-	public function bulk_edit_hook( int $post_id, $post ) {
+	public function bulk_edit_hook( int $post_id, WP_Post $post ) {
 		remove_action( 'save_post', [ $this, 'bulk_edit_hook' ] );
 		do_action( 'bulk_edit_save_post', $post_id, $post );
-		add_action( 'save_post_{$', [ $this, 'bulk_edit_hook' ], 10, 2 );
+		add_action( 'save_post', [ $this, 'bulk_edit_hook' ], 10, 2 );
 	}
 }

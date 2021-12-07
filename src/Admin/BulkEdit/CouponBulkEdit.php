@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit;
 
 use Automattic\Jetpack\Constants;
-use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Admin;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\ViewHelperTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
@@ -72,8 +71,6 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 	 *
 	 * @param string $column_name Column being shown.
 	 * @param string $post_type Post type being shown.
-	 *
-	 * @throws ViewException If the view doesn't exist or can't be loaded.
 	 */
 	public function render_view( $column_name, $post_type ) {
 		if ( self::get_screen() !== $post_type || self::TARGET_COLUMN !== $column_name ) {
@@ -98,7 +95,7 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 	 * @param int    $post_id Post ID being saved.
 	 * @param object $post Post object being saved.
 	 *
-	 * @return $post_id
+	 * @return int $post_id
 	 */
 	public function handle_submission( int $post_id, $post ): int {
 		$request_data = $this->request_data();
@@ -141,7 +138,7 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 	 *
 	 * @return array The $_REQUEST superglobal.
 	 */
-	protected function request_data() {
+	protected function request_data(): array {
 		return $_REQUEST;
 	}
 }
