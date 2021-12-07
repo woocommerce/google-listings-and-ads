@@ -1,17 +1,10 @@
 /**
- * External dependencies
- */
-import { useSelect } from '@wordpress/data';
-
-/**
  * Internal dependencies
  */
-import { STORE_KEY } from '.~/data';
+import useAppSelectDispatch from './useAppSelectDispatch';
 
 /**
- * Get the supported countries from API. Returns `{ loading, data }`.
- *
- * `loading` is a boolean indicating whether the request is still resolving.
+ * Get the supported countries from API. Returns `{ hasFinishedResolution, data, invalidateResolution }`.
  *
  * `data` is an object of country mapping. e.g.:
  *
@@ -25,17 +18,7 @@ import { STORE_KEY } from '.~/data';
  * ```
  */
 const useGetCountries = () => {
-	return useSelect( ( select ) => {
-		const { getCountries, isResolving } = select( STORE_KEY );
-
-		const data = getCountries();
-		const loading = isResolving( 'getCountries' );
-
-		return {
-			loading,
-			data,
-		};
-	}, [] );
+	return useAppSelectDispatch( 'getCountries' );
 };
 
 export default useGetCountries;
