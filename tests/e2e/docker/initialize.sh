@@ -23,5 +23,5 @@ wp plugin activate google-listings-and-ads
 # but we are leaving it intact here just in case we want to run full WooCommerce core e2e test.
 wp user create customer customer@woocommercecoree2etestsuite.com --user_pass=password --role=customer --path=/var/www/html
 
-# Skip OnBoarding Wizard, so redirect to it will not interrupt our tests.
-wp option update woocommerce_onboarding_profile '{"skipped": true, "completed": true}' --format=json
+# Skip activation redirect, so it will not interrupt our tests.
+wp transient delete _wc_activation_redirect
