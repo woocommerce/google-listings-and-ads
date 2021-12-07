@@ -10,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
-use Psr\Container\ContainerInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -25,8 +25,6 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 
 	use CountryCodeTrait;
 
-	/** @var ContainerInterface */
-	protected $container;
 
 	/**
 	 * The base for routes in this controller.
@@ -36,13 +34,26 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	protected $route_base = 'mc/shipping/rates';
 
 	/**
-	 * BaseController constructor.
-	 *
-	 * @param ContainerInterface $container
+	 * @var ShippingRateQuery
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->container = $container;
+	protected $query;
+
+	/**
+	 * @var ShippingZone
+	 */
+	protected $shipping_zone;
+
+	/**
+	 * ShippingRateController constructor.
+	 *
+	 * @param RESTServer        $server
+	 * @param ShippingRateQuery $query
+	 * @param ShippingZone      $shipping_zone
+	 */
+	public function __construct( RESTServer $server, ShippingRateQuery $query, ShippingZone $shipping_zone ) {
+		parent::__construct( $server );
+		$this->query         = $query;
+		$this->shipping_zone = $shipping_zone;
 	}
 
 	/**
@@ -84,6 +95,28 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
+
+		$this->register_route(
+			"{$this->route_base}/suggestions",
+			[
+				[
+					'methods'             => TransportMethods::READABLE,
+					'callback'            => $this->get_suggestions_callback(),
+					'permission_callback' => $this->get_permission_callback(),
+					'args'                => [
+						'country_code' => [
+							'type'              => 'string',
+							'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+							'context'           => [ 'view' ],
+							'sanitize_callback' => $this->get_country_code_sanitize_callback(),
+							'validate_callback' => $this->get_country_code_validate_callback(),
+							'required'          => true,
+						],
+					],
+				],
+				'schema' => $this->get_api_response_schema_callback(),
+			]
+		);
 	}
 
 	/**
@@ -109,6 +142,38 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 			}
 
 			return $items;
+		};
+	}
+
+	/**
+	 * Get the callback function for returning the endpoint results.
+	 *
+	 * @return callable
+	 *
+	 * @since x.x.x
+	 */
+	protected function get_suggestions_callback(): callable {
+		return function( Request $request ) {
+			$country = $request->get_param( 'country_code' );
+			$rate    = $this->get_suggested_shipping_rate_for_country( $country );
+			if ( empty( $rate ) ) {
+				return new Response(
+					[
+						'message' => __( 'No rate available.', 'google-listings-and-ads' ),
+						'country' => $country,
+					],
+					404
+				);
+			}
+
+			return $this->prepare_item_for_response(
+				[
+					'country_code' => $rate['country'],
+					'currency'     => $rate['currency'],
+					'rate'         => $rate['rate'],
+				],
+				$request
+			);
 		};
 	}
 
@@ -147,9 +212,8 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_create_rate_callback(): callable {
 		return function( Request $request ) {
-			$query        = $this->get_query_object();
 			$country_code = $request->get_param( 'country_code' );
-			$existing     = ! empty( $query->where( 'country', $country_code )->get_results() );
+			$existing     = ! empty( $this->query->where( 'country', $country_code )->get_results() );
 
 			try {
 				$data = [
@@ -159,14 +223,14 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				];
 
 				if ( $existing ) {
-					$query->update(
+					$this->query->update(
 						$data,
 						[
-							'id' => $query->get_results()[0]['id'],
+							'id' => $this->query->get_results()[0]['id'],
 						]
 					);
 				} else {
-					$query->insert( $data );
+					$this->query->insert( $data );
 				}
 
 				return new Response(
@@ -200,7 +264,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 		return function( Request $request ) {
 			try {
 				$country_code = $request->get_param( 'country_code' );
-				$this->get_query_object()->delete( 'country', $country_code );
+				$this->query->delete( 'country', $country_code );
 
 				return [
 					'status'  => 'success',
@@ -227,7 +291,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return array
 	 */
 	protected function get_all_shipping_rates(): array {
-		return $this->get_query_object()->set_limit( 100 )->get_results();
+		return $this->query->set_limit( 100 )->get_results();
 	}
 
 	/**
@@ -236,16 +300,30 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return array
 	 */
 	protected function get_shipping_rate_for_country( string $country ): array {
-		return $this->get_query_object()->where( 'country', $country )->get_results();
+		return $this->query->where( 'country', $country )->get_results();
 	}
 
 	/**
-	 * Get the shipping time query object.
+	 * @param string $country
 	 *
-	 * @return ShippingRateQuery
+	 * @return array|null
+	 *
+	 * @since x.x.x
 	 */
-	protected function get_query_object(): ShippingRateQuery {
-		return $this->container->get( ShippingRateQuery::class );
+	protected function get_suggested_shipping_rate_for_country( string $country ): ?array {
+		$methods = $this->shipping_zone->get_shipping_methods_for_country( $country );
+		foreach ( $methods as $method ) {
+			// Todo: Add support for "pickup" and "free" shipping methods, and also render the method ID once when we have the UI designed to display it.
+			if ( ShippingZone::METHOD_FLAT_RATE === $method['id'] && $method['enabled'] ) {
+				return [
+					'country'  => $country,
+					'currency' => $method['currency'],
+					'rate'     => $method['options']['cost'],
+				];
+			}
+		}
+
+		return null;
 	}
 
 	/**
