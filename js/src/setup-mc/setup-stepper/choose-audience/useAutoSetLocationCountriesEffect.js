@@ -2,11 +2,7 @@
  * External dependencies
  */
 import { useCallback, useEffect } from '@wordpress/element';
-
-/**
- * Internal dependencies
- */
-import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Automatically set `location` to be `selected`
@@ -21,20 +17,15 @@ import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
  */
 const useAutoSetLocationCountriesEffect = ( formProps ) => {
 	const { values, getInputProps } = formProps;
-	const { data } = useApiFetchEffect( {
-		path: `wc/gla/mc/target_audience/suggestions`,
-	} );
 
-	const setLocationCountries = useCallback( () => {
-		if ( ! data ) {
-			return;
-		}
-
-		const countriesValue = data.countries;
+	const setLocationCountries = useCallback( async () => {
+		const data = await apiFetch( {
+			path: `wc/gla/mc/target_audience/suggestions`,
+		} );
 
 		getInputProps( 'location' ).onChange( 'selected' );
-		getInputProps( 'countries' ).onChange( countriesValue );
-	}, [ data, getInputProps ] );
+		getInputProps( 'countries' ).onChange( data.countries );
+	}, [ getInputProps ] );
 
 	const hasNoLocationCountries =
 		values.location === null && values.countries.length === 0;
