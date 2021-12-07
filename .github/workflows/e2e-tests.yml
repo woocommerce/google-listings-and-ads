@@ -52,7 +52,7 @@ jobs:
         env:
             WC_E2E_SCREENSHOTS: 1
         run: |
-          WP_ENV_TESTS_PORT=8085 npm run test:e2e
+          npm run test:e2e
       - name: Archive e2e test screenshots
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
