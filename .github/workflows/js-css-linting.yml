@@ -7,6 +7,8 @@ on:
       - develop
   pull_request:
 
+env:
+  FORCE_COLOR: 2
 jobs:
   Setup:
     name: Setup for jobs
