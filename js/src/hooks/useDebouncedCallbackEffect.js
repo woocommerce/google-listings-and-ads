@@ -27,8 +27,8 @@ const useDebouncedCallbackEffect = (
 	options = defaultOptions
 ) => {
 	const { wait, callOnFirstRender } = {
-		...options,
 		...defaultOptions,
+		...options,
 	};
 	const debouncedCallback = useDebouncedCallback( func, wait );
 	const ref = useRef( null );
