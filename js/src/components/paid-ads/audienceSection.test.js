@@ -3,6 +3,7 @@
  */
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -24,15 +25,7 @@ jest.mock( '.~/hooks/useTargetAudienceFinalCountryCodes', () =>
 describe( 'audienceSection', () => {
 	const defaultProps = {
 		formProps: {
-			getInputProps: () => ( {
-				checked: true,
-				className: null,
-				help: null,
-				onBlur: ( f ) => f,
-				onChange: undefined,
-				selected: [ 'GB' ],
-				value: [ 'GB' ],
-			} ),
+			getInputProps: () => ( { value: [ 'GB' ] } ),
 		},
 		countrySelectHelperText:
 			'Once a campaign has been created, you cannot change the target country.',
@@ -42,15 +35,22 @@ describe( 'audienceSection', () => {
 		render( <AudienceSection { ...defaultProps } disabled={ true } /> );
 
 		const dropdown = await screen.findByRole( 'combobox' );
-
 		expect( dropdown ).toBeDisabled();
+
+		//Test that input is not editable
+		userEvent.type( dropdown, 'Spain' );
+		expect( dropdown ).toHaveValue( 'United Kingdom' );
 	} );
 
 	test( 'If Audience section is enable the country field should be enable', async () => {
 		render( <AudienceSection { ...defaultProps } disabled={ false } /> );
 
 		const dropdown = await screen.findByRole( 'combobox' );
-
 		expect( dropdown ).not.toBeDisabled();
+
+		//Test that input is editable
+		userEvent.clear( dropdown );
+		userEvent.type( dropdown, 'S' );
+		expect( dropdown ).toHaveValue( 'S' );
 	} );
 } );
