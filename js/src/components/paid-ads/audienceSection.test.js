@@ -38,7 +38,7 @@ describe( 'audienceSection', () => {
 			'Once a campaign has been created, you cannot change the target country.',
 	};
 
-	test( 'If Audience section is in edit mode the country field should be disabled', async () => {
+	test( 'If Audience section is disabled the country field should be disabled', async () => {
 		render( <AudienceSection { ...defaultProps } disabled={ true } /> );
 
 		const dropdown = await screen.findByRole( 'combobox' );
@@ -46,7 +46,7 @@ describe( 'audienceSection', () => {
 		expect( dropdown ).toBeDisabled();
 	} );
 
-	test( 'If Audience section is in create mode the country field should be enable', async () => {
+	test( 'If Audience section is enable the country field should be enable', async () => {
 		render( <AudienceSection { ...defaultProps } disabled={ false } /> );
 
 		const dropdown = await screen.findByRole( 'combobox' );
