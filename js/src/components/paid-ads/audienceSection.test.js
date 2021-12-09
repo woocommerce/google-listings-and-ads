@@ -23,12 +23,12 @@ jest.mock( '.~/hooks/useTargetAudienceFinalCountryCodes', () =>
 );
 
 describe( 'audienceSection', () => {
+	const onChange = jest.fn();
+
 	const defaultProps = {
 		formProps: {
-			getInputProps: () => ( { value: [ 'GB' ] } ),
+			getInputProps: () => ( { onChange } ),
 		},
-		countrySelectHelperText:
-			'Once a campaign has been created, you cannot change the target country.',
 	};
 
 	test( 'If Audience section is disabled the country field should be disabled', async () => {
@@ -38,11 +38,15 @@ describe( 'audienceSection', () => {
 		expect( dropdown ).toBeDisabled();
 
 		//Test that input is not editable
-		userEvent.type( dropdown, 'Spain' );
-		expect( dropdown ).toHaveValue( 'United Kingdom' );
+		userEvent.clear( dropdown );
+		userEvent.type( dropdown, 'S' );
+
+		const options = screen.queryAllByRole( 'option' );
+		expect( options.length ).toBe( 0 );
+		expect( onChange ).toHaveBeenCalledTimes( 0 );
 	} );
 
-	test( 'If Audience section is enable the country field should be enable', async () => {
+	test( 'If Audience section is enable the country field should be enable & editable', async () => {
 		render( <AudienceSection { ...defaultProps } disabled={ false } /> );
 
 		const dropdown = await screen.findByRole( 'combobox' );
@@ -51,6 +55,12 @@ describe( 'audienceSection', () => {
 		//Test that input is editable
 		userEvent.clear( dropdown );
 		userEvent.type( dropdown, 'S' );
-		expect( dropdown ).toHaveValue( 'S' );
+
+		const options = await screen.findAllByRole( 'option' );
+		expect( options.length ).toBeGreaterThan( 0 );
+
+		const firstOption = options[ 0 ];
+		userEvent.click( firstOption );
+		expect( onChange ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
