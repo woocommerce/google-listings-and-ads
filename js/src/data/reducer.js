@@ -131,16 +131,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_SETTINGS:
 		case TYPES.SAVE_SETTINGS: {
-			return {
-				...state,
-				mc: {
-					...state.mc,
-					settings: {
-						...state.mc.settings,
-						...action.settings,
-					},
-				},
-			};
+			return set( state, 'mc.settings', action.settings );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_JETPACK: {
@@ -152,16 +143,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS: {
-			return {
-				...state,
-				mc: {
-					...state.mc,
-					accounts: {
-						...state.mc.accounts,
-						google_access: action.data,
-					},
-				},
-			};
+			return set( state, 'mc.accounts.google_access', action.data );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC: {
@@ -177,16 +159,8 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS: {
-			return {
-				...state,
-				mc: {
-					...state.mc,
-					accounts: {
-						...state.mc.accounts,
-						ads: DEFAULT_STATE.mc.accounts.ads,
-					},
-				},
-			};
+			const value = DEFAULT_STATE.mc.accounts.ads;
+			return set( state, 'mc.accounts.ads', value );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS: {
@@ -199,14 +173,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_MC_CONTACT_INFORMATION: {
-			const newState = {
-				...state,
-				mc: {
-					...state.mc,
-					contact: action.data,
-				},
-			};
-			return newState;
+			return set( state, 'mc.contact', action.data );
 		}
 
 		case TYPES.RECEIVE_COUNTRIES: {
@@ -219,11 +186,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ADS_CAMPAIGNS: {
-			const newState = {
-				...state,
-				ads_campaigns: action.adsCampaigns,
-			};
-			return newState;
+			return set( state, 'ads_campaigns', action.adsCampaigns );
 		}
 
 		case TYPES.UPDATE_ADS_CAMPAIGN: {
@@ -239,103 +202,67 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const newAdsCampaigns = [ ...state.ads_campaigns ];
 			newAdsCampaigns[ idx ] = updatedCampaign;
 
-			const newState = {
-				...state,
-				ads_campaigns: newAdsCampaigns,
-			};
-			return newState;
+			return set( state, 'ads_campaigns', newAdsCampaigns );
 		}
 
 		case TYPES.DELETE_ADS_CAMPAIGN: {
 			const { id } = action;
-
-			return {
-				...state,
-				ads_campaigns: state.ads_campaigns.filter(
-					( el ) => el.id !== id
-				),
-			};
+			const adsCampaign = state.ads_campaigns.filter(
+				( el ) => el.id !== id
+			);
+			return set( state, 'ads_campaigns', adsCampaign );
 		}
 
 		case TYPES.RECEIVE_MC_SETUP: {
-			const newState = {
-				...state,
-				mc_setup: action.mcSetup,
-			};
-			return newState;
+			return set( state, 'mc_setup', action.mcSetup );
 		}
 
 		case TYPES.RECEIVE_MC_PRODUCT_STATISTICS: {
-			const newState = {
-				...state,
-				mc_product_statistics: action.mcProductStatistics,
-			};
-			return newState;
+			const value = action.mcProductStatistics;
+			return set( state, 'mc_product_statistics', value );
 		}
 
 		case TYPES.RECEIVE_MC_ISSUES: {
 			const { query, data } = action;
-			const newState = {
-				...state,
-				mc_issues: {
-					...state.mc_issues,
-					issues:
-						( state.mc_issues?.issues && [
-							...state.mc_issues.issues,
-						] ) ||
-						[],
-				},
-			};
-
-			newState.mc_issues.issues.splice(
+			const issues = state.mc_issues?.issues?.slice() || [];
+			issues.splice(
 				( query.page - 1 ) * query.per_page,
 				query.per_page,
 				...data.issues
 			);
-			newState.mc_issues.total = data.total;
 
-			return newState;
+			return chain( state, 'mc_issues' )
+				.set( 'issues', issues )
+				.set( 'total', data.total )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MC_PRODUCT_FEED: {
 			const { query, data } = action;
-			const newState = {
-				...state,
-				mc_product_feed: {
-					...state.mc_product_feed,
-					pages: {
-						...state.mc_product_feed?.pages,
-					},
-				},
-			};
+			const lastQuery = state.mc_product_feed || {};
+			const stateSetter = chain( state, 'mc_product_feed' );
 
 			if (
-				newState.mc_product_feed.per_page !== query.per_page ||
-				newState.mc_product_feed.order !== query.order ||
-				newState.mc_product_feed.orderby !== query.orderby
+				lastQuery.per_page !== query.per_page ||
+				lastQuery.order !== query.order ||
+				lastQuery.orderby !== query.orderby
 			) {
 				// discard old stored data when pagination has changed.
-				newState.mc_product_feed.pages = {};
+				stateSetter.set( 'pages', {} );
 			}
 
-			newState.mc_product_feed.per_page = query.per_page;
-			newState.mc_product_feed.order = query.order;
-			newState.mc_product_feed.orderby = query.orderby;
-			newState.mc_product_feed.total = data.total;
-			newState.mc_product_feed.pages[ query.page ] = data.products;
-
-			return newState;
+			return stateSetter
+				.set( `pages.[${ query.page }]`, data.products )
+				.set( 'per_page', query.per_page )
+				.set( 'order', query.order )
+				.set( 'orderby', query.orderby )
+				.set( 'total', data.total )
+				.end();
 		}
 
 		case TYPES.RECEIVE_REPORT: {
 			const { reportKey, data } = action;
-			return {
-				...state,
-				report: {
-					...state.report,
-					[ reportKey ]: data,
-				},
-			};
+			return set( state, `report.${ reportKey }`, data );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
