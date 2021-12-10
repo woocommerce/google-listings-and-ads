@@ -348,4 +348,28 @@ describe( 'reducer', () => {
 			] );
 		} );
 	} );
+
+	describe( 'Google Ads account connection', () => {
+		const path = 'mc.accounts.ads';
+
+		it( 'should return with received Google Ads account connection', () => {
+			const action = {
+				type: TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS,
+				account: { id: 123456789 },
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, action.account );
+		} );
+
+		it( 'should return with default Google Ads account connection when getting disconnect action', () => {
+			const originalState = prepareState( path, { id: 123456789 }, true );
+			const action = { type: TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS };
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, get( defaultState, path ) );
+		} );
+	} );
 } );
