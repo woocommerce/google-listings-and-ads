@@ -576,4 +576,28 @@ describe( 'reducer', () => {
 			}
 		);
 	} );
+
+	describe( 'Reports of programs and products', () => {
+		const path = 'report';
+
+		it( 'should store paginated data by `reportKey` and return with received report data', () => {
+			const pageOneState = reducer( prepareState(), {
+				type: TYPES.RECEIVE_REPORT,
+				reportKey: 'key1',
+				data: '#1',
+			} );
+			// Support for storing report data regardless of pagination loading order.
+			const pageFourState = reducer( pageOneState, {
+				type: TYPES.RECEIVE_REPORT,
+				reportKey: 'key4',
+				data: '#4',
+			} );
+
+			pageOneState.assertConsistentRef();
+			pageFourState.assertConsistentRef();
+			expect( pageOneState ).toHaveProperty( `${ path }.key1`, '#1' );
+			expect( pageFourState ).toHaveProperty( `${ path }.key1`, '#1' );
+			expect( pageFourState ).toHaveProperty( `${ path }.key4`, '#4' );
+		} );
+	} );
 } );
