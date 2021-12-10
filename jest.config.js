@@ -26,6 +26,7 @@ module.exports = {
 	},
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [ '/node_modules/', '/tests/e2e/' ],
+	watchPathIgnorePatterns: [ '<rootDir>/js/build/' ],
 	globals: {
 		glaData: {
 			mcSetupComplete: true,
