@@ -79,10 +79,10 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 
 
 	/**
-	 * Checks if a note can and should be added. We insert the notes only when all the conditions ares satisfied.
+	 * Checks if a note can and should be added. We insert the notes only when all the conditions are satisfied:
 	 *     1. Store is in promotion supported country
 	 *     2. Store has at least one active product in Merchant Center
-	 *     3. Store has coupons created, but no coupons synced with Merchant Center.
+	 *     3. Store has coupons created, but no coupons synced with Merchant Center
 	 *     4. Store has Ads account connected and has been setup for >3 days OR no Ads account and >17 days
 	 *
 	 * @return bool
