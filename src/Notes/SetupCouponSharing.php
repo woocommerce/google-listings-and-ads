@@ -55,8 +55,13 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
 
-		$note->set_title( __( 'Show your coupons on Google', 'google-listings-and-ads' ) );
-		$note->set_content( __( 'Attract customers with discounts, free shipping, and gifts by setting up promotions and showing them on Google. Show each coupon on Google by navigating to the coupon and turning it on.', 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Show your store coupons on your Google listings', 'google-listings-and-ads' ) );
+		$note->set_content(
+			__(
+				'Sync your store promotions and coupons directly with Google to showcase on your product listings across the Google Shopping tab. When creating a coupon, you’ll see a Channel Visibility settings box on the right; select "Show coupon on Google" to enable.',
+				'google-listings-and-ads'
+			)
+		);
 		$note->set_content_data( (object) [] );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
