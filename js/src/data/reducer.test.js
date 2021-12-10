@@ -600,4 +600,40 @@ describe( 'reducer', () => {
 			expect( pageFourState ).toHaveProperty( `${ path }.key4`, '#4' );
 		} );
 	} );
+
+	describe( 'Remaining actions simply update the data payload to the specific path of state and return the updated state', () => {
+		// The readability is better than applying the formatting here.
+		/* eslint-disable prettier/prettier */
+		// prettier-ignore
+		const argumentsTuples = [
+			[ TYPES.RECEIVE_SETTINGS, 'settings', 'mc.settings' ],
+			[ TYPES.SAVE_SETTINGS, 'settings', 'mc.settings' ],
+			[ TYPES.RECEIVE_ACCOUNTS_JETPACK, 'account', 'mc.accounts.jetpack' ],
+			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE, 'account', 'mc.accounts.google' ],
+			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS, 'data', 'mc.accounts.google_access' ],
+			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC, 'account', 'mc.accounts.mc' ],
+			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING, 'accounts', 'mc.accounts.existing_mc' ],
+			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS, 'billingStatus', 'mc.accounts.ads_billing_status' ],
+			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING, 'accounts', 'mc.accounts.existing_ads' ],
+			[ TYPES.RECEIVE_MC_CONTACT_INFORMATION, 'data', 'mc.contact' ],
+			[ TYPES.RECEIVE_COUNTRIES, 'countries', 'mc.countries' ],
+			[ TYPES.RECEIVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
+			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
+			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],
+			[ TYPES.RECEIVE_MC_PRODUCT_STATISTICS, 'mcProductStatistics', 'mc_product_statistics' ],
+		];
+		/* eslint-enable prettier/prettier */
+
+		it.each( argumentsTuples )(
+			'for type `%s`, it should return with received %s at `%s`',
+			( type, key, path ) => {
+				const payload = { hello: 'WordPress' };
+				const action = { type, [ key ]: payload };
+				const state = reducer( prepareState(), action );
+
+				state.assertConsistentRef();
+				expect( state ).toHaveProperty( path, payload );
+			}
+		);
+	} );
 } );
