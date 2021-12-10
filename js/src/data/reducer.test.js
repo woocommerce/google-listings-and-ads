@@ -372,4 +372,74 @@ describe( 'reducer', () => {
 			expect( state ).toHaveProperty( path, get( defaultState, path ) );
 		} );
 	} );
+
+	describe( 'Ads campaigns', () => {
+		const path = 'ads_campaigns';
+
+		it( 'should return with received ads campaigns', () => {
+			const action = {
+				type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+				adsCampaigns: [ { id: 123 }, { id: 456 } ],
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, action.adsCampaigns );
+		} );
+
+		it( 'should patch the given data properties and return with updated ads campaign by matching `id`', () => {
+			const originalState = prepareState( path, [
+				{
+					id: 123,
+					status: 'paused',
+					name: 'how do you turn this on',
+					amount: 50,
+				},
+				{
+					id: 456,
+					status: 'enabled',
+					name: 'alpaca simulator',
+					amount: 999,
+				},
+			] );
+			const action = {
+				type: TYPES.UPDATE_ADS_CAMPAIGN,
+				id: 123,
+				data: { name: 'robin hood', amount: 10000, status: 'enabled' },
+			};
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{
+					id: 123,
+					status: 'enabled',
+					name: 'robin hood',
+					amount: 10000,
+				},
+				{
+					id: 456,
+					status: 'enabled',
+					name: 'alpaca simulator',
+					amount: 999,
+				},
+			] );
+		} );
+
+		it( 'should return with remaining ads campaigns after deleting specific one by matching `id`', () => {
+			const originalState = prepareState( path, [
+				{ id: 123 },
+				{ id: 456 },
+				{ id: 789 },
+			] );
+			const action = { type: TYPES.DELETE_ADS_CAMPAIGN, id: 456 };
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{ id: 123 },
+				{ id: 789 },
+			] );
+		} );
+	} );
 } );
