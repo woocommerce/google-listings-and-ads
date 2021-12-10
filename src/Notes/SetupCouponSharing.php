@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -26,6 +27,18 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 	use MerchantCenterAwareTrait;
 	use PluginHelper;
 	use Utilities;
+
+	/** @var MerchantStatuses */
+	protected $merchant_statuses;
+
+	/**
+	 * SetupCouponSharing constructor.
+	 *
+	 * @param MerchantStatuses $merchant_statuses
+	 */
+	public function __construct( MerchantStatuses $merchant_statuses ) {
+		$this->merchant_statuses = $merchant_statuses;
+	}
 
 	/**
 	 * Get the note's unique name.

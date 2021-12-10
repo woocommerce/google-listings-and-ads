@@ -16,9 +16,4 @@ interface MerchantCenterAwareInterface {
 	 * @param MerchantCenterService $merchant_center
 	 */
 	public function set_merchant_center_object( MerchantCenterService $merchant_center ): void;
-
-	/**
-	 * @param MerchantStatuses $merchant_statuses
-	 */
-	public function set_merchant_statuses_object( MerchantStatuses $merchant_statuses ): void;
 }
