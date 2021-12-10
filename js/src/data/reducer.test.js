@@ -480,4 +480,100 @@ describe( 'reducer', () => {
 			} );
 		} );
 	} );
+
+	describe( 'Merchant Center product feed', () => {
+		const path = 'mc_product_feed';
+
+		it( 'should store paginated data by `query` and return with received product feed, total number of product feed and some query data', () => {
+			const pageOneState = reducer( prepareState(), {
+				type: TYPES.RECEIVE_MC_PRODUCT_FEED,
+				query: {
+					order: 'asc',
+					orderby: 'title',
+					per_page: 2,
+					page: 1,
+				},
+				data: {
+					total: 7,
+					products: [ '#1', '#2' ],
+				},
+			} );
+			// Support for storing product feed regardless of pagination loading order.
+			const pageFourState = reducer( pageOneState, {
+				type: TYPES.RECEIVE_MC_PRODUCT_FEED,
+				query: {
+					order: 'asc',
+					orderby: 'title',
+					per_page: 2,
+					page: 4,
+				},
+				data: {
+					total: 7,
+					products: [ '#7' ],
+				},
+			} );
+
+			pageOneState.assertConsistentRef();
+			pageFourState.assertConsistentRef();
+			expect( pageOneState ).toHaveProperty( path, {
+				order: 'asc',
+				orderby: 'title',
+				per_page: 2,
+				total: 7,
+				pages: { '1': [ '#1', '#2' ] },
+			} );
+			expect( pageFourState ).toHaveProperty( path, {
+				order: 'asc',
+				orderby: 'title',
+				per_page: 2,
+				total: 7,
+				pages: { '1': [ '#1', '#2' ], '4': [ '#7' ] },
+			} );
+		} );
+
+		it.each( [
+			[ 'order', 'desc' ],
+			[ 'orderby', 'visible' ],
+			[ 'per_page', 5 ],
+		] )(
+			'when the `query.%s` is changed, should discard `pages` and return with received product feed',
+			( key, value ) => {
+				const baseQuery = {
+					order: 'asc',
+					orderby: 'title',
+					per_page: 2,
+				};
+				const initValue = {
+					...baseQuery,
+					total: 7,
+					pages: { '1': [ '#1', '#2' ], '4': [ '#7' ] },
+				};
+				const originalState = prepareState( path, initValue, [
+					path,
+					`${ path }.pages`,
+				] );
+				const action = {
+					type: TYPES.RECEIVE_MC_PRODUCT_FEED,
+					query: {
+						...baseQuery,
+						[ key ]: value,
+						page: 2,
+					},
+					data: {
+						total: 7,
+						products: [ '#3', '#4' ],
+					},
+				};
+				const state = reducer( originalState, action );
+
+				state.assertConsistentRef();
+				expect( state ).toHaveProperty( path, {
+					...baseQuery,
+					[ key ]: value,
+					total: 7,
+					pages: { '2': [ '#3', '#4' ] },
+				} );
+			}
+		);
+	} );
 } );
