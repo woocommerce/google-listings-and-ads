@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { cloneDeep } from 'lodash';
+import { setWith, clone } from 'lodash';
 
 /**
  * Internal dependencies
@@ -36,6 +36,30 @@ const DEFAULT_STATE = {
 	mc_product_feed: null,
 	report: {},
 };
+
+// Referenced and modified from https://github.com/lodash/lodash/issues/1696#issuecomment-328335502
+function chain( state, basePath = '' ) {
+	const nextState = clone( state );
+	const customizer = ( value ) => {
+		if ( value === null || value === undefined ) {
+			return {};
+		}
+		return clone( value );
+	};
+
+	return {
+		set( path, value ) {
+			const fullPath = basePath ? `${ basePath }.${ path }` : path;
+			setWith( nextState, fullPath, value, customizer );
+			return this;
+		},
+		end: () => nextState,
+	};
+}
+
+function set( state, path, value ) {
+	return chain( state ).set( path, value ).end();
+}
 
 const getNextStateForShipping = ( state ) => {
 	return {
@@ -146,17 +170,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_JETPACK: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.jetpack = account;
-			return newState;
+			return set( state, 'mc.accounts.jetpack', action.account );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.google = account;
-			return newState;
+			return set( state, 'mc.accounts.google', action.account );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS: {
@@ -173,24 +191,15 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.mc = account;
-			return newState;
+			return set( state, 'mc.accounts.mc', action.account );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING: {
-			const { accounts } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.existing_mc = accounts;
-			return newState;
+			return set( state, 'mc.accounts.existing_mc', action.accounts );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.ads = account;
-			return newState;
+			return set( state, 'mc.accounts.ads', action.account );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS: {
@@ -207,17 +216,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS: {
-			const { billingStatus } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.ads_billing_status = billingStatus;
-			return newState;
+			const path = 'mc.accounts.ads_billing_status';
+			return set( state, path, action.billingStatus );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING: {
-			const { accounts } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.existing_ads = accounts;
-			return newState;
+			return set( state, 'mc.accounts.existing_ads', action.accounts );
 		}
 
 		case TYPES.RECEIVE_MC_CONTACT_INFORMATION: {
@@ -232,17 +236,12 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_COUNTRIES: {
-			const { countries } = action;
-			const newState = cloneDeep( state );
-			newState.mc.countries = countries;
-			return newState;
+			return set( state, 'mc.countries', action.countries );
 		}
 
 		case TYPES.RECEIVE_TARGET_AUDIENCE:
 		case TYPES.SAVE_TARGET_AUDIENCE: {
-			const newState = cloneDeep( state );
-			newState.mc.target_audience = action.target_audience;
-			return newState;
+			return set( state, 'mc.target_audience', action.target_audience );
 		}
 
 		case TYPES.RECEIVE_ADS_CAMPAIGNS: {
