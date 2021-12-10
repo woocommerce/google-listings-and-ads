@@ -154,4 +154,198 @@ describe( 'reducer', () => {
 			expect( state ).toBe( originalState );
 		} );
 	} );
+
+	describe( 'Merchant center shipping rate at `mc.shipping.rates`', () => {
+		const path = 'mc.shipping.rates';
+
+		it( 'should return with received shipping rates', () => {
+			const action = {
+				type: TYPES.RECEIVE_SHIPPING_RATES,
+				shippingRates: [
+					{
+						countryCode: 'US',
+						currency: 'USD',
+						rate: 4.99,
+					},
+					{
+						countryCode: 'CA',
+						currency: 'USD',
+						rate: 25,
+					},
+				],
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, action.shippingRates );
+		} );
+
+		it( 'should return with upserted shipping rates by matching `countryCode`', () => {
+			const originalState = prepareState( path, [
+				{
+					countryCode: 'US',
+					currency: 'USD',
+					rate: 4.99,
+				},
+				{
+					countryCode: 'CA',
+					currency: 'USD',
+					rate: 25,
+				},
+			] );
+			const action = {
+				type: TYPES.UPSERT_SHIPPING_RATES,
+				shippingRate: {
+					countryCodes: [ 'JP', 'CA' ],
+					currency: 'USD',
+					rate: 12,
+				},
+			};
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{
+					countryCode: 'US',
+					currency: 'USD',
+					rate: 4.99,
+				},
+				{
+					countryCode: 'CA',
+					currency: 'USD',
+					rate: 12,
+				},
+				{
+					countryCode: 'JP',
+					currency: 'USD',
+					rate: 12,
+				},
+			] );
+		} );
+
+		it( 'should return with remaining shipping rates after deleting specific items by matching `countryCode`', () => {
+			const originalState = prepareState( path, [
+				{
+					countryCode: 'US',
+					currency: 'USD',
+					rate: 4.99,
+				},
+				{
+					countryCode: 'CA',
+					currency: 'USD',
+					rate: 25,
+				},
+				{
+					countryCode: 'JP',
+					currency: 'USD',
+					rate: 12,
+				},
+			] );
+			const action = {
+				type: TYPES.DELETE_SHIPPING_RATES,
+				countryCodes: [ 'US', 'JP' ],
+			};
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{
+					countryCode: 'CA',
+					currency: 'USD',
+					rate: 25,
+				},
+			] );
+		} );
+	} );
+
+	describe( 'Merchant center shipping time at `mc.shipping.times`', () => {
+		const path = 'mc.shipping.times';
+
+		it( 'should return with received shipping times', () => {
+			const action = {
+				type: TYPES.RECEIVE_SHIPPING_TIMES,
+				shippingTimes: [
+					{
+						countryCode: 'US',
+						time: 7,
+					},
+					{
+						countryCode: 'CA',
+						time: 12,
+					},
+				],
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, action.shippingTimes );
+		} );
+
+		it( 'should return with upserted shipping times by matching `countryCode`', () => {
+			const originalState = prepareState( path, [
+				{
+					countryCode: 'US',
+					time: 7,
+				},
+				{
+					countryCode: 'CA',
+					time: 12,
+				},
+			] );
+			const action = {
+				type: TYPES.UPSERT_SHIPPING_TIMES,
+				shippingTime: {
+					countryCodes: [ 'JP', 'CA' ],
+					time: 15,
+				},
+			};
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{
+					countryCode: 'US',
+					time: 7,
+				},
+				{
+					countryCode: 'CA',
+					time: 15,
+				},
+				{
+					countryCode: 'JP',
+					time: 15,
+				},
+			] );
+		} );
+
+		it( 'should return with remaining shipping times after deleting specific items by matching `countryCode`', () => {
+			const originalState = prepareState( path, [
+				{
+					countryCode: 'US',
+					time: 7,
+				},
+				{
+					countryCode: 'CA',
+					time: 12,
+				},
+				{
+					countryCode: 'JP',
+					time: 15,
+				},
+			] );
+			const action = {
+				type: TYPES.DELETE_SHIPPING_TIMES,
+				countryCodes: [ 'US', 'JP' ],
+			};
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{
+					countryCode: 'CA',
+					time: 12,
+				},
+			] );
+		} );
+	} );
 } );
