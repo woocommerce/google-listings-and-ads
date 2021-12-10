@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Admin\BulkEdit;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Conditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use WP_Post;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,7 +18,7 @@ interface BulkEditInterface extends Service, Conditional {
 	 * @param string $column_name Column being shown.
 	 * @param string $post_type Post type being shown.
 	 */
-	public function render_view( $column_name, $post_type );
+	public function render_view( string $column_name, string $post_type );
 
 	/**
 	 * The screen or screens on which to show the box (such as a post type, 'link', or 'comment').
@@ -31,10 +32,10 @@ interface BulkEditInterface extends Service, Conditional {
 	/**
 	 * Handle the bulk edit submission.
 	 *
-	 * @param int    $post_id Post ID being saved.
-	 * @param object $post Post object being saved.
+	 * @param int     $post_id Post ID being saved.
+	 * @param WP_Post $post Post object being saved.
 	 *
-	 * @return $post_id
+	 * @return int $post_id
 	 */
-	public function handle_submission( int $post_id, $post ): int;
+	public function handle_submission( int $post_id, WP_Post $post ): int;
 }

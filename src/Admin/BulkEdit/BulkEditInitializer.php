@@ -31,7 +31,7 @@ class BulkEditInitializer implements Service, Registerable {
 	 * @param int     $post_id Post ID being saved.
 	 * @param WP_Post $post Post object being saved.
 	 */
-	public function bulk_edit_hook( int $post_id, WP_Post $post ) {
+	public function bulk_edit_hook( int $post_id, WP_Post $post ): void {
 		remove_action( 'save_post', [ $this, 'bulk_edit_hook' ] );
 		do_action( 'bulk_edit_save_post', $post_id, $post );
 		add_action( 'save_post', [ $this, 'bulk_edit_hook' ], 10, 2 );
