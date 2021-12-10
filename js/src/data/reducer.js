@@ -61,29 +61,13 @@ function set( state, path, value ) {
 	return chain( state ).set( path, value ).end();
 }
 
-const getNextStateForShipping = ( state ) => {
-	return {
-		...state,
-		mc: {
-			...state.mc,
-			shipping: {
-				...state.mc.shipping,
-			},
-		},
-	};
-};
-
 const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
 		case TYPES.RECEIVE_SHIPPING_RATES: {
-			const { shippingRates } = action;
-			const newState = getNextStateForShipping( state );
-			newState.mc.shipping.rates = shippingRates;
-			return newState;
+			return set( state, 'mc.shipping.rates', action.shippingRates );
 		}
 
 		case TYPES.UPSERT_SHIPPING_RATES: {
-			const nextState = getNextStateForShipping( state );
 			const { countryCodes, currency, rate } = action.shippingRate;
 			const rates = [ ...state.mc.shipping.rates ];
 
@@ -100,30 +84,23 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				}
 			} );
 
-			nextState.mc.shipping.rates = rates;
-			return nextState;
+			return set( state, 'mc.shipping.rates', rates );
 		}
 
 		case TYPES.DELETE_SHIPPING_RATES: {
-			const nextState = getNextStateForShipping( state );
 			const countryCodeSet = new Set( action.countryCodes );
 			const rates = state.mc.shipping.rates.filter(
 				( el ) => ! countryCodeSet.has( el.countryCode )
 			);
 
-			nextState.mc.shipping.rates = rates;
-			return nextState;
+			return set( state, 'mc.shipping.rates', rates );
 		}
 
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
-			const { shippingTimes } = action;
-			const newState = getNextStateForShipping( state );
-			newState.mc.shipping.times = shippingTimes;
-			return newState;
+			return set( state, 'mc.shipping.times', action.shippingTimes );
 		}
 
 		case TYPES.UPSERT_SHIPPING_TIMES: {
-			const nextState = getNextStateForShipping( state );
 			const { countryCodes, time } = action.shippingTime;
 			const times = [ ...state.mc.shipping.times ];
 
@@ -140,19 +117,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				}
 			} );
 
-			nextState.mc.shipping.times = times;
-			return nextState;
+			return set( state, 'mc.shipping.times', times );
 		}
 
 		case TYPES.DELETE_SHIPPING_TIMES: {
-			const nextState = getNextStateForShipping( state );
 			const countryCodeSet = new Set( action.countryCodes );
 			const times = state.mc.shipping.times.filter(
 				( el ) => ! countryCodeSet.has( el.countryCode )
 			);
 
-			nextState.mc.shipping.times = times;
-			return nextState;
+			return set( state, 'mc.shipping.times', times );
 		}
 
 		case TYPES.RECEIVE_SETTINGS:
