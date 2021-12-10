@@ -442,4 +442,42 @@ describe( 'reducer', () => {
 			] );
 		} );
 	} );
+
+	describe( 'Merchant Center issues', () => {
+		const path = 'mc_issues';
+
+		it( 'should update issues array by ascending order of paging 1, 2, ..., final, and return with received issues and total number of issues', () => {
+			const pageOneState = reducer( prepareState(), {
+				type: TYPES.RECEIVE_MC_ISSUES,
+				query: { page: 1, per_page: 2 },
+				data: { total: 5, issues: [ '#1', '#2' ] },
+			} );
+			const pageTwoState = reducer( pageOneState, {
+				type: TYPES.RECEIVE_MC_ISSUES,
+				query: { page: 2, per_page: 2 },
+				data: { total: 5, issues: [ '#3', '#4' ] },
+			} );
+			const pageThreeState = reducer( pageTwoState, {
+				type: TYPES.RECEIVE_MC_ISSUES,
+				query: { page: 3, per_page: 2 },
+				data: { total: 5, issues: [ '#5' ] },
+			} );
+
+			pageOneState.assertConsistentRef();
+			pageTwoState.assertConsistentRef();
+			pageThreeState.assertConsistentRef();
+			expect( pageOneState ).toHaveProperty( path, {
+				total: 5,
+				issues: [ '#1', '#2' ],
+			} );
+			expect( pageTwoState ).toHaveProperty( path, {
+				total: 5,
+				issues: [ '#1', '#2', '#3', '#4' ],
+			} );
+			expect( pageThreeState ).toHaveProperty( path, {
+				total: 5,
+				issues: [ '#1', '#2', '#3', '#4', '#5' ],
+			} );
+		} );
+	} );
 } );
