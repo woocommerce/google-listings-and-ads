@@ -13,4 +13,5 @@ export const REPORT_PROGRAM_PARAM = 'programs';
 
 export const GUIDE_NAMES = {
 	SUBMISSION_SUCCESS: 'submission-success',
+	CAMPAIGN_CREATION_SUCCESS: 'campaign-creation-success',
 };

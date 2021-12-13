@@ -15,10 +15,10 @@ import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
+import { GUIDE_NAMES } from '.~/constants';
 import headerImageURL from './header.svg';
 import './index.scss';
 
-const GUIDE_NAME = 'campaign-creation-success';
 const CTA_CREATE_ANOTHER_CAMPAIGN = 'create-another-campaign';
 
 const handleCloseWithAction = ( e, specifiedAction ) => {
@@ -34,7 +34,7 @@ const handleCloseWithAction = ( e, specifiedAction ) => {
 	}
 
 	recordEvent( 'gla_modal_closed', {
-		context: GUIDE_NAME,
+		context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
 		action,
 	} );
 };
@@ -43,7 +43,9 @@ const handleRequestClose = ( e ) => handleCloseWithAction( e, 'dismiss' );
 
 const GuideImplementation = () => {
 	useEffect( () => {
-		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
+		recordEvent( 'gla_modal_open', {
+			context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
+		} );
 	}, [] );
 
 	return (
@@ -115,7 +117,7 @@ const GuideImplementation = () => {
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success`.
  */
 export default function CampaignCreationSuccessGuide() {
-	const isOpen = getQuery().guide === GUIDE_NAME;
+	const isOpen = getQuery().guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
 
 	if ( ! isOpen ) {
 		return null;
