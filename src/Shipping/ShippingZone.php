@@ -68,7 +68,9 @@ class ShippingZone implements Service {
 	 *
 	 * @param string $country_code
 	 *
-	 * @return array
+	 * @return array[] Returns an array of shipping methods for the given country.
+	 *
+	 * @see ShippingZone::parse_method() for the format of the returned array.
 	 */
 	public function get_shipping_methods_for_country( string $country_code ): array {
 		$this->parse_shipping_zones();
