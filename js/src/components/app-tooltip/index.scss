@@ -1,3 +1,11 @@
 .app-tooltip__children-container {
 	display: inline-block;
+	cursor: help;
+
+	> span {
+		/*
+		* Specify this so that the help cursor is not applied to the tooltip content.
+		*/
+		cursor: auto;
+	}
 }

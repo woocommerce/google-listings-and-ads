@@ -90,10 +90,10 @@ class ShippingZoneTest extends UnitTest {
 						 'EU' => [
 							 'name'      => 'Europe',
 							 'countries' => [
+								 // A random country code, not supported by Merchant Center. This should be ignored.
 								 'OO1',
-								 // A random country code, not supported by Merchant Center. This should be ignored.
+								 // Another random country code, not supported by Merchant Center. This should be ignored.
 								 'OO2',
-								 // A random country code, not supported by Merchant Center. This should be ignored.
 								 'GB',
 								 'FR',
 								 'DE',

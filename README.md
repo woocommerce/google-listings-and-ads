@@ -28,7 +28,7 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
 -   WordPress 5.6+
--   WooCommerce 5.5+
+-   WooCommerce 5.7+
 -   PHP 7.3+
 
 ## Browsers supported
@@ -66,8 +66,8 @@ There are a number of helper scripts exposed via our package.json (below list is
 
 -   `npm run lint:js` : Run eslint over the javascript files
 -   `npm run lint:css` : Run stylelint over the javascript files
--   `npm run test-unit` : Run the JS test suite
--   `npm run test-unit:watch` : Run the JS test suite, watch for changes
+-   `npm run test:js` : Run the JS test suite
+-   `npm run test:js:watch` : Run the JS test suite, watch for changes
 
 ## WordPress Code Standards
 
