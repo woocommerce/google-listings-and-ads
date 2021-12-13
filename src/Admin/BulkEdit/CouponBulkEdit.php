@@ -10,7 +10,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\AdminConditional;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
-use Automattic\WooCommerce\GoogleListingsAndAds\View\ViewException;
 use WC_Coupon;
 
 defined( 'ABSPATH' ) || exit;
@@ -73,7 +72,7 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 	 * @param string $post_type Post type being shown.
 	 */
 	public function render_view( $column_name, $post_type ) {
-		if ( self::get_screen() !== $post_type || self::TARGET_COLUMN !== $column_name ) {
+		if ( $this->get_screen() !== $post_type || self::TARGET_COLUMN !== $column_name ) {
 			return;
 		}
 
@@ -106,7 +105,7 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 		}
 
 		// Don't save revisions and autosaves.
-		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || self::get_screen() !== $post->post_type || ! current_user_can( 'edit_post', $post_id ) ) {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || $this->get_screen() !== $post->post_type || ! current_user_can( 'edit_post', $post_id ) ) {
 			return $post_id;
 		}
 

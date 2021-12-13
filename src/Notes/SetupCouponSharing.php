@@ -58,7 +58,7 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 		$note->set_title( __( 'Show your store coupons on your Google listings', 'google-listings-and-ads' ) );
 		$note->set_content(
 			__(
-				'Sync your store promotions and coupons directly with Google to showcase on your product listings across the Google Shopping tab. When creating a coupon, you’ll see a Channel Visibility settings box on the right; select "Show coupon on Google" to enable.',
+				'Sync your store promotions and coupons directly with Google to showcase on your product listings across the Google Shopping tab. <br/><br/>When creating a coupon, you’ll see a Channel Visibility settings box on the right; select "Show coupon on Google" to enable.',
 				'google-listings-and-ads'
 			)
 		);
@@ -70,13 +70,8 @@ class SetupCouponSharing extends AbstractNote implements MerchantCenterAwareInte
 		$note->set_source( $this->get_slug() );
 		$note->add_action(
 			'coupon-views',
-			__( 'View coupons', 'google-listings-and-ads' ),
+			__( 'Go to coupons', 'google-listings-and-ads' ),
 			$this->get_coupons_url()
-		);
-		$note->add_action(
-			'coupon-more-info',
-			__( 'Learn more', 'google-listings-and-ads' ),
-			$this->get_documentation_url()
 		);
 
 		return $note;
