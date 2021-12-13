@@ -120,7 +120,7 @@ const updatedSassOptions = {
 	sassOptions: {
 		includePaths: [ 'js/src/css/abstracts' ],
 	},
-	prependData:
+	additionalData:
 		'@import "_colors"; ' +
 		'@import "_variables"; ' +
 		'@import "_mixins"; ' +

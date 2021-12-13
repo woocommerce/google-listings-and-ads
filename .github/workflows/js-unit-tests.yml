@@ -11,6 +11,8 @@ jobs:
   UnitTests:
     name: JavaScript unit tests
     runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -19,4 +21,4 @@ jobs:
         uses: ./.github/actions/prepare-node
 
       - name: Run JavaScript unit tests
-        run: npm run test-unit
+        run: npm run test:js
