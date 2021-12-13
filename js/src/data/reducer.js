@@ -233,7 +233,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_MC_ISSUES: {
 			const { query, data } = action;
-			const issues = state.mc_issues?.issues?.slice() || [];
+			const issues = state.mc_issues?.issues.slice() || [];
 			issues.splice(
 				( query.page - 1 ) * query.per_page,
 				query.per_page,
