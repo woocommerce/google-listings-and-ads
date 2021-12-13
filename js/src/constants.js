@@ -10,3 +10,7 @@ export const REPORT_SOURCE_DEFAULT = REPORT_SOURCE_PAID;
 
 // Programs report related
 export const REPORT_PROGRAM_PARAM = 'programs';
+
+export const GUIDE_NAMES = {
+	SUBMISSION_SUCCESS: 'submission-success',
+};
