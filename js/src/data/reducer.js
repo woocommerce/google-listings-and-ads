@@ -159,13 +159,19 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS: {
-			const value = DEFAULT_STATE.mc.accounts.ads;
-			return set( state, 'mc.accounts.ads', value );
+			return set(
+				state,
+				'mc.accounts.ads',
+				DEFAULT_STATE.mc.accounts.ads
+			);
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS: {
-			const path = 'mc.accounts.ads_billing_status';
-			return set( state, path, action.billingStatus );
+			return set(
+				state,
+				'mc.accounts.ads_billing_status',
+				action.billingStatus
+			);
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING: {
@@ -218,8 +224,11 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_MC_PRODUCT_STATISTICS: {
-			const value = action.mcProductStatistics;
-			return set( state, 'mc_product_statistics', value );
+			return set(
+				state,
+				'mc_product_statistics',
+				action.mcProductStatistics
+			);
 		}
 
 		case TYPES.RECEIVE_MC_ISSUES: {
