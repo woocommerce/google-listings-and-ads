@@ -39,7 +39,7 @@ const DEFAULT_STATE = {
 
 // Referenced and modified from https://github.com/lodash/lodash/issues/1696#issuecomment-328335502
 function chain( state, basePath = '' ) {
-	const nextState = clone( state );
+	const nextState = Object.assign( state.constructor(), state );
 	const customizer = ( value ) => {
 		if ( value === null || value === undefined ) {
 			return {};
