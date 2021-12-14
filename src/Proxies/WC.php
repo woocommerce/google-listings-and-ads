@@ -9,6 +9,8 @@ use WC_Coupon;
 use WC_Product;
 use WC_Shipping_Zone;
 use WC_Shipping_Zones;
+use WP_Term;
+use function WC as WCCore;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -144,6 +146,17 @@ class WC {
 	 */
 	public function get_shipping_zone( int $zone_id ): ?WC_Shipping_Zone {
 		return WC_Shipping_Zones::get_zone( $zone_id );
+	}
+
+	/**
+	 * Get an array of shipping classes.
+	 *
+	 * @return array|WP_Term[]
+	 *
+	 * @since x.x.x
+	 */
+	public function get_shipping_classes(): array {
+		return WCCore()->shipping()->get_shipping_classes();
 	}
 
 	/**
