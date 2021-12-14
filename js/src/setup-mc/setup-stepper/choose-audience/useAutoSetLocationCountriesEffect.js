@@ -2,43 +2,38 @@
  * External dependencies
  */
 import { useCallback, useEffect } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import useStoreCountry from '.~/hooks/useStoreCountry';
-import useGetCountries from '.~/hooks/useGetCountries';
+import { API_NAMESPACE } from '.~/data/constants';
 
 /**
- * Automatically set `location` to be `selected` and `countries` to be `[ storeCountryCode ]`
- * when `values.location === null && values.countries.length === 0` (i.e. when users first visit the page).
+ * Automatically set `location` to be `selected`
+ * and `countries` to be the value from Target Audience Suggestion API
+ * when `values.location === null && values.countries.length === 0`
+ * (i.e. when users first visit the page).
  *
- * If the `storeCountryCode` is not in the list of the MC supported countries, then `countries` would be set to empty array `[]`.
- *
- * This is done by calling `onChange` from `getInputProps`, simulating user's manual input action.
+ * The value setting is done by calling `onChange` from `getInputProps`,
+ * simulating user's manual input action.
  *
  * @param {Object} formProps formProps.
  */
 const useAutoSetLocationCountriesEffect = ( formProps ) => {
 	const { values, getInputProps } = formProps;
-	const { code: storeCountryCode } = useStoreCountry();
-	const { data } = useGetCountries();
+
+	const setLocationCountries = useCallback( async () => {
+		const data = await apiFetch( {
+			path: `${ API_NAMESPACE }/mc/target_audience/suggestions`,
+		} );
+
+		getInputProps( 'location' ).onChange( 'selected' );
+		getInputProps( 'countries' ).onChange( data.countries );
+	}, [ getInputProps ] );
 
 	const hasNoLocationCountries =
 		values.location === null && values.countries.length === 0;
-
-	const setLocationCountries = useCallback( () => {
-		if ( ! data ) {
-			return;
-		}
-
-		const countriesValue = data[ storeCountryCode ]
-			? [ storeCountryCode ]
-			: [];
-
-		getInputProps( 'location' ).onChange( 'selected' );
-		getInputProps( 'countries' ).onChange( countriesValue );
-	}, [ data, getInputProps, storeCountryCode ] );
 
 	useEffect( () => {
 		if ( hasNoLocationCountries ) {
