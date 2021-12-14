@@ -314,6 +314,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 		$methods = $this->shipping_zone->get_shipping_methods_for_country( $country );
 		foreach ( $methods as $method ) {
 			// Todo: Add support for "pickup" and "free" shipping methods, and also render the method ID once when we have the UI designed to display it.
+			// Todo: Render the cost of shipping classes for the flat-shipping rate.
 			if ( ShippingZone::METHOD_FLAT_RATE === $method['id'] && $method['enabled'] ) {
 				return [
 					'country'  => $country,
