@@ -15,3 +15,8 @@ export const GUIDE_NAMES = {
 	SUBMISSION_SUCCESS: 'submission-success',
 	CAMPAIGN_CREATION_SUCCESS: 'campaign-creation-success',
 };
+
+export const LOCAL_STORAGE_KEYS = {
+	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
+		'gla-can-onboarding-setup-ces-prompt-open',
+};

@@ -19,7 +19,8 @@ import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
-import { GUIDE_NAMES } from '.~/constants';
+import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
+import localStorage from '.~/utils/localStorage';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from './google-logo.svg';
 import './index.scss';
@@ -167,6 +168,13 @@ export default function SubmissionSuccessGuide() {
 		recordEvent( 'gla_modal_open', {
 			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		} );
+
+		// Set a flag in local storage to indicate the CES prompt can be shown
+		// when the user enters product feed for the first time after setting up.
+		localStorage.set(
+			LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN,
+			true
+		);
 	}, [] );
 
 	const renderFinish = useCallback( () => {

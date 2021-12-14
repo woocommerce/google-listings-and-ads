@@ -11,11 +11,13 @@ import NavigationClassic from '.~/components/navigation-classic';
 import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
+import CustomerEffortScorePrompt from './customer-effort-score-prompt';
 import ProductStatistics from './product-statistics';
 import './index.scss';
 import useProductFeedPrefetch from './useProductFeedPrefetch';
 import AppSpinner from '.~/components/app-spinner';
-import { GUIDE_NAMES } from '.~/constants';
+import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
+import localStorage from '.~/utils/localStorage';
 
 const ProductFeed = () => {
 	const { hasFinishedResolution, data } = useProductFeedPrefetch();
@@ -25,10 +27,17 @@ const ProductFeed = () => {
 	const isSubmissionSuccessOpen =
 		getQuery().guide === GUIDE_NAMES.SUBMISSION_SUCCESS;
 
+	const canCesPromptOpen = localStorage.get(
+		LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
+	);
+
 	return (
 		<>
 			<NavigationClassic />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
+			{ ! isSubmissionSuccessOpen && canCesPromptOpen && (
+				<CustomerEffortScorePrompt />
+			) }
 			<div className="gla-product-feed">
 				{ ! hasFinishedResolution && <AppSpinner /> }
 				{ hasFinishedResolution &&
