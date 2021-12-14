@@ -6,8 +6,8 @@ import { cloneDeep, set, get, isPlainObject } from 'lodash';
 /**
  * Internal dependencies
  */
-import reducer from './reducer';
-import TYPES from './action-types';
+import reducer from '../reducer';
+import TYPES from '../action-types';
 
 // Copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
 function deepFreeze( object ) {
