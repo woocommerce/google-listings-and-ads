@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         php: [7.3, 7.4]
-        wp-version: [5.6, 5.7, 5.8]
+        wp-version: [5.6, 5.7, 5.8, 5.9]
 
     steps:
       - name: Checkout repository
