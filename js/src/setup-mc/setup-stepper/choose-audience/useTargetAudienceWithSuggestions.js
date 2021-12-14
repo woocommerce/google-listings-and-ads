@@ -1,6 +1,7 @@
 /**
  * Internal dependencies
  */
+import { API_NAMESPACE } from '.~/data/constants';
 import useTargetAudience from '.~/hooks/useTargetAudience';
 import useGetCountries from '.~/hooks/useGetCountries';
 import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
@@ -41,7 +42,7 @@ const useTargetAudienceWithSuggestions = () => {
 		loading: loadingSuggestions,
 		data: dataSuggestions,
 	} = useApiFetchEffect( {
-		path: `wc/gla/mc/target_audience/suggestions`,
+		path: `${ API_NAMESPACE }/mc/target_audience/suggestions`,
 	} );
 
 	const hasNoLocationCountries =
