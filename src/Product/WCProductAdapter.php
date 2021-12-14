@@ -413,6 +413,12 @@ class WCProductAdapter extends GoogleProduct implements Validatable {
 				 ->map_wc_shipping_weight( $weight_unit );
 		}
 
+		// Set the product's shipping class slug as the shipping label.
+		$shipping_class = $this->wc_product->get_shipping_class();
+		if ( ! empty( $shipping_class ) ) {
+			$this->setShippingLabel( $shipping_class );
+		}
+
 		return $this;
 	}
 
