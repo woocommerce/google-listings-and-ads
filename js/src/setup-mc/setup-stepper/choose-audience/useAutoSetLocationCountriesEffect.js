@@ -5,6 +5,11 @@ import { useCallback, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
+ * Internal dependencies
+ */
+import { API_NAMESPACE } from '.~/data/constants';
+
+/**
  * Automatically set `location` to be `selected`
  * and `countries` to be the value from Target Audience Suggestion API
  * when `values.location === null && values.countries.length === 0`
@@ -20,7 +25,7 @@ const useAutoSetLocationCountriesEffect = ( formProps ) => {
 
 	const setLocationCountries = useCallback( async () => {
 		const data = await apiFetch( {
-			path: `wc/gla/mc/target_audience/suggestions`,
+			path: `${ API_NAMESPACE }/mc/target_audience/suggestions`,
 		} );
 
 		getInputProps( 'location' ).onChange( 'selected' );
