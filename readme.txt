@@ -133,8 +133,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - Reduce the bundle size of the index.js file.
 * Tweak - refactored legacy WC menu highlighting effect.
 
-= 1.6.0 - 2021-11-09 =
-* Add - Coupon/promotion integration with Merchant Center.
-* Tweak - WooCommerce 5.9 compatibility.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
