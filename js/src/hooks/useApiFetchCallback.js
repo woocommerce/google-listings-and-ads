@@ -4,6 +4,11 @@
 import { useCallback, useReducer } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 
+/**
+ * Internal dependencies
+ */
+import useIsEqualRefValue from './useIsEqualRefValue';
+
 const TYPES = {
 	START: 'START',
 	FINISH: 'FINISH',
@@ -116,6 +121,7 @@ const shouldReturnResponseBody = ( options ) => {
  * 							You can optionally pass in a reset state and it will be merged with the initial state.
  */
 const useApiFetchCallback = ( options, initialState = defaultState ) => {
+	const optionsRefValue = useIsEqualRefValue( options );
 	const mergedState = {
 		...defaultState,
 		...initialState,
@@ -125,7 +131,7 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 	const enhancedApiFetch = useCallback(
 		async ( overwriteOptions ) => {
 			const mergedOptions = {
-				...options,
+				...optionsRefValue,
 				...overwriteOptions,
 			};
 
@@ -185,7 +191,7 @@ const useApiFetchCallback = ( options, initialState = defaultState ) => {
 					: response;
 			}
 		},
-		[ options ]
+		[ optionsRefValue ]
 	);
 
 	const reset = ( resetState ) => {
