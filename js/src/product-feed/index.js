@@ -11,7 +11,7 @@ import NavigationClassic from '.~/components/navigation-classic';
 import IssuesTableCard from './issues-table-card';
 import ProductFeedTableCard from './product-feed-table-card';
 import SubmissionSuccessGuide from './submission-success-guide';
-import CustomerEffortScorePrompt from './customer-effort-score-prompt';
+import CustomerEffortScorePrompt from '.~/components/customer-effort-score-prompt';
 import ProductStatistics from './product-statistics';
 import './index.scss';
 import useProductFeedPrefetch from './useProductFeedPrefetch';
@@ -41,7 +41,15 @@ const ProductFeed = () => {
 		<>
 			<NavigationClassic />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
-			{ shouldOpenCESPrompt && <CustomerEffortScorePrompt /> }
+			{ shouldOpenCESPrompt && (
+				<CustomerEffortScorePrompt
+					label={ __(
+						'How easy was it to set up Google Listings & Ads?',
+						'google-listings-and-ads'
+					) }
+					eventContext="gla-setup"
+				/>
+			) }
 			<div className="gla-product-feed">
 				{ ! hasFinishedResolution && <AppSpinner /> }
 				{ hasFinishedResolution &&
