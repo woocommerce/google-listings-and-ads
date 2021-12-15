@@ -42,6 +42,7 @@ const AudienceSection = ( props ) => {
 						) }
 						helperText={ countrySelectHelperText }
 						inlineTags={ false }
+						disabled={ disabled }
 						{ ...inputProps }
 					/>
 				</Section.Card.Body>

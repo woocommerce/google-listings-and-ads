@@ -7,6 +7,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use WC_Countries;
 use WC_Coupon;
 use WC_Product;
+use WC_Shipping_Zone;
+use WC_Shipping_Zones;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -118,5 +120,29 @@ class WC {
 			return null;
 		}
 		return $coupon;
+	}
+
+	/**
+	 * Get shipping zones from the database.
+	 *
+	 * @return array Array of arrays.
+	 *
+	 * @since 1.9.0
+	 */
+	public function get_shipping_zones(): array {
+		return WC_Shipping_Zones::get_zones();
+	}
+
+	/**
+	 * Get shipping zone using it's ID
+	 *
+	 * @param int $zone_id Zone ID.
+	 *
+	 * @return WC_Shipping_Zone|bool
+	 *
+	 * @since 1.9.0
+	 */
+	public function get_shipping_zone( int $zone_id ): ?WC_Shipping_Zone {
+		return WC_Shipping_Zones::get_zone( $zone_id );
 	}
 }

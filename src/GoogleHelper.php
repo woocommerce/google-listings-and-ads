@@ -213,4 +213,20 @@ trait GoogleHelper {
 			'vi' => 'vi', // Vietnamese
 		];
 	}
+
+	/**
+	 * Get whether the country is supported by the Merchant Center.
+	 *
+	 * @param  string $country Country code.
+	 *
+	 * @return bool True if the country is in the list of MC-supported countries.
+	 *
+	 * @since 1.9.0
+	 */
+	protected function is_country_supported( string $country ): bool {
+		return array_key_exists(
+			strtoupper( $country ),
+			$this->get_mc_supported_countries_currencies()
+		);
+	}
 }

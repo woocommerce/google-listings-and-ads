@@ -111,7 +111,7 @@ class Admin implements Service, Registerable, Conditional {
 			'glaData',
 			[
 				'mcSetupComplete'     => $this->merchant_center->is_setup_complete(),
-				'mcSupportedCountry'  => $this->merchant_center->is_country_supported(),
+				'mcSupportedCountry'  => $this->merchant_center->is_store_country_supported(),
 				'mcSupportedLanguage' => $this->merchant_center->is_language_supported(),
 				'adsSetupComplete'    => $this->ads->is_setup_complete(),
 				'enableReports'       => $this->enableReports(),

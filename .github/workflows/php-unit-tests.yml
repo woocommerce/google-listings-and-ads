@@ -15,11 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Prepare node
-        uses: ./.github/actions/prepare-node
-        with:
-          install-deps: "maybe"
-
       - name: Prepare PHP
         uses: ./.github/actions/prepare-php
         with:
@@ -41,9 +36,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Prepare node
-        uses: ./.github/actions/prepare-node
-
       - name: Prepare PHP
         uses: ./.github/actions/prepare-php
         with:
@@ -56,9 +48,6 @@ jobs:
         run: |
           sudo systemctl start mysql.service
           mysql -u root -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';"
-
-      - name: Build client bundles
-        run: npm run dev
 
       - name: Install WP tests
         shell: bash

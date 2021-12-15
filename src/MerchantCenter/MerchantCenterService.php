@@ -95,19 +95,14 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	/**
 	 * Get whether the country is supported by the Merchant Center.
 	 *
-	 * @param  string $country Optional - to check a country other than the site country.
 	 * @return bool True if the country is in the list of MC-supported countries.
+	 *
+	 * @since 1.9.0
 	 */
-	public function is_country_supported( string $country = '' ): bool {
-		// Default to WooCommerce store country
-		if ( empty( $country ) ) {
-			$country = $this->container->get( WC::class )->get_base_country();
-		}
+	public function is_store_country_supported(): bool {
+		$country = $this->container->get( WC::class )->get_base_country();
 
-		return array_key_exists(
-			strtoupper( $country ),
-			$this->get_mc_supported_countries_currencies()
-		);
+		return $this->is_country_supported( $country );
 	}
 
 	/**

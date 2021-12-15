@@ -45,6 +45,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Utility\AddressUtility;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
 use Psr\Container\ContainerInterface;
@@ -97,7 +98,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share_with_container( ShippingTimeBatchController::class );
 		$this->share_with_container( ShippingTimeController::class );
 		$this->share( SiteVerificationController::class, SiteVerification::class );
-		$this->share( TargetAudienceController::class, WP::class );
+		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class );
 		$this->share( SupportedCountriesController::class, WC::class );
 		$this->share( SettingsSyncController::class, Settings::class );
 		$this->share( DisconnectController::class );
