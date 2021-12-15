@@ -18,6 +18,7 @@ import useProductFeedPrefetch from './useProductFeedPrefetch';
 import AppSpinner from '.~/components/app-spinner';
 import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
+import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 
 const ProductFeed = () => {
 	const { hasFinishedResolution, data } = useProductFeedPrefetch();
@@ -31,13 +32,16 @@ const ProductFeed = () => {
 		LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
 	);
 
+	const wcTracksEnabled = isWCTracksEnabled();
+
+	const shouldOpenCesPrompt =
+		! isSubmissionSuccessOpen && canCesPromptOpen && wcTracksEnabled;
+
 	return (
 		<>
 			<NavigationClassic />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
-			{ ! isSubmissionSuccessOpen && canCesPromptOpen && (
-				<CustomerEffortScorePrompt />
-			) }
+			{ shouldOpenCesPrompt && <CustomerEffortScorePrompt /> }
 			<div className="gla-product-feed">
 				{ ! hasFinishedResolution && <AppSpinner /> }
 				{ hasFinishedResolution &&
