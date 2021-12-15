@@ -97,7 +97,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 *
 	 * @return bool True if the country is in the list of MC-supported countries.
 	 *
-	 * @since x.x.x
+	 * @since 1.9.0
 	 */
 	public function is_store_country_supported(): bool {
 		$country = $this->container->get( WC::class )->get_base_country();

@@ -127,7 +127,7 @@ class WC {
 	 *
 	 * @return array Array of arrays.
 	 *
-	 * @since x.x.x
+	 * @since 1.9.0
 	 */
 	public function get_shipping_zones(): array {
 		return WC_Shipping_Zones::get_zones();
@@ -140,7 +140,7 @@ class WC {
 	 *
 	 * @return WC_Shipping_Zone|bool
 	 *
-	 * @since x.x.x
+	 * @since 1.9.0
 	 */
 	public function get_shipping_zone( int $zone_id ): ?WC_Shipping_Zone {
 		return WC_Shipping_Zones::get_zone( $zone_id );

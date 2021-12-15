@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Shipping
  *
- * @since x.x.x
+ * @since 1.9.0
  */
 class ShippingZone implements Service {
 
