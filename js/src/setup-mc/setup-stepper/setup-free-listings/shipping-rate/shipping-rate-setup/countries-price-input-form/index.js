@@ -18,7 +18,7 @@ const CountriesPriceInputForm = ( props ) => {
 		if ( value.price === null ) {
 			setValue( savedValue );
 		}
-	}, [ savedValue ] );
+	}, [ savedValue, value ] );
 
 	const handleBlur = ( event, numberValue ) => {
 		const { countries, currency, price } = value;

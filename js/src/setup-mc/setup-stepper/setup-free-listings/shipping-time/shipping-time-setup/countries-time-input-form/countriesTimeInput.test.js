@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import CountriesPriceInputForm from './';
+import CountriesTimeInputForm from './';
 
 jest.mock( '.~/hooks/useStoreCurrency', () =>
 	jest.fn( () => ( {
@@ -28,19 +28,19 @@ jest.mock( '.~/hooks/useTargetAudienceFinalCountryCodes', () => () => ( {
 	data: { selectedCountryCodes: [ 'ES' ] },
 } ) );
 
-const mockupsertShippingRates = jest.fn();
+const mockupsertShippingTimes = jest.fn();
 
 jest.mock( '.~/data', () => ( {
 	useAppDispatch: () => ( {
-		upsertShippingRates: mockupsertShippingRates,
+		upsertShippingTimes: mockupsertShippingTimes,
 	} ),
 } ) );
 
-describe( 'CountriesPriceInput', () => {
+describe( 'CountriesTimeInput', () => {
 	const defaultProps = {
 		savedValue: {
 			countries: [ 'ES' ],
-			price: '1',
+			time: '1',
 		},
 	};
 
@@ -48,18 +48,18 @@ describe( 'CountriesPriceInput', () => {
 		jest.clearAllMocks();
 	} );
 
-	test( 'Check if the saved price value is set in the input', () => {
-		render( <CountriesPriceInputForm { ...defaultProps } /> );
+	test( 'Check if the saved time value is set in the input', () => {
+		render( <CountriesTimeInputForm { ...defaultProps } /> );
 
 		const input = screen.getByRole( 'textbox' );
-		expect( input ).toHaveValue( defaultProps.savedValue.price );
+		expect( input ).toHaveValue( defaultProps.savedValue.time );
 	} );
 
-	test( 'Check if the new value is updated without using the saved value & upsertShippingRates is called', () => {
-		render( <CountriesPriceInputForm { ...defaultProps } /> );
+	test( 'Check if the new value is updated without using the saved value & upsertShippingTimes is called', () => {
+		render( <CountriesTimeInputForm { ...defaultProps } /> );
 
 		const input = screen.getByRole( 'textbox' );
-		expect( input ).toHaveValue( defaultProps.savedValue.price );
+		expect( input ).toHaveValue( defaultProps.savedValue.time );
 
 		userEvent.clear( input );
 		userEvent.type( input, '2' );
@@ -67,19 +67,19 @@ describe( 'CountriesPriceInput', () => {
 		fireEvent.blur( input );
 
 		expect( input ).toHaveValue( '2' );
-		expect( mockupsertShippingRates ).toHaveBeenCalledTimes( 1 );
+		expect( mockupsertShippingTimes ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	test( 'Check when the saved price value is null and it has not been edited & upsertShippingRates is called', () => {
+	test( 'Check when the saved time value is null and it has not been edited & upsertShippingTimes is called', () => {
 		render(
-			<CountriesPriceInputForm
-				savedValue={ { ...defaultProps.savedValue, price: null } }
+			<CountriesTimeInputForm
+				savedValue={ { ...defaultProps.savedValue, time: null } }
 			/>
 		);
 
 		const input = screen.getByRole( 'textbox' );
 		fireEvent.blur( input );
 		expect( input ).toHaveValue( '0' );
-		expect( mockupsertShippingRates ).toHaveBeenCalledTimes( 1 );
+		expect( mockupsertShippingTimes ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
