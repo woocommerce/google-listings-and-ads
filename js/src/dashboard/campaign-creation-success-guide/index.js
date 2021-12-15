@@ -2,19 +2,27 @@
  * External dependencies
  */
 import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
-import { createInterpolateElement, useEffect } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useEffect,
+	useCallback,
+	useState,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
+import PropTypes from 'prop-types';
 
 /**
  * Internal dependencies
  */
 import { getCreateCampaignUrl } from '.~/utils/urls';
+import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
+import CustomerEffortScorePrompt from '.~/components/customer-effort-score-prompt';
 import { GUIDE_NAMES } from '.~/constants';
 import headerImageURL from './header.svg';
 import './index.scss';
@@ -41,12 +49,26 @@ const handleCloseWithAction = ( e, specifiedAction ) => {
 
 const handleRequestClose = ( e ) => handleCloseWithAction( e, 'dismiss' );
 
-const GuideImplementation = () => {
+const GuideImplementation = ( { isOpen, setCESPromptOpen } ) => {
+	const handleGotItClick = useCallback(
+		( e ) => {
+			handleCloseWithAction( e );
+			setCESPromptOpen( true );
+		},
+		[ setCESPromptOpen ]
+	);
+
 	useEffect( () => {
-		recordEvent( 'gla_modal_open', {
-			context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
-		} );
-	}, [] );
+		if ( isOpen ) {
+			recordEvent( 'gla_modal_open', {
+				context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
+			} );
+		}
+	}, [ isOpen ] );
+
+	if ( ! isOpen ) {
+		return null;
+	}
 
 	return (
 		<AppModal
@@ -68,7 +90,7 @@ const GuideImplementation = () => {
 					key="1"
 					isPrimary
 					data-action="confirm"
-					onClick={ handleCloseWithAction }
+					onClick={ handleGotItClick }
 				>
 					{ __( 'Got it', 'google-listings-and-ads' ) }
 				</Button>,
@@ -110,6 +132,17 @@ const GuideImplementation = () => {
 	);
 };
 
+GuideImplementation.propTypes = {
+	/**
+	 * Whether the campaign creation success guide must be shown
+	 */
+	isOpen: PropTypes.bool.isRequired,
+	/**
+	 * Function to enable or disable the CES prompt
+	 */
+	setCESPromptOpen: PropTypes.func.isRequired,
+};
+
 /**
  * Modal window to prompt the user at Dashboard, after successful completing the campaign creation.
  *
@@ -117,10 +150,26 @@ const GuideImplementation = () => {
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success`.
  */
 export default function CampaignCreationSuccessGuide() {
-	const isOpen = getQuery().guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
+	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
 
-	if ( ! isOpen ) {
-		return null;
-	}
-	return <GuideImplementation />;
+	const isOpen = getQuery().guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
+	const wcTracksEnabled = isWCTracksEnabled();
+
+	return (
+		<>
+			<GuideImplementation
+				isOpen={ isOpen }
+				setCESPromptOpen={ setCESPromptOpen }
+			/>
+			{ isCESPromptOpen && wcTracksEnabled && (
+				<CustomerEffortScorePrompt
+					label={ __(
+						'How easy was it to create a Google Ad campaign?',
+						'google-listings-and-ads'
+					) }
+					eventContext="create-ad-campaign"
+				/>
+			) }
+		</>
+	);
 }
