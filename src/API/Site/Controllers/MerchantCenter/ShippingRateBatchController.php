@@ -140,7 +140,7 @@ class ShippingRateBatchController extends ShippingRateController {
 					'errors'  => $errors,
 					'success' => $responses,
 				],
-				201
+				200
 			);
 		};
 	}
