@@ -14,7 +14,7 @@ import localStorage from '.~/utils/localStorage';
 const EVENT_CONTEXT = 'gla-setup';
 
 export default function CustomerEffortScorePrompt() {
-	const removeCesPromptFlagFromLocal = () => {
+	const removeCESPromptFlagFromLocal = () => {
 		localStorage.remove(
 			LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
 		);
@@ -27,14 +27,14 @@ export default function CustomerEffortScorePrompt() {
 	};
 
 	const onNoticeDismissed = () => {
-		removeCesPromptFlagFromLocal();
+		removeCESPromptFlagFromLocal();
 		recordEvent( 'gla_ces_snackbar_closed', {
 			context: EVENT_CONTEXT,
 		} );
 	};
 
 	const onModalShown = () => {
-		removeCesPromptFlagFromLocal();
+		removeCESPromptFlagFromLocal();
 		recordEvent( 'gla_ces_modal_open', {
 			context: EVENT_CONTEXT,
 		} );

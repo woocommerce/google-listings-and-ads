@@ -28,20 +28,20 @@ const ProductFeed = () => {
 	const isSubmissionSuccessOpen =
 		getQuery().guide === GUIDE_NAMES.SUBMISSION_SUCCESS;
 
-	const canCesPromptOpen = localStorage.get(
+	const canCESPromptOpen = localStorage.get(
 		LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
 	);
 
 	const wcTracksEnabled = isWCTracksEnabled();
 
-	const shouldOpenCesPrompt =
-		! isSubmissionSuccessOpen && canCesPromptOpen && wcTracksEnabled;
+	const shouldOpenCESPrompt =
+		! isSubmissionSuccessOpen && canCESPromptOpen && wcTracksEnabled;
 
 	return (
 		<>
 			<NavigationClassic />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
-			{ shouldOpenCesPrompt && <CustomerEffortScorePrompt /> }
+			{ shouldOpenCESPrompt && <CustomerEffortScorePrompt /> }
 			<div className="gla-product-feed">
 				{ ! hasFinishedResolution && <AppSpinner /> }
 				{ hasFinishedResolution &&
