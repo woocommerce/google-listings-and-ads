@@ -19,6 +19,7 @@ trait MerchantCenterAwareTrait {
 	 */
 	protected $merchant_center;
 
+
 	/**
 	 * @param MerchantCenterService $merchant_center
 	 */
