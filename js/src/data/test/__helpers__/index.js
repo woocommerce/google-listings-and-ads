@@ -26,6 +26,23 @@ export function deepFreeze( object ) {
 	return Object.freeze( object );
 }
 
+/**
+ * @typedef {Object} CheckingGroup
+ * @property {Object} ref The attached object for further reference checks.
+ * @property {string} refPath The access path of `ref` in the object tree.
+ */
+/**
+ * Loops through the passed-in `object` recursively and attaches (by mutating on passed-in `object`)
+ * a new object as a reference checking mark to any nodes which is an plain object type.
+ * Returns an array that contains each attached reference checking mark and its access path.
+ *
+ * @param {Object} object The object to be attached reference marks.
+ * @param {Array<string>} ignore The paths to be ignored to attach reference marks.
+ * @param {Array<CheckingGroup>} [checkingGroups=[]] The accumulator of attached reference marks passed by internal recursive call.
+ * @param {Array<string>} [paths=[]] The current looping sub-tree paths by internal recursive call.
+ *
+ * @return {Array<CheckingGroup>} An array that contains each attached reference checking mark and its access path.
+ */
 function attachRef( object, ignore, checkingGroups = [], paths = [] ) {
 	const refKey = '__refForCheck';
 
