@@ -145,4 +145,15 @@ class WC {
 	public function get_shipping_zone( int $zone_id ): ?WC_Shipping_Zone {
 		return WC_Shipping_Zones::get_zone( $zone_id );
 	}
+
+	/**
+	 * Get Base Currency Code.
+	 *
+	 * @return string
+	 *
+	 * @since x.x.x
+	 */
+	public function get_woocommerce_currency(): string {
+		return get_woocommerce_currency();
+	}
 }
