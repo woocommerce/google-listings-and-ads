@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { cloneDeep } from 'lodash';
+import { setWith, clone } from 'lodash';
 
 /**
  * Internal dependencies
@@ -37,29 +37,37 @@ const DEFAULT_STATE = {
 	report: {},
 };
 
-const getNextStateForShipping = ( state ) => {
-	return {
-		...state,
-		mc: {
-			...state.mc,
-			shipping: {
-				...state.mc.shipping,
-			},
-		},
+// Referenced and modified from https://github.com/lodash/lodash/issues/1696#issuecomment-328335502
+function chain( state, basePath = '' ) {
+	const nextState = Object.assign( state.constructor(), state );
+	const customizer = ( value ) => {
+		if ( value === null || value === undefined ) {
+			return {};
+		}
+		return clone( value );
 	};
-};
+
+	return {
+		set( path, value ) {
+			const fullPath = basePath ? `${ basePath }.${ path }` : path;
+			setWith( nextState, fullPath, value, customizer );
+			return this;
+		},
+		end: () => nextState,
+	};
+}
+
+function set( state, path, value ) {
+	return chain( state ).set( path, value ).end();
+}
 
 const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
 		case TYPES.RECEIVE_SHIPPING_RATES: {
-			const { shippingRates } = action;
-			const newState = getNextStateForShipping( state );
-			newState.mc.shipping.rates = shippingRates;
-			return newState;
+			return set( state, 'mc.shipping.rates', action.shippingRates );
 		}
 
 		case TYPES.UPSERT_SHIPPING_RATES: {
-			const nextState = getNextStateForShipping( state );
 			const { countryCodes, currency, rate } = action.shippingRate;
 			const rates = [ ...state.mc.shipping.rates ];
 
@@ -76,30 +84,23 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				}
 			} );
 
-			nextState.mc.shipping.rates = rates;
-			return nextState;
+			return set( state, 'mc.shipping.rates', rates );
 		}
 
 		case TYPES.DELETE_SHIPPING_RATES: {
-			const nextState = getNextStateForShipping( state );
 			const countryCodeSet = new Set( action.countryCodes );
 			const rates = state.mc.shipping.rates.filter(
 				( el ) => ! countryCodeSet.has( el.countryCode )
 			);
 
-			nextState.mc.shipping.rates = rates;
-			return nextState;
+			return set( state, 'mc.shipping.rates', rates );
 		}
 
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
-			const { shippingTimes } = action;
-			const newState = getNextStateForShipping( state );
-			newState.mc.shipping.times = shippingTimes;
-			return newState;
+			return set( state, 'mc.shipping.times', action.shippingTimes );
 		}
 
 		case TYPES.UPSERT_SHIPPING_TIMES: {
-			const nextState = getNextStateForShipping( state );
 			const { countryCodes, time } = action.shippingTime;
 			const times = [ ...state.mc.shipping.times ];
 
@@ -116,141 +117,82 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				}
 			} );
 
-			nextState.mc.shipping.times = times;
-			return nextState;
+			return set( state, 'mc.shipping.times', times );
 		}
 
 		case TYPES.DELETE_SHIPPING_TIMES: {
-			const nextState = getNextStateForShipping( state );
 			const countryCodeSet = new Set( action.countryCodes );
 			const times = state.mc.shipping.times.filter(
 				( el ) => ! countryCodeSet.has( el.countryCode )
 			);
 
-			nextState.mc.shipping.times = times;
-			return nextState;
+			return set( state, 'mc.shipping.times', times );
 		}
 
 		case TYPES.RECEIVE_SETTINGS:
 		case TYPES.SAVE_SETTINGS: {
-			return {
-				...state,
-				mc: {
-					...state.mc,
-					settings: {
-						...state.mc.settings,
-						...action.settings,
-					},
-				},
-			};
+			return set( state, 'mc.settings', action.settings );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_JETPACK: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.jetpack = account;
-			return newState;
+			return set( state, 'mc.accounts.jetpack', action.account );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.google = account;
-			return newState;
+			return set( state, 'mc.accounts.google', action.account );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS: {
-			return {
-				...state,
-				mc: {
-					...state.mc,
-					accounts: {
-						...state.mc.accounts,
-						google_access: action.data,
-					},
-				},
-			};
+			return set( state, 'mc.accounts.google_access', action.data );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.mc = account;
-			return newState;
+			return set( state, 'mc.accounts.mc', action.account );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_MC_EXISTING: {
-			const { accounts } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.existing_mc = accounts;
-			return newState;
+			return set( state, 'mc.accounts.existing_mc', action.accounts );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS: {
-			const { account } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.ads = account;
-			return newState;
+			return set( state, 'mc.accounts.ads', action.account );
 		}
 
 		case TYPES.DISCONNECT_ACCOUNTS_GOOGLE_ADS: {
-			return {
-				...state,
-				mc: {
-					...state.mc,
-					accounts: {
-						...state.mc.accounts,
-						ads: DEFAULT_STATE.mc.accounts.ads,
-					},
-				},
-			};
+			return set(
+				state,
+				'mc.accounts.ads',
+				DEFAULT_STATE.mc.accounts.ads
+			);
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS: {
-			const { billingStatus } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.ads_billing_status = billingStatus;
-			return newState;
+			return set(
+				state,
+				'mc.accounts.ads_billing_status',
+				action.billingStatus
+			);
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING: {
-			const { accounts } = action;
-			const newState = cloneDeep( state );
-			newState.mc.accounts.existing_ads = accounts;
-			return newState;
+			return set( state, 'mc.accounts.existing_ads', action.accounts );
 		}
 
 		case TYPES.RECEIVE_MC_CONTACT_INFORMATION: {
-			const newState = {
-				...state,
-				mc: {
-					...state.mc,
-					contact: action.data,
-				},
-			};
-			return newState;
+			return set( state, 'mc.contact', action.data );
 		}
 
 		case TYPES.RECEIVE_COUNTRIES: {
-			const { countries } = action;
-			const newState = cloneDeep( state );
-			newState.mc.countries = countries;
-			return newState;
+			return set( state, 'mc.countries', action.countries );
 		}
 
 		case TYPES.RECEIVE_TARGET_AUDIENCE:
 		case TYPES.SAVE_TARGET_AUDIENCE: {
-			const newState = cloneDeep( state );
-			newState.mc.target_audience = action.target_audience;
-			return newState;
+			return set( state, 'mc.target_audience', action.target_audience );
 		}
 
 		case TYPES.RECEIVE_ADS_CAMPAIGNS: {
-			const newState = {
-				...state,
-				ads_campaigns: action.adsCampaigns,
-			};
-			return newState;
+			return set( state, 'ads_campaigns', action.adsCampaigns );
 		}
 
 		case TYPES.UPDATE_ADS_CAMPAIGN: {
@@ -266,103 +208,70 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const newAdsCampaigns = [ ...state.ads_campaigns ];
 			newAdsCampaigns[ idx ] = updatedCampaign;
 
-			const newState = {
-				...state,
-				ads_campaigns: newAdsCampaigns,
-			};
-			return newState;
+			return set( state, 'ads_campaigns', newAdsCampaigns );
 		}
 
 		case TYPES.DELETE_ADS_CAMPAIGN: {
 			const { id } = action;
-
-			return {
-				...state,
-				ads_campaigns: state.ads_campaigns.filter(
-					( el ) => el.id !== id
-				),
-			};
+			const adsCampaign = state.ads_campaigns.filter(
+				( el ) => el.id !== id
+			);
+			return set( state, 'ads_campaigns', adsCampaign );
 		}
 
 		case TYPES.RECEIVE_MC_SETUP: {
-			const newState = {
-				...state,
-				mc_setup: action.mcSetup,
-			};
-			return newState;
+			return set( state, 'mc_setup', action.mcSetup );
 		}
 
 		case TYPES.RECEIVE_MC_PRODUCT_STATISTICS: {
-			const newState = {
-				...state,
-				mc_product_statistics: action.mcProductStatistics,
-			};
-			return newState;
+			return set(
+				state,
+				'mc_product_statistics',
+				action.mcProductStatistics
+			);
 		}
 
 		case TYPES.RECEIVE_MC_ISSUES: {
 			const { query, data } = action;
-			const newState = {
-				...state,
-				mc_issues: {
-					...state.mc_issues,
-					issues:
-						( state.mc_issues?.issues && [
-							...state.mc_issues.issues,
-						] ) ||
-						[],
-				},
-			};
-
-			newState.mc_issues.issues.splice(
+			const issues = state.mc_issues?.issues.slice() || [];
+			issues.splice(
 				( query.page - 1 ) * query.per_page,
 				query.per_page,
 				...data.issues
 			);
-			newState.mc_issues.total = data.total;
 
-			return newState;
+			return chain( state, 'mc_issues' )
+				.set( 'issues', issues )
+				.set( 'total', data.total )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MC_PRODUCT_FEED: {
 			const { query, data } = action;
-			const newState = {
-				...state,
-				mc_product_feed: {
-					...state.mc_product_feed,
-					pages: {
-						...state.mc_product_feed?.pages,
-					},
-				},
-			};
+			const lastQuery = state.mc_product_feed || {};
+			const stateSetter = chain( state, 'mc_product_feed' );
 
 			if (
-				newState.mc_product_feed.per_page !== query.per_page ||
-				newState.mc_product_feed.order !== query.order ||
-				newState.mc_product_feed.orderby !== query.orderby
+				lastQuery.per_page !== query.per_page ||
+				lastQuery.order !== query.order ||
+				lastQuery.orderby !== query.orderby
 			) {
 				// discard old stored data when pagination has changed.
-				newState.mc_product_feed.pages = {};
+				stateSetter.set( 'pages', {} );
 			}
 
-			newState.mc_product_feed.per_page = query.per_page;
-			newState.mc_product_feed.order = query.order;
-			newState.mc_product_feed.orderby = query.orderby;
-			newState.mc_product_feed.total = data.total;
-			newState.mc_product_feed.pages[ query.page ] = data.products;
-
-			return newState;
+			return stateSetter
+				.set( `pages.[${ query.page }]`, data.products )
+				.set( 'per_page', query.per_page )
+				.set( 'order', query.order )
+				.set( 'orderby', query.orderby )
+				.set( 'total', data.total )
+				.end();
 		}
 
 		case TYPES.RECEIVE_REPORT: {
 			const { reportKey, data } = action;
-			return {
-				...state,
-				report: {
-					...state.report,
-					[ reportKey ]: data,
-				},
-			};
+			return set( state, `report.${ reportKey }`, data );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.

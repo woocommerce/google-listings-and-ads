@@ -359,8 +359,7 @@ describe( 'reducer', () => {
 			};
 			const state = reducer( prepareState(), action );
 
-			// TODO: Uncomment the next line after replacing the `cloneDeep` in reducer.
-			// state.assertConsistentRef();
+			state.assertConsistentRef();
 			expect( state ).toHaveProperty( path, action.account );
 		} );
 
@@ -632,8 +631,7 @@ describe( 'reducer', () => {
 				const action = { type, [ key ]: payload };
 				const state = reducer( prepareState(), action );
 
-				// TODO: Uncomment the next line after replacing the `cloneDeep` in reducer.
-				// state.assertConsistentRef();
+				state.assertConsistentRef();
 				expect( state ).toHaveProperty( path, payload );
 			}
 		);
