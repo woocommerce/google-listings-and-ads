@@ -15,7 +15,7 @@ const CountriesTimeInputForm = ( props ) => {
 	const { upsertShippingTimes } = useAppDispatch();
 
 	useEffect( () => {
-		setValue( savedValue );
+		setValue( ( state ) => ( { ...state, time: savedValue.time } ) );
 	}, [ savedValue.time ] );
 
 	const handleBlur = ( event, numberValue ) => {

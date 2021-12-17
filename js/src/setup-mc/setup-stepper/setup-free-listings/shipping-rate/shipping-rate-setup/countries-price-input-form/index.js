@@ -15,7 +15,7 @@ const CountriesPriceInputForm = ( props ) => {
 	const { upsertShippingRates } = useAppDispatch();
 
 	useEffect( () => {
-		setValue( savedValue );
+		setValue( ( state ) => ( { ...state, price: savedValue.price } ) );
 	}, [ savedValue.price ] );
 
 	const handleBlur = ( event, numberValue ) => {
