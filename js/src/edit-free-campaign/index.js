@@ -116,13 +116,13 @@ export default function EditFreeCampaign() {
 	const loadedShippingRates = ! hfrShippingRates ? null : shippingRates;
 
 	const {
+		hasFinishedResolution: hfrShippingTimes,
 		data: savedShippingTimes,
-		loading: loadingShippingTimes,
 	} = useShippingTimes();
 	const [ shippingTimes, updateShippingTimes ] = useState(
 		savedShippingTimes
 	);
-	const loadedShippingTimes = loadingShippingTimes ? null : shippingTimes;
+	const loadedShippingTimes = ! hfrShippingTimes ? null : shippingTimes;
 
 	// TODO: Consider making it less repetitive.
 	useEffect( () => updateSettings( savedSettings ), [ savedSettings ] );
