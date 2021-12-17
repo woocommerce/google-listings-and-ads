@@ -33,7 +33,7 @@ export function deepFreeze( object ) {
  */
 /**
  * Loops through the passed-in `object` recursively and attaches (by mutating on passed-in `object`)
- * a new object as a reference checking mark to any nodes which is an plain object type.
+ * a new object as a reference checking mark to any nodes which is a plain object type.
  * Returns an array that contains each attached reference checking mark and its access path.
  *
  * @param {Object} object The object to be attached reference marks.
