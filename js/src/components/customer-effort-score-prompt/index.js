@@ -12,6 +12,14 @@ import PropTypes from 'prop-types';
 import { LOCAL_STORAGE_KEYS } from '.~/constants';
 import localStorage from '.~/utils/localStorage';
 
+/**
+ * A CustomerEffortScore wrapper that uses tracks to track the selected
+ * customer effort score.
+ *
+ * @param {Object} props React component props.
+ * @param {string} props.eventContext Context to be used in the CES wrapper events.
+ * @param {string} props.label Text to be displayed in the CES notice and modal.
+ */
 const CustomerEffortScorePrompt = ( { eventContext, label } ) => {
 	const removeCESPromptFlagFromLocal = () => {
 		localStorage.remove(
