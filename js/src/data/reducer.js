@@ -54,12 +54,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_SHIPPING_RATES: {
 			const { shippingRates } = action;
 			const newState = getNextStateForShipping( state );
-			newState.mc.shipping.rates = shippingRates.map( ( el ) => {
-				return {
-					...el,
-					rate: parseFloat( el.rate ),
-				};
-			} );
+			newState.mc.shipping.rates = shippingRates;
 			return newState;
 		}
 
@@ -99,12 +94,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
 			const { shippingTimes } = action;
 			const newState = getNextStateForShipping( state );
-			newState.mc.shipping.times = shippingTimes.map( ( el ) => {
-				return {
-					...el,
-					time: parseFloat( el.time ),
-				};
-			} );
+			newState.mc.shipping.times = shippingTimes;
 			return newState;
 		}
 
