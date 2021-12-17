@@ -1,8 +1,8 @@
 /**
  * Internal dependencies
  */
-import { createErrorResponseCatcher } from './api-fetch-middlewares';
-import { API_NAMESPACE } from './constants';
+import { createErrorResponseCatcher } from '../api-fetch-middlewares';
+import { API_NAMESPACE } from '../constants';
 
 describe( 'createErrorResponseCatcher', () => {
 	// Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/api-fetch%405.1.1/packages/api-fetch/src/index.js#L68-L81

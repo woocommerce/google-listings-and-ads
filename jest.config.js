@@ -25,7 +25,12 @@ module.exports = {
 		'^\\.~/(.*)$': '<rootDir>/js/src/$1',
 	},
 	// Exclude e2e tests from unit testing.
-	testPathIgnorePatterns: [ '/node_modules/', '/tests/e2e/' ],
+	testPathIgnorePatterns: [
+		'/node_modules/',
+		'/tests/e2e/',
+		'/__helpers__/',
+	],
+	coveragePathIgnorePatterns: [ '/node_modules/', '/__helpers__/' ],
 	watchPathIgnorePatterns: [ '<rootDir>/js/build/' ],
 	globals: {
 		glaData: {

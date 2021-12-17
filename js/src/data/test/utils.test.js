@@ -9,7 +9,7 @@ import {
 	freeFields,
 	paidFields,
 	MISSING_FREE_LISTINGS_DATA,
-} from './utils';
+} from '../utils';
 
 /**
  * Calls given function with all combinations of possible categories and dataReferences.

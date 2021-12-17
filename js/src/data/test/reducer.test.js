@@ -1,53 +1,14 @@
 /**
  * External dependencies
  */
-import { cloneDeep, set, get, isPlainObject } from 'lodash';
+import { get } from 'lodash';
 
 /**
  * Internal dependencies
  */
-import reducer from './reducer';
-import TYPES from './action-types';
-
-// Copied from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
-function deepFreeze( object ) {
-	// Retrieve the property names defined on object
-	const propNames = Object.getOwnPropertyNames( object );
-
-	// Freeze properties before freezing self
-	for ( const name of propNames ) {
-		const value = object[ name ];
-		if ( value && typeof value === 'object' ) {
-			deepFreeze( value );
-		}
-	}
-
-	return Object.freeze( object );
-}
-
-function attachRef( object, ignore, checkingGroups = [], paths = [] ) {
-	const refKey = '__refForCheck';
-
-	for ( const [ name, value ] of Object.entries( object ) ) {
-		if ( isPlainObject( value ) ) {
-			const checkPaths = [ ...paths, name ];
-			attachRef( value, ignore, checkingGroups, checkPaths );
-
-			const currentPath = checkPaths.join( '.' );
-			if ( ! ignore.includes( currentPath ) ) {
-				const ref = {
-					whyFail: `If there's no mutation at \`state.${ currentPath }\`, it should be kept the same reference.`,
-				};
-				checkingGroups.push( {
-					ref,
-					refPath: `${ currentPath }.${ refKey }`,
-				} );
-				value[ refKey ] = ref;
-			}
-		}
-	}
-	return checkingGroups;
-}
+import reducer from '../reducer';
+import TYPES from '../action-types';
+import { deepFreeze, prepareImmutableStateWithRefCheck } from './__helpers__';
 
 describe( 'reducer', () => {
 	let defaultState;
@@ -83,53 +44,10 @@ describe( 'reducer', () => {
 			report: {},
 		} );
 
-		/**
-		 * Creates a deep freeze state based on the default state,
-		 * and also implants a `assertConsistentRef` function for reference check.
-		 * An initial value of a specific path can be set optionally to facilitate testing.
-		 *
-		 * Usage of `assertConsistentRef`:
-		 *   After getting the new state from `reducer( preparedState, action )`,
-		 *   calls `newState.assertConsistentRef()` for reference checking.
-		 *
-		 * @param {string} [path] The path of state to be set.
-		 * @param {*} [value] The initial value to be set.
-		 * @param {true|Array<string>} [ignoreRefCheckOnMutatingPath] Indicate state paths that don't require reference check.
-		 *   `true` - Set `true` to use the passed-in `path` parameter as the ignoring path.
-		 *   `Array<string>` - Given an array of state paths to be ignored.
-		 *
-		 * @return {Object} Prepared state.
-		 */
-		prepareState = ( path, value, ignoreRefCheckOnMutatingPath ) => {
-			const state = cloneDeep( defaultState );
-			if ( path ) {
-				set( state, path, value );
-			}
-
-			// Prepare the paths to be ignored the reference check.
-			const ignorePaths = [];
-			if ( ignoreRefCheckOnMutatingPath === true ) {
-				ignorePaths.push( path );
-			} else if ( Array.isArray( ignoreRefCheckOnMutatingPath ) ) {
-				ignorePaths.push( ...ignoreRefCheckOnMutatingPath );
-			}
-			const checkingGroups = attachRef( state, ignorePaths );
-
-			state.assertConsistentRef = function () {
-				if ( this === state ) {
-					throw new Error(
-						'Please use the state returned by `reducer` to check this assertion in the test case.'
-					);
-				}
-
-				checkingGroups.forEach( ( { refPath, ref } ) => {
-					// If you see this failed assertion, it may be because a reference has been changed unexpectedly, please check if other states have been changed. Or, the reference chage is expected but hasn't be specified ignoring. Please add that path to the `ignoreRefCheckOnMutatingPath` parameter.
-					expect( get( this, refPath ) ).toBe( ref );
-				} );
-			};
-
-			return deepFreeze( state );
-		};
+		prepareState = prepareImmutableStateWithRefCheck.bind(
+			null,
+			defaultState
+		);
 	} );
 
 	describe( 'General reducer behaviors', () => {
@@ -446,7 +364,7 @@ describe( 'reducer', () => {
 	describe( 'Merchant Center issues', () => {
 		const path = 'mc_issues';
 
-		it( 'should update issues array by ascending order of paging 1, 2, ..., final, and return with received issues and total number of issues', () => {
+		it( 'should only allow receiving pagination data sequentially from the first page and return with received issues array and total number of issues', () => {
 			const pageOneState = reducer( prepareState(), {
 				type: TYPES.RECEIVE_MC_ISSUES,
 				query: { page: 1, per_page: 2 },
