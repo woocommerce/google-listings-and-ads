@@ -364,7 +364,7 @@ describe( 'reducer', () => {
 	describe( 'Merchant Center issues', () => {
 		const path = 'mc_issues';
 
-		it( 'should update issues array by ascending order of paging 1, 2, ..., final, and return with received issues and total number of issues', () => {
+		it( 'should only allow receiving pagination data sequentially from the first page and return with received issues array and total number of issues', () => {
 			const pageOneState = reducer( prepareState(), {
 				type: TYPES.RECEIVE_MC_ISSUES,
 				query: { page: 1, per_page: 2 },
