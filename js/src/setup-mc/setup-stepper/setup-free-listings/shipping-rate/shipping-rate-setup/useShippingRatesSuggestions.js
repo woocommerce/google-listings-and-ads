@@ -10,6 +10,20 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
 import { API_NAMESPACE } from '.~/data/constants';
 
+/**
+ * @typedef {Object} ShippingRatesSuggestionsResult
+ * @property {boolean} loading Whether loading is in progress.
+ * @property {import('.~/data/actions').ShippingRate?} data Shipping rates suggestions.
+ */
+
+/**
+ * Get the shipping rates suggestions.
+ *
+ * This depends on the `useTargetAudienceFinalCountryCodes` hook,
+ * i.e. the target audience countres specified in Setup MC Step 2.
+ *
+ * @return {ShippingRatesSuggestionsResult} Result object with `loading` and `data`.
+ */
 const useShippingRatesSuggestions = () => {
 	const {
 		loading: loadingFinalCountryCodes,
@@ -32,15 +46,17 @@ const useShippingRatesSuggestions = () => {
 	);
 
 	/**
-	 * Returned `data` is consistent with shipping rates structure in wp-data.
+	 * Make returned `data` consistent with shipping rates structure in wp-data.
 	 */
+	const data = dataSuggestions?.success.map( ( el ) => ( {
+		countryCode: el.country_code,
+		currency: el.currency,
+		rate: el.rate,
+	} ) );
+
 	return {
 		loading: loadingFinalCountryCodes || loadingSuggestions,
-		data: dataSuggestions?.success.map( ( el ) => ( {
-			countryCode: el.country_code,
-			currency: el.currency,
-			rate: el.rate,
-		} ) ),
+		data,
 	};
 };
 
