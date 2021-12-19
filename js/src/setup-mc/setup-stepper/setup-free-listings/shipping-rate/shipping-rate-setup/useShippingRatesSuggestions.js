@@ -13,7 +13,7 @@ import { API_NAMESPACE } from '.~/data/constants';
 /**
  * @typedef {Object} ShippingRatesSuggestionsResult
  * @property {boolean} loading Whether loading is in progress.
- * @property {import('.~/data/actions').ShippingRate?} data Shipping rates suggestions.
+ * @property {Array<import('.~/data/actions').ShippingRate>?} data Shipping rates suggestions.
  */
 
 /**
