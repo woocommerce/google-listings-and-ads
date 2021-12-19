@@ -2,10 +2,12 @@
  * External dependencies
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useShippingRates from '.~/hooks/useShippingRates';
 import getCountriesPriceArray from './getCountriesPriceArray';
 import { useAppDispatch } from '.~/data';
@@ -83,19 +85,31 @@ const useShippingRatesWithSavedSuggestions = () => {
 	 */
 	const [ saving, setSaving ] = useState( true );
 
+	const { createNotice } = useDispatchCoreNotices();
 	const { upsertShippingRates } = useAppDispatch();
 	const saveSuggestions = useCallback(
 		async ( suggestions ) => {
-			const shippingRates = convertSuggestionsToAggregatedShippingRates(
-				suggestions
-			);
-			const promises = shippingRates.map( ( el ) => {
-				return upsertShippingRates( el );
-			} );
-			await Promise.all( promises );
+			try {
+				const shippingRates = convertSuggestionsToAggregatedShippingRates(
+					suggestions
+				);
+				const promises = shippingRates.map( ( el ) => {
+					return upsertShippingRates( el );
+				} );
+				await Promise.all( promises );
+			} catch ( error ) {
+				createNotice(
+					'error',
+					__(
+						`Unable to use your WooCommerce shipping settings as shipping rates in Google. You may have to enter shipping rates manually.`,
+						'google-listings-and-ads'
+					)
+				);
+			}
+
 			setSaving( false );
 		},
-		[ upsertShippingRates ]
+		[ createNotice, upsertShippingRates ]
 	);
 
 	/**
