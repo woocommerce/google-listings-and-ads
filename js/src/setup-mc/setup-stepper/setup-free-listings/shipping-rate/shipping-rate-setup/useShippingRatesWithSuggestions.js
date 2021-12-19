@@ -24,7 +24,7 @@ const useShippingRatesWithSuggestions = () => {
 	} = useShippingRatesSuggestions();
 
 	/**
-	 * `hasInitialShippingRates` is used to indicate
+	 * `isInitialShippingRatesEmpty` is used to indicate
 	 * whether the initial loaded shipping rates
 	 * has a pre-saved value or not.
 	 *
@@ -39,9 +39,12 @@ const useShippingRatesWithSuggestions = () => {
 	 * and then reload the page,
 	 * then the suggestions would be saved as shipping rates as per above logic.
 	 */
-	const hasInitialShippingRates = useRef( undefined );
-	if ( hfrShippingRates && hasInitialShippingRates.current === undefined ) {
-		hasInitialShippingRates.current = dataShippingRates.length > 0;
+	const isInitialShippingRatesEmpty = useRef( undefined );
+	if (
+		hfrShippingRates &&
+		isInitialShippingRatesEmpty.current === undefined
+	) {
+		isInitialShippingRatesEmpty.current = dataShippingRates.length === 0;
 	}
 
 	const saveSuggestions = useCallback(
@@ -76,7 +79,7 @@ const useShippingRatesWithSuggestions = () => {
 	 */
 	useEffect( () => {
 		if (
-			hasInitialShippingRates.current === false &&
+			isInitialShippingRatesEmpty.current &&
 			dataSuggestions &&
 			hasSavedSuggestions.current === false
 		) {
@@ -89,7 +92,7 @@ const useShippingRatesWithSuggestions = () => {
 		loading:
 			loadingSuggestions ||
 			! hfrShippingRates ||
-			( hasInitialShippingRates.current === false ? saving : false ),
+			( isInitialShippingRatesEmpty.current ? saving : false ),
 		data: dataShippingRates,
 	};
 };
