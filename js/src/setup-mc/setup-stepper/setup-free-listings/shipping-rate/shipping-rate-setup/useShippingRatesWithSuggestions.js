@@ -11,9 +11,37 @@ import getCountriesPriceArray from './getCountriesPriceArray';
 import { useAppDispatch } from '.~/data';
 import useShippingRatesSuggestions from './useShippingRatesSuggestions';
 
+/**
+ * Convert shipping rates suggestions to aggregated shipping rates
+ * that are ready to be saved.
+ *
+ * @param {Array<import('.~/data/actions').ShippingRate>} suggestions Shipping rate suggestions.
+ * @return {Array<import('.~/data/actions').AggregatedShippingRate>} Aggregated shipping rates.
+ */
+const convertSuggestionsToAggregatedShippingRates = ( suggestions ) => {
+	const countriesPriceArray = getCountriesPriceArray( suggestions );
+	const values = countriesPriceArray.map( ( el ) => ( {
+		countryCodes: el.countries,
+		currency: el.currency,
+		rate: el.price,
+	} ) );
+
+	return values;
+};
+
+/**
+ * @typedef {Object} ShippingRatesWithSuggestionsResult
+ * @property {boolean} loading Whether loading is in progress.
+ * @property {Array<import('.~/data/actions').ShippingRate>?} data Shipping rates.
+ */
+
+/**
+ * Check existing shipping rates, and if it is empty, get shipping rates suggestions
+ * and save the suggestions as shipping rates.
+ *
+ * @return {ShippingRatesWithSuggestionsResult} Result object with `loading` and `data`.
+ */
 const useShippingRatesWithSuggestions = () => {
-	const [ saving, setSaving ] = useState( true );
-	const { upsertShippingRates } = useAppDispatch();
 	const {
 		hasFinishedResolution: hfrShippingRates,
 		data: dataShippingRates,
@@ -47,15 +75,21 @@ const useShippingRatesWithSuggestions = () => {
 		isInitialShippingRatesEmpty.current = dataShippingRates.length === 0;
 	}
 
+	/**
+	 * `saving` is used to indicate whether saving is in progress or has finished.
+	 * This is only used when we have no pre-saved initial shipping rates value
+	 * and we call `saveSuggestions`. It is set to `true` by default,
+	 * and will be set to `false` after the suggestions are saved.
+	 */
+	const [ saving, setSaving ] = useState( true );
+
+	const { upsertShippingRates } = useAppDispatch();
 	const saveSuggestions = useCallback(
 		async ( suggestions ) => {
-			const countriesPriceArray = getCountriesPriceArray( suggestions );
-			const values = countriesPriceArray.map( ( el ) => ( {
-				countryCodes: el.countries,
-				currency: el.currency,
-				rate: el.price,
-			} ) );
-			const promises = values.map( ( el ) => {
+			const shippingRates = convertSuggestionsToAggregatedShippingRates(
+				suggestions
+			);
+			const promises = shippingRates.map( ( el ) => {
 				return upsertShippingRates( el );
 			} );
 			await Promise.all( promises );
@@ -65,7 +99,7 @@ const useShippingRatesWithSuggestions = () => {
 	);
 
 	/**
-	 * Used to track whether `saveSuggestions` has been called.
+	 * Used to track whether `saveSuggestions` has been called in the `useEffect`.
 	 * We want to call the function one time only.
 	 */
 	const hasSavedSuggestions = useRef( false );
