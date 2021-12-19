@@ -30,7 +30,7 @@ const convertSuggestionsToAggregatedShippingRates = ( suggestions ) => {
 };
 
 /**
- * @typedef {Object} ShippingRatesWithSuggestionsResult
+ * @typedef {Object} ShippingRatesWithSavedSuggestionsResult
  * @property {boolean} loading Whether loading is in progress.
  * @property {Array<import('.~/data/actions').ShippingRate>?} data Shipping rates.
  */
@@ -39,9 +39,9 @@ const convertSuggestionsToAggregatedShippingRates = ( suggestions ) => {
  * Check existing shipping rates, and if it is empty, get shipping rates suggestions
  * and save the suggestions as shipping rates.
  *
- * @return {ShippingRatesWithSuggestionsResult} Result object with `loading` and `data`.
+ * @return {ShippingRatesWithSavedSuggestionsResult} Result object with `loading` and `data`.
  */
-const useShippingRatesWithSuggestions = () => {
+const useShippingRatesWithSavedSuggestions = () => {
 	const {
 		hasFinishedResolution: hfrShippingRates,
 		data: dataShippingRates,
@@ -131,4 +131,4 @@ const useShippingRatesWithSuggestions = () => {
 	};
 };
 
-export default useShippingRatesWithSuggestions;
+export default useShippingRatesWithSavedSuggestions;
