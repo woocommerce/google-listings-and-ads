@@ -54,20 +54,19 @@ const CustomerEffortScorePrompt = ( { eventContext, label } ) => {
 	};
 
 	const onNoticeShown = () => {
+		removeCESPromptFlagFromLocal();
 		recordEvent( 'gla_ces_snackbar_open', {
 			context: eventContext,
 		} );
 	};
 
 	const onNoticeDismissed = () => {
-		removeCESPromptFlagFromLocal();
 		recordEvent( 'gla_ces_snackbar_closed', {
 			context: eventContext,
 		} );
 	};
 
 	const onModalShown = () => {
-		removeCESPromptFlagFromLocal();
 		recordEvent( 'gla_ces_modal_open', {
 			context: eventContext,
 		} );

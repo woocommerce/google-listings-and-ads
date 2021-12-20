@@ -87,7 +87,7 @@ describe( 'ProductFeed', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		describe( 'And both canCESPromptOpen and wcTracksEnabled are false', () => {
+		describe( 'And both canCESPromptOpenLocal and wcTracksEnabled are false', () => {
 			beforeAll( () => {
 				localStorage.get.mockImplementation( () => {
 					return false;
@@ -110,7 +110,7 @@ describe( 'ProductFeed', () => {
 			} );
 		} );
 
-		describe( 'And canCESPromptOpen is true but wcTracksEnabled is false', () => {
+		describe( 'And canCESPromptOpenLocal is true but wcTracksEnabled is false', () => {
 			beforeAll( () => {
 				localStorage.get.mockImplementation( () => {
 					return true;
@@ -133,7 +133,7 @@ describe( 'ProductFeed', () => {
 			} );
 		} );
 
-		describe( 'And wcTracksEnabled is true but canCESPromptOpen is false', () => {
+		describe( 'And wcTracksEnabled is true but canCESPromptOpenLocal is false', () => {
 			beforeAll( () => {
 				localStorage.get.mockImplementation( () => {
 					return false;
@@ -156,7 +156,7 @@ describe( 'ProductFeed', () => {
 			} );
 		} );
 
-		describe( 'And both canCESPromptOpen and wcTracksEnabled are true', () => {
+		describe( 'And both canCESPromptOpenLocal and wcTracksEnabled are true', () => {
 			beforeAll( () => {
 				localStorage.get.mockImplementation( () => {
 					return true;

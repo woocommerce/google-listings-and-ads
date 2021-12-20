@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useState, useEffect } from '@wordpress/element';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
@@ -22,26 +23,35 @@ import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 
 const ProductFeed = () => {
 	const { hasFinishedResolution, data } = useProductFeedPrefetch();
+	const [ canCESPromptOpen, setCESPromptOpen ] = useState( false );
 
 	// Show submission success guide modal by visiting the path with a specific query `guide=submission-success`.
 	// For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
 	const isSubmissionSuccessOpen =
 		getQuery()?.guide === GUIDE_NAMES.SUBMISSION_SUCCESS;
 
-	const canCESPromptOpen = localStorage.get(
-		LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
-	);
-
 	const wcTracksEnabled = isWCTracksEnabled();
 
-	const shouldOpenCESPrompt =
-		! isSubmissionSuccessOpen && canCESPromptOpen && wcTracksEnabled;
+	useEffect( () => {
+		if ( ! canCESPromptOpen ) {
+			const canCESPromptOpenLocal = localStorage.get(
+				LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN
+			);
+
+			const canOpen =
+				! isSubmissionSuccessOpen &&
+				canCESPromptOpenLocal &&
+				wcTracksEnabled;
+
+			setCESPromptOpen( canOpen );
+		}
+	}, [ isSubmissionSuccessOpen, canCESPromptOpen, wcTracksEnabled ] );
 
 	return (
 		<>
 			<NavigationClassic />
 			{ isSubmissionSuccessOpen && <SubmissionSuccessGuide /> }
-			{ shouldOpenCESPrompt && (
+			{ canCESPromptOpen && (
 				<CustomerEffortScorePrompt
 					label={ __(
 						'How easy was it to set up Google Listings & Ads?',
