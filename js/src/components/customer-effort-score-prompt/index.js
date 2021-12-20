@@ -4,7 +4,6 @@
 import { __ } from '@wordpress/i18n';
 import CustomerEffortScore from '@woocommerce/customer-effort-score';
 import { recordEvent } from '@woocommerce/tracks';
-import PropTypes from 'prop-types';
 
 /**
  * Internal dependencies
@@ -103,17 +102,6 @@ const CustomerEffortScorePrompt = ( { eventContext, label } ) => {
 			}
 		/>
 	);
-};
-
-CustomerEffortScorePrompt.propTypes = {
-	/**
-	 * The text to be displayed on the CES prompt
-	 */
-	label: PropTypes.string.isRequired,
-	/**
-	 * Context property to be sent when calling recordEvent
-	 */
-	eventContext: PropTypes.string.isRequired,
 };
 
 export default CustomerEffortScorePrompt;

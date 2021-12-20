@@ -11,7 +11,6 @@ import {
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
-import PropTypes from 'prop-types';
 
 /**
  * Internal dependencies
@@ -130,17 +129,6 @@ const GuideImplementation = ( { isOpen, setCESPromptOpen } ) => {
 			</GuidePageContent>
 		</AppModal>
 	);
-};
-
-GuideImplementation.propTypes = {
-	/**
-	 * Whether the campaign creation success guide must be shown
-	 */
-	isOpen: PropTypes.bool.isRequired,
-	/**
-	 * Function to enable or disable the CES prompt
-	 */
-	setCESPromptOpen: PropTypes.func.isRequired,
 };
 
 /**
