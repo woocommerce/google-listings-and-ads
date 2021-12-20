@@ -47,7 +47,7 @@ const ProductFeed = () => {
 						'How easy was it to set up Google Listings & Ads?',
 						'google-listings-and-ads'
 					) }
-					eventContext="gla-setup"
+					eventContext={ GUIDE_NAMES.SUBMISSION_SUCCESS }
 				/>
 			) }
 			<div className="gla-product-feed">

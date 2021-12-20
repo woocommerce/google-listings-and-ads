@@ -155,7 +155,7 @@ export default function CampaignCreationSuccessGuide() {
 						'How easy was it to create a Google Ad campaign?',
 						'google-listings-and-ads'
 					) }
-					eventContext="create-ad-campaign"
+					eventContext={ GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS }
 				/>
 			) }
 		</>
