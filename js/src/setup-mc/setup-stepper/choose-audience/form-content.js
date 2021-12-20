@@ -18,7 +18,6 @@ import SupportedCountrySelect from '.~/components/supported-country-select';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useAutoSaveTargetAudienceEffect from './useAutoSaveTargetAudienceEffect';
 import useAutoClearShippingEffect from './useAutoClearShippingEffect';
-import useAutoSetLocationCountriesEffect from './useAutoSetLocationCountriesEffect';
 import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
@@ -33,7 +32,6 @@ const FormContent = ( props ) => {
 	const { values, isValidForm, getInputProps, handleSubmit } = formProps;
 	const { locale, language } = values;
 
-	useAutoSetLocationCountriesEffect( formProps );
 	useAutoSaveTargetAudienceEffect( values );
 	useAutoClearShippingEffect( values.location, values.countries );
 

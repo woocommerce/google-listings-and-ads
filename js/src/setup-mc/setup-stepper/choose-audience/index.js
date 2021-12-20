@@ -8,10 +8,10 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppSpinner from '.~/components/app-spinner';
-import useTargetAudience from '.~/hooks/useTargetAudience';
 import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import FormContent from './form-content';
+import useTargetAudienceWithSuggestions from './useTargetAudienceWithSuggestions';
 import '.~/components/free-listings/choose-audience/index.scss';
 
 /**
@@ -24,9 +24,9 @@ import '.~/components/free-listings/choose-audience/index.scss';
  */
 const ChooseAudience = ( props ) => {
 	const { onContinue = () => {} } = props;
-	const { data } = useTargetAudience();
+	const { loading, data } = useTargetAudienceWithSuggestions();
 
-	if ( ! data ) {
+	if ( loading ) {
 		return <AppSpinner />;
 	}
 
@@ -67,23 +67,21 @@ const ChooseAudience = ( props ) => {
 						'google-listings-and-ads'
 					) }
 				/>
-				{ data && (
-					<Form
-						initialValues={ {
-							locale: data.locale,
-							language: data.language,
-							location: data.location,
-							countries: data.countries || [],
-						} }
-						validate={ handleValidate }
-						onSubmitCallback={ handleSubmitCallback }
-						onSubmit={ handleSubmitCallback }
-					>
-						{ ( formProps ) => {
-							return <FormContent formProps={ formProps } />;
-						} }
-					</Form>
-				) }
+				<Form
+					initialValues={ {
+						locale: data.locale,
+						language: data.language,
+						location: data.location,
+						countries: data.countries || [],
+					} }
+					validate={ handleValidate }
+					onSubmitCallback={ handleSubmitCallback }
+					onSubmit={ handleSubmitCallback }
+				>
+					{ ( formProps ) => {
+						return <FormContent formProps={ formProps } />;
+					} }
+				</Form>
 			</StepContent>
 		</div>
 	);

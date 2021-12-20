@@ -11,6 +11,8 @@ jobs:
   UnitTests:
     name: JavaScript unit tests
     runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
