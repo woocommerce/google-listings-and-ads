@@ -86,6 +86,7 @@ const webpackConfig = {
 		),
 		new DependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
+			externalizedReport: '../../.externalized.json',
 			requestToExternal,
 			requestToHandle,
 		} ),
