@@ -8,15 +8,16 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import { useAppDispatch } from '.~/data';
 import CountriesTimeInput from '../countries-time-input';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const CountriesTimeInputForm = ( props ) => {
-	const { savedValue } = props;
+	const savedValue = useIsEqualRefValue( props.savedValue );
 	const [ value, setValue ] = useState( savedValue );
 	const { upsertShippingTimes } = useAppDispatch();
 
 	useEffect( () => {
-		setValue( ( state ) => ( { ...state, time: savedValue.time } ) );
-	}, [ savedValue.time ] );
+		setValue( savedValue );
+	}, [ savedValue ] );
 
 	const handleBlur = ( event, numberValue ) => {
 		const { countries, time } = value;
