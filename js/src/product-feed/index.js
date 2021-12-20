@@ -26,7 +26,7 @@ const ProductFeed = () => {
 	// Show submission success guide modal by visiting the path with a specific query `guide=submission-success`.
 	// For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
 	const isSubmissionSuccessOpen =
-		getQuery().guide === GUIDE_NAMES.SUBMISSION_SUCCESS;
+		getQuery()?.guide === GUIDE_NAMES.SUBMISSION_SUCCESS;
 
 	const canCESPromptOpen = localStorage.get(
 		LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN

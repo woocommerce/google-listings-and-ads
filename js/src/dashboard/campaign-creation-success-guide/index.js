@@ -140,7 +140,7 @@ const GuideImplementation = ( { isOpen, setCESPromptOpen } ) => {
 export default function CampaignCreationSuccessGuide() {
 	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
 
-	const isOpen = getQuery().guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
+	const isOpen = getQuery()?.guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
 	const wcTracksEnabled = isWCTracksEnabled();
 
 	return (
