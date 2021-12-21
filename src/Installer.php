@@ -42,11 +42,6 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	protected $wp_proxy;
 
 	/**
-	 * @var OptionsInterface
-	 */
-	protected $options;
-
-	/**
 	 * Installer constructor.
 	 *
 	 * @param InstallableInterface[]  $installables
