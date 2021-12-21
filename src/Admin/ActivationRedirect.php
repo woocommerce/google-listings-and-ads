@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP as WPProxy;
 
 /**
  * Class ActivationRedirect
@@ -28,6 +29,19 @@ class ActivationRedirect implements Activateable, Service, Registerable, Options
 		'page' => 'wc-admin',
 		'path' => '/google/start',
 	];
+	/**
+	 * @var WPProxy
+	 */
+	protected $wp_proxy;
+
+	/**
+	 * Installer constructor.
+	 *
+	 * @param WPProxy $wp_proxy
+	 */
+	public function __construct( WPProxy $wp_proxy ) {
+		$this->wp_proxy = $wp_proxy;
+	}
 
 	/**
 	 * Register a service.
@@ -70,7 +84,7 @@ class ActivationRedirect implements Activateable, Service, Registerable, Options
 	 * @return bool True if the redirection should have happened
 	 */
 	protected function maybe_redirect_to_onboarding(): bool {
-		if ( wp_doing_ajax() ) {
+		if ( $this->wp_proxy->wp_doing_ajax() ) {
 			return false;
 		}
 
