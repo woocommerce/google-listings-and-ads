@@ -8,9 +8,10 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import { useAppDispatch } from '.~/data';
 import CountriesTimeInput from '../countries-time-input';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const CountriesTimeInputForm = ( props ) => {
-	const { savedValue } = props;
+	const savedValue = useIsEqualRefValue( props.savedValue );
 	const [ value, setValue ] = useState( savedValue );
 	const { upsertShippingTimes } = useAppDispatch();
 
