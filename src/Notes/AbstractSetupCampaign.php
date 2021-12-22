@@ -1,0 +1,77 @@
+<?php
+declare( strict_types=1 );
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
+
+use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use stdClass;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Abstract Class AbstractSetupCampaign
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
+ * @since x.x.x
+ */
+abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInterface {
+
+	use AdsAwareTrait;
+	use PluginHelper;
+	use Utilities;
+
+	/**
+	 * @param NoteEntry $note
+	 *
+	 * @return void
+	 */
+	protected function add_common_note_settings( NoteEntry $note ): void {
+		$note->set_content_data( new stdClass() );
+		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_layout( 'plain' );
+		$note->set_image( '' );
+		$note->set_name( $this->get_name() );
+		$note->set_source( $this->get_slug() );
+		$note->add_action(
+			'setup-campaign',
+			__( 'Get started', 'google-listings-and-ads' ),
+			$this->get_setup_ads_url()
+		);
+	}
+
+	/**
+	 * Checks if a note can and should be added.
+	 *
+	 * Check if ads setup IS NOT complete
+	 * Check if it is > $this->get_gla_setup_days() days ago from DATE OF SETUP COMPLETION
+	 * Send notification
+	 *
+	 * @return bool
+	 */
+	public function should_be_added(): bool {
+		if ( $this->has_been_added() ) {
+			return false;
+		}
+
+		if ( $this->ads_service->is_setup_complete() ) {
+			return false;
+		}
+
+		if ( ! $this->gla_setup_for( $this->get_gla_setup_days() * DAY_IN_SECONDS ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get the number of days after which to add the note.
+	 *
+	 * @return int
+	 */
+	abstract protected function get_gla_setup_days(): int;
+}
