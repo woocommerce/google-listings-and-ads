@@ -211,9 +211,10 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_create_rate_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
+			$query_object = $this->create_query();
 			$country_code = $request->get_param( 'country_code' );
-			$existing     = ! empty( $this->query->where( 'country', $country_code )->get_results() );
+			$existing     = ! empty( $query_object->where( 'country', $country_code )->get_results() );
 
 			try {
 				$data = [
@@ -223,14 +224,14 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				];
 
 				if ( $existing ) {
-					$this->query->update(
+					$query_object->update(
 						$data,
 						[
-							'id' => $this->query->get_results()[0]['id'],
+							'id' => $query_object->get_results()[0]['id'],
 						]
 					);
 				} else {
-					$this->query->insert( $data );
+					$query_object->insert( $data );
 				}
 
 				return new Response(
@@ -264,7 +265,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 		return function( Request $request ) {
 			try {
 				$country_code = $request->get_param( 'country_code' );
-				$this->query->delete( 'country', $country_code );
+				$this->create_query()->delete( 'country', $country_code );
 
 				return [
 					'status'  => 'success',
@@ -291,7 +292,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return array
 	 */
 	protected function get_all_shipping_rates(): array {
-		return $this->query->set_limit( 100 )->get_results();
+		return $this->create_query()->set_limit( 100 )->get_results();
 	}
 
 	/**
@@ -300,7 +301,16 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return array
 	 */
 	protected function get_shipping_rate_for_country( string $country ): array {
-		return $this->query->where( 'country', $country )->get_results();
+		return $this->create_query()->where( 'country', $country )->get_results();
+	}
+
+	/**
+	 * Return a new instance of the shipping rate query object.
+	 *
+	 * @return ShippingRateQuery
+	 */
+	protected function create_query(): ShippingRateQuery {
+		return clone $this->query;
 	}
 
 	/**
