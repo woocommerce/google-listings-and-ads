@@ -39,7 +39,10 @@ describe( 'reducer', () => {
 			ads_campaigns: null,
 			mc_setup: null,
 			mc_product_statistics: null,
-			mc_issues: null,
+			mc_issues: {
+				account: null,
+				product: null,
+			},
 			mc_product_feed: null,
 			report: {},
 		} );
@@ -362,41 +365,105 @@ describe( 'reducer', () => {
 	} );
 
 	describe( 'Merchant Center issues', () => {
-		const path = 'mc_issues';
+		const basePath = 'mc_issues';
+		const productPath = basePath + '.product';
+		const accountPath = basePath + '.account';
 
-		it( 'should only allow receiving pagination data sequentially from the first page and return with received issues array and total number of issues', () => {
-			const pageOneState = reducer( prepareState(), {
+		it( 'Issues are split between Account and Product without collision', () => {
+			const accountIssuesPage1 = [ '#1-Account', '#2-Account' ];
+			const productIssuesPage1 = [ '#1-Product', '#2-Product' ];
+			const accountIssuesPage2 = [ '#3-Account', '#4-Account' ];
+
+			const accountIssuesState = reducer( prepareState(), {
 				type: TYPES.RECEIVE_MC_ISSUES,
-				query: { page: 1, per_page: 2 },
-				data: { total: 5, issues: [ '#1', '#2' ] },
-			} );
-			const pageTwoState = reducer( pageOneState, {
-				type: TYPES.RECEIVE_MC_ISSUES,
-				query: { page: 2, per_page: 2 },
-				data: { total: 5, issues: [ '#3', '#4' ] },
-			} );
-			const pageThreeState = reducer( pageTwoState, {
-				type: TYPES.RECEIVE_MC_ISSUES,
-				query: { page: 3, per_page: 2 },
-				data: { total: 5, issues: [ '#5' ] },
+				query: { page: 1, per_page: 2, issue_type: 'account' },
+				data: { total: 5, issues: accountIssuesPage1 },
 			} );
 
-			pageOneState.assertConsistentRef();
-			pageTwoState.assertConsistentRef();
-			pageThreeState.assertConsistentRef();
-			expect( pageOneState ).toHaveProperty( path, {
-				total: 5,
-				issues: [ '#1', '#2' ],
+			const productIssuesState = reducer( accountIssuesState, {
+				type: TYPES.RECEIVE_MC_ISSUES,
+				query: { page: 1, per_page: 2, issue_type: 'product' },
+				data: { total: 3, issues: productIssuesPage1 },
 			} );
-			expect( pageTwoState ).toHaveProperty( path, {
-				total: 5,
-				issues: [ '#1', '#2', '#3', '#4' ],
+
+			const accountIssuesStatePage2 = reducer( productIssuesState, {
+				type: TYPES.RECEIVE_MC_ISSUES,
+				query: { page: 2, per_page: 2, issue_type: 'account' },
+				data: { total: 5, issues: accountIssuesPage2 },
 			} );
-			expect( pageThreeState ).toHaveProperty( path, {
+
+			accountIssuesState.assertConsistentRef();
+			productIssuesState.assertConsistentRef();
+			accountIssuesStatePage2.assertConsistentRef();
+
+			expect( accountIssuesState ).toHaveProperty( accountPath, {
 				total: 5,
-				issues: [ '#1', '#2', '#3', '#4', '#5' ],
+				issues: accountIssuesPage1,
+			} );
+
+			expect( accountIssuesState ).toHaveProperty( productPath, null );
+
+			expect( productIssuesState ).toHaveProperty( accountPath, {
+				total: 5,
+				issues: accountIssuesPage1,
+			} );
+
+			expect( productIssuesState ).toHaveProperty( productPath, {
+				total: 3,
+				issues: productIssuesPage1,
+			} );
+
+			expect( accountIssuesStatePage2 ).toHaveProperty( accountPath, {
+				total: 5,
+				issues: [ ...accountIssuesPage1, ...accountIssuesPage2 ],
+			} );
+
+			expect( accountIssuesStatePage2 ).toHaveProperty( productPath, {
+				total: 3,
+				issues: productIssuesPage1,
 			} );
 		} );
+
+		it.each( [ 'account', 'product' ] )(
+			'Issues of type %s should only allow receiving pagination data sequentially from the first page and return with received issues array and total number of issues',
+			( issueType ) => {
+				const path = `${ basePath }.${ issueType }`;
+				const pageOneState = reducer( prepareState(), {
+					type: TYPES.RECEIVE_MC_ISSUES,
+					query: { page: 1, per_page: 2, issue_type: issueType },
+					data: { total: 5, issues: [ '#1', '#2' ] },
+				} );
+
+				const pageTwoState = reducer( pageOneState, {
+					type: TYPES.RECEIVE_MC_ISSUES,
+					query: { page: 2, per_page: 2, issue_type: issueType },
+					data: { total: 5, issues: [ '#3', '#4' ] },
+				} );
+
+				const pageThreeState = reducer( pageTwoState, {
+					type: TYPES.RECEIVE_MC_ISSUES,
+					query: { page: 3, per_page: 2, issue_type: issueType },
+					data: { total: 5, issues: [ '#5' ] },
+				} );
+
+				pageOneState.assertConsistentRef();
+				pageTwoState.assertConsistentRef();
+				pageThreeState.assertConsistentRef();
+
+				expect( pageOneState ).toHaveProperty( path, {
+					total: 5,
+					issues: [ '#1', '#2' ],
+				} );
+				expect( pageTwoState ).toHaveProperty( path, {
+					total: 5,
+					issues: [ '#1', '#2', '#3', '#4' ],
+				} );
+				expect( pageThreeState ).toHaveProperty( path, {
+					total: 5,
+					issues: [ '#1', '#2', '#3', '#4', '#5' ],
+				} );
+			}
+		);
 	} );
 
 	describe( 'Merchant Center product feed', () => {
