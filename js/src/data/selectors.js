@@ -113,22 +113,28 @@ export const getMCProductStatistics = ( state ) => {
 // which might cause rendering performance problem.
 export const getMCIssues = createSelector(
 	( state, query ) => {
-		if ( ! state.mc_issues ) {
-			return state.mc_issues;
+		const mcIssues = state.mc_issues[ query.issue_type ];
+
+		if ( ! mcIssues ) {
+			return mcIssues;
 		}
 
 		const start = ( query.page - 1 ) * query.per_page;
 		const end = start + query.per_page;
 
 		return {
-			issues: state.mc_issues.issues.slice( start, end ),
-			total: state.mc_issues.total,
+			issues: mcIssues.issues.slice( start, end ),
+			total: mcIssues.total,
 		};
 	},
 	( state ) => [
 		state.mc_issues,
-		state.mc_issues?.issues,
-		state.mc_issues?.total,
+		state.mc_issues.account,
+		state.mc_issues.product,
+		state.mc_issues.account?.issues,
+		state.mc_issues.account?.total,
+		state.mc_issues.product?.issues,
+		state.mc_issues.product?.total,
 	]
 );
 

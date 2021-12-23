@@ -8,7 +8,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
+import {
+	REPORT_SOURCE_PAID,
+	REPORT_SOURCE_FREE,
+	ISSUE_TYPE_ACCOUNT,
+} from '.~/constants';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { getReportKey } from './utils';
@@ -164,8 +168,13 @@ export function* getMCProductStatistics() {
 
 export function* getMCIssues( query ) {
 	try {
+		const issueTypeFilter = query?.issue_type ?? ISSUE_TYPE_ACCOUNT;
+
 		const response = yield apiFetch( {
-			path: addQueryArgs( `${ API_NAMESPACE }/mc/issues`, query ),
+			path: addQueryArgs(
+				`${ API_NAMESPACE }/mc/issues/${ issueTypeFilter }`,
+				query
+			),
 		} );
 
 		yield receiveMCIssues( query, response );

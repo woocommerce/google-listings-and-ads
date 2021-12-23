@@ -10,3 +10,7 @@ export const REPORT_SOURCE_DEFAULT = REPORT_SOURCE_PAID;
 
 // Programs report related
 export const REPORT_PROGRAM_PARAM = 'programs';
+
+// MC Issues Related
+export const ISSUE_TYPE_PRODUCT = 'product';
+export const ISSUE_TYPE_ACCOUNT = 'account';
