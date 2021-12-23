@@ -20,3 +20,7 @@ export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
 };
+
+// MC Issues Related
+export const ISSUE_TYPE_PRODUCT = 'product';
+export const ISSUE_TYPE_ACCOUNT = 'account';
