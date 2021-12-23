@@ -32,7 +32,10 @@ const DEFAULT_STATE = {
 	ads_campaigns: null,
 	mc_setup: null,
 	mc_product_statistics: null,
-	mc_issues: null,
+	mc_issues: {
+		account: null,
+		product: null,
+	},
 	mc_product_feed: null,
 	report: {},
 };
@@ -233,14 +236,15 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_MC_ISSUES: {
 			const { query, data } = action;
-			const issues = state.mc_issues?.issues.slice() || [];
+			const issues =
+				state.mc_issues[ query.issue_type ]?.issues.slice() || [];
 			issues.splice(
 				( query.page - 1 ) * query.per_page,
 				query.per_page,
 				...data.issues
 			);
 
-			return chain( state, 'mc_issues' )
+			return chain( state, `mc_issues.${ query.issue_type }` )
 				.set( 'issues', issues )
 				.set( 'total', data.total )
 				.end();
