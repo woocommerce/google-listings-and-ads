@@ -207,7 +207,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			 ->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
 		// Set up Ads service, and inflect classes that need it.
-		$this->share_with_tags( AdsService::class );
+		$this->share_with_tags( AdsAccountState::class );
+		$this->share_with_tags( AdsService::class, AdsAccountState::class );
 		$this->getLeagueContainer()
 			 ->inflector( AdsAwareInterface::class )
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
@@ -271,7 +272,6 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 
-		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
