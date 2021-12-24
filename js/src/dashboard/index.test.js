@@ -9,9 +9,17 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import CampaignCreationSuccessGuide from './index';
+import Dashboard from './index';
 import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 import { GUIDE_NAMES } from '.~/constants';
+
+jest.mock( '@woocommerce/settings', () => {
+	return {
+		getSetting: () => ( {
+			code: 'TWD',
+		} ),
+	};
+} );
 
 jest.mock( '@woocommerce/navigation', () => {
 	return {
@@ -30,7 +38,12 @@ jest.mock( '.~/components/customer-effort-score-prompt', () => () => (
 	<div>{ CES_PROMPT_TEXT }</div>
 ) );
 
-describe( 'CampaignCreationSuccessGuide', () => {
+beforeAll( () => {
+	// Used in the js/src/hooks/useLegacyMenuEffect.js dependency
+	window.wpNavMenuClassChange = jest.fn();
+} );
+
+describe( 'Dashboard', () => {
 	describe( `When the query string "guide" equals to ${ GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS }`, () => {
 		beforeAll( () => {
 			getQuery.mockImplementation( () => {
@@ -45,7 +58,7 @@ describe( 'CampaignCreationSuccessGuide', () => {
 		} );
 
 		test( 'Should render CampaignCreationSuccessGuide', () => {
-			const { queryByText } = render( <CampaignCreationSuccessGuide /> );
+			const { queryByText } = render( <Dashboard /> );
 			expect(
 				queryByText( CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT )
 			).toBeInTheDocument();
@@ -63,18 +76,14 @@ describe( 'CampaignCreationSuccessGuide', () => {
 			} );
 
 			test( 'Should not render CustomerEffortScorePrompt when user does not click "Got it"', () => {
-				const { queryByText } = render(
-					<CampaignCreationSuccessGuide />
-				);
+				const { queryByText } = render( <Dashboard /> );
 				expect(
 					queryByText( CES_PROMPT_TEXT )
 				).not.toBeInTheDocument();
 			} );
 
 			test( 'Should not render CustomerEffortScorePrompt when user clicks "Got it"', () => {
-				const { queryByText } = render(
-					<CampaignCreationSuccessGuide />
-				);
+				const { queryByText } = render( <Dashboard /> );
 				userEvent.click( screen.getByText( 'Got it' ) );
 
 				expect(
@@ -95,18 +104,14 @@ describe( 'CampaignCreationSuccessGuide', () => {
 			} );
 
 			test( 'Should not render CustomerEffortScorePrompt when user does not click "Got it"', () => {
-				const { queryByText } = render(
-					<CampaignCreationSuccessGuide />
-				);
+				const { queryByText } = render( <Dashboard /> );
 				expect(
 					queryByText( CES_PROMPT_TEXT )
 				).not.toBeInTheDocument();
 			} );
 
 			test( 'Should render CustomerEffortScorePrompt when user clicks "Got it"', () => {
-				const { queryByText } = render(
-					<CampaignCreationSuccessGuide />
-				);
+				const { queryByText } = render( <Dashboard /> );
 				userEvent.click( screen.getByText( 'Got it' ) );
 
 				expect( queryByText( CES_PROMPT_TEXT ) ).toBeInTheDocument();
@@ -126,7 +131,7 @@ describe( 'CampaignCreationSuccessGuide', () => {
 		} );
 
 		test( 'Should not render CampaignCreationSuccessGuide', () => {
-			const { queryByText } = render( <CampaignCreationSuccessGuide /> );
+			const { queryByText } = render( <Dashboard /> );
 			expect(
 				queryByText( CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT )
 			).not.toBeInTheDocument();
