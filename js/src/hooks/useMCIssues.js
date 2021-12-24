@@ -7,6 +7,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { ISSUE_TABLE_PER_PAGE } from '.~/product-feed/constants';
+import { ISSUE_TYPE_ACCOUNT } from '.~/constants';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 
 const defaultQuery = {
@@ -14,7 +15,7 @@ const defaultQuery = {
 	per_page: ISSUE_TABLE_PER_PAGE,
 };
 
-const useMCIssues = ( issueType ) => {
+const useMCIssues = ( issueType = ISSUE_TYPE_ACCOUNT ) => {
 	const [ page, setPage ] = useState( defaultQuery.page );
 
 	const { data, hasFinishedResolution } = useAppSelectDispatch(
@@ -26,7 +27,7 @@ const useMCIssues = ( issueType ) => {
 		}
 	);
 
-	return [ data, hasFinishedResolution, page, setPage ];
+	return { data, hasFinishedResolution, page, setPage };
 };
 
 export default useMCIssues;

@@ -26,6 +26,7 @@ const IssuesTableData = ( { data, headers } ) => {
 
 	return (
 		<Table
+			caption={ __( 'Issues to resolve', 'google-listings-and-ads' ) }
 			headers={ headers }
 			rows={ data.issues.map( ( el ) => [
 				{

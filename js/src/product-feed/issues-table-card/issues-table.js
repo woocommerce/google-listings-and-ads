@@ -44,7 +44,7 @@ const headers = [
 ];
 
 const IssuesTable = ( { issueType } ) => {
-	const [ data, hasFinishedResolution, page, setPage ] = useMCIssues(
+	const { data, hasFinishedResolution, page, setPage } = useMCIssues(
 		issueType
 	);
 
@@ -59,7 +59,13 @@ const IssuesTable = ( { issueType } ) => {
 		<>
 			<CardBody size={ null }>
 				{ ! hasFinishedResolution ? (
-					<TablePlaceholder headers={ headers } caption="" />
+					<TablePlaceholder
+						headers={ headers }
+						caption={ __(
+							'Loading Issues To Resolve',
+							'google-listings-and-ads'
+						) }
+					/>
 				) : (
 					<IssuesTableData headers={ headers } data={ data } />
 				) }
