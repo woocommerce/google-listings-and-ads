@@ -7,13 +7,16 @@ import { getNewPath } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import AppTabNav from '.~/components/app-tab-nav';
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
+import AppTabNav from '.~/components/app-tab-nav';
 import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
+import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 
-const IssuesTypeNavigation = ( { totals } ) => {
-	const getTotal = ( issueType ) =>
-		totals[ issueType ] ? `(${ totals[ issueType ] })` : '';
+const IssuesTypeNavigation = () => {
+	const { totals } = useMCIssuesTotals();
+
+	const issuesTotal = ( issueType ) =>
+		totals[ issueType ] >= 0 ? `(${ totals[ issueType ] })` : '';
 
 	const tabs = [
 		{
@@ -21,7 +24,7 @@ const IssuesTypeNavigation = ( { totals } ) => {
 			title: `${ __(
 				'Account Issues',
 				'google-listings-and-ads'
-			) } ${ getTotal( ISSUE_TYPE_ACCOUNT ) }`,
+			) } ${ issuesTotal( ISSUE_TYPE_ACCOUNT ) }`,
 			href: getNewPath(
 				{ issueType: ISSUE_TYPE_ACCOUNT },
 				'/google/product-feed',
@@ -33,7 +36,7 @@ const IssuesTypeNavigation = ( { totals } ) => {
 			title: `${ __(
 				'Product Issues',
 				'google-listings-and-ads'
-			) } ${ getTotal( ISSUE_TYPE_PRODUCT ) }`,
+			) } ${ issuesTotal( ISSUE_TYPE_PRODUCT ) }`,
 			href: getNewPath(
 				{ issueType: ISSUE_TYPE_PRODUCT },
 				'/google/product-feed',

@@ -18,7 +18,7 @@ import HelpPopover from '.~/components/help-popover';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-navigation';
-import useMCIssuesCombined from '.~/hooks/useMCIssuesCombined';
+import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 import { ISSUE_TYPE_PRODUCT, ISSUE_TYPE_ACCOUNT } from '.~/constants';
 import './index.scss';
 
@@ -43,13 +43,9 @@ const actions = (
 );
 
 const IssuesTableCard = () => {
-	const { data } = useMCIssuesCombined();
+	const { totals } = useMCIssuesTotals();
 
-	const totals = {
-		[ ISSUE_TYPE_ACCOUNT ]: data?.account?.total,
-		[ ISSUE_TYPE_PRODUCT ]: data?.product?.total,
-	};
-
+	// We don't want to render if no issues are found
 	if ( ! ( totals[ ISSUE_TYPE_ACCOUNT ] || totals[ ISSUE_TYPE_PRODUCT ] ) )
 		return null;
 
@@ -70,7 +66,7 @@ const IssuesTableCard = () => {
 						{ actions }
 					</div>
 				</CardHeader>
-				<IssuesTypeNavigation totals={ totals } />
+				<IssuesTypeNavigation />
 				<IssuesTable issueType={ ISSUE_TYPE_PRODUCT } />
 				<IssuesTable issueType={ ISSUE_TYPE_ACCOUNT } />
 			</Card>
