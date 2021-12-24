@@ -24,6 +24,8 @@ module.exports = {
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `.~/` alias.
 		'^\\.~/(.*)$': '<rootDir>/js/src/$1',
+		'@woocommerce/settings':
+			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 	},
 	// Exclude e2e tests from unit testing.
 	testPathIgnorePatterns: [ '/node_modules/', '/tests/e2e/' ],
