@@ -36,37 +36,38 @@ import useMCIssues from '.~/hooks/useMCIssues';
 import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
 
 describe( 'Issues Table', () => {
-	describe( 'Inactive Issue Table', () => {
+	describe( 'Rendering correctly the table', () => {
 		beforeEach( () => {
-			useMCIssues.mockReturnValue( {
-				data: {
-					issues: [ mockIssue( 1 ) ],
-					total: 3,
-				},
-				page: 1,
-				hasFinishedResolution: true,
+			useMCIssues.mockImplementation( ( type ) => {
+				return {
+					data: {
+						issues: [ mockIssue( 1, { type } ) ],
+						total: 3,
+					},
+					page: 1,
+					hasFinishedResolution: true,
+				};
 			} );
-
-			getActiveIssueType.mockReturnValue( ISSUE_TYPE_PRODUCT );
 		} );
 
-		it( 'Not Rendering', () => {
-			useMCIssues.mockReturnValue( {
-				data: {
-					issues: [ mockIssue( 1 ) ],
-					total: 300,
-				},
-				page: 1,
-				hasFinishedResolution: true,
-			} );
+		it( 'Rendering Product table if issue type is product', () => {
+			getActiveIssueType.mockReturnValue( ISSUE_TYPE_PRODUCT );
 
-			render( <IssuesTable issueType={ ISSUE_TYPE_ACCOUNT } /> );
+			const { queryByText } = render( <IssuesTable /> );
 
-			expect( screen.queryByRole( 'table' ) ).toBeFalsy();
+			expect( queryByText( 'Edit' ) ).toBeTruthy();
+		} );
+
+		it( 'Rendering Account table if issue type is account', () => {
+			getActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
+
+			const { queryByText } = render( <IssuesTable /> );
+
+			expect( queryByText( 'Edit' ) ).toBeFalsy();
 		} );
 	} );
 
-	describe( 'Active Issue Table', () => {
+	describe( 'Table behaviour', () => {
 		beforeEach( () => {
 			getActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
 		} );
@@ -81,9 +82,7 @@ describe( 'Issues Table', () => {
 				hasFinishedResolution: true,
 			} );
 
-			const { getByRole } = render(
-				<IssuesTable issueType={ ISSUE_TYPE_ACCOUNT } />
-			);
+			const { getByRole } = render( <IssuesTable /> );
 
 			expect( getByRole( 'button', { name: 'Next Page' } ) ).toBeTruthy();
 		} );
@@ -98,9 +97,9 @@ describe( 'Issues Table', () => {
 				hasFinishedResolution: true,
 			} );
 
-			render( <IssuesTable issueType={ ISSUE_TYPE_ACCOUNT } /> );
+			const { queryByText } = render( <IssuesTable /> );
 
-			expect( screen.queryByText( 'Next Page' ) ).toBeFalsy();
+			expect( queryByText( 'Next Page' ) ).toBeFalsy();
 		} );
 
 		it( 'Renders the Table With Data', () => {
@@ -113,9 +112,7 @@ describe( 'Issues Table', () => {
 				hasFinishedResolution: true,
 			} );
 
-			const { getAllByRole, getByRole } = render(
-				<IssuesTable issueType={ ISSUE_TYPE_ACCOUNT } />
-			);
+			const { getAllByRole, getByRole } = render( <IssuesTable /> );
 
 			expect( getByRole( 'table' ) ).toBeTruthy();
 			expect( getAllByRole( 'row' ) ).toHaveLength( 4 ); // header + issues
@@ -127,9 +124,7 @@ describe( 'Issues Table', () => {
 				page: 1,
 			} );
 
-			const { getByText } = render(
-				<IssuesTable issueType={ ISSUE_TYPE_ACCOUNT } />
-			);
+			const { getByText } = render( <IssuesTable /> );
 
 			expect( getByText( 'Loading Issues To Resolve' ) ).toBeTruthy();
 		} );

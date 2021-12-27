@@ -1,8 +1,8 @@
-jest.mock( '.~/hooks/useMCIssues', () => ( {
+jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()
-		.mockName( 'useMCIssues' )
+		.mockName( 'useMCIssuesTypeFilter' )
 		.mockReturnValue( {
 			data: {
 				total: 1,

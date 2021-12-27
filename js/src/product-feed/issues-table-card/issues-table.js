@@ -43,12 +43,10 @@ const headers = [
 	{ key: 'action', label: '', required: true },
 ];
 
-const IssuesTable = ( { issueType } ) => {
+const IssuesTable = () => {
 	const { data, hasFinishedResolution, page, setPage } = useMCIssues(
-		issueType
+		getActiveIssueType()
 	);
-
-	if ( getActiveIssueType() !== issueType ) return null;
 
 	const handlePageChange = ( newPage, direction ) => {
 		setPage( newPage );
