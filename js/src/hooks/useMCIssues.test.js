@@ -1,79 +1,40 @@
-jest.mock( '.~/hooks/useAppSelectDispatch', () => ( {
+jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()
-		.mockName( 'useAppSelectDispatch' )
-		.mockImplementation( ( selector, args ) => {
+		.mockName( 'useMCIssuesTypeFilter' )
+		.mockImplementation( ( issueType ) => {
 			return {
-				hasFinishedResolution: true,
-				data: { ...args },
+				data: issueType,
 			};
 		} ),
 } ) );
 
-const originalUseAppSelectDispatch = jest.requireActual(
-	'.~/hooks/useAppSelectDispatch'
-);
-
 /**
  * External dependencies
  */
-import { act, renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-hooks';
 
 /**
  * Internal dependencies
  */
 import useMCIssues from '.~/hooks/useMCIssues';
-import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
-
-afterEach( () => {
-	jest.clearAllMocks();
-} );
+import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 
 describe( 'useMcIssues', () => {
-	test( 'Calls useAppSelectDispatch with `getMCIssues` selector on each page update', async () => {
+	test( 'Gets both account and product issues by default', () => {
 		const { result } = renderHook( () => useMCIssues() );
 
-		act( () => {
-			result.current.setPage( 2 );
-		} );
-
-		expect( useAppSelectDispatch ).toHaveBeenCalledWith(
-			'getMCIssues',
-			expect.any( Object )
-		);
-
-		expect( useAppSelectDispatch ).toHaveBeenCalledTimes( 2 );
+		expect( result.current ).toHaveProperty( ISSUE_TYPE_ACCOUNT );
+		expect( result.current ).toHaveProperty( ISSUE_TYPE_PRODUCT );
 	} );
 
-	test( 'Returns the correct page and data after calling setPage', async () => {
-		const { result } = renderHook( () => useMCIssues() );
-		expect( result.current.page ).toBe( 1 );
-		expect( result.current.data.page ).toBe( 1 );
+	test.each( [ ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT ] )(
+		'Gets %s data when using it as a filter',
+		( issueType ) => {
+			const { result } = renderHook( () => useMCIssues( issueType ) );
 
-		act( () => {
-			result.current.setPage( 2 );
-		} );
-
-		expect( result.current.page ).toBe( 2 );
-		expect( result.current.data.page ).toBe( 2 );
-	} );
-
-	test( 'Supports Product Issue Type', async () => {
-		const { result } = renderHook( () => useMCIssues( 'product' ) );
-		expect( result.current.data.issue_type ).toBe( 'product' );
-	} );
-
-	test( 'Returns the default values correctly', () => {
-		useAppSelectDispatch.mockImplementation(
-			originalUseAppSelectDispatch.default
-		);
-
-		const { result } = renderHook( () => useMCIssues() );
-
-		expect( result.current.data ).toBe( null );
-		expect( result.current.hasFinishedResolution ).toBe( false );
-		expect( result.current.page ).toBe( 1 );
-		expect( typeof result.current.setPage ).toBe( 'function' );
-	} );
+			expect( result.current.data ).toEqual( issueType );
+		}
+	);
 } );

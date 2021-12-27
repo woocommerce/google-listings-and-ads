@@ -1,33 +1,16 @@
 /**
- * External dependencies
- */
-import { useState } from '@wordpress/element';
-
-/**
  * Internal dependencies
  */
-import { ISSUE_TABLE_PER_PAGE } from '.~/product-feed/constants';
-import { ISSUE_TYPE_ACCOUNT } from '.~/constants';
-import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
+import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
+import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFIlter';
 
-const defaultQuery = {
-	page: 1,
-	per_page: ISSUE_TABLE_PER_PAGE,
-};
+const useMCIssues = ( issueType ) => {
+	const issueTypes = {
+		[ ISSUE_TYPE_ACCOUNT ]: useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT ),
+		[ ISSUE_TYPE_PRODUCT ]: useMCIssuesTypeFilter( ISSUE_TYPE_PRODUCT ),
+	};
 
-const useMCIssues = ( issueType = ISSUE_TYPE_ACCOUNT ) => {
-	const [ page, setPage ] = useState( defaultQuery.page );
-
-	const { data, hasFinishedResolution } = useAppSelectDispatch(
-		'getMCIssues',
-		{
-			...defaultQuery,
-			page,
-			issue_type: issueType,
-		}
-	);
-
-	return { data, hasFinishedResolution, page, setPage };
+	return issueType ? issueTypes[ issueType ] : issueTypes;
 };
 
 export default useMCIssues;

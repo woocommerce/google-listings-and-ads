@@ -67,8 +67,7 @@ const IssuesTableCard = () => {
 					</div>
 				</CardHeader>
 				<IssuesTypeNavigation />
-				<IssuesTable issueType={ ISSUE_TYPE_PRODUCT } />
-				<IssuesTable issueType={ ISSUE_TYPE_ACCOUNT } />
+				<IssuesTable />
 			</Card>
 		</AppTableCardDiv>
 	);
