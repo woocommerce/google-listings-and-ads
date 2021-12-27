@@ -96,6 +96,9 @@ class ValidateAddressTest extends ContainerAwareUnitTest {
 			count( $errors )
 		);
 
+		$this->assertTrue( in_array ('postcode', $errors) );
+		$this->assertTrue( in_array ('state', $errors) );
+
 	}
 	
 	public function test_address_with_multiple_no_required_empty_fields() {

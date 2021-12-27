@@ -406,7 +406,7 @@ class Settings {
 		$countries = $wc->get_wc_countries();
 
 		$locale          = $countries->get_country_locale();
-		$locale_settings = $locale[ $country ];
+		$locale_settings = isset( $locale[ $country ] ) ? $locale[ $country ] : [];
 
 		$fields_to_validate = [
 			'address_1' => $address->getStreetAddress(),
