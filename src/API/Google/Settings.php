@@ -388,6 +388,58 @@ class Settings {
 	}
 
 	/**
+	 * Check whether the address has errors
+	 *
+	 * @param AccountAddress $address to be validated.
+	 *
+	 * @return array
+	 */
+	public function has_address_errors( AccountAddress $address ): array {
+		if ( ! $address instanceof AccountAddress ) {
+			return [];
+		}
+
+		/** @var WC $wc */
+		$wc = $this->container->get( WC::class );
+
+		$country   = $address->getCountry();
+		$countries = $wc->get_wc_countries();
+
+		$locale          = $countries->get_country_locale();
+		$locale_settings = $locale[ $country ];
+
+		$fields_to_validate = [
+			'address_1' => $address->getStreetAddress(),
+			'city'      => $address->getLocality(),
+			'country'   => $address->getCountry(),
+			'postcode'  => $address->getPostalCode(),
+			'state'     => $address->getRegion(),
+		];
+
+		return $this->validate_address( $fields_to_validate, $locale_settings );
+	}
+
+	/**
+	 * Check whether the required address fields are empty
+	 *
+	 * @param array $address_fields to be validated.
+	 * @param array $locale_settings locale settings
+	 * @return array
+	 */
+	public function validate_address( array $address_fields, array $locale_settings ) {
+		$errors = array_filter(
+			$address_fields,
+			function ( $field ) use ( $locale_settings, $address_fields ) {
+				$is_required = isset( $locale_settings[ $field ] ) && isset( $locale_settings[ $field ]['required'] ) ? $locale_settings[ $field ]['required'] : true;
+				return true === $is_required && empty( $address_fields[ $field ] ) ? true : false;
+			},
+			ARRAY_FILTER_USE_KEY
+		);
+
+		return array_keys( $errors );
+	}
+
+	/**
 	 * Return a state name.
 	 *
 	 * @param string $state_code State code.
