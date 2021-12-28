@@ -56,7 +56,7 @@ class ShippingRateBatchController extends ShippingRateController {
 							'description'       => __( 'Array of country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 							'context'           => [ 'view' ],
 							'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-							'validate_callback' => $this->get_country_code_validate_callback(),
+							'validate_callback' => $this->get_country_codes_array_validate_callback(),
 							'minItems'          => 1,
 							'required'          => true,
 							'uniqueItems'       => true,

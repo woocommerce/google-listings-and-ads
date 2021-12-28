@@ -54,9 +54,31 @@ trait CountryCodeTrait {
 	protected function get_country_code_validate_callback(): callable {
 		return function( $value ) {
 			try {
-				// This is used for individual strings and an array of strings.
-				$value = (array) $value;
-				foreach ( $value as $item ) {
+				$this->validate_country_code( $value );
+
+				return true;
+			} catch ( Throwable $e ) {
+				return $this->error_from_exception(
+					$e,
+					'gla_invalid_country',
+					[
+						'status'  => 400,
+						'country' => $value,
+					]
+				);
+			}
+		};
+	}
+
+	/**
+	 * Get a callable function for validating that an array of provided country codes are recognized.
+	 *
+	 * @return callable
+	 */
+	protected function get_country_codes_array_validate_callback(): callable {
+		return function( array $values ) {
+			try {
+				foreach ( $values as $item ) {
 					$this->validate_country_code( $item );
 				}
 
