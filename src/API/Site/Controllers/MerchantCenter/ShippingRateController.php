@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
+use WP_Error;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -125,20 +126,19 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_read_rates_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$rates = $this->get_all_shipping_rates();
 			$items = [];
-			foreach ( $rates as $rate ) {
+			foreach ( $rates as $country => $country_rates ) {
 				$data = $this->prepare_item_for_response(
 					[
-						'country_code' => $rate['country'],
-						'currency'     => $rate['currency'],
-						'rate'         => $rate['rate'],
+						'country_code' => $country,
+						'rates'        => $country_rates,
 					],
 					$request
 				);
 
-				$items[ $rate['country'] ] = $this->prepare_response_for_collection( $data );
+				$items[ $country ] = $this->prepare_response_for_collection( $data );
 			}
 
 			return $items;
@@ -153,10 +153,10 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @since x.x.x
 	 */
 	protected function get_suggestions_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$country = $request->get_param( 'country_code' );
-			$rate    = $this->get_suggested_shipping_rate_for_country( $country );
-			if ( empty( $rate ) ) {
+			$rates   = $this->get_suggested_shipping_rates_for_country( $country );
+			if ( empty( $rates ) ) {
 				return new Response(
 					[
 						'message' => __( 'No rate available.', 'google-listings-and-ads' ),
@@ -166,14 +166,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				);
 			}
 
-			return $this->prepare_item_for_response(
-				[
-					'country_code' => $rate['country'],
-					'currency'     => $rate['currency'],
-					'rate'         => $rate['rate'],
-				],
-				$request
-			);
+			return $this->prepare_item_for_response( $rates, $request );
 		};
 	}
 
@@ -181,10 +174,10 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @return callable
 	 */
 	protected function get_read_rate_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$country = $request->get_param( 'country_code' );
-			$rate    = $this->get_shipping_rate_for_country( $country );
-			if ( empty( $rate ) ) {
+			$rates   = $this->get_shipping_rates_for_country( $country );
+			if ( empty( $rates ) ) {
 				return new Response(
 					[
 						'message' => __( 'No rate available.', 'google-listings-and-ads' ),
@@ -196,9 +189,8 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 
 			return $this->prepare_item_for_response(
 				[
-					'country_code' => $rate['country'],
-					'currency'     => $rate['currency'],
-					'rate'         => $rate['rate'],
+					'country_code' => $country,
+					'rates'        => array_values( $rates ),
 				],
 				$request
 			);
@@ -212,49 +204,67 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_create_rate_callback(): callable {
 		return function ( Request $request ) {
-			$query_object = $this->create_query();
+			$update_query = $this->create_query();
 			$country_code = $request->get_param( 'country_code' );
-			$existing     = ! empty( $query_object->where( 'country', $country_code )->get_results() );
 
-			try {
-				$data = [
-					'country'  => $country_code,
-					'currency' => $request->get_param( 'currency' ),
-					'rate'     => $request->get_param( 'rate' ),
-				];
-
-				if ( $existing ) {
-					$query_object->update(
-						$data,
-						[
-							'id' => $query_object->get_results()[0]['id'],
-						]
-					);
-				} else {
-					$query_object->insert( $data );
-				}
-
-				return new Response(
-					[
-						'status'  => 'success',
-						'message' => sprintf(
-							/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
-							__( 'Successfully added rate for country: "%s".', 'google-listings-and-ads' ),
-							$country_code
-						),
-					],
-					201
-				);
-			} catch ( InvalidQuery $e ) {
-				return $this->error_from_exception(
-					$e,
-					'gla_error_creating_shipping_rate',
-					[
-						'code'    => 400,
-						'message' => $e->getMessage(),
-					]
+			$rates = $request->get_param( 'rates' );
+			if ( empty( $rates ) ) {
+				return new WP_Error(
+					400,
+					sprintf(
+					/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
+						__( 'No rates provided for country: "%s".', 'google-listings-and-ads' ),
+						$country_code
+					)
 				);
 			}
+
+			foreach ( $rates as ['method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
+				try {
+					$data = [
+						'country'  => $country_code,
+						'method'   => $method,
+						'currency' => $currency,
+						'rate'     => $rate,
+						'options'  => $options,
+					];
+
+					$existing_query = $this->create_query()->where( 'country', $country_code )->where( 'method', $method );
+					$existing       = ! empty( $existing_query->get_results() );
+
+					if ( $existing ) {
+						$update_query->update(
+							$data,
+							[
+								'id' => $existing_query->get_results()[0]['id'],
+							]
+						);
+					} else {
+						$update_query->insert( $data );
+					}
+				} catch ( InvalidQuery $e ) {
+					return $this->error_from_exception(
+						$e,
+						'gla_error_creating_shipping_rate',
+						[
+							'code'    => 400,
+							'message' => $e->getMessage(),
+						]
+					);
+				}
+			}
+
+			return new Response(
+				[
+					'status'  => 'success',
+					'message' => sprintf(
+					/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
+						__( 'Successfully added rates for country: "%s".', 'google-listings-and-ads' ),
+						$country_code
+					),
+				],
+				201
+			);
 		};
 	}
 
@@ -289,10 +299,14 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	}
 
 	/**
-	 * @return array
+	 * Returns the list of all shipping rates stored in the database grouped by their respective country code.
+	 *
+	 * @return array Array of shipping rates grouped by country code.
 	 */
 	protected function get_all_shipping_rates(): array {
-		return $this->create_query()->set_limit( 100 )->get_results();
+		$results = $this->create_query()->set_limit( 100 )->get_results();
+
+		return $this->group_rates_by_country( $results );
 	}
 
 	/**
@@ -300,8 +314,34 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 *
 	 * @return array
 	 */
-	protected function get_shipping_rate_for_country( string $country ): array {
-		return $this->create_query()->where( 'country', $country )->get_results();
+	protected function get_shipping_rates_for_country( string $country ): array {
+		$results = $this->create_query()->where( 'country', $country )->get_results();
+
+		return $this->group_rates_by_country( $results );
+	}
+
+	/**
+	 * @param array $rates
+	 *
+	 * @return array
+	 *
+	 * @since x.x.x
+	 */
+	protected function group_rates_by_country( array $rates ): array {
+		$rates_grouped = [];
+		foreach ( $rates as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
+			// Initialize the country rates array.
+			$rates_grouped[ $country ] = $rates_grouped[ $country ] ?? [];
+
+			$rates_grouped[ $country ][] = [
+				'method'   => $method,
+				'currency' => $currency,
+				'rate'     => $rate,
+				'options'  => $options,
+			];
+		}
+
+		return $rates_grouped;
 	}
 
 	/**
@@ -320,21 +360,73 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 *
 	 * @since x.x.x
 	 */
-	protected function get_suggested_shipping_rate_for_country( string $country ): ?array {
-		$methods = $this->shipping_zone->get_shipping_methods_for_country( $country );
+	protected function get_suggested_shipping_rates_for_country( string $country ): ?array {
+		$rates = [];
+
+		// Todo: Render the cost of shipping classes for the flat-shipping rate.
+
+		$methods       = $this->shipping_zone->get_shipping_methods_for_country( $country );
+		$free_shipping = $this->find_free_shipping_method( $methods );
 		foreach ( $methods as $method ) {
-			// Todo: Add support for "pickup" and "free" shipping methods, and also render the method ID once when we have the UI designed to display it.
-			// Todo: Render the cost of shipping classes for the flat-shipping rate.
-			if ( ShippingZone::METHOD_FLAT_RATE === $method['id'] && $method['enabled'] ) {
-				return [
-					'country'  => $country,
-					'currency' => $method['currency'],
-					'rate'     => $method['options']['cost'],
-				];
+			// We process the free shipping method separately.
+			if ( ! $method['enabled'] || ShippingZone::METHOD_FREE === $method['id'] ) {
+				continue;
 			}
+
+			// We can skip the pickup method because it's still not supported.
+			// Todo: Add support for the pickup method once it's available.
+			if ( ShippingZone::METHOD_PICKUP === $method['id'] ) {
+				continue;
+			}
+
+			$rate = [
+				'method'   => $method['id'],
+				'currency' => $method['currency'],
+				'rate'     => $method['options']['cost'] ?? 0,
+				'options'  => [],
+			];
+
+			if ( null !== $free_shipping ) {
+				if ( isset( $free_shipping['options']['min_amount'] ) ) {
+					// If there is a free shipping method, and it has a minimum order amount, we set it as an option for all rates.
+					$rate['options']['free_shipping_threshold'] = $free_shipping['options']['min_amount'];
+				} else {
+					// If there is a free shipping method without a minimum order amount, we set the rate to 0 to mark it as free.
+					$rate['rate'] = 0;
+				}
+			}
+
+			$rates[] = $rate;
 		}
 
-		return null;
+		return [
+			'country_code' => $country,
+			'rates'        => $rates,
+		];
+	}
+
+	/**
+	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods.
+	 *
+	 * @param array $methods
+	 *
+	 * @return array|null Array containing the free shipping method properties, or null if it does not exist.
+	 *
+	 * @since x.x.x
+	 */
+	protected function find_free_shipping_method( array $methods ): ?array {
+		$free_shipping_method = array_filter(
+			$methods,
+			function ( $method ) {
+				return ShippingZone::METHOD_FREE === $method['id'];
+			}
+		);
+
+		if ( empty( $free_shipping_method ) ) {
+			return null;
+		}
+
+		return array_values( $free_shipping_method )[0];
 	}
 
 	/**
@@ -350,19 +442,61 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				'validate_callback' => $this->get_country_code_validate_callback(),
 				'required'          => true,
 			],
-			'currency'     => [
-				'type'              => 'string',
-				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
+			'rates'        => [
+				'type'              => 'array',
+				'minItems'          => 1,
+				'uniqueItems'       => true,
+				'description'       => __( 'Array of shipping rates for the given country_code.', 'google-listings-and-ads' ),
 				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => 'USD', // todo: default to store currency.
-			],
-			'rate'         => [
-				'type'              => 'number',
-				'description'       => __( 'The shipping rate.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
+				'items'             => [
+					'type'                 => 'object',
+					'additionalProperties' => false,
+					'properties'           => [
+						'method'   => [
+							'type'              => 'string',
+							'description'       => __( 'The shipping method.', 'google-listings-and-ads' ),
+							'enum'              => [
+								ShippingZone::METHOD_FLAT_RATE,
+								// ShippingZone::METHOD_PICKUP, // Todo: Add support for the pickup method once it's available.
+							],
+							'context'           => [ 'view', 'edit' ],
+							'validate_callback' => 'rest_validate_request_arg',
+							'required'          => true,
+						],
+						'currency' => [
+							'type'              => 'string',
+							'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
+							'context'           => [ 'view', 'edit' ],
+							'validate_callback' => 'rest_validate_request_arg',
+							'default'           => 'USD', // todo: default to store currency.
+						],
+						'rate'     => [
+							'type'              => 'number',
+							'minimum'           => 0,
+							'description'       => __( 'The shipping rate.', 'google-listings-and-ads' ),
+							'context'           => [ 'view', 'edit' ],
+							'validate_callback' => 'rest_validate_request_arg',
+							'required'          => true,
+						],
+						'options'  => [
+							'type'                 => 'object',
+							'additionalProperties' => false,
+							'description'          => __( 'Array of options for the shipping method.', 'google-listings-and-ads' ),
+							'context'              => [ 'view', 'edit' ],
+							'validate_callback'    => 'rest_validate_request_arg',
+							'default'              => [],
+							'properties'           => [
+								'free_shipping_threshold' => [
+									'type'              => 'number',
+									'minimum'           => 0,
+									'description'       => __( 'Minimum price eligible for free shipping.', 'google-listings-and-ads' ),
+									'context'           => [ 'view', 'edit' ],
+									'validate_callback' => 'rest_validate_request_arg',
+								],
+							],
+						],
+					],
+				],
 			],
 		];
 	}
