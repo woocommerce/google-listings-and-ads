@@ -221,7 +221,7 @@ trait GoogleHelper {
 	 *
 	 * @return bool True if the country is in the list of MC-supported countries.
 	 *
-	 * @since x.x.x
+	 * @since 1.9.0
 	 */
 	protected function is_country_supported( string $country ): bool {
 		return array_key_exists(

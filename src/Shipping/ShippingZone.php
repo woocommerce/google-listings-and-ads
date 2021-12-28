@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Shipping
  *
- * @since x.x.x
+ * @since 1.9.0
  */
 class ShippingZone implements Service {
 
@@ -329,14 +329,15 @@ class ShippingZone implements Service {
 	 *
 	 * @param string $continent_code
 	 *
-	 * @return string[]
+	 * @return string[] Returns an array of country codes with each country code used both as the key and value.
+	 *                  For example: [ 'US' => 'US', 'DE' => 'DE' ].
 	 */
 	protected function get_countries_from_continent( string $continent_code ): array {
 		$countries  = [];
 		$continents = $this->wc->get_wc_countries()->get_continents();
 		if ( isset( $continents[ $continent_code ] ) ) {
 			$countries = $continents[ $continent_code ]['countries'];
-			// Use the country code as array keys. For example: [ 'US' => 'US' ].
+			// Use the country code as array keys.
 			$countries = array_combine( $countries, $countries );
 		}
 

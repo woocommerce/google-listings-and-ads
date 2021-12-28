@@ -122,6 +122,8 @@ class SyncerHooks implements Service, Registerable {
 		// when a coupon is added / updated, schedule a update job.
 		add_action( 'woocommerce_new_coupon', $update_by_id, 90, 2 );
 		add_action( 'woocommerce_update_coupon', $update_by_id, 90, 2 );
+		add_action( 'woocommerce_gla_bulk_update_coupon', $update_by_id, 90 );
+
 		// when a coupon is trashed or removed, schedule a delete job.
 		add_action( 'wp_trash_post', $pre_delete, 90 );
 		add_action( 'before_delete_post', $pre_delete, 90 );

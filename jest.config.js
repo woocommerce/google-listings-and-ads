@@ -20,12 +20,21 @@ module.exports = {
 		`<rootDir>/node_modules/(?!@woocommerce/(${ wcPackagesNeedTransform })(/node_modules/@woocommerce/(${ wcPackagesNeedTransform }))?/build/)`,
 	],
 	moduleNameMapper: {
+		'\\.svg$': '<rootDir>/tests/mocks/assets/svgrMock.js',
 		'\\.scss$': '<rootDir>/tests/mocks/assets/styleMock.js',
 		// Transform our `.~/` alias.
 		'^\\.~/(.*)$': '<rootDir>/js/src/$1',
+		'@woocommerce/settings':
+			'<rootDir>/js/src/tests/dependencies/woocommerce/settings',
 	},
 	// Exclude e2e tests from unit testing.
-	testPathIgnorePatterns: [ '/node_modules/', '/tests/e2e/' ],
+	testPathIgnorePatterns: [
+		'/node_modules/',
+		'/tests/e2e/',
+		'/__helpers__/',
+	],
+	coveragePathIgnorePatterns: [ '/node_modules/', '/__helpers__/' ],
+	watchPathIgnorePatterns: [ '<rootDir>/js/build/' ],
 	globals: {
 		glaData: {
 			mcSetupComplete: true,

@@ -129,6 +129,15 @@ trait PluginHelper {
 	}
 
 	/**
+	 * Get the coupon list view URL
+	 *
+	 * @return string
+	 */
+	protected function get_coupons_url(): string {
+		return admin_url( 'edit.php?post_type=shop_coupon' );
+	}
+
+	/**
 	 * Get the plugin documentation URL
 	 *
 	 * @return string

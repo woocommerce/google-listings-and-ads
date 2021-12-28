@@ -1,25 +1,10 @@
 /**
- * External dependencies
- */
-import { useSelect } from '@wordpress/data';
-
-/**
  * Internal dependencies
  */
-import { STORE_KEY } from '.~/data';
+import useAppSelectDispatch from './useAppSelectDispatch';
 
 const useShippingRates = () => {
-	return useSelect( ( select ) => {
-		const { getShippingRates, isResolving } = select( STORE_KEY );
-
-		const data = getShippingRates();
-		const loading = isResolving( 'getShippingRates' );
-
-		return {
-			loading,
-			data,
-		};
-	}, [] );
+	return useAppSelectDispatch( 'getShippingRates' );
 };
 
 export default useShippingRates;

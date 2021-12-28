@@ -8,9 +8,10 @@ import { useState, useEffect } from '@wordpress/element';
  */
 import { useAppDispatch } from '.~/data';
 import CountriesPriceInput from '../countries-price-input';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 
 const CountriesPriceInputForm = ( props ) => {
-	const { savedValue } = props;
+	const savedValue = useIsEqualRefValue( props.savedValue );
 	const [ value, setValue ] = useState( savedValue );
 	const { upsertShippingRates } = useAppDispatch();
 

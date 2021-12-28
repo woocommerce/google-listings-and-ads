@@ -1,27 +1,58 @@
 /**
  * External dependencies
  */
-import { Link } from '@woocommerce/components';
 import { Button } from '@wordpress/components';
-import { getNewPath, getQuery } from '@woocommerce/navigation';
+import { useState, useCallback } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+import { Link } from '@woocommerce/components';
+import { getNewPath, getQuery, getHistory } from '@woocommerce/navigation';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
  */
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
 import NavigationClassic from '.~/components/navigation-classic';
+import CustomerEffortScorePrompt from '.~/components/customer-effort-score-prompt';
 import AppDateRangeFilterPicker from './app-date-range-filter-picker';
 import SummarySection from './summary-section';
 import CampaignCreationSuccessGuide from './campaign-creation-success-guide';
 import AllProgramsTableCard from './all-programs-table-card';
-import { glaData } from '.~/constants';
+import { glaData, GUIDE_NAMES } from '.~/constants';
 import './index.scss';
-import { subpaths } from '.~/utils/urls';
+import { subpaths, getCreateCampaignUrl } from '.~/utils/urls';
+import isWCTracksEnabled from '.~/utils/isWCTracksEnabled';
 import EditFreeCampaign from '.~/edit-free-campaign';
 import EditPaidAdsCampaign from '.~/pages/edit-paid-ads-campaign';
 import CreatePaidAdsCampaign from '.~/pages/create-paid-ads-campaign';
+import { CTA_CREATE_ANOTHER_CAMPAIGN, CTA_CONFIRM } from './constants';
 
 const Dashboard = () => {
+	const [ isCESPromptOpen, setCESPromptOpen ] = useState( false );
+
+	const handleCampaignCreationSuccessGuideClose = useCallback(
+		( e, specifiedAction ) => {
+			const action = specifiedAction || e.currentTarget.dataset.action;
+			const nextQuery = {
+				...getQuery(),
+				guide: undefined,
+			};
+			getHistory().replace( getNewPath( nextQuery ) );
+
+			if ( action === CTA_CREATE_ANOTHER_CAMPAIGN ) {
+				getHistory().push( getCreateCampaignUrl() );
+			} else if ( action === CTA_CONFIRM ) {
+				setCESPromptOpen( true );
+			}
+
+			recordEvent( 'gla_modal_closed', {
+				context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
+				action,
+			} );
+		},
+		[ setCESPromptOpen ]
+	);
+
 	const query = getQuery();
 	switch ( query.subpath ) {
 		case subpaths.editFreeListings:
@@ -43,26 +74,47 @@ const Dashboard = () => {
 		);
 	};
 
+	const isCampaignCreationSuccessGuideOpen =
+		query?.guide === GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS;
+	const wcTracksEnabled = isWCTracksEnabled();
+
 	return (
-		<div className="gla-dashboard">
-			<DifferentCurrencyNotice context="dashboard" />
-			<NavigationClassic />
-			<div className="gla-dashboard__filter">
-				<AppDateRangeFilterPicker
-					trackEventReportId={ trackEventReportId }
+		<>
+			<div className="gla-dashboard">
+				<DifferentCurrencyNotice context="dashboard" />
+				<NavigationClassic />
+				<div className="gla-dashboard__filter">
+					<AppDateRangeFilterPicker
+						trackEventReportId={ trackEventReportId }
+					/>
+					{ enableReports && <ReportsLink /> }
+				</div>
+				<div className="gla-dashboard__performance">
+					<SummarySection />
+				</div>
+				<div className="gla-dashboard__programs">
+					<AllProgramsTableCard
+						trackEventReportId={ trackEventReportId }
+					/>
+				</div>
+			</div>
+			{ isCampaignCreationSuccessGuideOpen && (
+				<CampaignCreationSuccessGuide
+					onGuideRequestClose={
+						handleCampaignCreationSuccessGuideClose
+					}
 				/>
-				{ enableReports && <ReportsLink /> }
-			</div>
-			<div className="gla-dashboard__performance">
-				<SummarySection />
-			</div>
-			<div className="gla-dashboard__programs">
-				<CampaignCreationSuccessGuide />
-				<AllProgramsTableCard
-					trackEventReportId={ trackEventReportId }
+			) }
+			{ isCESPromptOpen && wcTracksEnabled && (
+				<CustomerEffortScorePrompt
+					label={ __(
+						'How easy was it to create a Google Ad campaign?',
+						'google-listings-and-ads'
+					) }
+					eventContext={ GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS }
 				/>
-			</div>
-		</div>
+			) }
+		</>
 	);
 };
 
