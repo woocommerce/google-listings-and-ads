@@ -258,8 +258,11 @@ class ShippingZone implements Service {
 				break;
 			case self::METHOD_PICKUP:
 				$cost = $method->get_option( 'cost' );
-				// Check if the cost is a numeric value (and not null or a math expression).
-				if ( ! is_numeric( $cost ) ) {
+				if ( empty( $cost ) ) {
+					// For the pickup method, an empty cost value means that the method is free of charge.
+					$cost = 0;
+				} elseif ( ! is_numeric( $cost ) ) {
+					// Skip if the cost is not a numeric value (and possibly a math expression).
 					return null;
 				}
 				$parsed_method['options']['cost'] = (float) $cost;
