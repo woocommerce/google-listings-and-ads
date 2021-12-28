@@ -18,8 +18,7 @@ import HelpPopover from '.~/components/help-popover';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-navigation';
-import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
-import { ISSUE_TYPE_PRODUCT, ISSUE_TYPE_ACCOUNT } from '.~/constants';
+import useMCIssues from '.~/hooks/useMCIssues';
 import './index.scss';
 
 const actions = (
@@ -43,11 +42,10 @@ const actions = (
 );
 
 const IssuesTableCard = () => {
-	const { totals } = useMCIssuesTotals();
+	const { total } = useMCIssues();
 
 	// We don't want to render if no issues are found
-	if ( ! ( totals[ ISSUE_TYPE_ACCOUNT ] || totals[ ISSUE_TYPE_PRODUCT ] ) )
-		return null;
+	if ( ! total ) return null;
 
 	return (
 		<AppTableCardDiv className="gla-issues-table-card">
