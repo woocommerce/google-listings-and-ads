@@ -7,6 +7,8 @@ on:
       - develop
   pull_request:
 
+env:
+  FORCE_COLOR: 2
 jobs:
   Setup:
     name: Setup for jobs
@@ -17,8 +19,6 @@ jobs:
 
       - name: Prepare node
         uses: ./.github/actions/prepare-node
-        with:
-          install-deps: "maybe"
 
   JSLintingCheck:
     name: Lint JavaScript

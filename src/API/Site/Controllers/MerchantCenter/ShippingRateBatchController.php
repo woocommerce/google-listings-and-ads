@@ -52,7 +52,7 @@ class ShippingRateBatchController extends ShippingRateController {
 					'permission_callback' => $this->get_permission_callback(),
 					'args'                => [
 						'country_codes' => [
-							'type'              => 'string',
+							'type'              => 'array',
 							'description'       => __( 'Array of country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 							'context'           => [ 'view' ],
 							'sanitize_callback' => $this->get_country_code_sanitize_callback(),
@@ -140,7 +140,7 @@ class ShippingRateBatchController extends ShippingRateController {
 					'errors'  => $errors,
 					'success' => $responses,
 				],
-				201
+				200
 			);
 		};
 	}

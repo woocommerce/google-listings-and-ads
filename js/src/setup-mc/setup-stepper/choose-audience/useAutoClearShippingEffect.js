@@ -13,9 +13,6 @@ import useShippingRates from '.~/hooks/useShippingRates';
 
 const wait = 500;
 
-// TODO: review the following effect (specifically the useShippingRates and useShippingTimes)
-// after reducer deepClone issue (https://github.com/woocommerce/google-listings-and-ads/issues/270)
-// has been addressed.
 const useAutoClearShippingEffect = ( location, countries ) => {
 	const { data: shippingRates } = useShippingRates();
 	const { data: shippingTimes } = useShippingTimes();

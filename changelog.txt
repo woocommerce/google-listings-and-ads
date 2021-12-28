@@ -1,7 +1,31 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.9.0 - 2021-12-15 =
+* Add - Pre-fill target audience countries during onboarding using WooCommerce shipping zones. #1131
+* Add - Pre-fill target audience countries with suggestions based on WooCommerce settings. #1145
+* Fix -  Fatal error on plugin deactivation. #1142
+* Fix - Fix UI loading flicker in Setup MC Step 2 "Choose your audience" page. #1146
+* Fix - Fix e2e test after copy update. #1134
+* Tweak - Display help cursor for tooltip. #1130
+* Tweak - Update product channel visibility's styling to match that of coupons channel visibility. #1135
+* Tweak - Updated `@wordpress/scripts@17.1.0`. #1132
+* Tweak - WC 6.0 compatibility.
+* Tweak - WP 5.9 compatibility.
+* Update - min. WC version to 5.7. #1110
+
 = 1.8.0 - 2021-11-30 =
-* Update - UX improvements on account connections in Setup Merchant Center flow.
+* Add - Allow connecting to a different Google account in Setup MC. - #1072
+* Add - Disconnect Google Merchant Center account when switching Google account. - #1109
+* Add - Display account name and domain in Google Merchant Center cards. - #1112
+* Add - track events for UX improvements. - #1124
+* Fix - Refetch list of GMC accounts when users choose to connect to a different GMC accounts. - #1123
+* Tweak - Improve UX and adjust UI style for the accounts connection step of the Google Ads & Paid Campaign setup page. - #1102
+* Tweak - Minor layout tweak in Google Ads card in Setup Ads. - #1114
+* Update - Display better explanation tip for Google Merchant Center in Setup MC Step 1. - #1075
+* Update - UX improvement on Google account card in Setup MC. - #1072
+* Update - UX improvements on Google Merchant Center section in Setup MC flow. - #1094
+* Update - UX improvements on account connections in Setup Merchant Center flow. - #1119
+* Update - Update the WordPress.com account connection UI to the newer design. - #1068
 
 = 1.7.0 - 2021-11-24 =
 * Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.

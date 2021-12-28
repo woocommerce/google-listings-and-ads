@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
+import { getHistory, getNewPath } from '@woocommerce/navigation';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -19,11 +19,12 @@ import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
+import { GUIDE_NAMES, LOCAL_STORAGE_KEYS } from '.~/constants';
+import localStorage from '.~/utils/localStorage';
 import wooLogoURL from './woocommerce-logo.svg';
 import googleLogoURL from './google-logo.svg';
 import './index.scss';
 
-const GUIDE_NAME = 'submission-success';
 const EVENT_NAME = 'gla_modal_closed';
 const LATER_BUTTON_CLASS = 'components-guide__finish-button';
 
@@ -151,14 +152,29 @@ const handleGuideFinish = ( e ) => {
 		? 'maybe-later'
 		: 'dismiss';
 	recordEvent( EVENT_NAME, {
-		context: GUIDE_NAME,
+		context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 		action,
 	} );
 };
 
-const GuideImplementation = () => {
+/**
+ * Modal window to greet the user at Product Feed, after successful completion of onboarding.
+ *
+ * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
+ * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
+ */
+export default function SubmissionSuccessGuide() {
 	useEffect( () => {
-		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
+		recordEvent( 'gla_modal_open', {
+			context: GUIDE_NAMES.SUBMISSION_SUCCESS,
+		} );
+
+		// Set a flag in local storage to indicate the CES prompt can be shown
+		// when the user enters product feed for the first time after setting up.
+		localStorage.set(
+			LOCAL_STORAGE_KEYS.CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN,
+			true
+		);
 	}, [] );
 
 	const renderFinish = useCallback( () => {
@@ -178,7 +194,7 @@ const GuideImplementation = () => {
 					isSmall={ false }
 					eventName={ EVENT_NAME }
 					eventProps={ {
-						context: GUIDE_NAME,
+						context: GUIDE_NAMES.SUBMISSION_SUCCESS,
 						action: 'create-paid-campaign',
 					} }
 				>
@@ -197,19 +213,4 @@ const GuideImplementation = () => {
 			onFinish={ handleGuideFinish }
 		/>
 	);
-};
-
-/**
- * Modal window to greet the user at Product Feed, after successful completion of onboarding.
- *
- * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
- * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
- */
-export default function SubmissionSuccessGuide() {
-	const isOpen = getQuery().guide === GUIDE_NAME;
-
-	if ( ! isOpen ) {
-		return null;
-	}
-	return <GuideImplementation />;
 }

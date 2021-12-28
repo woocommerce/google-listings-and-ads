@@ -113,7 +113,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 *
 	 * @return callable
 	 *
-	 * @since x.x.x
+	 * @since 1.9.0
 	 */
 	protected function get_suggest_audience_callback(): callable {
 		return function( Request $request ) {
@@ -192,7 +192,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	 *
 	 * @return string[]
 	 *
-	 * @since x.x.x
+	 * @since 1.9.0
 	 */
 	protected function get_target_audience_suggestion(): array {
 		$countries    = $this->shipping_zone->get_shipping_countries();

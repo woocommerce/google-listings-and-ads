@@ -8,6 +8,9 @@ js/src export-ignore
 README.md export-ignore
 package.json export-ignore
 package-lock.json export-ignore
+coverage export-ignore
+node_modules export-ignore
+npm-debug.log export-ignore
 composer.json export-ignore
 composer.lock export-ignore
 phpcs.xml.dist export-ignore
@@ -16,10 +19,11 @@ webpack.config.js export-ignore
 jest.config.js export-ignore
 wordpress_org_assets export-ignore
 .editorconfig export-ignore
-.travis.yml export-ignore
-.stylelintrc export-ignore
-.prettierrc export-ignore
+.externalized.json export-ignore
+.prettierrc.js export-ignore
+.prettierignore export-ignore
 .eslintignore export-ignore
+.eslintrc.js export-ignore
 .stylelintignore export-ignore
-.eslintrc export-ignore
+.stylelintrc.json export-ignore
 .nvmrc export-ignore

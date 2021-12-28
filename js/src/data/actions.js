@@ -52,7 +52,7 @@ export function* fetchShippingRates() {
 			return {
 				countryCode: el.country_code,
 				currency: el.currency,
-				rate: el.rate.toString(),
+				rate: Number( el.rate ),
 			};
 		} );
 
@@ -164,7 +164,7 @@ export function* fetchShippingTimes() {
 		const shippingTimes = Object.values( response ).map( ( el ) => {
 			return {
 				countryCode: el.country_code,
-				time: el.time,
+				time: Number( el.time ),
 			};
 		} );
 

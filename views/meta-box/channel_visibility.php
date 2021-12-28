@@ -35,6 +35,9 @@ $show_status = ! empty( $sync_status ) && $channel_visibility === ChannelVisibil
 $issues     = $this->issues;
 $has_issues = ! empty( $issues );
 
+$visibility_box_class = $has_issues ? 'notice-warning' : '';
+$visibility_box_style = $has_issues ? 'border-left-style: solid' : 'background-color:#efefef';
+
 $input_description = '';
 $input_disabled    = false;
 if ( ! $product->is_visible() ) {
@@ -70,7 +73,10 @@ if ( $input_disabled ) {
 		);
 		?>
 		<?php if ( $show_status ) : ?>
-			<div class="sync-status notice-alt notice-large notice-warning" style="border-left-style: solid">
+			<div
+				class="sync-status notice-alt notice-large <?php echo esc_attr( $visibility_box_class ); ?>"
+				style="<?php echo esc_attr( $visibility_box_style ); ?>"
+			>
 				<p><strong><?php esc_html_e( 'Google sync status', 'google-listings-and-ads' ); ?></strong></p>
 				<p><?php echo esc_html( $sync_status ); ?></p>
 				<?php if ( $has_issues ) : ?>
@@ -89,6 +95,6 @@ if ( $input_disabled ) {
 		<p><strong><?php esc_html_e( 'Google Listings & Ads', 'google-listings-and-ads' ); ?></strong></p>
 		<p><?php esc_html_e( 'Complete setup to get your products listed on Google for free.', 'google-listings-and-ads' ); ?></p>
 		<a href="<?php echo esc_attr( $get_started_url ); ?>"
-		   class="button"><?php esc_html_e( 'Complete setup', 'google-listings-and-ads' ); ?></a>
+			class="button"><?php esc_html_e( 'Complete setup', 'google-listings-and-ads' ); ?></a>
 	<?php endif; ?>
 </div>

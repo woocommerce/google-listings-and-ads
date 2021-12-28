@@ -157,11 +157,11 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 * @param string     $hook The hook that the job will trigger.
 	 * @param array|null $args Args that would have been passed to the job.
 	 *
-	 * @return string The scheduled action ID if a scheduled action was found.
+	 * @return int The scheduled action ID if a scheduled action was found.
 	 *
 	 * @throws ActionSchedulerException If no matching action found.
 	 */
-	public function cancel( string $hook, $args = [] ): string {
+	public function cancel( string $hook, $args = [] ) {
 		$action_id = as_unschedule_action( $hook, $args, $this->get_slug() );
 
 		if ( null === $action_id ) {
