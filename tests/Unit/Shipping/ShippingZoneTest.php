@@ -15,7 +15,7 @@ use WC_Shipping_Method;
 use WC_Shipping_Zone;
 
 /**
- * Class BatchProductHelperTest
+ * Class ShippingZoneTest
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
  *
@@ -30,7 +30,6 @@ class ShippingZoneTest extends UnitTest {
 				 ->method( 'get_shipping_zones' )
 				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
 
-		// Create a sample flat-rate shipping method with a constant cost.
 		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
 		$flat_rate->expects( $this->any() )
@@ -88,13 +87,12 @@ class ShippingZoneTest extends UnitTest {
 		);
 	}
 
-	public function test_ignores_methods_with_null_cost() {
+	public function test_ignores_flat_rate_methods_with_null_cost() {
 		// Return one sample shipping zone.
 		$this->wc->expects( $this->any() )
 				 ->method( 'get_shipping_zones' )
 				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
 
-		// Create a sample flat-rate shipping method with a constant cost.
 		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
 		$flat_rate->expects( $this->any() )
@@ -104,6 +102,25 @@ class ShippingZoneTest extends UnitTest {
 						  return null;
 					  }
 				  } );
+
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate ] );
+
+		// Return the zone locations for the given zone id.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zone' )
+				 ->willReturn( $shipping_zone );
+
+		$methods = $this->shipping_zone->get_shipping_methods_for_country( 'US' );
+
+		$this->assertEmpty( $methods );
+	}
+
+	public function test_pickup_methods_with_null_cost_are_considered_free() {
+		// Return one sample shipping zone.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zones' )
+				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
+
 		$pickup = $this->createMock( WC_Shipping_Local_Pickup::class );
 		$pickup->id = ShippingZone::METHOD_PICKUP;
 		$pickup->expects( $this->any() )
@@ -114,7 +131,7 @@ class ShippingZoneTest extends UnitTest {
 					  }
 				  } );
 
-		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate, $pickup ] );
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $pickup ] );
 
 		// Return the zone locations for the given zone id.
 		$this->wc->expects( $this->any() )
@@ -123,7 +140,9 @@ class ShippingZoneTest extends UnitTest {
 
 		$methods = $this->shipping_zone->get_shipping_methods_for_country( 'US' );
 
-		$this->assertEmpty( $methods );
+		$this->assertCount( 1, $methods );
+		$this->assertEquals( ShippingZone::METHOD_PICKUP, $methods[0]['id'] );
+		$this->assertEquals( 0, $methods[0]['options']['cost'] );
 	}
 
 	public function test_returns_shipping_method_properties() {
