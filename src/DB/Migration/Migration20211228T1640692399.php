@@ -51,12 +51,9 @@ class Migration20211228T1640692399 extends AbstractMigration {
 	public function apply(): void {
 		if ( $this->shipping_rate_table->exists() ) {
 			// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
-			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ADD COLUMN `method` varchar(30) NOT NULL DEFAULT 'flat_rate' AFTER `country`" );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ALTER COLUMN `method` DROP DEFAULT" );
-			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ADD COLUMN `options` text DEFAULT NULL" );
 			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
-			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 	}
 }
