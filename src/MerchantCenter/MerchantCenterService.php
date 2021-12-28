@@ -393,7 +393,12 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		if ( isset( $merchant_center_settings['shipping_rate'] ) && 'manual' === $merchant_center_settings['shipping_rate'] ) {
 			$saved_shipping_rate = true;
 		} else {
-			$shipping_rate_rows  = $this->container->get( ShippingRateQuery::class )->get_count();
+			/**
+			 * @var ShippingRateQuery $shipping_rate_query
+			 */
+			$shipping_rate_query = $this->container->get( ShippingRateQuery::class );
+			$shipping_rate_query->group_by( 'country' );
+			$shipping_rate_rows  = $shipping_rate_query->get_count();
 			$saved_shipping_rate = $shipping_rate_rows === count( $target_countries );
 		}
 
