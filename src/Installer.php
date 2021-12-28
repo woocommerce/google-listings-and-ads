@@ -69,7 +69,7 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 * Admin init.
 	 */
 	protected function admin_init(): void {
-		if ( defined( 'IFRAME_REQUEST' ) || is_ajax() ) {
+		if ( defined( 'IFRAME_REQUEST' ) || wp_doing_ajax() ) {
 			return;
 		}
 
