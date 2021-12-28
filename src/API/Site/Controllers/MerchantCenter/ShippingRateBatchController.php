@@ -77,10 +77,9 @@ class ShippingRateBatchController extends ShippingRateController {
 	 * @return callable
 	 */
 	protected function get_batch_create_callback(): callable {
-		return function( Request $request ) {
+		return function ( Request $request ) {
 			$country_codes = $request->get_param( 'country_codes' );
-			$currency      = $request->get_param( 'currency' );
-			$rate          = $request->get_param( 'rate' );
+			$rates         = $request->get_param( 'rates' );
 
 			$responses = [];
 			$errors    = [];
@@ -89,8 +88,7 @@ class ShippingRateBatchController extends ShippingRateController {
 				$new_request->set_body_params(
 					[
 						'country_code' => $country_code,
-						'currency'     => $currency,
-						'rate'         => $rate,
+						'rates'        => $rates,
 					]
 				);
 
