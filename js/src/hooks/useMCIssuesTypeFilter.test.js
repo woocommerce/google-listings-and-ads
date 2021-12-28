@@ -24,7 +24,7 @@ import { act, renderHook } from '@testing-library/react-hooks';
  * Internal dependencies
  */
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
-import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFIlter';
+import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 
 afterEach( () => {
 	jest.clearAllMocks();
