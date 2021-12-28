@@ -26,8 +26,10 @@ class ShippingRateTable extends Table {
 CREATE TABLE `{$this->get_sql_safe_name()}` (
     id bigint(20) NOT NULL AUTO_INCREMENT,
     country varchar(2) NOT NULL,
+    method varchar(30) NOT NULL,
     currency varchar(3) NOT NULL,
     rate double NOT NULL default 0,
+    options text,
     PRIMARY KEY (id),
     KEY country (country),
     KEY currency (currency)
@@ -53,8 +55,10 @@ SQL;
 		return [
 			'id'       => true,
 			'country'  => true,
+			'method'   => true,
 			'currency' => true,
 			'rate'     => true,
+			'options'  => true,
 		];
 	}
 }
