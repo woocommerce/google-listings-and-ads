@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagement;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20211228_1640692399;
+use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migration20211228T1640692399;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\MigrationVersion141;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration\Migrator;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductFeedQueryHelper;
@@ -91,7 +91,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 
 		// Share DB migrations
 		$this->share_migration( MigrationVersion141::class, MerchantIssueTable::class );
-		$this->share_migration( Migration20211228_1640692399::class, ShippingRateTable::class );
+		$this->share_migration( Migration20211228T1640692399::class, ShippingRateTable::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 

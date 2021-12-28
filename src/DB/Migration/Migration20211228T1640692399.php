@@ -9,13 +9,13 @@ use wpdb;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Migration20211228_1640692399
+ * Class Migration20211228T1640692399
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration
  *
  * @since x.x.x
  */
-class Migration20211228_1640692399 extends AbstractMigration {
+class Migration20211228T1640692399 extends AbstractMigration {
 
 	/**
 	 * @var ShippingRateTable
