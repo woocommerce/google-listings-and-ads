@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as Ra
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\AccountAddress;
 use Google\Service\ShoppingContent\AccountTax;
@@ -54,11 +55,12 @@ class Settings {
 		$settings->setAccountId( $this->get_account_id() );
 
 		$services = [];
-		foreach ( $this->get_rates() as ['country' => $country, 'currency' => $currency, 'rate' => $rate] ) {
-			$services[] = $this->create_main_service( $country, $currency, $rate );
+		foreach ( $this->get_rates() as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
+			$services[] = $this->create_shipping_service( $country, $method, $currency, $rate );
 
-			if ( $this->has_free_shipping_option() ) {
-				$services[] = $this->create_free_shipping_service( $country, $currency );
+			// Add a conditional free-shipping service
+			if ( 0 !== $rate && isset( $options['free_shipping_threshold'] ) ) {
+				$services[] = $this->create_conditional_free_shipping_service( $country, $currency, (float) $options['free_shipping_threshold'] );
 			}
 		}
 
@@ -219,24 +221,6 @@ class Settings {
 	}
 
 	/**
-	 * Determine whether free shipping is offered.
-	 *
-	 * @return bool
-	 */
-	protected function has_free_shipping_option(): bool {
-		return boolval( $this->get_settings()['offers_free_shipping'] ?? false );
-	}
-
-	/**
-	 * Get the free shipping minimum order value.
-	 *
-	 * @return int
-	 */
-	protected function get_free_shipping_minimum(): int {
-		return intval( $this->get_settings()['free_shipping_threshold'] );
-	}
-
-	/**
 	 * @return OptionsInterface
 	 */
 	protected function get_options_object(): OptionsInterface {
@@ -244,15 +228,16 @@ class Settings {
 	}
 
 	/**
-	 * Create the main shipping service object.
+	 * Create a shipping service object.
 	 *
 	 * @param string $country
+	 * @param string $method
 	 * @param string $currency
 	 * @param mixed  $rate
 	 *
 	 * @return Service
 	 */
-	protected function create_main_service( string $country, string $currency, $rate ): Service {
+	protected function create_shipping_service( string $country, string $method, string $currency, $rate ): Service {
 		$unique  = sprintf( '%04x', mt_rand( 0, 0xffff ) );
 		$service = new Service();
 		$service->setActive( true );
@@ -269,6 +254,11 @@ class Settings {
 			)
 		);
 
+		if ( ShippingZone::METHOD_PICKUP === $method ) {
+			$service->setShipmentType( 'pickup' );
+			// Todo: Set the pickup service (PickupCarrierService).
+		}
+
 		$service->setRateGroups( $this->create_rate_groups( $currency, $rate ) );
 
 		$times = $this->get_times();
@@ -284,16 +274,22 @@ class Settings {
 	 *
 	 * @param string $country
 	 * @param string $currency
+	 * @param float  $minimum_order_value
 	 *
 	 * @return Service
 	 */
-	protected function create_free_shipping_service( string $country, string $currency ): Service {
-		$price = new Price();
-		$price->setValue( $this->get_free_shipping_minimum() );
-		$price->setCurrency( $currency );
+	protected function create_conditional_free_shipping_service( string $country, string $currency, float $minimum_order_value ): Service {
+		$service = $this->create_shipping_service( $country, ShippingZone::METHOD_FREE, $currency, 0 );
 
-		$service = $this->create_main_service( $country, $currency, 0 );
-		$service->setMinimumOrderValue( $price );
+		// Set the minimum order value to be eligible for free shipping.
+		$service->setMinimumOrderValue(
+			new Price(
+				[
+					'value'    => $minimum_order_value,
+					'currency' => $currency,
+				]
+			)
+		);
 
 		return $service;
 	}
