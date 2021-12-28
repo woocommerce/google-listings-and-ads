@@ -10,13 +10,15 @@ import { getNewPath } from '@woocommerce/navigation';
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 import AppTabNav from '.~/components/app-tab-nav';
 import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
-import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
+import useMCIssues from '.~/hooks/useMCIssues';
 
 const IssuesTypeNavigation = () => {
-	const { totals } = useMCIssuesTotals();
+	const issueTypes = useMCIssues();
 
-	const issuesTotal = ( issueType ) =>
-		totals[ issueType ] >= 0 ? `(${ totals[ issueType ] })` : '';
+	const issuesTotal = ( issueType ) => {
+		const total = issueTypes[ issueType ]?.data?.total;
+		return total >= 0 ? `(${ total })` : '';
+	};
 
 	const tabs = [
 		{

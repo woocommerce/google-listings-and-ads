@@ -1,14 +1,17 @@
-jest.mock( '.~/hooks/useMCIssuesTotals', () => ( {
+jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
 	default: jest
 		.fn()
-		.mockName( 'useMCIssuesTotals' )
-		.mockReturnValue( {
-			totals: {
-				account: 1,
-				product: 2,
-				total: 3,
-			},
+		.mockName( 'useMCIssuesTypeFilter' )
+		.mockImplementation( ( issueType ) => {
+			return {
+				data: {
+					issues: issueType,
+					total: 2,
+				},
+				page: 1,
+				setPage: jest.fn(),
+			};
 		} ),
 } ) );
 
@@ -21,7 +24,7 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import IssuesTableCard from '.~/product-feed/issues-table-card/index';
-import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
+import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFIlter';
 
 describe( 'Issues Table Card', () => {
 	it( 'Rendering when there are issues', () => {
@@ -40,13 +43,17 @@ describe( 'Issues Table Card', () => {
 	} );
 
 	it( 'Not rendering when there are no issues', () => {
-		useMCIssuesTotals.mockReturnValue( {
-			totals: {
-				account: 0,
-				product: 0,
-				total: 0,
-			},
+		useMCIssuesTypeFilter.mockImplementation( ( issueType ) => {
+			return {
+				data: {
+					issues: issueType,
+					total: 0,
+				},
+				page: 1,
+				setPage: jest.fn(),
+			};
 		} );
+
 		render( <IssuesTableCard /> );
 		expect( screen.queryByText( 'Issues to resolve' ) ).toBeFalsy();
 	} );

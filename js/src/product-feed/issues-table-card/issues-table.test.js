@@ -25,7 +25,7 @@ jest.mock( '.~/hooks/useMCIssues', () => ( {
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
