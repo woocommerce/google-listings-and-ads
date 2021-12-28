@@ -5,7 +5,10 @@ jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 		.mockName( 'useMCIssuesTypeFilter' )
 		.mockImplementation( ( issueType ) => {
 			return {
-				data: issueType,
+				data: {
+					issues: issueType,
+					total: 1,
+				},
 			};
 		} ),
 } ) );
@@ -29,12 +32,26 @@ describe( 'useMcIssues', () => {
 		expect( result.current ).toHaveProperty( ISSUE_TYPE_PRODUCT );
 	} );
 
+	test( 'Total is the sum of Account total and Product total', () => {
+		const { result } = renderHook( () => useMCIssues() );
+		const { result: accountResult } = renderHook( () =>
+			useMCIssues( ISSUE_TYPE_ACCOUNT )
+		);
+		const { result: productResult } = renderHook( () =>
+			useMCIssues( ISSUE_TYPE_PRODUCT )
+		);
+
+		expect( result.current.total ).toEqual(
+			accountResult.current.data.total + productResult.current.data.total
+		);
+	} );
+
 	test.each( [ ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT ] )(
 		'Gets %s data when using it as a filter',
 		( issueType ) => {
 			const { result } = renderHook( () => useMCIssues( issueType ) );
 
-			expect( result.current.data ).toEqual( issueType );
+			expect( result.current.data.issues ).toEqual( issueType );
 		}
 	);
 } );
