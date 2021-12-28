@@ -15,6 +15,13 @@ const defaultQuery = {
 	per_page: ISSUE_TABLE_PER_PAGE,
 };
 
+/**
+ * Hook that returns the issues data filtered by issueType with their paginator state.
+ *
+ * @param {string} [issueType=product|account] `account` by default
+ * @return {{data: Object, page: number, hasFinishedResolution: boolean, setPage: Function}} The issues data,
+ * the current page, the page setter and the resolution status
+ */
 const useMCIssuesTypeFilter = ( issueType = ISSUE_TYPE_ACCOUNT ) => {
 	const [ page, setPage ] = useState( defaultQuery.page );
 

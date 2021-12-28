@@ -12,6 +12,14 @@ import AppTabNav from '.~/components/app-tab-nav';
 import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
 import useMCIssues from '.~/hooks/useMCIssues';
 
+/**
+ * The issue navigation tabs. It uses `useMCIssues` for getting the issue totals
+ * and `getActiveIssueType` to get the active `issueType`.
+ *
+ * @see useMCIssues
+ * @see getActiveIssueType
+ * @return {JSX.Element} The rendered component
+ */
 const IssuesTypeNavigation = () => {
 	const issueTypes = useMCIssues();
 

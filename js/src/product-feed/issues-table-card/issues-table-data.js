@@ -12,6 +12,14 @@ import ErrorIcon from '.~/components/error-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import EditProductLink from '.~/components/edit-product-link';
 
+/**
+ * The rows with data for the Issues table
+ *
+ * @param {Object} args The data and the headers
+ * @param {Object} args.data The data containing the issues to render.
+ * @param {Object[]} args.headers An array with the different headers
+ * @return {JSX.Element} The rendered component with the issues or with an empty table if no data is provided
+ */
 const IssuesTableData = ( { data, headers } ) => {
 	if ( ! data ) {
 		return (

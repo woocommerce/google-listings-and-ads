@@ -43,6 +43,15 @@ const headers = [
 	{ key: 'action', label: '', required: true },
 ];
 
+/**
+ * The table rendering the issues data with a paginator.
+ * It uses useMCIssues for filtering the issues
+ * It uses getActiveIssueType in order to know which issue is active.
+ *
+ * @see useMCIssues
+ * @see getActiveIssueType
+ * @return {JSX.Element} The rendered component
+ */
 const IssuesTable = () => {
 	const { data, hasFinishedResolution, page, setPage } = useMCIssues(
 		getActiveIssueType()

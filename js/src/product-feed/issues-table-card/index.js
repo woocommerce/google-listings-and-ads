@@ -41,6 +41,15 @@ const actions = (
 	</HelpPopover>
 );
 
+/**
+ * The card rendering the Merchant Center Issues in the Product feed. It doesn't render if there is no issues.
+ * It uses useMCIssues for getting the total of issues.
+ *
+ * @see useMCIssues
+ * @see IssuesTypeNavigation
+ * @see IssuesTable
+ * @return {JSX.Element|null} A Card with a Header, a Navigation and a table with issues
+ */
 const IssuesTableCard = () => {
 	const { total } = useMCIssues();
 
