@@ -41,6 +41,28 @@ class ShippingRateQuery extends Query {
 			throw InvalidQuery::cant_set_id( ShippingRateTable::class );
 		}
 
+		if ( 'options' === $column ) {
+			$value = maybe_serialize( $value );
+		}
+
 		return $value;
 	}
+
+	/**
+	 * Perform the query and save it to the results.
+	 */
+	protected function query_results() {
+		parent::query_results();
+
+		$this->results = array_map(
+			function ( $row ) {
+				$row['options'] = maybe_unserialize( $row['options'] );
+
+				return $row;
+			},
+			$this->results
+		);
+	}
+
+
 }
