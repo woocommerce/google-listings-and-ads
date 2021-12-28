@@ -100,22 +100,6 @@ class SettingsController extends BaseOptionsController {
 					'manual',
 				],
 			],
-			'offers_free_shipping'    => [
-				'type'              => 'boolean',
-				'description'       => __(
-					'Whether free shipping over a certain price is allowed .',
-					'google-listings-and-ads'
-				),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'default'           => false,
-			],
-			'free_shipping_threshold' => [
-				'type'              => 'integer',
-				'description'       => __( 'Minimum price eligible for free shipping.', 'google-listings-and-ads' ),
-				'context'           => [ 'view', 'edit' ],
-				'validate_callback' => 'rest_validate_request_arg',
-			],
 			'shipping_time'           => [
 				'type'              => 'string',
 				'description'       => __(
