@@ -25,6 +25,9 @@ abstract class Query implements QueryInterface {
 	/** @var array */
 	protected $orderby = [];
 
+	/** @var array */
+	protected $groupby = [];
+
 	/**
 	 * The result of the query.
 	 *
@@ -87,6 +90,22 @@ abstract class Query implements QueryInterface {
 			'value'   => $value,
 			'compare' => $compare,
 		];
+
+		return $this;
+	}
+
+	/**
+	 * Add a group by clause to the query.
+	 *
+	 * @param string $column  The column name.
+	 *
+	 * @return $this
+	 *
+	 * @since x.x.x
+	 */
+	public function group_by( string $column ): QueryInterface {
+		$this->validate_column( $column );
+		$this->groupby[] = "`{$column}`";
 
 		return $this;
 	}
@@ -287,8 +306,14 @@ abstract class Query implements QueryInterface {
 
 		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
 
+		if ( ! empty( $this->groupby ) ) {
+			$pieces[] = 'GROUP BY ' . implode( ', ', $this->groupby );
+		}
+
 		if ( ! $get_count ) {
-			$pieces[] = "GROUP BY `{$this->table->get_name()}`.`{$this->table->get_primary_column()}`";
+			if ( empty( $this->groupby ) ) {
+				$pieces[] = "GROUP BY `{$this->table->get_name()}`.`{$this->table->get_primary_column()}`";
+			}
 
 			if ( $this->orderby ) {
 				$pieces[] = 'ORDER BY ' . implode( ', ', $this->orderby );
