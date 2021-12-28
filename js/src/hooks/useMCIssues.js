@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
-import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFIlter';
+import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 
 const useMCIssues = ( issueType ) => {
 	const issueTypes = {

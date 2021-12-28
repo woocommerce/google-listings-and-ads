@@ -24,7 +24,7 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import IssuesTableCard from '.~/product-feed/issues-table-card/index';
-import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFIlter';
+import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 
 describe( 'Issues Table Card', () => {
 	it( 'Rendering when there are issues', () => {
