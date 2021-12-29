@@ -120,7 +120,6 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 			$coupon     = new WC_Coupon( $post_id );
 			$visibility =
 			ChannelVisibility::cast( sanitize_key( $request_data['change_channel_visibility'] ) );
-			// phpcs:enable WordPress.Security.NonceVerification
 
 			if ( $this->meta_handler->get_visibility( $coupon ) !== $visibility ) {
 				$this->meta_handler->update_visibility( $coupon, $visibility );
@@ -138,6 +137,8 @@ class CouponBulkEdit implements BulkEditInterface, Registerable {
 	 * @return array The $_REQUEST superglobal.
 	 */
 	protected function request_data(): array {
+		// Nonce must be verified manually.
+		//phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return $_REQUEST;
 	}
 }
