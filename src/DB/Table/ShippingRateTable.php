@@ -32,6 +32,7 @@ CREATE TABLE `{$this->get_sql_safe_name()}` (
     options text DEFAULT NULL,
     PRIMARY KEY (id),
     KEY country (country),
+    KEY method (method),
     KEY currency (currency)
 ) {$this->get_collation()};
 SQL;
