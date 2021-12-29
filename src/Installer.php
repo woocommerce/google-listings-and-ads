@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableI
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP as WPProxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -37,21 +37,21 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	protected $first_installers;
 
 	/**
-	 * @var WPProxy
+	 * @var WP
 	 */
-	protected $wp_proxy;
+	protected $wp;
 
 	/**
 	 * Installer constructor.
 	 *
 	 * @param InstallableInterface[]  $installables
 	 * @param FirstInstallInterface[] $first_installers
-	 * @param WPProxy                 $wp_proxy
+	 * @param WP                      $wp
 	 */
-	public function __construct( array $installables, array $first_installers, WPProxy $wp_proxy ) {
+	public function __construct( array $installables, array $first_installers, WP $wp ) {
 		$this->installables     = $installables;
 		$this->first_installers = $first_installers;
-		$this->wp_proxy         = $wp_proxy;
+		$this->wp               = $wp;
 		$this->validate_installables();
 		$this->validate_first_installers();
 	}
@@ -72,7 +72,7 @@ class Installer implements OptionsAwareInterface, Service, Registerable {
 	 * Admin init.
 	 */
 	protected function admin_init(): void {
-		if ( defined( 'IFRAME_REQUEST' ) || $this->wp_proxy->wp_doing_ajax() ) {
+		if ( defined( 'IFRAME_REQUEST' ) || $this->wp->wp_doing_ajax() ) {
 			return;
 		}
 
