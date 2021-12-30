@@ -251,7 +251,7 @@ class ShippingZone implements Service {
 				$parsed_method['options'] = $this->get_flat_rate_method_options( $method );
 
 				// If the flat-rate method has no cost AND no shipping classes, we don't return it.
-				if ( empty( $parsed_method['options']['cost'] ) && empty( $parsed_method['options']['class_costs'] ) ) {
+				if ( ! isset( $parsed_method['options']['cost'] ) && ! isset( $parsed_method['options']['class_costs'] ) ) {
 					return null;
 				}
 
