@@ -42,7 +42,11 @@ class ShippingRateQuery extends Query {
 		}
 
 		if ( 'options' === $column ) {
-			$value = maybe_serialize( $value );
+			if ( is_array( $value ) ) {
+				$value = maybe_serialize( $value );
+			} else {
+				throw InvalidQuery::invalid_value( $column );
+			}
 		}
 
 		return $value;
