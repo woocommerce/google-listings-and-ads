@@ -387,6 +387,17 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				}
 			}
 
+			if ( ! empty( $method['options']['class_costs'] ) ) {
+				// If there are shipping classes, we set the cost of each class as an option.
+				$rate['options']['shipping_class_rates'] = [];
+				foreach ( $method['options']['class_costs'] as $class_id => $cost ) {
+					$rate['options']['shipping_class_rates'][] = [
+						'class' => $class_id,
+						'rate'  => $cost,
+					];
+				}
+			}
+
 			$rates[] = $rate;
 		}
 
