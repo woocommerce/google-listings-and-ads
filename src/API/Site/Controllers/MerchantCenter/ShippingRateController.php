@@ -207,6 +207,9 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 			$update_query = $this->create_query();
 			$country_code = $request->get_param( 'country_code' );
 
+			// First we delete all rates for this country (to avoid duplicates).
+			$this->create_query()->delete( 'country', $country_code );
+
 			$rates = $request->get_param( 'rates' );
 			if ( empty( $rates ) ) {
 				return new WP_Error(
@@ -229,19 +232,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 						'options'  => $options,
 					];
 
-					$existing_query = $this->create_query()->where( 'country', $country_code )->where( 'method', $method );
-					$existing       = ! empty( $existing_query->get_results() );
-
-					if ( $existing ) {
-						$update_query->update(
-							$data,
-							[
-								'id' => $existing_query->get_results()[0]['id'],
-							]
-						);
-					} else {
-						$update_query->insert( $data );
-					}
+					$update_query->insert( $data );
 				} catch ( InvalidQuery $e ) {
 					return $this->error_from_exception(
 						$e,
@@ -492,6 +483,32 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 									'description'       => __( 'Minimum price eligible for free shipping.', 'google-listings-and-ads' ),
 									'context'           => [ 'view', 'edit' ],
 									'validate_callback' => 'rest_validate_request_arg',
+								],
+								'shipping_class_rates'    => [
+									'type'              => 'array',
+									'description'       => __( 'An array of rates for shipping classes/labels.', 'google-listings-and-ads' ),
+									'context'           => [ 'view', 'edit' ],
+									'validate_callback' => 'rest_validate_request_arg',
+									'items'             => [
+										'type'       => 'object',
+										'properties' => [
+											'class' => [
+												'type'     => 'string',
+												'required' => true,
+												'context'  => [ 'view', 'edit' ],
+												'description' => __( 'The shipping class/label.', 'google-listings-and-ads' ),
+												'validate_callback' => 'rest_validate_request_arg',
+											],
+											'rate'  => [
+												'type'     => 'number',
+												'required' => true,
+												'minimum'  => 0,
+												'context'  => [ 'view', 'edit' ],
+												'description' => __( 'The shipping rate.', 'google-listings-and-ads' ),
+												'validate_callback' => 'rest_validate_request_arg',
+											],
+										],
+									],
 								],
 							],
 						],
