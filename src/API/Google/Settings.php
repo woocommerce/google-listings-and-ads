@@ -56,7 +56,7 @@ class Settings {
 
 		$services = [];
 		foreach ( $this->get_rates() as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
-			$services[] = $this->create_shipping_service( $country, $method, $currency, $rate );
+			$services[] = $this->create_shipping_service( $country, $method, $currency, $rate, $options );
 
 			// Add a conditional free-shipping service
 			if ( 0 !== $rate && isset( $options['free_shipping_threshold'] ) ) {
@@ -179,26 +179,16 @@ class Settings {
 	}
 
 	/**
-	 * Create the array of rate groups for the service.
-	 *
-	 * @param string $currency
-	 * @param mixed  $rate
-	 *
-	 * @return array
-	 */
-	protected function create_rate_groups( string $currency, $rate ): array {
-		return [ $this->create_rate_group_object( $currency, $rate ) ];
-	}
-
-	/**
 	 * Create a rate group object for the shopping settings.
 	 *
-	 * @param string $currency
-	 * @param mixed  $rate
+	 * @param string   $currency
+	 * @param mixed    $rate
+	 * @param string   $method
+	 * @param string[] $shipping_labels
 	 *
 	 * @return RateGroup
 	 */
-	protected function create_rate_group_object( string $currency, $rate ): RateGroup {
+	protected function create_rate_group_object( string $currency, $rate, string $method, array $shipping_labels = [] ): RateGroup {
 		$price = new Price();
 		$price->setCurrency( $currency );
 		$price->setValue( $rate );
@@ -207,15 +197,23 @@ class Settings {
 		$value->setFlatRate( $price );
 
 		$rate_group = new RateGroup();
+
 		$rate_group->setSingleValue( $value );
-		$rate_group->setName(
-			sprintf(
-				/* translators: %1 is the shipping rate, %2 is the currency (e.g. USD) */
-				__( 'Flat rate - %1$s %2$s', 'google-listings-and-ads' ),
-				$rate,
-				$currency
-			)
+
+		$name = sprintf(
+		/* translators: %1 is the shipping method, %2 is the shipping rate, %3 is the currency (e.g. USD) */
+			__( '%1$s - %2$s %3$s', 'google-listings-and-ads' ),
+			str_replace( '_', ' ', ucwords( $method, '_' ) ), // Capitalize the shipping method name.
+			$rate,
+			$currency
 		);
+
+		if ( ! empty( $shipping_labels ) ) {
+			$rate_group->setApplicableShippingLabels( $shipping_labels );
+			$name .= ' (' . implode( ', ', $shipping_labels ) . ')';
+		}
+
+		$rate_group->setName( $name );
 
 		return $rate_group;
 	}
@@ -230,14 +228,15 @@ class Settings {
 	/**
 	 * Create a shipping service object.
 	 *
-	 * @param string $country
-	 * @param string $method
-	 * @param string $currency
-	 * @param mixed  $rate
+	 * @param string     $country
+	 * @param string     $method
+	 * @param string     $currency
+	 * @param mixed      $rate
+	 * @param array|null $options
 	 *
 	 * @return Service
 	 */
-	protected function create_shipping_service( string $country, string $method, string $currency, $rate ): Service {
+	protected function create_shipping_service( string $country, string $method, string $currency, $rate, ?array $options = [] ): Service {
 		$unique  = sprintf( '%04x', mt_rand( 0, 0xffff ) );
 		$service = new Service();
 		$service->setActive( true );
@@ -259,7 +258,21 @@ class Settings {
 			// Todo: Set the pickup service (PickupCarrierService).
 		}
 
-		$service->setRateGroups( $this->create_rate_groups( $currency, $rate ) );
+		$rate_groups = [];
+		// Create a rate group for each shipping class (if any).
+		if ( is_array( $options ) && ! empty( $options['shipping_class_rates'] ) ) {
+			foreach ( $options['shipping_class_rates'] as ['class' => $class, 'rate' => $rate] ) {
+				$rate_groups[] = $this->create_rate_group_object(
+					$currency,
+					$rate,
+					$method,
+					[ $class ]
+				);
+			}
+		}
+		// Create a main rate group for the service.
+		$rate_groups[] = $this->create_rate_group_object( $currency, $rate, $method );
+		$service->setRateGroups( $rate_groups );
 
 		$times = $this->get_times();
 		if ( array_key_exists( $country, $times ) ) {
