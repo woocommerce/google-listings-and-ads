@@ -56,7 +56,7 @@ class Settings {
 
 		$services = [];
 		foreach ( $this->get_rates() as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
-			$services[] = $this->create_shipping_service( $country, $method, $currency, $rate );
+			$services[] = $this->create_shipping_service( $country, $method, $currency, (float) $rate );
 
 			// Add a conditional free-shipping service
 			if ( 0 !== $rate && isset( $options['free_shipping_threshold'] ) ) {
@@ -182,11 +182,11 @@ class Settings {
 	 * Create the array of rate groups for the service.
 	 *
 	 * @param string $currency
-	 * @param mixed  $rate
+	 * @param float  $rate
 	 *
 	 * @return array
 	 */
-	protected function create_rate_groups( string $currency, $rate ): array {
+	protected function create_rate_groups( string $currency, float $rate ): array {
 		return [ $this->create_rate_group_object( $currency, $rate ) ];
 	}
 
@@ -194,11 +194,11 @@ class Settings {
 	 * Create a rate group object for the shopping settings.
 	 *
 	 * @param string $currency
-	 * @param mixed  $rate
+	 * @param float  $rate
 	 *
 	 * @return RateGroup
 	 */
-	protected function create_rate_group_object( string $currency, $rate ): RateGroup {
+	protected function create_rate_group_object( string $currency, float $rate ): RateGroup {
 		$price = new Price();
 		$price->setCurrency( $currency );
 		$price->setValue( $rate );
@@ -233,11 +233,11 @@ class Settings {
 	 * @param string $country
 	 * @param string $method
 	 * @param string $currency
-	 * @param mixed  $rate
+	 * @param float  $rate
 	 *
 	 * @return Service
 	 */
-	protected function create_shipping_service( string $country, string $method, string $currency, $rate ): Service {
+	protected function create_shipping_service( string $country, string $method, string $currency, float $rate ): Service {
 		$unique  = sprintf( '%04x', mt_rand( 0, 0xffff ) );
 		$service = new Service();
 		$service->setActive( true );
