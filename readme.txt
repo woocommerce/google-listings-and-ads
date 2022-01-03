@@ -63,7 +63,7 @@ Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaig
 = Minimum Requirements =
 
 * WordPress 5.6 or greater
-* WooCommerce 5.7 or greater
+* WooCommerce 5.8 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
 
