@@ -166,4 +166,15 @@ class WP {
 	public function number_format_i18n( float $number, int $decimals = 0 ): string {
 		return number_format_i18n( $number, $decimals );
 	}
+
+	/**
+	 * Determines whether the current request is a WordPress Ajax request.
+	 *
+	 * @return bool True if it's a WordPress Ajax request, false otherwise.
+	 *
+	 * @since x.x.x
+	 */
+	public function wp_doing_ajax(): bool {
+		return wp_doing_ajax();
+	}
 }

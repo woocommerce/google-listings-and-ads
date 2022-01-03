@@ -32,6 +32,7 @@ const requestToExternal = ( request ) => {
 		// but https://github.com/woocommerce/woocommerce-gutenberg-products-block/blob/trunk/assets/js/settings/shared/index.ts
 		// (at an unknown version).
 		'@woocommerce/settings': [ 'wc', 'wcSettings' ],
+		'@woocommerce/customer-effort-score': [ 'wc', 'customerEffortScore' ],
 	};
 
 	return wcDepMap[ request ];
@@ -43,6 +44,7 @@ const requestToHandle = ( request ) => {
 		'@woocommerce/navigation': 'wc-navigation',
 		'@woocommerce/data': 'wc-store-data',
 		'@woocommerce/settings': 'wc-settings',
+		'@woocommerce/customer-effort-score': 'wc-customer-effort-score',
 	};
 
 	return wcHandleMap[ request ];

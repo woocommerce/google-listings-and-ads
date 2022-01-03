@@ -1,8 +1,11 @@
 /**
  * External dependencies
  */
-import { getHistory, getNewPath, getQuery } from '@woocommerce/navigation';
-import { createInterpolateElement, useEffect } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useEffect,
+	useCallback,
+} from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { recordEvent } from '@woocommerce/tracks';
@@ -10,41 +13,41 @@ import { recordEvent } from '@woocommerce/tracks';
 /**
  * Internal dependencies
  */
-import { getCreateCampaignUrl } from '.~/utils/urls';
 import AppModal from '.~/components/app-modal';
 import GuidePageContent, {
 	ContentLink,
 } from '.~/components/guide-page-content';
+import { GUIDE_NAMES } from '.~/constants';
 import headerImageURL from './header.svg';
 import './index.scss';
+import {
+	CTA_CREATE_ANOTHER_CAMPAIGN,
+	CTA_CONFIRM,
+	CTA_DISMISS,
+} from '../constants';
 
-const GUIDE_NAME = 'campaign-creation-success';
-const CTA_CREATE_ANOTHER_CAMPAIGN = 'create-another-campaign';
-
-const handleCloseWithAction = ( e, specifiedAction ) => {
-	const action = specifiedAction || e.currentTarget.dataset.action;
-	const nextQuery = {
-		...getQuery(),
-		guide: undefined,
-	};
-	getHistory().replace( getNewPath( nextQuery ) );
-
-	if ( action === CTA_CREATE_ANOTHER_CAMPAIGN ) {
-		getHistory().push( getCreateCampaignUrl() );
-	}
-
-	recordEvent( 'gla_modal_closed', {
-		context: GUIDE_NAME,
-		action,
-	} );
-};
-
-const handleRequestClose = ( e ) => handleCloseWithAction( e, 'dismiss' );
-
-const GuideImplementation = () => {
+/**
+ * Modal window to prompt the user at Dashboard, after successful completing the campaign creation.
+ *
+ * Show this guide modal by visiting the path with a specific query `guide=campaign-creation-success`.
+ * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success`.
+ *
+ * @param {Object} props React component props.
+ * @param {Function} props.onGuideRequestClose The function to be called when the guide is closed.
+ */
+export default function CampaignCreationSuccessGuide( {
+	onGuideRequestClose = () => {},
+} ) {
 	useEffect( () => {
-		recordEvent( 'gla_modal_open', { context: GUIDE_NAME } );
+		recordEvent( 'gla_modal_open', {
+			context: GUIDE_NAMES.CAMPAIGN_CREATION_SUCCESS,
+		} );
 	}, [] );
+
+	const handleRequestClose = useCallback(
+		( e ) => onGuideRequestClose( e, CTA_DISMISS ),
+		[ onGuideRequestClose ]
+	);
 
 	return (
 		<AppModal
@@ -55,7 +58,7 @@ const GuideImplementation = () => {
 					key="0"
 					isTertiary
 					data-action={ CTA_CREATE_ANOTHER_CAMPAIGN }
-					onClick={ handleCloseWithAction }
+					onClick={ onGuideRequestClose }
 				>
 					{ __(
 						'Create another campaign',
@@ -65,8 +68,8 @@ const GuideImplementation = () => {
 				<Button
 					key="1"
 					isPrimary
-					data-action="confirm"
-					onClick={ handleCloseWithAction }
+					data-action={ CTA_CONFIRM }
+					onClick={ onGuideRequestClose }
 				>
 					{ __( 'Got it', 'google-listings-and-ads' ) }
 				</Button>,
@@ -106,19 +109,4 @@ const GuideImplementation = () => {
 			</GuidePageContent>
 		</AppModal>
 	);
-};
-
-/**
- * Modal window to prompt the user at Dashboard, after successful completing the campaign creation.
- *
- * Show this guide modal by visiting the path with a specific query `guide=campaign-creation-success`.
- * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fdashboard&guide=campaign-creation-success`.
- */
-export default function CampaignCreationSuccessGuide() {
-	const isOpen = getQuery().guide === GUIDE_NAME;
-
-	if ( ! isOpen ) {
-		return null;
-	}
-	return <GuideImplementation />;
 }

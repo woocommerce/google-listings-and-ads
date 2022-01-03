@@ -213,7 +213,12 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
 
 		// Set up the installer.
-		$installer_definition = $this->share_with_tags( Installer::class, InstallableInterface::class, FirstInstallInterface::class );
+		$installer_definition = $this->share_with_tags(
+			Installer::class,
+			InstallableInterface::class,
+			FirstInstallInterface::class,
+			WP::class
+		);
 		$installer_definition->setConcrete(
 			function ( ...$arguments ) {
 				return new Installer( ...$arguments );
@@ -233,7 +238,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			MerchantCenterService::class,
 			AdsService::class
 		);
-		$this->conditionally_share_with_tags( ActivationRedirect::class );
+		$this->conditionally_share_with_tags( ActivationRedirect::class, WP::class );
 		$this->conditionally_share_with_tags( GetStarted::class );
 		$this->conditionally_share_with_tags( SetupMerchantCenter::class );
 		$this->conditionally_share_with_tags( SetupAds::class );
