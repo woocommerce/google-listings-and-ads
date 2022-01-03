@@ -20,6 +20,7 @@ import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-navigation';
 import useMCIssues from '.~/hooks/useMCIssues';
 import './index.scss';
+import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 
 const actions = (
 	<HelpPopover id="issues-to-resolve">
@@ -51,10 +52,14 @@ const actions = (
  * @return {JSX.Element|null} A Card with a Header, a Navigation and a table with issues
  */
 const IssuesTableCard = () => {
-	const { total } = useMCIssues();
+	const issues = useMCIssues();
 
 	// We don't want to render if no issues are found
-	if ( ! total ) return null;
+	if (
+		! issues[ ISSUE_TYPE_PRODUCT ]?.data?.total ||
+		! issues[ ISSUE_TYPE_ACCOUNT ]?.data?.total
+	)
+		return null;
 
 	return (
 		<AppTableCardDiv className="gla-issues-table-card">
