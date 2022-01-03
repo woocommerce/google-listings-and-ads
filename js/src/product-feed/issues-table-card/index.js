@@ -56,7 +56,7 @@ const IssuesTableCard = () => {
 
 	// We don't want to render if no issues are found
 	if (
-		! issues[ ISSUE_TYPE_PRODUCT ]?.data?.total ||
+		! issues[ ISSUE_TYPE_PRODUCT ]?.data?.total &&
 		! issues[ ISSUE_TYPE_ACCOUNT ]?.data?.total
 	)
 		return null;
