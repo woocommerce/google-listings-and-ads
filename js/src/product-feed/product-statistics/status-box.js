@@ -12,7 +12,7 @@ import GridiconSync from 'gridicons/dist/sync';
  */
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import useMCIssues from '.~/hooks/useMCIssues';
-import { glaData, ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
+import { glaData } from '.~/constants';
 
 function getUnsolvedStatusText( totalUnsolvedIssues ) {
 	if ( ! Number.isInteger( totalUnsolvedIssues ) ) {
