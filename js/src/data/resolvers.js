@@ -168,12 +168,14 @@ export function* getMCProductStatistics() {
 
 export function* getMCIssues( query ) {
 	try {
-		const issueTypeFilter = query?.issue_type || ISSUE_TYPE_ACCOUNT;
+		const { issue_type: issueType, ...args } = query;
 
 		const response = yield apiFetch( {
 			path: addQueryArgs(
-				`${ API_NAMESPACE }/mc/issues/${ issueTypeFilter }`,
-				query
+				`${ API_NAMESPACE }/mc/issues/${
+					issueType || ISSUE_TYPE_ACCOUNT
+				}`,
+				args
 			),
 		} );
 
