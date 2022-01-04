@@ -86,11 +86,8 @@ function getSyncResult( {
 }
 
 function FeedStatus() {
-	const issues = useMCIssues();
-	const status = getUnsolvedStatusText(
-		issues[ ISSUE_TYPE_ACCOUNT ]?.data?.total +
-			issues[ ISSUE_TYPE_PRODUCT ]?.data?.total
-	);
+	const { total } = useMCIssues();
+	const status = getUnsolvedStatusText( total );
 
 	return (
 		<Flex justify="normal" gap={ 1 }>

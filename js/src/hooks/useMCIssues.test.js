@@ -38,4 +38,20 @@ describe( 'useMcIssues', () => {
 			);
 		}
 	);
+
+	test( 'Total is equivalent to the sum of the issueType totals', () => {
+		const { result: resultProducts } = renderHook( () =>
+			useMCIssuesTypeFilter( ISSUE_TYPE_PRODUCT )
+		);
+
+		const { result: resultAccount } = renderHook( () =>
+			useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT )
+		);
+
+		const { result } = renderHook( () => useMCIssues() );
+
+		expect( result.current.total ).toEqual(
+			resultProducts.current.data.total + resultAccount.current.data.total
+		);
+	} );
 } );
