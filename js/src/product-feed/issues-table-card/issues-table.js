@@ -53,9 +53,12 @@ const headers = [
  * @return {JSX.Element} The rendered component
  */
 const IssuesTable = () => {
-	const { data, hasFinishedResolution, page, setPage } = useMCIssues(
-		getActiveIssueType()
-	);
+	const issueTypes = useMCIssues();
+	const issues = issueTypes[ getActiveIssueType() ];
+
+	if ( ! issues ) return null;
+
+	const { data, hasFinishedResolution, page, setPage } = issues;
 
 	const handlePageChange = ( newPage, direction ) => {
 		setPage( newPage );

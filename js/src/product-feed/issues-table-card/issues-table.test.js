@@ -17,9 +17,9 @@ jest.mock( '.~/product-feed/issues-table-card/getActiveIssueType', () => ( {
 	default: jest.fn().mockName( 'getActiveIssueType' ),
 } ) );
 
-jest.mock( '.~/hooks/useMCIssues', () => ( {
+jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
-	default: jest.fn().mockName( 'useMCIssues' ),
+	default: jest.fn().mockName( 'useMCIssuesTypeFilter' ),
 } ) );
 
 /**
@@ -32,13 +32,13 @@ import { render } from '@testing-library/react';
  */
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
-import useMCIssues from '.~/hooks/useMCIssues';
+import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
 
 describe( 'Issues Table', () => {
 	describe( 'Rendering correctly the table', () => {
 		beforeEach( () => {
-			useMCIssues.mockImplementation( ( type ) => {
+			useMCIssuesTypeFilter.mockImplementation( ( type ) => {
 				return {
 					data: {
 						issues: [ mockIssue( 1, { type } ) ],
@@ -73,7 +73,7 @@ describe( 'Issues Table', () => {
 		} );
 
 		it( 'Renders paginator if needed', () => {
-			useMCIssues.mockReturnValue( {
+			useMCIssuesTypeFilter.mockReturnValue( {
 				data: {
 					issues: [ mockIssue( 1 ) ],
 					total: 300,
@@ -88,7 +88,7 @@ describe( 'Issues Table', () => {
 		} );
 
 		it( 'Does Not render paginator if it is not needed', () => {
-			useMCIssues.mockReturnValue( {
+			useMCIssuesTypeFilter.mockReturnValue( {
 				data: {
 					issues: [ mockIssue( 1 ), mockIssue( 2 ), mockIssue( 3 ) ],
 					total: 1,
@@ -103,7 +103,7 @@ describe( 'Issues Table', () => {
 		} );
 
 		it( 'Renders the Table With Data', () => {
-			useMCIssues.mockReturnValue( {
+			useMCIssuesTypeFilter.mockReturnValue( {
 				data: {
 					issues: [ mockIssue( 1 ), mockIssue( 2 ), mockIssue( 3 ) ],
 					total: 1,
@@ -119,7 +119,7 @@ describe( 'Issues Table', () => {
 		} );
 
 		it( 'Renders the Placeholder Table on Loading', () => {
-			useMCIssues.mockReturnValue( {
+			useMCIssuesTypeFilter.mockReturnValue( {
 				hasFinishedResolution: false,
 				page: 1,
 			} );
