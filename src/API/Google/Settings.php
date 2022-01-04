@@ -261,10 +261,10 @@ class Settings {
 		$rate_groups = [];
 		// Create a rate group for each shipping class (if any).
 		if ( is_array( $options ) && ! empty( $options['shipping_class_rates'] ) ) {
-			foreach ( $options['shipping_class_rates'] as ['class' => $class, 'rate' => $rate] ) {
+			foreach ( $options['shipping_class_rates'] as ['class' => $class, 'rate' => $class_rate] ) {
 				$rate_groups[] = $this->create_rate_group_object(
 					$currency,
-					$rate,
+					$class_rate,
 					$method,
 					[ $class ]
 				);
