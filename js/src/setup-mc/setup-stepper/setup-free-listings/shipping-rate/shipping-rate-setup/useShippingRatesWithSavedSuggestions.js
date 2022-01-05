@@ -1,35 +1,14 @@
 /**
  * External dependencies
  */
-import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useShippingRates from '.~/hooks/useShippingRates';
-import getCountriesPriceArray from './getCountriesPriceArray';
-import { useAppDispatch } from '.~/data';
 import useShippingRatesSuggestions from './useShippingRatesSuggestions';
-
-/**
- * Convert shipping rates suggestions to aggregated shipping rates
- * that are ready to be saved.
- *
- * @param {Array<import('.~/data/actions').ShippingRate>} suggestions Shipping rate suggestions.
- * @return {Array<import('.~/data/actions').AggregatedShippingRate>} Aggregated shipping rates.
- */
-const convertSuggestionsToAggregatedShippingRates = ( suggestions ) => {
-	const countriesPriceArray = getCountriesPriceArray( suggestions );
-	const values = countriesPriceArray.map( ( el ) => ( {
-		countryCodes: el.countries,
-		currency: el.currency,
-		rate: el.price,
-	} ) );
-
-	return values;
-};
+import useSaveSuggestions from './useSaveSuggestions';
 
 /**
  * @typedef {Object} ShippingRatesWithSavedSuggestionsResult
@@ -78,45 +57,26 @@ const useShippingRatesWithSavedSuggestions = () => {
 	}
 
 	/**
-	 * `saving` is used to indicate whether saving is in progress or has finished.
+	 * `done` is used to indicate whether saving has finished.
 	 * This is only used when we have no pre-saved initial shipping rates value
-	 * and we call `saveSuggestions`. It is set to `true` by default,
-	 * and will be set to `false` after the suggestions are saved.
+	 * and we call `saveSuggestions`. It is initially set to `false`,
+	 * and will be set to `true` after the suggestions are saved.
 	 */
-	const [ saving, setSaving ] = useState( true );
-
-	const { createNotice } = useDispatchCoreNotices();
-	const { upsertShippingRates } = useAppDispatch();
-	const saveSuggestions = useCallback(
+	const [ done, setDone ] = useState( false );
+	const saveSuggestions = useSaveSuggestions();
+	const callSaveSuggestions = useCallback(
 		async ( suggestions ) => {
-			try {
-				const shippingRates = convertSuggestionsToAggregatedShippingRates(
-					suggestions
-				);
-				const promises = shippingRates.map( ( el ) => {
-					return upsertShippingRates( el );
-				} );
-				await Promise.all( promises );
-			} catch ( error ) {
-				createNotice(
-					'error',
-					__(
-						`Unable to use your WooCommerce shipping settings as shipping rates in Google. You may have to enter shipping rates manually.`,
-						'google-listings-and-ads'
-					)
-				);
-			}
-
-			setSaving( false );
+			await saveSuggestions( suggestions );
+			setDone( true );
 		},
-		[ createNotice, upsertShippingRates ]
+		[ saveSuggestions ]
 	);
 
 	/**
 	 * Used to track whether `saveSuggestions` has been called in the `useEffect`.
 	 * We want to call the function one time only.
 	 */
-	const hasSavedSuggestions = useRef( false );
+	const hasCalledSaveSuggestions = useRef( false );
 
 	/**
 	 * Call `saveSuggestions` when:
@@ -129,18 +89,18 @@ const useShippingRatesWithSavedSuggestions = () => {
 		if (
 			isInitialShippingRatesEmpty.current &&
 			dataSuggestions &&
-			hasSavedSuggestions.current === false
+			hasCalledSaveSuggestions.current === false
 		) {
-			hasSavedSuggestions.current = true;
-			saveSuggestions( dataSuggestions );
+			hasCalledSaveSuggestions.current = true;
+			callSaveSuggestions( dataSuggestions );
 		}
-	}, [ dataSuggestions, saveSuggestions ] );
+	}, [ dataSuggestions, callSaveSuggestions ] );
 
 	return {
 		loading:
 			loadingSuggestions ||
 			! hfrShippingRates ||
-			( isInitialShippingRatesEmpty.current ? saving : false ),
+			( isInitialShippingRatesEmpty.current ? ! done : false ),
 		data: dataShippingRates,
 	};
 };
