@@ -66,11 +66,7 @@ export default function useStoreAddress( source = 'wc' ) {
 
 		const [ address, address2 = '' ] = streetAddress.split( '\n' );
 		const country = countryNameDict[ storeAddress?.country ];
-		const isAddressFilled =
-			Array.isArray( contact.has_address_errors ) &&
-			contact.has_address_errors.length > 0
-				? false
-				: true;
+		const isAddressFilled = ! contact.has_address_errors.length;
 
 		data = {
 			address,

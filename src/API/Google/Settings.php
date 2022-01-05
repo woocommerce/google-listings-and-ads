@@ -395,18 +395,13 @@ class Settings {
 	 * @return array
 	 */
 	public function has_address_errors( AccountAddress $address ): array {
-		if ( ! $address instanceof AccountAddress ) {
-			return [];
-		}
-
 		/** @var WC $wc */
 		$wc = $this->container->get( WC::class );
 
-		$country   = $address->getCountry();
 		$countries = $wc->get_wc_countries();
 
 		$locale          = $countries->get_country_locale();
-		$locale_settings = isset( $locale[ $country ] ) ? $locale[ $country ] : [];
+		$locale_settings = $locale[ $address->getCountry() ] ?? [];
 
 		$fields_to_validate = [
 			'address_1' => $address->getStreetAddress(),
@@ -426,12 +421,12 @@ class Settings {
 	 * @param array $locale_settings locale settings
 	 * @return array
 	 */
-	public function validate_address( array $address_fields, array $locale_settings ) {
+	public function validate_address( array $address_fields, array $locale_settings ): array {
 		$errors = array_filter(
 			$address_fields,
 			function ( $field ) use ( $locale_settings, $address_fields ) {
 				$is_required = isset( $locale_settings[ $field ] ) && isset( $locale_settings[ $field ]['required'] ) ? $locale_settings[ $field ]['required'] : true;
-				return true === $is_required && empty( $address_fields[ $field ] ) ? true : false;
+				return $is_required && empty( $address_fields[ $field ] );
 			},
 			ARRAY_FILTER_USE_KEY
 		);
