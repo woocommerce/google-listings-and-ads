@@ -127,15 +127,7 @@ export const getMCIssues = createSelector(
 			total: mcIssues.total,
 		};
 	},
-	( state ) => [
-		state.mc_issues,
-		state.mc_issues.account,
-		state.mc_issues.product,
-		state.mc_issues.account?.issues,
-		state.mc_issues.account?.total,
-		state.mc_issues.product?.issues,
-		state.mc_issues.product?.total,
-	]
+	( state ) => [ state.mc_issues ]
 );
 
 export const getMCProductFeed = ( state, query ) => {
