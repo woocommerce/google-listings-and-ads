@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
+import { useState, useRef, useCallback } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -9,6 +9,7 @@ import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingRatesSuggestions from './useShippingRatesSuggestions';
 import useSaveSuggestions from './useSaveSuggestions';
+import useCallbackOnceEffect from '.~/hooks/useCallbackOnceEffect';
 
 /**
  * @typedef {Object} ShippingRatesWithSavedSuggestionsResult
@@ -73,28 +74,16 @@ const useShippingRatesWithSavedSuggestions = () => {
 	);
 
 	/**
-	 * Used to track whether `saveSuggestions` has been called in the `useEffect`.
-	 * We want to call the function one time only.
-	 */
-	const hasCalledSaveSuggestions = useRef( false );
-
-	/**
-	 * Call `saveSuggestions` when:
+	 * `callSaveSuggestions` when:
 	 *
 	 * - there is no pre-saved initial shipping rates value.
 	 * - we have suggestions data.
-	 * - we have not saved the suggestions data as shipping rates.
 	 */
-	useEffect( () => {
-		if (
-			isInitialShippingRatesEmpty.current &&
-			dataSuggestions &&
-			hasCalledSaveSuggestions.current === false
-		) {
-			hasCalledSaveSuggestions.current = true;
-			callSaveSuggestions( dataSuggestions );
-		}
-	}, [ dataSuggestions, callSaveSuggestions ] );
+	useCallbackOnceEffect(
+		isInitialShippingRatesEmpty.current && dataSuggestions,
+		callSaveSuggestions,
+		dataSuggestions
+	);
 
 	return {
 		loading:
