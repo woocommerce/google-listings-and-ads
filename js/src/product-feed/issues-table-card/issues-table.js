@@ -54,7 +54,8 @@ const headers = [
  */
 const IssuesTable = () => {
 	const issueTypes = useMCIssues();
-	const issues = issueTypes[ getActiveIssueType() ];
+	const issueType = getActiveIssueType();
+	const issues = issueTypes[ issueType ];
 
 	if ( ! issues ) return null;
 
@@ -62,7 +63,11 @@ const IssuesTable = () => {
 
 	const handlePageChange = ( newPage, direction ) => {
 		setPage( newPage );
-		recordTablePageEvent( `issues-to-resolve`, newPage, direction );
+		recordTablePageEvent(
+			`${ issueType }-issues-to-resolve`,
+			newPage,
+			direction
+		);
 	};
 
 	return (
