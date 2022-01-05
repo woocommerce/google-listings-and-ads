@@ -8,6 +8,13 @@ import { useEffect, useRef } from '@wordpress/element';
  */
 import useIsEqualRefValue from './useIsEqualRefValue';
 
+/**
+ * A hook to call a callback function once when a condition is set to true.
+ *
+ * @param {boolean} condition Condition to call the callback.
+ * @param {Function} callback Callback to be executed once when condition is true.
+ * @param  {...any} args Arguments to be passed to the callback.
+ */
 const useCallbackOnceEffect = ( condition, callback, ...args ) => {
 	const calledRef = useRef( false );
 	const argsRefValue = useIsEqualRefValue( args );
