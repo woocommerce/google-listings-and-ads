@@ -394,7 +394,7 @@ class Settings {
 	 *
 	 * @return array
 	 */
-	public function has_address_errors( AccountAddress $address ): array {
+	public function wc_address_errors( AccountAddress $address ): array {
 		/** @var WC $wc */
 		$wc = $this->container->get( WC::class );
 

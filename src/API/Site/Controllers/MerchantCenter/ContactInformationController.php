@@ -155,9 +155,9 @@ class ContactInformationController extends BaseOptionsController {
 				'description' => __( 'Whether the Merchant Center account address is different than the WooCommerce store address.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
-			'has_address_errors'      => [
+			'wc_address_errors'       => [
 				'type'        => 'array',
-				'description' => __( 'Whether the Merchant Center account address has errors', 'google-listings-and-ads' ),
+				'description' => __( 'The errors associated with the WooCommerce address', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 			],
 		];
@@ -248,7 +248,7 @@ class ContactInformationController extends BaseOptionsController {
 			}
 		}
 
-		$has_address_errors = $this->settings->has_address_errors( $wc_address );
+		$wc_address_errors = $this->settings->wc_address_errors( $wc_address );
 
 		return $this->prepare_item_for_response(
 			[
@@ -257,7 +257,7 @@ class ContactInformationController extends BaseOptionsController {
 				'mc_address'              => self::serialize_address( $mc_address ),
 				'wc_address'              => self::serialize_address( $wc_address ),
 				'is_mc_address_different' => $is_address_diff,
-				'has_address_errors'      => $has_address_errors,
+				'wc_address_errors'       => $wc_address_errors,
 			],
 			$request
 		);
