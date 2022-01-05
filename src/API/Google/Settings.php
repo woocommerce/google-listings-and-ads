@@ -425,7 +425,7 @@ class Settings {
 		$errors = array_filter(
 			$address_fields,
 			function ( $field ) use ( $locale_settings, $address_fields ) {
-				$is_required = isset( $locale_settings[ $field ] ) && isset( $locale_settings[ $field ]['required'] ) ? $locale_settings[ $field ]['required'] : true;
+				$is_required = $locale_settings[ $field ]['required'] ?? true;
 				return $is_required && empty( $address_fields[ $field ] );
 			},
 			ARRAY_FILTER_USE_KEY
