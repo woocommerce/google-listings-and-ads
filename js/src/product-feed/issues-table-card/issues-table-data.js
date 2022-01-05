@@ -11,6 +11,7 @@ import WarningIcon from '.~/components/warning-icon';
 import ErrorIcon from '.~/components/error-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import EditProductLink from '.~/components/edit-product-link';
+import { ISSUE_TYPE_PRODUCT } from '.~/constants';
 
 /**
  * The rows with data for the Issues table
@@ -59,7 +60,7 @@ const IssuesTableData = ( { data, headers } ) => {
 					),
 				},
 				{
-					display: el.type === 'product' && (
+					display: el.type === ISSUE_TYPE_PRODUCT && (
 						<EditProductLink
 							productId={ el.product_id }
 							eventName="gla_edit_product_issue_click"
