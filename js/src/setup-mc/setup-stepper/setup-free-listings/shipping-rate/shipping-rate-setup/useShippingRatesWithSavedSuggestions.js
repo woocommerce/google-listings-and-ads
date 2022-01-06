@@ -89,7 +89,7 @@ const useShippingRatesWithSavedSuggestions = () => {
 		loading:
 			loadingSuggestions ||
 			! hfrShippingRates ||
-			( isInitialShippingRatesEmpty.current ? ! done : false ),
+			( isInitialShippingRatesEmpty.current && ! done ),
 		data: dataShippingRates,
 	};
 };
