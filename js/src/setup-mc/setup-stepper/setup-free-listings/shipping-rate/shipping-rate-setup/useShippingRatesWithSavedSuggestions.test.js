@@ -127,7 +127,6 @@ describe( 'useShippingRatesWithSavedSuggestions', () => {
 		expect( result.current.data ).toBe( undefined );
 		expect( mockSaveSuggestions ).toHaveBeenCalledTimes( 0 );
 
-		// rerender();
 		/**
 		 * Shipping rates are loaded; suggestions are loading.
 		 */
