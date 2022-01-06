@@ -58,17 +58,19 @@ const useShippingRatesWithSavedSuggestions = () => {
 	}
 
 	/**
-	 * `done` is used to indicate whether saving has finished.
+	 * `saveSuggestionsFinished` is used to indicate whether saving has finished.
 	 * This is only used when we have no pre-saved initial shipping rates value
 	 * and we call `saveSuggestions`. It is initially set to `false`,
 	 * and will be set to `true` after the suggestions are saved.
 	 */
-	const [ done, setDone ] = useState( false );
+	const [ saveSuggestionsFinished, setSaveSuggestionsFinished ] = useState(
+		false
+	);
 	const saveSuggestions = useSaveSuggestions();
 	const callSaveSuggestions = useCallback(
 		async ( suggestions ) => {
 			await saveSuggestions( suggestions );
-			setDone( true );
+			setSaveSuggestionsFinished( true );
 		},
 		[ saveSuggestions ]
 	);
@@ -89,7 +91,8 @@ const useShippingRatesWithSavedSuggestions = () => {
 		loading:
 			loadingSuggestions ||
 			! hfrShippingRates ||
-			( isInitialShippingRatesEmpty.current && ! done ),
+			( isInitialShippingRatesEmpty.current &&
+				! saveSuggestionsFinished ),
 		data: dataShippingRates,
 	};
 };
