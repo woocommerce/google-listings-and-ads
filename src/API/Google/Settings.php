@@ -408,7 +408,6 @@ class Settings {
 			'city'      => $address->getLocality(),
 			'country'   => $address->getCountry(),
 			'postcode'  => $address->getPostalCode(),
-			'state'     => $address->getRegion(),
 		];
 
 		return $this->validate_address( $fields_to_validate, $locale_settings );
