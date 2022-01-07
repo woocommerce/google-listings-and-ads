@@ -18,7 +18,7 @@ import HelpPopover from '.~/components/help-popover';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-navigation';
-import useMCIssues from '.~/hooks/useMCIssues';
+import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 import './index.scss';
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 
@@ -44,21 +44,18 @@ const actions = (
 
 /**
  * The card rendering the Merchant Center Issues in the Product feed. It doesn't render if there is no issues.
- * It uses useMCIssues for getting the total of issues.
+ * It uses useMCIssuesTotals for getting the total of issues.
  *
- * @see useMCIssues
+ * @see useMCIssuesTotals
  * @see IssuesTypeNavigation
  * @see IssuesTable
  * @return {JSX.Element|null} A Card with a Header, a Navigation and a table with issues
  */
 const IssuesTableCard = () => {
-	const issues = useMCIssues();
+	const totals = useMCIssuesTotals();
 
 	// We don't want to render if no issues are found
-	if (
-		! issues[ ISSUE_TYPE_PRODUCT ]?.data?.total &&
-		! issues[ ISSUE_TYPE_ACCOUNT ]?.data?.total
-	)
+	if ( ! totals[ ISSUE_TYPE_PRODUCT ] && ! totals[ ISSUE_TYPE_ACCOUNT ] )
 		return null;
 
 	return (

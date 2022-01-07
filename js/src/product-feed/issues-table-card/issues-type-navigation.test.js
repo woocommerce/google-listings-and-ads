@@ -1,20 +1,10 @@
-jest.mock( '.~/hooks/useMCIssues', () => ( {
+jest.mock( '.~/hooks/useMCIssuesTotals', () => ( {
 	__esModule: true,
-	default: jest
-		.fn()
-		.mockName( 'useMCIssues' )
-		.mockReturnValue( {
-			account: {
-				data: {
-					total: 0,
-				},
-			},
-			product: {
-				data: {
-					total: 0,
-				},
-			},
-		} ),
+	default: jest.fn().mockName( 'useMCIssuesTotals' ).mockReturnValue( {
+		account: 0,
+		product: 0,
+		total: 0,
+	} ),
 } ) );
 
 /**
@@ -27,7 +17,7 @@ import '@testing-library/jest-dom';
  * Internal dependencies
  */
 import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-navigation';
-import useMCIssues from '.~/hooks/useMCIssues';
+import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 
 describe( 'Issues Type Navigation', () => {
 	describe( 'When totals are defined', () => {
@@ -61,17 +51,10 @@ describe( 'Issues Type Navigation', () => {
 
 	describe( 'When totals are undefined', () => {
 		it( 'Not Rendering the totals', () => {
-			useMCIssues.mockReturnValue( {
-				account: {
-					data: {
-						total: undefined,
-					},
-				},
-				product: {
-					data: {
-						total: undefined,
-					},
-				},
+			useMCIssuesTotals.mockReturnValue( {
+				account: undefined,
+				product: undefined,
+				total: undefined,
 			} );
 			render( <IssuesTypeNavigation /> );
 			expect( screen.queryByText( `Account Issues` ) ).toBeTruthy();

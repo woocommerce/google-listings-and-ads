@@ -10,9 +10,10 @@ import { Pagination, TablePlaceholder } from '@woocommerce/components';
  */
 import { ISSUE_TABLE_PER_PAGE } from '../constants';
 import { recordTablePageEvent } from '.~/utils/recordEvent';
-import useMCIssues from '.~/hooks/useMCIssues';
 import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
 import IssuesTableData from '.~/product-feed/issues-table-card/issues-table-data';
+import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
+import usePagination from '.~/hooks/usePagination';
 import './index.scss';
 
 const headers = [
@@ -47,19 +48,20 @@ const headers = [
  * The table rendering the issues data with a paginator.
  * It uses useMCIssues for filtering the issues
  * It uses getActiveIssueType in order to know which issue is active.
+ * It uses usePagination in order to handle the pagination.
  *
- * @see useMCIssues
+ * @see useMCIssuesTotals
+ * @see usePagination
  * @see getActiveIssueType
  * @return {JSX.Element} The rendered component
  */
 const IssuesTable = () => {
-	const issueTypes = useMCIssues();
 	const issueType = getActiveIssueType();
-	const issues = issueTypes[ issueType ];
-
-	if ( ! issues ) return null;
-
-	const { data, hasFinishedResolution, page, setPage } = issues;
+	const { page, setPage } = usePagination( issueType );
+	const { data, hasFinishedResolution } = useMCIssuesTypeFilter(
+		issueType,
+		page
+	);
 
 	const handlePageChange = ( newPage, direction ) => {
 		setPage( newPage );

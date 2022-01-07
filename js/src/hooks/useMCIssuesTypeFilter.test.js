@@ -11,14 +11,10 @@ jest.mock( '.~/hooks/useAppSelectDispatch', () => ( {
 		} ),
 } ) );
 
-const originalUseAppSelectDispatch = jest.requireActual(
-	'.~/hooks/useAppSelectDispatch'
-);
-
 /**
  * External dependencies
  */
-import { act, renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-hooks';
 
 /**
  * Internal dependencies
@@ -26,56 +22,34 @@ import { act, renderHook } from '@testing-library/react-hooks';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 
-afterEach( () => {
-	jest.clearAllMocks();
-} );
-
 describe( 'useMCIssuesTypeFilter', () => {
-	test( 'Calls useAppSelectDispatch with `getMCIssues` selector on each page update', async () => {
-		const { result } = renderHook( () => useMCIssuesTypeFilter() );
+	test( 'Calls useAppSelectDispatch with `getMCIssues` and the right parameters', async () => {
+		const { rerender } = renderHook(
+			( { issueType, page, perPage } ) =>
+				useMCIssuesTypeFilter( issueType, page, perPage ),
+			{
+				initialProps: {
+					issueType: 'account',
+				},
+			}
+		);
 
-		act( () => {
-			result.current.setPage( 2 );
+		expect( useAppSelectDispatch ).toHaveBeenCalledWith( 'getMCIssues', {
+			issue_type: 'account',
+			page: 1,
+			per_page: 5,
 		} );
 
-		expect( useAppSelectDispatch ).toHaveBeenCalledWith(
-			'getMCIssues',
-			expect.any( Object )
-		);
+		expect( useAppSelectDispatch ).toHaveBeenCalledTimes( 1 );
+
+		rerender( { issueType: 'product', page: 3, perPage: 2 } );
+
+		expect( useAppSelectDispatch ).toHaveBeenCalledWith( 'getMCIssues', {
+			issue_type: 'product',
+			page: 3,
+			per_page: 2,
+		} );
 
 		expect( useAppSelectDispatch ).toHaveBeenCalledTimes( 2 );
-	} );
-
-	test( 'Returns the correct page and data after calling setPage', async () => {
-		const { result } = renderHook( () => useMCIssuesTypeFilter() );
-		expect( result.current.page ).toBe( 1 );
-		expect( result.current.data.page ).toBe( 1 );
-
-		act( () => {
-			result.current.setPage( 2 );
-		} );
-
-		expect( result.current.page ).toBe( 2 );
-		expect( result.current.data.page ).toBe( 2 );
-	} );
-
-	test( 'Supports Product Issue Type', async () => {
-		const { result } = renderHook( () =>
-			useMCIssuesTypeFilter( 'product' )
-		);
-		expect( result.current.data.issue_type ).toBe( 'product' );
-	} );
-
-	test( 'Returns the default values correctly', () => {
-		useAppSelectDispatch.mockImplementation(
-			originalUseAppSelectDispatch.default
-		);
-
-		const { result } = renderHook( () => useMCIssuesTypeFilter() );
-
-		expect( result.current.data ).toBe( null );
-		expect( result.current.hasFinishedResolution ).toBe( false );
-		expect( result.current.page ).toBe( 1 );
-		expect( typeof result.current.setPage ).toBe( 'function' );
 	} );
 } );

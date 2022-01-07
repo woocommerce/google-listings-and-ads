@@ -11,7 +11,7 @@ import GridiconSync from 'gridicons/dist/sync';
  * Internal dependencies
  */
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
-import useMCIssues from '.~/hooks/useMCIssues';
+import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 import { glaData } from '.~/constants';
 
 function getUnsolvedStatusText( totalUnsolvedIssues ) {
@@ -86,7 +86,7 @@ function getSyncResult( {
 }
 
 function FeedStatus() {
-	const { total } = useMCIssues();
+	const { total } = useMCIssuesTotals();
 	const status = getUnsolvedStatusText( total );
 
 	return (

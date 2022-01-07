@@ -21,20 +21,20 @@ import { renderHook } from '@testing-library/react-hooks';
 /**
  * Internal dependencies
  */
-import useMCIssues from '.~/hooks/useMCIssues';
+import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 
-describe( 'useMcIssues', () => {
+describe( 'useMCIssuesTotals', () => {
 	test.each( [ ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT ] )(
-		'Gets %s data when using it as a filter',
+		'Gets %s total data',
 		( issueType ) => {
 			const { result: resultType } = renderHook( () =>
 				useMCIssuesTypeFilter( issueType )
 			);
-			const { result } = renderHook( () => useMCIssues() );
+			const { result } = renderHook( () => useMCIssuesTotals() );
 			expect( result.current[ issueType ] ).toStrictEqual(
-				resultType.current
+				resultType.current.data.total
 			);
 		}
 	);
@@ -48,7 +48,7 @@ describe( 'useMcIssues', () => {
 			useMCIssuesTypeFilter( ISSUE_TYPE_ACCOUNT )
 		);
 
-		const { result } = renderHook( () => useMCIssues() );
+		const { result } = renderHook( () => useMCIssuesTotals() );
 
 		expect( result.current.total ).toEqual(
 			resultProducts.current.data.total + resultAccount.current.data.total
