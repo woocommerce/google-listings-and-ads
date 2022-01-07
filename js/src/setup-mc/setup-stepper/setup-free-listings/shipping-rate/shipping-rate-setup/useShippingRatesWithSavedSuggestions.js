@@ -34,7 +34,7 @@ const useShippingRatesWithSavedSuggestions = () => {
 	} = useShippingRatesSuggestions();
 
 	/**
-	 * `isInitialShippingRatesEmpty` is used to indicate
+	 * `isInitialShippingRatesEmptyRef` is used to indicate
 	 * whether the initial loaded shipping rates
 	 * has a pre-saved value or not.
 	 *
@@ -49,13 +49,21 @@ const useShippingRatesWithSavedSuggestions = () => {
 	 * and then reload the page,
 	 * then the suggestions would be saved as shipping rates as per above logic.
 	 */
-	const isInitialShippingRatesEmpty = useRef( undefined );
+	const isInitialShippingRatesEmptyRef = useRef( undefined );
 	if (
 		hfrShippingRates &&
-		isInitialShippingRatesEmpty.current === undefined
+		isInitialShippingRatesEmptyRef.current === undefined
 	) {
-		isInitialShippingRatesEmpty.current = dataShippingRates.length === 0;
+		isInitialShippingRatesEmptyRef.current = dataShippingRates.length === 0;
 	}
+
+	/**
+	 * Boolean to indicate we should save suggestions,
+	 * when the initial shipping rates is empty
+	 * and we have suggestions data.
+	 */
+	const shouldSaveSuggestions =
+		isInitialShippingRatesEmptyRef.current && dataSuggestions;
 
 	/**
 	 * `saveSuggestionsFinished` is used to indicate whether saving has finished.
@@ -76,13 +84,11 @@ const useShippingRatesWithSavedSuggestions = () => {
 	);
 
 	/**
-	 * `callSaveSuggestions` when:
-	 *
-	 * - there is no pre-saved initial shipping rates value.
-	 * - we have suggestions data.
+	 * Call save suggestions with dataSuggestions for one time only
+	 * when shouldSaveSuggestions is true.
 	 */
 	useCallbackOnceEffect(
-		isInitialShippingRatesEmpty.current && dataSuggestions,
+		shouldSaveSuggestions,
 		callSaveSuggestions,
 		dataSuggestions
 	);
@@ -91,8 +97,7 @@ const useShippingRatesWithSavedSuggestions = () => {
 		loading:
 			loadingSuggestions ||
 			! hfrShippingRates ||
-			( isInitialShippingRatesEmpty.current &&
-				! saveSuggestionsFinished ),
+			( shouldSaveSuggestions && ! saveSuggestionsFinished ),
 		data: dataShippingRates,
 	};
 };
