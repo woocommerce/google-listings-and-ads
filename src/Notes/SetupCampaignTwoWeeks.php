@@ -24,23 +24,42 @@ class SetupCampaignTwoWeeks extends AbstractSetupCampaign {
 	}
 
 	/**
-	 * Get the note entry.
-	 */
-	public function get_entry(): NoteEntry {
-		$note = new NoteEntry();
-		$note->set_title( __( 'Launch your first ad in a few steps', 'google-listings-and-ads' ) );
-		$note->set_content( __( 'You’re just a few steps away from reaching new shoppers across Google. Create your first paid ad campaign today.', 'google-listings-and-ads' ) );
-		$this->add_common_note_settings( $note );
-
-		return $note;
-	}
-
-	/**
 	 * Get the number of days after which to add the note.
 	 *
 	 * @return int
 	 */
 	protected function get_gla_setup_days(): int {
 		return 14;
+	}
+
+	/**
+	 * Set the title and content of the Note.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param NoteEntry $note
+	 *
+	 * @return void
+	 */
+	protected function set_title_and_content( NoteEntry $note ): void {
+		if ( ! $this->ads_service->is_setup_started() ) {
+			$note->set_title( __( 'Reach more shoppers with paid listings on Google', 'google-listings-and-ads' ) );
+			$note->set_content(
+				__(
+					'Your products are ready for Google Ads! Connect with the right shoppers at the right moment when they’re searching for products like yours. Connect your Google Ads account to create your first paid ad campaign.',
+					'google-listings-and-ads'
+				)
+			);
+		} else {
+			$note->set_title(
+				__( 'Finish setting up your ads campaign and boost your sales', 'google-listings-and-ads' )
+			);
+			$note->set_content(
+				__(
+					"You're just a few steps away from reaching new shoppers across Google. Finish connecting your account, create your campaign, pick your budget, and easily measure the impact of your ads.",
+					'google-listings-and-ads'
+				)
+			);
+		}
 	}
 }
