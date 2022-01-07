@@ -25,6 +25,17 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	use Utilities;
 
 	/**
+	 * Get the note entry.
+	 */
+	public function get_entry(): NoteEntry {
+		$note = new NoteEntry();
+		$this->set_title_and_content( $note );
+		$this->add_common_note_settings( $note );
+
+		return $note;
+	}
+
+	/**
 	 * @param NoteEntry $note
 	 *
 	 * @return void
@@ -74,4 +85,15 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	 * @return int
 	 */
 	abstract protected function get_gla_setup_days(): int;
+
+	/**
+	 * Set the title and content of the Note.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param NoteEntry $note
+	 *
+	 * @return void
+	 */
+	abstract protected function set_title_and_content( NoteEntry $note ): void;
 }
