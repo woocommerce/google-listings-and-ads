@@ -46,10 +46,19 @@ function chain( state, basePath = '' ) {
 		}
 		return clone( value );
 	};
+	const combinBasePath = ( path ) => {
+		if ( basePath ) {
+			if ( Array.isArray( basePath ) || Array.isArray( path ) ) {
+				return [].concat( basePath, path );
+			}
+			return `${ basePath }.${ path }`;
+		}
+		return path;
+	};
 
 	return {
 		set( path, value ) {
-			const fullPath = basePath ? `${ basePath }.${ path }` : path;
+			const fullPath = combinBasePath( path );
 			setWith( nextState, fullPath, value, customizer );
 			return this;
 		},
@@ -271,7 +280,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_REPORT: {
 			const { reportKey, data } = action;
-			return set( state, `report.${ reportKey }`, data );
+			return set( state, [ 'report', reportKey ], data );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
