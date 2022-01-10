@@ -14,8 +14,8 @@ const defaultQuery = {
  * Hook that returns the issues data filtered by issueType with their paginator state.
  *
  * @param {string} [issueType=product|account] `account` by default
- * @param {number} page allows to set the page, by default 1
- * @param {number} perPage allows to set the number of items per page, by default 5
+ * @param {number} [page=1] allows to set the page, by default 1
+ * @param {number} [perPage=5] allows to set the number of items per page, by default 5
  * @return {{data: Object, hasFinishedResolution: boolean}} The issues data and the resolution status
  */
 const useMCIssuesTypeFilter = (

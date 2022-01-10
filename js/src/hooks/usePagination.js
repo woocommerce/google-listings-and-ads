@@ -10,7 +10,7 @@ import { useCallback, useState } from '@wordpress/element';
  * Example of usage with different initial page `const { page, setPage } = usePagination('paginator2', 5)`
  *
  * @param {string} paginationId The key used to identify this paginator
- * @param {number} initialPage The initial page for the paginator
+ * @param {number} [initialPage=1] The initial page for the paginator
  * @return {{page: number, setPage}} Returns the current page for the selected paginator and a setPage function for update the page.
  */
 const usePagination = ( paginationId, initialPage = 1 ) => {
