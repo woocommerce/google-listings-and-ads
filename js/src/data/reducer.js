@@ -270,7 +270,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			}
 
 			return stateSetter
-				.set( `pages.[${ query.page }]`, data.products )
+				.set( [ 'pages', query.page ], data.products )
 				.set( 'per_page', query.per_page )
 				.set( 'order', query.order )
 				.set( 'orderby', query.orderby )
