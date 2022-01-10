@@ -22,7 +22,7 @@ import '.~/components/free-listings/choose-audience/index.scss';
  *
  * @param {Object} props
  * @param {string} [props.initialData] Target audience data, if not given AppSinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
+ * @param {(change: {name, value}, values: Object) => void} props.onChange Callback called with form data once form data is changed. Forwarded from {@link Form.Props.onChange}.
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked.
  */
 export default function ChooseAudience( {
@@ -76,9 +76,7 @@ export default function ChooseAudience( {
 							countries: initialData.countries || [],
 						} }
 						validate={ handleValidate }
-						onSubmitCallback={ onContinue }
 						onSubmit={ onContinue }
-						onChangeCallback={ onChange }
 						onChange={ onChange }
 					>
 						{ ( formProps ) => {

@@ -54,7 +54,6 @@ const AddTimeModal = ( { countries, onRequestClose, onSubmit } ) => {
 				time: 0,
 			} }
 			validate={ handleValidate }
-			onSubmitCallback={ handleSubmitCallback }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {

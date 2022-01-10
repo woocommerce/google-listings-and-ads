@@ -75,9 +75,7 @@ const SetupAdsForm = () => {
 		<Form
 			initialValues={ initialValues }
 			validate={ handleValidate }
-			onChangeCallback={ handleChange }
 			onChange={ handleChange }
-			onSubmitCallback={ handleSubmit }
 			onSubmit={ handleSubmit }
 		>
 			{ ( formProps ) => {
