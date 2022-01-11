@@ -46,7 +46,7 @@ function chain( state, basePath = '' ) {
 		}
 		return clone( value );
 	};
-	const combinBasePath = ( path ) => {
+	const combineBasePath = ( path ) => {
 		if ( basePath ) {
 			if ( Array.isArray( basePath ) || Array.isArray( path ) ) {
 				return [].concat( basePath, path );
@@ -58,7 +58,7 @@ function chain( state, basePath = '' ) {
 
 	return {
 		set( path, value ) {
-			const fullPath = combinBasePath( path );
+			const fullPath = combineBasePath( path );
 			setWith( nextState, fullPath, value, customizer );
 			return this;
 		},
