@@ -542,6 +542,19 @@ describe( 'reducer', () => {
 	describe( 'Reports of programs and products', () => {
 		const path = 'report';
 
+		it( 'should store paginated data by the stringified `reportKey`, which contains JSON syntax', () => {
+			const reportKey =
+				'programs:free:{"after":"2021-01-01","before":"2021-01-07","fields":["sales","conversions","spend","clicks","impressions"],"interval":"day","order":"desc","orderby":"sales"}';
+			const state = reducer( prepareState(), {
+				type: TYPES.RECEIVE_REPORT,
+				reportKey,
+				data: '#1',
+			} );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( [ path, reportKey ], '#1' );
+		} );
+
 		it( 'should store paginated data by `reportKey` and return with received report data', () => {
 			const pageOneState = reducer( prepareState(), {
 				type: TYPES.RECEIVE_REPORT,

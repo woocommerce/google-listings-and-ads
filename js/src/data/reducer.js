@@ -37,7 +37,38 @@ const DEFAULT_STATE = {
 	report: {},
 };
 
-// Referenced and modified from https://github.com/lodash/lodash/issues/1696#issuecomment-328335502
+/**
+ * @callback chainSet
+ * @param {Array<string>|string} path The path of the property to set the new value.
+ *   The `basePath`, which is called with `chain`, would be contacted with `path` if it exists.
+ *   Array `path` is used directly as each path properties without parsing.
+ *   String `path` is parsed to an array of path properties by splitting '.' and property names enclosed in square brackets. Example: 'user.settings[darkMode].schedule'.
+ * @param {*} value The value to set.
+ * @return {ChainState} The instance.
+ */
+
+/**
+ * @typedef {Object} ChainState
+ * @property {chainSet} set A chainable function for setting value.
+ * @property {()=>Object|Array} end Get back the updated new state after chaining calls.
+ */
+
+/**
+ * A helper to chain multiple values setting into the same new state.
+ *
+ * Recursively creates a shallow copied new state from `state`,
+ * and returns a chainable instance for setting values.
+ * Objects are created for missing or `null` paths.
+ *
+ * Referenced and modified from https://github.com/lodash/lodash/issues/1696#issuecomment-328335502
+ *
+ * @param {Object|Array} state The state to create and set the new value.
+ * @param {Array<string>|string} [basePath='']
+ *   The base path to be contacted to the passed-in `path` when chaining calls.
+ *   Use this when setting multiple values and don't want to repeat the base path multiple times.
+ *
+ * @return {ChainState} The chainable instance.
+ */
 function chain( state, basePath = '' ) {
 	const nextState = Object.assign( state.constructor(), state );
 	const customizer = ( value ) => {
@@ -46,10 +77,21 @@ function chain( state, basePath = '' ) {
 		}
 		return clone( value );
 	};
+	// The `path` of lodash `setWith` can be either a string or an array.
+	// Here combines `basePath` and `path` to the final path to be called with lodash `setWith`.
+	const combineBasePath = ( path ) => {
+		if ( basePath ) {
+			if ( Array.isArray( basePath ) || Array.isArray( path ) ) {
+				return [].concat( basePath, path );
+			}
+			return `${ basePath }.${ path }`;
+		}
+		return path;
+	};
 
 	return {
 		set( path, value ) {
-			const fullPath = basePath ? `${ basePath }.${ path }` : path;
+			const fullPath = combineBasePath( path );
 			setWith( nextState, fullPath, value, customizer );
 			return this;
 		},
@@ -57,6 +99,21 @@ function chain( state, basePath = '' ) {
 	};
 }
 
+/**
+ * An immutable version of lodash `set` function with the same arguments.
+ *
+ * Recursively creates a shallow copied new state from `state`,
+ * and sets the `value` at `path` of the new state.
+ * Objects are created for missing or `null` paths.
+ *
+ * @param {Object|Array} state The state to create and set the new value.
+ * @param {Array<string>|string} path The path of the property to set the new value.
+ *   Array `path` is used directly as each path properties without parsing.
+ *   String `path` is parsed to an array of path properties by splitting '.' and property names enclosed in square brackets. Example: 'user.settings[darkMode].schedule'.
+ * @param {*} value The value to set.
+ *
+ * @return {Object|Array} The same type of passed-in `state` with placed `value` at `path` of the new state.
+ */
 function set( state, path, value ) {
 	return chain( state ).set( path, value ).end();
 }
@@ -268,7 +325,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			}
 
 			return stateSetter
-				.set( `pages.[${ query.page }]`, data.products )
+				.set( [ 'pages', query.page ], data.products )
 				.set( 'per_page', query.per_page )
 				.set( 'order', query.order )
 				.set( 'orderby', query.orderby )
@@ -278,7 +335,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_REPORT: {
 			const { reportKey, data } = action;
-			return set( state, `report.${ reportKey }`, data );
+			return set( state, [ 'report', reportKey ], data );
 		}
 
 		// Page will be reloaded after all accounts have been disconnected, so no need to mutate state.
