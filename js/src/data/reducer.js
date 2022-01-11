@@ -129,9 +129,16 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return set( state, 'mc.shipping.times', times );
 		}
 
-		case TYPES.RECEIVE_SETTINGS:
-		case TYPES.SAVE_SETTINGS: {
+		case TYPES.RECEIVE_SETTINGS: {
 			return set( state, 'mc.settings', action.settings );
+		}
+
+		case TYPES.SAVE_SETTINGS: {
+			const nextSettings = {
+				...state.mc.settings,
+				...action.settings,
+			};
+			return set( state, 'mc.settings', nextSettings );
 		}
 
 		case TYPES.RECEIVE_ACCOUNTS_JETPACK: {
