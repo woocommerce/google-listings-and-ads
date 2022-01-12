@@ -34,7 +34,10 @@ module.exports = {
 		'/__helpers__/',
 	],
 	coveragePathIgnorePatterns: [ '/node_modules/', '/__helpers__/' ],
-	watchPathIgnorePatterns: [ '<rootDir>/js/build/' ],
+	watchPathIgnorePatterns: [
+		'<rootDir>/.externalized.json',
+		'<rootDir>/js/build/',
+	],
 	globals: {
 		glaData: {
 			mcSetupComplete: true,
