@@ -396,6 +396,17 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				}
 			}
 
+			if ( ! empty( $method['options']['class_costs'] ) ) {
+				// If there are shipping classes, we set the cost of each class as an option.
+				$rate['options']['shipping_class_rates'] = [];
+				foreach ( $method['options']['class_costs'] as $class_id => $cost ) {
+					$rate['options']['shipping_class_rates'][] = [
+						'class' => $class_id,
+						'rate'  => $cost,
+					];
+				}
+			}
+
 			$rates[] = $rate;
 		}
 
@@ -492,6 +503,32 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 									'description'       => __( 'Minimum price eligible for free shipping.', 'google-listings-and-ads' ),
 									'context'           => [ 'view', 'edit' ],
 									'validate_callback' => 'rest_validate_request_arg',
+								],
+								'shipping_class_rates'    => [
+									'type'              => 'array',
+									'description'       => __( 'An array of rates for shipping classes/labels.', 'google-listings-and-ads' ),
+									'context'           => [ 'view', 'edit' ],
+									'validate_callback' => 'rest_validate_request_arg',
+									'items'             => [
+										'type'       => 'object',
+										'properties' => [
+											'class' => [
+												'type'     => 'string',
+												'required' => true,
+												'context'  => [ 'view', 'edit' ],
+												'description' => __( 'The shipping class/label.', 'google-listings-and-ads' ),
+												'validate_callback' => 'rest_validate_request_arg',
+											],
+											'rate'  => [
+												'type'     => 'number',
+												'required' => true,
+												'minimum'  => 0,
+												'context'  => [ 'view', 'edit' ],
+												'description' => __( 'The shipping rate.', 'google-listings-and-ads' ),
+												'validate_callback' => 'rest_validate_request_arg',
+											],
+										],
+									],
 								],
 							],
 						],
