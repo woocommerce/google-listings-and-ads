@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import getCountriesPriceArray from './getCountriesPriceArray';
+import getCountriesPriceArray from '.~/utils/getCountriesPriceArray';
 import { useAppDispatch } from '.~/data';
 
 /**
