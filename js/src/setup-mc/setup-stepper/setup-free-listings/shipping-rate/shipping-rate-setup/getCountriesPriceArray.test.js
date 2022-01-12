@@ -4,7 +4,7 @@
 import getCountriesPriceArray from './getCountriesPriceArray';
 
 describe( 'getCountriesPriceArray', () => {
-	it( 'should group the shipping rates based on price', () => {
+	it( 'should group the shipping rates based on price and currency', () => {
 		const shippingRates = [
 			{
 				countryCode: 'US',
@@ -21,11 +21,16 @@ describe( 'getCountriesPriceArray', () => {
 				currency: 'USD',
 				rate: 25,
 			},
+			{
+				countryCode: 'BR',
+				currency: 'BRL',
+				rate: 20,
+			},
 		];
 
 		const result = getCountriesPriceArray( shippingRates );
 
-		expect( result.length ).toEqual( 2 );
+		expect( result.length ).toEqual( 3 );
 		expect( result[ 0 ] ).toStrictEqual( {
 			countries: [ 'US', 'AU' ],
 			price: 20,
@@ -35,6 +40,11 @@ describe( 'getCountriesPriceArray', () => {
 			countries: [ 'CN' ],
 			price: 25,
 			currency: 'USD',
+		} );
+		expect( result[ 2 ] ).toStrictEqual( {
+			countries: [ 'BR' ],
+			price: 20,
+			currency: 'BRL',
 		} );
 	} );
 } );

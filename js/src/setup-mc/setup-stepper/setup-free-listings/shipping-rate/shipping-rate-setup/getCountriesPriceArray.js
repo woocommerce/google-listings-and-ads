@@ -1,5 +1,5 @@
 /**
- * Groups shipping rates based on price.
+ * Groups shipping rates based on price and currency.
  *
  * Usage example:
  *
@@ -20,6 +20,11 @@
  *         currency: 'USD',
  *         rate: 25,
  *     },
+ *     {
+ *         countryCode: 'BR',
+ *         currency: 'BRL',
+ *         rate: 20,
+ *     },
  * ]
  *
  * const result = getCountriesPriceArray( shippingRates );
@@ -36,25 +41,30 @@
  * //         price: 25,
  * //         currency: 'USD',
  * //     },
+ * //     {
+ * //         countries: ['BR'],
+ * //         price: 20,
+ * //         currency: 'BRL',
+ * //     },
  * ]
  * ```
  *
  * @param {Array<Object>} shippingRates Array of shipping rates in the format of `{ countryCode, rate, currency }`.
  */
 const getCountriesPriceArray = ( shippingRates ) => {
-	const currency = shippingRates[ 0 ]?.currency;
 	const rateGroupMap = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
-		const { countryCode, rate } = shippingRate;
+		const { countryCode, rate, currency } = shippingRate;
 		const price = Number( rate );
-		const group = rateGroupMap.get( price ) || {
+		const priceCurrency = `${ price } ${ currency }`;
+		const group = rateGroupMap.get( priceCurrency ) || {
 			countries: [],
 			price,
 			currency,
 		};
 		group.countries.push( countryCode );
-		rateGroupMap.set( price, group );
+		rateGroupMap.set( priceCurrency, group );
 	} );
 
 	return Array.from( rateGroupMap.values() );
