@@ -696,6 +696,71 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertFalse( ShippingZone::is_shipping_method_valid( 'some_random_method_that_should_not_be_valid' ) );
 	}
 
+	public function test_returns_shipping_class_costs() {
+		// Return one sample shipping zone.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zones' )
+				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
+
+		// Return three sample shipping classes.
+		$light_class          = new \stdClass();
+		$light_class->term_id = 0;
+		$light_class->slug    = 'light';
+		$heavy_class          = new \stdClass();
+		$heavy_class->term_id = 1;
+		$heavy_class->slug    = 'heavy';
+		$qty_class            = new \stdClass();
+		$qty_class->term_id   = 2;
+		$qty_class->slug      = 'qty';
+		$shipping_classes     = [ $light_class, $heavy_class, $qty_class ];
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_classes' )
+				 ->willReturn( $shipping_classes );
+
+		// Create a sample flat-rate shipping method with a constant cost.
+		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+				  ->method( 'get_option' )
+				  ->willReturnCallback( function ( $option ) {
+					  if ( 'cost' === $option ) {
+						  return 10;
+					  } elseif ( 'class_cost_0' === $option ) {
+						  return 5;
+					  } elseif ( 'class_cost_1' === $option ) {
+						  return 15;
+					  } elseif ( 'class_cost_2' === $option ) {
+						  // This one has a dynamic price. It should be ignored.
+						  return '[qty] / 10';
+					  } elseif ( 'no_class_cost' === $option ) {
+						  return 2;
+					  }
+
+					  return null;
+				  } );
+
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate ] );
+		// Return the zone locations for the given zone id.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zone' )
+				 ->willReturn( $shipping_zone );
+
+		$methods = $this->shipping_zone->get_shipping_methods_for_country( 'US' );
+
+		$this->assertCount( 1, $methods );
+
+		// The shipping class with a dynamic price should be ignored.
+		$this->assertCount( 2, $methods[0]['options']['class_costs'] );
+
+		// The `no_class_cost` should be added to the flat rate method cost (10+2=12).
+		$this->assertEquals( 12, $methods[0]['options']['cost'] );
+
+		// The shipping class costs should be added to the flat rate method cost (10+5=15 and 10+15=25).
+		$this->assertEquals( 15, $methods[0]['options']['class_costs']['light'] );
+		$this->assertEquals( 25, $methods[0]['options']['class_costs']['heavy'] );
+
+	}
+
 	/**
 	 * Creates a mock WooCommerce shipping zone object covering the given country and including the given shipping methods.
 	 *
