@@ -4,7 +4,7 @@
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddRateButton from './add-rate-button';
 import CountriesPriceInput from './countries-price-input';
-import getCountriesPriceArray from './getCountriesPriceArray';
+import getCountriesPriceArray from '.~/utils/getCountriesPriceArray';
 
 /**
  * Partial form to provide shipping rates for individual countries,
