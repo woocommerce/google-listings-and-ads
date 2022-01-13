@@ -27,7 +27,7 @@
  *     },
  * ]
  *
- * const result = getCountriesPriceArray( shippingRates );
+ * const result = groupShippingRatesByPriceCurrency( shippingRates );
  *
  * // result:
  * // [
@@ -51,7 +51,7 @@
  *
  * @param {Array<Object>} shippingRates Array of shipping rates in the format of `{ countryCode, rate, currency }`.
  */
-const getCountriesPriceArray = ( shippingRates ) => {
+const groupShippingRatesByPriceCurrency = ( shippingRates ) => {
 	const rateGroupMap = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
@@ -70,4 +70,4 @@ const getCountriesPriceArray = ( shippingRates ) => {
 	return Array.from( rateGroupMap.values() );
 };
 
-export default getCountriesPriceArray;
+export default groupShippingRatesByPriceCurrency;

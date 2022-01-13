@@ -1,9 +1,9 @@
 /**
  * Internal dependencies
  */
-import getCountriesPriceArray from './getCountriesPriceArray';
+import groupShippingRatesByPriceCurrency from './groupShippingRatesByPriceCurrency';
 
-describe( 'getCountriesPriceArray', () => {
+describe( 'groupShippingRatesByPriceCurrency', () => {
 	it( 'should group the shipping rates based on price and currency', () => {
 		const shippingRates = [
 			{
@@ -28,7 +28,7 @@ describe( 'getCountriesPriceArray', () => {
 			},
 		];
 
-		const result = getCountriesPriceArray( shippingRates );
+		const result = groupShippingRatesByPriceCurrency( shippingRates );
 
 		expect( result.length ).toEqual( 3 );
 		expect( result[ 0 ] ).toStrictEqual( {
