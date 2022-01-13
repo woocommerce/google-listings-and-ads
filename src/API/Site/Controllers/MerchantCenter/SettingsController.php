@@ -96,6 +96,7 @@ class SettingsController extends BaseOptionsController {
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'enum'              => [
+					'automatic',
 					'flat',
 					'manual',
 				],
