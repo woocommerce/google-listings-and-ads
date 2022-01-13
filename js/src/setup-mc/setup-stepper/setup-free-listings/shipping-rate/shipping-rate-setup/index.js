@@ -13,7 +13,7 @@ import AddRateButton from './add-rate-button';
 import CountriesPriceInputForm from './countries-price-input-form';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import useShippingRatesWithSavedSuggestions from './useShippingRatesWithSavedSuggestions';
-import getCountriesPriceArray from './getCountriesPriceArray';
+import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import './index.scss';
@@ -37,7 +37,9 @@ const ShippingRateSetup = ( props ) => {
 	const actualCountryCount = dataShippingRates.length;
 	const remainingCount = expectedCountryCount - actualCountryCount;
 
-	const countriesPriceArray = getCountriesPriceArray( dataShippingRates );
+	const countriesPriceArray = groupShippingRatesByPriceCurrency(
+		dataShippingRates
+	);
 
 	// Prefill to-be-added price.
 	if ( countriesPriceArray.length === 0 ) {
