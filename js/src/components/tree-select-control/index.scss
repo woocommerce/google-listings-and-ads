@@ -1,10 +1,4 @@
-// example dummy values.
-$studio-gray-0: #111111;
-$studio-gray-20: #111111;
-$studio-gray-50: #111111;
-$studio-gray-80: #111111;
-$studio-white: #ffffff;
-$studio-wordpress-blue-50: blue;
+@import '@automattic/color-studio/dist/color-variables.scss';
 
 $gap-largest: 40px;
 $gap-larger: 36px;
