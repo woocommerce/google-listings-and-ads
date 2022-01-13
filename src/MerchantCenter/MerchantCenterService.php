@@ -41,6 +41,7 @@ defined( 'ABSPATH' ) || exit;
  * - ShippingTimeTable
  * - WC
  * - WP
+ * - TargetAudience
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
@@ -143,42 +144,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		return false;
-	}
-
-	/**
-	 * @return string[] List of target countries specified in options. Defaults to WooCommerce store base country.
-	 */
-	public function get_target_countries(): array {
-		$target_countries = [ $this->container->get( WC::class )->get_base_country() ];
-
-		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
-		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
-			return $target_countries;
-		}
-
-		$location = strtolower( $target_audience['location'] );
-		if ( 'all' === $location ) {
-			$target_countries = $this->get_mc_supported_countries();
-		} elseif ( 'selected' === $location && ! empty( $target_audience['countries'] ) ) {
-			$target_countries = $target_audience['countries'];
-		}
-
-		return $target_countries;
-	}
-
-	/**
-	 * Return the main target country (default Store country).
-	 * If the store country is not included then use the first target country.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return string
-	 */
-	public function get_main_target_country(): string {
-		$target_countries = $this->get_target_countries();
-		$shop_country     = $this->container->get( WC::class )->get_base_country();
-
-		return in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
 	}
 
 	/**
@@ -372,7 +337,7 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	protected function saved_shipping_and_tax_options(): bool {
 		$merchant_center_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-		$target_countries         = $this->get_target_countries();
+		$target_countries         = $this->container->get( TargetAudience::class )->get_target_countries();
 
 		// Tax options saved if: not US (no taxes) or tax_rate has been set
 		if ( in_array( 'US', $target_countries, true ) && empty( $merchant_center_settings['tax_rate'] ) ) {
