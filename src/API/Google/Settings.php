@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as RateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
@@ -51,11 +52,30 @@ class Settings {
 			return;
 		}
 
+		if ( $this->should_get_shipping_rates_from_woocommerce() ) {
+			$rates = $this->get_shipping_rates_from_woocommerce();
+		} else {
+			$rates = $this->get_shipping_rates_from_database();
+		}
+
+		$this->update_shipping_rates( $rates );
+	}
+
+	/**
+	 * Submit the given shipping rates to Google.
+	 *
+	 * @param array $rates A multidimensional array of shipping rates and their properties.
+	 *
+	 * @see ShippingZone::get_shipping_rates_for_country() for the format of the $rates array.
+	 *
+	 * @since x.x.x
+	 */
+	public function update_shipping_rates( array $rates ) {
 		$settings = new ShippingSettings();
 		$settings->setAccountId( $this->get_account_id() );
 
 		$services = [];
-		foreach ( $this->get_rates() as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
+		foreach ( $rates as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
 			$services[] = $this->create_shipping_service( $country, $method, $currency, (float) $rate, $options );
 
 			// Add a conditional free-shipping service
@@ -79,7 +99,18 @@ class Settings {
 	 * @return bool
 	 */
 	protected function should_sync_shipping(): bool {
-		return 'flat' === $this->get_settings()['shipping_rate'];
+		return in_array( $this->get_settings()['shipping_rate'], [ 'flat', 'automatic' ], true );
+	}
+
+	/**
+	 * Whether we should get the shipping settings from the WooCommerce settings.
+	 *
+	 * @return bool
+	 *
+	 * @since x.x.x
+	 */
+	protected function should_get_shipping_rates_from_woocommerce(): bool {
+		return 'automatic' === $this->get_settings()['shipping_rate'];
 	}
 
 	/**
@@ -155,10 +186,31 @@ class Settings {
 	 *
 	 * @return array
 	 */
-	protected function get_rates(): array {
+	protected function get_shipping_rates_from_database(): array {
 		$rate_query = $this->container->get( RateQuery::class );
 
 		return $rate_query->get_results();
+	}
+
+	/**
+	 * Get shipping rate data from WooCommerce shipping settings.
+	 *
+	 * @return array
+	 */
+	protected function get_shipping_rates_from_woocommerce(): array {
+		/** @var TargetAudience $target_audience */
+		$target_audience  = $this->container->get( TargetAudience::class );
+		$target_countries = $target_audience->get_target_countries();
+		/** @var ShippingZone $shipping_zone */
+		$shipping_zone = $this->container->get( ShippingZone::class );
+
+		$rates = [];
+		foreach ( $target_countries as $country ) {
+			$country_rates = $shipping_zone->get_shipping_rates_for_country( $country );
+			$rates         = array_merge( $rates, $country_rates );
+		}
+
+		return $rates;
 	}
 
 	/**
