@@ -388,6 +388,52 @@ class Settings {
 	}
 
 	/**
+	 * Check whether the address has errors
+	 *
+	 * @param AccountAddress $address to be validated.
+	 *
+	 * @return array
+	 */
+	public function wc_address_errors( AccountAddress $address ): array {
+		/** @var WC $wc */
+		$wc = $this->container->get( WC::class );
+
+		$countries = $wc->get_wc_countries();
+
+		$locale          = $countries->get_country_locale();
+		$locale_settings = $locale[ $address->getCountry() ] ?? [];
+
+		$fields_to_validate = [
+			'address_1' => $address->getStreetAddress(),
+			'city'      => $address->getLocality(),
+			'country'   => $address->getCountry(),
+			'postcode'  => $address->getPostalCode(),
+		];
+
+		return $this->validate_address( $fields_to_validate, $locale_settings );
+	}
+
+	/**
+	 * Check whether the required address fields are empty
+	 *
+	 * @param array $address_fields to be validated.
+	 * @param array $locale_settings locale settings
+	 * @return array
+	 */
+	public function validate_address( array $address_fields, array $locale_settings ): array {
+		$errors = array_filter(
+			$address_fields,
+			function ( $field ) use ( $locale_settings, $address_fields ) {
+				$is_required = $locale_settings[ $field ]['required'] ?? true;
+				return $is_required && empty( $address_fields[ $field ] );
+			},
+			ARRAY_FILTER_USE_KEY
+		);
+
+		return array_keys( $errors );
+	}
+
+	/**
 	 * Return a state name.
 	 *
 	 * @param string $state_code State code.

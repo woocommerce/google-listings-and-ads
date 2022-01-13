@@ -270,6 +270,50 @@ describe( 'reducer', () => {
 		} );
 	} );
 
+	describe( 'Merchant Center settings', () => {
+		const path = 'mc.settings';
+
+		it( 'should return with received Merchant Center settings', () => {
+			const action = {
+				type: TYPES.SAVE_SETTINGS,
+				settings: {
+					settingA: 'A',
+					SettingB: 'B',
+				},
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, action.settings );
+		} );
+
+		it( 'should return with partially updated Merchant Center settings', () => {
+			const originalState = prepareState(
+				path,
+				{
+					existingSettingA: 'should be kept',
+					existingSettingB: 'should be updated from old value',
+				},
+				true
+			);
+			const action = {
+				type: TYPES.SAVE_SETTINGS,
+				settings: {
+					existingSettingB: 'should be updated to new value',
+					existingSettingC: 'should be added',
+				},
+			};
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, {
+				existingSettingA: 'should be kept',
+				existingSettingB: 'should be updated to new value',
+				existingSettingC: 'should be added',
+			} );
+		} );
+	} );
+
 	describe( 'Google Ads account connection', () => {
 		const path = 'mc.accounts.ads';
 
@@ -565,6 +609,19 @@ describe( 'reducer', () => {
 	describe( 'Reports of programs and products', () => {
 		const path = 'report';
 
+		it( 'should store paginated data by the stringified `reportKey`, which contains JSON syntax', () => {
+			const reportKey =
+				'programs:free:{"after":"2021-01-01","before":"2021-01-07","fields":["sales","conversions","spend","clicks","impressions"],"interval":"day","order":"desc","orderby":"sales"}';
+			const state = reducer( prepareState(), {
+				type: TYPES.RECEIVE_REPORT,
+				reportKey,
+				data: '#1',
+			} );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( [ path, reportKey ], '#1' );
+		} );
+
 		it( 'should store paginated data by `reportKey` and return with received report data', () => {
 			const pageOneState = reducer( prepareState(), {
 				type: TYPES.RECEIVE_REPORT,
@@ -592,7 +649,6 @@ describe( 'reducer', () => {
 		// prettier-ignore
 		const argumentsTuples = [
 			[ TYPES.RECEIVE_SETTINGS, 'settings', 'mc.settings' ],
-			[ TYPES.SAVE_SETTINGS, 'settings', 'mc.settings' ],
 			[ TYPES.RECEIVE_ACCOUNTS_JETPACK, 'account', 'mc.accounts.jetpack' ],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE, 'account', 'mc.accounts.google' ],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ACCESS, 'data', 'mc.accounts.google_access' ],

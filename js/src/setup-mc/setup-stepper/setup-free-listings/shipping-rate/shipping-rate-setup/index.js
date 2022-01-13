@@ -12,8 +12,8 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddRateButton from './add-rate-button';
 import CountriesPriceInputForm from './countries-price-input-form';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import useShippingRates from '.~/hooks/useShippingRates';
-import getCountriesPriceArray from './getCountriesPriceArray';
+import useShippingRatesWithSavedSuggestions from './useShippingRatesWithSavedSuggestions';
+import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
 import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import './index.scss';
@@ -22,19 +22,24 @@ const ShippingRateSetup = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
 	} = props;
-	const { data: shippingRates } = useShippingRates();
+	const {
+		loading: loadingShippingRates,
+		data: dataShippingRates,
+	} = useShippingRatesWithSavedSuggestions();
 	const { code: currencyCode } = useStoreCurrency();
 	const { data: selectedCountryCodes } = useTargetAudienceFinalCountryCodes();
 
-	if ( ! selectedCountryCodes ) {
+	if ( loadingShippingRates || ! selectedCountryCodes ) {
 		return <AppSpinner />;
 	}
 
 	const expectedCountryCount = selectedCountryCodes.length;
-	const actualCountryCount = shippingRates.length;
+	const actualCountryCount = dataShippingRates.length;
 	const remainingCount = expectedCountryCount - actualCountryCount;
 
-	const countriesPriceArray = getCountriesPriceArray( shippingRates );
+	const countriesPriceArray = groupShippingRatesByPriceCurrency(
+		dataShippingRates
+	);
 
 	// Prefill to-be-added price.
 	if ( countriesPriceArray.length === 0 ) {

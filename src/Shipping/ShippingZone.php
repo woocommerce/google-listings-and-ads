@@ -227,7 +227,14 @@ class ShippingZone implements Service {
 	 *     @type string $id      The shipping method ID.
 	 *     @type string $title   The user-defined title of the shipping method.
 	 *     @type bool   $enabled A boolean indicating whether the shipping method is enabled or not.
-	 *     @type array  $options Array of options for the shipping method (varies based on the method type).
+	 *     @type array  $options Array of options for the shipping method (varies based on the method type). {
+	 *         Array of options for the shipping method.
+	 *
+	 *         @type string $cost The cost of the shipping method. Only if the method is flat-rate or local pickup.
+	 *         @type array  $class_costs An array of costs for each shipping class (with class names used as array keys). Only if the method is flat-rate.
+	 *         @type string $min_amount The minimum order amount required to use the shipping method. Only if the method is free shipping.
+	 *
+	 *     }
 	 * }
 	 */
 	protected function parse_method( object $method ): ?array {
@@ -241,6 +248,14 @@ class ShippingZone implements Service {
 
 		switch ( $method->id ) {
 			case self::METHOD_FLAT_RATE:
+				$parsed_method['options'] = $this->get_flat_rate_method_options( $method );
+
+				// If the flat-rate method has no cost AND no shipping classes, we don't return it.
+				if ( empty( $parsed_method['options']['cost'] ) && empty( $parsed_method['options']['class_costs'] ) ) {
+					return null;
+				}
+
+				break;
 			case self::METHOD_PICKUP:
 				$cost = $method->get_option( 'cost' );
 				// Check if the cost is a numeric value (and not null or a math expression).
@@ -265,6 +280,48 @@ class ShippingZone implements Service {
 		}
 
 		return $parsed_method;
+	}
+
+	/**
+	 * Get the array of options of the flat-rate shipping method.
+	 *
+	 * @param object $method
+	 *
+	 * @return array
+	 */
+	protected function get_flat_rate_method_options( object $method ): array {
+		$options = [
+			'cost' => null,
+		];
+
+		$flat_cost = 0;
+		$cost      = $method->get_option( 'cost' );
+		// Check if the cost is a numeric value (and not null or a math expression).
+		if ( is_numeric( $cost ) ) {
+			$flat_cost       = (float) $cost;
+			$options['cost'] = $flat_cost;
+		}
+
+		// Add the no class cost.
+		$no_class_cost = $method->get_option( 'no_class_cost' );
+		if ( is_numeric( $no_class_cost ) ) {
+			$options['cost'] = $flat_cost + (float) $no_class_cost;
+		}
+
+		// Add shipping class costs.
+		$shipping_classes = $this->wc->get_shipping_classes();
+		foreach ( $shipping_classes as $shipping_class ) {
+			// Initialize the array if it doesn't exist.
+			$options['class_costs'] = $options['class_costs'] ?? [];
+
+			$shipping_class_cost = $method->get_option( 'class_cost_' . $shipping_class->term_id );
+			if ( is_numeric( $shipping_class_cost ) ) {
+				// Add the flat rate cost to the shipping class cost.
+				$options['class_costs'][ $shipping_class->slug ] = $flat_cost + $shipping_class_cost;
+			}
+		}
+
+		return $options;
 	}
 
 	/**
