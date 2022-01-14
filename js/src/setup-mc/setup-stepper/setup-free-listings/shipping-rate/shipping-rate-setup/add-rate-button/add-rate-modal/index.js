@@ -62,7 +62,6 @@ const AddRateModal = ( props ) => {
 				rate: 0,
 			} }
 			validate={ handleValidate }
-			onSubmitCallback={ handleSubmitCallback }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
