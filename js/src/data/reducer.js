@@ -40,7 +40,7 @@ const DEFAULT_STATE = {
 /**
  * @callback chainSet
  * @param {Array<string>|string} path The path of the property to set the new value.
- *   The `basePath`, which is called with `chain`, would be contacted with `path` if it exists.
+ *   The `basePath`, which is called with `chainState`, would be contacted with `path` if it exists.
  *   Array `path` is used directly as each path properties without parsing.
  *   String `path` is parsed to an array of path properties by splitting '.' and property names enclosed in square brackets. Example: 'user.settings[darkMode].schedule'.
  * @param {*} value The value to set.
@@ -69,7 +69,7 @@ const DEFAULT_STATE = {
  *
  * @return {ChainState} The chainable instance.
  */
-function chain( state, basePath = '' ) {
+function chainState( state, basePath = '' ) {
 	const nextState = Object.assign( state.constructor(), state );
 	const customizer = ( value ) => {
 		if ( value === null || value === undefined ) {
@@ -115,7 +115,7 @@ function chain( state, basePath = '' ) {
  * @return {Object|Array} The same type of passed-in `state` with placed `value` at `path` of the new state.
  */
 function setIn( state, path, value ) {
-	return chain( state ).setIn( path, value ).end();
+	return chainState( state ).setIn( path, value ).end();
 }
 
 const reducer = ( state = DEFAULT_STATE, action ) => {
@@ -304,7 +304,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				...data.issues
 			);
 
-			return chain( state, 'mc_issues' )
+			return chainState( state, 'mc_issues' )
 				.setIn( 'issues', issues )
 				.setIn( 'total', data.total )
 				.end();
@@ -313,7 +313,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		case TYPES.RECEIVE_MC_PRODUCT_FEED: {
 			const { query, data } = action;
 			const lastQuery = state.mc_product_feed || {};
-			const stateSetter = chain( state, 'mc_product_feed' );
+			const stateSetter = chainState( state, 'mc_product_feed' );
 
 			if (
 				lastQuery.per_page !== query.per_page ||
