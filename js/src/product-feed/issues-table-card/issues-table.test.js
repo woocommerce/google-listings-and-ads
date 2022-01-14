@@ -12,11 +12,7 @@ const mockIssue = ( id, args ) => {
 	};
 };
 
-jest.mock( '.~/product-feed/issues-table-card/getActiveIssueType', () => ( {
-	__esModule: true,
-	default: jest.fn().mockName( 'getActiveIssueType' ),
-} ) );
-
+jest.mock( '.~/hooks/useActiveIssueType' );
 jest.mock( '.~/hooks/useMCIssuesTypeFilter', () => ( {
 	__esModule: true,
 	default: jest.fn().mockName( 'useMCIssuesTypeFilter' ),
@@ -33,7 +29,7 @@ import { render } from '@testing-library/react';
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
-import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
+import useActiveIssueType from '.~/hooks/useActiveIssueType';
 
 describe( 'Issues Table', () => {
 	describe( 'Rendering correctly the table', () => {
@@ -51,7 +47,7 @@ describe( 'Issues Table', () => {
 		} );
 
 		it( 'Rendering Product table if issue type is product', () => {
-			getActiveIssueType.mockReturnValue( ISSUE_TYPE_PRODUCT );
+			useActiveIssueType.mockReturnValue( ISSUE_TYPE_PRODUCT );
 
 			const { queryByText } = render( <IssuesTable /> );
 
@@ -59,7 +55,7 @@ describe( 'Issues Table', () => {
 		} );
 
 		it( 'Rendering Account table if issue type is account', () => {
-			getActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
+			useActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
 
 			const { queryByText } = render( <IssuesTable /> );
 
@@ -69,7 +65,7 @@ describe( 'Issues Table', () => {
 
 	describe( 'Table behaviour', () => {
 		beforeEach( () => {
-			getActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
+			useActiveIssueType.mockReturnValue( ISSUE_TYPE_ACCOUNT );
 		} );
 
 		it( 'Renders paginator if needed', () => {

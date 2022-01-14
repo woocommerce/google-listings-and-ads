@@ -10,10 +10,10 @@ import { Pagination, TablePlaceholder } from '@woocommerce/components';
  */
 import { ISSUE_TABLE_PER_PAGE } from '../constants';
 import { recordTablePageEvent } from '.~/utils/recordEvent';
-import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
 import IssuesTableData from '.~/product-feed/issues-table-card/issues-table-data';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
 import usePagination from '.~/hooks/usePagination';
+import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import './index.scss';
 
 const headers = [
@@ -47,16 +47,16 @@ const headers = [
 /**
  * The table rendering the issues data with a paginator.
  * It uses useMCIssues for filtering the issues
- * It uses getActiveIssueType in order to know which issue is active.
+ * It uses useActiveIssueType in order to know which issue is active.
  * It uses usePagination in order to handle the pagination.
  *
  * @see useMCIssuesTotals
  * @see usePagination
- * @see getActiveIssueType
+ * @see useActiveIssueType
  * @return {JSX.Element} The rendered component
  */
 const IssuesTable = () => {
-	const issueType = getActiveIssueType();
+	const issueType = useActiveIssueType();
 	const { page, setPage } = usePagination( issueType );
 	const { data, hasFinishedResolution } = useMCIssuesTypeFilter(
 		issueType,
@@ -87,16 +87,18 @@ const IssuesTable = () => {
 					<IssuesTableData headers={ headers } data={ data } />
 				) }
 			</CardBody>
-			<CardFooter justify="center">
-				<Pagination
-					page={ page }
-					perPage={ ISSUE_TABLE_PER_PAGE }
-					total={ data?.total ?? 0 }
-					showPagePicker={ false }
-					showPerPagePicker={ false }
-					onPageChange={ handlePageChange }
-				/>
-			</CardFooter>
+			{ data?.total > 0 && (
+				<CardFooter justify="center">
+					<Pagination
+						page={ page }
+						perPage={ ISSUE_TABLE_PER_PAGE }
+						total={ data.total }
+						showPagePicker={ false }
+						showPerPagePicker={ false }
+						onPageChange={ handlePageChange }
+					/>
+				</CardFooter>
+			) }
 		</>
 	);
 };

@@ -12,6 +12,7 @@ import ErrorIcon from '.~/components/error-icon';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import EditProductLink from '.~/components/edit-product-link';
 import { ISSUE_TYPE_PRODUCT } from '.~/constants';
+import IssuesSolved from '.~/product-feed/issues-table-card/issues-solved';
 
 /**
  * The rows with data for the Issues table
@@ -31,6 +32,10 @@ const IssuesTableData = ( { data, headers } ) => {
 				) }
 			</EmptyTable>
 		);
+	}
+
+	if ( ! data.issues?.length ) {
+		return <IssuesSolved />;
 	}
 
 	return (
