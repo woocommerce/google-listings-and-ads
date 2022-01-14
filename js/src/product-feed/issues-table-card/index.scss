@@ -22,7 +22,8 @@
 
 		&__icon {
 			margin-bottom: $grid-unit-20;
-			width: $grid-unit-50;height: $grid-unit-50;
+			width: $grid-unit-50;
+			height: $grid-unit-50;
 			color: darken($gray-400, 6.5%);
 			font-size: $grid-unit-50;
 		}
@@ -34,6 +35,3 @@
 		}
 	}
 }
-
-
-
