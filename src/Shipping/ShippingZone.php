@@ -101,7 +101,7 @@ class ShippingZone implements Service {
 	 */
 	public function get_shipping_rates_for_country( string $country_code ): array {
 		$methods       = $this->get_shipping_methods_for_country( $country_code );
-		$free_shipping = self::find_free_shipping_method( $methods );
+		$free_shipping = self::find_available_free_shipping_method( $methods );
 
 		$rates = [];
 		foreach ( $methods as $method ) {
@@ -454,17 +454,17 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods.
+	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods, and it's enabled.
 	 *
 	 * @param array $methods
 	 *
 	 * @return array|null Array containing the free shipping method properties, or null if it does not exist.
 	 */
-	protected static function find_free_shipping_method( array $methods ): ?array {
+	protected static function find_available_free_shipping_method( array $methods ): ?array {
 		$free_shipping_method = array_filter(
 			$methods,
 			function ( $method ) {
-				return self::METHOD_FREE === $method['id'];
+				return self::METHOD_FREE === $method['id'] && $method['enabled'];
 			}
 		);
 
