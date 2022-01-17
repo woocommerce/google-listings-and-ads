@@ -76,12 +76,28 @@ class Settings {
 
 		$services = [];
 		foreach ( $rates as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
-			$services[] = $this->create_shipping_service( $country, $method, $currency, (float) $rate, $options );
+			$service = $this->create_shipping_service( $country, $method, $currency, (float) $rate, $options );
 
-			// Add a conditional free-shipping service
-			if ( 0 !== $rate && isset( $options['free_shipping_threshold'] ) ) {
-				$services[] = $this->create_conditional_free_shipping_service( $country, $currency, (float) $options['free_shipping_threshold'] );
+			if ( isset( $options['free_shipping_threshold'] ) ) {
+				$minimum_order_value = (float) $options['free_shipping_threshold'];
+
+				if ( 0 !== $rate ) {
+					// Add a conditional free-shipping service if the current rate is not free.
+					$services[] = $this->create_conditional_free_shipping_service( $country, $currency, $minimum_order_value );
+				} else {
+					// Set the minimum order value if the current rate is free.
+					$service->setMinimumOrderValue(
+						new Price(
+							[
+								'value'    => $minimum_order_value,
+								'currency' => $currency,
+							]
+						)
+					);
+				}
 			}
+
+			$services[] = $service;
 		}
 
 		$settings->setServices( $services );
