@@ -47,6 +47,27 @@ const ShippingRateSection = ( { formProps } ) => {
 						<VerticalGapLayout size="large">
 							<AppRadioContentControl
 								{ ...inputProps }
+								label={ createInterpolateElement(
+									__(
+										'<strong>Recommended:</strong> Automatically sync my store’s shipping settings to Google.',
+										'google-listings-and-ads'
+									),
+									{
+										strong: <strong></strong>,
+									}
+								) }
+								value="automatic"
+								collapsible
+							>
+								<RadioHelperText>
+									{ __(
+										'My current settings and any future changes to my store’s shipping rates and classes will be automatically synced to Google Merchant Center.',
+										'google-listings-and-ads'
+									) }
+								</RadioHelperText>
+							</AppRadioContentControl>
+							<AppRadioContentControl
+								{ ...inputProps }
 								label={ __(
 									'My shipping settings are simple. I can manually estimate flat shipping rates.',
 									'google-listings-and-ads'
