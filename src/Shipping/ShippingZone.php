@@ -100,10 +100,26 @@ class ShippingZone implements Service {
 	 * }
 	 */
 	public function get_shipping_rates_for_country( string $country_code ): array {
-		$methods       = $this->get_shipping_methods_for_country( $country_code );
-		$free_shipping = self::find_available_free_shipping_method( $methods );
+		$methods = $this->get_shipping_methods_for_country( $country_code );
 
-		$rates = [];
+		// If the only shipping method is the free shipping method, return it as the only rate.
+		if ( 1 === count( $methods ) && self::METHOD_FREE === $methods[0]['id'] ) {
+			$rate = [
+				'country'  => $country_code,
+				'method'   => $methods[0]['id'],
+				'currency' => $methods[0]['currency'],
+				'rate'     => 0,
+				'options'  => [],
+			];
+			if ( isset( $methods[0]['options']['min_amount'] ) ) {
+				$rate['options']['free_shipping_threshold'] = $methods[0]['options']['min_amount'];
+			}
+
+			return [ $rate ];
+		}
+
+		$free_shipping = self::find_available_free_shipping_method( $methods );
+		$rates         = [];
 		foreach ( $methods as $method ) {
 			// We process the free shipping method separately.
 			if ( ! $method['enabled'] || self::METHOD_FREE === $method['id'] ) {
