@@ -54,7 +54,7 @@
 		"install-scripts": [
 			"Google\\Task\\Composer::cleanup",
 			"php ./bin/prefix-vendor-namespace.php",
-			"composer run-script remove-google-ads-api-version-support -- 6 7",
+			"composer run-script remove-google-ads-api-version-support -- 6 7 8",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"
 		],
