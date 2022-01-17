@@ -110,12 +110,6 @@ class ShippingZone implements Service {
 				continue;
 			}
 
-			// We can skip the pickup method because it's still not supported.
-			// Todo: Add support for the pickup method once it's available.
-			if ( self::METHOD_PICKUP === $method['id'] ) {
-				continue;
-			}
-
 			$rate = [
 				'country'  => $country_code,
 				'method'   => $method['id'],
@@ -175,9 +169,14 @@ class ShippingZone implements Service {
 
 			foreach ( $methods as $method ) {
 				// Check if the method is supported and return its properties.
+
+				if ( ! self::is_shipping_method_supported( $method->id ) ) {
+					continue;
+				}
+
 				$method = $this->parse_method( $method );
 
-				// Skip if method is not supported.
+				// Skip if method cannot be parsed.
 				if ( null === $method ) {
 					continue;
 				}
@@ -435,19 +434,18 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Checks whether the given shipping method is valid.
+	 * Checks whether the given shipping method is supported.
 	 *
 	 * @param string $method
 	 *
 	 * @return bool
 	 */
-	public static function is_shipping_method_valid( string $method ): bool {
+	public static function is_shipping_method_supported( string $method ): bool {
 		return in_array(
 			$method,
 			[
 				self::METHOD_FLAT_RATE,
 				self::METHOD_FREE,
-				self::METHOD_PICKUP,
 			],
 			true
 		);

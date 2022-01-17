@@ -710,9 +710,9 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEquals( 10, $methods[0]['options']['min_amount'] );
 	}
 
-	public function test_is_shipping_method_valid() {
-		$this->assertTrue( ShippingZone::is_shipping_method_valid( ShippingZone::METHOD_FLAT_RATE ) );
-		$this->assertFalse( ShippingZone::is_shipping_method_valid( 'some_random_method_that_should_not_be_valid' ) );
+	public function test_is_shipping_method_supported() {
+		$this->assertTrue( ShippingZone::is_shipping_method_supported( ShippingZone::METHOD_FLAT_RATE ) );
+		$this->assertFalse( ShippingZone::is_shipping_method_supported( 'some_random_method_that_should_not_be_valid' ) );
 	}
 
 	public function test_returns_shipping_class_costs() {
