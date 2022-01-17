@@ -435,25 +435,6 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Checks whether the given shipping method is valid.
-	 *
-	 * @param string $method
-	 *
-	 * @return bool
-	 */
-	public static function is_shipping_method_valid( string $method ): bool {
-		return in_array(
-			$method,
-			[
-				self::METHOD_FLAT_RATE,
-				self::METHOD_FREE,
-				self::METHOD_PICKUP,
-			],
-			true
-		);
-	}
-
-	/**
 	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods, and it's enabled.
 	 *
 	 * @param array $methods
