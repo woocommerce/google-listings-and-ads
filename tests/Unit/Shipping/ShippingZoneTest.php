@@ -10,7 +10,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WC_Countries;
 use WC_Shipping_Flat_Rate;
 use WC_Shipping_Free_Shipping;
-use WC_Shipping_Local_Pickup;
 use WC_Shipping_Method;
 use WC_Shipping_Zone;
 
@@ -41,17 +40,6 @@ class ShippingZoneTest extends UnitTest {
 
 					  return null;
 				  } );
-		$pickup = $this->createMock( WC_Shipping_Local_Pickup::class );
-		$pickup->id = ShippingZone::METHOD_PICKUP;
-		$pickup->expects( $this->any() )
-				  ->method( 'get_option' )
-				  ->willReturnCallback( function ( $option ) {
-					  if ( 'cost' === $option ) {
-						  return 10;
-					  }
-
-					  return null;
-				  } );
 		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ShippingZone::METHOD_FREE;
 
@@ -59,7 +47,7 @@ class ShippingZoneTest extends UnitTest {
 		$unsupported_method     = $this->createMock( WC_Shipping_Method::class );
 		$unsupported_method->id = 'unsupported_method';
 
-		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate, $pickup, $free_shipping, $unsupported_method ] );
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate, $free_shipping, $unsupported_method ] );
 
 		// Return the zone locations for the given zone id.
 		$this->wc->expects( $this->any() )
@@ -68,7 +56,7 @@ class ShippingZoneTest extends UnitTest {
 
 		$methods = $this->shipping_zone->get_shipping_methods_for_country( 'US' );
 
-		$this->assertCount( 3, $methods );
+		$this->assertCount( 2, $methods );
 
 		$methods_ids = array_map(
 			function ( $method ) {
@@ -80,7 +68,6 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEqualSets(
 			[
 				ShippingZone::METHOD_FLAT_RATE,
-				ShippingZone::METHOD_PICKUP,
 				ShippingZone::METHOD_FREE,
 			],
 			$methods_ids
@@ -113,36 +100,6 @@ class ShippingZoneTest extends UnitTest {
 		$methods = $this->shipping_zone->get_shipping_methods_for_country( 'US' );
 
 		$this->assertEmpty( $methods );
-	}
-
-	public function test_pickup_methods_with_null_cost_are_considered_free() {
-		// Return one sample shipping zone.
-		$this->wc->expects( $this->any() )
-				 ->method( 'get_shipping_zones' )
-				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
-
-		$pickup = $this->createMock( WC_Shipping_Local_Pickup::class );
-		$pickup->id = ShippingZone::METHOD_PICKUP;
-		$pickup->expects( $this->any() )
-				  ->method( 'get_option' )
-				  ->willReturnCallback( function ( $option ) {
-					  if ( 'cost' === $option ) {
-						  return null;
-					  }
-				  } );
-
-		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $pickup ] );
-
-		// Return the zone locations for the given zone id.
-		$this->wc->expects( $this->any() )
-				 ->method( 'get_shipping_zone' )
-				 ->willReturn( $shipping_zone );
-
-		$methods = $this->shipping_zone->get_shipping_methods_for_country( 'US' );
-
-		$this->assertCount( 1, $methods );
-		$this->assertEquals( ShippingZone::METHOD_PICKUP, $methods[0]['id'] );
-		$this->assertEquals( 0, $methods[0]['options']['cost'] );
 	}
 
 	public function test_returns_shipping_method_properties() {
@@ -799,27 +756,13 @@ class ShippingZoneTest extends UnitTest {
 
 					  return null;
 				  } );
-		$pickup = $this->createMock( WC_Shipping_Local_Pickup::class );
-		$pickup->id = ShippingZone::METHOD_PICKUP;
-		$pickup->expects( $this->any() )
-			   ->method( 'is_enabled' )
-			   ->willReturn( true );
-		$pickup->expects( $this->any() )
-			   ->method( 'get_option' )
-			   ->willReturnCallback( function ( $option ) {
-				   if ( 'cost' === $option ) {
-					   return 10;
-				   }
-
-				   return null;
-			   } );
 		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ShippingZone::METHOD_FREE;
 		$free_shipping->expects( $this->any() )
 					  ->method( 'is_enabled' )
 					  ->willReturn( true );
 
-		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate, $pickup, $free_shipping ] );
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate, $free_shipping ] );
 
 		// Return the zone locations for the given zone id.
 		$this->wc->expects( $this->any() )
