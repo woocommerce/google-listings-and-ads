@@ -305,8 +305,9 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_all_shipping_rates(): array {
 		$results = $this->create_query()->set_limit( 100 )->get_results();
+		$rates   = $this->group_rates_by_country( $results );
 
-		return $this->prepare_rates( $results );
+		return array_map( [ $this, 'prepare_country_rates_for_output' ], $rates );
 	}
 
 	/**
@@ -317,7 +318,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	protected function get_shipping_rates_for_country( string $country ): array {
 		$results = $this->create_query()->where( 'country', $country )->get_results();
 
-		return $this->prepare_rates( $results );
+		return $this->prepare_country_rates_for_output( $results );
 	}
 
 	/**
@@ -329,21 +330,40 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 *
 	 * @since x.x.x
 	 */
-	protected function prepare_rates( array $rates ): array {
-		$rates_grouped = [];
-		foreach ( $rates as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
-			// Initialize the country rates array.
-			$rates_grouped[ $country ] = $rates_grouped[ $country ] ?? [];
-
+	protected function prepare_country_rates_for_output( array $rates ): array {
+		$rates_output = [];
+		foreach ( $rates as $rate ) {
 			// We don't render the class rates because they are not used by the API.
-			unset( $options['shipping_class_rates'] );
+			if ( isset( $rate['options']['shipping_class_rates'] ) ) {
+				unset( $rate['options']['shipping_class_rates'] );
+			}
 
-			$rates_grouped[ $country ][] = [
-				'method'   => $method,
-				'currency' => $currency,
-				'rate'     => $rate,
-				'options'  => $options,
-			];
+			// No need to include the country code in the output.
+			unset( $rate['country'] );
+
+			$rates_output[] = $rate;
+		}
+
+		return $rates_output;
+	}
+
+	/**
+	 * Groups the given shipping rates array by country.
+	 *
+	 * @param array $rates
+	 *
+	 * @return array An array of shipping rates grouped by country. The array keys are the country codes.
+	 *
+	 * @since x.x.x
+	 */
+	protected function group_rates_by_country( array $rates ): array {
+		$rates_grouped = [];
+		foreach ( $rates as $rate ) {
+			// Initialize the country rates array.
+			$rates_grouped[ $rate['country'] ] = $rates_grouped[ $rate['country'] ] ?? [];
+
+			// Add the rate to the country rates array.
+			$rates_grouped[ $rate['country'] ][] = $rate;
 		}
 
 		return $rates_grouped;
@@ -367,11 +387,11 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_suggested_shipping_rates_for_country( string $country ): ?array {
 		$rates = $this->shipping_zone->get_shipping_rates_for_country( $country );
-		$rates = $this->prepare_rates( $rates );
+		$rates = $this->prepare_country_rates_for_output( $rates );
 
 		return [
 			'country_code' => $country,
-			'rates'        => $rates,
+			'rates'        => array_values( $rates ),
 		];
 	}
 
