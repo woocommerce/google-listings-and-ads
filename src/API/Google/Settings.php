@@ -321,11 +321,6 @@ class Settings {
 			)
 		);
 
-		if ( ShippingZone::METHOD_PICKUP === $method ) {
-			$service->setShipmentType( 'pickup' );
-			// Todo: Set the pickup service (PickupCarrierService).
-		}
-
 		$rate_groups = [];
 		// Create a rate group for each shipping class (if any).
 		if ( is_array( $options ) && ! empty( $options['shipping_class_rates'] ) ) {

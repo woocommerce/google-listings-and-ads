@@ -21,7 +21,6 @@ defined( 'ABSPATH' ) || exit;
 class ShippingZone implements Service {
 
 	public const METHOD_FLAT_RATE = 'flat_rate';
-	public const METHOD_PICKUP    = 'local_pickup';
 	public const METHOD_FREE      = 'free_shipping';
 
 	use GoogleHelper;
@@ -89,7 +88,7 @@ class ShippingZone implements Service {
 	 *     @type string $country  The shipping method country.
 	 *     @type string $method   The shipping method ID.
 	 *     @type string $currency The currency which the shipping rate is in. Defaults to the store currency.
-	 *     @type float  $rate     The cost of the shipping method. Only if the method is flat-rate or local pickup.
+	 *     @type float  $rate     The cost of the shipping method. Only if the method is flat-rate.
 	 *     @type array  $options  Array of options for the shipping method (varies based on the method type). {
 	 *         Array of options for the shipping method.
 	 *
@@ -227,7 +226,7 @@ class ShippingZone implements Service {
 		}
 
 		if (
-			// If a flat-rate/local-pickup method already exists, we replace it with the one with the higher cost.
+			// If a flat-rate method already exists, we replace it with the one with the higher cost.
 			self::does_method_have_higher_cost( $method, $existing_method ) ||
 			// If a free-shipping method already exists, we replace it with the one with the higher required minimum order amount.
 			self::does_method_have_higher_min_amount( $method, $existing_method )
@@ -251,7 +250,7 @@ class ShippingZone implements Service {
 			return false;
 		}
 
-		return in_array( $method['id'], [ self::METHOD_FLAT_RATE, self::METHOD_PICKUP ], true ) && $method['options']['cost'] > $existing_method['options']['cost'];
+		return self::METHOD_FLAT_RATE === $method['id'] && $method['options']['cost'] > $existing_method['options']['cost'];
 	}
 
 	/**
@@ -319,7 +318,7 @@ class ShippingZone implements Service {
 	 *     @type array  $options  Array of options for the shipping method (varies based on the method type). {
 	 *         Array of options for the shipping method.
 	 *
-	 *         @type float   $cost The cost of the shipping method. Only if the method is flat-rate or local pickup.
+	 *         @type float   $cost The cost of the shipping method. Only if the method is flat-rate.
 	 *         @type float[] $class_costs An array of costs for each shipping class (with class names used as array keys). Only if the method is flat-rate.
 	 *         @type float   $min_amount The minimum order amount required to use the shipping method. Only if the method is free shipping.
 	 *
@@ -344,17 +343,6 @@ class ShippingZone implements Service {
 					return null;
 				}
 
-				break;
-			case self::METHOD_PICKUP:
-				$cost = $method->get_option( 'cost' );
-				if ( empty( $cost ) ) {
-					// For the pickup method, an empty cost value means that the method is free of charge.
-					$cost = 0;
-				} elseif ( ! is_numeric( $cost ) ) {
-					// Skip if the cost is not a numeric value (and possibly a math expression).
-					return null;
-				}
-				$parsed_method['options']['cost'] = (float) $cost;
 				break;
 			case self::METHOD_FREE:
 				// Check if free shipping requires a minimum order amount.

@@ -423,7 +423,6 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 							'description'       => __( 'The shipping method.', 'google-listings-and-ads' ),
 							'enum'              => [
 								ShippingZone::METHOD_FLAT_RATE,
-								// ShippingZone::METHOD_PICKUP, // Todo: Add support for the pickup method once it's available.
 							],
 							'context'           => [ 'view', 'edit' ],
 							'validate_callback' => 'rest_validate_request_arg',
