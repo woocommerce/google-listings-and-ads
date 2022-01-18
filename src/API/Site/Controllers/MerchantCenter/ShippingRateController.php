@@ -208,7 +208,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 			if ( empty( $rate ) ) {
 				return new Response(
 					[
-						'message' => __( 'No rate available.', 'google-listings-and-ads' ),
+						'message' => __( 'No rate found with the given ID.', 'google-listings-and-ads' ),
 						'id'      => $id,
 					],
 					404
