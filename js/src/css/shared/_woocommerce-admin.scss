@@ -1,5 +1,12 @@
 // Used in .~/hooks/useLayout.js
 .gla-full-content {
+	// #wpbody `margin-top` style is set onto DOM node directly in WC Admin.
+	// Here force override it to 0.
+	// Ref: https://github.com/woocommerce/woocommerce-admin/blob/95c487247416ab34eb8e492b984e2b068618e0d3/client/header/index.js#L92-L118.
+	#wpbody {
+		margin-top: 0 !important;
+	}
+
 	.woocommerce-layout {
 		padding-top: 0;
 
