@@ -68,7 +68,7 @@ const SetupFreeListings = ( props ) => {
 			<Hero />
 			<Form
 				initialValues={ {
-					shipping_rate: settings.shipping_rate,
+					shipping_rate: settings.shipping_rate || 'automatic',
 					offers_free_shipping: settings.offers_free_shipping,
 					free_shipping_threshold: settings.free_shipping_threshold,
 					shipping_time: settings.shipping_time,
