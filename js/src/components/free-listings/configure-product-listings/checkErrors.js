@@ -3,7 +3,8 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const validShippingSet = new Set( [ 'flat', 'manual' ] );
+const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
+const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
 
 const checkErrors = (
@@ -17,7 +18,7 @@ const checkErrors = (
 	/**
 	 * Check shipping rates.
 	 */
-	if ( ! validShippingSet.has( values.shipping_rate ) ) {
+	if ( ! validShippingRateSet.has( values.shipping_rate ) ) {
 		errors.shipping_rate = __(
 			'Please select a shipping rate option.',
 			'google-listings-and-ads'
@@ -51,7 +52,7 @@ const checkErrors = (
 	/**
 	 * Check shipping times.
 	 */
-	if ( ! validShippingSet.has( values.shipping_time ) ) {
+	if ( ! validShippingTimeSet.has( values.shipping_time ) ) {
 		errors.shipping_time = __(
 			'Please select a shipping time option.',
 			'google-listings-and-ads'
