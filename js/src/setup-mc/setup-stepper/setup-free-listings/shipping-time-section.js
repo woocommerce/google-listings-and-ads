@@ -13,6 +13,7 @@ import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import ShippingTimeSetup from './shipping-time/shipping-time-setup';
+import Subsection from '.~/wcdl/subsection';
 
 const ShippingTimeSection = ( { formProps } ) => {
 	const { getInputProps, values } = formProps;
@@ -87,15 +88,12 @@ const ShippingTimeSection = ( { formProps } ) => {
 				{ values.shipping_time === 'flat' && (
 					<Section.Card>
 						<Section.Card.Body>
-							<h3
-								variant="title.small"
-								className="gla-shipping-title"
-							>
+							<Subsection.Title>
 								{ __(
 									'Estimated shipping times',
 									'google-listings-and-ads'
 								) }
-							</h3>
+							</Subsection.Title>
 							<ShippingTimeSetup formProps={ formProps } />
 						</Section.Card.Body>
 					</Section.Card>

@@ -13,6 +13,7 @@ import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import ShippingRateSetup from './shipping-rate/shipping-rate-setup';
+import Subsection from '.~/wcdl/subsection';
 
 const ShippingRateSection = ( { formProps } ) => {
 	const { getInputProps, values } = formProps;
@@ -108,15 +109,12 @@ const ShippingRateSection = ( { formProps } ) => {
 				{ values.shipping_rate === 'flat' && (
 					<Section.Card>
 						<Section.Card.Body>
-							<h3
-								variant="title.small"
-								className="gla-shipping-title"
-							>
+							<Subsection.Title>
 								{ __(
 									'Estimated shipping rates',
 									'google-listings-and-ads'
 								) }
-							</h3>
+							</Subsection.Title>
 							<ShippingRateSetup formProps={ formProps } />
 						</Section.Card.Body>
 					</Section.Card>
