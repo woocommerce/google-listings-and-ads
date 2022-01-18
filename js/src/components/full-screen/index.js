@@ -3,11 +3,6 @@
  */
 import { useEffect } from '@wordpress/element';
 
-/**
- * Internal dependencies
- */
-import './index.scss';
-
 const cssClassNames = {
 	isWPToolbarDisabled: 'is-wp-toolbar-disabled',
 	woocommerceAdminFullScreen: 'woocommerce-admin-full-screen',
