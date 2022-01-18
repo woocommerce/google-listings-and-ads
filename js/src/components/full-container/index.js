@@ -6,7 +6,6 @@ import { useEffect } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import './index.scss';
 import useWPBodyMarginOffsetEffect from './useWPBodyMarginOffsetEffect';
 
 /**
