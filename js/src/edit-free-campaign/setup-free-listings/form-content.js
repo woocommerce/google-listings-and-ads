@@ -25,7 +25,7 @@ import ConditionalSection from '.~/components/conditional-section';
  * without auto-save functionality.
  *
  * @param {Object} props React props.
- * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to CombinedShipping.
+ * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to ShippingRateSection and ShippingTimeSection.
  * @param {Object} props.formProps Form props forwarded from `Form` component, containing free listings settings.
  * @param {boolean} [props.saving=false] Is the form currently beign saved?
  * @param {string} [props.submitLabel="Complete setup"] Submit button label.
