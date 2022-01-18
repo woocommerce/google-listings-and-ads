@@ -9,7 +9,9 @@ const SupportedCountrySelect = ( props ) => {
 
 	const options = data ? Object.keys( data ) : [];
 
-	return <AppCountrySelect options={ options } { ...props } />;
+	return (
+		<AppCountrySelect hideBeforeSearch options={ options } { ...props } />
+	);
 };
 
 export default SupportedCountrySelect;
