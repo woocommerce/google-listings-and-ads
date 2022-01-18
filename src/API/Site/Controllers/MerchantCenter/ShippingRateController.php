@@ -160,6 +160,11 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 
 			return array_map(
 				function ( $rate ) use ( $request ) {
+					// Remove the shipping class rates from the response because they are not needed.
+					if ( isset( $rate['options']['shipping_class_rates'] ) ) {
+						unset( $rate['options']['shipping_class_rates'] );
+					}
+
 					$response = $this->prepare_item_for_response( $rate, $request );
 
 					// Suggestions don't have a id.
@@ -286,6 +291,18 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 		return function( Request $request ) {
 			try {
 				$id = (string) $request->get_param( 'id' );
+
+				$rate = $this->get_shipping_rate_by_id( $id );
+				if ( empty( $rate ) ) {
+					return new Response(
+						[
+							'message' => __( 'No rate found with the given ID.', 'google-listings-and-ads' ),
+							'id'      => $id,
+						],
+						404
+					);
+				}
+
 				$this->create_query()->delete( 'id', $id );
 
 				return [
