@@ -1,4 +1,5 @@
-.gla-full-container {
+// Used in .~/hooks/useLayout.js
+.gla-full-content {
 	.woocommerce-layout {
 		padding-top: 0;
 
@@ -51,7 +52,8 @@
 	}
 }
 
-.app-full-screen {
+// Used in .~/hooks/useLayout.js
+.gla-full-page {
 	// hack to fix the margin-top when WC Navigation is not enabled
 	// and width is between 600px and 782px.
 	// without this, the margin-top would be -32px,
