@@ -85,7 +85,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_read_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => [ $this->get_schema_properties()['id'] ],
+					'args'                => [ 'id' => $this->get_schema_properties()['id'] ],
 				],
 				[
 					'methods'             => TransportMethods::EDITABLE,
@@ -97,7 +97,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 					'methods'             => TransportMethods::DELETABLE,
 					'callback'            => $this->get_delete_rate_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => [ $this->get_schema_properties()['id'] ],
+					'args'                => [ 'id' => $this->get_schema_properties()['id'] ],
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
@@ -110,7 +110,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_suggestions_callback(),
 					'permission_callback' => $this->get_permission_callback(),
-					'args'                => [ $this->get_schema_properties()['country'] ],
+					'args'                => [ 'country' => $this->get_schema_properties()['country'] ],
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
