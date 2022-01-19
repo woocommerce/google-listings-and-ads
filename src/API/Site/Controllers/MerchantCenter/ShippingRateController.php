@@ -265,7 +265,6 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_all_shipping_rates(): array {
 		return $this->create_query()
-					->set_limit( 200 )
 					->set_order( 'country', 'ASC' )
 					->get_results();
 	}
