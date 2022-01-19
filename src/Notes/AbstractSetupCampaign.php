@@ -7,7 +7,9 @@ use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use Exception;
 use stdClass;
 
 defined( 'ABSPATH' ) || exit;
@@ -23,6 +25,20 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	use AdsAwareTrait;
 	use PluginHelper;
 	use Utilities;
+
+	/**
+	 * @var MerchantStatuses
+	 */
+	protected $merchant_statuses;
+
+	/**
+	 * AbstractSetupCampaign constructor.
+	 *
+	 * @param MerchantStatuses $merchant_statuses
+	 */
+	public function __construct( MerchantStatuses $merchant_statuses ) {
+		$this->merchant_statuses = $merchant_statuses;
+	}
 
 	/**
 	 * Get the note entry.
@@ -76,7 +92,44 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 			return false;
 		}
 
+		// We don't need to process exceptions here, as we're just determining whether to add a note.
+		try {
+			if ( $this->has_account_issues() ) {
+				return false;
+			}
+
+			if ( ! $this->has_at_least_one_synced_product() ) {
+				return false;
+			}
+		} catch ( Exception $e ) {
+			return false;
+		}
+
 		return true;
+	}
+
+	/**
+	 * Determine whether there are any account-level issues.
+	 *
+	 * @since x.x.x
+	 * @return bool
+	 */
+	protected function has_account_issues(): bool {
+		$issues = $this->merchant_statuses->get_issues( MerchantStatuses::TYPE_ACCOUNT );
+
+		return isset( $issues['issues'] ) && count( $issues['issues'] ) >= 1;
+	}
+
+	/**
+	 * Determine whether there is at least one synced product.
+	 *
+	 * @since x.x.x
+	 * @return bool
+	 */
+	protected function has_at_least_one_synced_product(): bool {
+		$statuses = $this->merchant_statuses->get_product_statistics();
+
+		return $statuses['statistics']['active'] >= 1;
 	}
 
 	/**

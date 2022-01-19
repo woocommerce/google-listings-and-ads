@@ -262,8 +262,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( CompleteSetupNote::class );
 		$this->share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( ReviewAfterConversionsNote::class, MerchantMetrics::class, WP::class );
-		$this->share_with_tags( SetupCampaignNote::class );
-		$this->share_with_tags( SetupCampaign2Note::class );
+		$this->share_with_tags( SetupCampaignNote::class, MerchantStatuses::class );
+		$this->share_with_tags( SetupCampaign2Note::class, MerchantStatuses::class );
 		$this->share_with_tags( SetupCouponSharingNote::class, MerchantStatuses::class );
 		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class, Note::class );
 
