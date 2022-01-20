@@ -16,6 +16,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\Attribu
 use Automattic\WooCommerce\GoogleListingsAndAds\Admin\Product\Attributes\VariationsAttributes;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings as GoogleSettings;
@@ -174,6 +175,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		VariationsAttributes::class   => true,
 		DeprecatedFilters::class      => true,
 		ShippingZone::class           => true,
+		AdsAccountService::class      => true,
 	];
 
 	/**
@@ -255,6 +257,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( SiteVerificationMeta::class, ContainerInterface::class );
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
+		$this->conditionally_share_with_tags( AdsAccountService::class, ContainerInterface::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
