@@ -965,6 +965,68 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEquals( 0, $rates[0]['rate'] );
 	}
 
+	public function test_returns_shipping_rate_with_zero_cost_if_only_free_shipping_enabled() {
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zones' )
+				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
+
+		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+				  ->method( 'is_enabled' )
+				  ->willReturn( false );
+		$flat_rate->expects( $this->any() )
+				  ->method( 'get_option' )
+				  ->willReturnCallback( function ( $option ) {
+					  if ( 'cost' === $option ) {
+						  return 10;
+					  }
+
+					  return null;
+				  } );
+		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
+		$free_shipping->id = ShippingZone::METHOD_FREE;
+		$free_shipping->expects( $this->any() )
+					  ->method( 'is_enabled' )
+					  ->willReturn( true );
+
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate, $free_shipping ] );
+
+		// Return the zone locations for the given zone id.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zone' )
+				 ->willReturn( $shipping_zone );
+
+		$rates = $this->shipping_zone->get_shipping_rates_for_country( 'US' );
+
+		$this->assertCount( 1, $rates );
+		$this->assertEquals( 0, $rates[0]['rate'] );
+	}
+
+	public function test_returns_shipping_rate_with_zero_cost_if_only_free_shipping_exists() {
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zones' )
+				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
+
+		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
+		$free_shipping->id = ShippingZone::METHOD_FREE;
+		$free_shipping->expects( $this->any() )
+					  ->method( 'is_enabled' )
+					  ->willReturn( true );
+
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $free_shipping ] );
+
+		// Return the zone locations for the given zone id.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zone' )
+				 ->willReturn( $shipping_zone );
+
+		$rates = $this->shipping_zone->get_shipping_rates_for_country( 'US' );
+
+		$this->assertCount( 1, $rates );
+		$this->assertEquals( 0, $rates[0]['rate'] );
+	}
+
 	public function test_returns_class_shipping_rates() {
 		$this->wc->expects( $this->any() )
 				 ->method( 'get_shipping_zones' )
