@@ -27,11 +27,11 @@ import FormContent from './form-content';
  * @param {Object} props
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to FormContent.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
+ * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
  * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} props.onShippingRatesChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
+ * @param {(newValue: Object) => void} props.onShippingRatesChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChange}.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} props.onShippingTimesChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
+ * @param {(newValue: Object) => void} props.onShippingTimesChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChange}.
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
  * @param {string} [props.submitLabel] Submit button label, to be forwarded to `FormContent`.
  */
@@ -111,10 +111,8 @@ const SetupFreeListings = ( {
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,
 				} }
-				onChangeCallback={ handleChange }
 				onChange={ handleChange }
 				validate={ handleValidate }
-				onSubmitCallback={ handleSubmit }
 				onSubmit={ handleSubmit }
 			>
 				{ ( formProps ) => {

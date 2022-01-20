@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.9.0
+Stable tag: 1.10.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -117,6 +117,23 @@ Smart Shopping campaigns are pay-per-click, meaning you only pay when someone cl
 Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
 
 == Changelog ==
+
+= 1.10.0 - 2022-01-13 =
+* Add - Bulk update channel visibility for coupons.
+* Add - CES prompts for initial setup and campaign creation.
+* Add - Pre-fill shipping rates during free listing configuration wizard.
+* Add - Pre-fill shipping rates in Setup Merchant Center flow based on store's shipping settings.
+* Add - Sync products' shipping label/class to Merchant Center.
+* Fix - Drop WC 5.7 support.
+* Fix - Fatal error when creating Ads account without Site Title.
+* Fix - Fix/1078 shipping values flash during onboarding setup.
+* Fix - Fixing coupon test issue.
+* Fix - Group shipping rate by price and currency, and display the right currency in shipping rate input.
+* Fix - MC address validation.
+* Fix - Remove WC's `is_ajax` (deprecated in 6.1) in favor of proxied WP `wp_doing_ajax`.
+* Fix - Removed state/region address validation .
+* Fix - Replace `cloneDeep` within `.~/data/reducer.js` with functions that would not mutate other references of the state tree.
+* Tweak - WC 6.1 compatibility.
 
 = 1.9.0 - 2021-12-15 =
 * Add - Pre-fill target audience countries during onboarding using WooCommerce shipping zones. #1131
