@@ -779,6 +779,29 @@ class ShippingZoneTest extends UnitTest {
 
 	}
 
+	public function test_doesnt_return_disabled_methods() {
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zones' )
+				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
+
+		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+				  ->method( 'is_enabled' )
+				  ->willReturn( false );
+
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate ] );
+
+		// Return the zone locations for the given zone id.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zone' )
+				 ->willReturn( $shipping_zone );
+
+		$rates = $this->shipping_zone->get_shipping_methods_for_country( 'US' );
+
+		$this->assertEmpty( $rates );
+	}
+
 	public function test_doesnt_return_unsupported_rates() {
 		$this->wc->expects( $this->any() )
 				 ->method( 'get_shipping_zones' )
