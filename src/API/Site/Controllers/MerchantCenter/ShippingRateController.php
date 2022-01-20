@@ -334,9 +334,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 		$rates_output = [];
 		foreach ( $rates as $rate ) {
 			// We don't render the class rates because they are not used by the API.
-			if ( isset( $rate['options']['shipping_class_rates'] ) ) {
-				unset( $rate['options']['shipping_class_rates'] );
-			}
+			unset( $rate['options']['shipping_class_rates'] );
 
 			// No need to include the country code in the output.
 			unset( $rate['country'] );
