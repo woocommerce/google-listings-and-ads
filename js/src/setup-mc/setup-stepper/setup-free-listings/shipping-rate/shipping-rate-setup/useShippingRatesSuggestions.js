@@ -39,7 +39,7 @@ const useShippingRatesSuggestions = () => {
 	} = useApiFetchEffect(
 		dataFinalCountryCodes && {
 			path: addQueryArgs(
-				`${ API_NAMESPACE }/mc/shipping/rates/suggestions/batch`,
+				`${ API_NAMESPACE }/mc/shipping/rates/suggestions`,
 				{ country_codes: dataFinalCountryCodes }
 			),
 		}
@@ -48,8 +48,8 @@ const useShippingRatesSuggestions = () => {
 	/**
 	 * Make returned `data` consistent with shipping rates structure in wp-data.
 	 */
-	const data = dataSuggestions?.success.map( ( el ) => ( {
-		countryCode: el.country_code,
+	const data = dataSuggestions?.map( ( el ) => ( {
+		countryCode: el.country,
 		currency: el.currency,
 		rate: el.rate,
 	} ) );
