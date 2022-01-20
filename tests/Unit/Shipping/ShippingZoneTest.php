@@ -32,6 +32,9 @@ class ShippingZoneTest extends UnitTest {
 		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
 		$flat_rate->expects( $this->any() )
+				  ->method( 'is_enabled' )
+				  ->willReturn( true );
+		$flat_rate->expects( $this->any() )
 				  ->method( 'get_option' )
 				  ->willReturnCallback( function ( $option ) {
 					  if ( 'cost' === $option ) {
@@ -40,8 +43,12 @@ class ShippingZoneTest extends UnitTest {
 
 					  return null;
 				  } );
+
 		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ShippingZone::METHOD_FREE;
+		$free_shipping->expects( $this->any() )
+				  ->method( 'is_enabled' )
+				  ->willReturn( true );
 
 		// Adding one unsupported shipping method. This method should not be returned.
 		$unsupported_method     = $this->createMock( WC_Shipping_Method::class );
@@ -82,6 +89,9 @@ class ShippingZoneTest extends UnitTest {
 
 		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+				  ->method( 'is_enabled' )
+				  ->willReturn( true );
 		$flat_rate->expects( $this->any() )
 				  ->method( 'get_option' )
 				  ->willReturnCallback( function ( $option ) {
@@ -137,7 +147,6 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertCount( 1, $methods );
 		$this->assertEquals( ShippingZone::METHOD_FLAT_RATE, $methods[0]['id'] );
 		$this->assertEquals( 'Flat Rate', $methods[0]['title'] );
-		$this->assertEquals( true, $methods[0]['enabled'] );
 		$this->assertEquals( 'USD', $methods[0]['currency'] );
 		$this->assertNotEmpty( $methods[0]['options'] );
 		$this->assertEquals( 10, $methods[0]['options']['cost'] );
@@ -156,6 +165,9 @@ class ShippingZoneTest extends UnitTest {
 
 		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ShippingZone::METHOD_FREE;
+		$free_shipping->expects( $this->any() )
+				  ->method( 'is_enabled' )
+				  ->willReturn( true );
 		$free_shipping->expects( $this->any() )
 						->method( 'get_option' )
 						->willReturnCallback( function ( $option ) use ( $requires ) {
@@ -197,6 +209,9 @@ class ShippingZoneTest extends UnitTest {
 
 		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ShippingZone::METHOD_FREE;
+		$free_shipping->expects( $this->any() )
+					  ->method( 'is_enabled' )
+					  ->willReturn( true );
 		$free_shipping->expects( $this->any() )
 						->method( 'get_option' )
 						->willReturnCallback( function ( $option ) use ( $requires ) {
@@ -315,6 +330,9 @@ class ShippingZoneTest extends UnitTest {
 					 // We need at least one method for each country in order for it to show up in the list.
 					 $free_shipping     = $this->createMock( WC_Shipping_Free_Shipping::class );
 					 $free_shipping->id = ShippingZone::METHOD_FREE;
+					 $free_shipping->expects( $this->any() )
+								   ->method( 'is_enabled' )
+								   ->willReturn( true );
 					 $zone->expects( $this->any() )
 						  ->method( 'get_shipping_methods' )
 						  ->willReturn( [ $free_shipping ] );
@@ -361,6 +379,9 @@ class ShippingZoneTest extends UnitTest {
 	public function test_ignores_shipping_countries_with_no_methods() {
 		$free_shipping     = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ShippingZone::METHOD_FREE;
+		$free_shipping->expects( $this->any() )
+					  ->method( 'is_enabled' )
+					  ->willReturn( true );
 		$shipping_zones = [
 			[
 				'id'             => 0,
@@ -418,6 +439,9 @@ class ShippingZoneTest extends UnitTest {
 		$flat_rate_1 = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate_1->id = ShippingZone::METHOD_FLAT_RATE;
 		$flat_rate_1->expects( $this->any() )
+					  ->method( 'is_enabled' )
+					  ->willReturn( true );
+		$flat_rate_1->expects( $this->any() )
 				  ->method( 'get_option' )
 				  ->willReturnCallback( function ( $option ) {
 					  if ( 'cost' === $option ) {
@@ -429,6 +453,9 @@ class ShippingZoneTest extends UnitTest {
 		// Create another flat-rate shipping method with a higher cost.
 		$flat_rate_2 = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate_2->id = ShippingZone::METHOD_FLAT_RATE;
+		$flat_rate_2->expects( $this->any() )
+					->method( 'is_enabled' )
+					->willReturn( true );
 		$flat_rate_2->expects( $this->any() )
 				  ->method( 'get_option' )
 				  ->willReturnCallback( function ( $option ) {
@@ -502,6 +529,9 @@ class ShippingZoneTest extends UnitTest {
 		$free_shipping_1 = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping_1->id = ShippingZone::METHOD_FREE;
 		$free_shipping_1->expects( $this->any() )
+					->method( 'is_enabled' )
+					->willReturn( true );
+		$free_shipping_1->expects( $this->any() )
 					  ->method( 'get_option' )
 					  ->willReturnCallback( function ( $option ) {
 						  if ( 'requires' === $option ) {
@@ -517,6 +547,9 @@ class ShippingZoneTest extends UnitTest {
 		// Create another free-shipping method with a higher min amount option.
 		$free_shipping_2 = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping_2->id = ShippingZone::METHOD_FREE;
+		$free_shipping_2->expects( $this->any() )
+						->method( 'is_enabled' )
+						->willReturn( true );
 		$free_shipping_2->expects( $this->any() )
 					  ->method( 'get_option' )
 					  ->willReturnCallback( function ( $option ) {
@@ -592,10 +625,16 @@ class ShippingZoneTest extends UnitTest {
 		// Create a sample free-shipping method WITHOUT min amount option.
 		$free_shipping_1 = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping_1->id = ShippingZone::METHOD_FREE;
+		$free_shipping_1->expects( $this->any() )
+						->method( 'is_enabled' )
+						->willReturn( true );
 
 		// Create another free-shipping method with a min amount option specified.
 		$free_shipping_2 = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping_2->id = ShippingZone::METHOD_FREE;
+		$free_shipping_2->expects( $this->any() )
+						->method( 'is_enabled' )
+						->willReturn( true );
 		$free_shipping_2->expects( $this->any() )
 					  ->method( 'get_option' )
 					  ->willReturnCallback( function ( $option ) {
@@ -696,6 +735,9 @@ class ShippingZoneTest extends UnitTest {
 		// Create a sample flat-rate shipping method with a constant cost.
 		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
 		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+						->method( 'is_enabled' )
+						->willReturn( true );
 		$flat_rate->expects( $this->any() )
 				  ->method( 'get_option' )
 				  ->willReturnCallback( function ( $option ) {
