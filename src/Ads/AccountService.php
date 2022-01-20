@@ -83,7 +83,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @throws Exception If there is already an Ads account ID.
 	 */
 	public function use_existing_account( int $account_id ) {
-		$ads_id = $this->options->get( OptionsInterface::ADS_ID );
+		$ads_id = $this->options->get_ads_id();
 		if ( $ads_id && $ads_id !== $account_id ) {
 			throw new Exception(
 				/* translators: 1: is a numeric account ID */
@@ -116,7 +116,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 */
 	public function setup_account(): array {
 		$state   = $this->state->get();
-		$ads_id  = $this->options->get( OptionsInterface::ADS_ID );
+		$ads_id  = $this->options->get_ads_id();
 		$account = [ 'id' => $ads_id ];
 
 		foreach ( $state as $name => &$step ) {
