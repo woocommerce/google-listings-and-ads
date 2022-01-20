@@ -110,16 +110,6 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 				$rates_output = array_merge( $rates_output, $suggestions );
 			}
 
-			if ( empty( $rates_output ) ) {
-				return new Response(
-					[
-						'message'       => __( 'No rate available for the country codes provided.', 'google-listings-and-ads' ),
-						'country_codes' => $country_codes,
-					],
-					404
-				);
-			}
-
 			return $rates_output;
 		};
 	}
