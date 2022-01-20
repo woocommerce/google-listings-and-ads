@@ -67,7 +67,6 @@ const EditPaidAdsCampaignForm = ( props ) => {
 				country: [ campaign.country ],
 			} }
 			validate={ handleValidate }
-			onSubmitCallback={ handleSubmit }
 			onSubmit={ handleSubmit }
 		>
 			{ ( formProps ) => {

@@ -172,7 +172,7 @@ class WP {
 	 *
 	 * @return bool True if it's a WordPress Ajax request, false otherwise.
 	 *
-	 * @since x.x.x
+	 * @since 1.10.0
 	 */
 	public function wp_doing_ajax(): bool {
 		return wp_doing_ajax();

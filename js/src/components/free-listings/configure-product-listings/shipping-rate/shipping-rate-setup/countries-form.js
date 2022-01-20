@@ -4,7 +4,7 @@
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AddRateButton from './add-rate-button';
 import CountriesPriceInput from './countries-price-input';
-import getCountriesPriceArray from './getCountriesPriceArray';
+import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
 
 /**
  * Partial form to provide shipping rates for individual countries,
@@ -35,7 +35,9 @@ export default function ShippingCountriesForm( {
 	const totalCountyCount = actualCountryCount + remainingCount;
 
 	// Group countries with the same rate.
-	const countriesPriceArray = getCountriesPriceArray( shippingRates );
+	const countriesPriceArray = groupShippingRatesByPriceCurrency(
+		shippingRates
+	);
 
 	// Prefill to-be-added price.
 	if ( countriesPriceArray.length === 0 ) {
