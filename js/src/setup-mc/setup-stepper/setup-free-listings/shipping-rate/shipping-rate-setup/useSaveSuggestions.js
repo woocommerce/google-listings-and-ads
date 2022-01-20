@@ -8,26 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import getCountriesPriceArray from './getCountriesPriceArray';
 import { useAppDispatch } from '.~/data';
-
-/**
- * Convert shipping rates suggestions to aggregated shipping rates
- * that are ready to be saved.
- *
- * @param {Array<import('.~/data/actions').ShippingRate>} suggestions Shipping rate suggestions.
- * @return {Array<import('.~/data/actions').AggregatedShippingRate>} Aggregated shipping rates.
- */
-const convertSuggestionsToAggregatedShippingRates = ( suggestions ) => {
-	const countriesPriceArray = getCountriesPriceArray( suggestions );
-	const values = countriesPriceArray.map( ( el ) => ( {
-		countryCodes: el.countries,
-		currency: el.currency,
-		rate: el.price,
-	} ) );
-
-	return values;
-};
 
 /**
  * A hook that returns a `saveSuggestions` callback.
@@ -44,13 +25,7 @@ const useSaveSuggestions = () => {
 	const saveSuggestions = useCallback(
 		async ( suggestions ) => {
 			try {
-				const shippingRates = convertSuggestionsToAggregatedShippingRates(
-					suggestions
-				);
-				const promises = shippingRates.map( ( el ) => {
-					return upsertShippingRates( el );
-				} );
-				await Promise.all( promises );
+				await upsertShippingRates( suggestions );
 			} catch ( error ) {
 				createNotice(
 					'error',

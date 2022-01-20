@@ -83,25 +83,21 @@ export function* fetchShippingRates() {
 /**
  * Updates or inserts given aggregated shipping rate.
  *
- * @param {AggregatedShippingRate} shippingRate
+ * @param {AggregatedShippingRate} shippingRates
  */
-export function* upsertShippingRates( shippingRate ) {
-	const { countryCodes, currency, rate } = shippingRate;
-
+export function* upsertShippingRates( shippingRates ) {
 	try {
 		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'POST',
 			data: {
-				country_codes: countryCodes,
-				currency,
-				rate,
+				rates: shippingRates,
 			},
 		} );
 
 		return {
 			type: TYPES.UPSERT_SHIPPING_RATES,
-			shippingRate,
+			shippingRate: shippingRates,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
