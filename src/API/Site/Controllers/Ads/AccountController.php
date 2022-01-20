@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -30,11 +29,12 @@ class AccountController extends BaseController {
 	/**
 	 * AccountController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer     $server
+	 * @param AccountService $account
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->account = $container->get( AccountService::class );
+	public function __construct( RESTServer $server, AccountService $account ) {
+		parent::__construct( $server );
+		$this->account = $account;
 	}
 
 	/**
