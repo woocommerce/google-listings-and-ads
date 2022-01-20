@@ -73,7 +73,6 @@ const EditTimeModal = ( props ) => {
 				time: groupedTime.time,
 			} }
 			validate={ handleValidate }
-			onSubmitCallback={ handleSubmitCallback }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
