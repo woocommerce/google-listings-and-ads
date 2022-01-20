@@ -942,7 +942,7 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEquals( 0, $rates[0]['rate'] );
 	}
 
-	public function test_returns_clas_shipping_rates() {
+	public function test_returns_class_shipping_rates() {
 		$this->wc->expects( $this->any() )
 				 ->method( 'get_shipping_zones' )
 				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
