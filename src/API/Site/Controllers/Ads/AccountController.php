@@ -159,11 +159,7 @@ class AccountController extends BaseController {
 	 */
 	protected function get_billing_status_callback(): callable {
 		return function() {
-			try {
-				return $this->account->get_billing_status();
-			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
-			}
+			return $this->account->get_billing_status();
 		};
 	}
 
