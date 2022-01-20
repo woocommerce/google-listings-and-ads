@@ -3,12 +3,13 @@
  */
 import StepContent from '.~/components/stepper/step-content';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
-import CombinedShipping from './combined-shipping';
 import TaxRate from '.~/components/free-listings/configure-product-listings/tax-rate';
 import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import ConditionalSection from '.~/components/conditional-section';
+import ShippingRateSection from './shipping-rate-section';
+import ShippingTimeSection from './shipping-time-section';
 
 /**
  * Form to configure free listings.
@@ -27,7 +28,8 @@ const FormContent = ( props ) => {
 
 	return (
 		<StepContent>
-			<CombinedShipping formProps={ formProps } />
+			<ShippingRateSection formProps={ formProps } />
+			<ShippingTimeSection formProps={ formProps } />
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate formProps={ formProps } />
 			</ConditionalSection>
