@@ -45,18 +45,9 @@ const useShippingRatesSuggestions = () => {
 		}
 	);
 
-	/**
-	 * Make returned `data` consistent with shipping rates structure in wp-data.
-	 */
-	const data = dataSuggestions?.map( ( el ) => ( {
-		countryCode: el.country,
-		currency: el.currency,
-		rate: el.rate,
-	} ) );
-
 	return {
 		loading: loadingFinalCountryCodes || loadingSuggestions,
-		data,
+		data: dataSuggestions,
 	};
 };
 
