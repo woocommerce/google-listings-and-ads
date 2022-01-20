@@ -44,16 +44,8 @@ export function handleFetchError( error, message ) {
  */
 export function* fetchShippingRates() {
 	try {
-		const response = yield apiFetch( {
+		const shippingRates = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
-		} );
-
-		const shippingRates = Object.values( response ).map( ( el ) => {
-			return {
-				countryCode: el.country_code,
-				currency: el.currency,
-				rate: Number( el.rate ),
-			};
 		} );
 
 		return {
