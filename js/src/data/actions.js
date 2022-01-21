@@ -89,7 +89,7 @@ export function* upsertShippingRates( shippingRates ) {
 
 		return {
 			type: TYPES.UPSERT_SHIPPING_RATES,
-			shippingRate: shippingRates,
+			shippingRates,
 		};
 	} catch ( error ) {
 		yield handleFetchError(

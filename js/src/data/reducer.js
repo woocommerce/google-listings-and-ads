@@ -125,13 +125,15 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.UPSERT_SHIPPING_RATES: {
-			const { countryCodes, currency, rate } = action.shippingRate;
+			const { shippingRates } = action;
 			const rates = [ ...state.mc.shipping.rates ];
 
-			countryCodes.forEach( ( countryCode ) => {
-				const shippingRate = { countryCode, currency, rate };
+			shippingRates.forEach( ( shippingRate ) => {
 				const idx = rates.findIndex(
-					( el ) => el.countryCode === countryCode
+					( el ) =>
+						el.id === shippingRate.id ||
+						( el.country === shippingRate.country &&
+							el.method === shippingRate.method )
 				);
 
 				if ( idx >= 0 ) {
