@@ -63,7 +63,7 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Gets the shipping methods for the given country.
+	 * Returns the available shipping methods for a country.
 	 *
 	 * @param string $country_code
 	 *
@@ -78,7 +78,7 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Gets the shipping rates for the given country.
+	 * Returns the available shipping rates for a country.
 	 *
 	 * @param string $country_code
 	 *
@@ -121,7 +121,7 @@ class ShippingZone implements Service {
 		$rates         = [];
 		foreach ( $methods as $method ) {
 			// We process the free shipping method separately.
-			if ( ! $method['enabled'] || self::METHOD_FREE === $method['id'] ) {
+			if ( self::METHOD_FREE === $method['id'] ) {
 				continue;
 			}
 
@@ -183,9 +183,8 @@ class ShippingZone implements Service {
 			}
 
 			foreach ( $methods as $method ) {
-				// Check if the method is supported and return its properties.
-
-				if ( ! self::is_shipping_method_supported( $method->id ) ) {
+				// Skip if the method is unsupported or disabled.
+				if ( ! $method->is_enabled() || ! self::is_shipping_method_supported( $method->id ) ) {
 					continue;
 				}
 
@@ -313,7 +312,6 @@ class ShippingZone implements Service {
 	 *
 	 *     @type string $id       The shipping method ID.
 	 *     @type string $title    The user-defined title of the shipping method.
-	 *     @type bool   $enabled  A boolean indicating whether the shipping method is enabled or not.
 	 *     @type string $currency The currency which the shipping rate is in. Defaults to the store currency.
 	 *     @type array  $options  Array of options for the shipping method (varies based on the method type). {
 	 *         Array of options for the shipping method.
@@ -329,7 +327,6 @@ class ShippingZone implements Service {
 		$parsed_method = [
 			'id'       => $method->id,
 			'title'    => $method->title,
-			'enabled'  => $method->is_enabled(),
 			'currency' => $this->wc->get_woocommerce_currency(),
 			'options'  => [],
 		];
@@ -456,7 +453,7 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods, and it's enabled.
+	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods.
 	 *
 	 * @param array $methods
 	 *
@@ -466,7 +463,7 @@ class ShippingZone implements Service {
 		$free_shipping_method = array_filter(
 			$methods,
 			function ( $method ) {
-				return self::METHOD_FREE === $method['id'] && $method['enabled'];
+				return self::METHOD_FREE === $method['id'];
 			}
 		);
 

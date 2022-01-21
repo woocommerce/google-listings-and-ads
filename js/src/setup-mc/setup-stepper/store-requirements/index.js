@@ -97,9 +97,7 @@ export default function StoreRequirements() {
 					contact_info_visible: settings.contact_info_visible,
 				} }
 				validate={ checkErrors }
-				onChangeCallback={ handleChangeCallback }
 				onChange={ handleChangeCallback }
-				onSubmitCallback={ handleSubmitCallback }
 				onSubmit={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {

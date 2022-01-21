@@ -153,7 +153,7 @@ class WC {
 	 *
 	 * @return array|WP_Term[]
 	 *
-	 * @since x.x.x
+	 * @since 1.10.0
 	 */
 	public function get_shipping_classes(): array {
 		return WCCore()->shipping()->get_shipping_classes();
@@ -164,7 +164,7 @@ class WC {
 	 *
 	 * @return string
 	 *
-	 * @since x.x.x
+	 * @since 1.10.0
 	 */
 	public function get_woocommerce_currency(): string {
 		return get_woocommerce_currency();

@@ -13,11 +13,14 @@ _Replace this with a good description of your changes & reasoning._
 
 
 ### Detailed test instructions:
+<!-- Add detailed instructions for how to test that this PR fixes the issue and confirm that it doesn't break any other features :) -->
 
 1. 
 2. 
 3. 
 
+
+### Additional details:
 
 <!--
 Optional.

@@ -75,7 +75,6 @@ const SetupFreeListings = ( props ) => {
 					tax_rate: settings.tax_rate,
 				} }
 				validate={ handleValidate }
-				onSubmitCallback={ handleSubmitCallback }
 				onSubmit={ handleSubmitCallback }
 			>
 				{ ( formProps ) => {
