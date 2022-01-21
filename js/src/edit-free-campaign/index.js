@@ -12,13 +12,13 @@ import { isEqual } from 'lodash';
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
-import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
+import useLayout from '.~/hooks/useLayout';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
@@ -83,6 +83,8 @@ function saveShippingData( batchUpsertAction, newData, getGroupKey ) {
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
+	useLayout( 'full-content' );
+
 	const {
 		targetAudience: savedTargetAudience,
 		getFinalCountries,
@@ -220,7 +222,7 @@ export default function EditFreeCampaign() {
 	};
 	// TODO: Wse ChooseAudience and SetupFreeListings customized for this page.
 	return (
-		<FullContainer>
+		<>
 			<TopBar
 				title={ __( 'Edit free listings', 'google-listings-and-ads' ) }
 				helpButton={
@@ -279,6 +281,6 @@ export default function EditFreeCampaign() {
 					},
 				] }
 			/>
-		</FullContainer>
+		</>
 	);
 }

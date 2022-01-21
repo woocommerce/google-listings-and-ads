@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import FullContainer from '.~/components/full-container';
+import useLayout from '.~/hooks/useLayout';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import CreatePaidAdsCampaignForm from './create-paid-ads-campaign-form';
@@ -15,8 +15,10 @@ import CreatePaidAdsCampaignForm from './create-paid-ads-campaign-form';
 const dashboardURL = getNewPath( {}, '/google/dashboard', {} );
 
 const CreatePaidAdsCampaign = () => {
+	useLayout( 'full-content' );
+
 	return (
-		<FullContainer>
+		<>
 			<TopBar
 				title={ __(
 					'Create your paid campaign',
@@ -26,7 +28,7 @@ const CreatePaidAdsCampaign = () => {
 				backHref={ dashboardURL }
 			/>
 			<CreatePaidAdsCampaignForm />
-		</FullContainer>
+		</>
 	);
 };
 
