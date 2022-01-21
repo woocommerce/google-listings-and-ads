@@ -76,6 +76,11 @@ class Settings {
 
 		$services = [];
 		foreach ( $rates as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
+			// No negative rates.
+			if ( $rate < 0 ) {
+				continue;
+			}
+
 			$service = $this->create_shipping_service( $country, $method, $currency, (float) $rate, $options );
 
 			if ( isset( $options['free_shipping_threshold'] ) ) {
