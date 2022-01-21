@@ -38,6 +38,8 @@
 		}
 
 		.woocommerce-select-control__listbox {
+			// Remove the hard coded height 57px that is causing the dropdown list
+			// not below the input box when there are multiple rows inside the input box.
 			top: unset;
 		}
 	}
