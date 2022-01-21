@@ -20,7 +20,7 @@ const EditRateModal = ( props ) => {
 	const { upsertShippingRates, deleteShippingRates } = useAppDispatch();
 
 	const handleDeleteClick = () => {
-		deleteShippingRates( rate.countries );
+		deleteShippingRates( rate.rates );
 
 		onRequestClose();
 	};
@@ -52,22 +52,28 @@ const EditRateModal = ( props ) => {
 		return errors;
 	};
 
-	const handleSubmitCallback = ( values ) => {
+	const handleSubmitCallback = async ( values ) => {
 		const { countryCodes, currency, price } = values;
 
-		upsertShippingRates( {
-			countryCodes,
+		const valuesCountrySet = new Set( values.countryCodes );
+		const deletedShippingRates = rate.rates.filter(
+			( el ) =>
+				el.method === 'flat_rate' &&
+				! valuesCountrySet.has( el.country )
+		);
+
+		if ( deletedShippingRates.length ) {
+			await deleteShippingRates( deletedShippingRates );
+		}
+
+		const upsertData = countryCodes.map( ( el ) => ( {
+			country: el,
+			method: 'flat_rate',
 			currency,
 			rate: price,
-		} );
+		} ) );
 
-		const valuesCountrySet = new Set( values.countryCodes );
-		const deletedCountryCodes = rate.countries.filter(
-			( el ) => ! valuesCountrySet.has( el )
-		);
-		if ( deletedCountryCodes.length ) {
-			deleteShippingRates( deletedCountryCodes );
-		}
+		await upsertShippingRates( upsertData );
 
 		onRequestClose();
 	};

@@ -45,11 +45,14 @@ const AddRateModal = ( props ) => {
 	const handleSubmitCallback = ( values ) => {
 		const { countryCodes, currency, rate } = values;
 
-		upsertShippingRates( {
-			countryCodes,
+		const shippingRates = countryCodes.map( ( el ) => ( {
+			country: el,
+			method: 'flat_rate',
 			currency,
 			rate,
-		} );
+		} ) );
+
+		upsertShippingRates( shippingRates );
 
 		onRequestClose();
 	};
