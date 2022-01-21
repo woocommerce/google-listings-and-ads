@@ -87,6 +87,10 @@ export function* upsertShippingRates( shippingRates ) {
 			},
 		} );
 
+		if ( shippingRates.some( ( el ) => ! el.id ) ) {
+			return yield fetchShippingRates();
+		}
+
 		return {
 			type: TYPES.UPSERT_SHIPPING_RATES,
 			shippingRates,
