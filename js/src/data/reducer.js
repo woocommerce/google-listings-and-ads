@@ -131,7 +131,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			shippingRates.forEach( ( shippingRate ) => {
 				const idx = rates.findIndex(
 					( el ) =>
-						el.id === shippingRate.id ||
+						( el.id && el.id === shippingRate.id ) ||
 						( el.country === shippingRate.country &&
 							el.method === shippingRate.method )
 				);
