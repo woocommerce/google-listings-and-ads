@@ -109,21 +109,23 @@ export function* upsertShippingRates( shippingRates ) {
 /**
  * Deletes shipping rates associated with given country codes.
  *
- * @param {Array<CountryCode>} countryCodes
+ * @param {Array<ShippingRate>} shippingRates
  */
-export function* deleteShippingRates( countryCodes ) {
+export function* deleteShippingRates( shippingRates ) {
 	try {
+		const ids = shippingRates.map( ( el ) => el.id );
+
 		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'DELETE',
 			data: {
-				country_codes: countryCodes,
+				ids,
 			},
 		} );
 
 		return {
 			type: TYPES.DELETE_SHIPPING_RATES,
-			countryCodes,
+			shippingRates,
 		};
 	} catch ( error ) {
 		yield handleFetchError(

@@ -147,9 +147,13 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.DELETE_SHIPPING_RATES: {
-			const countryCodeSet = new Set( action.countryCodes );
+			const { shippingRates } = action;
+			const deletedIDsSet = new Set(
+				shippingRates.map( ( el ) => el.id )
+			);
+
 			const rates = state.mc.shipping.rates.filter(
-				( el ) => ! countryCodeSet.has( el.countryCode )
+				( el ) => ! deletedIDsSet.has( el.id )
 			);
 
 			return setIn( state, 'mc.shipping.rates', rates );
