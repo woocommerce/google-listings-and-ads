@@ -1,16 +1,15 @@
 /**
  * External dependencies
  */
-import { capitalize } from 'lodash';
 import { createInterpolateElement } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { __experimentalText as Text, Dashicon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { ISSUE_TYPE_PRODUCT } from '.~/constants';
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
+import { ISSUE_TYPE_PRODUCT, ISSUE_TYPE_ACCOUNT } from '.~/constants';
 
 /**
  * This component renders a message when no issues of the
@@ -20,32 +19,41 @@ import useActiveIssueType from '.~/hooks/useActiveIssueType';
  */
 const IssuesSolved = () => {
 	const issueType = useActiveIssueType();
-	const otherIssueType =
-		issueType === ISSUE_TYPE_PRODUCT ? 'account' : 'product';
 
-	const map = {
-		otherIssueTab: <strong>{ capitalize( otherIssueType ) } Issues</strong>,
-		otherIssueType: <span>{ otherIssueType }</span>,
+	const subtitle = {
+		[ ISSUE_TYPE_ACCOUNT ]: __(
+			'All account issues resolved',
+			'google-listings-and-ads'
+		),
+		[ ISSUE_TYPE_PRODUCT ]: __(
+			'All product issues resolved',
+			'google-listings-and-ads'
+		),
+	};
+
+	const body = {
+		[ ISSUE_TYPE_ACCOUNT ]: createInterpolateElement(
+			__(
+				'However, there are issues affecting your products that needs to be resolved. Head over to the <strong>Product Issues</strong> tab to view them.',
+				'google-listings-and-ads'
+			),
+			{ strong: <strong /> }
+		),
+		[ ISSUE_TYPE_PRODUCT ]: createInterpolateElement(
+			__(
+				'However, there are issues affecting your account that needs to be resolved. Head over to the <strong>Account Issues</strong> tab to view them.',
+				'google-listings-and-ads'
+			),
+			{ strong: <strong /> }
+		),
 	};
 
 	return (
 		<div className="gla-issues-solved">
 			<Dashicon icon="yes-alt" className="gla-issues-solved__icon" />
-			<Text variant="subtitle">
-				{ sprintf(
-					// translators: %s: Active issue type (account or product)
-					__( 'All %s issues resolved', 'google-listings-and-ads' ),
-					issueType
-				) }
-			</Text>
+			<Text variant="subtitle">{ subtitle[ issueType ] }</Text>
 			<Text variant="body" className="gla-issues-solved__body">
-				{ createInterpolateElement(
-					__(
-						'However, there are issues affecting your <otherIssueType /> that needs to be resolved. Head over to the <otherIssueTab /> tab to view them.',
-						'google-listings-and-ads'
-					),
-					map
-				) }
+				{ body[ issueType ] }
 			</Text>
 		</div>
 	);
