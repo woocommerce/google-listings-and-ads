@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -21,6 +21,10 @@ const useActiveIssueType = () => {
 	const defaultIssueType = issueTotals[ ISSUE_TYPE_ACCOUNT ]
 		? ISSUE_TYPE_ACCOUNT
 		: ISSUE_TYPE_PRODUCT;
+
+	if ( ! getQuery()?.issueType ) {
+		updateQueryString( { issueType: defaultIssueType } );
+	}
 
 	return getQuery()?.issueType || defaultIssueType;
 };
