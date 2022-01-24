@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
-import { getNewPath, getHistory } from '@woocommerce/navigation';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -17,13 +17,13 @@ import AppButton from '.~/components/app-button';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
-import createCampaign from '.~/apis/createCampaign';
 import validateForm from '.~/utils/paid-ads/validateForm';
+import { getDashboardUrl } from '.~/utils/urls';
 import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
-	const { fetchAdsCampaigns } = useAppDispatch();
+	const { createAdsCampaign } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleValidate = ( values ) => {
@@ -39,7 +39,7 @@ const CreatePaidAdsCampaignForm = () => {
 
 			recordLaunchPaidCampaignClickEvent( amount, country );
 
-			await createCampaign( amount, country );
+			await createAdsCampaign( amount, country );
 
 			createNotice(
 				'success',
@@ -60,8 +60,7 @@ const CreatePaidAdsCampaignForm = () => {
 			return;
 		}
 
-		await fetchAdsCampaigns();
-		getHistory().push( getNewPath( {}, '/google/dashboard', {} ) );
+		getHistory().push( getDashboardUrl() );
 
 		setLoading( false );
 	};
