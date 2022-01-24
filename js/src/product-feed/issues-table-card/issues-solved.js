@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { capitalize } from 'lodash/string';
+import { capitalize } from 'lodash';
 import { createInterpolateElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { __experimentalText as Text, Dashicon } from '@wordpress/components';
