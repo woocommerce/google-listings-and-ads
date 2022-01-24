@@ -21,7 +21,7 @@ describe( 'useActiveIssueType', () => {
 		expect( result.current ).toEqual( 'account' );
 	} );
 
-	it( 'Returns "product" Issue type by default if account has not issues', () => {
+	it( 'If there is no account issues, then return "product" issue type by default', () => {
 		getQuery.mockReturnValue( {} );
 		useMCIssuesTotals.mockReturnValue( { account: 0 } );
 		const { result } = renderHook( () => useActiveIssueType() );
