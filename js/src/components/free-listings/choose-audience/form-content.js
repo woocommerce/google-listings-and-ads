@@ -88,7 +88,7 @@ const FormContent = ( props ) => {
 									'google-listings-and-ads'
 								) }
 							</Subsection.HelperText>
-							<VerticalGapLayout>
+							<VerticalGapLayout size="large">
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }
 									collapsible={ true }
@@ -104,12 +104,12 @@ const FormContent = ( props ) => {
 											{ ...getInputProps( 'countries' ) }
 										/>
 									</div>
-									<RadioHelperText>
+									<div className="cannot-find-country">
 										{ __(
 											'Can’t find a country? Only supported countries can be selected.',
 											'google-listings-and-ads'
 										) }
-									</RadioHelperText>
+									</div>
 								</AppRadioContentControl>
 								<AppRadioContentControl
 									{ ...getInputProps( 'location' ) }
