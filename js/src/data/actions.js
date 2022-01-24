@@ -765,6 +765,38 @@ export function receiveAdsCampaigns( adsCampaigns ) {
 	};
 }
 
+/**
+ * Create a new ads campaign.
+ *
+ * @param {number} amount Daily average cost of the paid ads campaign.
+ * @param {string} country Country code of the paid ads campaign audience country. Example: 'US'.
+ */
+export function* createAdsCampaign( amount, country ) {
+	try {
+		const createdCampaign = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+			method: 'POST',
+			data: {
+				amount,
+				country,
+			},
+		} );
+
+		return {
+			type: TYPES.CREATE_ADS_CAMPAIGN,
+			createdCampaign,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to create your paid ads campaign. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 export function* updateAdsCampaign( id, data ) {
 	try {
 		yield apiFetch( {

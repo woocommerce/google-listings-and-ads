@@ -259,6 +259,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'ads_campaigns', action.adsCampaigns );
 		}
 
+		case TYPES.CREATE_ADS_CAMPAIGN: {
+			const adsCampaigns = [
+				...( state.ads_campaigns || [] ),
+				action.createdCampaign,
+			];
+			return setIn( state, 'ads_campaigns', adsCampaigns );
+		}
+
 		case TYPES.UPDATE_ADS_CAMPAIGN: {
 			const { id, data } = action;
 			const idx = state.ads_campaigns.findIndex( ( el ) => el.id === id );
