@@ -79,18 +79,16 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER );
 
 		return [
-			'version'                 => $this->get_version(),
-			'db_version'              => $this->options->get( OptionsInterface::DB_VERSION ),
-			'tos_accepted'            => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
-			'google_connected'        => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
-			'mc_setup'                => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
-			'ads_setup'               => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
-			'target_audience'         => $mc_service->get_target_countries(),
-			'shipping_rate'           => $mc_settings['shipping_rate'] ?? '',
-			'shipping_time'           => $mc_settings['shipping_time'] ?? '',
-			'offers_free_shipping'    => ! empty( $mc_settings['offers_free_shipping'] ) ? 'yes' : 'no',
-			'free_shipping_threshold' => $mc_settings['free_shipping_threshold'] ?? '',
-			'tax_rate'                => $mc_settings['tax_rate'] ?? '',
+			'version'          => $this->get_version(),
+			'db_version'       => $this->options->get( OptionsInterface::DB_VERSION ),
+			'tos_accepted'     => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
+			'google_connected' => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
+			'mc_setup'         => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
+			'ads_setup'        => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
+			'target_audience'  => $mc_service->get_target_countries(),
+			'shipping_rate'    => $mc_settings['shipping_rate'] ?? '',
+			'shipping_time'    => $mc_settings['shipping_time'] ?? '',
+			'tax_rate'         => $mc_settings['tax_rate'] ?? '',
 		];
 	}
 
