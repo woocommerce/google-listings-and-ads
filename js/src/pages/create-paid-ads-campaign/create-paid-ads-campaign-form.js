@@ -49,20 +49,11 @@ const CreatePaidAdsCampaignForm = () => {
 				)
 			);
 		} catch ( e ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to launch your ads campaign. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
 			setLoading( false );
 			return;
 		}
 
 		getHistory().push( getDashboardUrl() );
-
-		setLoading( false );
 	};
 
 	return (

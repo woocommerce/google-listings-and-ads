@@ -16,47 +16,32 @@ export default function useSetupCompleteCallback() {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ loading, setLoading ] = useState( false );
 
-	const createCampaignCallback = useCallback(
-		( amount, country ) => {
-			return createAdsCampaign( amount, country ).catch( () => {
-				return Promise.reject(
-					__(
-						'Unable to launch your ads campaign. Please try again later.',
-						'google-listings-and-ads'
-					)
-				);
-			} );
-		},
-		[ createAdsCampaign ]
-	);
-
 	const completeAdsSetup = useCallback( () => {
 		const options = {
 			path: '/wc/gla/ads/setup/complete',
 			method: 'POST',
 		};
 		return apiFetch( options ).catch( () => {
-			return Promise.reject(
+			createNotice(
+				'error',
 				__(
 					'Unable to complete your ads setup. Please try again later.',
 					'google-listings-and-ads'
 				)
 			);
+			return Promise.reject();
 		} );
-	}, [] );
+	}, [ createNotice ] );
 
 	const handleFinishSetup = useCallback(
 		( amount, country, onCompleted ) => {
 			setLoading( true );
-			createCampaignCallback( amount, country )
+			createAdsCampaign( amount, country )
 				.then( completeAdsSetup )
 				.then( onCompleted )
-				.catch( ( errorMessage ) => {
-					createNotice( 'error', errorMessage );
-				} )
-				.then( () => setLoading( false ) );
+				.catch( () => setLoading( false ) );
 		},
-		[ createCampaignCallback, completeAdsSetup, createNotice ]
+		[ createAdsCampaign, completeAdsSetup ]
 	);
 
 	return [ handleFinishSetup, loading ];

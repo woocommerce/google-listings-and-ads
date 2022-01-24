@@ -15,7 +15,6 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import EditPaidAdsCampaignFormContent from './edit-paid-ads-campaign-form-content';
 import AppButton from '.~/components/app-button';
-import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
 import validateForm from '.~/utils/paid-ads/validateForm';
@@ -24,7 +23,6 @@ const EditPaidAdsCampaignForm = ( props ) => {
 	const { campaign } = props;
 	const [ loading, setLoading ] = useState( false );
 	const { updateAdsCampaign } = useAppDispatch();
-	const { createNotice } = useDispatchCoreNotices();
 
 	const handleValidate = ( values ) => {
 		return validateForm( values );
@@ -36,20 +34,11 @@ const EditPaidAdsCampaignForm = ( props ) => {
 		try {
 			await updateAdsCampaign( campaign.id, { amount: values.amount } );
 		} catch ( e ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to update your paid ads campaign. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
 			setLoading( false );
 			return;
 		}
 
 		getHistory().push( getDashboardUrl() );
-
-		setLoading( false );
 	};
 
 	return (
