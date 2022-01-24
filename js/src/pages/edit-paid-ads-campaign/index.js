@@ -9,7 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
  */
 import TopBar from '.~/components/stepper/top-bar';
 import useLayout from '.~/hooks/useLayout';
-import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
+import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import EditPaidAdsCampaignForm from './edit-paid-ads-campaign-form';
 import HelpIconButton from '.~/components/help-icon-button';
@@ -17,15 +17,22 @@ import HelpIconButton from '.~/components/help-icon-button';
 const dashboardURL = getNewPath( {}, '/google/dashboard', {} );
 const helpButton = <HelpIconButton eventContext="edit-ads" />;
 
+function useAdsCampaign( id ) {
+	const { loaded, data: campaigns } = useAdsCampaigns();
+	const campaign = campaigns?.find( ( el ) => el.id === id );
+	return {
+		loaded,
+		data: campaign || null,
+	};
+}
+
 const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 
-	const { programId } = getQuery();
-	const { loading, error, data: campaignData } = useApiFetchEffect( {
-		path: `/wc/gla/ads/campaigns/${ programId }`,
-	} );
+	const id = Number( getQuery().programId );
+	const { loaded, data: campaignData } = useAdsCampaign( id );
 
-	if ( loading ) {
+	if ( ! loaded ) {
 		return (
 			<>
 				<TopBar
@@ -38,7 +45,7 @@ const EditPaidAdsCampaign = () => {
 		);
 	}
 
-	if ( error ) {
+	if ( ! campaignData ) {
 		return (
 			<>
 				<TopBar

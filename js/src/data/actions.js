@@ -794,14 +794,23 @@ export function* createAdsCampaign( amount, country ) {
 				'google-listings-and-ads'
 			)
 		);
+
+		throw error;
 	}
 }
 
+/**
+ * Update the given data properties to an ads campaign.
+ *
+ * @param {number} id The ID of the ads campaign to be updated.
+ * @param {Object} data The properties of the ads campaign to be updated.
+ *   The valid properties are 'name', 'status', and 'amount'.
+ */
 export function* updateAdsCampaign( id, data ) {
 	try {
 		yield apiFetch( {
-			path: `/wc/gla/ads/campaigns/${ id }`,
-			method: 'POST',
+			path: `${ API_NAMESPACE }/ads/campaigns/${ id }`,
+			method: 'PATCH',
 			data,
 		} );
 

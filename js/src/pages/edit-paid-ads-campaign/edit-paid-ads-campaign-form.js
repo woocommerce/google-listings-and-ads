@@ -4,8 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
-import { getNewPath, getHistory } from '@woocommerce/navigation';
-import apiFetch from '@wordpress/api-fetch';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -18,12 +17,13 @@ import EditPaidAdsCampaignFormContent from './edit-paid-ads-campaign-form-conten
 import AppButton from '.~/components/app-button';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
+import { getDashboardUrl } from '.~/utils/urls';
 import validateForm from '.~/utils/paid-ads/validateForm';
 
 const EditPaidAdsCampaignForm = ( props ) => {
 	const { campaign } = props;
 	const [ loading, setLoading ] = useState( false );
-	const { fetchAdsCampaigns } = useAppDispatch();
+	const { updateAdsCampaign } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 
 	const handleValidate = ( values ) => {
@@ -34,13 +34,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 		setLoading( true );
 
 		try {
-			await apiFetch( {
-				path: `/wc/gla/ads/campaigns/${ campaign.id }`,
-				method: 'PATCH',
-				data: {
-					amount: values.amount,
-				},
-			} );
+			await updateAdsCampaign( campaign.id, { amount: values.amount } );
 		} catch ( e ) {
 			createNotice(
 				'error',
@@ -53,8 +47,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 			return;
 		}
 
-		await fetchAdsCampaigns();
-		getHistory().push( getNewPath( {}, '/google/dashboard', {} ) );
+		getHistory().push( getDashboardUrl() );
 
 		setLoading( false );
 	};
