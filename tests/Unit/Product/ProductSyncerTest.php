@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductResponse;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -33,6 +34,7 @@ use WC_Product;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
  * @property MockObject|GoogleProductService  $google_service
+ * @property MockObject|TargetAudience        $target_audience
  * @property MockObject|MerchantCenterService $merchant_center
  * @property ProductMetaHandler               $product_meta
  * @property BatchProductHelper               $batch_helper
@@ -55,7 +57,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 										$this->product_helper,
 										$validator,
 										$product_factory,
-										$this->merchant_center,
+										$this->target_audience,
 									]
 								)
 								->getMock();
@@ -354,6 +356,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp() {
 		parent::setUp();
+		$this->target_audience = $this->createMock( TargetAudience::class );
 		$this->merchant_center = $this->createMock( MerchantCenterService::class );
 		$this->merchant_center->expects( $this->any() )
 							  ->method( 'is_connected' )

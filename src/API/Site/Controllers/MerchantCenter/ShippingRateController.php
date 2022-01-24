@@ -305,8 +305,9 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_all_shipping_rates(): array {
 		$results = $this->create_query()->set_limit( 100 )->get_results();
+		$rates   = $this->group_rates_by_country( $results );
 
-		return $this->group_rates_by_country( $results );
+		return array_map( [ $this, 'prepare_country_rates_for_output' ], $rates );
 	}
 
 	/**
@@ -317,28 +318,50 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	protected function get_shipping_rates_for_country( string $country ): array {
 		$results = $this->create_query()->where( 'country', $country )->get_results();
 
-		return $this->group_rates_by_country( $results );
+		return $this->prepare_country_rates_for_output( $results );
 	}
 
 	/**
+	 * Prepares the given shipping rates array and returns them in the format used by the API.
+	 *
 	 * @param array $rates
 	 *
 	 * @return array
 	 *
 	 * @since x.x.x
 	 */
+	protected function prepare_country_rates_for_output( array $rates ): array {
+		$rates_output = [];
+		foreach ( $rates as $rate ) {
+			// We don't render the class rates because they are not used by the API.
+			unset( $rate['options']['shipping_class_rates'] );
+
+			// No need to include the country code in the output.
+			unset( $rate['country'] );
+
+			$rates_output[] = $rate;
+		}
+
+		return $rates_output;
+	}
+
+	/**
+	 * Groups the given shipping rates array by country.
+	 *
+	 * @param array $rates
+	 *
+	 * @return array An array of shipping rates grouped by country. The array keys are the country codes.
+	 *
+	 * @since x.x.x
+	 */
 	protected function group_rates_by_country( array $rates ): array {
 		$rates_grouped = [];
-		foreach ( $rates as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
+		foreach ( $rates as $rate ) {
 			// Initialize the country rates array.
-			$rates_grouped[ $country ] = $rates_grouped[ $country ] ?? [];
+			$rates_grouped[ $rate['country'] ] = $rates_grouped[ $rate['country'] ] ?? [];
 
-			$rates_grouped[ $country ][] = [
-				'method'   => $method,
-				'currency' => $currency,
-				'rate'     => $rate,
-				'options'  => $options,
-			];
+			// Add the rate to the country rates array.
+			$rates_grouped[ $rate['country'] ][] = $rate;
 		}
 
 		return $rates_grouped;
@@ -361,83 +384,13 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 * @since 1.10.0
 	 */
 	protected function get_suggested_shipping_rates_for_country( string $country ): ?array {
-		$rates = [];
-
-		// Todo: Render the cost of shipping classes for the flat-shipping rate.
-
-		$methods       = $this->shipping_zone->get_shipping_methods_for_country( $country );
-		$free_shipping = $this->find_free_shipping_method( $methods );
-		foreach ( $methods as $method ) {
-			// We process the free shipping method separately.
-			if ( ! $method['enabled'] || ShippingZone::METHOD_FREE === $method['id'] ) {
-				continue;
-			}
-
-			// We can skip the pickup method because it's still not supported.
-			// Todo: Add support for the pickup method once it's available.
-			if ( ShippingZone::METHOD_PICKUP === $method['id'] ) {
-				continue;
-			}
-
-			$rate = [
-				'method'   => $method['id'],
-				'currency' => $method['currency'],
-				'rate'     => $method['options']['cost'] ?? 0,
-				'options'  => [],
-			];
-
-			if ( null !== $free_shipping ) {
-				if ( isset( $free_shipping['options']['min_amount'] ) ) {
-					// If there is a free shipping method, and it has a minimum order amount, we set it as an option for all rates.
-					$rate['options']['free_shipping_threshold'] = $free_shipping['options']['min_amount'];
-				} else {
-					// If there is a free shipping method without a minimum order amount, we set the rate to 0 to mark it as free.
-					$rate['rate'] = 0;
-				}
-			}
-
-			if ( ! empty( $method['options']['class_costs'] ) ) {
-				// If there are shipping classes, we set the cost of each class as an option.
-				$rate['options']['shipping_class_rates'] = [];
-				foreach ( $method['options']['class_costs'] as $class_id => $cost ) {
-					$rate['options']['shipping_class_rates'][] = [
-						'class' => $class_id,
-						'rate'  => $cost,
-					];
-				}
-			}
-
-			$rates[] = $rate;
-		}
+		$rates = $this->shipping_zone->get_shipping_rates_for_country( $country );
+		$rates = $this->prepare_country_rates_for_output( $rates );
 
 		return [
 			'country_code' => $country,
-			'rates'        => $rates,
+			'rates'        => array_values( $rates ),
 		];
-	}
-
-	/**
-	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods.
-	 *
-	 * @param array $methods
-	 *
-	 * @return array|null Array containing the free shipping method properties, or null if it does not exist.
-	 *
-	 * @since x.x.x
-	 */
-	protected function find_free_shipping_method( array $methods ): ?array {
-		$free_shipping_method = array_filter(
-			$methods,
-			function ( $method ) {
-				return ShippingZone::METHOD_FREE === $method['id'];
-			}
-		);
-
-		if ( empty( $free_shipping_method ) ) {
-			return null;
-		}
-
-		return array_values( $free_shipping_method )[0];
 	}
 
 	/**
@@ -468,7 +421,6 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 							'description'       => __( 'The shipping method.', 'google-listings-and-ads' ),
 							'enum'              => [
 								ShippingZone::METHOD_FLAT_RATE,
-								// ShippingZone::METHOD_PICKUP, // Todo: Add support for the pickup method once it's available.
 							],
 							'context'           => [ 'view', 'edit' ],
 							'validate_callback' => 'rest_validate_request_arg',
@@ -503,32 +455,6 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 									'description'       => __( 'Minimum price eligible for free shipping.', 'google-listings-and-ads' ),
 									'context'           => [ 'view', 'edit' ],
 									'validate_callback' => 'rest_validate_request_arg',
-								],
-								'shipping_class_rates'    => [
-									'type'              => 'array',
-									'description'       => __( 'An array of rates for shipping classes/labels.', 'google-listings-and-ads' ),
-									'context'           => [ 'view', 'edit' ],
-									'validate_callback' => 'rest_validate_request_arg',
-									'items'             => [
-										'type'       => 'object',
-										'properties' => [
-											'class' => [
-												'type'     => 'string',
-												'required' => true,
-												'context'  => [ 'view', 'edit' ],
-												'description' => __( 'The shipping class/label.', 'google-listings-and-ads' ),
-												'validate_callback' => 'rest_validate_request_arg',
-											],
-											'rate'  => [
-												'type'     => 'number',
-												'required' => true,
-												'minimum'  => 0,
-												'context'  => [ 'view', 'edit' ],
-												'description' => __( 'The shipping rate.', 'google-listings-and-ads' ),
-												'validate_callback' => 'rest_validate_request_arg',
-											],
-										],
-									],
 								],
 							],
 						],
