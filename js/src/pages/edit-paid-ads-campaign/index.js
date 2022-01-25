@@ -17,20 +17,12 @@ import HelpIconButton from '.~/components/help-icon-button';
 const dashboardURL = getNewPath( {}, '/google/dashboard', {} );
 const helpButton = <HelpIconButton eventContext="edit-ads" />;
 
-function useAdsCampaign( id ) {
-	const { loaded, data: campaigns } = useAdsCampaigns();
-	const campaign = campaigns?.find( ( el ) => el.id === id );
-	return {
-		loaded,
-		data: campaign || null,
-	};
-}
-
 const EditPaidAdsCampaign = () => {
 	useLayout( 'full-content' );
 
 	const id = Number( getQuery().programId );
-	const { loaded, data: campaignData } = useAdsCampaign( id );
+	const { loaded, data: campaigns } = useAdsCampaigns();
+	const campaignData = campaigns?.find( ( el ) => el.id === id );
 
 	if ( ! loaded ) {
 		return (
