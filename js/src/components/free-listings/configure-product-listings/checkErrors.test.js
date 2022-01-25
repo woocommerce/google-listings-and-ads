@@ -51,10 +51,12 @@ describe( 'checkErrors', () => {
 	} );
 
 	describe( 'Shipping rates', () => {
+		let automaticShipping;
 		let flatShipping;
 		let manualShipping;
 
 		beforeEach( () => {
+			automaticShipping = { shipping_rate: 'automatic' };
 			flatShipping = { shipping_rate: 'flat' };
 			manualShipping = { shipping_rate: 'manual' };
 		} );
@@ -73,15 +75,20 @@ describe( 'checkErrors', () => {
 			expect( errors.shipping_rate ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors( { shipping_rate: 'automatic' }, [], [], [] );
+			errors = checkErrors( { shipping_rate: 'invalid' }, [], [], [] );
 
 			expect( errors ).toHaveProperty( 'shipping_rate' );
 			expect( errors.shipping_rate ).toMatchSnapshot();
 		} );
 
 		it( 'When the type of shipping rate is a valid value, should pass', () => {
+			// Selected automatic
+			let errors = checkErrors( automaticShipping, [], [], [] );
+
+			expect( errors ).not.toHaveProperty( 'shipping_rate' );
+
 			// Selected flat
-			let errors = checkErrors( flatShipping, [], [], [] );
+			errors = checkErrors( flatShipping, [], [], [] );
 
 			expect( errors ).not.toHaveProperty( 'shipping_rate' );
 
@@ -214,7 +221,7 @@ describe( 'checkErrors', () => {
 			expect( errors.shipping_time ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors( { shipping_time: 'automatic' }, [], [], [] );
+			errors = checkErrors( { shipping_time: 'invalid' }, [], [], [] );
 
 			expect( errors ).toHaveProperty( 'shipping_time' );
 			expect( errors.shipping_time ).toMatchSnapshot();
@@ -294,7 +301,7 @@ describe( 'checkErrors', () => {
 			expect( errors.tax_rate ).toMatchSnapshot();
 
 			// Invalid value
-			errors = checkErrors( { tax_rate: 'automatic' }, [], [], codes );
+			errors = checkErrors( { tax_rate: 'invalid' }, [], [], codes );
 
 			expect( errors ).toHaveProperty( 'tax_rate' );
 			expect( errors.tax_rate ).toMatchSnapshot();

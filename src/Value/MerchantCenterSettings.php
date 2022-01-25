@@ -32,7 +32,7 @@ class MerchantCenterSettings extends ArrayWithRequiredKeys implements ValueInter
 
 		$this->data = array_merge(
 			[
-				'shipping_rate'           => 'flat',
+				'shipping_rate'           => 'automatic',
 				'shipping_time'           => 'flat',
 				'tax_rate'                => 'destination',
 				'website_live'            => false,

@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
@@ -25,10 +25,10 @@ use WC_Product;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
- * @property ProductMetaHandler               $product_meta
- * @property WC                               $wc
- * @property MockObject|MerchantCenterService $merchant_center
- * @property ProductHelper                    $product_helper
+ * @property ProductMetaHandler        $product_meta
+ * @property WC                        $wc
+ * @property MockObject|TargetAudience $target_audience
+ * @property ProductHelper             $product_helper
  */
 class ProductHelperTest extends ContainerAwareUnitTest {
 
@@ -44,7 +44,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	public function test_mark_as_synced( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
 
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_target_countries' )
 							  ->willReturn( [ $this->get_sample_target_country() ] );
 
@@ -92,7 +92,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 	public function test_mark_as_synced_doesnt_delete_errors_unless_all_target_countries_synced( WC_Product $product ) {
 		$google_product = $this->generate_google_product_mock();
 
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_target_countries' )
 							  ->willReturn( [ 'AU', $google_product->getTargetCountry() ] );
 
@@ -121,7 +121,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$parent         = WC_Helper_Product::create_variation_product();
 		$variation      = $this->wc->get_product( $parent->get_children()[0] );
 
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_target_countries' )
 							  ->willReturn( [ $this->get_sample_target_country() ] );
 
@@ -160,7 +160,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$variation->set_parent_id( 0 );
 		$variation->save();
 
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_target_countries' )
 							  ->willReturn( [ $this->get_sample_target_country() ] );
 
@@ -934,7 +934,7 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		parent::setUp();
 		$this->product_meta    = $this->container->get( ProductMetaHandler::class );
 		$this->wc              = $this->container->get( WC::class );
-		$this->merchant_center = $this->createMock( MerchantCenterService::class );
-		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->merchant_center );
+		$this->target_audience = $this->createMock( TargetAudience::class );
+		$this->product_helper  = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
 	}
 }

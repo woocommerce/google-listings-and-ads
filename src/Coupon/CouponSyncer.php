@@ -7,13 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\InvalidCouponEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
-use DateInterval;
 use Google\Exception as GoogleException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Exception;
 use WC_Coupon;
-use WC_DateTime;
 defined( 'ABSPATH' ) || exit();
 
 /**
@@ -59,12 +58,18 @@ class CouponSyncer implements Service {
 	protected $wc;
 
 	/**
+	 * @var TargetAudience
+	 */
+	protected $target_audience;
+
+	/**
 	 * CouponSyncer constructor.
 	 *
 	 * @param GooglePromotionService $google_service
 	 * @param CouponHelper           $coupon_helper
 	 * @param ValidatorInterface     $validator
 	 * @param MerchantCenterService  $merchant_center
+	 * @param TargetAudience         $target_audience
 	 * @param WC                     $wc
 	 */
 	public function __construct(
@@ -72,11 +77,13 @@ class CouponSyncer implements Service {
 		CouponHelper $coupon_helper,
 		ValidatorInterface $validator,
 		MerchantCenterService $merchant_center,
+		TargetAudience $target_audience,
 		WC $wc ) {
 		$this->google_service  = $google_service;
 		$this->coupon_helper   = $coupon_helper;
 		$this->validator       = $validator;
 		$this->merchant_center = $merchant_center;
+		$this->target_audience = $target_audience;
 		$this->wc              = $wc;
 	}
 
@@ -102,7 +109,7 @@ class CouponSyncer implements Service {
 			return;
 		}
 
-		$target_country = $this->merchant_center->get_main_target_country();
+		$target_country = $this->target_audience->get_main_target_country();
 		if ( ! $this->merchant_center->is_promotion_supported_country( $target_country ) ) {
 			do_action(
 				'woocommerce_gla_debug_message',
