@@ -22,6 +22,8 @@ defined( 'ABSPATH' ) || exit;
 class AccountController extends BaseController {
 
 	/**
+	 * Service used to access / update Ads account data.
+	 *
 	 * @var AccountService
 	 */
 	protected $account;
