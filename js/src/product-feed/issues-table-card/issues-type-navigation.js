@@ -9,19 +9,20 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import { ISSUE_TYPE_ACCOUNT, ISSUE_TYPE_PRODUCT } from '.~/constants';
 import AppTabNav from '.~/components/app-tab-nav';
-import getActiveIssueType from '.~/product-feed/issues-table-card/getActiveIssueType';
 import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
+import useActiveIssueType from '.~/hooks/useActiveIssueType';
 
 /**
  * The issue navigation tabs. It uses `useMCIssuesTotals` for getting the issue totals
- * and `getActiveIssueType` to get the active `issueType`.
+ * and `useActiveIssueType` to get the active `issueType`.
  *
  * @see useMCIssuesTotals
- * @see getActiveIssueType
+ * @see useActiveIssueType
  * @return {JSX.Element} The rendered component
  */
 const IssuesTypeNavigation = () => {
 	const totals = useMCIssuesTotals();
+	const activeIssueType = useActiveIssueType();
 
 	const issuesTotal = ( issueType ) => {
 		const total = totals[ issueType ];
@@ -55,7 +56,7 @@ const IssuesTypeNavigation = () => {
 		},
 	];
 
-	return <AppTabNav tabs={ tabs } selectedKey={ getActiveIssueType() } />;
+	return <AppTabNav tabs={ tabs } selectedKey={ activeIssueType } />;
 };
 
 export default IssuesTypeNavigation;
