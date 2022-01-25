@@ -201,6 +201,9 @@ class AccountServiceTest extends UnitTest {
 			->method( 'create_ads_account' )
 			->willReturn( [ 'id' => self::TEST_ACCOUNT_ID ] );
 
+		$this->state->expects( $this->once() )
+			->method( 'update' );
+
 		$this->assertEquals( [ 'id' => self::TEST_ACCOUNT_ID ], $this->account->setup_account() );
 	}
 
