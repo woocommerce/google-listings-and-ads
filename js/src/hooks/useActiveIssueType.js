@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -12,7 +12,7 @@ import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 /**
  * Gets the active Issue Type Filter based on the `issueType` query property.
  *
- * @return {string} The active Issue Type Filter based on the url query. If `issueType` is falsy because is not in the query
+ * @return {string|null} The active Issue Type Filter based on the url query. If `issueType` is falsy because is not in the query
  * it returns the issue type account if it has any issue, or it returns issue type product otherwise.
  */
 const useActiveIssueType = () => {
@@ -22,8 +22,8 @@ const useActiveIssueType = () => {
 		? ISSUE_TYPE_ACCOUNT
 		: ISSUE_TYPE_PRODUCT;
 
-	if ( ! getQuery()?.issueType ) {
-		updateQueryString( { issueType: defaultIssueType } );
+	if ( ! issueTotals?.total ) {
+		return null;
 	}
 
 	return getQuery()?.issueType || defaultIssueType;
