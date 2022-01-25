@@ -91,12 +91,12 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function test_get_accounts_with_api_exception() {
 		$this->account->expects( $this->once() )
 			->method( 'get_account_ids' )
-			->willThrowException( new Exception( 'error' ) );
+			->willThrowException( new Exception( 'error', 401 ) );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'GET' );
 
 		$this->assertEquals( 'error', $response->get_data()['message'] );
-		$this->assertEquals( 400, $response->get_status() );
+		$this->assertEquals( 401, $response->get_status() );
 	}
 
 	public function test_create_account() {
