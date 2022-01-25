@@ -44,7 +44,6 @@ class AccountServiceTest extends UnitTest {
 		self::TEST_OLD_ACCOUNT_ID,
 		3456789012,
 	];
-	protected const TEST_ACCOUNT_NO_IDS    = [];
 	protected const TEST_CONNECTED_DATA    = [
 		'id'       => SELF::TEST_ACCOUNT_ID,
 		'currency' => 'EUR',
@@ -83,14 +82,6 @@ class AccountServiceTest extends UnitTest {
 
 		$this->account = new AccountService( $this->container );
 		$this->account->set_options_object( $this->options );
-	}
-
-	public function test_get_accounts_with_no_ids() {
-		$this->middleware->expects( $this->once() )
-			->method( 'get_ads_account_ids' )
-			->willReturn( self::TEST_ACCOUNT_NO_IDS );
-
-		$this->assertEquals( self::TEST_ACCOUNT_NO_IDS, $this->account->get_account_ids() );
 	}
 
 	public function test_get_accounts() {
