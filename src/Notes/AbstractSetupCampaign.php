@@ -135,6 +135,8 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	/**
 	 * Get the number of days after which to add the note.
 	 *
+	 * @since x.x.x
+	 *
 	 * @return int
 	 */
 	abstract protected function get_gla_setup_days(): int;

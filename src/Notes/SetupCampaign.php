@@ -26,6 +26,8 @@ class SetupCampaign extends AbstractSetupCampaign {
 	/**
 	 * Get the number of days after which to add the note.
 	 *
+	 * @since x.x.x
+	 *
 	 * @return int
 	 */
 	protected function get_gla_setup_days(): int {
