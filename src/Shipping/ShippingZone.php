@@ -161,7 +161,7 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Parses the WooCommerce shipping zones and maps them into the self::$methods_countries array.
+	 * Parses the WooCommerce shipping zones and maps the ones that are supported and enabled into the self::$methods_countries array.
 	 */
 	protected function parse_shipping_zones(): void {
 		// Don't parse if already parsed.
