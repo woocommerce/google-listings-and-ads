@@ -180,61 +180,6 @@ const faqItems = [
 			'google-listings-and-ads'
 		),
 	},
-	{
-		trackId: 'how-can-i-get-the-ad-credit-offer',
-		question: __(
-			'How can I get the $150 ad credit offer?',
-			'google-listings-and-ads'
-		),
-		answer: (
-			<>
-				<p>
-					{ __(
-						'Ad credit amounts vary by country and region.',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<p>
-					{ __(
-						'The eligibility criteria:',
-						'google-listings-and-ads'
-					) }
-					<br />
-					{ __(
-						'The account has no other promotions applied.',
-						'google-listings-and-ads'
-					) }
-					<br />
-					{ __(
-						'The account is billed to a country where Google Partners promotions are offered.',
-						'google-listings-and-ads'
-					) }
-					<br />
-					{ __(
-						'The account served its first ad impression within the last 14 days.',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<p>
-					{ createInterpolateElement(
-						__(
-							'Review the static terms <link>here</link>.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<AppDocumentationLink
-									context="faqs"
-									linkId="terms-and-conditions-of-google-ads-coupons"
-									href="http://www.google.com/ads/coupons/terms.html"
-								/>
-							),
-						}
-					) }
-				</p>
-			</>
-		),
-	},
 ];
 
 const Faqs = () => {
