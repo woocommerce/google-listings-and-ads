@@ -52,6 +52,13 @@ class SetupCampaign extends AbstractSetupCampaign {
 					'google-listings-and-ads'
 				)
 			);
+			$note->add_action(
+				'setup-campaign',
+				__( 'Set up Google Ads', 'google-listings-and-ads' ),
+				$this->get_setup_ads_url(),
+				NoteEntry::E_WC_ADMIN_NOTE_ACTIONED,
+				true
+			);
 		} else {
 			$note->set_title( __( 'Finish connecting your Google Ads account', 'google-listings-and-ads' ) );
 			$note->set_content(
@@ -60,6 +67,19 @@ class SetupCampaign extends AbstractSetupCampaign {
 					'google-listings-and-ads'
 				)
 			);
+			$note->add_action(
+				'setup-campaign',
+				__( 'Complete Setup', 'google-listings-and-ads' ),
+				$this->get_setup_ads_url(),
+				NoteEntry::E_WC_ADMIN_NOTE_ACTIONED,
+				true
+			);
 		}
+
+		$note->add_action(
+			'setup-campaign-learn-more',
+			__( 'Learn more', 'google-listings-and-ads' ),
+			'https://docs.woocommerce.com/document/google-listings-and-ads/#get-500-in-free-ad-credits'
+		);
 	}
 }

@@ -52,6 +52,13 @@ class SetupCampaignTwoWeeks extends AbstractSetupCampaign {
 					'google-listings-and-ads'
 				)
 			);
+			$note->add_action(
+				'setup-campaign',
+				__( 'Set up Google Ads', 'google-listings-and-ads' ),
+				$this->get_setup_ads_url(),
+				NoteEntry::E_WC_ADMIN_NOTE_ACTIONED,
+				true
+			);
 		} else {
 			$note->set_title(
 				__( 'Finish setting up your ads campaign and boost your sales', 'google-listings-and-ads' )
@@ -61,6 +68,13 @@ class SetupCampaignTwoWeeks extends AbstractSetupCampaign {
 					"You're just a few steps away from reaching new shoppers across Google. Finish connecting your account, create your campaign, pick your budget, and easily measure the impact of your ads.",
 					'google-listings-and-ads'
 				)
+			);
+			$note->add_action(
+				'setup-campaign',
+				__( 'Complete Setup', 'google-listings-and-ads' ),
+				$this->get_setup_ads_url(),
+				NoteEntry::E_WC_ADMIN_NOTE_ACTIONED,
+				true
 			);
 		}
 	}

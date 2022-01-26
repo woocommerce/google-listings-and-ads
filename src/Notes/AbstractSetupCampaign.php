@@ -63,11 +63,6 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 		$note->set_image( '' );
 		$note->set_name( $this->get_name() );
 		$note->set_source( $this->get_slug() );
-		$note->add_action(
-			'setup-campaign',
-			__( 'Get started', 'google-listings-and-ads' ),
-			$this->get_setup_ads_url()
-		);
 	}
 
 	/**
