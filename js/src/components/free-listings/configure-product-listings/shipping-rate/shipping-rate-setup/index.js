@@ -1,13 +1,6 @@
 /**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-import { CheckboxControl } from '@wordpress/components';
-
-/**
  * Internal dependencies
  */
-import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppSpinner from '.~/components/app-spinner';
@@ -22,11 +15,11 @@ import './index.scss';
  * Form control to edit shipping rate settings.
  *
  * @param {Object} props React props.
- * @param {Object} props.formProps Form props forwarded from `Form` component, containing `offers_free_shipping` and `free_shipping_threshold` properties.
+ * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
  */
 const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
-	const { getInputProps, values } = formProps;
+	const { getInputProps } = formProps;
 	const { code: currencyCode } = useStoreCurrency();
 
 	if ( ! selectedCountryCodes ) {
@@ -41,24 +34,6 @@ const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
 					currencyCode={ currencyCode }
 					audienceCountries={ selectedCountryCodes }
 				/>
-				<CheckboxControl
-					label={ __(
-						'I also offer free shipping for all countries for products over a certain price.',
-						'google-listings-and-ads'
-					) }
-					{ ...getInputProps( 'offers_free_shipping' ) }
-				/>
-				{ values.offers_free_shipping && (
-					<div className="price-over-input">
-						<AppInputPriceControl
-							label={ __(
-								'I offer free shipping for products priced over',
-								'google-listings-and-ads'
-							) }
-							{ ...getInputProps( 'free_shipping_threshold' ) }
-						/>
-					</div>
-				) }
 			</VerticalGapLayout>
 		</div>
 	);

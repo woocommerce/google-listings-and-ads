@@ -30,8 +30,6 @@ describe( 'checkErrors', () => {
 		const values = {
 			shipping_rate: 'flat',
 			shipping_time: 'flat',
-			offers_free_shipping: true,
-			free_shipping_threshold: 100,
 			tax_rate: 'manual',
 		};
 		const rates = toRates( [ 'US', 10 ], [ 'JP', 30 ] );
@@ -99,14 +97,6 @@ describe( 'checkErrors', () => {
 		} );
 
 		describe( 'For flat type', () => {
-			function createFreeShipping( threshold ) {
-				return {
-					...flatShipping,
-					offers_free_shipping: true,
-					free_shipping_threshold: threshold,
-				};
-			}
-
 			it( `When there are any selected countries with shipping rates not set, should not pass`, () => {
 				const rates = toRates( [ 'US', 10.5 ], [ 'FR', 12.8 ] );
 				const codes = [ 'US', 'JP', 'FR' ];
@@ -143,57 +133,6 @@ describe( 'checkErrors', () => {
 				const errors = checkErrors( flatShipping, rates, [], codes );
 
 				expect( errors ).not.toHaveProperty( 'shipping_rate' );
-			} );
-
-			it( 'When the free shipping threshold is an invalid value or missing, should not pass', () => {
-				// Not set yet
-				// When set up from scratch, the initial value of `free_shipping_threshold` is null.
-				let freeShipping = createFreeShipping( null );
-				const rates = toRates( [ 'JP', 2 ] );
-				const codes = [ 'JP' ];
-
-				let errors = checkErrors( freeShipping, rates, [], codes );
-
-				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
-				expect( errors.free_shipping_threshold ).toMatchSnapshot();
-
-				// Invalid value
-				freeShipping = createFreeShipping( true );
-
-				errors = checkErrors( freeShipping, rates, [], codes );
-
-				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
-				expect( errors.free_shipping_threshold ).toMatchSnapshot();
-
-				// Invalid range
-				freeShipping = createFreeShipping( -0.01 );
-
-				errors = checkErrors( freeShipping, rates, [], codes );
-
-				expect( errors ).toHaveProperty( 'free_shipping_threshold' );
-				expect( errors.free_shipping_threshold ).toMatchSnapshot();
-			} );
-
-			it( 'When the free shipping threshold ≥ 0, should pass', () => {
-				// Free threshold is 0
-				let freeShipping = createFreeShipping( 0 );
-				const rates = toRates( [ 'JP', 2 ] );
-				const codes = [ 'JP' ];
-
-				let errors = checkErrors( freeShipping, rates, [], codes );
-
-				expect( errors ).not.toHaveProperty(
-					'free_shipping_threshold'
-				);
-
-				// Free threshold is a positive number
-				freeShipping = createFreeShipping( 0.01 );
-
-				errors = checkErrors( freeShipping, rates, [], codes );
-
-				expect( errors ).not.toHaveProperty(
-					'free_shipping_threshold'
-				);
 			} );
 		} );
 	} );
