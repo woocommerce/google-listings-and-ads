@@ -48,7 +48,7 @@ class SetupCampaign extends AbstractSetupCampaign {
 			$note->set_title( __( 'Launch ads to drive traffic and grow sales', 'google-listings-and-ads' ) );
 			$note->set_content(
 				__(
-					'Your products are ready for Google Ads! Get your products shown on Google exactly when shoppers are searching for the products you offer. For new Google Ads accounts, Google will match your spend up to $150 USD over your first 30 days. T&Cs apply.',
+					'Your products are ready for Google Ads! Get your products shown on Google exactly when shoppers are searching for the products you offer. For new Google Ads accounts, get $500 in ad credit when you spend $500 within your first 60 days. T&Cs apply.',
 					'google-listings-and-ads'
 				)
 			);
@@ -63,7 +63,7 @@ class SetupCampaign extends AbstractSetupCampaign {
 			$note->set_title( __( 'Finish connecting your Google Ads account', 'google-listings-and-ads' ) );
 			$note->set_content(
 				__(
-					'Your products are ready for Google Ads! Finish connecting your account, create your campaign, pick your budget, and easily measure the impact of your ads. Plus, Google will match $150 USD ad spend for new accounts. T&Cs apply.',
+					'Your products are ready for Google Ads! Finish connecting your account, create your campaign, pick your budget, and easily measure the impact of your ads. Plus, Google will give you $500 USD in ad credit when you spend $500 for new accounts. T&Cs apply.',
 					'google-listings-and-ads'
 				)
 			);
