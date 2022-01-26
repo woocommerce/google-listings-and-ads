@@ -440,6 +440,7 @@ class Proxy implements OptionsAwareInterface {
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 
+		/** @var AdsAccountState $state */
 		$state      = $this->container->get( AdsAccountState::class );
 		$incomplete = $state->last_incomplete_step();
 		if ( ! empty( $incomplete ) ) {
