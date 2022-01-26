@@ -1,5 +1,5 @@
 // Import Gutenberg components that aren't already imported in the lowest WC Admin version we support
-// @import "node_modules/@wordpress/components/src/button/style"; // required for tab-panel
+@import "node_modules/@wordpress/components/src/button/style"; // required for tab-panel
 @import "node_modules/@wordpress/components/src/panel/style";
 
 .components-button {
