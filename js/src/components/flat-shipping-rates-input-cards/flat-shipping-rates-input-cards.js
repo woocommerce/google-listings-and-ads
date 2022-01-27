@@ -3,7 +3,7 @@
  */
 import { EstimatedShippingRatesCard } from './estimated-shipping-rates-card';
 
-const FlatShippingRatesInput = ( props ) => {
+const FlatShippingRatesInputCards = ( props ) => {
 	const { audienceCountries, value, onChange = () => {} } = props;
 
 	return (
@@ -15,4 +15,4 @@ const FlatShippingRatesInput = ( props ) => {
 	);
 };
 
-export default FlatShippingRatesInput;
+export default FlatShippingRatesInputCards;

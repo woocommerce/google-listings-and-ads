@@ -12,7 +12,7 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import { FlatShippingRatesInput } from '.~/components/flat-shipping-rates-input';
+import { FlatShippingRatesInputCards } from '.~/components/flat-shipping-rates-input-cards';
 
 const ShippingRateSection = ( { formProps, countries: audienceCountries } ) => {
 	const { getInputProps, values } = formProps;
@@ -106,7 +106,7 @@ const ShippingRateSection = ( { formProps, countries: audienceCountries } ) => {
 					</Section.Card.Body>
 				</Section.Card>
 				{ values.shipping_rate === 'flat' && (
-					<FlatShippingRatesInput
+					<FlatShippingRatesInputCards
 						audienceCountries={ audienceCountries }
 						value={
 							getInputProps( 'shipping_country_rates' ).value
