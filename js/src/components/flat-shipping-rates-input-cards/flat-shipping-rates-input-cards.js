@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { EstimatedShippingRatesCard } from './estimated-shipping-rates-card';
+import EstimatedShippingRatesCard from './estimated-shipping-rates-card';
 
 const FlatShippingRatesInputCards = ( props ) => {
 	const { audienceCountries, value, onChange = () => {} } = props;
