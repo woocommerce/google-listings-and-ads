@@ -24,12 +24,12 @@ export default function ShippingCountriesForm( {
 } ) {
 	const actualCountryCount = shippingRates.length;
 	const actualCountries = new Map(
-		shippingRates.map( ( rate ) => [ rate.countryCode, rate ] )
+		shippingRates.map( ( rate ) => [ rate.country, rate ] )
 	);
-	const remainingCountryCodes = audienceCountries.filter(
+	const remainingCountries = audienceCountries.filter(
 		( el ) => ! actualCountries.has( el )
 	);
-	const remainingCount = remainingCountryCodes.length;
+	const remainingCount = remainingCountries.length;
 	// We may have shipping rates defined for more than the audience countries.
 	// Therefore, the number of countries we anticipate is what we acutally have + missing audience ones.
 	const totalCountyCount = actualCountryCount + remainingCount;
@@ -55,14 +55,14 @@ export default function ShippingCountriesForm( {
 	function handleDelete( deletedCountries ) {
 		onChange(
 			shippingRates.filter(
-				( rate ) => ! deletedCountries.includes( rate.countryCode )
+				( rate ) => ! deletedCountries.includes( rate.country )
 			)
 		);
 	}
 	function handleAdd( { countries, currency, rate } ) {
 		// Split aggregated rate, to individial rates per country.
-		const addedIndividualRates = countries.map( ( countryCode ) => ( {
-			countryCode,
+		const addedIndividualRates = countries.map( ( country ) => ( {
+			country,
 			currency,
 			rate, // TODO: unify that
 		} ) );
@@ -73,14 +73,14 @@ export default function ShippingCountriesForm( {
 		{ countries, currency, price },
 		deletedCountries = []
 	) {
-		deletedCountries.forEach( ( countryCode ) =>
-			actualCountries.delete( countryCode )
+		deletedCountries.forEach( ( country ) =>
+			actualCountries.delete( country )
 		);
 
 		// Upsert rates.
-		countries.forEach( ( countryCode ) => {
-			actualCountries.set( countryCode, {
-				countryCode,
+		countries.forEach( ( country ) => {
+			actualCountries.set( country, {
+				country,
 				currency,
 				rate: price, // TODO: unify that
 			} );
@@ -110,7 +110,7 @@ export default function ShippingCountriesForm( {
 				{ actualCountryCount >= 1 && remainingCount >= 1 && (
 					<div className="add-rate-button">
 						<AddRateButton
-							countries={ remainingCountryCodes }
+							countries={ remainingCountries }
 							onSubmit={ handleAdd }
 						/>
 					</div>
@@ -124,7 +124,7 @@ export default function ShippingCountriesForm( {
  * Individual shipping rate.
  *
  * @typedef {Object} ShippingRate
- * @property {CountryCode} countryCode Destination country code.
+ * @property {CountryCode} country Destination country code.
  * @property {string} currency Currency of the price.
  * @property {number} price Shipping price.
  */
