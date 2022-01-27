@@ -30,14 +30,14 @@ const FreeAdCredit = () => {
 			<div>
 				<div className="gla-free-ad-credit__title">
 					{ __(
-						'You’re eligible for free ad credit!',
+						'Spend $500 to get $500 in Google Ads credits!',
 						'google-listings-and-ads'
 					) }
 				</div>
 				<div className="gla-free-ad-credit__description">
 					{ createInterpolateElement(
 						__(
-							'Whatever you spend over the next 60 days will be added back to your Google Ads account. Check how much credit you can receive in your country <checklink>here</checklink>.',
+							'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days. Check how much credit you can receive in your country <checklink>here</checklink>.',
 							'google-listings-and-ads'
 						),
 						{
