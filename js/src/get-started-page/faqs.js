@@ -180,6 +180,40 @@ const faqItems = [
 			'google-listings-and-ads'
 		),
 	},
+	{
+		trackId: 'how-can-i-get-the-ad-credit-offer',
+		question: __(
+			'How can I get the $500 ad credit offer?',
+			'google-listings-and-ads'
+		),
+		answer: (
+			<>
+				<p>
+					{ __(
+						'Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit.',
+						'google-listings-and-ads'
+					) }
+				</p>
+				<p>
+					{ createInterpolateElement(
+						__(
+							'Ad credit amounts vary by country and region. Full terms and conditions can be found <link>here</link>.',
+							'google-listings-and-ads'
+						),
+						{
+							link: (
+								<AppDocumentationLink
+									context="faqs"
+									linkId="terms-and-conditions-of-google-ads-coupons"
+									href="https://www.google.com/ads/coupons/terms/"
+								/>
+							),
+						}
+					) }
+				</p>
+			</>
+		),
+	},
 ];
 
 const Faqs = () => {
