@@ -45,18 +45,9 @@ Connect your Google Ads account, choose a budget, and launch your campaign strai
 
 *Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
 
-= Get started with up to $150 in ad credit when you create a Google Ads account =
+= Get $500 in Google Ads credit when you spend your first $500! =
 
-Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaigns. The promotional code will be applied when you start spending and serve your first ad impression, and whatever you spend over the next 30 days, up to $150, will be added back to your account.
-
-*\*Ad credit amounts vary by country and region.*
-
-= The eligibility criteria: =
-- The account has no other promotions applied.
-- The account is billed to a country where Google Partners promotions are offered.
-- The account served its first ad impression within the last 14 days.
-
-*Review the static terms [here](http://www.google.com/ads/coupons/terms.html).*
+Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit. See full terms and conditions [here](https://www.google.com/ads/coupons/terms/).
 
 == Installation ==
 
