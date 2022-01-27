@@ -15,14 +15,14 @@ import './index.scss';
  * Form control to edit shipping rate settings.
  *
  * @param {Object} props React props.
- * @param {Object} props.formProps Form props forwarded from `Form` component.
- * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
+ * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
+ * @param {Array<Object>} props.value Array of shipping rates.
+ * @param {Function} props.onChange onChange callback.
  */
-const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
-	const { getInputProps } = formProps;
+const ShippingRateSetup = ( { audienceCountries, value, onChange } ) => {
 	const { code: currencyCode } = useStoreCurrency();
 
-	if ( ! selectedCountryCodes ) {
+	if ( ! audienceCountries ) {
 		return <AppSpinner />;
 	}
 
@@ -30,9 +30,10 @@ const ShippingRateSetup = ( { formProps, selectedCountryCodes } ) => {
 		<div className="gla-shipping-rate-setup">
 			<VerticalGapLayout>
 				<ShippingCountriesForm
-					{ ...getInputProps( 'shipping_country_rates' ) }
 					currencyCode={ currencyCode }
-					audienceCountries={ selectedCountryCodes }
+					audienceCountries={ audienceCountries }
+					value={ value }
+					onChange={ onChange }
 				/>
 			</VerticalGapLayout>
 		</div>

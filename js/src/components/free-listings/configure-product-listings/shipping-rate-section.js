@@ -15,10 +15,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import ShippingRateSetup from './shipping-rate/shipping-rate-setup';
 import Subsection from '.~/wcdl/subsection';
 
-const ShippingRateSection = ( {
-	formProps,
-	countries: selectedCountryCodes,
-} ) => {
+const ShippingRateSection = ( { formProps, countries: audienceCountries } ) => {
 	const { getInputProps, values } = formProps;
 	const inputProps = getInputProps( 'shipping_rate' );
 
@@ -119,8 +116,15 @@ const ShippingRateSection = ( {
 								) }
 							</Subsection.Title>
 							<ShippingRateSetup
-								selectedCountryCodes={ selectedCountryCodes }
-								formProps={ formProps }
+								audienceCountries={ audienceCountries }
+								value={
+									getInputProps( 'shipping_country_rates' )
+										.value
+								}
+								onChange={
+									getInputProps( 'shipping_country_rates' )
+										.onChange
+								}
 							/>
 						</Section.Card.Body>
 					</Section.Card>
