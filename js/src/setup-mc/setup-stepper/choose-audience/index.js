@@ -75,7 +75,6 @@ const ChooseAudience = ( props ) => {
 						countries: data.countries || [],
 					} }
 					validate={ handleValidate }
-					onSubmitCallback={ handleSubmitCallback }
 					onSubmit={ handleSubmitCallback }
 				>
 					{ ( formProps ) => {

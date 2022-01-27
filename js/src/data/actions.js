@@ -765,13 +765,84 @@ export function receiveAdsCampaigns( adsCampaigns ) {
 	};
 }
 
+/**
+ * Create a new ads campaign.
+ *
+ * @param {number} amount Daily average cost of the paid ads campaign.
+ * @param {string} country Country code of the paid ads campaign audience country. Example: 'US'.
+ *
+ * @throws { { message: string } } Will throw an error if the campaign creation fails.
+ */
+export function* createAdsCampaign( amount, country ) {
+	try {
+		const createdCampaign = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns`,
+			method: 'POST',
+			data: {
+				amount,
+				country,
+			},
+		} );
+
+		{
+			/**
+			 * If the campaign creation fails, the API still responds a HTTP status code 200 response
+			 * with `message` property only. So here check the fails by data structure.
+			 *
+			 * TODO: Remove this code block after the API responds the fails in a more specific way.
+			 */
+			const keys = Object.keys( createdCampaign );
+			if ( keys.length === 1 && keys.pop() === 'message' ) {
+				throw createdCampaign;
+			}
+		}
+
+		return {
+			type: TYPES.CREATE_ADS_CAMPAIGN,
+			createdCampaign,
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'Unable to create your paid ads campaign. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+
+		throw error;
+	}
+}
+
+/**
+ * Update the given data properties to an ads campaign.
+ *
+ * @param {number} id The ID of the ads campaign to be updated.
+ * @param {Object} data The properties of the ads campaign to be updated.
+ *   The valid properties are 'name', 'status', and 'amount'.
+ *
+ * @throws { { message: string } } Will throw an error if the campaign update fails.
+ */
 export function* updateAdsCampaign( id, data ) {
 	try {
-		yield apiFetch( {
-			path: `/wc/gla/ads/campaigns/${ id }`,
-			method: 'POST',
+		const updatedCampaign = yield apiFetch( {
+			path: `${ API_NAMESPACE }/ads/campaigns/${ id }`,
+			method: 'PATCH',
 			data,
 		} );
+
+		{
+			/**
+			 * If the campaign update fails, the API still responds a HTTP status code 200 response
+			 * with `message` property only. So here check the fails by data structure.
+			 *
+			 * TODO: Remove this code block after the API responds the fails in a more specific way.
+			 */
+			const keys = Object.keys( updatedCampaign );
+			if ( keys.length === 1 && keys.pop() === 'message' ) {
+				throw updatedCampaign;
+			}
+		}
 
 		return {
 			type: TYPES.UPDATE_ADS_CAMPAIGN,
@@ -786,6 +857,8 @@ export function* updateAdsCampaign( id, data ) {
 				'google-listings-and-ads'
 			)
 		);
+
+		throw error;
 	}
 }
 

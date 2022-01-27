@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import isEqual from 'lodash/isEqual';
+import { isEqual } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
@@ -75,9 +75,7 @@ const SetupAdsForm = () => {
 		<Form
 			initialValues={ initialValues }
 			validate={ handleValidate }
-			onChangeCallback={ handleChange }
 			onChange={ handleChange }
-			onSubmitCallback={ handleSubmit }
 			onSubmit={ handleSubmit }
 		>
 			{ ( formProps ) => {

@@ -1,15 +1,13 @@
 /**
  * Internal dependencies
  */
-import FullScreen from '.~/components/full-screen';
+import useLayout from '.~/hooks/useLayout';
 import SetupAdsForm from './setup-ads-form';
 
 const SetupAds = () => {
-	return (
-		<FullScreen>
-			<SetupAdsForm />
-		</FullScreen>
-	);
+	useLayout( 'full-page' );
+
+	return <SetupAdsForm />;
 };
 
 export default SetupAds;

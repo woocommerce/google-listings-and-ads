@@ -74,7 +74,6 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			isRequesting={ ! loaded }
 			emptyMessage={ emptyMessage }
 			layout="time-comparison"
-			// 'hidden' is NOT a valid `legendPosition` value, but it can hack to hide the legend.
 			legendPosition="hidden"
 		/>
 	);

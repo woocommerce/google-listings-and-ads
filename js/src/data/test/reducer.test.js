@@ -352,6 +352,27 @@ describe( 'reducer', () => {
 			expect( state ).toHaveProperty( path, action.adsCampaigns );
 		} );
 
+		it( 'should push the created ads campaign and return with updated ads campaigns', () => {
+			const createdToInitialState = reducer( prepareState(), {
+				type: TYPES.CREATE_ADS_CAMPAIGN,
+				createdCampaign: { id: 123 },
+			} );
+			const createdToLoadedState = reducer( createdToInitialState, {
+				type: TYPES.CREATE_ADS_CAMPAIGN,
+				createdCampaign: { id: 456 },
+			} );
+
+			createdToInitialState.assertConsistentRef();
+			createdToLoadedState.assertConsistentRef();
+			expect( createdToInitialState ).toHaveProperty( path, [
+				{ id: 123 },
+			] );
+			expect( createdToLoadedState ).toHaveProperty( path, [
+				{ id: 123 },
+				{ id: 456 },
+			] );
+		} );
+
 		it( 'should patch the given data properties and return with updated ads campaign by matching `id`', () => {
 			const originalState = prepareState( path, [
 				{
