@@ -62,7 +62,8 @@
 		"file-loader": "^6.2.0",
 		"h2o2": "^8.2.0",
 		"postcss": "^8.4.4",
-		"prettier": "npm:wp-prettier@^2.0.5"
+		"prettier": "npm:wp-prettier@^2.0.5",
+		"stylelint": "^13.8.0"
 	},
 	"dependencies": {
 		"@woocommerce/components": "8.1.0",
