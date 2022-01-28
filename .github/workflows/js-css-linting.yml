@@ -9,20 +9,10 @@ on:
 
 env:
   FORCE_COLOR: 2
+
 jobs:
-  Setup:
-    name: Setup for jobs
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Prepare node
-        uses: ./.github/actions/prepare-node
-
   JSLintingCheck:
     name: Lint JavaScript
-    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -50,7 +40,6 @@ jobs:
 
   CSSLintingCheck:
     name: Lint CSS
-    needs: Setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
