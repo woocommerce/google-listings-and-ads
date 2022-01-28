@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseD
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantTimeToWait;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Exception;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -267,7 +268,7 @@ class AccountController extends BaseController {
 
 		return new Response(
 			$data,
-			$e->getCode() ?: 503,
+			$wait->getCode() ?: 503,
 			[
 				'Retry-After' => $data['retry_after'],
 			]
