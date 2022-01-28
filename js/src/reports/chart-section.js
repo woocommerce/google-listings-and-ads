@@ -51,8 +51,6 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 			return [];
 		}
 
-		const unusedVariable = 123;
-
 		return intervals.map( ( { interval, subtotals } ) => {
 			return {
 				date: interval,
@@ -62,7 +60,7 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 				},
 			};
 		} );
-	}, [ key, label, loaded ] );
+	}, [ key, label, loaded, intervals ] );
 
 	return (
 		<Chart

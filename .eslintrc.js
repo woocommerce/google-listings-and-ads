@@ -10,8 +10,7 @@ module.exports = {
 		'import/resolver': 'webpack',
 	},
 	rules: {
-		'@wordpress/no-global-event-listener': 0,
-		'@wordpress/no-unsafe-wp-apis': 0,
+		'@wordpress/no-unsafe-wp-apis': 1,
 		'react-hooks/exhaustive-deps': [
 			'warn',
 			{

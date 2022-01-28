@@ -32,7 +32,7 @@ jobs:
         uses: ./.github/actions/prepare-node
 
       - name: Lint JavaScript and annotate linting errors
-        run: npm run lint:js -- --format ./.github/scripts/eslintFormatter.js
+        run: npm run lint:js -- --quiet --format ./.github/scripts/eslintFormatter.js
 
   CSSLintingCheck:
     name: Lint CSS
