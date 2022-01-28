@@ -45,5 +45,5 @@ jobs:
       - name: Prepare node
         uses: ./.github/actions/prepare-node
 
-      - name: Lint CSS
-        run: npm run lint:css
+      - name: Lint CSS and annotate linting errors
+        run: npm run lint:css -- --custom-formatter ./.github/scripts/stylelintFormatter.js
