@@ -1,6 +1,7 @@
 {
 	"extends": "@wordpress/stylelint-config",
 	"rules": {
+		"block-no-empty": [true, { "severity": "warning" }],
 		"at-rule-empty-line-before": null,
 		"at-rule-no-unknown": null,
 		"comment-empty-line-before": null,

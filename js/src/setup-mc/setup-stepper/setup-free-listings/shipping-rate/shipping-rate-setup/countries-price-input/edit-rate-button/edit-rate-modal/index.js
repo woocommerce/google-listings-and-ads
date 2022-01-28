@@ -19,6 +19,8 @@ const EditRateModal = ( props ) => {
 	const { rate, onRequestClose } = props;
 	const { upsertShippingRates, deleteShippingRates } = useAppDispatch();
 
+	const unusedVariable = 123;
+
 	const handleDeleteClick = () => {
 		deleteShippingRates( rate.countries );
 
@@ -28,12 +30,8 @@ const EditRateModal = ( props ) => {
 	const handleValidate = ( values ) => {
 		const errors = {};
 
-		if ( values.countryCodes.length === 0 ) {
-			errors.countryCodes = __(
-				'Please specify at least one country.',
-				'google-listings-and-ads'
-			);
-		}
+		if ( values.countryCodes.length === 0 )
+		{errors.countryCodes = __('Please specify at least one country.', 'google-listings-and-ads');}
 
 		if ( values.price === null ) {
 			errors.price = __(

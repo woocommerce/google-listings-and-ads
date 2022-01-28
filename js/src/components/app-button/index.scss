@@ -2,7 +2,7 @@
 	white-space: nowrap;
 
 	svg {
-		max-width: inherit;
+		max-width:inherit;
 		max-height: inherit;
 
 		circle {
@@ -13,7 +13,7 @@
 	// Add a gap between the SVG icon and text when the icon is on the right side.
 	// `:last-child` is to prevent this style apply on the loading <Spinner>.
 	&--icon-position-right.has-icon svg:last-child {
-		margin-left: 8px;
+		margin-left: 0px
 	}
 
 	/**
