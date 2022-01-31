@@ -292,7 +292,7 @@ class AccountService implements OptionsAwareInterface, Service {
 					case 'verify':
 						// Skip if previously verified.
 						if ( $this->state->is_site_verified() ) {
-							return;
+							break;
 						}
 
 						$site_url = esc_url_raw( $this->get_site_url() );
