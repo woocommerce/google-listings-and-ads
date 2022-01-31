@@ -184,7 +184,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 			$end_date = clone $start_date;
 			$end_date->add( new DateInterval( 'PT1S' ) );
 		}
-		return sprintf( '%s/%s', (string) $start_date, (string) $end_date );
+		return sprintf( '{"startTime": "%s", "endTime": "%s"}', (string) $start_date, (string) $end_date );
 	}
 
 	/**
