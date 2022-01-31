@@ -290,7 +290,13 @@ class AccountService implements OptionsAwareInterface, Service {
 						$step['data']['created_timestamp'] = time();
 						break;
 					case 'verify':
-						$this->verify_site();
+						// Skip if previously verified.
+						if ( $this->state->is_site_verified() ) {
+							return;
+						}
+
+						$site_url = esc_url_raw( $this->get_site_url() );
+						$this->container->get( SiteVerification::class )->verify_site( $site_url );
 						break;
 					case 'link':
 						$middleware->link_merchant_to_mca();
@@ -365,67 +371,6 @@ class AccountService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Performs the three-step process of verifying the current site:
-	 * 1. Retrieves the meta tag with the verification token.
-	 * 2. Enables the meta tag in the head of the store.
-	 * 3. Instructs the Site Verification API to verify the meta tag.
-	 *
-	 * @throws Exception If any step of the site verification process fails.
-	 */
-	private function verify_site(): void {
-		$site_url = esc_url_raw( $this->get_site_url() );
-		if ( ! wc_is_valid_url( $site_url ) ) {
-			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'site-url' ] );
-			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
-		}
-
-		// Inform of previous verification.
-		if ( $this->state->is_site_verified() ) {
-			return;
-		}
-
-		// Retrieve the meta tag with verification token.
-		/** @var SiteVerification $site_verification */
-		$site_verification = $this->container->get( SiteVerification::class );
-		try {
-			$meta_tag = $site_verification->get_token( $site_url );
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'token' ] );
-			throw $e;
-		}
-
-		// Store the meta tag in the options table and mark as unverified.
-		$site_verification_options = [
-			'verified' => $site_verification::VERIFICATION_STATUS_UNVERIFIED,
-			'meta_tag' => $meta_tag,
-		];
-		$this->options->update(
-			OptionsInterface::SITE_VERIFICATION,
-			$site_verification_options
-		);
-
-		// Attempt verification.
-		try {
-			if ( $site_verification->insert( $site_url ) ) {
-				$site_verification_options['verified'] = $site_verification::VERIFICATION_STATUS_VERIFIED;
-				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-				do_action( 'woocommerce_gla_site_verify_success', [] );
-
-				return;
-			}
-		} catch ( Exception $e ) {
-			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
-
-			throw $e;
-		}
-
-		// Should never reach this point.
-		do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
-
-		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
-	}
-
-	/**
 	 * Restart the account setup when we are connecting with a different account ID.
 	 * Do not allow reset when the full setup process has completed.
 	 *
@@ -487,12 +432,12 @@ class AccountService implements OptionsAwareInterface, Service {
 					sprintf(
 					/* translators: 1: is a website URL (without the protocol) */
 						__( 'This Merchant Center account already has a verified and claimed URL, %1$s', 'google-listings-and-ads' ),
-						$clean_account_website_url
+						$clean_account_url
 					),
 					[
 						'id'          => $merchant_id,
-						'claimed_url' => $clean_account_website_url,
-						'new_url'     => $clean_site_website_url,
+						'claimed_url' => $clean_account_url,
+						'new_url'     => $clean_site_url,
 					],
 					409
 				);
