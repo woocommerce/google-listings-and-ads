@@ -133,7 +133,7 @@ class WCCouponAdapterTest extends UnitTest {
 	            'targetCountry' => 'US',
 	        ]
 	        );
-	    $this->assertEquals( '2021-01-01T02:03:45+00:00/2021-07-03T02:03:45+00:00', $adapted_coupon->getPromotionEffectiveDates() );
+	    $this->assertEquals( '{"startTime": "2021-01-01T02:03:45+00:00", "endTime": "2021-07-03T02:03:45+00:00"}', $adapted_coupon->getPromotionEffectiveDates() );
 	}
 
 	public function test_disable_promotion() {
