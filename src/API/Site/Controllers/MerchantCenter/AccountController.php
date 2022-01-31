@@ -161,7 +161,12 @@ class AccountController extends BaseController {
 		return function( Request $request ) use ( $action ) {
 			try {
 				$account_id = absint( $request['id'] );
-				$account    = $this->account->{$action}( $account_id );
+
+				if ( $account_id && 'setup_account' === $action ) {
+					$this->account->use_existing_account_id( $account_id );
+				}
+
+				$account = $this->account->{$action}( $account_id );
 
 				return $this->prepare_item_for_response( $account, $request );
 			} catch ( MerchantTimeToWait $e ) {

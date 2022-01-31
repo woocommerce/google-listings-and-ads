@@ -31,6 +31,7 @@ defined( 'ABSPATH' ) || exit;
  * - MerchantAccountState
  * - MerchantCenterService
  * - MerchantIssueTable
+ * - MerchantStatuses
  * - Middleware
  * - SiteVerification
  * - ShippingRateTable
@@ -89,40 +90,69 @@ class AccountService implements OptionsAwareInterface, Service {
 	}
 
 	/**
+	 * Use an existing MC account. Mark the 'set_id' step as done, update the MC account's website URL,
+	 * and sets the Merchant ID.
+	 *
+	 * @param int $account_id The merchant ID to use.
+	 *
+	 * @throws ExceptionWithResponseData If there's a website URL conflict, or account data can't be retrieved.
+	 */
+	public function use_existing_account_id( int $account_id ): void {
+		// Reset the process if the provided ID isn't the same as the one stored in options.
+		$merchant_id = $this->options->get_merchant_id();
+		if ( $merchant_id && $merchant_id !== $account_id ) {
+			$this->reset_account_setup();
+		}
+
+		$state = $this->state->get();
+
+		// Don't do anything if this step was already finished.
+		if ( MerchantAccountState::STEP_DONE === $state['set_id']['status'] ) {
+			return;
+		}
+
+		try {
+			// Make sure the existing account has the correct website URL (or fail).
+			$this->maybe_add_merchant_center_url( $account_id );
+
+			// Re-fetch state as it might have changed.
+			$state      = $this->state->get();
+			$middleware = $this->container->get( Middleware::class );
+
+			// Maybe the existing account is a sub-account!
+			$state['set_id']['data']['from_mca'] = false;
+			foreach ( $middleware->get_merchant_accounts() as $existing_account ) {
+				if ( $existing_account['id'] === $account_id ) {
+					$state['set_id']['data']['from_mca'] = $existing_account['subaccount'];
+					break;
+				}
+			}
+
+			$middleware->link_merchant_account( $account_id );
+			$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
+			$this->state->update( $state );
+		} catch ( Exception $e ) {
+			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
+		}
+	}
+
+	/**
 	 * Run the process for setting up a Merchant Center account (sub-account or standalone).
 	 *
 	 * @param int $account_id
 	 *
-	 * @return array The account ID if setup has completed, or an error if not.
+	 * @return array The account ID if setup has completed.
 	 * @throws ExceptionWithResponseData When the account is already connected or a setup error occurs.
 	 */
 	public function setup_account( int $account_id ) {
-		$merchant_id = $this->options->get_merchant_id();
-
 		// Reset the process if the provided ID isn't the same as the one stored in options.
+		$merchant_id = $this->options->get_merchant_id();
 		if ( $merchant_id && $merchant_id !== $account_id ) {
-
-			// Can't reset if the MC connection process has been completed previously.
-			if ( $this->container->get( MerchantCenterService::class )->is_setup_complete() ) {
-				throw $this->prepare_exception(
-					sprintf(
-						/* translators: 1: is a numeric account ID */
-						__( 'Merchant Center account already connected: %d', 'google-listings-and-ads' ),
-						$merchant_id
-					)
-				);
-			}
-
-			$this->disconnect();
+			$this->reset_account_setup();
 		}
 
 		try {
-			if ( $account_id ) {
-				$this->use_existing_account_id( $account_id );
-			}
-
 			return $this->setup_account_steps();
-
 		} catch ( Exception $e ) {
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
@@ -219,44 +249,6 @@ class AccountService implements OptionsAwareInterface, Service {
 		$this->container->get( MerchantIssueTable::class )->truncate();
 		$this->container->get( ShippingRateTable::class )->truncate();
 		$this->container->get( ShippingTimeTable::class )->truncate();
-	}
-
-	/**
-	 * Use an existing MC account. Mark the 'set_id' step as done, update the MC account's website URL,
-	 * and sets the Merchant ID.
-	 *
-	 * @param int $account_id The merchant ID to use.
-	 *
-	 * @throws Exception If the merchant IDs of the connected account can't be retrieved.
-	 * @throws ExceptionWithResponseData If there's a website URL conflict.
-	 */
-	private function use_existing_account_id( int $account_id ): void {
-		$state = $this->state->get();
-
-		// Don't do anything if this step was already finished.
-		if ( MerchantAccountState::STEP_DONE === $state['set_id']['status'] ) {
-			return;
-		}
-
-		// Make sure the existing account has the correct website URL (or fail).
-		$this->maybe_add_merchant_center_url( $account_id );
-
-		// Re-fetch state as it might have changed.
-		$state      = $this->state->get();
-		$middleware = $this->container->get( Middleware::class );
-
-		// Maybe the existing account is a sub-account!
-		$state['set_id']['data']['from_mca'] = false;
-		foreach ( $middleware->get_merchant_accounts() as $existing_account ) {
-			if ( $existing_account['id'] === $account_id ) {
-				$state['set_id']['data']['from_mca'] = $existing_account['subaccount'];
-				break;
-			}
-		}
-
-		$middleware->link_merchant_account( $account_id );
-		$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
-		$this->state->update( $state );
 	}
 
 	/**
@@ -433,8 +425,26 @@ class AccountService implements OptionsAwareInterface, Service {
 		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
 	}
 
+	/**
+	 * Restart the account setup when we are connecting with a different account ID.
+	 * Do not allow reset when the full setup process has completed.
+	 *
+	 * @throws ExceptionWithResponseData When the full setup process is completed.
+	 */
+	private function reset_account_setup() {
+		// Can't reset if the MC connection process has been completed previously.
+		if ( $this->container->get( MerchantCenterService::class )->is_setup_complete() ) {
+			throw $this->prepare_exception(
+				sprintf(
+					/* translators: 1: is a numeric account ID */
+					__( 'Merchant Center account already connected: %d', 'google-listings-and-ads' ),
+					$this->options->get_merchant_id()
+				)
+			);
+		}
 
-
+		$this->disconnect();
+	}
 
 	/**
 	 * Ensure the Merchant Center account's Website URL matches the site URL. Update an empty value or

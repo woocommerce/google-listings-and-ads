@@ -139,6 +139,10 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_link_account() {
 		$this->account->expects( $this->once() )
+			->method( 'use_existing_account_id' )
+			->with( self::TEST_ACCOUNT_ID );
+
+		$this->account->expects( $this->once() )
 			->method( 'setup_account' )
 			->willReturn( self::TEST_ACCOUNT_DATA );
 
