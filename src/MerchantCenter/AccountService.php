@@ -131,6 +131,8 @@ class AccountService implements OptionsAwareInterface, Service {
 			$middleware->link_merchant_account( $account_id );
 			$state['set_id']['status'] = MerchantAccountState::STEP_DONE;
 			$this->state->update( $state );
+		} catch ( ExceptionWithResponseData $e ) {
+			throw $e;
 		} catch ( Exception $e ) {
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
@@ -153,6 +155,8 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		try {
 			return $this->setup_account_steps();
+		} catch ( ExceptionWithResponseData | MerchantTimeToWait $e ) {
+			throw $e;
 		} catch ( Exception $e ) {
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
 		}
@@ -258,7 +262,8 @@ class AccountService implements OptionsAwareInterface, Service {
 	 *
 	 * @return array The newly created (or pre-existing) Merchant account data.
 	 * @throws ExceptionWithResponseData If an error occurs during any step.
-	 * @throws Exception If the step is unknown.
+	 * @throws Exception                 If the step is unknown.
+	 * @throws MerchantTimeToWait        If we should wait to complete the next step.
 	 */
 	private function setup_account_steps() {
 		$state       = $this->state->get();
