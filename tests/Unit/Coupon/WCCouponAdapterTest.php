@@ -10,6 +10,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\DataTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\CouponTrait;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Google\Service\ShoppingContent\TimePeriod as GoogleTimePeriod;
+
 use WC_DateTime;
 use WC_Coupon;
 use function Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\json_encode;
@@ -133,7 +135,16 @@ class WCCouponAdapterTest extends UnitTest {
 	            'targetCountry' => 'US',
 	        ]
 	        );
-	    $this->assertEquals( '{"startTime": "2021-01-01T02:03:45+00:00", "endTime": "2021-07-03T02:03:45+00:00"}', $adapted_coupon->getPromotionEffectiveDates() );
+		$expected = new GoogleTimePeriod(
+				[
+					'startTime' => '2021-01-01T02:03:45+00:00',
+					'endTime'    => '2021-07-03T02:03:45+00:00',
+				]
+			);
+
+		$actual = $adapted_coupon->getPromotionEffectiveTimePeriod();
+	    $this->assertEquals( $expected->getStartTime() , $actual->getStartTime() );
+		$this->assertEquals( $expected->getEndTime() , $actual->getEndTime() );
 	}
 
 	public function test_disable_promotion() {
