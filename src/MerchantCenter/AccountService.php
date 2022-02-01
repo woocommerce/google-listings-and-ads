@@ -181,6 +181,7 @@ class AccountService implements OptionsAwareInterface, Service {
 		}
 
 		$this->allow_switch_url = true;
+		$this->use_existing_account_id( $account_id );
 		return $this->setup_account( $account_id );
 	}
 
