@@ -27,10 +27,11 @@ class MerchantTimeToWait extends ExceptionWithResponseData {
 	public static function retry_after( int $wait ): MerchantTimeToWait {
 		return new static(
 			__( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
+			503,
+			null,
 			[
 				'retry_after' => $wait,
-			],
-			503
+			]
 		);
 	}
 
