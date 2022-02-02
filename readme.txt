@@ -120,10 +120,7 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Google Ads API to V9.
 * Update - Google Content API library to 2.12.1.
 * Update - Inbox notifications have update promotion information from Google.
-* Update - Inbox notifications have update promotion information from Google.
 * Update - Update Google Ads credit incentive in WordPress.org plugin landing page.
-* Update - Update Google Ads credit incentive in WordPress.org plugin landing page.
-* Update - Update Google Ads credit incentive info in plugin UI.
 * Update - Update Google Ads credit incentive info in plugin UI.
 
 = 1.10.0 - 2022-01-13 =
