@@ -20,7 +20,7 @@ const PromotionContent = ( { adsAccount } ) => {
 			<p>
 				{ showFreeCredit
 					? __(
-							'Create your first campaign and get up to $150* free',
+							'Create your first campaign and get $500 in ad credit*',
 							'google-listings-and-ads'
 					  )
 					: __(
