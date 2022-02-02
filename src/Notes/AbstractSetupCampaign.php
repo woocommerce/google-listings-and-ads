@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * Abstract Class AbstractSetupCampaign
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
- * @since x.x.x
+ * @since 1.11.0
  */
 abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInterface {
 
@@ -106,7 +106,7 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	/**
 	 * Determine whether there are any account-level issues.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 * @return bool
 	 */
 	protected function has_account_issues(): bool {
@@ -118,7 +118,7 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	/**
 	 * Determine whether there is at least one synced product.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 * @return bool
 	 */
 	protected function has_at_least_one_synced_product(): bool {
@@ -130,7 +130,7 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	/**
 	 * Get the number of days after which to add the note.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 *
 	 * @return int
 	 */
@@ -139,7 +139,7 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	/**
 	 * Set the title and content of the Note.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 *
 	 * @param NoteEntry $note
 	 *
