@@ -156,7 +156,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		}
 
 		$this->setPromotionEffectiveTimePeriod(
-			$this->get_wc_coupon_effective_dates( $wc_coupon)
+			$this->get_wc_coupon_effective_dates( $wc_coupon )
 		);
 
 		return $this;
