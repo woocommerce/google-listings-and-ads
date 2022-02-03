@@ -8,9 +8,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\ProductMetaQueryHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupNotFoundProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Transients;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
@@ -29,6 +31,7 @@ use Exception;
  * Note: this class uses vanilla WP methods get_post, get_post_meta, update_post_meta
  *
  * ContainerAware used to retrieve
+ * - CleanupNotFoundProducts
  * - Merchant
  * - MerchantCenterService
  * - MerchantIssueQuery
@@ -88,6 +91,11 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @var string[] Lookup of WooCommerce Product Names.
 	 */
 	protected $product_data_lookup = [];
+
+	/**
+	 * @var array Google ID's which return the not found error when retrieving the status.
+	 */
+	protected $not_found = [];
 
 	/**
 	 * MerchantStatuses constructor.
@@ -200,6 +208,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		// Delete stale issues.
 		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
+
+		// Store products which were not found and schedule them to be cleaned up.
+		$this->options->update( OptionsInterface::GOOGLE_IDS_TO_CLEANUP, $this->not_found, false );
+		$this->container->get( CleanupNotFoundProducts::class )->schedule();
 	}
 
 	/**
@@ -316,13 +328,16 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		$valid_statuses = [];
 		foreach ( $merchant->get_productstatuses_batch( $google_ids )->getEntries() as $response_entry ) {
+			if ( $response_entry->getErrors() ) {
+				$this->handle_errors(
+					$google_ids[ $response_entry->getBatchId() ],
+					$response_entry->getErrors()->getErrors()
+				);
+				continue;
+			}
+
 			$mc_product_status = $response_entry->getProductStatus();
 			if ( ! $mc_product_status ) {
-				do_action(
-					'woocommerce_gla_debug_message',
-					'A Google ID was not found in Merchant Center.',
-					__METHOD__
-				);
 				continue;
 			}
 			$mc_product_id = $mc_product_status->getProductId();
@@ -534,6 +549,29 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 		// Handle any leftover issues.
 		$issue_query->update_or_insert( $product_issues );
+	}
+
+	/**
+	 * Handle the errors we get from retrieving a product status.
+	 * notFound errors get added to an array for scheduled cleanup.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $google_id
+	 * @param array  $errors
+	 */
+	protected function handle_errors( string $google_id, array $errors ) {
+		foreach ( $errors as $error ) {
+			if ( GoogleProductService::NOT_FOUND_ERROR_REASON === $error->getReason() ) {
+				$this->not_found[] = $google_id;
+
+				do_action(
+					'woocommerce_gla_debug_message',
+					sprintf( 'Google ID "%s" was not found in Merchant Center.', $google_id ),
+					__METHOD__
+				);
+			}
+		}
 	}
 
 	/**
