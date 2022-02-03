@@ -140,6 +140,24 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Find the matching WooCommerce product and remove it's Google ID.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $google_id
+	 * @return void
+	 */
+	public function remove_by_google_id( string $google_id ) {
+		$product_id = $this->get_wc_product_id( $google_id );
+		$product    = $this->wc->maybe_get_product( $product_id );
+		if ( ! $product instanceof WC_Product ) {
+			return;
+		}
+
+		$this->remove_google_id( $product, $google_id );
+	}
+
+	/**
 	 * Marks a WooCommerce product as invalid and stores the errors in a meta data key.
 	 *
 	 * Note: If a product variation is invalid then the parent product is also marked as invalid.
