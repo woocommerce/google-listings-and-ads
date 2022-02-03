@@ -22,6 +22,7 @@ interface OptionsInterface {
 	public const DB_VERSION             = 'db_version';
 	public const FILE_VERSION           = 'file_version';
 	public const GOOGLE_CONNECTED       = 'google_connected';
+	public const GOOGLE_IDS_TO_CLEANUP  = 'google_ids_to_cleanup';
 	public const INSTALL_TIMESTAMP      = 'install_timestamp';
 	public const MC_SETUP_COMPLETED_AT  = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE = 'merchant_account_state';
@@ -45,6 +46,7 @@ interface OptionsInterface {
 		self::DB_VERSION             => true,
 		self::FILE_VERSION           => true,
 		self::GOOGLE_CONNECTED       => true,
+		self::GOOGLE_IDS_TO_CLEANUP  => true,
 		self::INSTALL_TIMESTAMP      => true,
 		self::MC_SETUP_COMPLETED_AT  => true,
 		self::MERCHANT_ACCOUNT_STATE => true,
@@ -85,13 +87,15 @@ interface OptionsInterface {
 
 	/**
 	 * Update an option.
+	 * Options containing a large amount of data, should set autoload to false.
 	 *
-	 * @param string $name  The option name.
-	 * @param mixed  $value The option value.
+	 * @param string $name     The option name.
+	 * @param mixed  $value    The option value.
+	 * @param bool   $autoload Should the option be autoloaded.
 	 *
 	 * @return bool
 	 */
-	public function update( string $name, $value ): bool;
+	public function update( string $name, $value, ?bool $autoload = null ): bool;
 
 	/**
 	 * Delete an option.

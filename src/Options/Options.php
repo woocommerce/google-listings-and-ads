@@ -69,18 +69,20 @@ final class Options implements OptionsInterface, Service {
 
 	/**
 	 * Update an option.
+	 * Options containing a large amount of data, should set autoload to false.
 	 *
-	 * @param string $name  The option name.
-	 * @param mixed  $value The option value.
+	 * @param string $name     The option name.
+	 * @param mixed  $value    The option value.
+	 * @param bool   $autoload Should the option be autoloaded.
 	 *
 	 * @return bool
 	 */
-	public function update( string $name, $value ): bool {
+	public function update( string $name, $value, ?bool $autoload = null ): bool {
 		$this->validate_option_key( $name );
 		$value                  = $this->maybe_convert_value( $name, $value );
 		$this->options[ $name ] = $value;
 
-		$result = update_option( $this->prefix_name( $name ), $this->raw_value( $value ) );
+		$result = update_option( $this->prefix_name( $name ), $this->raw_value( $value ), $autoload );
 
 		do_action( "woocommerce_gla_options_updated_{$name}", $value );
 
