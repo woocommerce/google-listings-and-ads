@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,20 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.11.0 - 2022-02-02 =
+* Add - Unit tests for the Ads AccountController and AccountService.
+* Fix - Failure handling was not correctly displayed when the ads campaign creation and editing failed.
+* Fix - Fix the incorrect text color of the disabled "Disconnect account" buttons on the Settings page.
+* Fix - Makes country dropdown list always below the input box.
+* Fix - Prevent page flickering when loading admin pages of this extension.
+* Tweak - Change the importing way of lodash package to reduce the bundle size by 4 KB.
+* Tweak - Clean up outdated workarounds for WooCommerce 5.7.
+* Update - Google Ads API to V9.
+* Update - Google Content API library to 2.12.1.
+* Update - Inbox notifications have update promotion information from Google.
+* Update - Update Google Ads credit incentive in WordPress.org plugin landing page.
+* Update - Update Google Ads credit incentive info in plugin UI.
+
 = 1.10.0 - 2022-01-13 =
 * Add - Bulk update channel visibility for coupons.
 * Add - CES prompts for initial setup and campaign creation.
@@ -138,20 +152,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - WC 6.0 compatibility.
 * Tweak - WP 5.9 compatibility.
 * Update - min. WC version to 5.7. #1110
-
-= 1.8.0 - 2021-11-30 =
-* Update - UX improvements on account connections in Setup Merchant Center flow.
-
-= 1.7.0 - 2021-11-24 =
-* Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
-* Add - Accept login_hint when generating OAuth URL.
-* Add - Review request inbox notification after 10 conversions and 100 free listing clicks
-* Update – Add support for retrieving the name and domain from the Google API
-* Fix - Add support for Norwegian language, nb and nn
-* Fix - Report tabs lose active state when changing chart.
-* Tweak - Update `in_stock` and `out_of_stock` availability enums
-* Tweak - Retry async jobs on timeout
-* Tweak - Reduce the bundle size of the index.js file.
-* Tweak - refactored legacy WC menu highlighting effect.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

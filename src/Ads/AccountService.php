@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * - Merchant
  * - Middleware
  *
- * @since x.x.x
+ * @since 1.11.0
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Ads
  */
 class AccountService implements OptionsAwareInterface, Service {

@@ -26,7 +26,7 @@ class AdsService implements OptionsAwareInterface, Service {
 	/**
 	 * AdsService constructor.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 *
 	 * @param AdsAccountState $account_state
 	 */
@@ -37,7 +37,7 @@ class AdsService implements OptionsAwareInterface, Service {
 	/**
 	 * Determine whether Ads setup has been started.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 * @return bool
 	 */
 	public function is_setup_started(): bool {

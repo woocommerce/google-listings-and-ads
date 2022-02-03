@@ -26,7 +26,7 @@ class SetupCampaign extends AbstractSetupCampaign {
 	/**
 	 * Get the number of days after which to add the note.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 *
 	 * @return int
 	 */
@@ -37,7 +37,7 @@ class SetupCampaign extends AbstractSetupCampaign {
 	/**
 	 * Set the title and content of the Note.
 	 *
-	 * @since x.x.x
+	 * @since 1.11.0
 	 *
 	 * @param NoteEntry $note
 	 *
