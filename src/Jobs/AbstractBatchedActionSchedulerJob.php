@@ -84,6 +84,9 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 			if ( count( $items ) >= $this->get_batch_size() ) {
 				// if there might be more items, add another "create_batch" action to handle them
 				$this->schedule_create_batch_action( $batch_number + 1 );
+			} else {
+				// handle complete after scheduling the last batch
+				$this->handle_complete( $batch_number );
 			}
 		}
 
@@ -167,7 +170,6 @@ abstract class AbstractBatchedActionSchedulerJob extends AbstractActionScheduler
 	 * Called when the job is completed.
 	 *
 	 * @param int $final_batch_number The final batch number when the job was completed.
-	 *                                  If equal to 1 then no items were processed by the job.
 	 */
 	protected function handle_complete( int $final_batch_number ) {
 		// Optionally over-ride this method in child class.
