@@ -265,7 +265,7 @@ class MerchantTest extends UnitTest {
 					function( ProductstatusesCustomBatchRequest $request ) {
 						$this->assertEquals(
 							[
-								'batchId'    => 3,
+								'batchId'    => 2, // Batch ID uses array index
 								'productId'  => 3,
 								'method'     => 'GET',
 								'merchantId' => $this->merchant_id,
