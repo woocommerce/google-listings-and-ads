@@ -225,7 +225,7 @@ class Merchant implements OptionsAwareInterface {
 		$entries     = [];
 		foreach ( $mc_product_ids as $index => $id ) {
 			$entries[] = [
-				'batchId'    => $index + 1,
+				'batchId'    => $index,
 				'productId'  => $id,
 				'method'     => 'GET',
 				'merchantId' => $merchant_id,
