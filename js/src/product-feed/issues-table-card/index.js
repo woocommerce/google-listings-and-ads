@@ -18,6 +18,7 @@ import HelpPopover from '.~/components/help-popover';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-navigation';
+import ReviewRequest from '.~/product-feed/review-request';
 import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
 import './index.scss';
 
@@ -74,6 +75,7 @@ const IssuesTableCard = () => {
 					</div>
 				</CardHeader>
 				<IssuesTypeNavigation />
+				<ReviewRequest />
 				<IssuesTable />
 			</Card>
 		</AppTableCardDiv>
