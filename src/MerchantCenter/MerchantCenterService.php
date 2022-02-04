@@ -14,6 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -33,6 +34,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * ContainerAware used to access:
  * - AddressUtility
+ * - CleanupSyncedProducts
  * - ContactInformation
  * - MerchantAccountState
  * - MerchantStatuses
@@ -264,6 +266,8 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		$this->container->get( MerchantIssueTable::class )->truncate();
 		$this->container->get( ShippingRateTable::class )->truncate();
 		$this->container->get( ShippingTimeTable::class )->truncate();
+
+		$this->container->get( CleanupSyncedProducts::class )->schedule();
 	}
 
 	/**
