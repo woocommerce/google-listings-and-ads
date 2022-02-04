@@ -69,9 +69,9 @@ class AccountReviewController extends BaseOptionsController
 
 			// TODO: Temporary. Implement this after Google finishes new API implementation.
 			$response = array(
-				'reviewStatus' => RequestReview::REVIEW_STATUS_DISAPPROVED,
-				'nextReviewRequestAttempt' => $this->requestReview->get_next_review_request_attempt(),
-				'issues' => ["#1", "#2", "#3"]
+				'status' => RequestReview::REVIEW_STATUS_DISAPPROVED,
+				'nextAttempt' => $this->requestReview->get_next_review_request_attempt(),
+				'issues' => ["#1 Issue one", "#2 Issue two", "#3 Issue three", "#4 Issue three", "#5 Issue three", "#6 Issue three"]
 			);
 
 			return $this->prepare_item_for_response($response, $request);
@@ -86,19 +86,19 @@ class AccountReviewController extends BaseOptionsController
 	protected function get_schema_properties(): array
 	{
 		return [
-			'reviewStatus' => [
+			'status' => [
 				'type' => 'string',
 				'description' => __('The status of the last review.', 'google-listings-and-ads'),
 				'context' => ['view'],
 				'readonly' => true,
 			],
-			'nextReviewRequestAttempt' => [
+			'nextAttempt' => [
 				'type' => 'int',
 				'description' => __('The date when the last review was requested.', 'google-listings-and-ads'),
 				'context' => ['view'],
 				'readonly' => true,
 			],
-			'reviewIssues' => [
+			'issues' => [
 				'type' => 'array',
 				'description' => __('The issues related to the Merchant Center to be reviewed and addressed before approval.', 'google-listings-and-ads'),
 				'context' => ['view'],

@@ -69,7 +69,7 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 * @return int The Last Review request timestamp
 	 */
 	public function get_last_review_request() : int {
-		return $this->options->get( $this->option_last_review_request() );
+		return $this->options->get( $this->option_last_review_request(), 0 );
 	}
 
 	/**
@@ -95,6 +95,12 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 */
 	public function get_next_review_request_attempt() : int
 	{
+		$lastReview = $this->get_last_review_request();
+
+		if (!$lastReview) {
+			return time();
+		}
+
 		return strtotime('+7 days',  $this->get_last_review_request());
 	}
 }
