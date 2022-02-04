@@ -209,9 +209,10 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		// Delete stale issues.
 		$this->container->get( MerchantIssueTable::class )->delete_stale( $this->cache_created_time );
 
-		// Store products which were not found and schedule them to be cleaned up.
-		$this->options->update( OptionsInterface::GOOGLE_IDS_TO_CLEANUP, $this->not_found, false );
-		$this->container->get( CleanupNotFoundProducts::class )->schedule();
+		// Schedule notFound products to be cleaned up.
+		if ( ! empty( $this->not_found ) ) {
+			$this->container->get( CleanupNotFoundProducts::class )->schedule( [ $this->not_found ] );
+		}
 	}
 
 	/**

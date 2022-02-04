@@ -50,6 +50,24 @@ class CleanupNotFoundProducts extends AbstractBatchedActionSchedulerJob implemen
 	}
 
 	/**
+	 * Store the items and schedule them to be processed.
+	 *
+	 * @param array $args
+	 *
+	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
+	 */
+	public function schedule( array $args = [] ) {
+		$items = $args[0] ?? [];
+
+		if ( empty( $items ) ) {
+			throw JobException::item_not_provided( 'Array of Google IDs' );
+		}
+
+		$this->options->update( OptionsInterface::GOOGLE_IDS_TO_CLEANUP, $items, false );
+		parent::schedule();
+	}
+
+	/**
 	 * Get a single batch of items.
 	 *
 	 * If no items are returned the job will stop.
