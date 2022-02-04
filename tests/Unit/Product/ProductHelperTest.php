@@ -263,6 +263,25 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertEquals( [ 'AU' => 'online:en:AU:gla_1' ], $this->product_meta->get_google_ids( $product ) );
 	}
 
+	public function test_remove_by_google_id() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		$id = $product->get_id();
+		$this->product_meta->update_google_ids(
+			$product,
+			[
+				'AU' => "online:en:AU:gla_{$id}",
+				'US' => "online:en:US:gla_{$id}",
+			]
+		);
+
+		$this->product_helper->remove_by_google_id( "online:en:US:gla_{$id}" );
+
+		// get the updated product object from DB
+		$product = $this->wc->get_product( $id );
+		$this->assertEquals( [ 'AU' => "online:en:AU:gla_{$id}" ], $this->product_meta->get_google_ids( $product ) );
+	}
+
 	/**
 	 * @param WC_Product $product
 	 *
