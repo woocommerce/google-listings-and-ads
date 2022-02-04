@@ -36,6 +36,11 @@ const DEFAULT_STATE = {
 		account: null,
 		product: null,
 	},
+	mc_review_request: {
+		status: null,
+		nextAttempt: null,
+		issues: null,
+	},
 	mc_product_feed: null,
 	report: {},
 };
@@ -304,6 +309,15 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 				'mc_product_statistics',
 				action.mcProductStatistics
 			);
+		}
+
+		case TYPES.RECEIVE_MC_REVIEW_REQUEST: {
+			const { issues, nextAttempt, status } = action.mcReviewRequest;
+			return chainState( state, 'mc_review_request' )
+				.setIn( 'issues', issues )
+				.setIn( 'nextAttempt', nextAttempt )
+				.setIn( 'status', status )
+				.end();
 		}
 
 		case TYPES.RECEIVE_MC_ISSUES: {

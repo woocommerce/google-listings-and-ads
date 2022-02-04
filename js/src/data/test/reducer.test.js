@@ -38,6 +38,11 @@ describe( 'reducer', () => {
 			},
 			ads_campaigns: null,
 			mc_setup: null,
+			mc_review_request: {
+				issues: null,
+				nextAttempt: null,
+				status: null,
+			},
 			mc_product_statistics: null,
 			mc_issues: {
 				account: null,

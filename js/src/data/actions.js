@@ -925,6 +925,13 @@ export function* receiveMCProductStatistics( mcProductStatistics ) {
 	};
 }
 
+export function* receiveMCReviewRequest( mcReviewRequest ) {
+	return {
+		type: TYPES.RECEIVE_MC_REVIEW_REQUEST,
+		mcReviewRequest,
+	};
+}
+
 export function* receiveMCIssues( query, data ) {
 	return {
 		type: TYPES.RECEIVE_MC_ISSUES,
