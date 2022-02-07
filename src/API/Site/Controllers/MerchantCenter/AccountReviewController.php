@@ -20,7 +20,7 @@ class AccountReviewController extends BaseOptionsController {
 	/**
 	 * @var RequestReview Request review Helper
 	 */
-	protected RequestReview $request_review;
+	protected $request_review;
 
 
 	/**
