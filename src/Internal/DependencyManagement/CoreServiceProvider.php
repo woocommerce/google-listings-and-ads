@@ -165,7 +165,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DebugLogger::class            => true,
 		MerchantStatuses::class       => true,
 		PhoneVerification::class      => true,
-		RequestReview::class      	  => true,
+		RequestReview::class          => true,
 		ContactInformation::class     => true,
 		MerchantCenterService::class  => true,
 		MerchantAccountState::class   => true,
