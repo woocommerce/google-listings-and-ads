@@ -3,14 +3,9 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountReviewController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\PhoneVerificationController;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerificationException;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\RequestReview;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Value\PhoneNumber;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
