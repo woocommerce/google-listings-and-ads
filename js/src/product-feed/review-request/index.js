@@ -35,7 +35,7 @@ const ReviewRequest = () => {
 	return (
 		<div className="gla-review-request">
 			<ReviewRequestModal
-				data={ data }
+				issues={ data?.issues }
 				isActive={ modalActive }
 				onClose={ () => {
 					setModalActive( false );

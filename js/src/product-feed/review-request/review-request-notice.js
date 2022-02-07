@@ -1,14 +1,15 @@
 /**
  * External dependencies
  */
+import { createInterpolateElement } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
+import { format } from '@wordpress/date';
 import {
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
 	Flex,
 	FlexItem,
 } from '@wordpress/components';
-import { createInterpolateElement } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
-import { format } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -21,7 +22,10 @@ const ReviewRequestNotice = ( { data, onRequestReviewClick = () => {} } ) => {
 	const isDisabled = data.status === 'BLOCKED';
 
 	return (
-		<Flex className="gla-review-request-notice">
+		<Flex
+			data-testid="gla-review-request-notice"
+			className="gla-review-request-notice"
+		>
 			<FlexItem>
 				<Flex>
 					<FlexItem className="gla-review-request-notice__icon">

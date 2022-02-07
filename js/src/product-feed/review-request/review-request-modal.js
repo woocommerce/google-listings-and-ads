@@ -14,17 +14,16 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import ReviewRequestIssues from '.~/product-feed/review-request/review-request-issues';
 
 const ReviewRequestModal = ( {
-	data,
+	issues = [],
 	isActive = false,
 	onClose = () => {},
+	onSendRequest = () => {},
 } ) => {
 	const [ checkBoxChecked, setCheckBoxChecked ] = useState( false );
 
-	if ( ! data || ! isActive ) {
+	if ( ! issues.length || ! isActive ) {
 		return null;
 	}
-
-	const sendRequest = () => {};
 
 	return (
 		<AppModal
@@ -38,7 +37,7 @@ const ReviewRequestModal = ( {
 					key="primary"
 					isPrimary
 					disabled={ ! checkBoxChecked }
-					onClick={ sendRequest }
+					onClick={ onSendRequest }
 				>
 					{ __(
 						'Request account review',
@@ -71,7 +70,7 @@ const ReviewRequestModal = ( {
 					) }
 				</p>
 			</Notice>
-			<ReviewRequestIssues issues={ data.issues } />
+			<ReviewRequestIssues issues={ issues } />
 			<CheckboxControl
 				className="gla-review-request-modal__checkbox"
 				label={ __(
