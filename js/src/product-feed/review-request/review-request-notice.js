@@ -24,8 +24,11 @@ const ReviewRequestNotice = ( { data, onRequestReviewClick = () => {} } ) => {
 		<Flex className="gla-review-request-notice">
 			<FlexItem>
 				<Flex>
-					{ REVIEW_STATUSES[ data.status ].icon }
-					<FlexItem className="gla-review-request__text">
+					<FlexItem className="gla-review-request-notice__icon">
+						{ REVIEW_STATUSES[ data.status ].icon }
+					</FlexItem>
+
+					<FlexItem className="gla-review-request-notice__text">
 						<Text variant="subtitle">
 							{ REVIEW_STATUSES[ data.status ].title }
 						</Text>
@@ -58,7 +61,7 @@ const ReviewRequestNotice = ( { data, onRequestReviewClick = () => {} } ) => {
 					</FlexItem>
 				</Flex>
 			</FlexItem>
-			<FlexItem>
+			<FlexItem className="gla-review-request-notice__button">
 				{ REVIEW_STATUSES[ data.status ].showRequestButton && (
 					<AppButton
 						isPrimary
