@@ -1,5 +1,7 @@
 <?php
 
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter;
+
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\RequestReview;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
