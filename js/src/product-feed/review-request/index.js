@@ -6,10 +6,12 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import useActiveIssueType from '.~/hooks/useActiveIssueType';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
-import { REVIEW_STATUSES } from '.~/product-feed/review-request/review-request-statuses';
 import ReviewRequestModal from '.~/product-feed/review-request/review-request-modal';
 import ReviewRequestNotice from '.~/product-feed/review-request/review-request-notice';
+import { REVIEW_STATUSES } from '.~/product-feed/review-request/review-request-statuses';
+import { ISSUE_TYPE_ACCOUNT } from '.~/constants';
 import './index.scss';
 
 const showNotice = ( status ) =>
@@ -17,11 +19,16 @@ const showNotice = ( status ) =>
 
 const ReviewRequest = () => {
 	const [ modalActive, setModalActive ] = useState( false );
+	const activeIssueType = useActiveIssueType();
 	const { data, hasFinishedResolution } = useAppSelectDispatch(
 		'getMCReviewRequest'
 	);
 
-	if ( ! hasFinishedResolution || ! showNotice( data.status ) ) {
+	if (
+		! hasFinishedResolution ||
+		! showNotice( data.status ) ||
+		activeIssueType !== ISSUE_TYPE_ACCOUNT
+	) {
 		return null;
 	}
 
