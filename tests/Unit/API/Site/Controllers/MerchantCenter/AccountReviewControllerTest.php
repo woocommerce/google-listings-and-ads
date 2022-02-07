@@ -33,15 +33,19 @@ class AccountReviewControllerTest extends RESTControllerUnitTest {
 		$this->controller->register();
 	}
 
-	public function test_request_phone_verification() {
-		$this->request_review->expects( $this->once() )
-		                     ->method( 'get_next_attempt' )
+	public function test_route() {
+		$this->request_review->method( 'get_next_attempt' )
 		                     ->willReturn( time() );
 
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 
 		$this->assertEquals( 200, $response->get_status() );
 		$this->assertEquals( time(), $response->get_data()['nextAttempt'] );
+	}
+
+
+	public function test_register_route() {
+		$this->assertArrayHasKey( self::ROUTE_GET_REQUEST, $this->server->get_routes() );
 	}
 
 }
