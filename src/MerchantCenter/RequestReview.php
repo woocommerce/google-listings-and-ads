@@ -58,8 +58,8 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 *
 	 * @return string
 	 */
-	private function option_last_review_request(): string {
-		return OptionsInterface::MC_LAST_REVIEW_REQUESTED_AT;
+	private function option_next_review_request_attempt(): string {
+		return OptionsInterface::MC_NEXT_REVIEW_REQUEST_AT;
 	}
 
 	/**
@@ -68,8 +68,8 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 *
 	 * @return int The Last Review request timestamp
 	 */
-	public function get_last_review_request() : int {
-		return $this->options->get( $this->option_last_review_request(), 0 );
+	public function get_next_attempt() : int {
+		return (int) $this->options->get( $this->option_next_review_request_attempt(), time());
 	}
 
 	/**
@@ -77,8 +77,8 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 *
 	 * @return bool If the update was successful
 	 */
-	public function set_last_review_request() : bool {
-		return $this->options->update( $this->option_last_review_request(), time() );
+	public function set_next_attempt() : bool {
+		return $this->options->update( $this->option_next_review_request_attempt(), strtotime('+7 days',  $this->get_next_attempt()) );
 	}
 
 	/**
@@ -86,21 +86,7 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 *
 	 * @return bool True if the user is allowed to perform a new review request
 	 */
-	public function is_allowed_new_review_request() : bool {
-		return $this->get_next_review_request_attempt() > time();
-	}
-
-	/**
-	 * @return int The timestamp for the next allowed reiew request.
-	 */
-	public function get_next_review_request_attempt() : int
-	{
-		$lastReview = $this->get_last_review_request();
-
-		if (!$lastReview) {
-			return time();
-		}
-
-		return strtotime('+7 days',  $this->get_last_review_request());
+	public function is_allowed() : bool {
+		return $this->get_next_attempt() <= time();
 	}
 }

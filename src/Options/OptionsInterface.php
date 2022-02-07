@@ -24,7 +24,7 @@ interface OptionsInterface
 	public const FILE_VERSION = 'file_version';
 	public const GOOGLE_CONNECTED = 'google_connected';
 	public const INSTALL_TIMESTAMP = 'install_timestamp';
-	public const MC_LAST_REVIEW_REQUESTED_AT = 'mc_last_review_requested_at';
+	public const MC_NEXT_REVIEW_REQUEST_AT = 'mc_next_review_requested_at';
 	public const MC_SETUP_COMPLETED_AT = 'mc_setup_completed_at';
 	public const MERCHANT_ACCOUNT_STATE = 'merchant_account_state';
 	public const MERCHANT_CENTER = 'merchant_center';
@@ -48,7 +48,7 @@ interface OptionsInterface
 		self::FILE_VERSION => true,
 		self::GOOGLE_CONNECTED => true,
 		self::INSTALL_TIMESTAMP => true,
-		self::MC_LAST_REVIEW_REQUESTED_AT => true,
+		self::MC_NEXT_REVIEW_REQUEST_AT => true,
 		self::MC_SETUP_COMPLETED_AT => true,
 		self::MERCHANT_ACCOUNT_STATE => true,
 		self::MERCHANT_CENTER => true,

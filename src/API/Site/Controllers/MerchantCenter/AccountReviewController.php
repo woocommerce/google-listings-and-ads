@@ -69,9 +69,9 @@ class AccountReviewController extends BaseOptionsController
 
 			// TODO: Temporary. Implement this after Google finishes new API implementation.
 			$response = array(
-				'status' => RequestReview::REVIEW_STATUS_DISAPPROVED,
-				'nextAttempt' => $this->requestReview->get_next_review_request_attempt(),
-				'issues' => ["#1 Issue one", "#2 Issue two", "#3 Issue three", "#4 Issue three", "#5 Issue three", "#6 Issue three"]
+				'status' => $this->requestReview->is_allowed() ? RequestReview::REVIEW_STATUS_DISAPPROVED : RequestReview::REVIEW_STATUS_BLOCKED,
+				'nextAttempt' => $this->requestReview->get_next_attempt(),
+				'issues' => ["#1 Issue one", "#2 Issue two", "#3 Issue three", "#4 Issue four", "#5 Issue five", "#6 Issue six"]
 			);
 
 			return $this->prepare_item_for_response($response, $request);
