@@ -9,6 +9,27 @@ import SyncIcon from 'gridicons/dist/sync';
  */
 import ErrorIcon from '.~/components/error-icon';
 
+const DISAPPROVED = {
+	title: __(
+		'We’ve found unresolved issues in your account.',
+		'google-listing-and-ads'
+	),
+	body: __(
+		'Fix all account suspension issues listed below to request a review of your account.',
+		'google-listing-and-ads'
+	),
+	showRequestButton: true,
+	icon: <ErrorIcon />,
+};
+const WARNING = DISAPPROVED;
+const BLOCKED = {
+	...DISAPPROVED,
+	body: __(
+		'Fix all account suspension issues listed below.',
+		'google-listing-and-ads'
+	),
+};
+
 export const REVIEW_STATUSES = {
 	UNDER_REVIEW: {
 		title: __( 'Account review in progress.', 'google-listing-and-ads' ),
@@ -18,30 +39,9 @@ export const REVIEW_STATUSES = {
 		),
 		icon: <SyncIcon className="gla-sync-icon" size={ 18 } />,
 	},
-	DISAPPROVED: {
-		title: __(
-			'We’ve found unresolved issues in your account.',
-			'google-listing-and-ads'
-		),
-		body: __(
-			'Fix all account suspension issues listed below to request a review of your account.',
-			'google-listing-and-ads'
-		),
-		showRequestButton: true,
-		icon: <ErrorIcon />,
-	},
-	BLOCKED: {
-		title: __(
-			'We’ve found unresolved issues in your account.',
-			'google-listing-and-ads'
-		),
-		body: __(
-			'Fix all account suspension issues listed below.',
-			'google-listing-and-ads'
-		),
-		showRequestButton: true,
-		icon: <ErrorIcon />,
-	},
+	DISAPPROVED,
+	WARNING,
+	BLOCKED,
 };
 
 export default REVIEW_STATUSES;
