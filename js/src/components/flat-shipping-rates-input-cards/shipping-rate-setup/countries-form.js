@@ -6,6 +6,11 @@ import AddRateButton from './add-rate-button';
 import CountriesPriceInput from './countries-price-input';
 import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
 
+const defaultShippingRate = {
+	method: 'flat_rate',
+	options: [],
+};
+
 /**
  * Partial form to provide shipping rates for individual countries,
  * with an UI, that allows to aggregate countries with the same rate.
@@ -62,6 +67,7 @@ export default function ShippingCountriesForm( {
 	function handleAdd( { countries, currency, rate } ) {
 		// Split aggregated rate, to individial rates per country.
 		const addedIndividualRates = countries.map( ( country ) => ( {
+			...defaultShippingRate,
 			country,
 			currency,
 			rate, // TODO: unify that
@@ -79,11 +85,15 @@ export default function ShippingCountriesForm( {
 
 		// Upsert rates.
 		countries.forEach( ( country ) => {
-			actualCountries.set( country, {
+			const oldShippingRate = actualCountries.get( country );
+			const newShippingrate = {
+				...oldShippingRate,
 				country,
 				currency,
 				rate: price, // TODO: unify that
-			} );
+			};
+
+			actualCountries.set( country, newShippingrate );
 		} );
 		onChange( Array.from( actualCountries.values() ) );
 	}

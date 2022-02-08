@@ -181,11 +181,7 @@ export default function EditFreeCampaign() {
 			await Promise.allSettled( [
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
-				...saveShippingData(
-					upsertShippingRates,
-					shippingRates,
-					( item ) => `${ item.currency }:${ item.rate }`
-				),
+				upsertShippingRates( shippingRates ),
 				...saveShippingData(
 					upsertShippingTimes,
 					shippingTimes,
