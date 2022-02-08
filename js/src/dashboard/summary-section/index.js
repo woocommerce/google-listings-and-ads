@@ -11,7 +11,6 @@ import { glaData, REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
 import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
 import formatAmountWithCode from '.~/utils/formatAmountWithCode';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
-import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import usePerformance from './usePerformance';
 import PerformanceCard from './performance-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
@@ -56,11 +55,10 @@ const FreePerformanceCard = () => {
 };
 
 const PaidPerformanceCard = () => {
-	// Spend amount is given in the Ads' currency, but Total Sales is in store's currency.
-	// We use codes to make sure it's nonambiguous.
+	// The amount of Total Sales and Total Spend are given in the Ads' currency.
+	// We use currency code to make sure it's nonambiguous.
 	// Use just `useAdsCurrency`'s/`getCurrencyConfig`'s  `formatAmount`s once https://github.com/woocommerce/woocommerce-admin/pull/7575 is released and accessible.
 	const { adsCurrencyConfig } = useAdsCurrencyConfig();
-	const storeCurrencyConfig = useStoreCurrency();
 	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
 	return (
@@ -74,11 +72,11 @@ const PaidPerformanceCard = () => {
 					key="1"
 					label={ __( 'Total Sales', 'google-listings-and-ads' ) }
 					value={ formatAmountWithCode(
-						storeCurrencyConfig,
+						adsCurrencyConfig,
 						loadedData.sales.value
 					) }
 					prevValue={ formatAmountWithCode(
-						storeCurrencyConfig,
+						adsCurrencyConfig,
 						loadedData.sales.prevValue
 					) }
 					delta={ loadedData.sales.delta }
