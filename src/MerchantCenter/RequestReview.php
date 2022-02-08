@@ -59,7 +59,7 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 * @return int The Last Review request timestamp
 	 */
 	public function get_next_attempt(): int {
-		return (int) $this->options->get( $this->option_next_review_request_attempt(), mktime(0,0,0) );
+		return (int) $this->options->get( $this->option_next_review_request_attempt(), mktime( 0, 0, 0 ) );
 	}
 
 	/**
@@ -68,7 +68,7 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 * @return bool If the update was successful
 	 */
 	public function set_next_attempt(): bool {
-		return $this->options->update( $this->option_next_review_request_attempt(), strtotime( '+7 days', mktime(0,0,0) ) );
+		return $this->options->update( $this->option_next_review_request_attempt(), strtotime( '+7 days', mktime( 0, 0, 0 ) ) );
 	}
 
 	/**
@@ -77,7 +77,7 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	 * @return bool True if the user is allowed to perform a new review request
 	 */
 	public function is_allowed(): bool {
-		return $this->get_next_attempt() <= mktime(0,0,0);
+		return $this->get_next_attempt() <= mktime( 0, 0, 0 );
 	}
 
 	/**
