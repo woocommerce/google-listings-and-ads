@@ -1,4 +1,22 @@
 .gla-countries-price-input {
+	display: flex;
+    align-items: flex-end;
+    gap: 12px;
+
+	.app-input-control {
+		width: 300px;
+	}
+
+	.gla-input-pill-div {
+		// Make the pill to appear center-aligned with input control.
+		padding: 2px 0;
+
+		.woocommerce-pill {
+			border-color: #008A20;
+			color: #008A20;
+		}
+	}
+
 	.label {
 		display: flex;
 		justify-content: space-between;

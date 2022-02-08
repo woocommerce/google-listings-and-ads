@@ -3,6 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { Pill } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -83,6 +84,16 @@ const CountriesPriceInput = ( {
 				value={ price }
 				onBlur={ handleBlur }
 			/>
+			{ price === 0 && (
+				<div className="gla-input-pill-div">
+					<Pill>
+						{ __(
+							'Free shipping for all orders',
+							'google-listings-and-ads'
+						) }
+					</Pill>
+				</div>
+			) }
 		</div>
 	);
 };
