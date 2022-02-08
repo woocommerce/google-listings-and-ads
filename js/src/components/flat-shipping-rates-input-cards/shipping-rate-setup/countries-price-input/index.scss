@@ -4,6 +4,12 @@
     align-items: flex-end;
     gap: 8px;
 
+	.label {
+		display: flex;
+		justify-content: space-between;
+		gap: 4px;
+	}
+
 	.app-input-control {
 		width: 300px;
 	}
@@ -16,11 +22,5 @@
 			border-color: #008A20;
 			color: #008A20;
 		}
-	}
-
-	.label {
-		display: flex;
-		justify-content: space-between;
-		gap: 4px;
 	}
 }
