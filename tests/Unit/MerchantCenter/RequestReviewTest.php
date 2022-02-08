@@ -28,16 +28,16 @@ class RequestReviewTest extends UnitTest {
 	}
 
 	public function test_get_next_attempt() {
-		$this->options->method( 'get' )->willReturn( time() );
+		$this->options->method( 'get' )->willReturn( mktime(0,0,0) );
 
 		$this->assertEquals(
-			time(),
+			mktime(0,0,0),
 			$this->request_review->get_next_attempt()
 		);
 	}
 
 	public function test_is_allowed() {
-		$this->options->method( 'get' )->willReturn( time() );
+		$this->options->method( 'get' )->willReturn( mktime(0,0,0) );
 
 		$this->assertEquals(
 			true,
@@ -47,7 +47,7 @@ class RequestReviewTest extends UnitTest {
 
 
 	public function test_is_not_allowed() {
-		$this->options->method( 'get' )->willReturn( strtotime( '+ 7 days', time() ) );
+		$this->options->method( 'get' )->willReturn( strtotime( '+ 7 days', mktime(0,0,0) ) );
 
 		$this->assertEquals(
 			false,

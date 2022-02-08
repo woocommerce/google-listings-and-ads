@@ -18,8 +18,11 @@ import { REVIEW_STATUSES } from '.~/product-feed/review-request/review-request-s
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 
-const ReviewRequestNotice = ( { data, onRequestReviewClick = () => {} } ) => {
-	const isDisabled = data.status === 'BLOCKED';
+const ReviewRequestNotice = ( {
+	account,
+	onRequestReviewClick = () => {},
+} ) => {
+	const isDisabled = account.status === 'BLOCKED';
 
 	return (
 		<Flex
@@ -29,15 +32,15 @@ const ReviewRequestNotice = ( { data, onRequestReviewClick = () => {} } ) => {
 			<FlexItem>
 				<Flex>
 					<FlexItem className="gla-review-request-notice__icon">
-						{ REVIEW_STATUSES[ data.status ].icon }
+						{ REVIEW_STATUSES[ account.status ].icon }
 					</FlexItem>
 
 					<FlexItem className="gla-review-request-notice__text">
 						<Text variant="subtitle">
-							{ REVIEW_STATUSES[ data.status ].title }
+							{ REVIEW_STATUSES[ account.status ].title }
 						</Text>
 						<Text variant="body">
-							{ REVIEW_STATUSES[ data.status ].body }
+							{ REVIEW_STATUSES[ account.status ].body }
 							{ isDisabled &&
 								createInterpolateElement(
 									sprintf(
@@ -48,7 +51,7 @@ const ReviewRequestNotice = ( { data, onRequestReviewClick = () => {} } ) => {
 										),
 										format(
 											'd M Y',
-											data.nextAttempt * 1000
+											account.nextAttempt * 1000
 										)
 									),
 									{
@@ -66,7 +69,7 @@ const ReviewRequestNotice = ( { data, onRequestReviewClick = () => {} } ) => {
 				</Flex>
 			</FlexItem>
 			<FlexItem className="gla-review-request-notice__button">
-				{ REVIEW_STATUSES[ data.status ].showRequestButton && (
+				{ REVIEW_STATUSES[ account.status ].showRequestButton && (
 					<AppButton
 						isPrimary
 						onClick={ onRequestReviewClick }

@@ -18,7 +18,7 @@ describe( 'Request Review Notice', () => {
 
 			const { queryByText, queryByRole } = render(
 				<ReviewRequestNotice
-					data={ { status } }
+					account={ { status } }
 					onRequestReviewClick={ onRequestReviewClick }
 				/>
 			);
@@ -44,7 +44,7 @@ describe( 'Request Review Notice', () => {
 
 		const { queryByText, queryByRole } = render(
 			<ReviewRequestNotice
-				data={ { status: 'BLOCKED', nextAttempt: 1644220897 } }
+				account={ { status: 'BLOCKED', nextAttempt: 1644220897 } }
 				onRequestReviewClick={ onRequestReviewClick }
 			/>
 		);
@@ -64,7 +64,7 @@ describe( 'Request Review Notice', () => {
 
 	it( "Status UNDER_REVIEW doesn't have Request button", () => {
 		const { queryByText, queryByRole } = render(
-			<ReviewRequestNotice data={ { status: 'UNDER_REVIEW' } } />
+			<ReviewRequestNotice account={ { status: 'UNDER_REVIEW' } } />
 		);
 		expect( queryByText( 'Account review in progress.' ) ).toBeTruthy();
 		expect( queryByRole( 'button' ) ).toBeFalsy();
