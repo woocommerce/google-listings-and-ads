@@ -100,7 +100,7 @@ export default function ShippingCountriesForm( {
 
 	return (
 		<div className="countries-price">
-			<VerticalGapLayout>
+			<VerticalGapLayout size="large">
 				{ countriesPriceArray.map( ( el ) => {
 					return (
 						<div

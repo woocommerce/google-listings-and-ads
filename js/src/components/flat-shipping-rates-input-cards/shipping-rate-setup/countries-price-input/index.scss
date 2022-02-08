@@ -1,7 +1,8 @@
 .gla-countries-price-input {
 	display: flex;
+	flex-wrap: wrap;
     align-items: flex-end;
-    gap: 12px;
+    gap: 8px;
 
 	.app-input-control {
 		width: 300px;
