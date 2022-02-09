@@ -45,25 +45,23 @@ const MinimumOrderCard = ( props ) => {
 	const countryOptions = getMinimumOrderCountryOptions( value );
 
 	const handleChange = ( oldGroup ) => ( newGroup ) => {
-		const newValue = [];
-
-		value.forEach( ( shippingRate ) => {
+		const newValue = value.map( ( shippingRate ) => {
 			const newShippingRate = {
 				...shippingRate,
+				options: {
+					...shippingRate.options,
+				},
 			};
 
 			if ( oldGroup.countries.includes( newShippingRate.country ) ) {
-				newShippingRate.options = {
-					...newShippingRate.options,
-					free_shipping_threshold: newGroup.countries.includes(
-						newShippingRate.country
-					)
-						? newGroup.threshold
-						: undefined,
-				};
+				newShippingRate.options.free_shipping_threshold = newGroup.countries.includes(
+					newShippingRate.country
+				)
+					? newGroup.threshold
+					: undefined;
 			}
 
-			newValue.push( newShippingRate );
+			return newShippingRate;
 		} );
 
 		onChange( newValue );
