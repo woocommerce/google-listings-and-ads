@@ -14,6 +14,10 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 const OfferFreeShippingCard = ( props ) => {
 	const { value, onChange } = props;
 
+	const handleChange = ( newValue ) => {
+		onChange( newValue === 'yes' );
+	};
+
 	return (
 		<Section.Card>
 			<Section.Card.Body>
@@ -27,14 +31,14 @@ const OfferFreeShippingCard = ( props ) => {
 					<AppRadioContentControl
 						label={ __( 'Yes', 'google-listings-and-ads' ) }
 						value="yes"
-						selected={ value }
-						onChange={ onChange }
+						selected={ value === true && 'yes' }
+						onChange={ handleChange }
 					/>
 					<AppRadioContentControl
 						label={ __( 'No', 'google-listings-and-ads' ) }
 						value="no"
-						selected={ value }
-						onChange={ onChange }
+						selected={ value === false && 'no' }
+						onChange={ handleChange }
 					/>
 				</VerticalGapLayout>
 			</Section.Card.Body>
