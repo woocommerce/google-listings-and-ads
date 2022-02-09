@@ -14,7 +14,7 @@ import EditMinimumOrderModal from './edit-minimum-order-modal';
 import './minimum-order-input-control.scss';
 
 const MinimumOrderInputControl = ( props ) => {
-	const { value, onChange } = props;
+	const { countryOptions, value, onChange } = props;
 	const { countries, threshold, currency } = value;
 
 	const handleBlur = ( event, numberValue ) => {
@@ -27,6 +27,10 @@ const MinimumOrderInputControl = ( props ) => {
 			threshold: numberValue,
 			currency,
 		} );
+	};
+
+	const handleEditChange = ( newValue ) => {
+		onChange( newValue );
 	};
 
 	return (
@@ -44,7 +48,13 @@ const MinimumOrderInputControl = ( props ) => {
 								{ __( 'Edit', 'google-listings-and-ads' ) }
 							</Button>
 						}
-						modal={ <EditMinimumOrderModal /> }
+						modal={
+							<EditMinimumOrderModal
+								countryOptions={ countryOptions }
+								value={ value }
+								onChange={ handleEditChange }
+							/>
+						}
 					/>
 				</div>
 			}
