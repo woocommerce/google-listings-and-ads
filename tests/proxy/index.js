@@ -19,6 +19,9 @@ const init = async () => {
 			handler: ( request, h ) => {
 				const response = handler.checkRequest( request );
 				if ( response ) {
+					if ( config.logResponses ) {
+						console.log( 'Mocked response: ', response );
+					}
 					return response;
 				}
 
@@ -38,7 +41,7 @@ const init = async () => {
 						} );
 
 						res.on( 'end', () => {
-							console.log( body );
+							console.log( 'API response: ', body );
 						} );
 
 						return res;
