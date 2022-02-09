@@ -22,12 +22,30 @@ const init = async () => {
 					return response;
 				}
 
-				return h.proxy( {
+				let proxy = {
 					uri: `${ config.connectServer }/${ request.params.path }${
 						request.url.search || ''
 					}`,
 					passThrough: true,
-				} );
+				};
+
+				if ( config.logResponses ) {
+					proxy.onResponse = ( err, res, request, reply, settings, ttl ) => {
+						let body = '';
+
+						res.on( 'data', ( chunk ) => {
+							body += chunk;
+						} );
+
+						res.on( 'end', () => {
+							console.log( body );
+						} );
+
+						return res;
+					};
+				}
+
+				return h.proxy( proxy );
 			},
 			payload: {
 				parse: false,
