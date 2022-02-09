@@ -19,24 +19,24 @@ const MinimumOrderInputLabel = ( props ) => {
 		.slice( 0, firstN )
 		.map( ( c ) => keyNameMap[ c ] );
 
-	if ( countries.length > firstCountryNames.length ) {
-		return createInterpolateElement(
-			__(
-				`Minimum order for <countries /> + <count /> more`,
-				'google-listings-and-ads'
-			),
-			{
+	const string =
+		countries.length > firstCountryNames.length
+			? __(
+					`Minimum order for <countries /> + <count /> more`,
+					'google-listings-and-ads'
+			  )
+			: __(
+					`Minimum order for <countries />`,
+					'google-listings-and-ads'
+			  );
+
+	return (
+		<div>
+			{ createInterpolateElement( string, {
 				countries: <strong>{ firstCountryNames.join( ', ' ) }</strong>,
 				count: <>{ countries.length - firstCountryNames.length }</>,
-			}
-		);
-	}
-
-	return createInterpolateElement(
-		__( `Minimum order for <countries />`, 'google-listings-and-ads' ),
-		{
-			countries: <strong>{ firstCountryNames.join( ', ' ) }</strong>,
-		}
+			} ) }
+		</div>
 	);
 };
 
