@@ -11,7 +11,7 @@ import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 
 const firstN = 5;
 
-const MinimumOrderInputLabel = ( props ) => {
+const MinimumOrderInputLabelText = ( props ) => {
 	const { countries } = props;
 	const keyNameMap = useCountryKeyNameMap();
 
@@ -40,4 +40,4 @@ const MinimumOrderInputLabel = ( props ) => {
 	);
 };
 
-export default MinimumOrderInputLabel;
+export default MinimumOrderInputLabelText;

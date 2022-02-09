@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import AppButtonModalTrigger from '../app-button-modal-trigger';
-import MinimumOrderInputLabel from './minimum-order-input-label';
+import MinimumOrderInputLabelText from './minimum-order-input-label-text';
 import EditMinimumOrderModal from './edit-minimum-order-modal';
 import './minimum-order-input-control.scss';
 
@@ -34,7 +34,7 @@ const MinimumOrderInputControl = ( props ) => {
 			className="gla-minimum-order-input-control"
 			label={
 				<div className="gla-minimum-order-input-control__label">
-					<MinimumOrderInputLabel countries={ countries } />
+					<MinimumOrderInputLabelText countries={ countries } />
 					<AppButtonModalTrigger
 						button={
 							<Button
