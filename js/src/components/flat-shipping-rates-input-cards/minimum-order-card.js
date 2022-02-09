@@ -10,6 +10,7 @@ import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import MinimumOrderInput from './minimum-order-input';
+import './minimum-order-card.scss';
 
 const groupShippingRatesByFreeShippingThreshold = ( shippingRates ) => {
 	const map = new Map();
@@ -68,7 +69,7 @@ const MinimumOrderCard = ( props ) => {
 	};
 
 	return (
-		<Section.Card>
+		<Section.Card className="gla-minimum-order-card">
 			<Section.Card.Body>
 				<VerticalGapLayout size="large">
 					<Subsection.Title>
