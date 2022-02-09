@@ -5,5 +5,6 @@ module.exports = {
 	connectServer:
 		process.env.WOOCOMMERCE_CONNECT_SERVER ||
 		'https://api-vipgo.woocommerce.com',
+	proxyMode: process.env.PROXY_MODE || 'default',
 	logResponses: process.env.PROXY_LOG_RESPONSES || false,
 };

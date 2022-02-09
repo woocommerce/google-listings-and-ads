@@ -57,9 +57,10 @@ const init = async () => {
 
 	// eslint-disable-next-line no-console
 	console.log(
-		'Proxy server running on %s > %s',
+		'Proxy server running on %s > %s in %s mode',
 		server.info.uri,
-		config.connectServer
+		config.connectServer,
+		config.proxyMode
 	);
 };
 
