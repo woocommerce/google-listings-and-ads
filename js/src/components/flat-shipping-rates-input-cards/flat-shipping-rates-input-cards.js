@@ -28,6 +28,28 @@ const FlatShippingRatesInputCards = ( props ) => {
 		initialOfferFreeShippingValue
 	);
 
+	const handleOfferFreeShippingChange = ( offerFreeShipping ) => {
+		/**
+		 * When users select 'no', we remove all the
+		 * shippingRate.options.free_shipping_threshold.
+		 */
+		if ( offerFreeShipping === 'no' ) {
+			const newValue = value.map( ( el ) => {
+				return {
+					...el,
+					options: {
+						...el.options,
+						free_shipping_threshold: undefined,
+					},
+				};
+			} );
+
+			onChange( newValue );
+		}
+
+		setOfferFreeShippingValue( offerFreeShipping );
+	};
+
 	return (
 		<>
 			<EstimatedShippingRatesCard
@@ -38,7 +60,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 			{ displayOfferFreeShippingCard && (
 				<OfferFreeShippingCard
 					value={ offerFreeShippingValue }
-					onChange={ setOfferFreeShippingValue }
+					onChange={ handleOfferFreeShippingChange }
 				/>
 			) }
 			{ offerFreeShippingValue === 'yes' && <MinimumOrderCard /> }
