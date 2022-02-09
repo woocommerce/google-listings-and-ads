@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUn
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
- * Ctest suit for AccountReviewController
+ * Test suit for AccountReviewController
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  * @group RequestReview
