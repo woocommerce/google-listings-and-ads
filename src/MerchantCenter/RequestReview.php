@@ -28,11 +28,6 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	public const REVIEW_STATUS_PENDING = 'PENDING_REVIEW';
 
 	/**
-	 * Account is under review.
-	 */
-	public const REVIEW_STATUS_UNDER_REVIEW = 'UNDER_REVIEW';
-
-	/**
 	 *    If account has issues but offers are servable. Some of the issue can make account DISAPPROVED after a certain deadline.
 	 */
 	public const REVIEW_STATUS_WARNING = 'WARNING';
@@ -53,22 +48,12 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	public const REVIEW_STATUS_BLOCKED = 'BLOCKED';
 
 	/**
-	 * Get the last review request timestamp. This is necessary because we don't allow
-	 * performing new requests until 7 days from the last request.
-	 *
-	 * @return int The Last Review request timestamp
-	 */
-	public function get_next_attempt(): int {
-		return (int) $this->options->get( $this->option_next_review_request_attempt(), mktime( 0, 0, 0 ) );
-	}
-
-	/**
 	 * Set the last review request timestamp.
 	 *
 	 * @return bool If the update was successful
 	 */
 	public function set_next_attempt(): bool {
-		return $this->options->update( $this->option_next_review_request_attempt(), strtotime( '+7 days', mktime( 0, 0, 0 ) ) );
+		return $this->options->update( OptionsInterface::MC_NEXT_REVIEW_REQUEST_AT, strtotime( '+7 days', mktime( 0, 0, 0 ) ) );
 	}
 
 	/**
@@ -81,11 +66,12 @@ class RequestReview implements Service, ContainerAwareInterface, OptionsAwareInt
 	}
 
 	/**
-	 * Return the option name.
+	 * Get the last review request timestamp. This is necessary because we don't allow
+	 * performing new requests until 7 days from the last request.
 	 *
-	 * @return string
+	 * @return int The Last Review request timestamp
 	 */
-	private function option_next_review_request_attempt(): string {
-		return OptionsInterface::MC_NEXT_REVIEW_REQUEST_AT;
+	public function get_next_attempt(): int {
+		return (int) $this->options->get( OptionsInterface::MC_NEXT_REVIEW_REQUEST_AT, mktime( 0, 0, 0 ) );
 	}
 }
