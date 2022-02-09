@@ -17,7 +17,12 @@ const EditMinimumOrderModal = ( props ) => {
 	const { countryOptions, value, onChange, onRequestClose } = props;
 
 	const handleDeleteClick = () => {
-		// TODO:
+		onRequestClose();
+		onChange( {
+			countries: [],
+			currency: undefined,
+			threshold: undefined,
+		} );
 	};
 
 	const handleValidate = ( values ) => {
