@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import MinimumOrderInput from './minimum-order-input';
+import MinimumOrderInputControl from './minimum-order-input-control';
 import './minimum-order-card.scss';
 
 const groupShippingRatesByFreeShippingThreshold = ( shippingRates ) => {
@@ -82,7 +82,7 @@ const MinimumOrderCard = ( props ) => {
 						const key = group.countries.join( '-' );
 
 						return (
-							<MinimumOrderInput
+							<MinimumOrderInputControl
 								key={ key }
 								countryOptions={ countryOptions }
 								value={ group }

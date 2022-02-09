@@ -13,7 +13,7 @@ import MinimumOrderInputLabel from './minimum-order-input-label';
 import EditMinimumOrderModal from './edit-minimum-order-modal';
 import './minimum-order-input-control.scss';
 
-const MinimumOrderInput = ( props ) => {
+const MinimumOrderInputControl = ( props ) => {
 	const { value, onChange } = props;
 	const { countries, threshold, currency } = value;
 
@@ -55,4 +55,4 @@ const MinimumOrderInput = ( props ) => {
 	);
 };
 
-export default MinimumOrderInput;
+export default MinimumOrderInputControl;
