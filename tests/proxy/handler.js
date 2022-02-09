@@ -1,5 +1,7 @@
 'use strict';
 
+const config = require( './config' );
+
 module.exports.checkRequest = ( request ) => {
 	if ( request.params.path.includes( 'googleAds:search' ) ) {
 		const body = JSON.parse( request.payload );
@@ -20,6 +22,14 @@ module.exports.checkRequest = ( request ) => {
 		const page = body.pageToken ? '-' + body.pageToken : '';
 
 		return require( `./mocks/mc/reports/${ file }${ page }.json` );
+	}
+
+	if ( 'delete_error' === config.proxyMode && request.params.path.includes( 'products/batch' ) ) {
+		const body = JSON.parse( request.payload );
+		if ( 'delete' === body.entries[0].method ) {
+			const response = require( './mocks/mc/delete_errors' );
+			return response.deleteErrors( body );
+		}
 	}
 
 	return false;
