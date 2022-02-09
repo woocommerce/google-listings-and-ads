@@ -13,7 +13,6 @@ use PHPUnit\Framework\MockObject\MockObject;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\MerchantCenter
  * @group RequestReview
- * @property RESTServer $rest_server
  * @property RequestReview|MockObject $request_review
  */
 class AccountReviewControllerTest extends RESTControllerUnitTest {
