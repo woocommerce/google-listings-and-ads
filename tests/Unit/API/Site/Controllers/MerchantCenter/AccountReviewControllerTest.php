@@ -30,12 +30,12 @@ class AccountReviewControllerTest extends RESTControllerUnitTest {
 
 	public function test_route() {
 		$this->request_review->method( 'get_next_attempt' )
-		                     ->willReturn( time() );
+		                     ->willReturn( mktime( 0, 0, 0 ) );
 
 		$response = $this->do_request( self::ROUTE_GET_REQUEST );
 
 		$this->assertEquals( 200, $response->get_status() );
-		$this->assertEquals( time(), $response->get_data()['nextAttempt'] );
+		$this->assertEquals( mktime( 0, 0, 0 ), $response->get_data()['nextAttempt'] );
 	}
 
 
