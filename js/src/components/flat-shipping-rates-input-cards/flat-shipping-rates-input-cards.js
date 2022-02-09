@@ -18,7 +18,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 	let initialOfferFreeShippingValue = null;
 	if ( displayOfferFreeShippingCard ) {
 		initialOfferFreeShippingValue = value.some(
-			( el ) => el.options?.free_shippping_threshold > 0
+			( el ) => el.options?.free_shipping_threshold > 0
 		)
 			? 'yes'
 			: 'no';
