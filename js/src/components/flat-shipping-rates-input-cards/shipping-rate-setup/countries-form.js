@@ -8,7 +8,7 @@ import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPric
 
 const defaultShippingRate = {
 	method: 'flat_rate',
-	options: [],
+	options: {},
 };
 
 /**
