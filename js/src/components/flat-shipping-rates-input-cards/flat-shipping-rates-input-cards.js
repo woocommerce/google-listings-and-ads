@@ -63,7 +63,9 @@ const FlatShippingRatesInputCards = ( props ) => {
 					onChange={ handleOfferFreeShippingChange }
 				/>
 			) }
-			{ offerFreeShippingValue === 'yes' && <MinimumOrderCard /> }
+			{ offerFreeShippingValue === 'yes' && (
+				<MinimumOrderCard value={ value } onChange={ onChange } />
+			) }
 		</>
 	);
 };

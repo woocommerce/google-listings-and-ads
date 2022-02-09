@@ -9,8 +9,66 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import Subsection from '.~/wcdl/subsection';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import MinimumOrderInput from './minimum-order-input';
 
-const MinimumOrderCard = () => {
+const groupShippingRatesByFreeShippingThreshold = ( shippingRates ) => {
+	const map = new Map();
+
+	shippingRates.forEach( ( shippingRate ) => {
+		const threshold = Number(
+			shippingRate.options.free_shipping_threshold
+		);
+		const thresholdCurrency = `${ threshold } ${ shippingRate.currency }`;
+
+		const group = map.get( thresholdCurrency ) || {
+			countries: [],
+			threshold,
+			currency: shippingRate.currency,
+		};
+		group.countries.push( shippingRate.country );
+
+		map.set( thresholdCurrency, group );
+	} );
+
+	return Array.from( map.values() );
+};
+
+const getMinimumOrderCountryOptions = ( shippingRates ) => {
+	return shippingRates
+		.filter( ( shippingRate ) => shippingRate.rate > 0 )
+		.map( ( shippingRate ) => shippingRate.country );
+};
+
+const MinimumOrderCard = ( props ) => {
+	const { value, onChange } = props;
+	const groups = groupShippingRatesByFreeShippingThreshold( value );
+	const countryOptions = getMinimumOrderCountryOptions( value );
+
+	const handleChange = ( oldGroup ) => ( newGroup ) => {
+		const newValue = [];
+
+		value.forEach( ( shippingRate ) => {
+			const newShippingRate = {
+				...shippingRate,
+			};
+
+			if ( oldGroup.countries.includes( newShippingRate.country ) ) {
+				newShippingRate.options = {
+					...newShippingRate.options,
+					free_shipping_threshold: newGroup.countries.includes(
+						newShippingRate.country
+					)
+						? newGroup.threshold
+						: undefined,
+				};
+			}
+
+			newValue.push( newShippingRate );
+		} );
+
+		onChange( newValue );
+	};
+
 	return (
 		<Section.Card>
 			<Section.Card.Body>
@@ -21,6 +79,18 @@ const MinimumOrderCard = () => {
 							'google-listings-and-ads'
 						) }
 					</Subsection.Title>
+					{ groups.map( ( group ) => {
+						const key = group.countries.join( '-' );
+
+						return (
+							<MinimumOrderInput
+								key={ key }
+								countryOptions={ countryOptions }
+								value={ group }
+								onChange={ handleChange( group ) }
+							/>
+						);
+					} ) }
 				</VerticalGapLayout>
 			</Section.Card.Body>
 		</Section.Card>
