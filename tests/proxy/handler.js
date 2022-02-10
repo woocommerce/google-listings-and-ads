@@ -24,9 +24,12 @@ module.exports.checkRequest = ( request ) => {
 		return require( `./mocks/mc/reports/${ file }${ page }.json` );
 	}
 
-	if ( 'delete_error' === config.proxyMode && request.params.path.includes( 'products/batch' ) ) {
+	if (
+		config.proxyMode === 'delete_error' &&
+		request.params.path.includes( 'products/batch' )
+	) {
 		const body = JSON.parse( request.payload );
-		if ( 'delete' === body.entries[0].method ) {
+		if ( body.entries[ 0 ].method === 'delete' ) {
 			const response = require( './mocks/mc/delete_errors' );
 			return response.deleteErrors( body );
 		}

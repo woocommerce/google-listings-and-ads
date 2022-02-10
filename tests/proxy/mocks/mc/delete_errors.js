@@ -11,16 +11,16 @@ module.exports.deleteErrors = ( requests ) => {
 						domain: 'global',
 						reason: 'internalError',
 						message: 'internal error',
-					}
+					},
 				],
 				code: 500,
 				message: 'internal error',
-			}
-		}
+			},
+		};
 	} );
 
 	return {
 		kind: 'content#productsCustomBatchResponse',
-		entries
+		entries,
 	};
 };

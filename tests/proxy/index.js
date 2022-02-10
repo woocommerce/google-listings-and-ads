@@ -20,12 +20,13 @@ const init = async () => {
 				const response = handler.checkRequest( request );
 				if ( response ) {
 					if ( config.logResponses ) {
+						// eslint-disable-next-line no-console
 						console.log( 'Mocked response: ', response );
 					}
 					return response;
 				}
 
-				let proxy = {
+				const proxy = {
 					uri: `${ config.connectServer }/${ request.params.path }${
 						request.url.search || ''
 					}`,
@@ -33,7 +34,7 @@ const init = async () => {
 				};
 
 				if ( config.logResponses ) {
-					proxy.onResponse = ( err, res, request, reply, settings, ttl ) => {
+					proxy.onResponse = ( err, res ) => {
 						let body = '';
 
 						res.on( 'data', ( chunk ) => {
@@ -41,6 +42,7 @@ const init = async () => {
 						} );
 
 						res.on( 'end', () => {
+							// eslint-disable-next-line no-console
 							console.log( 'API response: ', body );
 						} );
 
