@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.11.1 - 2022-02-10 =
+* Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
+
 = 1.11.0 - 2022-02-02 =
 * Add - Unit tests for the Ads AccountController and AccountService.
 * Fix - Failure handling was not correctly displayed when the ads campaign creation and editing failed.
