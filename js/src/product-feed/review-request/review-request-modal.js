@@ -11,7 +11,7 @@ import { createInterpolateElement, useState } from '@wordpress/element';
 import AppModal from '.~/components/app-modal';
 import AppButton from '.~/components/app-button';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import ReviewRequestIssues from '.~/product-feed/review-request/review-request-issues';
+import ReviewRequestIssues from './review-request-issues';
 
 const ReviewRequestModal = ( {
 	issues = [],

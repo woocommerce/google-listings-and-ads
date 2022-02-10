@@ -5,15 +5,18 @@ import { __experimentalText as Text, Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 
+const COLLAPSED_ISSUES_SIZE = 5;
+
 const ReviewRequestIssues = ( { issues = [] } ) => {
 	const [ expanded, setExpanded ] = useState( false );
 
 	const toggleExpanded = () => {
 		setExpanded( ! expanded );
-		return false;
 	};
 
-	const issuesToRender = issues.slice( 0, expanded ? issues.length : 5 );
+	const issuesToRender = expanded
+		? issues
+		: issues.slice( 0, COLLAPSED_ISSUES_SIZE );
 
 	return (
 		<>

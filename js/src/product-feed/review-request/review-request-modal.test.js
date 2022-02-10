@@ -72,7 +72,7 @@ describe( 'Request Review Modal', () => {
 		expect( onClose ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'Request review button calls onSendRequest after checking the checkbox', () => {
+	it( 'Request review button is active after checking the checkbox and it calls onSendRequest on click', () => {
 		const onSendRequest = jest.fn().mockName( 'onSendRequest' );
 		const { queryByRole } = render(
 			<ReviewRequestModal

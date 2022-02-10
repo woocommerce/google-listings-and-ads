@@ -14,9 +14,9 @@ import {
 /**
  * Internal dependencies
  */
-import { REVIEW_STATUSES } from '.~/product-feed/review-request/review-request-statuses';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
+import REVIEW_STATUSES from './review-request-statuses';
 
 const ReviewRequestNotice = ( {
 	account,

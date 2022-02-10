@@ -7,10 +7,10 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
-import ReviewRequestModal from '.~/product-feed/review-request/review-request-modal';
-import ReviewRequestNotice from '.~/product-feed/review-request/review-request-notice';
-import { REVIEW_STATUSES } from '.~/product-feed/review-request/review-request-statuses';
 import { ISSUE_TYPE_ACCOUNT } from '.~/constants';
+import ReviewRequestModal from './review-request-modal';
+import ReviewRequestNotice from './review-request-notice';
+import REVIEW_STATUSES from './review-request-statuses';
 import './index.scss';
 
 const showNotice = ( status ) =>

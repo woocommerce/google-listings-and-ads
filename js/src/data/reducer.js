@@ -312,12 +312,7 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.RECEIVE_MC_REVIEW_REQUEST: {
-			const { issues, nextAttempt, status } = action.mcReviewRequest;
-			return chainState( state, 'mc_review_request' )
-				.setIn( 'issues', issues )
-				.setIn( 'nextAttempt', nextAttempt )
-				.setIn( 'status', status )
-				.end();
+			return setIn( state, 'mc_review_request', action.mcReviewRequest );
 		}
 
 		case TYPES.RECEIVE_MC_ISSUES: {

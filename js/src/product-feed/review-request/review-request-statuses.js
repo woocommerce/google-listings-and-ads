@@ -30,7 +30,7 @@ const BLOCKED = {
 	),
 };
 
-export const REVIEW_STATUSES = {
+const REVIEW_STATUSES = {
 	UNDER_REVIEW: {
 		title: __( 'Account review in progress.', 'google-listing-and-ads' ),
 		body: __(
