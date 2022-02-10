@@ -8,8 +8,9 @@ import { SummaryNumber } from '@woocommerce/components';
  * Internal dependencies
  */
 import { glaData, REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
+import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
+import formatAmountWithCode from '.~/utils/formatAmountWithCode';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import usePerformance from './usePerformance';
 import PerformanceCard from './performance-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
@@ -54,7 +55,10 @@ const FreePerformanceCard = () => {
 };
 
 const PaidPerformanceCard = () => {
-	const { formatAmount } = useCurrencyFactory();
+	// The amount of Total Sales and Total Spend are given in the Ads' currency.
+	// We use currency code to make sure it's nonambiguous.
+	// Use just `useAdsCurrency`'s/`getCurrencyConfig`'s  `formatAmount`s once https://github.com/woocommerce/woocommerce-admin/pull/7575 is released and accessible.
+	const { adsCurrencyConfig } = useAdsCurrencyConfig();
 	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
 	return (
@@ -67,15 +71,27 @@ const PaidPerformanceCard = () => {
 				<SummaryNumber
 					key="1"
 					label={ __( 'Total Sales', 'google-listings-and-ads' ) }
-					value={ formatAmount( loadedData.sales.value ) }
-					prevValue={ formatAmount( loadedData.sales.prevValue ) }
+					value={ formatAmountWithCode(
+						adsCurrencyConfig,
+						loadedData.sales.value
+					) }
+					prevValue={ formatAmountWithCode(
+						adsCurrencyConfig,
+						loadedData.sales.prevValue
+					) }
 					delta={ loadedData.sales.delta }
 				/>,
 				<SummaryNumber
 					key="2"
 					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-					value={ formatAmount( loadedData.spend.value ) }
-					prevValue={ formatAmount( loadedData.spend.prevValue ) }
+					value={ formatAmountWithCode(
+						adsCurrencyConfig,
+						loadedData.spend.value
+					) }
+					prevValue={ formatAmountWithCode(
+						adsCurrencyConfig,
+						loadedData.spend.prevValue
+					) }
 					delta={ loadedData.spend.delta }
 				/>,
 			] }
