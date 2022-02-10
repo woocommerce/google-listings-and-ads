@@ -24,7 +24,7 @@ const MinimumOrderInputControl = ( props ) => {
 
 		onChange( {
 			countries,
-			threshold: numberValue,
+			threshold: numberValue === 0 ? undefined : numberValue,
 			currency,
 		} );
 	};
