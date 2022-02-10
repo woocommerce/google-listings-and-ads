@@ -90,26 +90,25 @@ const MinimumOrderCard = ( props ) => {
 		 * Then, if there is a group with undefined threshold,
 		 * we render an "Add another minimum order" button last.
 		 */
-		let emptyThresholdGroup;
-		const output = [];
-		groups.forEach( ( group ) => {
-			if ( group.threshold === undefined ) {
-				emptyThresholdGroup = group;
-			} else {
-				output.push(
-					<MinimumOrderInputControl
-						key={ group.countries.join( '-' ) }
-						countryOptions={ countryOptions }
-						value={ group }
-						onChange={ handleChange( group ) }
-					/>
-				);
-			}
-		} );
+		const emptyThresholdGroup = groups.find(
+			( group ) => group.threshold === undefined
+		);
+		const thresholdGroups = groups.filter(
+			( group ) => group !== emptyThresholdGroup
+		);
 
 		return (
 			<>
-				{ output }
+				{ thresholdGroups.map( ( group ) => {
+					return (
+						<MinimumOrderInputControl
+							key={ group.countries.join( '-' ) }
+							countryOptions={ countryOptions }
+							value={ group }
+							onChange={ handleChange( group ) }
+						/>
+					);
+				} ) }
 				{ emptyThresholdGroup && <div>TODO: add button here</div> }
 			</>
 		);
