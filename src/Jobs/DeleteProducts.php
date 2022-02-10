@@ -61,7 +61,10 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 			throw JobException::item_not_provided( 'Array of WooCommerce product IDs' );
 		}
 
-		if ( $this->can_schedule( [ $id_map ] ) ) {
+		if ( did_action( 'woocommerce_gla_batch_retry_delete_products' ) ) {
+			// Retry after one minute.
+			$this->action_scheduler->schedule_single( gmdate( 'U' ) + 60, $this->get_process_item_hook(), [ $id_map ] );
+		} elseif ( $this->can_schedule( [ $id_map ] ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $id_map ] );
 		}
 	}
