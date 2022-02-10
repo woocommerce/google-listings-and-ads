@@ -69,6 +69,52 @@ const MinimumOrderCard = ( props ) => {
 		onChange( newValue );
 	};
 
+	const renderGroups = () => {
+		/**
+		 * If group length is 1, we render the group,
+		 * regardless of threshold is defined or not.
+		 */
+		if ( groups.length === 1 ) {
+			return (
+				<MinimumOrderInputControl
+					countryOptions={ countryOptions }
+					value={ groups[ 0 ] }
+					onChange={ handleChange( groups[ 0 ] ) }
+				/>
+			);
+		}
+
+		/**
+		 * When there is more than one group,
+		 * we render the groups with defined threshold first.
+		 * Then, if there is a group with undefined threshold,
+		 * we render an "Add another minimum order" button last.
+		 */
+		let emptyThresholdGroup;
+		const output = [];
+		groups.forEach( ( group ) => {
+			if ( group.threshold === undefined ) {
+				emptyThresholdGroup = group;
+			} else {
+				output.push(
+					<MinimumOrderInputControl
+						key={ group.countries.join( '-' ) }
+						countryOptions={ countryOptions }
+						value={ group }
+						onChange={ handleChange( group ) }
+					/>
+				);
+			}
+		} );
+
+		return (
+			<>
+				{ output }
+				{ emptyThresholdGroup && <div>TODO: add button here</div> }
+			</>
+		);
+	};
+
 	return (
 		<Section.Card className="gla-minimum-order-card">
 			<Section.Card.Body>
@@ -79,18 +125,7 @@ const MinimumOrderCard = ( props ) => {
 							'google-listings-and-ads'
 						) }
 					</Subsection.Title>
-					{ groups.map( ( group ) => {
-						const key = group.countries.join( '-' );
-
-						return (
-							<MinimumOrderInputControl
-								key={ key }
-								countryOptions={ countryOptions }
-								value={ group }
-								onChange={ handleChange( group ) }
-							/>
-						);
-					} ) }
+					{ renderGroups() }
 				</VerticalGapLayout>
 			</Section.Card.Body>
 		</Section.Card>
