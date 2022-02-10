@@ -314,6 +314,7 @@ class ProductSyncer implements Service {
 			// internal error
 			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
 				$internal_error_ids[ $google_product_id ] = $wc_product_id;
+				$this->product_helper->increment_failed_delete_attempt( $wc_product );
 			}
 		}
 
