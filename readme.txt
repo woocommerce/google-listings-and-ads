@@ -140,17 +140,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Fix - Replace `cloneDeep` within `.~/data/reducer.js` with functions that would not mutate other references of the state tree.
 * Tweak - WC 6.1 compatibility.
 
-= 1.9.0 - 2021-12-15 =
-* Add - Pre-fill target audience countries during onboarding using WooCommerce shipping zones. #1131
-* Add - Pre-fill target audience countries with suggestions based on WooCommerce settings. #1145
-* Fix -  Fatal error on plugin deactivation. #1142
-* Fix - Fix UI loading flicker in Setup MC Step 2 "Choose your audience" page. #1146
-* Fix - Fix e2e test after copy update. #1134
-* Tweak - Display help cursor for tooltip. #1130
-* Tweak - Update product channel visibility's styling to match that of coupons channel visibility. #1135
-* Tweak - Updated `@wordpress/scripts@17.1.0`. #1132
-* Tweak - WC 6.0 compatibility.
-* Tweak - WP 5.9 compatibility.
-* Update - min. WC version to 5.7. #1110
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
