@@ -11,6 +11,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Activateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Exception;
 
@@ -23,8 +25,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class NoteInitializer implements Activateable, Deactivateable, InstallableInterface, Service, Registerable {
+class NoteInitializer implements Activateable, ContainerAwareInterface, Deactivateable, InstallableInterface, Service, Registerable {
 
+	use ContainerAwareTrait;
 	use ValidateInterface;
 
 	/**
@@ -33,31 +36,11 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 	protected const CRON_HOOK = 'wc_gla_cron_daily_notes';
 
 	/**
-	 * @var ActionSchedulerInterface
-	 */
-	protected $action_scheduler;
-
-	/**
 	 * Array of notes to initialize.
 	 *
 	 * @var Note[]
 	 */
 	protected $notes;
-
-	/**
-	 * Cron constructor.
-	 *
-	 * @param ActionSchedulerInterface $action_scheduler
-	 * @param Note[]                   $notes
-	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, array $notes ) {
-		foreach ( $notes as $note ) {
-			$this->validate_instanceof( $note, Note::class );
-		}
-
-		$this->action_scheduler = $action_scheduler;
-		$this->notes            = $notes;
-	}
 
 	/**
 	 * Register the service.
@@ -70,7 +53,7 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 	 * Loop through all notes to add any that should be added.
 	 */
 	public function add_notes(): void {
-		foreach ( $this->notes as $note ) {
+		foreach ( $this->get_notes() as $note ) {
 			try {
 				if ( $note->should_be_added() ) {
 					$note->get_entry()->save();
@@ -104,8 +87,13 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 	 * Add notes cron job if it doesn't already exist.
 	 */
 	protected function maybe_add_cron_job(): void {
-		if ( ! $this->action_scheduler->has_scheduled_action( self::CRON_HOOK ) ) {
-			$this->action_scheduler->schedule_recurring( time(), DAY_IN_SECONDS, self::CRON_HOOK );
+		try {
+			$action_scheduler = $this->get_action_scheduler();
+			if ( ! $action_scheduler->has_scheduled_action( self::CRON_HOOK ) ) {
+				$action_scheduler->schedule_recurring( time(), DAY_IN_SECONDS, self::CRON_HOOK );
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 		}
 	}
 
@@ -116,7 +104,7 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 	 */
 	public function deactivate(): void {
 		try {
-			$this->action_scheduler->cancel( self::CRON_HOOK );
+			$this->get_action_scheduler()->cancel( self::CRON_HOOK );
 		} catch ( ActionSchedulerException $e ) {
 			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
 		}
@@ -124,7 +112,7 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 		// Ensure all note names are deleted
 		if ( class_exists( Notes::class ) ) {
 			$note_names = [];
-			foreach ( $this->notes as $note ) {
+			foreach ( $this->get_notes() as $note ) {
 				$note_names[] = $note->get_name();
 			}
 
@@ -132,4 +120,28 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 		}
 	}
 
+	/**
+	 * Get all Note objects.
+	 *
+	 * @since x.x.x
+	 * @return Note[]
+	 */
+	protected function get_notes(): array {
+		try {
+			return $this->container->get( Note::class );
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_exception', $e, __METHOD__ );
+			return [];
+		}
+	}
+
+	/**
+	 * Get the ActionSchedulerInterface object from the container.
+	 *
+	 * @since x.x.x
+	 * @return ActionSchedulerInterface
+	 */
+	protected function get_action_scheduler(): ActionSchedulerInterface {
+		return $this->container->get( ActionSchedulerInterface::class );
+	}
 }
