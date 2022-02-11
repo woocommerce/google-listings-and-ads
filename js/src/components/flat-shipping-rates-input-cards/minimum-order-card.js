@@ -40,16 +40,17 @@ const groupShippingRatesByFreeShippingThreshold = ( shippingRates ) => {
 	return Array.from( map.values() );
 };
 
-const getMinimumOrderCountryOptions = ( shippingRates ) => {
-	return shippingRates
-		.filter( ( shippingRate ) => shippingRate.rate > 0 )
-		.map( ( shippingRate ) => shippingRate.country );
-};
-
 const MinimumOrderCard = ( props ) => {
-	const { value, onChange = noop } = props;
-	const groups = groupShippingRatesByFreeShippingThreshold( value );
-	const countryOptions = getMinimumOrderCountryOptions( value );
+	const { value = [], onChange = noop } = props;
+	const nonZeroShippingRates = value.filter(
+		( shippingRate ) => shippingRate.rate > 0
+	);
+	const groups = groupShippingRatesByFreeShippingThreshold(
+		nonZeroShippingRates
+	);
+	const countryOptions = nonZeroShippingRates.map(
+		( shippingRate ) => shippingRate.country
+	);
 
 	const handleEditChange = ( oldGroup ) => ( newGroup ) => {
 		const newValue = value.map( ( shippingRate ) => {
