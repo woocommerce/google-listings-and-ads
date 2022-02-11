@@ -13,7 +13,6 @@ import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import ShippingTimeSetup from './shipping-time/shipping-time-setup';
-import Subsection from '.~/wcdl/subsection';
 
 const ShippingTimeSection = ( {
 	formProps,
@@ -91,12 +90,12 @@ const ShippingTimeSection = ( {
 				{ values.shipping_time === 'flat' && (
 					<Section.Card>
 						<Section.Card.Body>
-							<Subsection.Title>
+							<Section.Card.Title>
 								{ __(
 									'Estimated shipping times',
 									'google-listings-and-ads'
 								) }
-							</Subsection.Title>
+							</Section.Card.Title>
 							<ShippingTimeSetup
 								selectedCountryCodes={ selectedCountryCodes }
 								formProps={ formProps }
