@@ -9,21 +9,35 @@ import { Form } from '@woocommerce/components';
  * Internal dependencies
  */
 import AppModal from '.~/components/app-modal';
-import AppInputPriceControl from '.~/components/app-input-price-control/index.js';
-import useStoreCurrency from '.~/hooks/useStoreCurrency';
+import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
 /**
- * Form to add a new rate for selected country(-ies).
+ * Form to edit rate for selected country(-ies).
  *
  * @param {Object} props
- * @param {Array<CountryCode>} props.countries A list of country codes to choose from.
- * @param {Function} props.onRequestClose
- * @param {function(AggregatedShippingRate): void} props.onSubmit Called with submitted value.
+ * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
+ * @param {AggregatedShippingRate} props.rate
+ * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>) => void} props.onSubmit Called once the rate is submitted.
+ * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
+ * @param {Function} props.onRequestClose Called when the form is requested ot be closed.
  */
-const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
-	const { code } = useStoreCurrency();
+const EditRateModal = ( {
+	audienceCountries,
+	rate,
+	onDelete,
+	onSubmit,
+	onRequestClose,
+} ) => {
+	// We actually may have rates for more countries than the audience ones.
+	const availableCountries = Array.from(
+		new Set( [ ...rate.countries, ...audienceCountries ] )
+	);
+
+	const handleDeleteClick = () => {
+		onDelete( rate.countries );
+	};
 
 	const handleValidate = ( values ) => {
 		const errors = {};
@@ -35,8 +49,8 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 			);
 		}
 
-		if ( values.rate < 0 ) {
-			errors.rate = __(
+		if ( values.price < 0 ) {
+			errors.price = __(
 				'The estimated shipping rate cannot be less than 0.',
 				'google-listings-and-ads'
 			);
@@ -45,23 +59,32 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 		return errors;
 	};
 
-	const handleSubmitCallback = ( values ) => {
-		onSubmit( values );
-		onRequestClose();
+	const handleSubmitCallback = ( newAggregatedRate ) => {
+		const remainingCountries = new Set( newAggregatedRate.countries );
+		const removedCountries = rate.countries.filter(
+			( el ) => ! remainingCountries.has( el )
+		);
+
+		onSubmit( newAggregatedRate, removedCountries );
 	};
 
 	return (
 		<Form
 			initialValues={ {
-				countries,
-				currency: code,
-				rate: 0,
+				countries: rate.countries,
+				currency: rate.currency,
+				price: rate.price,
 			} }
 			validate={ handleValidate }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {
-				const { getInputProps, isValidForm, handleSubmit } = formProps;
+				const {
+					getInputProps,
+					values,
+					isValidForm,
+					handleSubmit,
+				} = formProps;
 
 				return (
 					<AppModal
@@ -72,13 +95,21 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 						) }
 						buttons={ [
 							<Button
+								key="delete"
+								isTertiary
+								isDestructive
+								onClick={ handleDeleteClick }
+							>
+								{ __( 'Delete', 'google-listings-and-ads' ) }
+							</Button>,
+							<Button
 								key="save"
 								isPrimary
 								disabled={ ! isValidForm }
 								onClick={ handleSubmit }
 							>
 								{ __(
-									'Add shipping rate',
+									'Update shipping rate',
 									'google-listings-and-ads'
 								) }
 							</Button>,
@@ -91,7 +122,7 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 									'If customer is in',
 									'google-listings-and-ads'
 								) }
-								options={ countries }
+								options={ availableCountries }
 								multiple
 								{ ...getInputProps( 'countries' ) }
 							/>
@@ -100,8 +131,8 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 									'Then the estimated shipping rate displayed in the product listing is',
 									'google-listings-and-ads'
 								) }
-								suffix={ code }
-								{ ...getInputProps( 'rate' ) }
+								suffix={ values.currency }
+								{ ...getInputProps( 'price' ) }
 							/>
 						</VerticalGapLayout>
 					</AppModal>
@@ -111,7 +142,8 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 	);
 };
 
-export default AddRateModal;
+export default EditRateModal;
+
 /**
  * @typedef {import("../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
