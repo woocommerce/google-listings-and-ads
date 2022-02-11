@@ -11,8 +11,6 @@ import { onQueryChange } from '@woocommerce/navigation';
  */
 import { getIdsFromQuery } from './utils';
 import useUrlQuery from '.~/hooks/useUrlQuery';
-import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
-import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import AppTableCard from '.~/components/app-table-card';
 
 /**
@@ -44,8 +42,6 @@ const CompareTableCard = ( {
 	nameCell,
 	...restProps
 } ) => {
-	const { adsCurrencyConfig } = useAdsCurrencyConfig();
-	const storeCurrencyConfig = useStoreCurrency();
 	const query = useUrlQuery();
 
 	const [ selectedRows, setSelectedRows ] = useState( () => {
@@ -105,7 +101,7 @@ const CompareTableCard = ( {
 	/**
 	 * Creates an array of metric cells for {@link getRows},
 	 * for a given row.
-	 * Creates a cell for every ~metric item, displays `"Unavailable"`, when the data is `null`.
+	 * Creates a cell for every ~metric item, displays `"Unavailable"`, when the data is `undefined`.
 	 *
 	 * @param {ReportData} row Row of data for data table.
 	 *
@@ -115,11 +111,7 @@ const CompareTableCard = ( {
 		metrics.map( ( metric ) => {
 			const value = row.subtotals[ metric.key ];
 			return {
-				display: metric.formatFn(
-					value,
-					storeCurrencyConfig,
-					adsCurrencyConfig
-				),
+				display: metric.formatFn( value ),
 			};
 		} );
 	/**

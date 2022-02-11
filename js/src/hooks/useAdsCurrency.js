@@ -63,5 +63,3 @@ export default function useAdsCurrency() {
 		formatAmount,
 	};
 }
-
-export const useAdsCurrencyConfig = useAdsCurrency;
