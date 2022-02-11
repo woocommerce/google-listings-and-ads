@@ -31,7 +31,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 					<li key={ issue }>{ issue }</li>
 				) ) }
 			</ul>
-			{ issues.length > 5 && (
+			{ issues.length > COLLAPSED_ISSUES_SIZE && (
 				<Button isTertiary onClick={ toggleExpanded }>
 					{ expanded
 						? __( 'Show less', 'google-listing-and-ads' )
@@ -41,7 +41,7 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 									'+ %d more issue(s)',
 									'google-listing-and-ads'
 								),
-								issues.length - 5
+								issues.length - COLLAPSED_ISSUES_SIZE
 						  ) }
 				</Button>
 			) }
