@@ -9,7 +9,6 @@ import { noop } from 'lodash';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import Subsection from '.~/wcdl/subsection';
 import AppButton from '../app-button';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
@@ -177,13 +176,13 @@ const MinimumOrderCard = ( props ) => {
 	return (
 		<Section.Card className="gla-minimum-order-card">
 			<Section.Card.Body>
+				<Section.Card.Title>
+					{ __(
+						'Minimum order to qualify for free shipping',
+						'google-listings-and-ads'
+					) }
+				</Section.Card.Title>
 				<VerticalGapLayout size="large">
-					<Subsection.Title>
-						{ __(
-							'Minimum order to qualify for free shipping',
-							'google-listings-and-ads'
-						) }
-					</Subsection.Title>
 					{ renderGroups() }
 				</VerticalGapLayout>
 			</Section.Card.Body>

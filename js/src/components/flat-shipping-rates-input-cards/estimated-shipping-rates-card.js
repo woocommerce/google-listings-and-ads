@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import Subsection from '.~/wcdl/subsection';
 import ShippingRateSetup from './shipping-rate-setup';
 
 const EstimatedShippingRatesCard = ( props ) => {
@@ -16,12 +15,12 @@ const EstimatedShippingRatesCard = ( props ) => {
 	return (
 		<Section.Card className="gla-estimated-shipping-rates-card">
 			<Section.Card.Body>
-				<Subsection.Title>
+				<Section.Card.Title>
 					{ __(
 						'Estimated shipping rates',
 						'google-listings-and-ads'
 					) }
-				</Subsection.Title>
+				</Section.Card.Title>
 				<ShippingRateSetup
 					audienceCountries={ audienceCountries }
 					value={ value }

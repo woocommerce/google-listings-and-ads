@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import Subsection from '.~/wcdl/subsection';
 import AppRadioContentControl from '../app-radio-content-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
@@ -21,13 +20,13 @@ const OfferFreeShippingCard = ( props ) => {
 	return (
 		<Section.Card>
 			<Section.Card.Body>
+				<Section.Card.Title>
+					{ __(
+						'I offer free shipping for orders over a certain price',
+						'google-listings-and-ads'
+					) }
+				</Section.Card.Title>
 				<VerticalGapLayout size="large">
-					<Subsection.Title>
-						{ __(
-							'I offer free shipping for orders over a certain price',
-							'google-listings-and-ads'
-						) }
-					</Subsection.Title>
 					<AppRadioContentControl
 						label={ __( 'Yes', 'google-listings-and-ads' ) }
 						value="yes"
