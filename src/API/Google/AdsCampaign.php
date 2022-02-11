@@ -163,6 +163,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			return [
 				'id'     => $campaign_id,
 				'status' => CampaignStatus::ENABLED,
+				'type'   => CampaignType::PERFORMANCE_MAX,
 			] + $params;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
