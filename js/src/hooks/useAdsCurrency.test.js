@@ -7,7 +7,7 @@ import { apiFetch } from '@wordpress/data-controls';
 /**
  * Internal dependencies
  */
-import { useAdsCurrencyConfig } from './useAdsCurrency';
+import useAdsCurrency from './useAdsCurrency';
 import useStoreCurrency from './useStoreCurrency';
 
 // Force real timers, make sure all timers are actually ticking.
@@ -29,9 +29,9 @@ jest.mock( './useStoreCurrency', () => ( {
 	} ),
 } ) );
 
-describe( 'useAdsCurrencyConfig', () => {
-	test( 'initially should return `{ adsCurrencyConfig: Object, hasFinishedResolution: undefined }`', () => {
-		const { result } = renderHook( () => useAdsCurrencyConfig() );
+describe( 'useAdsCurrency', () => {
+	test( 'initially should return `{ adsCurrencyConfig: Object, hasFinishedResolution: undefined, formatAmount: Function }`', () => {
+		const { result } = renderHook( () => useAdsCurrency() );
 
 		// assert initial state
 		expect( result.current ).toHaveProperty(
@@ -39,6 +39,9 @@ describe( 'useAdsCurrencyConfig', () => {
 			undefined
 		);
 		expect( result.current ).toHaveProperty( 'adsCurrencyConfig' );
+		expect( result.current ).toMatchObject( {
+			formatAmount: expect.any( Function ),
+		} );
 		expect( result.current.adsCurrencyConfig ).toEqual(
 			expect.objectContaining( {
 				code: expect.any( String ),
@@ -53,7 +56,7 @@ describe( 'useAdsCurrencyConfig', () => {
 	} );
 
 	test( "initially should return store's currency config w/ `code` and `symbol` set to empty", () => {
-		const { result } = renderHook( () => useAdsCurrencyConfig() );
+		const { result } = renderHook( () => useAdsCurrency() );
 		const {
 			result: { current: storesCurrencyConfig },
 		} = renderHook( () => useStoreCurrency() );
@@ -73,7 +76,7 @@ describe( 'useAdsCurrencyConfig', () => {
 			adsAccountData = {
 				id: 777777,
 				currency: 'PLN',
-				symbol: 'z\u0142',
+				symbol: 'zł',
 				status: 'connected',
 			};
 			apiFetch
@@ -94,10 +97,9 @@ describe( 'useAdsCurrencyConfig', () => {
 					adsAccountData
 				);
 		} );
+
 		test( 'should finish resolution', async () => {
-			const { result, waitFor } = renderHook( () =>
-				useAdsCurrencyConfig()
-			);
+			const { result, waitFor } = renderHook( () => useAdsCurrency() );
 
 			// assert initial state
 			expect( result.current.hasFinishedResolution ).toEqual( undefined );
@@ -108,9 +110,7 @@ describe( 'useAdsCurrencyConfig', () => {
 		} );
 
 		test( 'should return currency config with Ads account code and symbol', async () => {
-			const { result, waitFor } = renderHook( () =>
-				useAdsCurrencyConfig()
-			);
+			const { result, waitFor } = renderHook( () => useAdsCurrency() );
 
 			// assert initial state
 			// expect( result.current.hasFinishedResolution ).toEqual( undefined );
@@ -126,6 +126,15 @@ describe( 'useAdsCurrencyConfig', () => {
 					symbol: adsAccountData.symbol,
 				} )
 			);
+		} );
+
+		test( 'should be able to format value according to currency config', () => {
+			const { result } = renderHook( () => useAdsCurrency() );
+			const { formatAmount } = result.current;
+			const value = 1234.5678;
+
+			expect( formatAmount( value ) ).toBe( '1|234;568\xA0zł' );
+			expect( formatAmount( value, true ) ).toBe( '1|234;568\xA0PLN' );
 		} );
 	} );
 } );
