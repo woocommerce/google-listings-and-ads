@@ -358,6 +358,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'id'     => $campaign->getId(),
 			'name'   => $campaign->getName(),
 			'status' => CampaignStatus::label( $campaign->getStatus() ),
+			'type'   => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 		];
 
 		$budget = $row->getCampaignBudget();
