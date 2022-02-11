@@ -39,7 +39,10 @@ const ReviewRequestNotice = ( {
 						<Text variant="subtitle">
 							{ REVIEW_STATUSES[ account.status ].title }
 						</Text>
-						<Text variant="body">
+						<Text
+							className="gla-review-request-notice__text-body"
+							variant="body"
+						>
 							{ REVIEW_STATUSES[ account.status ].body }
 							{ isDisabled &&
 								createInterpolateElement(

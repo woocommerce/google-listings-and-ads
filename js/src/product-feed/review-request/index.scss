@@ -27,8 +27,12 @@
 	background: #fef8ee;
 	padding: $grid-unit-30;
 	flex-wrap: wrap;
+
 	&__text {
 		padding: 0 $grid-unit-20;
+	}
+
+	&__text-body {
 		color: #757575;
 	}
 
