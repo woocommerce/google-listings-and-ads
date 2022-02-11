@@ -61,12 +61,23 @@ const MinimumOrderCard = ( props ) => {
 				},
 			};
 
-			if ( oldGroup.countries.includes( newShippingRate.country ) ) {
-				newShippingRate.options.free_shipping_threshold = newGroup.countries.includes(
-					newShippingRate.country
-				)
-					? newGroup.threshold
-					: undefined;
+			if ( newGroup.countries.includes( newShippingRate.country ) ) {
+				/**
+				 * Shipping rate's country exists in the new value countries,
+				 * so we just assign the new value threshold.
+				 */
+				newShippingRate.options.free_shipping_threshold =
+					newGroup.threshold;
+			} else if (
+				oldGroup.countries.includes( newShippingRate.country )
+			) {
+				/**
+				 * Shipping rate's country does not exist in the new value countries,
+				 * but it exists in the old value countries.
+				 * This means users removed the country in the edit modal,
+				 * so we set the threshold value to undefined.
+				 */
+				newShippingRate.options.free_shipping_threshold = undefined;
 			}
 
 			return newShippingRate;
