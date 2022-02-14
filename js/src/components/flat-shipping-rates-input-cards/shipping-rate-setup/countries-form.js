@@ -8,8 +8,10 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
 /**
  * Internal dependencies
  */
+import Section from '.~/wcdl/section';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
+import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
 import ShippingRateInputControl from './countries-price-input/shipping-rate-input-control';
 import AddRateModal from './add-rate-modal';
@@ -25,16 +27,15 @@ const defaultShippingRate = {
  *
  * @param {Object} props
  * @param {Array<ShippingRateFromServerSide>} props.value Array of individual shipping rates to be used as the initial values of the form.
- * @param {string} props.currencyCode Shop's currency code.
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
  * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
 export default function ShippingCountriesForm( {
 	value: shippingRates,
-	currencyCode,
 	audienceCountries,
 	onChange,
 } ) {
+	const { code: currencyCode } = useStoreCurrency();
 	const actualCountryCount = shippingRates.length;
 	const actualCountries = new Map(
 		shippingRates.map( ( rate ) => [ rate.country, rate ] )
@@ -107,26 +108,29 @@ export default function ShippingCountriesForm( {
 	}
 
 	return (
-		<div className="countries-price">
-			<VerticalGapLayout size="large">
-				{ countriesPriceArray.map( ( el ) => {
-					return (
-						<div
-							key={ el.countries.join( '-' ) }
-							className="countries-price-input-form"
-						>
-							<ShippingRateInputControl
-								value={ el }
-								audienceCountries={ audienceCountries }
-								totalCountyCount={ totalCountyCount }
-								onChange={ handleChange }
-								onDelete={ handleDelete }
-							/>
-						</div>
-					);
-				} ) }
-				{ actualCountryCount >= 1 && remainingCount >= 1 && (
-					<div className="add-rate-button">
+		<Section.Card>
+			<Section.Card.Body>
+				<Section.Card.Title>
+					{ __(
+						'Estimated shipping rates',
+						'google-listings-and-ads'
+					) }
+				</Section.Card.Title>
+				<VerticalGapLayout size="large">
+					{ countriesPriceArray.map( ( el ) => {
+						return (
+							<div key={ el.countries.join( '-' ) }>
+								<ShippingRateInputControl
+									value={ el }
+									audienceCountries={ audienceCountries }
+									totalCountyCount={ totalCountyCount }
+									onChange={ handleChange }
+									onDelete={ handleDelete }
+								/>
+							</div>
+						);
+					} ) }
+					{ actualCountryCount >= 1 && remainingCount >= 1 && (
 						<AppButtonModalTrigger
 							button={
 								<Button
@@ -146,10 +150,10 @@ export default function ShippingCountriesForm( {
 								/>
 							}
 						/>
-					</div>
-				) }
-			</VerticalGapLayout>
-		</div>
+					) }
+				</VerticalGapLayout>
+			</Section.Card.Body>
+		</Section.Card>
 	);
 }
 
