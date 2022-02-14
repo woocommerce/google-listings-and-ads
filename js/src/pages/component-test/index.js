@@ -1,15 +1,13 @@
 /**
  * External dependencies
  */
-import { SelectControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
-
+import { SelectControl } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import TreeSelectControl from '.~/components/tree-select-control';
-import LocalSelectControl from '.~/components/select-control';
 import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 
 const ComponentTest = () => {
@@ -21,28 +19,38 @@ const ComponentTest = () => {
 	const [ selected, setSelected ] = useState( [] );
 	const keyNameMap = useCountryKeyNameMap();
 	const options = [ 'AU', 'CN', 'US' ];
-	const labelledOptions = options.map( ( option ) => {
-		return {
-			key: option,
-			label: keyNameMap[ option ],
-			value: { id: option },
-		};
-	} );
+	const treeSelectControlOptions = [
+		{
+			id: 'EU',
+			name: 'Europe',
+			children: [
+				{ id: 'ES', name: 'Spain' },
+				{ id: 'FR', name: 'France' },
+				{ id: 'IT', name: 'Italy' },
+			],
+		},
+		{
+			id: 'AS',
+			name: 'Asia',
+			children: [
+				{ id: 'JP', name: 'Japan' },
+				{ id: 'CH', name: 'China' },
+				{ id: 'MY', name: 'Malaysia' },
+			],
+		},
+	];
 
 	return (
 		<div>
 			<h2>TreeSelectControl</h2>
-			<TreeSelectControl />
-			<hr />
-			<h2>Local SelectControl</h2>
-			<LocalSelectControl
-				multiple
-				inlineTags
-				isSearchable
-				options={ labelledOptions }
-				selected={ selected }
+			<TreeSelectControl
+				options={ treeSelectControlOptions }
+				value={ selected }
 				onChange={ setSelected }
+				label="Select"
+				placeholder="Select"
 			/>
+			<hr />
 			<hr />
 			<h2>Existing SupportedCountrySelect:</h2>
 			<SupportedCountrySelect
@@ -51,7 +59,7 @@ const ComponentTest = () => {
 				onChange={ setValue }
 			/>
 			<hr></hr>
-			<h2>@wordpress/components SelectControl with multiple:</h2>
+			<h2>@woocommerce/components SelectControl with multiple:</h2>
 			<SelectControl
 				multiple
 				options={ [
