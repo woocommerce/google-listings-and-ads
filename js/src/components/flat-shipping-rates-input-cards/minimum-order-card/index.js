@@ -1,1 +1,1 @@
-export default './minimum-order-card';
+export { default as DefaultExport } from './minimum-order-card';

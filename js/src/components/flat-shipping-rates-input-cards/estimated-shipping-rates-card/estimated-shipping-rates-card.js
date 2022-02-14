@@ -13,7 +13,7 @@ import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
-import ShippingRateInputControl from './countries-price-input/shipping-rate-input-control';
+import ShippingRateInputControl from './shipping-rate-input-control';
 import AddRateModal from './add-rate-modal';
 
 const defaultShippingRate = {
@@ -30,7 +30,7 @@ const defaultShippingRate = {
  * @param {Array<CountryCode>} props.audienceCountries Array of country codes of all audience countries.
  * @param {(newValue: Object) => void} props.onChange Callback called with new data once shipping rates are changed.
  */
-export default function ShippingCountriesForm( {
+export default function EstimatedShippingRatesCard( {
 	value: shippingRates,
 	audienceCountries,
 	onChange,

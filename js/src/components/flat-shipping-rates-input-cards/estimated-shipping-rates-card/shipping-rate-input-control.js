@@ -110,6 +110,6 @@ const ShippingRateInputControl = ( {
 export default ShippingRateInputControl;
 
 /**
- * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

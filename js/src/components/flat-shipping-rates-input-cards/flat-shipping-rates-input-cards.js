@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import FreeShippingCards from './free-shipping-cards';
-import ShippingCountriesForm from './shipping-rate-setup/countries-form';
+import EstimatedShippingRatesCard from './estimated-shipping-rates-card';
 
 const FlatShippingRatesInputCards = ( props ) => {
 	const { audienceCountries, value, onChange = () => {} } = props;
@@ -10,7 +10,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 
 	return (
 		<>
-			<ShippingCountriesForm
+			<EstimatedShippingRatesCard
 				audienceCountries={ audienceCountries }
 				value={ value }
 				onChange={ onChange }
