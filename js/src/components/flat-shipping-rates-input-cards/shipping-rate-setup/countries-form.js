@@ -1,10 +1,18 @@
 /**
+ * External dependencies
+ */
+import { Button } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+import GridiconPlusSmall from 'gridicons/dist/plus-small';
+
+/**
  * Internal dependencies
  */
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import AddRateButton from './add-rate-button';
-import CountriesPriceInput from './countries-price-input';
 import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
+import CountriesPriceInput from './countries-price-input';
+import AddRateModal from './add-rate-modal';
 
 const defaultShippingRate = {
 	method: 'flat_rate',
@@ -119,9 +127,24 @@ export default function ShippingCountriesForm( {
 				} ) }
 				{ actualCountryCount >= 1 && remainingCount >= 1 && (
 					<div className="add-rate-button">
-						<AddRateButton
-							countries={ remainingCountries }
-							onSubmit={ handleAdd }
+						<AppButtonModalTrigger
+							button={
+								<Button
+									isSecondary
+									icon={ <GridiconPlusSmall /> }
+								>
+									{ __(
+										'Add another rate',
+										'google-listings-and-ads'
+									) }
+								</Button>
+							}
+							modal={
+								<AddRateModal
+									countries={ remainingCountries }
+									onSubmit={ handleAdd }
+								/>
+							}
 						/>
 					</div>
 				) }
