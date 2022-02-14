@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -25,12 +25,12 @@ describe( 'TreeSelectControl Component', () => {
 				] }
 			/>
 		);
-		expect( queryByRole( 'listbox' ) ).toBeTruthy();
+		expect( queryByRole( 'combobox' ) ).toBeTruthy();
 	} );
 
 	it( "Doesn't render without options", () => {
 		const { queryByRole } = render( <TreeSelectControl /> );
-		expect( queryByRole( 'listbox' ) ).toBeFalsy();
+		expect( queryByRole( 'combobox' ) ).toBeFalsy();
 	} );
 
 	it( 'Renders the provided options', () => {
@@ -84,6 +84,29 @@ describe( 'TreeSelectControl Component', () => {
 				);
 			} );
 		} );
+	} );
+
+	it( 'Can expand and collapse', async () => {
+		const options = [
+			{
+				id: 'EU',
+				name: 'Europe',
+				children: [
+					{ id: 'ES', name: 'Spain' },
+					{ id: 'FR', name: 'France' },
+					{ id: 'IT', name: 'Italy' },
+				],
+			},
+		];
+
+		const { queryByRole } = render(
+			<TreeSelectControl options={ options } placeholder="Select" />
+		);
+
+		const control = queryByRole( 'combobox' );
+		expect( queryByRole( 'listbox' ) ).toBeFalsy();
+		fireEvent.click( control );
+		expect( queryByRole( 'listbox' ) ).toBeTruthy();
 	} );
 
 	it( 'Calls onChange property with the selected values', () => {
@@ -181,7 +204,7 @@ describe( 'TreeSelectControl Component', () => {
 
 		expect( queryByLabelText( 'Select' ) ).toBeTruthy();
 	} );
-	it( 'Could expand and collapse', () => {} );
+
 	it( 'Show tags', () => {} );
 	it( 'Disabled state show tags but does not allow to change', () => {} );
 } );

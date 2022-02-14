@@ -4,7 +4,13 @@
 import { CheckboxControl } from '@wordpress/components';
 import classnames from 'classnames';
 
-const List = ( { options = [], selected = [], onChange = () => {} } ) => {
+const List = ( {
+	options = [],
+	selected = [],
+	onChange = () => {},
+	onFocus = () => {},
+	onBlur = () => {},
+} ) => {
 	const hasChildren = ( parent ) => parent.children?.length;
 
 	const isParentSelected = ( parent ) =>
@@ -15,6 +21,8 @@ const List = ( { options = [], selected = [], onChange = () => {} } ) => {
 			className="woocommerce-tree-select-control__listbox"
 			role="listbox"
 			tabIndex="-1"
+			onFocus={ onFocus }
+			onBlur={ onBlur }
 		>
 			{ options.map( ( parent ) => {
 				return (

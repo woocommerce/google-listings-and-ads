@@ -47,7 +47,7 @@ const ComponentTest = () => {
 				options={ treeSelectControlOptions }
 				value={ selected }
 				onChange={ setSelected }
-				label="Select"
+				label="Select Country"
 				placeholder="Select"
 			/>
 			<hr />

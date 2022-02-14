@@ -3,6 +3,7 @@
  */
 import { useState } from '@wordpress/element';
 import classnames from 'classnames';
+import { __experimentalUseFocusOutside as useFocusOutside } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -21,7 +22,11 @@ const TreeSelectControl = ( props ) => {
 		placeholder,
 		onChange = () => {},
 	} = props;
-	const [ isExpanded, setIsExpanded ] = useState( true );
+
+	const [ isExpanded, setIsExpanded ] = useState( false );
+	const focusOutside = useFocusOutside( () => {
+		setIsExpanded( false );
+	} );
 
 	if ( ! options.length ) {
 		return null;
@@ -70,11 +75,21 @@ const TreeSelectControl = ( props ) => {
 
 	return (
 		<div
+			{ ...focusOutside }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
 			) }
 		>
+			{ !! label && (
+				<label
+					htmlFor={ `woocommerce-select-control-${ props.id }__control-input` }
+					className="components-base-control__label"
+				>
+					{ label }
+				</label>
+			) }
+
 			<Control
 				disabled={ disabled }
 				hasTags
