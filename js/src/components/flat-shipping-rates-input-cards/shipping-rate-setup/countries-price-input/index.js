@@ -8,10 +8,12 @@ import { Pill } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
+import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import EditRateButton from './edit-rate-button';
 import AppSpinner from '.~/components/app-spinner';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
+import EditRateModal from './edit-rate-modal';
 import './index.scss';
 
 /**
@@ -72,11 +74,23 @@ const CountriesPriceInput = ( {
 								}
 							) }
 						</div>
-						<EditRateButton
-							audienceCountries={ audienceCountries }
-							onChange={ onChange }
-							onDelete={ onDelete }
-							rate={ value }
+						<AppButtonModalTrigger
+							button={
+								<AppButton
+									className="gla-countries-price-input__edit-button"
+									isTertiary
+								>
+									{ __( 'Edit', 'google-listings-and-ads' ) }
+								</AppButton>
+							}
+							modal={
+								<EditRateModal
+									audienceCountries={ audienceCountries }
+									rate={ value }
+									onSubmit={ onChange }
+									onDelete={ onDelete }
+								/>
+							}
 						/>
 					</div>
 				}

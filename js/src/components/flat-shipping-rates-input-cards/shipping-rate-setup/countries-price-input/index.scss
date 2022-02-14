@@ -10,6 +10,12 @@
 		gap: 4px;
 	}
 
+	&__edit-button.components-button.is-tertiary {
+		height: fit-content;
+		line-height: 1.4em;
+		padding: 0;
+	}
+
 	.app-input-control {
 		width: 300px;
 	}
