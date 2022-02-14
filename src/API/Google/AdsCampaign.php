@@ -145,9 +145,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function create_campaign( array $params ): array {
 		try {
-			/** @var AdsAssetGroup $asset_group */
-			$asset_group = $this->container->get( AdsAssetGroup::class );
-
 			// Operations must be in a specific order to match the temporary ID's.
 			$operations = array_merge(
 				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
