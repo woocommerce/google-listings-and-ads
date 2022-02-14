@@ -253,7 +253,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				[ $this->budget->delete_operation( $campaign_id ) ]
 			);
 
-			return $this->mutate( $operations ) ?: $campaign_id;
+			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
