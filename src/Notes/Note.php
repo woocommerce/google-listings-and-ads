@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-interface Note extends Service {
+interface Note {
 
 	/**
 	 * Get the note's unique name.
