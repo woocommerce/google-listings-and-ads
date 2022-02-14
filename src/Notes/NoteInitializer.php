@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -24,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class NoteInitializer implements Activateable, Deactivateable, InstallableInterface, Service, Registerable {
+class NoteInitializer implements Activateable, Deactivateable, InstallableInterface, Service, Registerable, ContainerAwareInterface {
 
 	use ValidateInterface;
 	use ContainerAwareTrait;
