@@ -108,6 +108,10 @@ export const getMCProductStatistics = ( state ) => {
 	return state.mc_product_statistics;
 };
 
+export const getMCReviewRequest = ( state ) => {
+	return state.mc_review_request;
+};
+
 // note: we use rememo createSelector here to cache the sliced issues array,
 // to prevent returning new array to the consumer every time,
 // which might cause rendering performance problem.

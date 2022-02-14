@@ -18,7 +18,9 @@ import HelpPopover from '.~/components/help-popover';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import IssuesTable from '.~/product-feed/issues-table-card/issues-table';
 import IssuesTypeNavigation from '.~/product-feed/issues-table-card/issues-type-navigation';
+import ReviewRequest from '.~/product-feed/review-request';
 import useMCIssuesTotals from '.~/hooks/useMCIssuesTotals';
+import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 import './index.scss';
 
 const actions = (
@@ -52,6 +54,7 @@ const actions = (
  */
 const IssuesTableCard = () => {
 	const { total } = useMCIssuesTotals();
+	const account = useAppSelectDispatch( 'getMCReviewRequest' );
 
 	// We don't want to render if no issues are found
 	if ( ! total ) return null;
@@ -74,6 +77,7 @@ const IssuesTableCard = () => {
 					</div>
 				</CardHeader>
 				<IssuesTypeNavigation />
+				<ReviewRequest account={ account } />
 				<IssuesTable />
 			</Card>
 		</AppTableCardDiv>

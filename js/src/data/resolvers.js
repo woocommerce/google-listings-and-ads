@@ -39,6 +39,7 @@ import {
 	receiveMCProductStatistics,
 	receiveMCIssues,
 	receiveMCProductFeed,
+	receiveMCReviewRequest,
 } from './actions';
 
 export function* getShippingRates() {
@@ -160,6 +161,24 @@ export function* getMCProductStatistics() {
 			error,
 			__(
 				'There was an error loading your merchant center product statistics.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
+export function* getMCReviewRequest() {
+	try {
+		const response = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/review`,
+		} );
+
+		yield receiveMCReviewRequest( response );
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error loading your merchant center product review request status.',
 				'google-listings-and-ads'
 			)
 		);
