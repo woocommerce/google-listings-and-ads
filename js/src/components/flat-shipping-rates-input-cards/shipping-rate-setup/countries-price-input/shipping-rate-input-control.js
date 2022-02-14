@@ -13,7 +13,7 @@ import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 import EditRateModal from './edit-rate-modal';
-import './index.scss';
+import './shipping-rate-input-control.scss';
 
 /**
  * Input control to edit a shipping rate.
@@ -27,7 +27,7 @@ import './index.scss';
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
-const CountriesPriceInput = ( {
+const ShippingRateInputControl = ( {
 	value,
 	audienceCountries,
 	totalCountyCount,
@@ -49,7 +49,7 @@ const CountriesPriceInput = ( {
 	};
 
 	return (
-		<div className="gla-countries-price-input">
+		<div className="gla-shipping-rate-input-control">
 			<AppInputPriceControl
 				label={
 					<div className="label">
@@ -72,7 +72,7 @@ const CountriesPriceInput = ( {
 						<AppButtonModalTrigger
 							button={
 								<AppButton
-									className="gla-countries-price-input__edit-button"
+									className="gla-shipping-rate-input-control__edit-button"
 									isTertiary
 								>
 									{ __( 'Edit', 'google-listings-and-ads' ) }
@@ -107,7 +107,7 @@ const CountriesPriceInput = ( {
 	);
 };
 
-export default CountriesPriceInput;
+export default ShippingRateInputControl;
 
 /**
  * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate

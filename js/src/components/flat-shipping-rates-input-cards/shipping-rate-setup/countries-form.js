@@ -11,7 +11,7 @@ import GridiconPlusSmall from 'gridicons/dist/plus-small';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
-import CountriesPriceInput from './countries-price-input';
+import ShippingRateInputControl from './countries-price-input/shipping-rate-input-control';
 import AddRateModal from './add-rate-modal';
 
 const defaultShippingRate = {
@@ -115,7 +115,7 @@ export default function ShippingCountriesForm( {
 							key={ el.countries.join( '-' ) }
 							className="countries-price-input-form"
 						>
-							<CountriesPriceInput
+							<ShippingRateInputControl
 								value={ el }
 								audienceCountries={ audienceCountries }
 								totalCountyCount={ totalCountyCount }
