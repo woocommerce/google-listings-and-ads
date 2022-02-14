@@ -3,7 +3,6 @@
  */
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import AppSpinner from '.~/components/app-spinner';
 import ShippingCountriesForm from './countries-form';
 import './index.scss';
 
@@ -21,10 +20,6 @@ import './index.scss';
  */
 const ShippingRateSetup = ( { audienceCountries, value, onChange } ) => {
 	const { code: currencyCode } = useStoreCurrency();
-
-	if ( ! audienceCountries ) {
-		return <AppSpinner />;
-	}
 
 	return (
 		<div className="gla-shipping-rate-setup">

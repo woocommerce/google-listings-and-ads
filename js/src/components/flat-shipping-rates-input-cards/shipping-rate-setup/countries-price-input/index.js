@@ -11,7 +11,6 @@ import { Pill } from '@woocommerce/components';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import AppSpinner from '.~/components/app-spinner';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 import EditRateModal from './edit-rate-modal';
 import './index.scss';
@@ -36,10 +35,6 @@ const CountriesPriceInput = ( {
 	onDelete,
 } ) => {
 	const { countries, currency, price } = value;
-
-	if ( ! audienceCountries ) {
-		return <AppSpinner />;
-	}
 
 	const handleBlur = ( event, numberValue ) => {
 		if ( price === numberValue ) {
