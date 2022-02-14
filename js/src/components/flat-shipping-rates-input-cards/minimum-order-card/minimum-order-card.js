@@ -9,7 +9,7 @@ import { noop } from 'lodash';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import AppButton from '../app-button';
+import AppButton from '.~/components/app-button';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import MinimumOrderInputControl from './minimum-order-input-control';

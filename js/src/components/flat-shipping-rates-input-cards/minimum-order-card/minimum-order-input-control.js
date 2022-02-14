@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import AppButtonModalTrigger from '../app-button-modal-trigger';
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import MinimumOrderInputLabelText from './minimum-order-input-label-text';
 import EditMinimumOrderModal from './edit-minimum-order-modal';
 import './minimum-order-input-control.scss';
