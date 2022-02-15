@@ -12,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\V8\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\ApiCore\PagedListResponse;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\SearchResponse;

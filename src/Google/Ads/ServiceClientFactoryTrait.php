@@ -2,7 +2,7 @@
 declare( strict_types=1 );
 
 /**
- * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V8/ServiceClientFactoryTrait.php
+ * Overrides vendor/googleads/google-ads-php/src/Google/Ads/GoogleAds/Lib/V9/ServiceClientFactoryTrait.php
  *
  * phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid
  * phpcs:disable WordPress.NamingConventions.ValidVariableName
@@ -11,140 +11,160 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
+use Google\Ads\GoogleAds\Constants;
 use Google\Ads\GoogleAds\Lib\ConfigurationTrait;
-use Google\Ads\GoogleAds\V8\Services\AccessibleBiddingStrategyServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AccountBudgetProposalServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AccountBudgetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AccountLinkServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupAdAssetViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupAdLabelServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupAdServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupAssetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupAudienceViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupBidModifierServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupCriterionLabelServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupCriterionServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupCriterionSimulationServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupExtensionSettingServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupFeedServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupLabelServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdGroupSimulationServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdParameterServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdScheduleViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AdServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AgeRangeViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AssetFieldTypeViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\AssetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\BatchJobServiceClient;
-use Google\Ads\GoogleAds\V8\Services\BiddingStrategyServiceClient;
-use Google\Ads\GoogleAds\V8\Services\BiddingStrategySimulationServiceClient;
-use Google\Ads\GoogleAds\V8\Services\BillingSetupServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignAssetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignAudienceViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignBidModifierServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignBudgetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignCriterionServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignCriterionSimulationServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignDraftServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignExperimentServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignExtensionSettingServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignFeedServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignLabelServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignSharedSetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CampaignSimulationServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CarrierConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ChangeStatusServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ClickViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CombinedAudienceServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ConversionAdjustmentUploadServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ConversionCustomVariableServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ConversionUploadServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CurrencyConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomAudienceServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerAssetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerClientLinkServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerClientServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerExtensionSettingServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerFeedServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerLabelServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerManagerLinkServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerNegativeCriterionServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerUserAccessInvitationServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomerUserAccessServiceClient;
-use Google\Ads\GoogleAds\V8\Services\CustomInterestServiceClient;
-use Google\Ads\GoogleAds\V8\Services\DetailedDemographicServiceClient;
-use Google\Ads\GoogleAds\V8\Services\DetailPlacementViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\DisplayKeywordViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\DistanceViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\DomainCategoryServiceClient;
-use Google\Ads\GoogleAds\V8\Services\DynamicSearchAdsSearchTermViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ExpandedLandingPageViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ExtensionFeedItemServiceClient;
-use Google\Ads\GoogleAds\V8\Services\FeedItemServiceClient;
-use Google\Ads\GoogleAds\V8\Services\FeedItemSetLinkServiceClient;
-use Google\Ads\GoogleAds\V8\Services\FeedItemSetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\FeedItemTargetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\FeedMappingServiceClient;
-use Google\Ads\GoogleAds\V8\Services\FeedPlaceholderViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\FeedServiceClient;
-use Google\Ads\GoogleAds\V8\Services\GenderViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\GeographicViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\GeoTargetConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\GoogleAdsFieldServiceClient;
-use Google\Ads\GoogleAds\V8\Services\GoogleAdsServiceClient;
-use Google\Ads\GoogleAds\V8\Services\GroupPlacementViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\HotelGroupViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\HotelPerformanceViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\IncomeRangeViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\InvoiceServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordPlanAdGroupKeywordServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordPlanAdGroupServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordPlanCampaignKeywordServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordPlanCampaignServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordPlanIdeaServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordPlanServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordThemeConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\KeywordViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\LabelServiceClient;
-use Google\Ads\GoogleAds\V8\Services\LandingPageViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\LanguageConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\LifeEventServiceClient;
-use Google\Ads\GoogleAds\V8\Services\LocationViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ManagedPlacementViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\MediaFileServiceClient;
-use Google\Ads\GoogleAds\V8\Services\MerchantCenterLinkServiceClient;
-use Google\Ads\GoogleAds\V8\Services\MobileAppCategoryConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\MobileDeviceConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\OfflineUserDataJobServiceClient;
-use Google\Ads\GoogleAds\V8\Services\OperatingSystemVersionConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\PaidOrganicSearchTermViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ParentalStatusViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\PaymentsAccountServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ProductBiddingCategoryConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ProductGroupViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ReachPlanServiceClient;
-use Google\Ads\GoogleAds\V8\Services\RecommendationServiceClient;
-use Google\Ads\GoogleAds\V8\Services\RemarketingActionServiceClient;
-use Google\Ads\GoogleAds\V8\Services\SearchTermViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\SharedCriterionServiceClient;
-use Google\Ads\GoogleAds\V8\Services\SharedSetServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ShoppingPerformanceViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\SmartCampaignSearchTermViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\SmartCampaignSettingServiceClient;
-use Google\Ads\GoogleAds\V8\Services\SmartCampaignSuggestServiceClient;
-use Google\Ads\GoogleAds\V8\Services\ThirdPartyAppAnalyticsLinkServiceClient;
-use Google\Ads\GoogleAds\V8\Services\TopicConstantServiceClient;
-use Google\Ads\GoogleAds\V8\Services\TopicViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\UserDataServiceClient;
-use Google\Ads\GoogleAds\V8\Services\UserInterestServiceClient;
-use Google\Ads\GoogleAds\V8\Services\UserListServiceClient;
-use Google\Ads\GoogleAds\V8\Services\UserLocationViewServiceClient;
-use Google\Ads\GoogleAds\V8\Services\VideoServiceClient;
-use Google\Ads\GoogleAds\V8\Services\WebpageViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AccessibleBiddingStrategyServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AccountBudgetProposalServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AccountBudgetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AccountLinkServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupAdAssetViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupAdLabelServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupAdServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupAssetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupAudienceViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupBidModifierServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupCriterionCustomizerServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupCriterionLabelServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupCriterionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupCriterionSimulationServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupCustomizerServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupExtensionSettingServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupFeedServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupLabelServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdGroupSimulationServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdParameterServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdScheduleViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AdServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AgeRangeViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetFieldTypeViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetGroupAssetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetGroupListingGroupFilterServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetGroupServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetSetAssetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetSetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\BatchJobServiceClient;
+use Google\Ads\GoogleAds\V9\Services\BiddingDataExclusionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\BiddingSeasonalityAdjustmentServiceClient;
+use Google\Ads\GoogleAds\V9\Services\BiddingStrategyServiceClient;
+use Google\Ads\GoogleAds\V9\Services\BiddingStrategySimulationServiceClient;
+use Google\Ads\GoogleAds\V9\Services\BillingSetupServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignAssetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignAssetSetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignAudienceViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignBidModifierServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignBudgetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignConversionGoalServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignCriterionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignCriterionSimulationServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignCustomizerServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignDraftServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignExperimentServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignExtensionSettingServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignFeedServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignLabelServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignSharedSetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignSimulationServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CarrierConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ChangeStatusServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ClickViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CombinedAudienceServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ConversionAdjustmentUploadServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ConversionCustomVariableServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ConversionGoalCampaignConfigServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ConversionUploadServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ConversionValueRuleServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ConversionValueRuleSetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CurrencyConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomAudienceServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomConversionGoalServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerAssetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerClientLinkServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerClientServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerConversionGoalServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerCustomizerServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerExtensionSettingServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerFeedServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerLabelServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerManagerLinkServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerNegativeCriterionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerUserAccessInvitationServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerUserAccessServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomInterestServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomizerAttributeServiceClient;
+use Google\Ads\GoogleAds\V9\Services\DetailedDemographicServiceClient;
+use Google\Ads\GoogleAds\V9\Services\DetailPlacementViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\DisplayKeywordViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\DistanceViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\DomainCategoryServiceClient;
+use Google\Ads\GoogleAds\V9\Services\DynamicSearchAdsSearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ExpandedLandingPageViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ExtensionFeedItemServiceClient;
+use Google\Ads\GoogleAds\V9\Services\FeedItemServiceClient;
+use Google\Ads\GoogleAds\V9\Services\FeedItemSetLinkServiceClient;
+use Google\Ads\GoogleAds\V9\Services\FeedItemSetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\FeedItemTargetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\FeedMappingServiceClient;
+use Google\Ads\GoogleAds\V9\Services\FeedPlaceholderViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\FeedServiceClient;
+use Google\Ads\GoogleAds\V9\Services\GenderViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\GeographicViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\GeoTargetConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\GoogleAdsFieldServiceClient;
+use Google\Ads\GoogleAds\V9\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V9\Services\GroupPlacementViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\HotelGroupViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\HotelPerformanceViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\IncomeRangeViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\InvoiceServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordPlanAdGroupKeywordServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordPlanAdGroupServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordPlanCampaignKeywordServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordPlanCampaignServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordPlanIdeaServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordPlanServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordThemeConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\KeywordViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\LabelServiceClient;
+use Google\Ads\GoogleAds\V9\Services\LandingPageViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\LanguageConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\LifeEventServiceClient;
+use Google\Ads\GoogleAds\V9\Services\LocationViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ManagedPlacementViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\MediaFileServiceClient;
+use Google\Ads\GoogleAds\V9\Services\MerchantCenterLinkServiceClient;
+use Google\Ads\GoogleAds\V9\Services\MobileAppCategoryConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\MobileDeviceConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\OfflineUserDataJobServiceClient;
+use Google\Ads\GoogleAds\V9\Services\OperatingSystemVersionConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\PaidOrganicSearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ParentalStatusViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\PaymentsAccountServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ProductBiddingCategoryConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ProductGroupViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ReachPlanServiceClient;
+use Google\Ads\GoogleAds\V9\Services\RecommendationServiceClient;
+use Google\Ads\GoogleAds\V9\Services\RemarketingActionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\SearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\SharedCriterionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\SharedSetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ShoppingPerformanceViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\SmartCampaignSearchTermViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\SmartCampaignSettingServiceClient;
+use Google\Ads\GoogleAds\V9\Services\SmartCampaignSuggestServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ThirdPartyAppAnalyticsLinkServiceClient;
+use Google\Ads\GoogleAds\V9\Services\TopicConstantServiceClient;
+use Google\Ads\GoogleAds\V9\Services\TopicViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\UserDataServiceClient;
+use Google\Ads\GoogleAds\V9\Services\UserInterestServiceClient;
+use Google\Ads\GoogleAds\V9\Services\UserListServiceClient;
+use Google\Ads\GoogleAds\V9\Services\UserLocationViewServiceClient;
+use Google\Ads\GoogleAds\V9\Services\VideoServiceClient;
+use Google\Ads\GoogleAds\V9\Services\WebpageViewServiceClient;
 
 /**
  * Contains service client factory methods.
@@ -170,6 +190,8 @@ trait ServiceClientFactoryTrait {
 			self::$CREDENTIALS_LOADER_KEY => $this->getOAuth2Credential(),
 			self::$DEVELOPER_TOKEN_KEY    => '',
 			self::$TRANSPORT_KEY          => 'rest',
+			'libName'                     => Constants::LIBRARY_NAME,
+			'libVersion'                  => Constants::LIBRARY_VERSION,
 		];
 
 		if ( ! empty( $this->getEndpoint() ) ) {
@@ -258,6 +280,13 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return AdGroupCriterionCustomizerServiceClient
+	 */
+	public function getAdGroupCriterionCustomizerServiceClient(): AdGroupCriterionCustomizerServiceClient {
+		return new AdGroupCriterionCustomizerServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return AdGroupCriterionLabelServiceClient
 	 */
 	public function getAdGroupCriterionLabelServiceClient(): AdGroupCriterionLabelServiceClient {
@@ -276,6 +305,13 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getAdGroupCriterionSimulationServiceClient(): AdGroupCriterionSimulationServiceClient {
 		return new AdGroupCriterionSimulationServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AdGroupCustomizerServiceClient
+	 */
+	public function getAdGroupCustomizerServiceClient(): AdGroupCustomizerServiceClient {
+		return new AdGroupCustomizerServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
@@ -349,6 +385,27 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return AssetGroupAssetServiceClient
+	 */
+	public function getAssetGroupAssetServiceClient(): AssetGroupAssetServiceClient {
+		return new AssetGroupAssetServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AssetGroupListingGroupFilterServiceClient
+	 */
+	public function getAssetGroupListingGroupFilterServiceClient(): AssetGroupListingGroupFilterServiceClient {
+		return new AssetGroupListingGroupFilterServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AssetGroupServiceClient
+	 */
+	public function getAssetGroupServiceClient(): AssetGroupServiceClient {
+		return new AssetGroupServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return AssetServiceClient
 	 */
 	public function getAssetServiceClient(): AssetServiceClient {
@@ -356,10 +413,38 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return AssetSetAssetServiceClient
+	 */
+	public function getAssetSetAssetServiceClient(): AssetSetAssetServiceClient {
+		return new AssetSetAssetServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AssetSetServiceClient
+	 */
+	public function getAssetSetServiceClient(): AssetSetServiceClient {
+		return new AssetSetServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return BatchJobServiceClient
 	 */
 	public function getBatchJobServiceClient(): BatchJobServiceClient {
 		return new BatchJobServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return BiddingDataExclusionServiceClient
+	 */
+	public function getBiddingDataExclusionServiceClient(): BiddingDataExclusionServiceClient {
+		return new BiddingDataExclusionServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return BiddingSeasonalityAdjustmentServiceClient
+	 */
+	public function getBiddingSeasonalityAdjustmentServiceClient(): BiddingSeasonalityAdjustmentServiceClient {
+		return new BiddingSeasonalityAdjustmentServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
@@ -391,6 +476,13 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return CampaignAssetSetServiceClient
+	 */
+	public function getCampaignAssetSetServiceClient(): CampaignAssetSetServiceClient {
+		return new CampaignAssetSetServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return CampaignAudienceViewServiceClient
 	 */
 	public function getCampaignAudienceViewServiceClient(): CampaignAudienceViewServiceClient {
@@ -412,6 +504,13 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return CampaignConversionGoalServiceClient
+	 */
+	public function getCampaignConversionGoalServiceClient(): CampaignConversionGoalServiceClient {
+		return new CampaignConversionGoalServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return CampaignCriterionServiceClient
 	 */
 	public function getCampaignCriterionServiceClient(): CampaignCriterionServiceClient {
@@ -423,6 +522,13 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getCampaignCriterionSimulationServiceClient(): CampaignCriterionSimulationServiceClient {
 		return new CampaignCriterionSimulationServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CampaignCustomizerServiceClient
+	 */
+	public function getCampaignCustomizerServiceClient(): CampaignCustomizerServiceClient {
+		return new CampaignCustomizerServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
@@ -531,10 +637,31 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return ConversionGoalCampaignConfigServiceClient
+	 */
+	public function getConversionGoalCampaignConfigServiceClient(): ConversionGoalCampaignConfigServiceClient {
+		return new ConversionGoalCampaignConfigServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return ConversionUploadServiceClient
 	 */
 	public function getConversionUploadServiceClient(): ConversionUploadServiceClient {
 		return new ConversionUploadServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return ConversionValueRuleServiceClient
+	 */
+	public function getConversionValueRuleServiceClient(): ConversionValueRuleServiceClient {
+		return new ConversionValueRuleServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return ConversionValueRuleSetServiceClient
+	 */
+	public function getConversionValueRuleSetServiceClient(): ConversionValueRuleSetServiceClient {
+		return new ConversionValueRuleSetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
@@ -549,6 +676,13 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getCustomAudienceServiceClient(): CustomAudienceServiceClient {
 		return new CustomAudienceServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomConversionGoalServiceClient
+	 */
+	public function getCustomConversionGoalServiceClient(): CustomConversionGoalServiceClient {
+		return new CustomConversionGoalServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
@@ -570,6 +704,20 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getCustomerClientServiceClient(): CustomerClientServiceClient {
 		return new CustomerClientServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomerConversionGoalServiceClient
+	 */
+	public function getCustomerConversionGoalServiceClient(): CustomerConversionGoalServiceClient {
+		return new CustomerConversionGoalServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomerCustomizerServiceClient
+	 */
+	public function getCustomerCustomizerServiceClient(): CustomerCustomizerServiceClient {
+		return new CustomerCustomizerServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
@@ -633,6 +781,13 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getCustomInterestServiceClient(): CustomInterestServiceClient {
 		return new CustomInterestServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomizerAttributeServiceClient
+	 */
+	public function getCustomizerAttributeServiceClient(): CustomizerAttributeServiceClient {
+		return new CustomizerAttributeServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**

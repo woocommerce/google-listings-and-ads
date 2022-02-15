@@ -8,23 +8,13 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
+import { useAppDispatch } from '.~/data';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import createCampaign from '.~/apis/createCampaign';
 
 export default function useSetupCompleteCallback() {
+	const { createAdsCampaign } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
 	const [ loading, setLoading ] = useState( false );
-
-	const createCampaignCallback = useCallback( ( amount, country ) => {
-		return createCampaign( amount, country ).catch( () => {
-			return Promise.reject(
-				__(
-					'Unable to launch your ads campaign. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
-		} );
-	}, [] );
 
 	const completeAdsSetup = useCallback( () => {
 		const options = {
@@ -32,27 +22,26 @@ export default function useSetupCompleteCallback() {
 			method: 'POST',
 		};
 		return apiFetch( options ).catch( () => {
-			return Promise.reject(
+			createNotice(
+				'error',
 				__(
 					'Unable to complete your ads setup. Please try again later.',
 					'google-listings-and-ads'
 				)
 			);
+			return Promise.reject();
 		} );
-	}, [] );
+	}, [ createNotice ] );
 
 	const handleFinishSetup = useCallback(
 		( amount, country, onCompleted ) => {
 			setLoading( true );
-			createCampaignCallback( amount, country )
+			createAdsCampaign( amount, country )
 				.then( completeAdsSetup )
 				.then( onCompleted )
-				.catch( ( errorMessage ) => {
-					createNotice( 'error', errorMessage );
-				} )
-				.then( () => setLoading( false ) );
+				.catch( () => setLoading( false ) );
 		},
-		[ createCampaignCallback, completeAdsSetup, createNotice ]
+		[ createAdsCampaign, completeAdsSetup ]
 	);
 
 	return [ handleFinishSetup, loading ];

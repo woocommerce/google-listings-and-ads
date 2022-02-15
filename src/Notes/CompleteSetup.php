@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
+use stdClass;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -36,9 +37,9 @@ class CompleteSetup extends AbstractNote implements MerchantCenterAwareInterface
 	 */
 	public function get_entry(): NoteEntry {
 		$note = new NoteEntry();
-		$note->set_title( __( 'Complete your setup on Google', 'google-listings-and-ads' ) );
+		$note->set_title( __( 'Reach more shoppers with free listings on Google', 'google-listings-and-ads' ) );
 		$note->set_content( __( 'Finish setting up Google Listings & Ads to list your products on Google for free and promote them with paid ads.', 'google-listings-and-ads' ) );
-		$note->set_content_data( (object) [] );
+		$note->set_content_data( new stdClass() );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_layout( 'plain' );
 		$note->set_image( '' );
