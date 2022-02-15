@@ -131,25 +131,27 @@ export default function EstimatedShippingRatesCard( {
 						);
 					} ) }
 					{ actualCountryCount >= 1 && remainingCount >= 1 && (
-						<AppButtonModalTrigger
-							button={
-								<Button
-									isSecondary
-									icon={ <GridiconPlusSmall /> }
-								>
-									{ __(
-										'Add another rate',
-										'google-listings-and-ads'
-									) }
-								</Button>
-							}
-							modal={
-								<AddRateModal
-									countries={ remainingCountries }
-									onSubmit={ handleAdd }
-								/>
-							}
-						/>
+						<div>
+							<AppButtonModalTrigger
+								button={
+									<Button
+										isSecondary
+										icon={ <GridiconPlusSmall /> }
+									>
+										{ __(
+											'Add another rate',
+											'google-listings-and-ads'
+										) }
+									</Button>
+								}
+								modal={
+									<AddRateModal
+										countries={ remainingCountries }
+										onSubmit={ handleAdd }
+									/>
+								}
+							/>
+						</div>
 					) }
 				</VerticalGapLayout>
 			</Section.Card.Body>
