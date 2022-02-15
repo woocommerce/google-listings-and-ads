@@ -26,11 +26,11 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
  * const { currencyConfig, hasFinishedResolution, formatAmount } = useAdsCurrency()
  * console.log( hasFinishedResolution ) // true
  *
- * console.log( currencyConfig.config )          // { code: 'CAD', symbol: '$', decimalSeparator: '.', thousandSeparator: ',', precision: 2, symbolPosition: 'left_space', priceFormat }
+ * console.log( currencyConfig.config )          // { code: 'CAD', symbol: '$', decimalSeparator: '.', thousandSeparator: ',', precision: 2, priceFormat: '%1$s %2$s' }
  * console.log( formatAmount( 1234.567 ) )       // '$ 1,234.57'
  * console.log( formatAmount( 1234.567, true ) ) // 'CAD 1,234.57'
  *
- * console.log( currencyConfig.config )          // { code: 'PLN', symbol: 'zł', decimalSeparator: ',', thousandSeparator: '.', precision: 1, … }
+ * console.log( currencyConfig.config )          // { code: 'PLN', symbol: 'zł', decimalSeparator: ',', thousandSeparator: '.', precision: 1, priceFormat: '%2$s %1$s' }
  * console.log( formatAmount( 1234.567 ) )       // '1.234,6 zł'
  * console.log( formatAmount( 1234.567, true ) ) // '1.234,6 PLN'
  * ```
@@ -43,7 +43,7 @@ export default function useAdsCurrency() {
 	const storeCurrencySetting = useStoreCurrency();
 	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
-	// Apply store's foramtting data without the Ad's currency and symbol.
+	// Apply store's foramtting config with the Ad's currency and symbol.
 	const { currency: code = '', symbol = '' } = googleAdsAccount || {};
 	const adsCurrencyConfig = useMemo( () => {
 		return {

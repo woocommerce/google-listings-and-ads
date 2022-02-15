@@ -35,7 +35,7 @@ export default function useMetricsWithFormatter( metrics ) {
 				// Use currency code to make sure it's nonambiguous.
 				return formatAmount( value, true );
 			}
-			// All non-currency values on report pages are semantically integer.
+			// All non-amount values on report pages are semantically integer.
 			// Avoid confusing information in the presence ('.00') of decimal.
 			return formatNumber( value, 0 );
 		}
