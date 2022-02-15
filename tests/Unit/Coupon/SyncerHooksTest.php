@@ -80,7 +80,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
             ->with( $this->equalTo( [$expected_coupon_entry] ) );
-
+        sleep(1);
         wp_trash_post( $coupon->get_id() );
     }
 
@@ -96,7 +96,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
         $this->delete_coupon_job->expects( $this->once() )
             ->method( 'schedule' )
             ->with( $this->equalTo( [$expected_coupon_entry] ) );
-
+        sleep(1);
         // force delete post
         wp_delete_post( $coupon->get_id(), true );
     }
