@@ -115,7 +115,8 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 		// Ensure all note names are deleted
 		if ( class_exists( Notes::class ) ) {
 			$note_names = [];
-			foreach ( $this->notes as $note ) {
+			$notes      = $this->container->get( Note::class );
+			foreach ( $notes as $note ) {
 				$note_names[] = $note->get_name();
 			}
 
