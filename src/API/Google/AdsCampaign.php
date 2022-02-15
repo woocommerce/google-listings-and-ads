@@ -147,7 +147,7 @@ class AdsCampaign implements OptionsAwareInterface {
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e ),
+				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
 	}
@@ -223,7 +223,7 @@ class AdsCampaign implements OptionsAwareInterface {
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e ),
+				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
 	}
