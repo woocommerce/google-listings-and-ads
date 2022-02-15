@@ -21,6 +21,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * NoteInitializer class.
  *
+ *  * ContainerAware used to access:
+ * - Note
+ *
  * @since 1.7.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
