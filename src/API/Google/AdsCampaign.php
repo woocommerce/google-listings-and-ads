@@ -88,7 +88,7 @@ class AdsCampaign implements OptionsAwareInterface {
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
 	}
@@ -140,14 +140,14 @@ class AdsCampaign implements OptionsAwareInterface {
 			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
 				throw new Exception(
 					__( 'A campaign with this name already exists', 'google-listings-and-ads' ),
-					$e->getCode()
+					$this->map_grpc_code_to_http_status_code( $e )
 				);
 			}
 
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
 	}
@@ -178,7 +178,7 @@ class AdsCampaign implements OptionsAwareInterface {
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error retrieving campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
 	}
@@ -223,7 +223,7 @@ class AdsCampaign implements OptionsAwareInterface {
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
 	}
@@ -255,14 +255,14 @@ class AdsCampaign implements OptionsAwareInterface {
 			if ( $this->has_api_exception_error( $e, 'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' ) ) {
 				throw new Exception(
 					__( 'This campaign has already been deleted', 'google-listings-and-ads' ),
-					$e->getCode()
+					$this->map_grpc_code_to_http_status_code( $e )
 				);
 			}
 
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error deleting campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
 	}
