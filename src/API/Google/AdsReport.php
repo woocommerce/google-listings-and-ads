@@ -13,8 +13,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\V8\Common\Segments;
-use Google\Ads\GoogleAds\V8\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V9\Common\Segments;
+use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
 
 /**

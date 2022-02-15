@@ -8,8 +8,8 @@ import { SummaryNumber } from '@woocommerce/components';
  * Internal dependencies
  */
 import { glaData, REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
+import useAdsCurrency from '.~/hooks/useAdsCurrency';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
-import useCurrencyFactory from '.~/hooks/useCurrencyFactory';
 import usePerformance from './usePerformance';
 import PerformanceCard from './performance-card';
 import PaidCampaignPromotionCard from './paid-campaign-promotion-card';
@@ -54,7 +54,9 @@ const FreePerformanceCard = () => {
 };
 
 const PaidPerformanceCard = () => {
-	const { formatAmount } = useCurrencyFactory();
+	// The amount of Total Sales and Total Spend are given in the Ads' currency.
+	// We use currency code to make sure it's nonambiguous.
+	const { formatAmount } = useAdsCurrency();
 	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
 	return (
@@ -67,15 +69,21 @@ const PaidPerformanceCard = () => {
 				<SummaryNumber
 					key="1"
 					label={ __( 'Total Sales', 'google-listings-and-ads' ) }
-					value={ formatAmount( loadedData.sales.value ) }
-					prevValue={ formatAmount( loadedData.sales.prevValue ) }
+					value={ formatAmount( loadedData.sales.value, true ) }
+					prevValue={ formatAmount(
+						loadedData.sales.prevValue,
+						true
+					) }
 					delta={ loadedData.sales.delta }
 				/>,
 				<SummaryNumber
 					key="2"
 					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-					value={ formatAmount( loadedData.spend.value ) }
-					prevValue={ formatAmount( loadedData.spend.prevValue ) }
+					value={ formatAmount( loadedData.spend.value, true ) }
+					prevValue={ formatAmount(
+						loadedData.spend.prevValue,
+						true
+					) }
 					delta={ loadedData.spend.delta }
 				/>,
 			] }

@@ -32,12 +32,12 @@ const CountryModal = ( props ) => {
 			<table>
 				<tbody>
 					{ countryAmount.map( ( el, idx ) => {
-						const [ countryCode, amount ] = el;
+						const [ countryCode, amount, currencyCode ] = el;
 
 						return (
 							<tr key={ idx }>
 								<td>{ map[ countryCode ] }</td>
-								<td>{ amount }</td>
+								<td>{ `${ amount } ${ currencyCode }` }</td>
 							</tr>
 						);
 					} ) }

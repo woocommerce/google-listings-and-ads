@@ -17,7 +17,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\Util\V8\ResourceNames;
+use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\ApiCore\ApiException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -440,6 +440,7 @@ class Proxy implements OptionsAwareInterface {
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 
+		/** @var AdsAccountState $state */
 		$state      = $this->container->get( AdsAccountState::class );
 		$incomplete = $state->last_incomplete_step();
 		if ( ! empty( $incomplete ) ) {

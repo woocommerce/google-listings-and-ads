@@ -1,5 +1,22 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.11.1 - 2022-02-10 =
+* Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
+
+= 1.11.0 - 2022-02-02 =
+* Add - Unit tests for the Ads AccountController and AccountService.
+* Fix - Failure handling was not correctly displayed when the ads campaign creation and editing failed.
+* Fix - Fix the incorrect text color of the disabled "Disconnect account" buttons on the Settings page.
+* Fix - Makes country dropdown list always below the input box.
+* Fix - Prevent page flickering when loading admin pages of this extension.
+* Tweak - Change the importing way of lodash package to reduce the bundle size by 4 KB.
+* Tweak - Clean up outdated workarounds for WooCommerce 5.7.
+* Update - Google Ads API to V9.
+* Update - Google Content API library to 2.12.1.
+* Update - Inbox notifications have update promotion information from Google.
+* Update - Update Google Ads credit incentive in WordPress.org plugin landing page.
+* Update - Update Google Ads credit incentive info in plugin UI.
+
 = 1.10.0 - 2022-01-13 =
 * Add - Bulk update channel visibility for coupons.
 * Add - CES prompts for initial setup and campaign creation.

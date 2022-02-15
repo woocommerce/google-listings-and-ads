@@ -7,9 +7,9 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
-import useApiFetchEffect from '.~/hooks/useApiFetchEffect';
+import useLayout from '.~/hooks/useLayout';
+import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import EditPaidAdsCampaignForm from './edit-paid-ads-campaign-form';
 import HelpIconButton from '.~/components/help-icon-button';
@@ -18,27 +18,28 @@ const dashboardURL = getNewPath( {}, '/google/dashboard', {} );
 const helpButton = <HelpIconButton eventContext="edit-ads" />;
 
 const EditPaidAdsCampaign = () => {
-	const { programId } = getQuery();
-	const { loading, error, data: campaignData } = useApiFetchEffect( {
-		path: `/wc/gla/ads/campaigns/${ programId }`,
-	} );
+	useLayout( 'full-content' );
 
-	if ( loading ) {
+	const id = Number( getQuery().programId );
+	const { loaded, data: campaigns } = useAdsCampaigns();
+	const campaignData = campaigns?.find( ( el ) => el.id === id );
+
+	if ( ! loaded ) {
 		return (
-			<FullContainer>
+			<>
 				<TopBar
 					title={ __( 'Loading…', 'google-listings-and-ads' ) }
 					helpButton={ helpButton }
 					backHref={ dashboardURL }
 				/>
 				<AppSpinner />
-			</FullContainer>
+			</>
 		);
 	}
 
-	if ( error ) {
+	if ( ! campaignData ) {
 		return (
-			<FullContainer>
+			<>
 				<TopBar
 					title={ __( 'Edit Campaign', 'google-listings-and-ads' ) }
 					helpButton={ helpButton }
@@ -50,12 +51,12 @@ const EditPaidAdsCampaign = () => {
 						'google-listings-and-ads'
 					) }
 				</div>
-			</FullContainer>
+			</>
 		);
 	}
 
 	return (
-		<FullContainer>
+		<>
 			<TopBar
 				title={ sprintf(
 					// translators: %s: campaign's name.
@@ -66,7 +67,7 @@ const EditPaidAdsCampaign = () => {
 				backHref={ dashboardURL }
 			/>
 			<EditPaidAdsCampaignForm campaign={ campaignData } />
-		</FullContainer>
+		</>
 	);
 };
 
