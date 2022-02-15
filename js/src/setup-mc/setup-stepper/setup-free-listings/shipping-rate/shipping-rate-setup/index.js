@@ -11,6 +11,7 @@ import AppSpinner from '.~/components/app-spinner';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import './index.scss';
 
+// TODO: Delete this, no longer in use.
 const ShippingRateSetup = () => {
 	const {
 		loading: loadingShippingRates,

@@ -13,9 +13,9 @@ import useSettings from '.~/components/free-listings/configure-product-listings/
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import FormContent from './form-content';
 import AppButton from '.~/components/app-button';
-import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import useShippingRatesWithSavedSuggestions from './useShippingRatesWithSavedSuggestions';
 
 /**
  * Setup step to configure free listings.
@@ -28,7 +28,10 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 const SetupFreeListings = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { settings } = useSettings();
-	const { data: shippingRatesData } = useShippingRates();
+	const {
+		loading: loadingShippingRates,
+		data: dataShippingRates,
+	} = useShippingRatesWithSavedSuggestions();
 	const { data: shippingTimesData } = useShippingTimes();
 	const {
 		data: finalCountryCodesData,
@@ -36,7 +39,7 @@ const SetupFreeListings = ( props ) => {
 
 	if (
 		! settings ||
-		! shippingRatesData ||
+		loadingShippingRates ||
 		! shippingTimesData ||
 		! finalCountryCodesData
 	) {
@@ -71,6 +74,7 @@ const SetupFreeListings = ( props ) => {
 					shipping_rate: settings.shipping_rate || 'automatic',
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
+					shipping_country_rates: dataShippingRates,
 				} }
 				validate={ handleValidate }
 				onSubmit={ handleSubmitCallback }
@@ -80,7 +84,7 @@ const SetupFreeListings = ( props ) => {
 
 					const errors = checkErrors(
 						values,
-						shippingRatesData,
+						dataShippingRates,
 						shippingTimesData,
 						finalCountryCodesData
 					);

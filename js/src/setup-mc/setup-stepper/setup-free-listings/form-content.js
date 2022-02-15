@@ -28,7 +28,10 @@ const FormContent = ( props ) => {
 
 	return (
 		<StepContent>
-			<ShippingRateSection formProps={ formProps } />
+			<ShippingRateSection
+				formProps={ formProps }
+				audienceCountries={ audienceCountries }
+			/>
 			<ShippingTimeSection formProps={ formProps } />
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate formProps={ formProps } />
