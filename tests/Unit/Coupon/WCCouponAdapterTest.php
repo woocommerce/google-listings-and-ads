@@ -145,7 +145,7 @@ class WCCouponAdapterTest extends UnitTest {
 	        'post_date_gmt' => $postdate,
 	    );
 	    wp_update_post( $post_args);
-	    sleep(1);
+
 	    $adapted_coupon = new WCCouponAdapter(
 	        [
 	            'wc_coupon'     => $coupon,

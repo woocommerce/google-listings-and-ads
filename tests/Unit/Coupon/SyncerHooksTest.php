@@ -82,7 +82,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
             ->with( $this->callback( function ( $entries ) use ( $expected_coupon_entry ) {
                 return $entries[0]->get_wc_coupon_id() === $expected_coupon_entry->get_wc_coupon_id();
             } ) );
-        sleep(1);
+
         wp_trash_post( $coupon->get_id() );
     }
 
@@ -100,7 +100,7 @@ class SyncerHooksTest extends ContainerAwareUnitTest {
             ->with( $this->callback( function ( $entries ) use ( $expected_coupon_entry ) {
                 return $entries[0]->get_wc_coupon_id() === $expected_coupon_entry->get_wc_coupon_id();
             } ) );
-        sleep(1);
+
         // force delete post
         wp_delete_post( $coupon->get_id(), true );
     }
