@@ -32,6 +32,7 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 
 	use ValidateInterface;
 	use ContainerAwareTrait;
+
 	/**
 	 * Hook name for daily cron.
 	 */
