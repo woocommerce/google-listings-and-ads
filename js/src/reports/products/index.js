@@ -14,6 +14,7 @@ import {
 	REPORT_SOURCE_DEFAULT,
 } from '.~/constants';
 import useProductsReport from './useProductsReport';
+import useMetricsWithFormatter from '../useMetricsWithFormatter';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import AppSpinner from '.~/components/app-spinner';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
@@ -23,42 +24,36 @@ import SummarySection from '../summary-section';
 import ChartSection from '../chart-section';
 import CompareProductsTableCard from './compare-products-table-card';
 import ReportsNavigation from '../reports-navigation';
-import { formatNumericCell, formatAdsCurrencyCell } from '../format-amount';
 
 /**
  * Available metrics and their human-readable labels.
  *
- * @type {Array<Metric>}
+ * @type {Array<import('../index.js').MetricSchema>}
  */
 const freeMetrics = [
 	{
 		key: 'clicks',
 		label: __( 'Clicks', 'google-listings-and-ads' ),
-		formatFn: formatNumericCell,
 	},
 	{
 		key: 'impressions',
 		label: __( 'Impressions', 'google-listings-and-ads' ),
-		formatFn: formatNumericCell,
 	},
 ];
 const paidMetrics = [
 	{
 		key: 'sales',
 		label: __( 'Total Sales', 'google-listings-and-ads' ),
-		formatFn: formatAdsCurrencyCell,
 		isCurrency: true,
 	},
 	{
 		key: 'conversions',
 		label: __( 'Conversions', 'google-listings-and-ads' ),
-		formatFn: formatNumericCell,
 	},
 	...freeMetrics,
 	{
 		key: 'spend',
 		label: __( 'Spend', 'google-listings-and-ads' ),
-		formatFn: formatAdsCurrencyCell,
 		isCurrency: true,
 	},
 ];
@@ -79,7 +74,10 @@ const ProductsReport = ( { hasPaidSource } ) => {
 
 	// Show only available data.
 	// Until ~Q4 2021, free listings, may not have all metrics.
-	const metrics = type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics;
+	const metrics = useMetricsWithFormatter(
+		type === REPORT_SOURCE_PAID ? paidMetrics : freeMetrics
+	);
+
 	const {
 		loaded,
 		data: { totals, intervals, products },
@@ -136,7 +134,3 @@ const ProductsReportPage = () => {
 };
 
 export default ProductsReportPage;
-
-/**
- * @typedef {import("../index.js").Metric} Metric
- */

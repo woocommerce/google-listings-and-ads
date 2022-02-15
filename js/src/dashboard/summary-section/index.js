@@ -8,8 +8,7 @@ import { SummaryNumber } from '@woocommerce/components';
  * Internal dependencies
  */
 import { glaData, REPORT_SOURCE_PAID, REPORT_SOURCE_FREE } from '.~/constants';
-import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
-import formatAmountWithCode from '.~/utils/formatAmountWithCode';
+import useAdsCurrency from '.~/hooks/useAdsCurrency';
 import useCurrencyFormat from '.~/hooks/useCurrencyFormat';
 import usePerformance from './usePerformance';
 import PerformanceCard from './performance-card';
@@ -57,8 +56,7 @@ const FreePerformanceCard = () => {
 const PaidPerformanceCard = () => {
 	// The amount of Total Sales and Total Spend are given in the Ads' currency.
 	// We use currency code to make sure it's nonambiguous.
-	// Use just `useAdsCurrency`'s/`getCurrencyConfig`'s  `formatAmount`s once https://github.com/woocommerce/woocommerce-admin/pull/7575 is released and accessible.
-	const { adsCurrencyConfig } = useAdsCurrencyConfig();
+	const { formatAmount } = useAdsCurrency();
 	const { data, loaded } = usePerformance( REPORT_SOURCE_PAID );
 
 	return (
@@ -71,26 +69,20 @@ const PaidPerformanceCard = () => {
 				<SummaryNumber
 					key="1"
 					label={ __( 'Total Sales', 'google-listings-and-ads' ) }
-					value={ formatAmountWithCode(
-						adsCurrencyConfig,
-						loadedData.sales.value
-					) }
-					prevValue={ formatAmountWithCode(
-						adsCurrencyConfig,
-						loadedData.sales.prevValue
+					value={ formatAmount( loadedData.sales.value, true ) }
+					prevValue={ formatAmount(
+						loadedData.sales.prevValue,
+						true
 					) }
 					delta={ loadedData.sales.delta }
 				/>,
 				<SummaryNumber
 					key="2"
 					label={ __( 'Total Spend', 'google-listings-and-ads' ) }
-					value={ formatAmountWithCode(
-						adsCurrencyConfig,
-						loadedData.spend.value
-					) }
-					prevValue={ formatAmountWithCode(
-						adsCurrencyConfig,
-						loadedData.spend.prevValue
+					value={ formatAmount( loadedData.spend.value, true ) }
+					prevValue={ formatAmount(
+						loadedData.spend.prevValue,
+						true
 					) }
 					delta={ loadedData.spend.delta }
 				/>,
