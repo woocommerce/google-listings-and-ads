@@ -192,7 +192,7 @@ export default function EditFreeCampaign() {
 			await fetchSettingsSync();
 
 			createNotice(
-				'error',
+				'success',
 				__(
 					'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
 					'google-listings-and-ads'
