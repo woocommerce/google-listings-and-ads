@@ -176,7 +176,6 @@ export default function EditFreeCampaign() {
 
 	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
-		//       Put Submit button in pending state.
 		try {
 			await Promise.allSettled( [
 				saveTargetAudience( targetAudience ),
@@ -188,6 +187,7 @@ export default function EditFreeCampaign() {
 					( item ) => item.time
 				),
 			] );
+
 			// Sync data once our changes are saved, even partially succesfully.
 			await fetchSettingsSync();
 
@@ -208,13 +208,12 @@ export default function EditFreeCampaign() {
 				)
 			);
 		}
-		// TODO: Enable the submit button.
 	};
 
 	const handleStepClick = ( key ) => {
 		getHistory().push( getNewPath( { pageStep: key } ) );
 	};
-	// TODO: Wse ChooseAudience and SetupFreeListings customized for this page.
+
 	return (
 		<FullContainer>
 			<TopBar
