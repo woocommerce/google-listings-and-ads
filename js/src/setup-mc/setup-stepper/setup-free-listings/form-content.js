@@ -22,11 +22,15 @@ import useAutoSaveShippingRatesEffect from './useAutoSaveShippingRatesEffect';
 const FormContent = ( props ) => {
 	const { formProps, submitButton } = props;
 	const { values } = formProps;
+	const {
+		shipping_country_rates: shippingRatesValue,
+		...settingsValue
+	} = values;
 	const { data: audienceCountries } = useTargetAudienceFinalCountryCodes();
 	const shouldDisplayTaxRate = useDisplayTaxRate( audienceCountries );
 
-	useAutoSaveSettingsEffect( values );
-	useAutoSaveShippingRatesEffect( values.shipping_country_rates );
+	useAutoSaveSettingsEffect( settingsValue );
+	useAutoSaveShippingRatesEffect( shippingRatesValue );
 
 	return (
 		<StepContent>
