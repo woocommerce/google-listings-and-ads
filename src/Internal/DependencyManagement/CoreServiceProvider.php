@@ -50,6 +50,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -176,6 +177,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DeprecatedFilters::class      => true,
 		ShippingZone::class           => true,
 		AdsAccountService::class      => true,
+		MerchantAccountService::class => true,
 	];
 
 	/**
@@ -259,6 +261,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsAccountService::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( MerchantAccountService::class, ContainerInterface::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
