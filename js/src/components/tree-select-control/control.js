@@ -9,11 +9,25 @@ import { useRef } from '@wordpress/element';
  */
 import Tags from './tags';
 
+/**
+ * The Control Component renders a search input and also the Tags. It also tiggers the expand function on click
+ *
+ * @param {Object} props Component props
+ * @param {Array} props.tags Array of tags
+ * @param {string} props.instanceId Id of the component
+ * @param {string} props.placeholder Placeholder of the searcg input
+ * @param props.isExpanded
+ * @param props.disabled
+ * @param props.setExpanded
+ * @param props.onTagsChange
+ * @return {JSX.Element}
+ */
 const Control = ( {
 	tags = [],
 	instanceId,
 	placeholder,
 	isExpanded,
+	disabled,
 	setExpanded = () => {},
 	onTagsChange = () => {},
 } ) => {
@@ -37,7 +51,13 @@ const Control = ( {
 				inputRef.current.focus();
 			} }
 		>
-			{ hasTags && <Tags tags={ tags } onChange={ onTagsChange } /> }
+			{ hasTags && (
+				<Tags
+					disabled={ disabled }
+					tags={ tags }
+					onChange={ onTagsChange }
+				/>
+			) }
 
 			<div className="components-base-control__field">
 				<input
@@ -51,6 +71,7 @@ const Control = ( {
 					aria-autocomplete="list"
 					aria-expanded={ isExpanded }
 					aria-haspopup="true"
+					disabled={ disabled }
 					onFocus={ () => {
 						setExpanded( true );
 					} }

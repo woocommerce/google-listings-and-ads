@@ -9,104 +9,50 @@ import { fireEvent, render } from '@testing-library/react';
 import TreeSelectControl from '.~/components/tree-select-control/index';
 
 describe( 'TreeSelectControl Component', () => {
-	it( 'Renders', () => {
-		const { queryByRole } = render(
-			<TreeSelectControl
-				options={ [
-					{
-						id: 'EU',
-						name: 'Europe',
-						children: [
-							{ id: 'ES', name: 'Spain' },
-							{ id: 'FR', name: 'France' },
-							{ id: 'IT', name: 'Italy' },
-						],
-					},
-				] }
-			/>
-		);
-		expect( queryByRole( 'combobox' ) ).toBeTruthy();
-	} );
-
 	it( "Doesn't render without options", () => {
 		const { queryByRole } = render( <TreeSelectControl /> );
 		expect( queryByRole( 'combobox' ) ).toBeFalsy();
 	} );
 
-	it( 'Renders the provided options', () => {
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-		];
-
-		const { queryByLabelText } = render(
-			<TreeSelectControl options={ options } />
-		);
-
-		options.forEach( ( { children } ) => {
-			children.forEach( ( item ) => {
-				expect( queryByLabelText( item.name ) ).toBeTruthy();
-			} );
-		} );
-	} );
-
-	it( 'Renders with the selected values', () => {
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-		];
-
+	it( 'Renders the provided options and selected values', () => {
 		const selectedValues = [ 'ES' ];
 
-		const { queryByLabelText } = render(
+		const options = [
+			{
+				id: 'EU',
+				name: 'Europe',
+				children: [
+					{ id: 'ES', name: 'Spain' },
+					{ id: 'FR', name: 'France' },
+					{ id: 'IT', name: 'Italy' },
+				],
+			},
+		];
+
+		const { queryByLabelText, queryByRole } = render(
 			<TreeSelectControl options={ options } value={ selectedValues } />
 		);
+
+		const control = queryByRole( 'combobox' );
+		expect( queryByRole( 'listbox' ) ).toBeFalsy();
+		options.forEach( ( { children } ) => {
+			children.forEach( ( item ) => {
+				expect( queryByLabelText( item.name ) ).toBeFalsy();
+			} );
+		} );
+
+		fireEvent.click( control );
+		expect( queryByRole( 'listbox' ) ).toBeTruthy();
 
 		options.forEach( ( { children } ) => {
 			children.forEach( ( item ) => {
 				const checkbox = queryByLabelText( item.name );
+				expect( checkbox ).toBeTruthy();
 				expect( checkbox.checked ).toEqual(
 					selectedValues.includes( item.id )
 				);
 			} );
 		} );
-	} );
-
-	it( 'Can expand and collapse', async () => {
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-		];
-
-		const { queryByRole } = render(
-			<TreeSelectControl options={ options } placeholder="Select" />
-		);
-
-		const control = queryByRole( 'combobox' );
-		expect( queryByRole( 'listbox' ) ).toBeFalsy();
-		fireEvent.click( control );
-		expect( queryByRole( 'listbox' ) ).toBeTruthy();
 	} );
 
 	it( 'Calls onChange property with the selected values', () => {
@@ -131,7 +77,7 @@ describe( 'TreeSelectControl Component', () => {
 			},
 		];
 
-		const { rerender, queryByLabelText } = render(
+		const { rerender, queryByLabelText, queryByRole } = render(
 			<TreeSelectControl
 				options={ options }
 				value={ [] }
@@ -139,6 +85,8 @@ describe( 'TreeSelectControl Component', () => {
 			/>
 		);
 
+		const control = queryByRole( 'combobox' );
+		fireEvent.click( control );
 		let checkbox = queryByLabelText( 'Spain' );
 
 		fireEvent.click( checkbox );
@@ -205,6 +153,64 @@ describe( 'TreeSelectControl Component', () => {
 		expect( queryByLabelText( 'Select' ) ).toBeTruthy();
 	} );
 
-	it( 'Show tags', () => {} );
-	it( 'Disabled state show tags but does not allow to change', () => {} );
+	it( 'Shows tags with the selected values', async () => {
+		const onChange = jest.fn().mockName( 'on Change' );
+		const options = [
+			{
+				id: 'EU',
+				name: 'Europe',
+				children: [
+					{ id: 'ES', name: 'Spain' },
+					{ id: 'FR', name: 'France' },
+					{ id: 'IT', name: 'Italy' },
+				],
+			},
+		];
+
+		const { queryByText, queryByLabelText } = render(
+			<TreeSelectControl
+				onChange={ onChange }
+				options={ options }
+				value={ [ 'ES', 'IT' ] }
+			/>
+		);
+
+		expect( queryByText( 'Spain (1 of 2)' ) ).toBeTruthy();
+		expect( queryByText( 'Italy (2 of 2)' ) ).toBeTruthy();
+
+		const removeButton = queryByLabelText( 'Remove Italy' );
+		expect( removeButton ).toBeTruthy();
+		fireEvent.click( removeButton );
+		expect( onChange ).toHaveBeenCalledWith( [ 'ES' ] );
+	} );
+
+	it( 'Disabled state show tags but does not allow to change', () => {
+		const options = [
+			{
+				id: 'EU',
+				name: 'Europe',
+				children: [
+					{ id: 'ES', name: 'Spain' },
+					{ id: 'FR', name: 'France' },
+					{ id: 'IT', name: 'Italy' },
+				],
+			},
+		];
+
+		const { queryByText, queryByLabelText, queryByRole } = render(
+			<TreeSelectControl
+				disabled={ true }
+				options={ options }
+				value={ [ 'ES', 'IT' ] }
+			/>
+		);
+		const control = queryByRole( 'combobox' );
+		expect( queryByText( 'Spain (1 of 2)' ) ).toBeTruthy();
+		expect( queryByText( 'Italy (2 of 2)' ) ).toBeTruthy();
+		expect( queryByLabelText( 'Remove Italy' ) ).toBeFalsy();
+
+		expect( queryByRole( 'listbox' ) ).toBeFalsy();
+		fireEvent.click( control );
+		expect( queryByRole( 'listbox' ) ).toBeFalsy();
+	} );
 } );

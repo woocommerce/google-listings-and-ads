@@ -3,6 +3,7 @@
  */
 import { useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
+// eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group
 import { __experimentalUseFocusOutside as useFocusOutside } from '@wordpress/compose';
 
 /**
@@ -12,24 +13,47 @@ import Control from './control';
 import List from './list';
 import './index.scss';
 
-const TreeSelectControl = ( props ) => {
-	const {
-		className,
-		options = [],
-		disabled,
-		value = [],
-		label,
-		placeholder,
-		onChange = () => {},
-	} = props;
+/**
+ * The Option type Object. This is how we send the options to the selector.
+ *
+ * @typedef { Object } Option
+ * @property {string} id The unique ID for the option
+ * @property {string} name The name for the option
+ * @property {Option[]} [children] The children Option objects
+ */
 
+/**
+ * Renders a component with a searchable control, tags and a tree selector.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.id Component id
+ * @param {string} props.label Label for the component
+ * @param {string} props.placeholder Placeholder for the search control input
+ * @param {string} props.className The class name for this component
+ * @param {boolean} props.disabled Disables the component
+ * @param {Option[]} props.options Options to show in the component
+ * @param {{string}[]} props.value Selected values
+ * @param {Function} props.onChange Callback when the selector changes
+ *
+ * @return {JSX.Element|null} The component
+ */
+const TreeSelectControl = ( {
+	id,
+	label,
+	placeholder,
+	className,
+	disabled,
+	options = [],
+	value = [],
+	onChange = () => {},
+} ) => {
 	const [ isExpanded, setIsExpanded ] = useState( false );
 	const focusOutside = useFocusOutside( () => {
 		setIsExpanded( false );
 	} );
 
 	/**
-	 * Optimizes the performance getting the tags info
+	 * Optimizes the performance for getting the tags info
 	 *
 	 * @see getTags
 	 */
@@ -48,13 +72,25 @@ const TreeSelectControl = ( props ) => {
 		return null;
 	}
 
+	/**
+	 * Get formatted Tags from the selected values.
+	 *
+	 * @return {{name: {string}, id: {string}}[]} An array of Tags
+	 */
 	const getTags = () => {
-		return value.map( ( id ) => {
-			const option = optionsRepository[ id ];
-			return { id, name: option.name };
+		return value.map( ( key ) => {
+			const option = optionsRepository[ key ];
+			return { id: key, name: option.name };
 		} );
 	};
 
+	/**
+	 * Handles a change on the Tree List of options. Could be a click on a parent option
+	 * or a child option
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {Option} option The option to change
+	 */
 	const handleListChange = ( checked, option ) => {
 		if ( option.children?.length ) {
 			handleParentChange( checked, option );
@@ -63,6 +99,12 @@ const TreeSelectControl = ( props ) => {
 		}
 	};
 
+	/**
+	 * Handles a change of a child element.
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {Option} option The option to change
+	 */
 	const handleSingleChange = ( checked, option ) => {
 		const idPosition = value.indexOf( option.id );
 		const newValue = [ ...value ];
@@ -76,10 +118,12 @@ const TreeSelectControl = ( props ) => {
 		onChange( newValue );
 	};
 
-	const handleTagsChange = ( tags ) => {
-		onChange( [ ...tags.map( ( el ) => el.id ) ] );
-	};
-
+	/**
+	 * Handles a change of a Parent element.
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {Option} option The option to change
+	 */
 	const handleParentChange = ( checked, option ) => {
 		let newValue = [ ...value ];
 
@@ -105,6 +149,15 @@ const TreeSelectControl = ( props ) => {
 		onChange( newValue );
 	};
 
+	/**
+	 * Handles a change of a Tag element. We map them to Value format.
+	 *
+	 * @param {Array} tags List of current tags
+	 */
+	const handleTagsChange = ( tags ) => {
+		onChange( [ ...tags.map( ( el ) => el.id ) ] );
+	};
+
 	return (
 		<div
 			{ ...focusOutside }
@@ -115,7 +168,7 @@ const TreeSelectControl = ( props ) => {
 		>
 			{ !! label && (
 				<label
-					htmlFor={ `woocommerce-select-control-${ props.id }__control-input` }
+					htmlFor={ `woocommerce-select-control-${ id }__control-input` }
 					className="components-base-control__label"
 				>
 					{ label }
@@ -127,7 +180,7 @@ const TreeSelectControl = ( props ) => {
 				tags={ getTags() }
 				isExpanded={ isExpanded }
 				setExpanded={ setIsExpanded }
-				instanceId={ props.id }
+				instanceId={ id }
 				placeholder={ placeholder }
 				label={ label }
 				onTagsChange={ handleTagsChange }

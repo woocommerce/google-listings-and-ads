@@ -16,7 +16,8 @@ const ComponentTest = () => {
 	/**
 	 * For LocalSelectControl
 	 */
-	const [ selected, setSelected ] = useState( [] );
+	const [ selected, setSelected ] = useState( [ 'ES' ] );
+	const [ disabled, setDisabled ] = useState( false );
 
 	const treeSelectControlOptions = useMemo(
 		() => [
@@ -44,8 +45,16 @@ const ComponentTest = () => {
 
 	return (
 		<div>
+			<button
+				onClick={ () => {
+					setDisabled( ! disabled );
+				} }
+			>
+				Toggle Disable
+			</button>
 			<h2>TreeSelectControl</h2>
 			<TreeSelectControl
+				disabled={ disabled }
 				options={ treeSelectControlOptions }
 				value={ selected }
 				onChange={ setSelected }
@@ -57,6 +66,7 @@ const ComponentTest = () => {
 			<h2>Existing SupportedCountrySelect:</h2>
 			<SupportedCountrySelect
 				multiple
+				disabled={ disabled }
 				value={ value }
 				onChange={ setValue }
 			/>
@@ -64,6 +74,7 @@ const ComponentTest = () => {
 			<h2>@woocommerce/components SelectControl with multiple:</h2>
 			<SelectControl
 				multiple
+				disabled={ disabled }
 				options={ [
 					{ value: null, label: 'Select a User', disabled: true },
 					{ value: 'a', label: 'User A' },

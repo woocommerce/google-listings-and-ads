@@ -10,7 +10,7 @@ import { Tag } from '@woocommerce/components';
  * @param {Object[]} tags The tags
  * @param {Function} onChange The method called when a tag is removed
  */
-const Tags = ( { tags, onChange = () => {} } ) => {
+const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 	if ( ! tags.length ) {
 		return null;
 	}
@@ -39,7 +39,7 @@ const Tags = ( { tags, onChange = () => {} } ) => {
 						key={ item.id }
 						id={ item.id }
 						label={ item.name }
-						remove={ remove }
+						remove={ ! disabled ? remove : undefined }
 						screenReaderLabel={ screenReaderLabel }
 					/>
 				);
