@@ -125,6 +125,24 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsCampaignBudgetQuery response.
+	 *
+	 * @param int $budget_id
+	 */
+	protected function generate_ads_campaign_budget_query_mock( int $budget_id ) {
+		$campaign = $this->createMock( Campaign::class );
+		$campaign->method( 'getCampaignBudget' )->willReturn(
+			$this->generate_campaign_budget_resource_name( $budget_id )
+		);
+
+		$this->generate_ads_query_mock(
+			[
+				( new GoogleAdsRow )->setCampaign( $campaign ),
+			]
+		);
+	}
+
+	/**
 	 * Converts campaign data to a mocked GoogleAdsRow.
 	 *
 	 * @param array $data Campaign data to convert.
@@ -148,5 +166,14 @@ trait GoogleAdsClientTrait {
 		return ( new GoogleAdsRow )
 			->setCampaign( $campaign )
 			->setCampaignBudget( $budget );
+	}
+
+	/**
+	 * Generates a campaign budget resource name.
+	 *
+	 * @param integer $budget_id
+	 */
+	protected function generate_campaign_budget_resource_name( int $budget_id ) {
+		return ResourceNames::forCampaignBudget( $this->ads_id, $budget_id );
 	}
 }
