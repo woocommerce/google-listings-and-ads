@@ -277,7 +277,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @return string
 	 */
-	public function temporary_resource_name() {
+	protected function temporary_resource_name() {
 		return ResourceNames::forCampaign( $this->options->get_ads_id(), self::TEMPORARY_ID );
 	}
 
