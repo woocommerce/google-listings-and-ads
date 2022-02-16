@@ -4,8 +4,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantTimeToWait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Exception;
@@ -121,7 +121,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 		$this->account->expects( $this->once() )
 			->method( 'setup_account' )
 			->willThrowException(
-				new MerchantTimeToWait(
+				new ApiNotReady(
 					'error',
 					503,
 					null,

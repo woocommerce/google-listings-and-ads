@@ -9,8 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantTimeToWait;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
@@ -391,8 +391,8 @@ class AccountServiceTest extends UnitTest {
 
 		try {
 			$this->account->setup_account( self::TEST_ACCOUNT_ID );
-		} catch ( MerchantTimeToWait $e ) {
-			$this->assertInstanceOf( MerchantTimeToWait::class, $e );
+		} catch ( ApiNotReady $e ) {
+			$this->assertInstanceOf( ApiNotReady::class, $e );
 			$this->assertEquals( 503, $e->getCode() );
 			$this->assertEquals(
 				[

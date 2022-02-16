@@ -9,8 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantTimeToWait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
@@ -155,7 +155,7 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		try {
 			return $this->setup_account_steps();
-		} catch ( ExceptionWithResponseData | MerchantTimeToWait $e ) {
+		} catch ( ExceptionWithResponseData | ApiNotReady $e ) {
 			throw $e;
 		} catch ( Exception $e ) {
 			throw $this->prepare_exception( $e->getMessage(), [], $e->getCode() );
@@ -264,7 +264,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return array The newly created (or pre-existing) Merchant account data.
 	 * @throws ExceptionWithResponseData If an error occurs during any step.
 	 * @throws Exception                 If the step is unknown.
-	 * @throws MerchantTimeToWait        If we should wait to complete the next step.
+	 * @throws ApiNotReady               If we should wait to complete the next step.
 	 */
 	private function setup_account_steps() {
 		$state       = $this->state->get();
@@ -365,7 +365,7 @@ class AccountService implements OptionsAwareInterface, Service {
 					// New sub-account not yet manipulable.
 					$state['set_id']['data']['created_timestamp'] = time();
 
-					$e = MerchantTimeToWait::retry_after( MerchantAccountState::MC_DELAY_AFTER_CREATE );
+					$e = ApiNotReady::retry_after( MerchantAccountState::MC_DELAY_AFTER_CREATE );
 				}
 
 				$this->state->update( $state );

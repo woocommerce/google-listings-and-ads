@@ -5,8 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantTimeToWait;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
@@ -169,7 +169,7 @@ class AccountController extends BaseController {
 				$account = $this->account->{$action}( $account_id );
 
 				return $this->prepare_item_for_response( $account, $request );
-			} catch ( MerchantTimeToWait $e ) {
+			} catch ( ApiNotReady $e ) {
 				return $this->get_time_to_wait_response( $e );
 			} catch ( ExceptionWithResponseData $e ) {
 				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
@@ -264,11 +264,11 @@ class AccountController extends BaseController {
 	/**
 	 * Return a 503 Response with Retry-After header and message.
 	 *
-	 * @param MerchantTimeToWait $wait Exception containing the time to wait.
+	 * @param ApiNotReady $wait Exception containing the time to wait.
 	 *
 	 * @return Response
 	 */
-	private function get_time_to_wait_response( MerchantTimeToWait $wait ): Response {
+	private function get_time_to_wait_response( ApiNotReady $wait ): Response {
 		$data = $wait->get_response_data( true );
 
 		return new Response(

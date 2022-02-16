@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Exception;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class MerchantResponseException
+ * Class ApiNotReady
  *
  * Error messages generated in this class should be translated, as they are intended to be displayed
  * to end users.
@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Exception
  */
-class MerchantTimeToWait extends ExceptionWithResponseData {
+class ApiNotReady extends ExceptionWithResponseData {
 
 	/**
 	 * Create a new instance of the exception when a Merchant Center account connection needs to wait.
@@ -24,9 +24,9 @@ class MerchantTimeToWait extends ExceptionWithResponseData {
 	 *
 	 * @return static
 	 */
-	public static function retry_after( int $wait ): MerchantTimeToWait {
+	public static function retry_after( int $wait ): ApiNotReady {
 		return new static(
-			__( 'Please retry after the indicated number of seconds to complete the account setup process.', 'google-listings-and-ads' ),
+			__( 'Please retry the request after the indicated number of seconds.', 'google-listings-and-ads' ),
 			503,
 			null,
 			[
