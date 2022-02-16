@@ -6,24 +6,36 @@
  * ```js
  * const shippingRates = [
  *     {
+ *         id: "1",
  *         country: 'US',
+ *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 20,
+ *         options: [],
  *     },
  *     {
+ *         id: "2",
  *         country: 'AU',
+ *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 20,
+ *         options: [],
  *     },
  *     {
+ *         id: "3",
  *         country: 'CN',
+ *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 25,
+ *         options: [],
  *     },
  *     {
+ *         id: "4",
  *         country: 'BR',
+ *         method: "flat_rate",
  *         currency: 'BRL',
  *         rate: 20,
+ *         options: [],
  *     },
  * ]
  *
@@ -35,42 +47,16 @@
  * //         countries: ['US', 'AU'],
  * //         price: 20,
  * //         currency: 'USD',
- * //         rates: [
- * //             {
- * //                 country: 'US',
- * //                 currency: 'USD',
- * //                 rate: 20,
- * //             },
- * //             {
- * //                 country: 'AU',
- * //                 currency: 'USD',
- * //                 rate: 20,
- * //             },
- * //         ]
  * //     },
  * //     {
  * //         countries: ['CN'],
  * //         price: 25,
  * //         currency: 'USD',
- * //         rates: [
- * //             {
- * //                 country: 'CN',
- * //                 currency: 'USD',
- * //                 rate: 25,
- * //             },
- * //         ]
  * //     },
  * //     {
  * //         countries: ['BR'],
  * //         price: 20,
  * //         currency: 'BRL',
- * //         rates: [
- * //             {
- * //                 country: 'BR',
- * //                 currency: 'BRL',
- * //                 rate: 20,
- * //             },
- * //         ]
  * //     },
  * ]
  * ```
@@ -88,10 +74,8 @@ const groupShippingRatesByPriceCurrency = ( shippingRates ) => {
 			countries: [],
 			price,
 			currency,
-			rates: [],
 		};
 		group.countries.push( country );
-		group.rates.push( shippingRate );
 		rateGroupMap.set( priceCurrency, group );
 	} );
 
