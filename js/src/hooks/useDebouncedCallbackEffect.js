@@ -4,6 +4,11 @@
 import { useEffect, useRef } from '@wordpress/element';
 import { useDebouncedCallback } from 'use-debounce';
 
+/**
+ * Internal dependencies
+ */
+import useIsEqualRefValue from './useIsEqualRefValue';
+
 const defaultOptions = {
 	wait: 500,
 	callOnFirstRender: false,
@@ -30,19 +35,20 @@ const useDebouncedCallbackEffect = (
 		...defaultOptions,
 		...options,
 	};
+	const valueRefValue = useIsEqualRefValue( value );
 	const debouncedCallback = useDebouncedCallback( func, wait );
 	const ref = useRef( null );
 
 	useEffect( () => {
 		// whether to call on first render.
 		if ( ! callOnFirstRender && ref.current === null ) {
-			ref.current = value;
+			ref.current = valueRefValue;
 			return;
 		}
 
 		// call the debounced callback.
-		debouncedCallback.callback( value );
-	}, [ callOnFirstRender, debouncedCallback, value ] );
+		debouncedCallback.callback( valueRefValue );
+	}, [ callOnFirstRender, debouncedCallback, valueRefValue ] );
 };
 
 export default useDebouncedCallbackEffect;
