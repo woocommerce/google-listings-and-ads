@@ -151,41 +151,59 @@ export function* deleteShippingRates( shippingRates ) {
  */
 export function* saveShippingRates( newShippingRates ) {
 	try {
+		/**
+		 * Compare the new shipping rates and the old ones from the store
+		 * to find out the old ones to be deleted.
+		 */
 		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
+		const deleteIds = oldShippingRates.reduce( ( acc, cur ) => {
+			const found = newShippingRates.find(
+				( el ) => el.country === cur.country && el.method === cur.method
+			);
 
-		const oldIDs = oldShippingRates.map( ( el ) => el.id );
-		if ( oldIDs.length ) {
+			if ( ! found ) {
+				acc.push( cur.id );
+			}
+
+			return acc;
+		}, [] );
+
+		if ( deleteIds.length ) {
 			yield apiFetch( {
 				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 				method: 'DELETE',
 				data: {
-					ids: oldIDs,
+					ids: deleteIds,
 				},
 			} );
 		}
 
-		if ( newShippingRates.length ) {
-			const data = yield apiFetch( {
-				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-				method: 'POST',
-				data: {
-					rates: newShippingRates,
-				},
-			} );
-
-			const upsertedShippingRates = data.success?.map(
-				( el ) => el.rate
-			);
-
+		/**
+		 * No new shipping rate, no need to call API.
+		 */
+		if ( ! newShippingRates.length ) {
 			return {
 				type: TYPES.SAVE_SHIPPING_RATES,
-				shippingRates: upsertedShippingRates,
+				shippingRates: [],
 			};
 		}
 
+		/**
+		 * There are new shipping rates, we call API to upsert them.
+		 */
+		const data = yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+			method: 'POST',
+			data: {
+				rates: newShippingRates,
+			},
+		} );
+
+		const upsertedShippingRates = data.success?.map( ( el ) => el.rate );
+
 		return {
 			type: TYPES.SAVE_SHIPPING_RATES,
-			shippingRates: [],
+			shippingRates: upsertedShippingRates,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
