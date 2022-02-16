@@ -37,12 +37,12 @@ const useDebouncedCallbackEffect = (
 	};
 	const valueRefValue = useIsEqualRefValue( value );
 	const debouncedCallback = useDebouncedCallback( func, wait );
-	const ref = useRef( null );
+	const ref = useRef( false );
 
 	useEffect( () => {
 		// whether to call on first render.
-		if ( ! callOnFirstRender && ref.current === null ) {
-			ref.current = valueRefValue;
+		if ( ! callOnFirstRender && ! ref.current ) {
+			ref.current = true;
 			return;
 		}
 
