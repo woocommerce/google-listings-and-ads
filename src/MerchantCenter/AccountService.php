@@ -476,16 +476,4 @@ class AccountService implements OptionsAwareInterface, Service {
 
 		return new ExceptionWithResponseData( $message, $code ?: 400, null, $data );
 	}
-
-	/**
-	 * Removes the protocol (http:// or https://) and trailing slash from the provided URL.
-	 *
-	 * @param string $url
-	 *
-	 * @return string
-	 */
-	private function strip_url_protocol( string $url ): string {
-		return preg_replace( '#^https?://#', '', untrailingslashit( $url ) );
-	}
-
 }
