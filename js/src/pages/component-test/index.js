@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
 import { SelectControl } from '@woocommerce/components';
+
 /**
  * Internal dependencies
  */
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import TreeSelectControl from '.~/components/tree-select-control';
-import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
 
 const ComponentTest = () => {
 	const [ value, setValue ] = useState();
@@ -17,28 +17,30 @@ const ComponentTest = () => {
 	 * For LocalSelectControl
 	 */
 	const [ selected, setSelected ] = useState( [] );
-	const keyNameMap = useCountryKeyNameMap();
-	const options = [ 'AU', 'CN', 'US' ];
-	const treeSelectControlOptions = [
-		{
-			id: 'EU',
-			name: 'Europe',
-			children: [
-				{ id: 'ES', name: 'Spain' },
-				{ id: 'FR', name: 'France' },
-				{ id: 'IT', name: 'Italy' },
-			],
-		},
-		{
-			id: 'AS',
-			name: 'Asia',
-			children: [
-				{ id: 'JP', name: 'Japan' },
-				{ id: 'CH', name: 'China' },
-				{ id: 'MY', name: 'Malaysia' },
-			],
-		},
-	];
+
+	const treeSelectControlOptions = useMemo(
+		() => [
+			{
+				id: 'EU',
+				name: 'Europe',
+				children: [
+					{ id: 'ES', name: 'Spain' },
+					{ id: 'FR', name: 'France' },
+					{ id: 'IT', name: 'Italy' },
+				],
+			},
+			{
+				id: 'AS',
+				name: 'Asia',
+				children: [
+					{ id: 'JP', name: 'Japan' },
+					{ id: 'CH', name: 'China' },
+					{ id: 'MY', name: 'Malaysia' },
+				],
+			},
+		],
+		[]
+	);
 
 	return (
 		<div>

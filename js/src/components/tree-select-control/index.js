@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
 import { __experimentalUseFocusOutside as useFocusOutside } from '@wordpress/compose';
 
@@ -28,9 +28,32 @@ const TreeSelectControl = ( props ) => {
 		setIsExpanded( false );
 	} );
 
+	/**
+	 * Optimizes the performance getting the tags info
+	 *
+	 * @see getTags
+	 */
+	const optionsRepository = useMemo( () => {
+		const repository = {};
+		options.forEach( ( option ) => {
+			option.children.forEach( ( child ) => {
+				repository[ child.id ] = { ...child, parent: option.id };
+			} );
+		} );
+
+		return repository;
+	}, [ options ] );
+
 	if ( ! options.length ) {
 		return null;
 	}
+
+	const getTags = () => {
+		return value.map( ( id ) => {
+			const option = optionsRepository[ id ];
+			return { id, name: option.name };
+		} );
+	};
 
 	const handleListChange = ( checked, option ) => {
 		if ( option.children?.length ) {
@@ -53,6 +76,10 @@ const TreeSelectControl = ( props ) => {
 		onChange( newValue );
 	};
 
+	const handleTagsChange = ( tags ) => {
+		onChange( [ ...tags.map( ( el ) => el.id ) ] );
+	};
+
 	const handleParentChange = ( checked, option ) => {
 		let newValue = [ ...value ];
 
@@ -68,9 +95,14 @@ const TreeSelectControl = ( props ) => {
 				...newValue,
 				...option.children.map( ( el ) => el.id ),
 			];
+
+			// unique values
+			newValue = newValue.filter(
+				( val, index, self ) => self.indexOf( val ) === index
+			);
 		}
 
-		onChange( Array.from( new Set( newValue ) ) );
+		onChange( newValue );
 	};
 
 	return (
@@ -92,12 +124,13 @@ const TreeSelectControl = ( props ) => {
 
 			<Control
 				disabled={ disabled }
-				hasTags
+				tags={ getTags() }
 				isExpanded={ isExpanded }
 				setExpanded={ setIsExpanded }
 				instanceId={ props.id }
 				placeholder={ placeholder }
 				label={ label }
+				onTagsChange={ handleTagsChange }
 			/>
 			{ isExpanded && (
 				<List
