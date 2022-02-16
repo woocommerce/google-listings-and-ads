@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
 class ApiNotReady extends ExceptionWithResponseData {
 
 	/**
-	 * Create a new instance of the exception when a Merchant Center account connection needs to wait.
+	 * Create a new instance of the exception when an API is not ready and the request needs to be retried.
 	 *
 	 * @param int $wait Time to wait in seconds.
 	 *
