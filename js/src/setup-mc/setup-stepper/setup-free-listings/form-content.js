@@ -10,6 +10,7 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import ConditionalSection from '.~/components/conditional-section';
 import ShippingRateSection from './shipping-rate-section';
 import ShippingTimeSection from './shipping-time-section';
+import useAutoSaveShippingRatesEffect from './useAutoSaveShippingRatesEffect';
 
 /**
  * Form to configure free listings.
@@ -25,6 +26,7 @@ const FormContent = ( props ) => {
 	const shouldDisplayTaxRate = useDisplayTaxRate( audienceCountries );
 
 	useAutoSaveSettingsEffect( values );
+	useAutoSaveShippingRatesEffect( values.shipping_country_rates );
 
 	return (
 		<StepContent>

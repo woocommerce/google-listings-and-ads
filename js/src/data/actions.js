@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, select } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { STORE_KEY } from '.';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -142,6 +143,61 @@ export function* deleteShippingRates( shippingRates ) {
 		);
 	}
 }
+
+/**
+ * Saves shipping rates.
+ *
+ * @param {Array<ShippingRate>} newShippingRates
+ */
+export function* saveShippingRates( newShippingRates ) {
+	try {
+		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
+
+		const oldIDs = oldShippingRates.map( ( el ) => el.id );
+		if ( oldIDs.length ) {
+			yield apiFetch( {
+				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+				method: 'DELETE',
+				data: {
+					ids: oldIDs,
+				},
+			} );
+		}
+
+		if ( newShippingRates.length ) {
+			const data = yield apiFetch( {
+				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+				method: 'POST',
+				data: {
+					rates: newShippingRates,
+				},
+			} );
+
+			const upsertedShippingRates = data.success?.map(
+				( el ) => el.rate
+			);
+
+			return {
+				type: TYPES.SAVE_SHIPPING_RATES,
+				shippingRates: upsertedShippingRates,
+			};
+		}
+
+		return {
+			type: TYPES.SAVE_SHIPPING_RATES,
+			shippingRates: [],
+		};
+	} catch ( error ) {
+		yield handleFetchError(
+			error,
+			__(
+				'There was an error trying to save shipping rates. Please try again later.',
+				'google-listings-and-ads'
+			)
+		);
+	}
+}
+
 /**
  * Individual shipping time.
  *
