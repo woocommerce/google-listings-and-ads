@@ -101,42 +101,70 @@ describe( 'reducer', () => {
 		it( 'should return with upserted shipping rates by matching `countryCode`', () => {
 			const originalState = prepareState( path, [
 				{
-					countryCode: 'US',
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
+					options: [],
 				},
 				{
-					countryCode: 'CA',
+					id: '2',
+					country: 'AU',
+					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
+					options: [],
 				},
 			] );
 			const action = {
 				type: TYPES.UPSERT_SHIPPING_RATES,
-				shippingRate: {
-					countryCodes: [ 'JP', 'CA' ],
-					currency: 'USD',
-					rate: 12,
-				},
+				shippingRates: [
+					{
+						id: '2',
+						country: 'AU',
+						method: 'flat_rate',
+						currency: 'USD',
+						rate: 123,
+						options: [],
+					},
+					{
+						id: '3',
+						country: 'MY',
+						method: 'flat_rate',
+						currency: 'USD',
+						rate: 456,
+						options: [],
+					},
+				],
 			};
 			const state = reducer( originalState, action );
 
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty( path, [
 				{
-					countryCode: 'US',
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
+					options: [],
 				},
 				{
-					countryCode: 'CA',
+					id: '2',
+					country: 'AU',
+					method: 'flat_rate',
 					currency: 'USD',
-					rate: 12,
+					rate: 123,
+					options: [],
 				},
 				{
-					countryCode: 'JP',
+					id: '3',
+					country: 'MY',
+					method: 'flat_rate',
 					currency: 'USD',
-					rate: 12,
+					rate: 456,
+					options: [],
 				},
 			] );
 		} );
@@ -144,33 +172,46 @@ describe( 'reducer', () => {
 		it( 'should return with remaining shipping rates after deleting specific items by matching `countryCode`', () => {
 			const originalState = prepareState( path, [
 				{
-					countryCode: 'US',
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
 					currency: 'USD',
 					rate: 4.99,
+					options: [],
 				},
 				{
-					countryCode: 'CA',
+					id: '2',
+					country: 'AU',
+					method: 'flat_rate',
 					currency: 'USD',
 					rate: 25,
-				},
-				{
-					countryCode: 'JP',
-					currency: 'USD',
-					rate: 12,
+					options: [],
 				},
 			] );
 			const action = {
 				type: TYPES.DELETE_SHIPPING_RATES,
-				countryCodes: [ 'US', 'JP' ],
+				shippingRates: [
+					{
+						id: '2',
+						country: 'AU',
+						method: 'flat_rate',
+						currency: 'USD',
+						rate: 123,
+						options: [],
+					},
+				],
 			};
 			const state = reducer( originalState, action );
 
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty( path, [
 				{
-					countryCode: 'CA',
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
 					currency: 'USD',
-					rate: 25,
+					rate: 4.99,
+					options: [],
 				},
 			] );
 		} );
