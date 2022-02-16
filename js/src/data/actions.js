@@ -86,7 +86,7 @@ export function* fetchShippingRates() {
  */
 export function* upsertShippingRates( shippingRates ) {
 	try {
-		yield apiFetch( {
+		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'POST',
 			data: {
@@ -94,13 +94,11 @@ export function* upsertShippingRates( shippingRates ) {
 			},
 		} );
 
-		if ( shippingRates.some( ( el ) => ! el.id ) ) {
-			return yield fetchShippingRates();
-		}
+		const upsertedShippingRates = data.success?.map( ( el ) => el.rate );
 
 		return {
 			type: TYPES.UPSERT_SHIPPING_RATES,
-			shippingRates,
+			shippingRates: upsertedShippingRates,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
