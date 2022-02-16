@@ -7,22 +7,22 @@ describe( 'groupShippingRatesByPriceCurrency', () => {
 	it( 'should group the shipping rates based on price and currency', () => {
 		const shippingRates = [
 			{
-				countryCode: 'US',
+				country: 'US',
 				currency: 'USD',
 				rate: 20,
 			},
 			{
-				countryCode: 'AU',
+				country: 'AU',
 				currency: 'USD',
 				rate: 20,
 			},
 			{
-				countryCode: 'CN',
+				country: 'CN',
 				currency: 'USD',
 				rate: 25,
 			},
 			{
-				countryCode: 'BR',
+				country: 'BR',
 				currency: 'BRL',
 				rate: 20,
 			},
