@@ -168,7 +168,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
 				throw new Exception(
 					__( 'A campaign with this name already exists', 'google-listings-and-ads' ),
-					$e->getCode()
+					$this->map_grpc_code_to_http_status_code( $e )
 				);
 			}
 
