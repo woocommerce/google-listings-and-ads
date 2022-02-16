@@ -397,6 +397,17 @@ abstract class Query implements QueryInterface {
 	}
 
 	/**
+	 * Returns the last inserted ID. Must be called after insert.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int
+	 */
+	public function last_insert_id(): int {
+		return $this->wpdb->insert_id;
+	}
+
+	/**
 	 * Delete rows from the database.
 	 *
 	 * @param string $where_column Column to use when looking for values to delete.
