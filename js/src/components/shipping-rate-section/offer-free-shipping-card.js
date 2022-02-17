@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Section from '.~/wcdl/section';
-import AppRadioContentControl from '../app-radio-content-control';
+import AppRadioContentControl from '.~/components/app-radio-content-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 
 const OfferFreeShippingCard = ( props ) => {
