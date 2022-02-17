@@ -175,7 +175,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_create_rate_callback(): callable {
 		return function ( Request $request ) {
-			$update_query = $this->create_query();
+			$shipping_rate_query = $this->create_query();
 
 			try {
 				$data    = $this->prepare_item_for_database( $request );
@@ -187,10 +187,10 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 
 				if ( $existing ) {
 					$rate_id = $existing_query->get_results()[0]['id'];
-					$update_query->update( $data, [ 'id' => $rate_id ] );
+					$shipping_rate_query->update( $data, [ 'id' => $rate_id ] );
 				} else {
-					$update_query->insert( $data );
-					$rate_id = $update_query->last_insert_id();
+					$shipping_rate_query->insert( $data );
+					$rate_id = $shipping_rate_query->last_insert_id();
 				}
 			} catch ( InvalidQuery $e ) {
 				return $this->error_from_exception(
