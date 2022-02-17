@@ -8,7 +8,7 @@ import useAutoSaveSettingsEffect from './useAutoSaveSettingsEffect';
 import useDisplayTaxRate from '.~/components/free-listings/configure-product-listings/useDisplayTaxRate';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import ConditionalSection from '.~/components/conditional-section';
-import ShippingRateSection from './shipping-rate-section';
+import ShippingRateSection from '.~/components/shipping-rate-section';
 import ShippingTimeSection from './shipping-time-section';
 import useAutoSaveShippingRatesEffect from './useAutoSaveShippingRatesEffect';
 
