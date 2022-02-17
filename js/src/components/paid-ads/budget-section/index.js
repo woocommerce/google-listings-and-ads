@@ -9,9 +9,7 @@ import { __ } from '@wordpress/i18n';
 import Section from '.~/wcdl/section';
 import getMonthlyMaxEstimated from './getMonthlyMaxEstimated';
 import './index.scss';
-import FreeAdCredit from './free-ad-credit';
 import BudgetRecommendation from './budget-recommendation';
-import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 
@@ -24,7 +22,6 @@ const BudgetSection = ( props ) => {
 		amount,
 	} = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const hasFreeAdCredit = useFreeAdCredit();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( values.amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
@@ -69,7 +66,6 @@ const BudgetSection = ( props ) => {
 								dailyAverageCost={ amount }
 							/>
 						) }
-						{ hasFreeAdCredit && <FreeAdCredit /> }
 					</Section.Card.Body>
 				</Section.Card>
 			</Section>
