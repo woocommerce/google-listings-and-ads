@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import isSameShippingRate from '.~/utils/isSameShippingRate';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { STORE_KEY } from '.';
@@ -159,8 +160,8 @@ export function* saveShippingRates( newShippingRates ) {
 		 */
 		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
 		const deleteIds = oldShippingRates.reduce( ( acc, cur ) => {
-			const found = newShippingRates.find(
-				( el ) => el.country === cur.country && el.method === cur.method
+			const found = newShippingRates.find( ( el ) =>
+				isSameShippingRate( el, cur )
 			);
 
 			if ( ! found ) {

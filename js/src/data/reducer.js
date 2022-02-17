@@ -6,6 +6,7 @@ import { setWith, clone } from 'lodash';
 /**
  * Internal dependencies
  */
+import isSameShippingRate from '.~/utils/isSameShippingRate';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -129,11 +130,8 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			const rates = [ ...state.mc.shipping.rates ];
 
 			shippingRates.forEach( ( shippingRate ) => {
-				const idx = rates.findIndex(
-					( el ) =>
-						( el.id && el.id === shippingRate.id ) ||
-						( el.country === shippingRate.country &&
-							el.method === shippingRate.method )
+				const idx = rates.findIndex( ( el ) =>
+					isSameShippingRate( el, shippingRate )
 				);
 
 				if ( idx >= 0 ) {
