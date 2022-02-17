@@ -44,7 +44,10 @@ export default function useAdsCurrency() {
 	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
 
 	// Apply store's foramtting config with the Ad's currency and symbol.
-	const { currency: code = '', symbol = '' } = googleAdsAccount || {};
+	// The `currency` and `symbol` could be `null`,
+	// so it cannot be assigned default values with destructuring assignment.
+	const code = googleAdsAccount?.currency || '';
+	const symbol = googleAdsAccount?.symbol || '';
 	const adsCurrencyConfig = useMemo( () => {
 		return {
 			...storeCurrencySetting,
