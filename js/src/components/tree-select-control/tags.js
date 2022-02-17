@@ -7,28 +7,42 @@ import { Tag } from '@woocommerce/components';
 /**
  * A list of tags to display selected items.
  *
- * @param {Object[]} tags The tags
- * @param {Function} onChange The method called when a tag is removed
+ * @param {Object} props The component props
+ * @param {Object[]} props.tags The tags
+ * @param {Function} props.onChange The method called when a tag is removed
+ * @param {boolean} props.disabled True if the plugin is disabled
  */
 const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 	if ( ! tags.length ) {
 		return null;
 	}
 
+	/**
+	 * Callback to remove a Tag.
+	 * The function is defined this way because in the WooCommerce Tag Component the remove logic
+	 * is defined as `onClick={ remove(key) }` hence we need to do this to avoid calling remove function
+	 * on each render.
+	 *
+	 * @param {string} key The key for the Tag to be deleted
+	 */
 	const remove = ( key ) => {
 		return () => {
+			if ( disabled ) {
+				return;
+			}
 			const i = tags.findIndex( ( tag ) => tag.id === key );
 			onChange( [ ...tags.slice( 0, i ), ...tags.slice( i + 1 ) ] );
 		};
 	};
 
 	return (
-		<div className="woocommerce-select-control__tags">
+		<div className="woocommerce-tree-select-control__tags">
 			{ tags.map( ( item, i ) => {
 				if ( ! item.name ) {
 					return null;
 				}
 				const screenReaderLabel = sprintf(
+					// translators: 1: Tag Name, 2: Current Tag index, 3: Total amount of tags.
 					__( '%1$s (%2$s of %3$s)', 'woocommerce-admin' ),
 					item.name,
 					i + 1,
@@ -39,8 +53,8 @@ const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 						key={ item.id }
 						id={ item.id }
 						label={ item.name }
-						remove={ ! disabled ? remove : undefined }
 						screenReaderLabel={ screenReaderLabel }
+						remove={ remove }
 					/>
 				);
 			} ) }

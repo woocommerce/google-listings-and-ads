@@ -8,6 +8,26 @@ import { fireEvent, render } from '@testing-library/react';
  */
 import TreeSelectControl from '.~/components/tree-select-control/index';
 
+const options = [
+	{
+		id: 'EU',
+		name: 'Europe',
+		children: [
+			{ id: 'ES', name: 'Spain' },
+			{ id: 'FR', name: 'France' },
+			{ id: 'IT', name: 'Italy' },
+		],
+	},
+	{
+		id: 'AS',
+		name: 'Asia',
+		children: [
+			{ id: 'JP', name: 'Japan' },
+			{ id: 'CH', name: 'China' },
+		],
+	},
+];
+
 describe( 'TreeSelectControl Component', () => {
 	it( "Doesn't render without options", () => {
 		const { queryByRole } = render( <TreeSelectControl /> );
@@ -16,18 +36,6 @@ describe( 'TreeSelectControl Component', () => {
 
 	it( 'Renders the provided options and selected values', () => {
 		const selectedValues = [ 'ES' ];
-
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-		];
 
 		const { queryByLabelText, queryByRole } = render(
 			<TreeSelectControl options={ options } value={ selectedValues } />
@@ -57,25 +65,6 @@ describe( 'TreeSelectControl Component', () => {
 
 	it( 'Calls onChange property with the selected values', () => {
 		const onChange = jest.fn().mockName( 'onChange' );
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-			{
-				id: 'AS',
-				name: 'Asia',
-				children: [
-					{ id: 'JP', name: 'Japan' },
-					{ id: 'CH', name: 'China' },
-				],
-			},
-		];
 
 		const { rerender, queryByLabelText, queryByRole } = render(
 			<TreeSelectControl
@@ -134,18 +123,6 @@ describe( 'TreeSelectControl Component', () => {
 	} );
 
 	it( 'Renders the label', () => {
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-		];
-
 		const { queryByLabelText } = render(
 			<TreeSelectControl options={ options } label="Select" />
 		);
@@ -155,17 +132,6 @@ describe( 'TreeSelectControl Component', () => {
 
 	it( 'Shows tags with the selected values', async () => {
 		const onChange = jest.fn().mockName( 'on Change' );
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-		];
 
 		const { queryByText, queryByLabelText } = render(
 			<TreeSelectControl
@@ -185,32 +151,25 @@ describe( 'TreeSelectControl Component', () => {
 	} );
 
 	it( 'Disabled state show tags but does not allow to change', () => {
-		const options = [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-		];
+		const onChange = jest.fn().mockName( 'on Change' );
 
 		const { queryByText, queryByLabelText, queryByRole } = render(
 			<TreeSelectControl
 				disabled={ true }
 				options={ options }
 				value={ [ 'ES', 'IT' ] }
+				onChange={ onChange }
 			/>
 		);
 		const control = queryByRole( 'combobox' );
 		expect( queryByText( 'Spain (1 of 2)' ) ).toBeTruthy();
 		expect( queryByText( 'Italy (2 of 2)' ) ).toBeTruthy();
-		expect( queryByLabelText( 'Remove Italy' ) ).toBeFalsy();
 
 		expect( queryByRole( 'listbox' ) ).toBeFalsy();
 		fireEvent.click( control );
 		expect( queryByRole( 'listbox' ) ).toBeFalsy();
+
+		fireEvent.click( queryByLabelText( 'Remove Italy' ) );
+		expect( onChange ).not.toHaveBeenCalled();
 	} );
 } );

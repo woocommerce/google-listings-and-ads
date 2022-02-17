@@ -20,6 +20,13 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 .woocommerce-tree-select-control {
 	position: relative;
 
+	&__label {
+		display: block;
+		font-size: 16px;
+		color: $studio-gray-50;
+		padding-bottom: $gap-smaller;
+	}
+
 	.components-base-control {
 		height: 56px;
 		display: flex;
@@ -30,13 +37,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		padding: $gap-small;
 		position: relative;
 
-		.woocommerce-tree-select-control__tags {
-			margin: $gap-small $gap-smallest 0 0;
-		}
-
-		.woocommerce-tag {
-			max-height: 20px;
-		}
 
 		.components-base-control__field {
 			display: flex;
@@ -44,14 +44,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			flex: 1;
 			margin-bottom: 0;
 			max-width: 100%;
-		}
-
-		.components-base-control__label {
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			color: $studio-gray-50;
-			font-size: 16px;
 		}
 
 		.woocommerce-tree-select-control__control-input {
@@ -100,6 +92,10 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			.components-base-control__label {
 				cursor: default;
 			}
+			.woocommerce-tag__remove {
+				cursor: default;
+				pointer-events: none;
+			}
 		}
 	}
 
@@ -110,7 +106,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 
 	.woocommerce-tree-select-control__tags {
 		position: relative;
-		margin: $gap-small 0 0 0;
+		margin: 0;
 
 		&.has-clear {
 			padding-right: $gap-large;

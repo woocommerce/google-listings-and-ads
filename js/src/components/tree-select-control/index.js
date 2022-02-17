@@ -3,7 +3,7 @@
  */
 import { useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
-// eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group
+// eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import { __experimentalUseFocusOutside as useFocusOutside } from '@wordpress/compose';
 
 /**
@@ -109,9 +109,9 @@ const TreeSelectControl = ( {
 		const idPosition = value.indexOf( option.id );
 		const newValue = [ ...value ];
 
-		if ( ! checked && idPosition >= 0 ) {
+		if ( ! checked ) {
 			newValue.splice( idPosition, 1 );
-		} else if ( checked && idPosition < 0 ) {
+		} else {
 			newValue.push( option.id );
 		}
 
@@ -125,26 +125,19 @@ const TreeSelectControl = ( {
 	 * @param {Option} option The option to change
 	 */
 	const handleParentChange = ( checked, option ) => {
-		let newValue = [ ...value ];
+		const newValue = [ ...value ];
 
-		if ( ! checked ) {
-			option.children.forEach( ( el ) => {
-				const childIdPosition = newValue.indexOf( el.id );
-				if ( childIdPosition >= 0 ) {
-					newValue.splice( childIdPosition, 1 );
-				}
-			} );
-		} else {
-			newValue = [
-				...newValue,
-				...option.children.map( ( el ) => el.id ),
-			];
+		option.children.forEach( ( el ) => {
+			const childIdPosition = newValue.indexOf( el.id );
 
-			// unique values
-			newValue = newValue.filter(
-				( val, index, self ) => self.indexOf( val ) === index
-			);
-		}
+			if ( ! checked && childIdPosition >= 0 ) {
+				newValue.splice( childIdPosition, 1 );
+			}
+
+			if ( checked && childIdPosition < 0 ) {
+				newValue.push( el.id );
+			}
+		} );
 
 		onChange( newValue );
 	};
@@ -168,8 +161,8 @@ const TreeSelectControl = ( {
 		>
 			{ !! label && (
 				<label
-					htmlFor={ `woocommerce-select-control-${ id }__control-input` }
-					className="components-base-control__label"
+					htmlFor={ `woocommerce-tree-select-control-${ id }__control-input` }
+					className="woocommerce-tree-select-control__label"
 				>
 					{ label }
 				</label>

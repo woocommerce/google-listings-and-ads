@@ -9,6 +9,7 @@ import { SelectControl } from '@woocommerce/components';
  */
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import TreeSelectControl from '.~/components/tree-select-control';
+import './index.scss';
 
 const ComponentTest = () => {
 	const [ value, setValue ] = useState();
@@ -54,6 +55,18 @@ const ComponentTest = () => {
 			</button>
 			<h2>TreeSelectControl</h2>
 			<TreeSelectControl
+				disabled={ disabled }
+				options={ treeSelectControlOptions }
+				value={ selected }
+				onChange={ setSelected }
+				label="Select Country"
+				placeholder="Select"
+			/>
+			<hr />
+			<hr />
+			<h2>TreeSelectControl Custom style</h2>
+			<TreeSelectControl
+				className="gla-tree-select-control"
 				disabled={ disabled }
 				options={ treeSelectControlOptions }
 				value={ selected }
