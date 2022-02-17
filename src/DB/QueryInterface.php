@@ -96,9 +96,9 @@ interface QueryInterface {
 	 *
 	 * @since x.x.x
 	 *
-	 * @return int
+	 * @return int|null
 	 */
-	public function last_insert_id(): int;
+	public function last_insert_id(): ?int;
 
 	/**
 	 * Delete rows from the database.
