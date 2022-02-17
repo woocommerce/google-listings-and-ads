@@ -36,6 +36,12 @@
 	}
 }
 
+#woocommerce-product-data ul.wc-tabs li.gla_attributes_tab {
+	a::before {
+		content: "\f18b";
+	}
+}
+
 .gla-channel-visibility-box .form-row > select {
 	display: block;
 	margin: $grid-unit-10 0;
