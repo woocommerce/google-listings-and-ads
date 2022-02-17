@@ -8,6 +8,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
+use Google\Ads\GoogleAds\V9\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V9\Resources\AssetGroupListingGroupFilter;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
@@ -143,6 +145,36 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsAssetGroupQuery response.
+	 *
+	 * @param string $asset_group_resource_name
+	 * @param string $listing_group_resource_name
+	 */
+	protected function generate_ads_asset_group_query_mock( string $asset_group_resource_name, string $listing_group_resource_name ) {
+		$asset_group = $this->createMock( AssetGroup::class );
+		$asset_group->method( 'getResourceName' )->willReturn( $asset_group_resource_name );
+
+		$listing_group = $this->createMock( AssetGroupListingGroupFilter::class );
+		$listing_group->method( 'getResourceName' )->willReturn( $listing_group_resource_name );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->expects( $this->exactly( 2 ) )
+			->method( 'iterateAllElements' )
+			->will(
+				$this->onConsecutiveCalls(
+					[
+						( new GoogleAdsRow )->setAssetGroup( $asset_group ),
+					],
+					[
+						( new GoogleAdsRow )->setAssetGroupListingGroupFilter( $listing_group ),
+					]
+				)
+			);
+
+		$this->service_client->method( 'search' )->willReturn( $list_response );
+	}
+
+	/**
 	 * Converts campaign data to a mocked GoogleAdsRow.
 	 *
 	 * @param array $data Campaign data to convert.
@@ -169,11 +201,40 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a campaign resource name.
+	 *
+	 * @param int $campaign_id
+	 */
+	protected function generate_campaign_resource_name( int $campaign_id ) {
+		return ResourceNames::forCampaign( $this->ads_id, $campaign_id );
+	}
+
+	/**
 	 * Generates a campaign budget resource name.
 	 *
-	 * @param integer $budget_id
+	 * @param int $budget_id
 	 */
 	protected function generate_campaign_budget_resource_name( int $budget_id ) {
 		return ResourceNames::forCampaignBudget( $this->ads_id, $budget_id );
+	}
+
+	/**
+	 * Generates an asset group resource name.
+	 *
+	 * @param int $asset_group_id
+	 */
+	protected function generate_asset_group_resource_name( int $asset_group_id ) {
+		return ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id );
+	}
+
+	/**
+	 * Generates an asset group asset resource name.
+	 *
+	 * @param int $asset_group_id
+	 * @param int $listing_group_id
+	 */
+	protected function generate_listing_group_resource_name( int $asset_group_id, int $listing_group_id ) {
+		// No helper function available in the Google Ads library.
+		return "customers/{$this->ads_id}/assetGroupListingGroupFilters/{$asset_group_id}~{$listing_group_id}";
 	}
 }
