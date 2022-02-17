@@ -50,6 +50,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -58,7 +59,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notes\Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as ReviewAfterClicksNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions as ReviewAfterConversionsNote;
@@ -178,6 +178,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DeprecatedFilters::class      => true,
 		ShippingZone::class           => true,
 		AdsAccountService::class      => true,
+		MerchantAccountService::class => true,
 	];
 
 	/**
@@ -264,6 +265,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsAccountService::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( MerchantAccountService::class, ContainerInterface::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
@@ -273,7 +275,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( SetupCampaignNote::class, MerchantStatuses::class );
 		$this->share_with_tags( SetupCampaign2Note::class, MerchantStatuses::class );
 		$this->share_with_tags( SetupCouponSharingNote::class, MerchantStatuses::class );
-		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class, Note::class );
+		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );
