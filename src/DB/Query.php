@@ -42,6 +42,13 @@ abstract class Query implements QueryInterface {
 	 */
 	protected $count = null;
 
+	/**
+	 * The last inserted ID (updated after a call to insert).
+	 *
+	 * @var int
+	 */
+	protected $last_insert_id = null;
+
 	/** @var TableInterface */
 	protected $table;
 
@@ -393,6 +400,9 @@ abstract class Query implements QueryInterface {
 			throw InvalidQuery::from_insert( $this->wpdb->last_error ?: 'Error inserting data.' );
 		}
 
+		// Save a local copy of the last inserted ID.
+		$this->last_insert_id = $this->wpdb->insert_id;
+
 		return $result;
 	}
 
@@ -401,10 +411,10 @@ abstract class Query implements QueryInterface {
 	 *
 	 * @since x.x.x
 	 *
-	 * @return int
+	 * @return int|null
 	 */
-	public function last_insert_id(): int {
-		return $this->wpdb->insert_id;
+	public function last_insert_id(): ?int {
+		return $this->last_insert_id;
 	}
 
 	/**
