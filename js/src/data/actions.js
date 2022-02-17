@@ -121,13 +121,15 @@ export function* deleteShippingRates( shippingRates ) {
 	try {
 		const ids = shippingRates.map( ( el ) => el.id );
 
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'DELETE',
-			data: {
-				ids,
-			},
-		} );
+		if ( ids.length ) {
+			yield apiFetch( {
+				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+				method: 'DELETE',
+				data: {
+					ids,
+				},
+			} );
+		}
 
 		return {
 			type: TYPES.DELETE_SHIPPING_RATES,
