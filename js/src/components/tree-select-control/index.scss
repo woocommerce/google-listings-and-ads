@@ -1,4 +1,4 @@
-@import '@automattic/color-studio/dist/color-variables.scss';
+@import "@automattic/color-studio/dist/color-variables.scss";
 
 $gap-largest: 40px;
 $gap-larger: 36px;
@@ -148,8 +148,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 
 	.woocommerce-tree-select-control__children {
 		padding: 0 $gap;
-
-		&.is-expanded {}
 	}
 
 	.woocommerce-tree-select-control__option {
