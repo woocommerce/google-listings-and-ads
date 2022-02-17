@@ -20,8 +20,7 @@ const useAutoClearShippingEffect = ( location, countries ) => {
 
 	const debouncedDelete = useDebouncedCallback( async () => {
 		if ( shippingRates.length ) {
-			const countryCodes = shippingRates.map( ( el ) => el.countryCode );
-			deleteShippingRates( countryCodes );
+			deleteShippingRates( shippingRates );
 		}
 
 		if ( shippingTimes.length ) {
