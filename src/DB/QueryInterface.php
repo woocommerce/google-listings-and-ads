@@ -92,6 +92,15 @@ interface QueryInterface {
 	public function insert( array $data ): int;
 
 	/**
+	 * Returns the last inserted ID. Must be called after insert.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int|null
+	 */
+	public function last_insert_id(): ?int;
+
+	/**
 	 * Delete rows from the database.
 	 *
 	 * @param string $where_column Column to use when looking for values to delete.
@@ -112,6 +121,7 @@ interface QueryInterface {
 	 * @throws InvalidQuery When there is an error updating data, or when an empty where array is provided.
 	 */
 	public function update( array $data, array $where ): int;
+
 	/**
 	 * Batch update or insert a set of records.
 	 *

@@ -175,7 +175,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 */
 	protected function get_create_rate_callback(): callable {
 		return function ( Request $request ) {
-			$update_query = $this->create_query();
+			$shipping_rate_query = $this->create_query();
 
 			try {
 				$data    = $this->prepare_item_for_database( $request );
@@ -186,14 +186,11 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				$existing       = ! empty( $existing_query->get_results() );
 
 				if ( $existing ) {
-					$update_query->update(
-						$data,
-						[
-							'id' => $existing_query->get_results()[0]['id'],
-						]
-					);
+					$rate_id = $existing_query->get_results()[0]['id'];
+					$shipping_rate_query->update( $data, [ 'id' => $rate_id ] );
 				} else {
-					$update_query->insert( $data );
+					$shipping_rate_query->insert( $data );
+					$rate_id = $shipping_rate_query->last_insert_id();
 				}
 			} catch ( InvalidQuery $e ) {
 				return $this->error_from_exception(
@@ -206,14 +203,21 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 				);
 			}
 
+			// Fetch updated/inserted rate to return in response.
+			$rate_response = $this->prepare_item_for_response(
+				$this->get_shipping_rate_by_id( (string) $rate_id ),
+				$request
+			);
+
 			return new Response(
 				[
 					'status'  => 'success',
 					'message' => sprintf(
-					/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
-						__( 'Successfully added rates for country: "%s".', 'google-listings-and-ads' ),
+						/* translators: %s is the country code in ISO 3166-1 alpha-2 format. */
+						__( 'Successfully added rate for country: "%s".', 'google-listings-and-ads' ),
 						$country
 					),
+					'rate'    => $rate_response->get_data(),
 				],
 				201
 			);
