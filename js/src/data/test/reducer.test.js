@@ -81,14 +81,20 @@ describe( 'reducer', () => {
 				type: TYPES.RECEIVE_SHIPPING_RATES,
 				shippingRates: [
 					{
-						countryCode: 'US',
+						id: '1',
+						country: 'US',
+						method: 'flat_rate',
 						currency: 'USD',
 						rate: 4.99,
+						options: [],
 					},
 					{
-						countryCode: 'CA',
+						id: '2',
+						country: 'AU',
+						method: 'flat_rate',
 						currency: 'USD',
 						rate: 25,
+						options: [],
 					},
 				],
 			};
