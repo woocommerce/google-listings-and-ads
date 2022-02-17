@@ -52,7 +52,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	public function register_routes(): void {
 		$this->register_route(
-			'ads/campaigns/budget-recommendation/(?P<country_code>\\w{2})',
+			'ads/campaigns/budget-recommendation',
 			[
 				[
 					'methods'             => TransportMethods::READABLE,
@@ -68,20 +68,34 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
-			$country        = strtoupper( $request->get_param( 'country_code' ) );
-			$currency       = $this->middleware->get_ads_currency();
-			$recommendation = $this
-				->budget_recommendation_query
-				->where( 'country', $country )
-				->where( 'currency', $currency )
-				->get_row();
+			$country_codes = $request->get_query_params()['country_codes'] ?? '';
+			$currency      = $this->middleware->get_ads_currency();
 
-			if ( ! $recommendation ) {
+			if ( ! $country_codes || ! $currency ) {
 				return new Response(
 					[
-						'message'      => __( 'Invalid country/currency combination', 'google-listings-and-ads' ),
-						'currency'     => $currency,
-						'country_code' => $country,
+						'message'       => __( 'Invalid country_codes/currency combination', 'google-listings-and-ads' ),
+						'currency'      => $currency,
+						'country_codes' => $country_codes,
+					],
+					400
+				);
+			}
+
+			$country_codes = strtoupper( $country_codes );
+
+			$recommendations = $this
+				->budget_recommendation_query
+				->where( 'country', explode( ',', $country_codes ), 'IN' )
+				->where( 'currency', $currency )
+				->get_results();
+
+			if ( ! $recommendations ) {
+				return new Response(
+					[
+						'message'       => __( 'Cannot find any budget recommendations', 'google-listings-and-ads' ),
+						'currency'      => $currency,
+						'country_codes' => $country_codes,
 					],
 					400
 				);
@@ -89,10 +103,25 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 
 			return $this->prepare_item_for_response(
 				[
-					'currency'          => $recommendation['currency'],
-					'country_code'      => $recommendation['country'],
-					'daily_budget_low'  => $recommendation['daily_budget_low'],
-					'daily_budget_high' => $recommendation['daily_budget_high'],
+					'currency'          => $currency,
+					'country_codes'     => array_map(
+						function ( $recommendation ) {
+							return $recommendation['country'];
+						},
+						$recommendations
+					),
+					'daily_budget_low'  => array_map(
+						function ( $recommendation ) {
+							return (float) $recommendation['daily_budget_low'];
+						},
+						$recommendations
+					),
+					'daily_budget_high' => array_map(
+						function ( $recommendation ) {
+							return (float) $recommendation['daily_budget_high'];
+						},
+						$recommendations
+					),
 				],
 				$request
 			);
@@ -113,24 +142,24 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
-			'country_code'      => [
-				'type'              => 'string',
-				'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+			'country_codes'     => [
+				'type'              => [ 'string' ],
+				'description'       => __( 'An array of Country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
 				'required'          => true,
 			],
 			'daily_budget_low'  => [
-				'type'              => 'number',
-				'description'       => __( 'The lower limit for the recommended budget.', 'google-listings-and-ads' ),
+				'type'              => [ 'number' ],
+				'description'       => __( 'An array of the lower limit for the recommended budget.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
 			'daily_budget_high' => [
-				'type'              => 'number',
-				'description'       => __( 'The upper limit for the recommended budget.', 'google-listings-and-ads' ),
+				'type'              => [ 'number' ],
+				'description'       => __( 'An array of the upper limit for the recommended budget.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
