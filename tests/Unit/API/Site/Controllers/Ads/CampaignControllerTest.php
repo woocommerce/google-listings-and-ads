@@ -1,0 +1,313 @@
+<?php
+
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
+
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
+use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
+
+/**
+ * Class CampaignControllerTest
+ *
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
+ *
+ * @property AdsCampaign|MockObject         $ads_campaign
+ * @property ISO3166DataProvider|MockObject $iso_provider;
+ * @property CampaignController             $controller
+ */
+class CampaignControllerTest extends RESTControllerUnitTest {
+
+	protected const TEST_CAMPAIGN_ID = 1234567890;
+	protected const ROUTE_CAMPAIGNS  = '/wc/gla/ads/campaigns';
+	protected const ROUTE_CAMPAIGN   = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID;
+
+	public function setUp() {
+		parent::setUp();
+
+		$this->ads_campaign = $this->createMock( AdsCampaign::class );
+		$this->iso_provider = $this->createMock( ISO3166DataProvider::class );
+
+		$this->controller = new CampaignController( $this->server, $this->ads_campaign );
+		$this->controller->register();
+		$this->controller->set_iso3166_provider( $this->iso_provider );
+	}
+
+	public function test_get_campaigns() {
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'paused',
+				'type'    => 'shopping',
+				'amount'  => 10,
+				'country' => 'US',
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'type'    => 'performance_max',
+				'amount'  => 20,
+				'country' => 'UK',
+			],
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'get_campaigns' )
+			->willReturn( $campaigns_data );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET' );
+
+		$this->assertEquals( $campaigns_data, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_campaigns_with_api_exception() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'get_campaigns' )
+			->willThrowException( new Exception( 'error', 401 ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'GET' );
+
+		$this->assertEquals( 'error', $response->get_data()['message'] );
+		$this->assertEquals( 401, $response->get_status() );
+	}
+
+	public function test_create_campaign() {
+		$campaign_data = [
+			'name'    => 'New Campaign',
+			'amount'  => 20,
+			'country' => 'US',
+		];
+
+		$expected = [
+			'id'     => self::TEST_CAMPAIGN_ID,
+			'status' => 'enabled',
+			'type'   => 'performance_max',
+		] + $campaign_data;
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( $expected );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_without_name() {
+		$campaign_data = [
+			'amount'  => 30,
+			'country' => 'GB',
+		];
+
+		$expected = [
+			'name'   => 'Campaign 2022-02-22 02:22:02',
+			'id'     => self::TEST_CAMPAIGN_ID,
+			'status' => 'enabled',
+			'type'   => 'performance_max',
+		] + $campaign_data;
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->willReturnCallback(
+				function( array $data ) use ( $campaign_data, $expected ) {
+					$name = $data['name'];
+					unset( $data['name'] );
+
+					// Confirm name matches the datetime format.
+					$this->assertStringMatchesFormat( 'Campaign %d-%d-%d %d:%d:%d', $name, 'Name does not match' );
+					$this->assertEquals( $data, $campaign_data );
+
+					return $expected;
+				}
+			);
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_create_campaign_invalid_country_code() {
+		$campaign_data = [
+			'amount'  => 20,
+			'country' => 'United States',
+		];
+
+		$this->iso_provider
+			->method( 'alpha2' )
+			->willThrowException( new Exception( 'invalid_country' ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): country', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_create_campaign_with_api_exception() {
+		$campaign_data = [
+			'amount'  => 20,
+			'country' => 'US',
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->willThrowException( new Exception( 'error', 401 ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 'error', $response->get_data()['message'] );
+		$this->assertEquals( 401, $response->get_status() );
+	}
+
+	public function test_create_campaign_missing_parameters() {
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', [] );
+
+		$this->assertEquals( 'Missing parameter(s): amount, country', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_get_campaign() {
+		$campaign_data = [
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'name'    => 'Campaign Name',
+			'status'  => 'enabled',
+			'type'    => 'performance_max',
+			'amount'  => 10,
+			'country' => 'US',
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'get_campaign' )
+			->with( self::TEST_CAMPAIGN_ID )
+			->willReturn( $campaign_data );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'GET' );
+
+		$this->assertEquals( $campaign_data, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_get_campaign_not_found() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'get_campaign' )
+			->with( self::TEST_CAMPAIGN_ID )
+			->willReturn( [] );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'GET' );
+
+		$this->assertEquals(
+			[
+				'message' => 'Campaign is not available.',
+				'id'      => self::TEST_CAMPAIGN_ID,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 404, $response->get_status() );
+	}
+
+	public function test_get_campaign_with_api_exception() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'get_campaign' )
+			->with( self::TEST_CAMPAIGN_ID )
+			->willThrowException( new Exception( 'error', 500 ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'GET' );
+
+		$this->assertEquals( 'error', $response->get_data()['message'] );
+		$this->assertEquals( 500, $response->get_status() );
+	}
+
+	public function test_edit_campaign() {
+		$campaign_data = [
+			'amount'  => 44.55,
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, $campaign_data )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', $campaign_data );
+
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully edited campaign.',
+				'id'      => self::TEST_CAMPAIGN_ID,
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_edit_campaign_country() {
+		$campaign_data = [
+			'country' => 'GB',
+		];
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', $campaign_data );
+
+		$this->assertEquals(
+			[
+				'status'  => 'invalid_data',
+				'message' => 'Invalid edit data.',
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_edit_campaign_with_api_exception() {
+		$campaign_data = [
+			'amount' => 0.001,
+		];
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'edit_campaign' )
+			->with( self::TEST_CAMPAIGN_ID, $campaign_data )
+			->willThrowException( new Exception( 'error', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'POST', $campaign_data );
+
+		$this->assertEquals( 'error', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_delete_campaign() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'delete_campaign' )
+			->with( self::TEST_CAMPAIGN_ID )
+			->willReturn( self::TEST_CAMPAIGN_ID );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'DELETE' );
+
+		$this->assertEquals(
+			[
+				'status'  => 'success',
+				'message' => 'Successfully deleted campaign.',
+				'id'      => self::TEST_CAMPAIGN_ID,
+			], $response->get_data()
+		);
+		$this->assertEquals( 200, $response->get_status() );
+	}
+
+	public function test_delete_campaign_with_api_exception() {
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'delete_campaign' )
+			->with( self::TEST_CAMPAIGN_ID )
+			->willThrowException( new Exception( 'error', 400 ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGN, 'DELETE' );
+
+		$this->assertEquals( 'error', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+}
