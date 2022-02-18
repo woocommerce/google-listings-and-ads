@@ -21,7 +21,7 @@ class AccountReviewController extends BaseOptionsController {
 	/**
 	 * AccountReviewController constructor.
 	 *
-	 * @param RESTServer    $server
+	 * @param RESTServer $server
 	 */
 	public function __construct( RESTServer $server ) {
 		parent::__construct( $server );
@@ -57,8 +57,8 @@ class AccountReviewController extends BaseOptionsController {
 			// TODO: Temporary. Implement this after Google finishes new API implementation.
 			// Statuses: APPROVED, UNDER_REVIEW, DISAPPROVED, WARNING, BLOCKED
 			$response = [
-				'status'      => 'BLOCKED',
-				'issues'      => [
+				'status' => 'BLOCKED',
+				'issues' => [
 					'#1 Issue one',
 					'#2 Issue two',
 					'#3 Issue three',
