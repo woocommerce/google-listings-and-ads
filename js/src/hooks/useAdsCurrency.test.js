@@ -3,10 +3,12 @@
  */
 import { renderHook } from '@testing-library/react-hooks';
 import { apiFetch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
+import { STORE_KEY } from '.~/data';
 import useAdsCurrency from './useAdsCurrency';
 import useStoreCurrency from './useStoreCurrency';
 
@@ -92,10 +94,15 @@ describe( 'useAdsCurrency', () => {
 					active: 'yes',
 					email: 'gla1.test@example.com',
 				} )
-				.mockReturnValueOnce(
-					// Mock /wp-json/wc/gla/ads/connection
-					adsAccountData
-				);
+				// Mock /wp-json/wc/gla/ads/connection as a connected Ads account
+				.mockReturnValueOnce( adsAccountData )
+				// Mock /wp-json/wc/gla/ads/connection as a unconnected Ads account
+				.mockReturnValueOnce( {
+					id: 0,
+					currency: null,
+					symbol: null,
+					status: 'disconnected',
+				} );
 		} );
 
 		test( 'should finish resolution', async () => {
@@ -135,6 +142,28 @@ describe( 'useAdsCurrency', () => {
 
 			expect( formatAmount( value ) ).toBe( '1|234;568\xA0zł' );
 			expect( formatAmount( value, true ) ).toBe( '1|234;568\xA0PLN' );
+		} );
+
+		test( 'when Ads account is not connected, it should return the code/symbol of currency config with fallback value', async () => {
+			// During the test running, `@wordpress/data` will keep the store across all tests,
+			// so the tests are not atomic, as the state is perserved between them.
+			// Here we invalidate the `getGoogleAdsAccount` selector to force it to re-fetch its state.
+			dispatch( STORE_KEY ).invalidateResolution(
+				'getGoogleAdsAccount',
+				[]
+			);
+
+			const { result, waitFor } = renderHook( () => useAdsCurrency() );
+
+			await waitFor( () => {
+				const { adsCurrencyConfig, formatAmount } = result.current;
+				const value = 1234.5678;
+
+				expect( adsCurrencyConfig.code ).toBe( '' );
+				expect( adsCurrencyConfig.symbol ).toBe( '' );
+				expect( formatAmount( value ) ).toBe( '1|234;568\xA0' );
+				expect( formatAmount( value, true ) ).toBe( '1|234;568\xA0' );
+			} );
 		} );
 	} );
 } );

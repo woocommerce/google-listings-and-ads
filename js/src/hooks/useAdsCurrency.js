@@ -45,7 +45,7 @@ export default function useAdsCurrency() {
 
 	// Apply store's foramtting config with the Ad's currency and symbol.
 	// The `currency` and `symbol` could be `null`,
-	// so it cannot be assigned default values with destructuring assignment.
+	// so they cannot be assigned default values with destructuring assignment.
 	const code = googleAdsAccount?.currency || '';
 	const symbol = googleAdsAccount?.symbol || '';
 	const adsCurrencyConfig = useMemo( () => {
