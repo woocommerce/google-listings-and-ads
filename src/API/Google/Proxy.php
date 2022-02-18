@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -283,7 +284,7 @@ class Proxy implements OptionsAwareInterface {
 	 * Get Ads IDs associated with the connected Google account.
 	 *
 	 * @return int[]
-	 * @throws Exception When an ApiException is caught.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_ads_account_ids(): array {
 		try {
@@ -301,15 +302,19 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
+			$errors = $this->get_api_exception_errors( $e );
+
 			// Return an empty list if the user has not signed up to ads yet.
-			if ( $this->has_api_exception_error( $e, 'NOT_ADS_USER' ) ) {
+			if ( isset( $errors['NOT_ADS_USER'] ) ) {
 				return [];
 			}
 
-			throw new Exception(
+			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
 			);
 		}
 	}
