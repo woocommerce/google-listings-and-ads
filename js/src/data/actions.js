@@ -114,7 +114,7 @@ export function* saveShippingRates( newShippingRates ) {
 		 */
 		if ( ! newShippingRates.length ) {
 			return {
-				type: TYPES.SAVE_SHIPPING_RATES,
+				type: TYPES.RECEIVE_SHIPPING_RATES,
 				shippingRates: [],
 			};
 		}
@@ -133,7 +133,7 @@ export function* saveShippingRates( newShippingRates ) {
 		const upsertedShippingRates = data.success?.map( ( el ) => el.rate );
 
 		return {
-			type: TYPES.SAVE_SHIPPING_RATES,
+			type: TYPES.RECEIVE_SHIPPING_RATES,
 			shippingRates: upsertedShippingRates,
 		};
 	} catch ( error ) {

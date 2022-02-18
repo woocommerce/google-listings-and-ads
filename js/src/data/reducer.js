@@ -124,12 +124,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'mc.shipping.rates', action.shippingRates );
 		}
 
-		case TYPES.SAVE_SHIPPING_RATES: {
-			const { shippingRates } = action;
-
-			return setIn( state, 'mc.shipping.rates', shippingRates );
-		}
-
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
 			return setIn( state, 'mc.shipping.times', action.shippingTimes );
 		}
