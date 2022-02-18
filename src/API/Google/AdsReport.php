@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\Admin\API\Reports\TimeInterval;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsProductReportQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
@@ -12,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use DateTime;
-use Exception;
 use Google\Ads\GoogleAds\V9\Common\Segments;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\ApiCore\ApiException;
@@ -24,6 +24,7 @@ use Google\ApiCore\ApiException;
  */
 class AdsReport implements OptionsAwareInterface {
 
+	use ApiExceptionTrait;
 	use MicroTrait;
 	use OptionsAwareTrait;
 	use ReportTrait;
@@ -51,7 +52,7 @@ class AdsReport implements OptionsAwareInterface {
 	 * @param array  $args Query arguments.
 	 *
 	 * @return array
-	 * @throws Exception If the report data can't be retrieved.
+	 * @throws ExceptionWithResponseData If the report data can't be retrieved.
 	 */
 	public function get_report_data( string $type, array $args ): array {
 		try {
@@ -88,10 +89,17 @@ class AdsReport implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			throw new Exception(
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Unable to retrieve campaign report data: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				sprintf( __( 'Unable to retrieve report data: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[
+					'errors' => $errors,
+					'type'   => $type,
+					'args'   => $args,
+				]
 			);
 		}
 	}
