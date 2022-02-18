@@ -5,7 +5,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Merch
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseOptionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\RequestReview;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use WP_REST_Request as Request;
 
@@ -17,21 +16,15 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  */
 class AccountReviewController extends BaseOptionsController {
-	/**
-	 * @var RequestReview Request review Helper
-	 */
-	protected $request_review;
 
 
 	/**
 	 * AccountReviewController constructor.
 	 *
 	 * @param RESTServer    $server
-	 * @param RequestReview $request_review
 	 */
-	public function __construct( RESTServer $server, RequestReview $request_review ) {
+	public function __construct( RESTServer $server ) {
 		parent::__construct( $server );
-		$this->request_review = $request_review;
 	}
 
 	/**
@@ -62,9 +55,9 @@ class AccountReviewController extends BaseOptionsController {
 	protected function get_review_read_callback(): callable {
 		return function ( Request $request ) {
 			// TODO: Temporary. Implement this after Google finishes new API implementation.
+			// Statuses: APPROVED, UNDER_REVIEW, DISAPPROVED, WARNING, BLOCKED
 			$response = [
-				'status'      => $this->request_review->is_allowed() ? RequestReview::REVIEW_STATUS_DISAPPROVED : RequestReview::REVIEW_STATUS_BLOCKED,
-				'nextAttempt' => $this->request_review->get_next_attempt(),
+				'status'      => 'BLOCKED',
 				'issues'      => [
 					'#1 Issue one',
 					'#2 Issue two',

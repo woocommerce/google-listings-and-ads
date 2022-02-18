@@ -2,8 +2,7 @@
  * External dependencies
  */
 import { createInterpolateElement } from '@wordpress/element';
-import { __, sprintf } from '@wordpress/i18n';
-import { format } from '@wordpress/date';
+import { __ } from '@wordpress/i18n';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
@@ -46,16 +45,9 @@ const ReviewRequestNotice = ( {
 							{ REVIEW_STATUSES[ account.status ].body }
 							{ isDisabled &&
 								createInterpolateElement(
-									sprintf(
-										// translators: %s: The date to wait until the next request review.
-										__(
-											' You can request a new review on %s. <Link>Learn more</Link>',
-											'google-listings-and-ads'
-										),
-										format(
-											'd M Y',
-											account.nextAttempt * 1000
-										)
+									__(
+										' You can request a new review approximately 7 days after a disapproval. <Link>Learn more</Link>',
+										'google-listings-and-ads'
 									),
 									{
 										Link: (
