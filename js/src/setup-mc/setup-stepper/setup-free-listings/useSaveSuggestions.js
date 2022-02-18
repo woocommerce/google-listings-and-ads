@@ -20,12 +20,12 @@ import { useAppDispatch } from '.~/data';
  */
 const useSaveSuggestions = () => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { upsertShippingRates } = useAppDispatch();
+	const { saveShippingRates } = useAppDispatch();
 
 	const saveSuggestions = useCallback(
 		async ( suggestions ) => {
 			try {
-				await upsertShippingRates( suggestions );
+				await saveShippingRates( suggestions );
 			} catch ( error ) {
 				createNotice(
 					'error',
@@ -36,7 +36,7 @@ const useSaveSuggestions = () => {
 				);
 			}
 		},
-		[ createNotice, upsertShippingRates ]
+		[ createNotice, saveShippingRates ]
 	);
 
 	return saveSuggestions;

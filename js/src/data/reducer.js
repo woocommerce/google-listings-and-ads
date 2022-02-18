@@ -6,7 +6,6 @@ import { setWith, clone } from 'lodash';
 /**
  * Internal dependencies
  */
-import isSameShippingRate from '.~/utils/isSameShippingRate';
 import TYPES from './action-types';
 
 const DEFAULT_STATE = {
@@ -123,38 +122,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 	switch ( action.type ) {
 		case TYPES.RECEIVE_SHIPPING_RATES: {
 			return setIn( state, 'mc.shipping.rates', action.shippingRates );
-		}
-
-		case TYPES.UPSERT_SHIPPING_RATES: {
-			const { shippingRates } = action;
-			const rates = [ ...state.mc.shipping.rates ];
-
-			shippingRates.forEach( ( shippingRate ) => {
-				const idx = rates.findIndex( ( el ) =>
-					isSameShippingRate( el, shippingRate )
-				);
-
-				if ( idx >= 0 ) {
-					rates[ idx ] = shippingRate;
-				} else {
-					rates.push( shippingRate );
-				}
-			} );
-
-			return setIn( state, 'mc.shipping.rates', rates );
-		}
-
-		case TYPES.DELETE_SHIPPING_RATES: {
-			const { shippingRates } = action;
-			const deletedIDsSet = new Set(
-				shippingRates.map( ( el ) => el.id )
-			);
-
-			const rates = state.mc.shipping.rates.filter(
-				( el ) => ! deletedIDsSet.has( el.id )
-			);
-
-			return setIn( state, 'mc.shipping.rates', rates );
 		}
 
 		case TYPES.SAVE_SHIPPING_RATES: {

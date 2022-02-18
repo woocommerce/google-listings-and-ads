@@ -9,19 +9,15 @@ import { useDebouncedCallback } from 'use-debounce';
  */
 import { useAppDispatch } from '.~/data';
 import useShippingTimes from '.~/hooks/useShippingTimes';
-import useShippingRates from '.~/hooks/useShippingRates';
 
 const wait = 500;
 
 const useAutoClearShippingEffect = ( location, countries ) => {
-	const { data: shippingRates } = useShippingRates();
 	const { data: shippingTimes } = useShippingTimes();
-	const { deleteShippingRates, deleteShippingTimes } = useAppDispatch();
+	const { saveShippingRates, deleteShippingTimes } = useAppDispatch();
 
 	const debouncedDelete = useDebouncedCallback( async () => {
-		if ( shippingRates.length ) {
-			deleteShippingRates( shippingRates );
-		}
+		saveShippingRates( [] );
 
 		if ( shippingTimes.length ) {
 			const countryCodes = shippingTimes.map( ( el ) => el.countryCode );
