@@ -10,7 +10,6 @@ import { getChartTypeForQuery } from '@woocommerce/date';
  * Internal dependencies
  */
 import useUrlQuery from '.~/hooks/useUrlQuery';
-import { useAdsCurrencyConfig } from '.~/hooks/useAdsCurrency';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
 
 const emptyMessage = __(
@@ -28,7 +27,6 @@ const emptyMessage = __(
  */
 export default function ChartSection( { metrics, loaded, intervals } ) {
 	const query = useUrlQuery();
-	const { adsCurrencyConfig } = useAdsCurrencyConfig();
 	const storeCurrencyConfig = useStoreCurrency();
 
 	const { selectedMetric } = query;
@@ -49,8 +47,7 @@ export default function ChartSection( { metrics, loaded, intervals } ) {
 
 	const chartType = getChartTypeForQuery( query );
 	const valueType = isCurrency ? 'currency' : 'number';
-	const localizedFormatFn = ( number ) =>
-		formatFn( number, storeCurrencyConfig, adsCurrencyConfig );
+	const localizedFormatFn = formatFn.bind( visibleMetric );
 
 	const chartData = useMemo( () => {
 		if ( ! loaded ) {

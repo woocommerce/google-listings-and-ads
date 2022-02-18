@@ -41,6 +41,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQue
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\MerchantIssueQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\ProductSyncStats;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
@@ -94,7 +95,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( MerchantCenterContactInformationController::class, ContactInformation::class, Settings::class, AddressUtility::class );
 		$this->share( AdsBudgetRecommendationController::class, BudgetRecommendationQuery::class, Middleware::class );
 		$this->share( PhoneVerificationController::class, PhoneVerification::class );
-		$this->share_with_container( MerchantCenterAccountController::class );
+		$this->share( MerchantCenterAccountController::class, MerchantAccountService::class );
 		$this->share_with_container( MerchantCenterReportsController::class );
 		$this->share( ShippingRateBatchController::class, ShippingRateQuery::class, ShippingZone::class );
 		$this->share( ShippingRateController::class, ShippingRateQuery::class, ShippingZone::class );

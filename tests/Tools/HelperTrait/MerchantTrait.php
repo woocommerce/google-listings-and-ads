@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Google\Service\ShoppingContent\Account;
 use Google\Service\ShoppingContent\AccountAddress;
 use Google\Service\ShoppingContent\AccountBusinessInformation;
+use Google\Service\ShoppingContent\AccountStatus;
 
 /**
  * Trait MerchantTrait
@@ -46,4 +47,19 @@ trait MerchantTrait {
 
 		return $account;
 	}
+
+	public function get_account_with_url( string $url ): Account {
+		$account = new Account();
+		$account->setWebsiteUrl( $url );
+
+		return $account;
+	}
+
+	public function get_status_website_claimed(): AccountStatus {
+		$status = new AccountStatus();
+		$status->setWebsiteClaimed( true );
+
+		return $status;
+	}
+
 }
