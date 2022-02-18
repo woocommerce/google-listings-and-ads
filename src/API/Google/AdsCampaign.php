@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
@@ -78,7 +79,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * Returns a list of campaigns
 	 *
 	 * @return array
-	 * @throws Exception When an ApiException is caught.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_campaigns(): array {
 		try {
@@ -96,10 +97,13 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			throw new Exception(
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e )
+				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
 			);
 		}
 	}
@@ -110,7 +114,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param int $id Campaign ID.
 	 *
 	 * @return array
-	 * @throws Exception When an ApiException is caught.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_campaign( int $id ): array {
 		try {
@@ -127,10 +131,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			throw new Exception(
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e )
+				sprintf( __( 'Error retrieving campaign: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[
+					'errors' => $errors,
+					'id'     => $id,
+				]
 			);
 		}
 	}
@@ -141,7 +151,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param array $params Request parameters.
 	 *
 	 * @return array
-	 * @throws Exception When an ApiException is caught.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function create_campaign( array $params ): array {
 		try {
@@ -164,17 +174,19 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
-				throw new Exception(
-					__( 'A campaign with this name already exists', 'google-listings-and-ads' ),
-					$this->map_grpc_code_to_http_status_code( $e )
-				);
+			$errors = $this->get_api_exception_errors( $e );
+			/* translators: %s Error message */
+			$message = sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), reset( $errors ) );
+
+			if ( isset( $errors['DUPLICATE_CAMPAIGN_NAME'] ) ) {
+				$message = __( 'A campaign with this name already exists', 'google-listings-and-ads' );
 			}
 
-			throw new Exception(
-				/* translators: %s Error message */
-				sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e )
+			throw new ExceptionWithResponseData(
+				$message,
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
 			);
 		}
 	}
@@ -186,7 +198,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param array $params      Request parameters.
 	 *
 	 * @return int
-	 * @throws Exception When an ApiException is caught or the ID is invalid.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function edit_campaign( int $campaign_id, array $params ): int {
 		try {
@@ -217,10 +229,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			throw new Exception(
+			$errors = $this->get_api_exception_errors( $e );
+			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e )
+				sprintf( __( 'Error editing campaign: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[
+					'errors' => $errors,
+					'id'     => $campaign_id,
+				]
 			);
 		}
 	}
@@ -231,7 +249,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @param int $campaign_id Campaign ID.
 	 *
 	 * @return int
-	 * @throws Exception When an ApiException is caught or the ID is invalid.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function delete_campaign( int $campaign_id ): int {
 		try {
@@ -248,17 +266,22 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
-			if ( $this->has_api_exception_error( $e, 'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' ) ) {
-				throw new Exception(
-					__( 'This campaign has already been deleted', 'google-listings-and-ads' ),
-					$this->map_grpc_code_to_http_status_code( $e )
-				);
+			$errors = $this->get_api_exception_errors( $e );
+			/* translators: %s Error message */
+			$message = sprintf( __( 'Error deleting campaign: %s', 'google-listings-and-ads' ), reset( $errors ) );
+
+			if ( isset( $errors['OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE'] ) ) {
+				$message = __( 'This campaign has already been deleted', 'google-listings-and-ads' );
 			}
 
-			throw new Exception(
-				/* translators: %s Error message */
-				sprintf( __( 'Error deleting campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e )
+			throw new ExceptionWithResponseData(
+				$message,
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[
+					'errors' => $errors,
+					'id'     => $campaign_id,
+				]
 			);
 		}
 	}
