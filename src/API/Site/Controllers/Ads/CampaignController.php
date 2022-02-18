@@ -13,7 +13,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166Aware
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -34,13 +33,14 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected $ads_campaign;
 
 	/**
-	 * BaseController constructor.
+	 * CampaignController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer  $server
+	 * @param AdsCampaign $ads_campaign
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->ads_campaign = $container->get( AdsCampaign::class );
+	public function __construct( RESTServer $server, AdsCampaign $ads_campaign ) {
+		parent::__construct( $server );
+		$this->ads_campaign = $ads_campaign;
 	}
 
 	/**
