@@ -12,7 +12,7 @@ import Section from '.~/wcdl/section';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
-import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
+import groupShippingRatesByMethodPriceCurrency from '.~/utils/groupShippingRatesByMethodPriceCurrency';
 import ShippingRateInputControl from './shipping-rate-input-control';
 import AddRateModal from './add-rate-modal';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
@@ -50,7 +50,7 @@ export default function EstimatedShippingRatesCard( {
 	const totalCountyCount = actualCountryCount + remainingCount;
 
 	// Group countries with the same rate.
-	const countriesPriceArray = groupShippingRatesByPriceCurrency(
+	const countriesPriceArray = groupShippingRatesByMethodPriceCurrency(
 		shippingRates
 	);
 
