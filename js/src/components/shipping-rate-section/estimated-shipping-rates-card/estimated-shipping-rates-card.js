@@ -15,9 +15,10 @@ import useStoreCurrency from '.~/hooks/useStoreCurrency';
 import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
 import ShippingRateInputControl from './shipping-rate-input-control';
 import AddRateModal from './add-rate-modal';
+import { SHIPPING_RATE_METHOD } from '.~/constants';
 
 const defaultShippingRate = {
-	method: 'flat_rate',
+	method: SHIPPING_RATE_METHOD.FLAT_RATE,
 	options: {},
 };
 
