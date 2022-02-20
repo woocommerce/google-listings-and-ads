@@ -6,24 +6,36 @@
  * ```js
  * const shippingRates = [
  *     {
+ *         id: "1",
  *         country: 'US',
+ *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 20,
+ *         options: [],
  *     },
  *     {
+ *         id: "2",
  *         country: 'AU',
+ *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 20,
+ *         options: [],
  *     },
  *     {
+ *         id: "3",
  *         country: 'CN',
+ *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 25,
+ *         options: [],
  *     },
  *     {
+ *         id: "4",
  *         country: 'BR',
+ *         method: "flat_rate",
  *         currency: 'BRL',
  *         rate: 20,
+ *         options: [],
  *     },
  * ]
  *
@@ -33,46 +45,23 @@
  * // [
  * //     {
  * //         countries: ['US', 'AU'],
+ * //         method: "flat_rate",
  * //         price: 20,
  * //         currency: 'USD',
- * //         rates: [
- * //             {
- * //                 country: 'US',
- * //                 currency: 'USD',
- * //                 rate: 20,
- * //             },
- * //             {
- * //                 country: 'AU',
- * //                 currency: 'USD',
- * //                 rate: 20,
- * //             },
- * //         ]
  * //     },
  * //     {
  * //         countries: ['CN'],
+ * //         method: "flat_rate",
  * //         price: 25,
  * //         currency: 'USD',
- * //         rates: [
- * //             {
- * //                 country: 'CN',
- * //                 currency: 'USD',
- * //                 rate: 25,
- * //             },
- * //         ]
  * //     },
  * //     {
  * //         countries: ['BR'],
+ * //         method: "flat_rate",
  * //         price: 20,
  * //         currency: 'BRL',
- * //         rates: [
- * //             {
- * //                 country: 'BR',
- * //                 currency: 'BRL',
- * //                 rate: 20,
- * //             },
- * //         ]
  * //     },
- * ]
+ * // ]
  * ```
  *
  * @param {Array<Object>} shippingRates Array of shipping rates in the format of `{ country, rate, currency }`.
@@ -81,18 +70,17 @@ const groupShippingRatesByPriceCurrency = ( shippingRates ) => {
 	const rateGroupMap = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
-		const { country, rate, currency } = shippingRate;
+		const { country, method, rate, currency } = shippingRate;
 		const price = Number( rate );
-		const priceCurrency = `${ price } ${ currency }`;
-		const group = rateGroupMap.get( priceCurrency ) || {
+		const methodPriceCurrency = `${ method } ${ price } ${ currency }`;
+		const group = rateGroupMap.get( methodPriceCurrency ) || {
 			countries: [],
+			method,
 			price,
 			currency,
-			rates: [],
 		};
 		group.countries.push( country );
-		group.rates.push( shippingRate );
-		rateGroupMap.set( priceCurrency, group );
+		rateGroupMap.set( methodPriceCurrency, group );
 	} );
 
 	return Array.from( rateGroupMap.values() );
