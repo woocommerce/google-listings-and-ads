@@ -97,6 +97,7 @@ export default function EstimatedShippingRatesCard( {
 		countries.forEach( ( country ) => {
 			const oldShippingRate = actualCountries.get( country );
 			const newShippingrate = {
+				...defaultShippingRate,
 				...oldShippingRate,
 				country,
 				currency,
