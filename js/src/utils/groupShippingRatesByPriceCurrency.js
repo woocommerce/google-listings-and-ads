@@ -45,16 +45,19 @@
  * // [
  * //     {
  * //         countries: ['US', 'AU'],
+ * //         method: "flat_rate",
  * //         price: 20,
  * //         currency: 'USD',
  * //     },
  * //     {
  * //         countries: ['CN'],
+ * //         method: "flat_rate",
  * //         price: 25,
  * //         currency: 'USD',
  * //     },
  * //     {
  * //         countries: ['BR'],
+ * //         method: "flat_rate",
  * //         price: 20,
  * //         currency: 'BRL',
  * //     },
@@ -67,16 +70,17 @@ const groupShippingRatesByPriceCurrency = ( shippingRates ) => {
 	const rateGroupMap = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
-		const { country, rate, currency } = shippingRate;
+		const { country, method, rate, currency } = shippingRate;
 		const price = Number( rate );
-		const priceCurrency = `${ price } ${ currency }`;
-		const group = rateGroupMap.get( priceCurrency ) || {
+		const methodPriceCurrency = `${ method } ${ price } ${ currency }`;
+		const group = rateGroupMap.get( methodPriceCurrency ) || {
 			countries: [],
+			method,
 			price,
 			currency,
 		};
 		group.countries.push( country );
-		rateGroupMap.set( priceCurrency, group );
+		rateGroupMap.set( methodPriceCurrency, group );
 	} );
 
 	return Array.from( rateGroupMap.values() );
