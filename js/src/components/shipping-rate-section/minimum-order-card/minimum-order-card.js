@@ -15,7 +15,7 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import AddMinimumOrderModal from './add-minimum-order-modal';
-import groupShippingRatesByFreeShippingThreshold from './groupShippingRatesByFreeShippingThreshold';
+import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
@@ -25,7 +25,7 @@ const MinimumOrderCard = ( props ) => {
 			shippingRate.rate > 0 &&
 			shippingRate.method === SHIPPING_RATE_METHOD.FLAT_RATE
 	);
-	const groups = groupShippingRatesByFreeShippingThreshold(
+	const groups = groupShippingRatesByMethodFreeShippingThreshold(
 		nonZeroShippingRates
 	);
 	const countryOptions = nonZeroShippingRates.map(
