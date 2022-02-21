@@ -188,7 +188,7 @@ class WCCouponAdapter extends GooglePromotion implements Validatable {
 		return new GoogleTimePeriod(
 			[
 				'startTime' => (string) $start_date,
-				'endTime'    => (string) $end_date,
+				'endTime'   => (string) $end_date,
 			]
 		);
 	}
