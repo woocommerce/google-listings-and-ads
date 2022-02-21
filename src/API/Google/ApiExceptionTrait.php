@@ -58,15 +58,22 @@ trait ApiExceptionTrait {
 
 		if ( is_array( $meta ) ) {
 			foreach ( $meta as $data ) {
-				if ( ! is_array( $data['errors'] ) ) {
+				if ( empty( $data['errors'] ) || ! is_array( $data['errors'] ) ) {
 					continue;
 				}
 
 				foreach ( $data['errors'] as $error ) {
-					if ( ! empty( $error['message'] ) ) {
-						$error_code            = reset( $error['errorCode'] ) ?: 'ERROR';
-						$errors[ $error_code ] = $error['message'];
+					if ( empty( $error['message'] ) ) {
+						continue;
 					}
+
+					if ( ! empty( $error['errorCode'] ) && is_array( $error['errorCode'] ) ) {
+						$error_code = reset( $error['errorCode'] );
+					} else {
+						$error_code = 'ERROR';
+					}
+
+					$errors[ $error_code ] = $error['message'];
 				}
 			}
 		}
