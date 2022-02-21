@@ -152,6 +152,22 @@ class ProductRepository implements Service {
 	}
 
 	/**
+	 * Find and return an array of WooCommerce product ID's ready to be deleted from the Google Merchant Center.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param int[] $ids    Array of WooCommerce product IDs
+	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
+	 * @param int   $offset Amount to offset product results.
+	 *
+	 * @return array
+	 */
+	public function find_delete_product_ids( array $ids, int $limit = - 1, int $offset = 0 ): array {
+		$results = $this->find_by_ids( $ids, $limit, $offset );
+		return $this->product_filter->filter_products_for_delete( $results, true );
+	}
+
+	/**
 	 * Find and return an array of WooCommerce product IDs ready to be submitted to Google Merchant Center.
 	 *
 	 * @param array $args   Array of WooCommerce args (except 'return'), and product metadata.
