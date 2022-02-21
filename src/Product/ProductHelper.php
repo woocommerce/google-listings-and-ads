@@ -55,6 +55,12 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Mark a product as synced in the local database.
+	 * This function also handles the following cleanup tasks:
+	 * - Remove any failed delete attemps
+	 * - Update the visibility (if it was previously empty)
+	 * - Remove any previous product errors (if it was synced for all target countries)
+	 *
 	 * @param WC_Product    $product
 	 * @param GoogleProduct $google_product
 	 */
