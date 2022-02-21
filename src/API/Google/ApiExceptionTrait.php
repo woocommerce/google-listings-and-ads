@@ -30,7 +30,7 @@ trait ApiExceptionTrait {
 		}
 
 		foreach ( $meta as $data ) {
-			if ( empty( $data['errors'] || ! is_array( $data['errors'] ) ) ) {
+			if ( empty( $data['errors'] ) || ! is_array( $data['errors'] ) ) {
 				continue;
 			}
 
