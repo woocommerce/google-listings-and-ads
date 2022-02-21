@@ -101,27 +101,21 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				);
 			}
 
+			$returned_recommendations = array_map(
+				function ( $recommendation ) {
+					return [
+						'country'           => $recommendation['country'],
+						'daily_budget_low'  => (float) $recommendation['daily_budget_low'],
+						'daily_budget_high' => (float) $recommendation['daily_budget_high'],
+					];
+				},
+				$recommendations
+			);
+
 			return $this->prepare_item_for_response(
 				[
-					'currency'          => $currency,
-					'country_codes'     => array_map(
-						function ( $recommendation ) {
-							return $recommendation['country'];
-						},
-						$recommendations
-					),
-					'daily_budget_low'  => array_map(
-						function ( $recommendation ) {
-							return (float) $recommendation['daily_budget_low'];
-						},
-						$recommendations
-					),
-					'daily_budget_high' => array_map(
-						function ( $recommendation ) {
-							return (float) $recommendation['daily_budget_high'];
-						},
-						$recommendations
-					),
+					'currency'        => $currency,
+					'recommendations' => $returned_recommendations,
 				],
 				$request
 			);
@@ -135,34 +129,38 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'currency'          => [
+			'currency'        => [
 				'type'              => 'string',
 				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
-			'country_codes'     => [
-				'type'              => [ 'string' ],
-				'description'       => __( 'An array of Country codes in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-				'validate_callback' => $this->get_country_code_validate_callback(),
-				'required'          => true,
-			],
-			'daily_budget_low'  => [
-				'type'              => [ 'number' ],
-				'description'       => __( 'An array of the lower limit for the recommended budget.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
-			],
-			'daily_budget_high' => [
-				'type'              => [ 'number' ],
-				'description'       => __( 'An array of the upper limit for the recommended budget.', 'google-listings-and-ads' ),
-				'context'           => [ 'view' ],
-				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
+			'recommendations' => [
+				'type'  => 'array',
+				'items' => [
+					'type'       => 'object',
+					'properties' => [
+						'country'           => [
+							'type'              => 'string',
+							'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+							'context'           => [ 'view' ],
+							'sanitize_callback' => $this->get_country_code_sanitize_callback(),
+							'validate_callback' => $this->get_country_code_validate_callback(),
+							'required'          => true,
+						],
+						'daily_budget_low'  => [
+							'type'        => 'number',
+							'description' => __( 'Daily budget lower bound ', 'google-listings-and-ads' ),
+							'required'    => true,
+						],
+						'daily_budget_high' => [
+							'type'        => 'number',
+							'description' => __( 'Daily budget upper bound ', 'google-listings-and-ads' ),
+							'required'    => true,
+						],
+					],
+				],
 			],
 		];
 	}

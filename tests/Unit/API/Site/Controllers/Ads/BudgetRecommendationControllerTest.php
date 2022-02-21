@@ -64,10 +64,29 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		];
 
 		$expected_response_data = [
-			'currency'          => 'TWD',
-			'country_codes'     => ['US', 'GB', 'TW', 'JP'],
-			'daily_budget_low'  => [330, 245, 95, 110],
-			'daily_budget_high' => [930, 625, 255, 320],
+			'currency'        => 'TWD',
+			'recommendations' => [
+				[
+					'country'           => 'US',
+					'daily_budget_low'  => 330.0,
+					'daily_budget_high' => 930.0,
+				],
+				[
+					'country'           => 'GB',
+					'daily_budget_low'  => 245.0,
+					'daily_budget_high' => 625.0,
+				],
+				[
+					'country'           => 'TW',
+					'daily_budget_low'  => 95.0,
+					'daily_budget_high' => 255.0,
+				],
+				[
+					'country'           => 'JP',
+					'daily_budget_low'  => 110.0,
+					'daily_budget_high' => 320.0,
+				]
+			],
 		];
 
 		$this->middleware->expects( $this->once() )
@@ -84,7 +103,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
 
-		$this->assertEquals( $expected_response_data, $response->get_data() );
+		$this->assertSame( $expected_response_data, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
