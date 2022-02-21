@@ -138,7 +138,7 @@ class WCCouponAdapterTest extends UnitTest {
 		$expected = new GoogleTimePeriod(
 				[
 					'startTime' => '2021-01-01T02:03:45+00:00',
-					'endTime'    => '2021-07-03T02:03:45+00:00',
+					'endTime'   => '2021-07-03T02:03:45+00:00',
 				]
 			);
 
