@@ -2,7 +2,7 @@
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
-	"version": "1.11.0",
+	"version": "1.11.1",
 	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
@@ -56,16 +56,18 @@
 		"@wordpress/scripts": "^17.1.0",
 		"@wordpress/stylelint-config": "^19.0.5",
 		"bundlewatch": "^0.3.2",
+		"eslint": "^7.17.0",
 		"eslint-import-resolver-webpack": "^0.13.1",
 		"eslint-plugin-import": "^2.25.4",
 		"file-loader": "^6.2.0",
 		"h2o2": "^8.2.0",
 		"postcss": "^8.4.4",
-		"prettier": "npm:wp-prettier@^2.0.5"
+		"prettier": "npm:wp-prettier@^2.0.5",
+		"stylelint": "^13.8.0"
 	},
 	"dependencies": {
 		"@woocommerce/components": "8.1.0",
-		"@woocommerce/currency": "^3.1.0",
+		"@woocommerce/currency": "^3.2.1",
 		"@woocommerce/customer-effort-score": "^1.1.0",
 		"@woocommerce/data": "1.4.0",
 		"@woocommerce/date": "^3.1.0",

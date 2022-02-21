@@ -7,6 +7,10 @@ on:
       - develop
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   E2ETests:
     name: E2E Tests
@@ -14,11 +18,6 @@ jobs:
     env:
       FORCE_COLOR: 2
     steps:
-      - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.9.1
-        with:
-            access_token: ${{ github.token }}
-
       # Needed for Ubuntu 20.04.
       - name: Kill mono to free 8084
         run: |

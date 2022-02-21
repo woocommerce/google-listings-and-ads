@@ -67,4 +67,28 @@ class ProductFilter implements Service {
 
 		return new FilteredProductList( $results, $unfiltered_count );
 	}
+
+	/**
+	 * Filter and return a list of products that can be deleted.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product[] $products
+	 * @param boolean      $return_ids
+	 *
+	 * @return array
+	 */
+	public function filter_products_for_delete( array $products, bool $return_ids = false ): array {
+		$results = [];
+		foreach ( $products as $product ) {
+			// Skip if the failed threshold has been reached.
+			if ( $this->product_helper->is_delete_failed_threshold_reached( $product ) ) {
+				continue;
+			}
+
+			$results[] = $return_ids ? $product->get_id() : $product;
+		}
+
+		return $results;
+	}
 }

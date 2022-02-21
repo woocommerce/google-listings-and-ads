@@ -9,7 +9,8 @@
 composer.lock
 
 # ignore the files in .github folder; running prettier for the files would mess with the templates.
-.github
+.github/*
+!.github/scripts
 
 # from .eslintignore file.
 build
