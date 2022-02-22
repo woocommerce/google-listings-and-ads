@@ -166,8 +166,14 @@ class WCCouponAdapterTest extends UnitTest {
 	    $adapted_coupon->disable_promotion( $coupon );
 
 	    $this->assertEquals(
-	        "$postdate/$postdate",
-	        $adapted_coupon->getPromotionEffectiveDates() );
+	        new GoogleTimePeriod(
+				[
+					'startTime' => (string) $postdate,
+					'endTime'   => (string) $postdate,
+				]
+			),
+	        $adapted_coupon->getPromotionEffectiveTimePeriod() 
+		);
 	}
 
 	public function test_product_id_restrictions() {
@@ -218,7 +224,6 @@ class WCCouponAdapterTest extends UnitTest {
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'promotionId' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'productApplicability' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'offerType' ) );
-		$this->assertTrue( $metadata->hasPropertyMetadata( 'promotionEffectiveDates' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'redemptionChannel' ) );
 		$this->assertTrue( $metadata->hasPropertyMetadata( 'couponValueType' ) );
 	}
