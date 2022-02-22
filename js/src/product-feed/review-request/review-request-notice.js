@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
@@ -13,7 +12,6 @@ import {
 /**
  * Internal dependencies
  */
-import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import REVIEW_STATUSES from './review-request-statuses';
 
@@ -21,7 +19,7 @@ const ReviewRequestNotice = ( {
 	account,
 	onRequestReviewClick = () => {},
 } ) => {
-	const isDisabled = account.status === 'BLOCKED';
+	const accountReviewStatus = REVIEW_STATUSES[ account.status ];
 
 	return (
 		<Flex
@@ -31,44 +29,28 @@ const ReviewRequestNotice = ( {
 			<FlexItem>
 				<Flex>
 					<FlexItem className="gla-review-request-notice__icon">
-						{ REVIEW_STATUSES[ account.status ].icon }
+						{ accountReviewStatus.icon }
 					</FlexItem>
 
 					<FlexItem className="gla-review-request-notice__text">
 						<Text variant="subtitle">
-							{ REVIEW_STATUSES[ account.status ].title }
+							{ accountReviewStatus.title }
 						</Text>
 						<Text
 							className="gla-review-request-notice__text-body"
 							variant="body"
 						>
-							{ REVIEW_STATUSES[ account.status ].body }
-							{ isDisabled &&
-								createInterpolateElement(
-									__(
-										' You can request a new review approximately 7 days after a disapproval. <Link>Learn more</Link>',
-										'google-listings-and-ads'
-									),
-									{
-										Link: (
-											<AppDocumentationLink
-												href="https://support.google.com/merchants/answer/2948694"
-												context="request-review"
-												linkId="request-review-learn-more"
-											/>
-										),
-									}
-								) }
+							{ accountReviewStatus.body }
 						</Text>
 					</FlexItem>
 				</Flex>
 			</FlexItem>
 			<FlexItem className="gla-review-request-notice__button">
-				{ REVIEW_STATUSES[ account.status ].showRequestButton && (
+				{ accountReviewStatus.requestButton && (
 					<AppButton
 						isPrimary
 						onClick={ onRequestReviewClick }
-						disabled={ isDisabled }
+						disabled={ accountReviewStatus.requestButton.disabled }
 						text={ __(
 							'Request review',
 							'google-listings-and-ads'
