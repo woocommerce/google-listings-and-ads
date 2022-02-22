@@ -23,8 +23,7 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
  * Usage:
  *
  * ```js
- * const { currencyConfig, hasFinishedResolution, formatAmount } = useAdsCurrency()
- * console.log( hasFinishedResolution ) // true
+ * const { currencyConfig, formatAmount } = useAdsCurrency()
  *
  * console.log( currencyConfig.config )          // { code: 'CAD', symbol: '$', decimalSeparator: '.', thousandSeparator: ',', precision: 2, priceFormat: '%1$s %2$s' }
  * console.log( formatAmount( 1234.567 ) )       // '$ 1,234.57'
@@ -37,15 +36,15 @@ import useGoogleAdsAccount from './useGoogleAdsAccount';
  *
  * @see useStoreCurrency
  *
- * @return {{adsCurrencyConfig: Object, hasFinishedResolution: boolean | undefined, formatAmount: Function}} The currency object.
+ * @return {{adsCurrencyConfig: Object, formatAmount: Function}} The currency object.
  */
 export default function useAdsCurrency() {
 	const storeCurrencySetting = useStoreCurrency();
-	const { googleAdsAccount, hasFinishedResolution } = useGoogleAdsAccount();
+	const { googleAdsAccount } = useGoogleAdsAccount();
 
-	// Apply store's foramtting config with the Ad's currency and symbol.
+	// Apply store's formatting config with the Ad's currency and symbol.
 	// The `currency` and `symbol` could be `null`,
-	// so it cannot be assigned default values with destructuring assignment.
+	// so they cannot be assigned default values with destructuring assignment.
 	const code = googleAdsAccount?.currency || '';
 	const symbol = googleAdsAccount?.symbol || '';
 	const adsCurrencyConfig = useMemo( () => {
@@ -62,7 +61,6 @@ export default function useAdsCurrency() {
 
 	return {
 		adsCurrencyConfig,
-		hasFinishedResolution,
 		formatAmount,
 	};
 }
