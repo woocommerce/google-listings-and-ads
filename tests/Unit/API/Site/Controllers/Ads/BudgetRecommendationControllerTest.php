@@ -28,6 +28,9 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		parent::setUp();
 
 		$this->budget_recommendation_query = $this->createMock( BudgetRecommendationQuery::class );
+		$this->budget_recommendation_query->method( 'where' )
+			->willReturn( $this->budget_recommendation_query );
+
 		$this->iso_provider = $this->createMock( ISO3166DataProvider::class );
 		$this->middleware = $this->createMock( Middleware::class );
 
@@ -94,9 +97,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			->method( 'get_ads_currency' )
 			->willReturn( 'TWD' );
 
-		$this->budget_recommendation_query->expects( $this->exactly(2) )
-			->method( 'where' )
-			->willReturn( $this->budget_recommendation_query );
+		$this->budget_recommendation_query->expects( $this->exactly(2) )->method( 'where' );
 
 		$this->budget_recommendation_query->expects( $this->once() )
 			->method( 'get_results' )
