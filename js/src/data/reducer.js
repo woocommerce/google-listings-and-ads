@@ -124,41 +124,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'mc.shipping.rates', action.shippingRates );
 		}
 
-		case TYPES.UPSERT_SHIPPING_RATES: {
-			const { shippingRates } = action;
-			const rates = [ ...state.mc.shipping.rates ];
-
-			shippingRates.forEach( ( shippingRate ) => {
-				const idx = rates.findIndex(
-					( el ) =>
-						( el.id && el.id === shippingRate.id ) ||
-						( el.country === shippingRate.country &&
-							el.method === shippingRate.method )
-				);
-
-				if ( idx >= 0 ) {
-					rates[ idx ] = shippingRate;
-				} else {
-					rates.push( shippingRate );
-				}
-			} );
-
-			return setIn( state, 'mc.shipping.rates', rates );
-		}
-
-		case TYPES.DELETE_SHIPPING_RATES: {
-			const { shippingRates } = action;
-			const deletedIDsSet = new Set(
-				shippingRates.map( ( el ) => el.id )
-			);
-
-			const rates = state.mc.shipping.rates.filter(
-				( el ) => ! deletedIDsSet.has( el.id )
-			);
-
-			return setIn( state, 'mc.shipping.rates', rates );
-		}
-
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
 			return setIn( state, 'mc.shipping.times', action.shippingTimes );
 		}

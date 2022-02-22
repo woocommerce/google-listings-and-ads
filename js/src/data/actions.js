@@ -1,15 +1,17 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, select } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import isSameShippingRate from '.~/utils/isSameShippingRate';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { STORE_KEY } from '.';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -71,79 +73,80 @@ export function* fetchShippingRates() {
 }
 
 /**
- * Aggregated shipping rate.
+ * Saves shipping rates.
  *
- * @typedef {Object} AggregatedShippingRate
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {string} currency Currency of the price.
- * @property {number} rate Shipping price.
- */
-
-/**
- * Updates or inserts given aggregated shipping rate.
+ * This is done by removing the old shipping rates first,
+ * and then upserting the new shipping rates.
  *
- * @param {AggregatedShippingRate} shippingRates
+ * @param {Array<ShippingRate>} newShippingRates
  */
-export function* upsertShippingRates( shippingRates ) {
+export function* saveShippingRates( newShippingRates ) {
 	try {
-		yield apiFetch( {
+		/**
+		 * Compare the new shipping rates and the old ones from the store
+		 * to find out the old ones to be deleted.
+		 */
+		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
+		const deleteIds = oldShippingRates.reduce( ( acc, cur ) => {
+			const found = newShippingRates.find( ( el ) =>
+				isSameShippingRate( el, cur )
+			);
+
+			if ( ! found ) {
+				acc.push( cur.id );
+			}
+
+			return acc;
+		}, [] );
+
+		if ( deleteIds.length ) {
+			yield apiFetch( {
+				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+				method: 'DELETE',
+				data: {
+					ids: deleteIds,
+				},
+			} );
+		}
+
+		/**
+		 * No new shipping rate, no need to call API.
+		 */
+		if ( ! newShippingRates.length ) {
+			return {
+				type: TYPES.RECEIVE_SHIPPING_RATES,
+				shippingRates: [],
+			};
+		}
+
+		/**
+		 * There are new shipping rates, we call API to upsert them.
+		 */
+		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'POST',
 			data: {
-				rates: shippingRates,
+				rates: newShippingRates,
 			},
 		} );
 
-		if ( shippingRates.some( ( el ) => ! el.id ) ) {
-			return yield fetchShippingRates();
-		}
+		const upsertedShippingRates = data.success?.map( ( el ) => el.rate );
 
 		return {
-			type: TYPES.UPSERT_SHIPPING_RATES,
-			shippingRates,
+			type: TYPES.RECEIVE_SHIPPING_RATES,
+			shippingRates: upsertedShippingRates,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to add / update shipping rates. Please try again later.',
+				'There was an error trying to save shipping rates. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
 	}
 }
 
-/**
- * Deletes shipping rates associated with given country codes.
- *
- * @param {Array<ShippingRate>} shippingRates
- */
-export function* deleteShippingRates( shippingRates ) {
-	try {
-		const ids = shippingRates.map( ( el ) => el.id );
-
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'DELETE',
-			data: {
-				ids,
-			},
-		} );
-
-		return {
-			type: TYPES.DELETE_SHIPPING_RATES,
-			shippingRates,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to delete shipping rates. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
 /**
  * Individual shipping time.
  *

@@ -94,7 +94,7 @@ export default function EditFreeCampaign() {
 	const {
 		saveTargetAudience,
 		saveSettings,
-		upsertShippingRates,
+		saveShippingRates,
 		upsertShippingTimes,
 	} = useAppDispatch();
 
@@ -182,7 +182,7 @@ export default function EditFreeCampaign() {
 			await Promise.allSettled( [
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
-				upsertShippingRates( shippingRates ),
+				saveShippingRates( shippingRates ),
 				...saveShippingData(
 					upsertShippingTimes,
 					shippingTimes,
