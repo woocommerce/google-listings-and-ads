@@ -32,13 +32,14 @@ const ReviewRequest = ( { account = {} } ) => {
 
 	const handleNoticeClick = () => {
 		setModalActive( true );
-		recordEvent( 'gla_request_review_open_modal' );
+		recordEvent( 'gla_modal_open', { context: 'request_review' } );
 	};
 
-	const handleModalClose = ( context ) => {
+	const handleModalClose = ( action ) => {
 		setModalActive( false );
-		recordEvent( 'gla_request_review_close_modal', {
-			context,
+		recordEvent( 'gla_modal_closed', {
+			context: 'request_review',
+			action,
 		} );
 	};
 

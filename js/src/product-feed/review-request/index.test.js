@@ -8,7 +8,7 @@ jest.mock( '@woocommerce/tracks', () => {
 /**
  * External dependencies
  */
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, screen, render } from '@testing-library/react';
 import { recordEvent } from '@woocommerce/tracks';
 
 /**
@@ -51,9 +51,16 @@ describe( 'Request Review Component', () => {
 			expect( button ).toBeTruthy();
 			fireEvent.click( button );
 			expect( queryByRole( 'dialog' ) ).toBeTruthy();
-			expect( recordEvent ).toHaveBeenCalledWith(
-				'gla_request_review_open_modal'
-			);
+			expect( recordEvent ).toHaveBeenCalledWith( 'gla_modal_open', {
+				context: 'request_review',
+			} );
+
+			fireEvent.click( screen.queryByText( 'Cancel' ) );
+			expect( queryByRole( 'dialog' ) ).toBeFalsy();
+			expect( recordEvent ).toHaveBeenCalledWith( 'gla_modal_closed', {
+				context: 'request_review',
+				action: 'cancel',
+			} );
 		}
 	);
 
