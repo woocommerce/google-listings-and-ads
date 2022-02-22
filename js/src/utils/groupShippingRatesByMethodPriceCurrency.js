@@ -66,7 +66,7 @@
  *
  * @param {Array<Object>} shippingRates Array of shipping rates in the format of `{ country, rate, currency }`.
  */
-const groupShippingRatesByPriceCurrency = ( shippingRates ) => {
+const groupShippingRatesByMethodPriceCurrency = ( shippingRates ) => {
 	const rateGroupMap = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
@@ -86,4 +86,4 @@ const groupShippingRatesByPriceCurrency = ( shippingRates ) => {
 	return Array.from( rateGroupMap.values() );
 };
 
-export default groupShippingRatesByPriceCurrency;
+export default groupShippingRatesByMethodPriceCurrency;
