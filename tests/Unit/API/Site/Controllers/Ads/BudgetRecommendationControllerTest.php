@@ -6,7 +6,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -138,33 +137,12 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 		$this->iso_provider
 			->method( 'alpha2' )
-			->willThrowException( new OutOfBoundsException( 'Not a valid alpha2 key: AAAAA', 400 ) );
+			->willThrowException( new Exception( 'invalid_country' ) );
 
 		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
 
-		$this->assertEquals(
-			[
-				'code'    => 'rest_invalid_param',
-				'message' => 'Invalid parameter(s): country_codes',
-				'data'    => [
-					'status'  => 400,
-					'params'  => [
-						'country_codes' => 'Not a valid alpha2 key: AAAAA',
-					],
-					'details' => [
-						'country_codes' => [
-							'code'    => 'gla_invalid_country',
-							'message' => 'Not a valid alpha2 key: AAAAA',
-							'data'    => [
-								'status'  => 400,
-								'country' => 'AAAAA',
-							],
-						],
-					],
-				],
-			],
-			$response->get_data()
-		);
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): country_codes', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
