@@ -44,13 +44,15 @@ describe( 'Request Review Notice', () => {
 
 		const { queryByText, queryByRole } = render(
 			<ReviewRequestNotice
-				account={ { status: 'BLOCKED', nextAttempt: 1644220897 } }
+				account={ { status: 'BLOCKED' } }
 				onRequestReviewClick={ onRequestReviewClick }
 			/>
 		);
 
 		expect(
-			queryByText( /You can request a new review on 07 Feb 2022/ )
+			queryByText(
+				/You can request a new review approximately 7 days after a disapproval./
+			)
 		).toBeTruthy();
 		expect( queryByText( /Learn more/ ) ).toBeTruthy();
 
