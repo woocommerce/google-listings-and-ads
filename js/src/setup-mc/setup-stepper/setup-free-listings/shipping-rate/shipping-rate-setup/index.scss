@@ -3,6 +3,10 @@
 
 	.countries-price {
 		margin-bottom: calc(var(--main-gap) / 2);
+
+		.countries-price-input-form {
+			max-width: 300px;
+		}
 	}
 
 	.add-rate-button {
