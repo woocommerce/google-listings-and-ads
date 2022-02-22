@@ -61,7 +61,7 @@
  * //         price: 20,
  * //         currency: 'BRL',
  * //     },
- * ]
+ * // ]
  * ```
  *
  * @param {Array<Object>} shippingRates Array of shipping rates in the format of `{ country, rate, currency }`.
