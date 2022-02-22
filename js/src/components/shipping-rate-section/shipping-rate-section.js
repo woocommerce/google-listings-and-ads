@@ -14,7 +14,7 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 
-const ShippingRateSection = ( { formProps, countries: audienceCountries } ) => {
+const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 	const { getInputProps, values } = formProps;
 	const inputProps = getInputProps( 'shipping_rate' );
 

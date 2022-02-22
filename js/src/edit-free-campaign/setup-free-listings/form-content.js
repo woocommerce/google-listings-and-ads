@@ -47,7 +47,7 @@ const FormContent = ( {
 		<StepContent>
 			<ShippingRateSection
 				formProps={ formProps }
-				countries={ countries }
+				audienceCountries={ countries }
 			/>
 			<ShippingTimeSection
 				formProps={ formProps }
