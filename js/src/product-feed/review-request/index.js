@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useState } from '@wordpress/element';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -29,18 +30,35 @@ const ReviewRequest = ( { account = {} } ) => {
 		return null;
 	}
 
+	const handleNoticeClick = () => {
+		setModalActive( true );
+		recordEvent( 'gla_request_review_open_modal' );
+	};
+
+	const handleModalClose = ( context ) => {
+		setModalActive( false );
+		recordEvent( 'gla_request_review_close_modal', {
+			context,
+		} );
+	};
+
+	const handleReviewRequest = () => {
+		handleModalClose( 'request_review' );
+		recordEvent( 'gla_request_review' );
+		// TODO: Implement call to Review Request API
+	};
+
 	return (
 		<div className="gla-review-request">
 			<ReviewRequestModal
 				issues={ accountData?.issues }
 				isActive={ modalActive }
-				onClose={ () => {
-					setModalActive( false );
-				} }
+				onClose={ handleModalClose }
+				onSendRequest={ handleReviewRequest }
 			/>
 			<ReviewRequestNotice
 				account={ accountData }
-				onRequestReviewClick={ () => setModalActive( true ) }
+				onRequestReviewClick={ handleNoticeClick }
 			/>
 		</div>
 	);

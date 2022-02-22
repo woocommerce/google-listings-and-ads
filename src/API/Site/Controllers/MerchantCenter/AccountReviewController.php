@@ -63,7 +63,7 @@ class AccountReviewController extends BaseOptionsController {
 		return function ( Request $request ) {
 			// TODO: Temporary. Implement this after Google finishes new API implementation.
 			$response = [
-				'status'      => $this->request_review->is_allowed() ? RequestReview::REVIEW_STATUS_DISAPPROVED : RequestReview::REVIEW_STATUS_BLOCKED,
+				'status'      => RequestReview::REVIEW_STATUS_DISAPPROVED,
 				'nextAttempt' => $this->request_review->get_next_attempt(),
 				'issues'      => [
 					'#1 Issue one',

@@ -1,7 +1,13 @@
+jest.mock( '@woocommerce/tracks', () => {
+	return {
+		recordEvent: jest.fn(),
+	};
+} );
 /**
  * External dependencies
  */
 import { fireEvent, render } from '@testing-library/react';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -48,12 +54,28 @@ describe( 'Request Review Modal', () => {
 		expect( queryByText( '#5' ) ).toBeTruthy();
 		expect( queryByText( '#6' ) ).toBeFalsy();
 
-		const button = queryByText( '+ 1 more issue(s)' );
+		let button = queryByText( '+ 1 more issue(s)' );
 		expect( queryByText( 'Show less' ) ).toBeFalsy();
 		expect( button ).toBeTruthy();
 		fireEvent.click( button );
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'gla_request_review_issue_list_toggle_click',
+			{
+				action: 'expand',
+			}
+		);
 		expect( queryByText( '#6' ) ).toBeTruthy();
-		expect( queryByText( 'Show less' ) ).toBeTruthy();
+		button = queryByText( 'Show less' );
+		expect( button ).toBeTruthy();
+		fireEvent.click( button );
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'gla_request_review_issue_list_toggle_click',
+			{
+				action: 'collapse',
+			}
+		);
+		expect( queryByText( '#6' ) ).toBeFalsy();
+		expect( queryByText( 'Show less' ) ).toBeFalsy();
 	} );
 
 	it( 'Cancel button closes the modal', () => {

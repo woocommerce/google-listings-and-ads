@@ -1,9 +1,15 @@
 jest.mock( '.~/hooks/useActiveIssueType' );
+jest.mock( '@woocommerce/tracks', () => {
+	return {
+		recordEvent: jest.fn(),
+	};
+} );
 
 /**
  * External dependencies
  */
 import { fireEvent, render } from '@testing-library/react';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -43,9 +49,11 @@ describe( 'Request Review Component', () => {
 			expect( queryByRole( 'dialog' ) ).toBeFalsy();
 			const button = queryByRole( 'button' );
 			expect( button ).toBeTruthy();
-
 			fireEvent.click( button );
 			expect( queryByRole( 'dialog' ) ).toBeTruthy();
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'gla_request_review_open_modal'
+			);
 		}
 	);
 
