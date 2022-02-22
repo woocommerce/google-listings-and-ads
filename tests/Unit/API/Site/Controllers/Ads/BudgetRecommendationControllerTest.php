@@ -6,6 +6,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -37,7 +38,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_budget_recommendation() {
 		$budget_recommendation_params = [
-			'country_codes' => 'JP,TW,GB,US',
+			'country_codes' => ['JP', 'TW', 'GB', 'US'],
 		];
 
 		$budget_recommendation_data = [
@@ -108,26 +109,6 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_budget_recommendation_without_query_parameters() {
-		$budget_recommendation_params = [];
-
-		$this->middleware->expects( $this->once() )
-			->method( 'get_ads_currency' )
-			->willReturn( 'TWD' );
-
-		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
-
-		$this->assertEquals(
-			[
-				'message'       => 'Invalid country_codes/currency combination',
-				'currency'      => 'TWD',
-				'country_codes' => '',
-			],
-			$response->get_data()
-		);
-		$this->assertEquals( 400, $response->get_status() );
-	}
-
-	public function test_get_budget_recommendation_with_wrong_query_parameters() {
 		$budget_recommendation_params = [
 			'country_codes' => '',
 		];
@@ -140,7 +121,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals(
 			[
-				'message'       => 'Invalid country_codes/currency combination',
+				'message'       => 'Cannot find any budget recommendations',
 				'currency'      => 'TWD',
 				'country_codes' => '',
 			],
@@ -151,28 +132,35 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_budget_recommendation_with_nonexistent_country_code() {
 		$budget_recommendation_params = [
-			'country_codes' => 'AAAAA',
+			'country_codes' => ['AAAAA'],
 		];
 
-		$this->middleware->expects( $this->once() )
-			->method( 'get_ads_currency' )
-			->willReturn( 'TWD' );
-
-		$this->budget_recommendation_query->expects( $this->exactly(2) )
-			->method( 'where' )
-			->willReturn( $this->budget_recommendation_query );
-
-		$this->budget_recommendation_query->expects( $this->once() )
-			->method( 'get_results' )
-			->willReturn( null );
+		$this->iso_provider
+			->method( 'alpha2' )
+			->willThrowException( new OutOfBoundsException( 'Not a valid alpha2 key: AAAAA', 400 ) );
 
 		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
 
 		$this->assertEquals(
 			[
-				'message'       => 'Cannot find any budget recommendations',
-				'currency'      => 'TWD',
-				'country_codes' => 'AAAAA',
+				'code'    => 'rest_invalid_param',
+				'message' => 'Invalid parameter(s): country_codes',
+				'data'    => [
+					'status'  => 400,
+					'params'  => [
+						'country_codes' => 'Not a valid alpha2 key: AAAAA',
+					],
+					'details' => [
+						'country_codes' => [
+							'code'    => 'gla_invalid_country',
+							'message' => 'Not a valid alpha2 key: AAAAA',
+							'data'    => [
+								'status'  => 400,
+								'country' => 'AAAAA',
+							],
+						],
+					],
+				],
 			],
 			$response->get_data()
 		);
@@ -181,16 +169,16 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_budget_recommendation_without_currency() {
 		$budget_recommendation_params = [
-			'country_codes' => 'JP,TW,GB,US',
+			'country_codes' => ['JP', 'TW', 'GB', 'US'],
 		];
 
 		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
 
 		$this->assertEquals(
 			[
-				'message'       => 'Invalid country_codes/currency combination',
+				'message'       => 'Invalid currency',
 				'currency'      => '',
-				'country_codes' => 'JP,TW,GB,US',
+				'country_codes' => ['JP', 'TW', 'GB', 'US'],
 			],
 			$response->get_data()
 		);

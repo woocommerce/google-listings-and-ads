@@ -58,23 +58,44 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_budget_recommendation_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_collection_params(),
 				],
 				'schema' => $this->get_api_response_schema_callback(),
 			]
 		);
 	}
+
+	/**
+	 * Get the query params for collections.
+	 *
+	 * @return array
+	 */
+	public function get_collection_params(): array {
+		return [
+			'context'       => $this->get_context_param( [ 'default' => 'view' ] ),
+			'country_codes' => [
+				'type'              => 'array',
+				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
+				'validate_callback' => $this->get_country_code_validate_callback(),
+				'items'             => [
+					'type' => 'string',
+				],
+			],
+		];
+	}
+
 	/**
 	 * @return callable
 	 */
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
-			$country_codes = $request->get_query_params()['country_codes'] ?? '';
+			$country_codes = $request->get_params()['country_codes'];
 			$currency      = $this->middleware->get_ads_currency();
 
-			if ( ! $country_codes || ! $currency ) {
+			if ( ! $currency ) {
 				return new Response(
 					[
-						'message'       => __( 'Invalid country_codes/currency combination', 'google-listings-and-ads' ),
+						'message'       => __( 'Invalid currency', 'google-listings-and-ads' ),
 						'currency'      => $currency,
 						'country_codes' => $country_codes,
 					],
@@ -82,11 +103,9 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				);
 			}
 
-			$country_codes = strtoupper( $country_codes );
-
 			$recommendations = $this
 				->budget_recommendation_query
-				->where( 'country', explode( ',', $country_codes ), 'IN' )
+				->where( 'country', $country_codes, 'IN' )
 				->where( 'currency', $currency )
 				->get_results();
 
