@@ -3,6 +3,9 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Google\Service\Exception as GoogleException;
 use Exception;
@@ -20,8 +23,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class SiteVerification {
+class SiteVerification implements OptionsAwareInterface {
 
+	use OptionsAwareTrait;
 	use PluginHelper;
 
 	/**
@@ -122,4 +126,62 @@ class SiteVerification {
 
 		return true;
 	}
+
+	/**
+	 * Performs the three-step process of verifying the current site:
+	 * 1. Retrieves the meta tag with the verification token.
+	 * 2. Enables the meta tag in the head of the store.
+	 * 3. Instructs the Site Verification API to verify the meta tag.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param string $site_url Site URL to verify.
+	 *
+	 * @throws Exception If any step of the site verification process fails.
+	 */
+	public function verify_site( string $site_url ) {
+		if ( ! wc_is_valid_url( $site_url ) ) {
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'site-url' ] );
+			throw new Exception( __( 'Invalid site URL.', 'google-listings-and-ads' ) );
+		}
+
+		// Retrieve the meta tag with verification token.
+		try {
+			$meta_tag = $this->get_token( $site_url );
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'token' ] );
+			throw $e;
+		}
+
+		// Store the meta tag in the options table and mark as unverified.
+		$site_verification_options = [
+			'verified' => self::VERIFICATION_STATUS_UNVERIFIED,
+			'meta_tag' => $meta_tag,
+		];
+		$this->options->update(
+			OptionsInterface::SITE_VERIFICATION,
+			$site_verification_options
+		);
+
+		// Attempt verification.
+		try {
+			if ( $this->insert( $site_url ) ) {
+				$site_verification_options['verified'] = self::VERIFICATION_STATUS_VERIFIED;
+				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
+				do_action( 'woocommerce_gla_site_verify_success', [] );
+
+				return;
+			}
+		} catch ( Exception $e ) {
+			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
+
+			throw $e;
+		}
+
+		// Should never reach this point.
+		do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
+
+		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
+	}
+
 }

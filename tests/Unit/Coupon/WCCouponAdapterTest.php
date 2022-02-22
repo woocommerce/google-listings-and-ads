@@ -164,6 +164,7 @@ class WCCouponAdapterTest extends UnitTest {
 	        ]
 	        );
 	    $adapted_coupon->disable_promotion( $coupon );
+	    $dates = $adapted_coupon->getPromotionEffectiveTimePeriod();
 
 	    $this->assertEquals(
 	        new GoogleTimePeriod(
@@ -172,8 +173,12 @@ class WCCouponAdapterTest extends UnitTest {
 					'endTime'   => (string) $postdate,
 				]
 			),
-	        $adapted_coupon->getPromotionEffectiveTimePeriod() 
-		);
+	        $dates);
+
+	    $now = date(DATE_ATOM);
+	    $this->assertEquals( $postdate, $dates->startTime );
+	    $this->assertGreaterThanOrEqual( $postdate, $dates->endTime );
+	    $this->assertLessThanOrEqual( $now, $dates->endTime );
 	}
 
 	public function test_product_id_restrictions() {
