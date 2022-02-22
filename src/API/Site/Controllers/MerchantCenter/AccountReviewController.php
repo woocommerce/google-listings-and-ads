@@ -85,12 +85,6 @@ class AccountReviewController extends BaseOptionsController {
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'nextAttempt' => [
-				'type'        => 'int',
-				'description' => __( 'The date when the last review was requested.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'readonly'    => true,
-			],
 			'issues'      => [
 				'type'        => 'array',
 				'description' => __( 'The issues related to the Merchant Center to be reviewed and addressed before approval.', 'google-listings-and-ads' ),
