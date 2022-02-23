@@ -82,6 +82,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 						/>
 						<EditPaidAdsCampaignFormContent
 							formProps={ formProps }
+							allowMultiple={ campaign.allowMultiple }
 						/>
 						<StepContentFooter>
 							<AppButton
