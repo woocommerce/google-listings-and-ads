@@ -39,6 +39,21 @@ const ComponentTest = () => {
 				{ id: 'MY', name: 'Malaysia' },
 			],
 		},
+		{
+			id: 'NA',
+			name: 'North America',
+			children: [
+				{
+					id: 'US',
+					name: 'United States',
+					children: [
+						{ id: 'NY', name: 'New York' },
+						{ id: 'TX', name: 'Texas' },
+					],
+				},
+				{ id: 'CA', name: 'Canada' },
+			],
+		},
 	];
 
 	return (

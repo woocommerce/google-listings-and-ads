@@ -14,68 +14,75 @@ import classnames from 'classnames';
  * @return {JSX.Element} The component to be rendered
  */
 const List = ( { options = [], selected = [], onChange = () => {} } ) => {
-	const hasChildren = ( parent ) => !! parent.children?.length;
-
-	/**
-	 * Returns true if all the children for the parent are selected
-	 *
-	 * @param {Option} parent The parent option to check
-	 */
-	const isParentSelected = ( parent ) =>
-		parent.children.every( ( { id } ) => selected.includes( id ) );
-
 	return (
 		<div
 			className="woocommerce-tree-select-control__listbox"
 			role="listbox"
 			tabIndex="-1"
 		>
-			{ options.map( ( parent ) => {
-				return (
-					<div
-						key={ parent.id }
-						className="woocommerce-tree-select-control__group"
-					>
-						<CheckboxControl
-							value={ parent.id }
-							className={ classnames(
-								'woocommerce-tree-select-control__option',
-								'woocommerce-tree-select-control__parent'
-							) }
-							label={ parent.name }
-							checked={ isParentSelected( parent ) }
-							onChange={ ( checked ) => {
-								onChange( checked, parent );
-							} }
-						/>
-						{ hasChildren( parent ) && (
-							<div className="woocommerce-tree-select-control__children">
-								{ parent.children.map( ( children ) => {
-									return (
-										<CheckboxControl
-											key={ children.id }
-											className={ classnames(
-												'woocommerce-tree-select-control__option',
-												'woocommerce-tree-select-control__child'
-											) }
-											value={ children.id }
-											label={ children.name }
-											checked={ selected.includes(
-												children.id
-											) }
-											onChange={ ( checked ) => {
-												onChange( checked, children );
-											} }
-										/>
-									);
-								} ) }
-							</div>
-						) }
-					</div>
-				);
-			} ) }
+			<Options
+				options={ options }
+				selected={ selected }
+				onChange={ onChange }
+			/>
 		</div>
 	);
+};
+
+const Options = ( { options = [], selected, parent = '', onChange } ) => {
+	/**
+	 * Returns true if all the children for the parent are selected
+	 *
+	 * @param {Option} option The parent option to check
+	 */
+	const isParentSelected = ( option ) => {
+		if ( ! option.children ) {
+			return false;
+		}
+
+		return option.children.every(
+			( child ) =>
+				selected.includes( child.id ) || isParentSelected( child )
+		);
+	};
+
+	const hasChildren = ( option ) => !! option.children?.length;
+
+	return options.map( ( option ) => {
+		return (
+			<div
+				key={ `${ parent }-${ option.id }` }
+				className="woocommerce-tree-select-control__group"
+			>
+				<CheckboxControl
+					value={ option.id }
+					className={ classnames(
+						'woocommerce-tree-select-control__option',
+						'woocommerce-tree-select-control__parent'
+					) }
+					label={ option.name }
+					checked={
+						selected.includes( option.id ) ||
+						isParentSelected( option )
+					}
+					onChange={ ( checked ) => {
+						onChange( checked, option );
+					} }
+				/>
+
+				{ hasChildren( option ) && (
+					<div className="woocommerce-tree-select-control__children">
+						<Options
+							parent={ option.id }
+							options={ option.children }
+							onChange={ onChange }
+							selected={ selected }
+						/>
+					</div>
+				) }
+			</div>
+		);
+	} );
 };
 
 export default List;

@@ -61,11 +61,22 @@ const TreeSelectControl = ( {
 	 */
 	const optionsRepository = useMemo( () => {
 		const repository = {};
-		options.forEach( ( option ) => {
+
+		function loadOption( option ) {
+			if ( ! option.children ) {
+				repository[ option.id ] = { ...option };
+			}
+
 			option.children.forEach( ( child ) => {
-				repository[ child.id ] = { ...child, parent: option.id };
+				repository[ child.id ] = { ...child };
+
+				if ( child.children ) {
+					loadOption( child );
+				}
 			} );
-		} );
+		}
+
+		optionsRef.forEach( ( option ) => loadOption( option ) );
 
 		return repository;
 	}, [ optionsRef ] );
@@ -129,18 +140,30 @@ const TreeSelectControl = ( {
 	const handleParentChange = ( checked, option ) => {
 		const newValue = [ ...value ];
 
-		option.children.forEach( ( el ) => {
-			const childIdPosition = newValue.indexOf( el.id );
-
-			if ( ! checked && childIdPosition >= 0 ) {
-				newValue.splice( childIdPosition, 1 );
+		function loadChildren( parent ) {
+			if ( ! parent.children ) {
+				return;
 			}
 
-			if ( checked && childIdPosition < 0 ) {
-				newValue.push( el.id );
-			}
-		} );
+			parent.children.forEach( ( child ) => {
+				if ( child.children?.length ) {
+					loadChildren( child );
+					return;
+				}
 
+				const childIdPosition = newValue.indexOf( child.id );
+
+				if ( ! checked && childIdPosition >= 0 ) {
+					newValue.splice( childIdPosition, 1 );
+				}
+
+				if ( checked && childIdPosition < 0 ) {
+					newValue.push( child.id );
+				}
+			} );
+		}
+
+		loadChildren( option );
 		onChange( newValue );
 	};
 
