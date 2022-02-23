@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useMemo, useState } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import { SelectControl } from '@woocommerce/components';
 
 /**
@@ -20,29 +20,26 @@ const ComponentTest = () => {
 	const [ selected, setSelected ] = useState( [ 'ES' ] );
 	const [ disabled, setDisabled ] = useState( false );
 
-	const treeSelectControlOptions = useMemo(
-		() => [
-			{
-				id: 'EU',
-				name: 'Europe',
-				children: [
-					{ id: 'ES', name: 'Spain' },
-					{ id: 'FR', name: 'France' },
-					{ id: 'IT', name: 'Italy' },
-				],
-			},
-			{
-				id: 'AS',
-				name: 'Asia',
-				children: [
-					{ id: 'JP', name: 'Japan' },
-					{ id: 'CH', name: 'China' },
-					{ id: 'MY', name: 'Malaysia' },
-				],
-			},
-		],
-		[]
-	);
+	const treeSelectControlOptions = [
+		{
+			id: 'EU',
+			name: 'Europe',
+			children: [
+				{ id: 'ES', name: 'Spain' },
+				{ id: 'FR', name: 'France' },
+				{ id: 'IT', name: 'Italy' },
+			],
+		},
+		{
+			id: 'AS',
+			name: 'Asia',
+			children: [
+				{ id: 'JP', name: 'Japan' },
+				{ id: 'CH', name: 'China' },
+				{ id: 'MY', name: 'Malaysia' },
+			],
+		},
+	];
 
 	return (
 		<div>

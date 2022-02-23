@@ -9,6 +9,7 @@ import { __experimentalUseFocusOutside as useFocusOutside } from '@wordpress/com
 /**
  * Internal dependencies
  */
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
 import List from './list';
 import './index.scss';
@@ -48,6 +49,7 @@ const TreeSelectControl = ( {
 	onChange = () => {},
 } ) => {
 	const [ isExpanded, setIsExpanded ] = useState( false );
+	const optionsRef = useIsEqualRefValue( options );
 	const focusOutside = useFocusOutside( () => {
 		setIsExpanded( false );
 	} );
@@ -66,7 +68,7 @@ const TreeSelectControl = ( {
 		} );
 
 		return repository;
-	}, [ options ] );
+	}, [ optionsRef ] );
 
 	/**
 	 * Get formatted Tags from the selected values.
