@@ -36,6 +36,30 @@ class CleanupSyncedProductsTest extends UnitTest {
 	protected const PROCESS_ITEM_HOOK = 'gla/jobs/' . self::JOB_NAME . '/process_item';
 	protected const BATCH_SIZE        = 100;
 
+	/**
+	 * Runs before each test is executed.
+	 */
+	public function setUp() {
+		parent::setUp();
+
+		$this->action_scheduler     = $this->createMock( ActionScheduler::class );
+		$this->monitor              = $this->createMock( ActionSchedulerJobMonitor::class );
+		$this->product_syncer       = $this->createMock( ProductSyncer::class );
+		$this->product_repository   = $this->createMock( ProductRepository::class );
+		$this->batch_product_helper = $this->createMock( BatchProductHelper::class );
+		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->job                  = new CleanupSyncedProducts(
+			$this->action_scheduler,
+			$this->monitor,
+			$this->product_syncer,
+			$this->product_repository,
+			$this->batch_product_helper,
+			$this->merchant_center
+		);
+
+		$this->job->init();
+	}
+
 	public function test_job_name() {
 		$this->assertEquals( self::JOB_NAME, $this->job->get_name() );
 	}
@@ -128,29 +152,5 @@ class CleanupSyncedProductsTest extends UnitTest {
 			->method( 'schedule_immediate' );
 
 		$this->job->schedule();
-	}
-
-	/**
-	 * Runs before each test is executed.
-	 */
-	public function setUp() {
-		parent::setUp();
-
-		$this->action_scheduler     = $this->createMock( ActionScheduler::class );
-		$this->monitor              = $this->createMock( ActionSchedulerJobMonitor::class );
-		$this->product_syncer       = $this->createMock( ProductSyncer::class );
-		$this->product_repository   = $this->createMock( ProductRepository::class );
-		$this->batch_product_helper = $this->createMock( BatchProductHelper::class );
-		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
-		$this->job                  = new CleanupSyncedProducts(
-			$this->action_scheduler,
-			$this->monitor,
-			$this->product_syncer,
-			$this->product_repository,
-			$this->batch_product_helper,
-			$this->merchant_center
-		);
-
-		$this->job->init();
 	}
 }
