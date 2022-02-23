@@ -31,12 +31,26 @@ const BudgetSection = ( props ) => {
 			<Section
 				title={ __( 'Budget', 'google-listings-and-ads' ) }
 				description={
-					<p>
-						{ __(
-							'Enter a daily average cost that works best for your business and the results that you want. You can change your budget or cancel your ad at any time.',
-							'google-listings-and-ads'
-						) }
-					</p>
+					<>
+						<p>
+							{ __(
+								'Enter a daily average cost that works best for your business and the results that you want. You can change your budget or cancel your ad at any time.',
+								'google-listings-and-ads'
+							) }
+						</p>
+						<p>
+							{ __(
+								'You will be billed directly by Google Ads.',
+								'google-listings-and-ads'
+							) }
+						</p>
+						<p>
+							{ __(
+								'Google will optimize your ads to maximize performance across your selected country(s).',
+								'google-listings-and-ads'
+							) }
+						</p>
+					</>
 				}
 			>
 				<Section.Card>

@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-
-/**
  * Internal dependencies
  */
 import AudienceSection from '.~/components/paid-ads/audience-section';
@@ -16,13 +11,7 @@ const CreateCampaignFormContent = ( props ) => {
 
 	return (
 		<div className="gla-campaign-form-content">
-			<AudienceSection
-				formProps={ formProps }
-				countrySelectHelperText={ __(
-					'You can only select one country per campaign. ',
-					'google-listings-and-ads'
-				) }
-			/>
+			<AudienceSection formProps={ formProps } />
 			<BudgetSection formProps={ formProps } />
 			<FaqsSection />
 		</div>
