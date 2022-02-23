@@ -151,16 +151,25 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 	}
 
 	.woocommerce-tree-select-control__option {
-		padding: $gap;
-		min-height: 56px;
+		padding: 0 $gap;
 		font-size: 16px;
 		text-align: left;
 		border: none;
+		min-height: 0;
+		display: flex;
+		height: auto;
 
 		&.is-selected,
 		&:hover {
 			background: $studio-gray-0;
 		}
+	}
+
+	.components-checkbox-control__label {
+		width: 100%;
+		display: flex;
+		min-height: 56px;
+		align-items: center;
 	}
 
 	&.is-searchable {
