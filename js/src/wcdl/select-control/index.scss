@@ -2,7 +2,9 @@
 	&__label,
 	&__input,
 	&__helper-text {
-		margin-bottom: calc(var(--main-gap) / 3);
+		&:not(:last-child) {
+			margin-bottom: calc(var(--main-gap) / 3);
+		}
 	}
 
 	&__label {
