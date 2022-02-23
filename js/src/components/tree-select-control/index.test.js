@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { fireEvent, render } from '@testing-library/react';
-
 /**
  * Internal dependencies
  */
@@ -29,9 +28,12 @@ const options = [
 ];
 
 describe( 'TreeSelectControl Component', () => {
-	it( "Doesn't render without options", () => {
+	it( 'Is disabled without options', () => {
 		const { queryByRole } = render( <TreeSelectControl /> );
-		expect( queryByRole( 'combobox' ) ).toBeFalsy();
+		const selector = queryByRole( 'combobox' );
+
+		expect( selector ).toBeTruthy();
+		expect( selector.hasAttribute( 'disabled' ) ).toBeTruthy();
 	} );
 
 	it( 'Renders the provided options and selected values', () => {
@@ -164,6 +166,7 @@ describe( 'TreeSelectControl Component', () => {
 		const control = queryByRole( 'combobox' );
 		expect( queryByText( 'Spain (1 of 2)' ) ).toBeTruthy();
 		expect( queryByText( 'Italy (2 of 2)' ) ).toBeTruthy();
+		expect( control.hasAttribute( 'disabled' ) ).toBeTruthy();
 
 		expect( queryByRole( 'listbox' ) ).toBeFalsy();
 		fireEvent.click( control );

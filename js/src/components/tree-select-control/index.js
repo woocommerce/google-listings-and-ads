@@ -68,16 +68,16 @@ const TreeSelectControl = ( {
 		return repository;
 	}, [ options ] );
 
-	if ( ! options.length ) {
-		return null;
-	}
-
 	/**
 	 * Get formatted Tags from the selected values.
 	 *
 	 * @return {{name: {string}, id: {string}}[]} An array of Tags
 	 */
 	const getTags = () => {
+		if ( ! options.length ) {
+			return [];
+		}
+
 		return value.map( ( key ) => {
 			const option = optionsRepository[ key ];
 			return { id: key, name: option.name };
@@ -169,7 +169,7 @@ const TreeSelectControl = ( {
 			) }
 
 			<Control
-				disabled={ disabled }
+				disabled={ disabled || ! options.length }
 				tags={ getTags() }
 				isExpanded={ isExpanded }
 				setExpanded={ setIsExpanded }
