@@ -11,7 +11,7 @@ import Tags from './tags';
 
 /**
  * The Control Component renders a search input and also the Tags.
- * It also triggers the setExpand foe expanding the options tree on click.
+ * It also triggers the setExpand for expanding the options tree on click.
  *
  * @param {Object} props Component props
  * @param {Array} props.tags Array of tags
