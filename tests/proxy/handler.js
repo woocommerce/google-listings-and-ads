@@ -25,7 +25,7 @@ module.exports.checkRequest = ( request ) => {
 	}
 
 	if (
-		[ 'delete_error', 'update_error' ].contains( config.proxyMode ) &&
+		[ 'delete_error', 'update_error' ].includes( config.proxyMode ) &&
 		request.params.path.includes( 'products/batch' )
 	) {
 		const body = JSON.parse( request.payload );
