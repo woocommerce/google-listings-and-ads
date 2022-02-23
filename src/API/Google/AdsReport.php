@@ -96,9 +96,9 @@ class AdsReport implements OptionsAwareInterface {
 				$this->map_grpc_code_to_http_status_code( $e ),
 				null,
 				[
-					'errors' => $errors,
-					'type'   => $type,
-					'args'   => $args,
+					'errors'            => $errors,
+					'report_type'       => $type,
+					'report_query_args' => $args,
 				]
 			);
 		}
