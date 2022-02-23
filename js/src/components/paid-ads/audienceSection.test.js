@@ -23,13 +23,17 @@ jest.mock( '.~/hooks/useTargetAudienceFinalCountryCodes', () =>
 );
 
 describe( 'AudienceSection with multiple countries selector', () => {
-	const onChange = jest.fn();
+	let defaultProps;
+	let onChange;
 
-	const defaultProps = {
-		formProps: {
-			getInputProps: () => ( { onChange } ),
-		},
-	};
+	beforeEach( () => {
+		onChange = jest.fn();
+		defaultProps = {
+			formProps: {
+				getInputProps: () => ( { onChange } ),
+			},
+		};
+	} );
 
 	test( 'If Audience section is disabled the country field should be disabled', async () => {
 		render( <AudienceSection { ...defaultProps } disabled={ true } /> );
