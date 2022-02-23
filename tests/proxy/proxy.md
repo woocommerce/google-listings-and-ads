@@ -22,6 +22,7 @@ The mode will determine what kind of responses will be returned, this is used to
 
 Modes:
 - `delete_error` will return an internal error when deleting products
+- `update_error` will return an internal error when updating products
 
 ### Log responses when running the proxy
 This option will allow us to view the responses which are returned from the API, this is useful for generating mocked responses to return.
