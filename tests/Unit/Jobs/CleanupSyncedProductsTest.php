@@ -142,8 +142,6 @@ class CleanupSyncedProductsTest extends UnitTest {
 	}
 
 	public function test_merchant_center_connected() {
-		$ids = [ 1, 2 ];
-
 		$this->merchant_center->expects( $this->once() )
 			->method( 'is_connected' )
 			->willReturn( true );
