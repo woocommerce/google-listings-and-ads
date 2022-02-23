@@ -3,6 +3,10 @@
 	flex-direction: column;
 	margin-bottom: var(--large-gap);
 
+	&--is-disabled {
+		opacity: 0.5;
+	}
+
 	@include break-small() {
 		flex-direction: row;
 		gap: var(--main-gap);

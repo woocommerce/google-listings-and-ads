@@ -8,11 +8,15 @@ import './campaign-form-content.scss';
 
 const CreateCampaignFormContent = ( props ) => {
 	const { formProps } = props;
+	const disabledBudgetSection = ! formProps.values.country.length;
 
 	return (
 		<div className="gla-campaign-form-content">
 			<AudienceSection formProps={ formProps } />
-			<BudgetSection formProps={ formProps } />
+			<BudgetSection
+				formProps={ formProps }
+				disabled={ disabledBudgetSection }
+			/>
 			<FaqsSection />
 		</div>
 	);

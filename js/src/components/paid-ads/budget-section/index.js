@@ -13,22 +13,35 @@ import BudgetRecommendation from './budget-recommendation';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 
+/**
+ * Renders <Section> and <Section.Card> UI with campaign budget inputs.
+ *
+ * @param {Object} props React props.
+ * @param {Object} props.formProps Form props forwarded from `Form` component.
+ * @param {boolean} [props.disabled=false] Whether display the Card in disabled style.
+ */
 const BudgetSection = ( props ) => {
 	const {
 		formProps: { getInputProps, values },
+		disabled = false,
 	} = props;
 	const {
 		country: [ selectedCountryCode ],
 		amount,
 	} = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
-	const monthlyMaxEstimated = getMonthlyMaxEstimated( values.amount );
+
+	const amountValue = disabled ? '' : values.amount;
+	const monthlyMaxEstimated = disabled
+		? ''
+		: getMonthlyMaxEstimated( values.amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
 
 	return (
 		<div className="gla-budget-section">
 			<Section
+				disabled={ disabled }
 				title={ __( 'Budget', 'google-listings-and-ads' ) }
 				description={
 					<>
@@ -63,6 +76,8 @@ const BudgetSection = ( props ) => {
 								) }
 								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
+								value={ amountValue }
+								readOnly={ disabled }
 							/>
 							<AppInputPriceControl
 								disabled
