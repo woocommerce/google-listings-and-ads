@@ -30,8 +30,7 @@ const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 			if ( disabled ) {
 				return;
 			}
-			const i = tags.findIndex( ( tag ) => tag.id === key );
-			onChange( [ ...tags.slice( 0, i ), ...tags.slice( i + 1 ) ] );
+			onChange( tags.filter( ( tag ) => tag.id !== key ) );
 		};
 	};
 
