@@ -33,7 +33,7 @@ module.exports.checkRequest = ( request ) => {
 			const response = require( './mocks/mc/delete_errors' );
 			return response.deleteErrors( body );
 		}
-		if ( body.entries[ 0 ].method === 'update' ) {
+		if ( body.entries[ 0 ].method === 'insert' ) {
 			const response = require( './mocks/mc/update_errors' );
 			return response.updateErrors( body );
 		}
