@@ -113,11 +113,11 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 			if ( ! $recommendations ) {
 				return new Response(
 					[
-						'message'       => __( 'Cannot find any budget recommendations', 'google-listings-and-ads' ),
+						'message'       => __( 'Cannot find any budget recommendations.', 'google-listings-and-ads' ),
 						'currency'      => $currency,
 						'country_codes' => $country_codes,
 					],
-					400
+					404
 				);
 			}
 

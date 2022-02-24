@@ -151,4 +151,30 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 		);
 		$this->assertEquals( 400, $response->get_status() );
 	}
+
+	public function test_get_budget_recommendation_cannot_find_any_recommendations() {
+		$budget_recommendation_params = [
+			'country_codes' => ['JP', 'TW', 'GB', 'US'],
+		];
+
+		$this->middleware->expects( $this->once() )
+			->method( 'get_ads_currency' )
+			->willReturn( 'TWD' );
+
+		$this->budget_recommendation_query->expects( $this->once() )
+			->method( 'get_results' )
+			->willReturn( null );
+
+		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
+
+		$this->assertEquals(
+			[
+				'message'       => 'Cannot find any budget recommendations',
+				'currency'      => 'TWD',
+				'country_codes' => ['JP', 'TW', 'GB', 'US'],
+			],
+			$response->get_data()
+		);
+		$this->assertEquals( 404, $response->get_status() );
+	}
 }
