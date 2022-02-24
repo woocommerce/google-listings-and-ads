@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -28,7 +29,7 @@ const nonInteractableProps = {
  */
 const BudgetSection = ( props ) => {
 	const {
-		formProps: { getInputProps, values },
+		formProps: { getInputProps, setValue, values },
 		disabled = false,
 	} = props;
 	const {
@@ -36,13 +37,20 @@ const BudgetSection = ( props ) => {
 		amount,
 	} = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
-
-	const amountValue = disabled ? '' : values.amount;
-	const monthlyMaxEstimated = disabled
-		? ''
-		: getMonthlyMaxEstimated( values.amount );
+	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
 	const currency = googleAdsAccount?.currency;
+
+	/**
+	 * In addition to the initial value setting during initialization, when `disabled` changes
+	 * - from false to true, then clear filled amount to `undefined` for showing a blank <input>.
+	 * - from true to false, then reset amount to the initial value passed from the consumer side.
+	 */
+	const initialAmountRef = useRef( amount );
+	useEffect( () => {
+		const nextAmount = disabled ? undefined : initialAmountRef.current;
+		setValue( 'amount', nextAmount );
+	}, [ disabled, setValue ] );
 
 	return (
 		<div className="gla-budget-section">
@@ -82,7 +90,6 @@ const BudgetSection = ( props ) => {
 								) }
 								suffix={ currency }
 								{ ...getInputProps( 'amount' ) }
-								value={ amountValue }
 								{ ...( disabled && nonInteractableProps ) }
 							/>
 							<AppInputPriceControl
