@@ -4,12 +4,15 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Resources\AdGroup;
 use Google\Ads\GoogleAds\V9\Resources\AdGroupAd;
 use Google\Ads\GoogleAds\V9\Resources\AdGroupCriterion;
+use Google\Ads\GoogleAds\V9\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V9\Resources\AssetGroupListingGroupFilter;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
@@ -145,6 +148,36 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsAssetGroupQuery response.
+	 *
+	 * @param string $asset_group_resource_name
+	 * @param string $listing_group_resource_name
+	 */
+	protected function generate_ads_asset_group_query_mock( string $asset_group_resource_name, string $listing_group_resource_name ) {
+		$asset_group = $this->createMock( AssetGroup::class );
+		$asset_group->method( 'getResourceName' )->willReturn( $asset_group_resource_name );
+
+		$listing_group = $this->createMock( AssetGroupListingGroupFilter::class );
+		$listing_group->method( 'getResourceName' )->willReturn( $listing_group_resource_name );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->expects( $this->exactly( 2 ) )
+			->method( 'iterateAllElements' )
+			->will(
+				$this->onConsecutiveCalls(
+					[
+						( new GoogleAdsRow )->setAssetGroup( $asset_group ),
+					],
+					[
+						( new GoogleAdsRow )->setAssetGroupListingGroupFilter( $listing_group ),
+					]
+				)
+			);
+
+		$this->service_client->method( 'search' )->willReturn( $list_response );
+	}
+
+	/**
 	 * Generates a mocked AdsGroupQuery response.
 	 *
 	 * @param string $ad_group_resource_name
@@ -200,6 +233,7 @@ trait GoogleAdsClientTrait {
 		$campaign->method( 'getId' )->willReturn( $data['id'] );
 		$campaign->method( 'getName' )->willReturn( $data['name'] );
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
+		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
 
 		$budget = $this->createMock( CampaignBudget::class );
@@ -226,6 +260,15 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_campaign_budget_resource_name( int $budget_id ) {
 		return ResourceNames::forCampaignBudget( $this->ads_id, $budget_id );
+	}
+
+	/**
+	 * Generates an asset group resource name.
+	 *
+	 * @param int $asset_group_id
+	 */
+	protected function generate_asset_group_resource_name( int $asset_group_id ) {
+		return ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id );
 	}
 
 	/**
