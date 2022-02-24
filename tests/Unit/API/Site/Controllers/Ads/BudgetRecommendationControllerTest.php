@@ -109,24 +109,12 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_get_budget_recommendation_without_query_parameters() {
-		$budget_recommendation_params = [
-			'country_codes' => '',
-		];
-
-		$this->middleware->expects( $this->once() )
-			->method( 'get_ads_currency' )
-			->willReturn( 'TWD' );
+		$budget_recommendation_params = [];
 
 		$response = $this->do_request( self::ROUTE_BUDGET_RECOMMENDATION, 'GET', $budget_recommendation_params );
 
-		$this->assertEquals(
-			[
-				'message'       => 'Cannot find any budget recommendations',
-				'currency'      => 'TWD',
-				'country_codes' => '',
-			],
-			$response->get_data()
-		);
+		$this->assertEquals( 'rest_missing_callback_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Missing parameter(s): country_codes', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 

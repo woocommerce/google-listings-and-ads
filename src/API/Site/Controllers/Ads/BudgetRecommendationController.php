@@ -80,6 +80,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				'items'             => [
 					'type' => 'string',
 				],
+				'required'          => true,
 			],
 		];
 	}
@@ -89,7 +90,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 	 */
 	protected function get_budget_recommendation_callback(): callable {
 		return function( Request $request ) {
-			$country_codes = $request->get_params()['country_codes'];
+			$country_codes = $request->get_param( 'country_codes' );
 			$currency      = $this->middleware->get_ads_currency();
 
 			if ( ! $currency ) {
