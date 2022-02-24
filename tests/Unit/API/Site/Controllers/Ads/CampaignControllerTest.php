@@ -42,6 +42,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'name'    => 'Campaign One',
 				'status'  => 'paused',
 				'amount'  => 10,
+				'type'    => 'shopping',
 				'country' => 'US',
 			],
 			[
@@ -49,6 +50,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
 				'amount'  => 20,
+				'type'    => 'performance_max',
 				'country' => 'UK',
 			],
 		];
@@ -84,6 +86,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$expected = [
 			'id'     => self::TEST_CAMPAIGN_ID,
 			'status' => 'enabled',
+			'type'   => 'performance_max',
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -107,6 +110,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'name'   => 'Campaign 2022-02-22 02:22:02',
 			'id'     => self::TEST_CAMPAIGN_ID,
 			'status' => 'enabled',
+			'type'   => 'performance_max',
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -175,6 +179,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'id'      => self::TEST_CAMPAIGN_ID,
 			'name'    => 'Campaign Name',
 			'status'  => 'enabled',
+			'type'    => 'performance_max',
 			'amount'  => 10,
 			'country' => 'US',
 		];
