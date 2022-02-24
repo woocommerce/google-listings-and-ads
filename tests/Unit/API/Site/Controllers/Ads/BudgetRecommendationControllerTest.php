@@ -96,8 +96,6 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			->method( 'get_ads_currency' )
 			->willReturn( 'TWD' );
 
-		$this->budget_recommendation_query->expects( $this->exactly(2) )->method( 'where' );
-
 		$this->budget_recommendation_query->expects( $this->once() )
 			->method( 'get_results' )
 			->willReturn( $budget_recommendation_data );
