@@ -5,6 +5,8 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -18,21 +20,36 @@ use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V9\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
-use Google\Ads\GoogleAds\V9\Services\MutateCampaignResult;
+use Google\Ads\GoogleAds\V9\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
 
 /**
- * Class AdsCampaign
+ * Class AdsCampaign (Smart Shopping Campaign)
+ * https://developers.google.com/google-ads/api/docs/smart-campaigns/overview
+ *
+ * ContainerAware used for:
+ * - AdsGroup
+ *
+ * @since x.x.x Refactored to use batch requests when operating on campaigns.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsCampaign implements OptionsAwareInterface {
+class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 	use ApiExceptionTrait;
+	use ContainerAwareTrait;
 	use OptionsAwareTrait;
 	use MicroTrait;
+
+	/**
+	 * Temporary ID to use within a batch job.
+	 * A negative number which is unique for all the created resources.
+	 *
+	 * @var int
+	 */
+	protected const TEMPORARY_ID = -1;
 
 	/**
 	 * The Google Ads Client.
@@ -42,30 +59,24 @@ class AdsCampaign implements OptionsAwareInterface {
 	protected $client;
 
 	/**
-	 * @var AdsCampaignBudget $ads_campaign_budget
+	 * @var AdsCampaignBudget $budget
 	 */
-	protected $ads_campaign_budget;
-
-	/**
-	 * @var AdsGroup $ads_group
-	 */
-	protected $ads_group;
-
+	protected $budget;
 
 	/**
 	 * AdsCampaign constructor.
 	 *
 	 * @param GoogleAdsClient   $client
-	 * @param AdsCampaignBudget $ads_campaign_budget
-	 * @param AdsGroup          $ads_group
+	 * @param AdsCampaignBudget $budget
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $ads_campaign_budget, AdsGroup $ads_group ) {
-		$this->client              = $client;
-		$this->ads_campaign_budget = $ads_campaign_budget;
-		$this->ads_group           = $ads_group;
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget ) {
+		$this->client = $client;
+		$this->budget = $budget;
 	}
 
 	/**
+	 * Returns a list of campaigns
+	 *
 	 * @return array
 	 * @throws Exception When an ApiException is caught.
 	 */
@@ -88,65 +99,6 @@ class AdsCampaign implements OptionsAwareInterface {
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error retrieving campaigns: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$this->map_grpc_code_to_http_status_code( $e )
-			);
-		}
-	}
-
-
-	/**
-	 * Create a new campaign.
-	 *
-	 * @param array $params Request parameters.
-	 *
-	 * @return array
-	 * @throws Exception When an ApiException is caught or the created ID is invalid.
-	 */
-	public function create_campaign( array $params ): array {
-		try {
-			$budget = $this->ads_campaign_budget->create_campaign_budget( $params['amount'] );
-
-			$campaign = new Campaign(
-				[
-					'name'                         => $params['name'],
-					'advertising_channel_type'     => AdvertisingChannelType::SHOPPING,
-					'advertising_channel_sub_type' => AdvertisingChannelSubType::SHOPPING_SMART_ADS,
-					'status'                       => CampaignStatus::number( 'enabled' ),
-					'campaign_budget'              => $budget,
-					'maximize_conversion_value'    => new MaximizeConversionValue(),
-					'shopping_setting'             => new ShoppingSetting(
-						[
-							'merchant_id'   => $this->options->get_merchant_id(),
-							'sales_country' => $params['country'],
-						]
-					),
-				]
-			);
-
-			$operation = new CampaignOperation();
-			$operation->setCreate( $campaign );
-			$created_campaign = $this->mutate_campaign( $operation );
-			$campaign_id      = $this->parse_campaign_id( $created_campaign->getResourceName() );
-
-			$this->ads_group->set_up_for_campaign( $created_campaign->getResourceName(), $params['name'] );
-
-			return [
-				'id'     => $campaign_id,
-				'status' => CampaignStatus::ENABLED,
-			] + $params;
-		} catch ( ApiException $e ) {
-			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-
-			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
-				throw new Exception(
-					__( 'A campaign with this name already exists', 'google-listings-and-ads' ),
-					$this->map_grpc_code_to_http_status_code( $e )
-				);
-			}
-
-			throw new Exception(
-				/* translators: %s Error message */
-				sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
 				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
@@ -184,6 +136,50 @@ class AdsCampaign implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Create a new campaign.
+	 *
+	 * @param array $params Request parameters.
+	 *
+	 * @return array
+	 * @throws Exception When an ApiException is caught.
+	 */
+	public function create_campaign( array $params ): array {
+		try {
+			// Operations must be in a specific order to match the temporary ID's.
+			$operations = array_merge(
+				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
+				[ $this->create_operation( $params['name'], $params['country'] ) ],
+				$this->container->get( AdsGroup::class )->create_operations(
+					$this->temporary_resource_name(),
+					$params['name']
+				)
+			);
+
+			$campaign_id = $this->mutate( $operations );
+
+			return [
+				'id'     => $campaign_id,
+				'status' => CampaignStatus::ENABLED,
+			] + $params;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			if ( $this->has_api_exception_error( $e, 'DUPLICATE_CAMPAIGN_NAME' ) ) {
+				throw new Exception(
+					__( 'A campaign with this name already exists', 'google-listings-and-ads' ),
+					$this->map_grpc_code_to_http_status_code( $e )
+				);
+			}
+
+			throw new Exception(
+				/* translators: %s Error message */
+				sprintf( __( 'Error creating campaign: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
+				$this->map_grpc_code_to_http_status_code( $e )
+			);
+		}
+	}
+
+	/**
 	 * Edit a campaign.
 	 *
 	 * @param int   $campaign_id Campaign ID.
@@ -194,26 +190,27 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function edit_campaign( int $campaign_id, array $params ): int {
 		try {
-			$campaign_fields = [
-				'resource_name' => ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id ),
-			];
+			$operations      = [];
+			$campaign_fields = [];
+
 			if ( ! empty( $params['name'] ) ) {
 				$campaign_fields['name'] = $params['name'];
 			}
+
 			if ( ! empty( $params['status'] ) ) {
 				$campaign_fields['status'] = CampaignStatus::number( $params['status'] );
 			}
+
 			if ( ! empty( $params['amount'] ) ) {
-				$this->ads_campaign_budget->edit_campaign_budget( $campaign_id, $params['amount'] );
+				$operations[] = $this->budget->edit_operation( $campaign_id, $params['amount'] );
 			}
 
-			if ( count( $campaign_fields ) > 1 ) {
-				$campaign  = new Campaign( $campaign_fields );
-				$operation = new CampaignOperation();
-				$operation->setUpdate( $campaign );
-				$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $campaign ) );
-				$edited_campaign = $this->mutate_campaign( $operation );
-				$campaign_id     = $this->parse_campaign_id( $edited_campaign->getResourceName() );
+			if ( ! empty( $campaign_fields ) ) {
+				$operations[] = $this->edit_operation( $campaign_id, $campaign_fields );
+			}
+
+			if ( ! empty( $operations ) ) {
+				return $this->mutate( $operations ) ?: $campaign_id;
 			}
 
 			return $campaign_id;
@@ -238,17 +235,16 @@ class AdsCampaign implements OptionsAwareInterface {
 	 */
 	public function delete_campaign( int $campaign_id ): int {
 		try {
-			$resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
+			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 
-			$this->ads_group->delete_for_campaign( $resource_name );
+			// Budget must be removed after the campaign.
+			$operations = array_merge(
+				$this->container->get( AdsGroup::class )->delete_operations( $campaign_resource_name ),
+				[ $this->delete_operation( $campaign_resource_name ) ],
+				[ $this->budget->delete_operation( $campaign_id ) ]
+			);
 
-			$operation = new CampaignOperation();
-			$operation->setRemove( $resource_name );
-			$deleted_campaign = $this->mutate_campaign( $operation );
-
-			$this->ads_campaign_budget->delete_campaign_budget( $campaign_id );
-
-			return $this->parse_campaign_id( $deleted_campaign->getResourceName() );
+			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -265,6 +261,76 @@ class AdsCampaign implements OptionsAwareInterface {
 				$this->map_grpc_code_to_http_status_code( $e )
 			);
 		}
+	}
+
+	/**
+	 * Return a temporary resource name for the campaign.
+	 *
+	 * @return string
+	 */
+	protected function temporary_resource_name() {
+		return ResourceNames::forCampaign( $this->options->get_ads_id(), self::TEMPORARY_ID );
+	}
+
+	/**
+	 * Returns a campaign create operation.
+	 *
+	 * @param string $campaign_name
+	 * @param string $country
+	 *
+	 * @return MutateOperation
+	 */
+	protected function create_operation( string $campaign_name, string $country ): MutateOperation {
+		$campaign = new Campaign(
+			[
+				'resource_name'                => $this->temporary_resource_name(),
+				'name'                         => $campaign_name,
+				'advertising_channel_type'     => AdvertisingChannelType::SHOPPING,
+				'advertising_channel_sub_type' => AdvertisingChannelSubType::SHOPPING_SMART_ADS,
+				'status'                       => CampaignStatus::number( 'enabled' ),
+				'campaign_budget'              => $this->budget->temporary_resource_name(),
+				'maximize_conversion_value'    => new MaximizeConversionValue(),
+				'shopping_setting'             => new ShoppingSetting(
+					[
+						'merchant_id'   => $this->options->get_merchant_id(),
+						'sales_country' => $country,
+					]
+				),
+			]
+		);
+
+		$operation = ( new CampaignOperation() )->setCreate( $campaign );
+		return ( new MutateOperation() )->setCampaignOperation( $operation );
+	}
+
+	/**
+	 * Returns a campaign edit operation.
+	 *
+	 * @param integer $campaign_id
+	 * @param array   $fields
+	 *
+	 * @return MutateOperation
+	 */
+	protected function edit_operation( int $campaign_id, array $fields ): MutateOperation {
+		$fields['resource_name'] = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
+
+		$campaign  = new Campaign( $fields );
+		$operation = new CampaignOperation();
+		$operation->setUpdate( $campaign );
+		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $campaign ) );
+		return ( new MutateOperation() )->setCampaignOperation( $operation );
+	}
+
+	/**
+	 * Returns a campaign delete operation.
+	 *
+	 * @param string $campaign_resource_name
+	 *
+	 * @return MutateOperation
+	 */
+	protected function delete_operation( string $campaign_resource_name ): MutateOperation {
+		$operation = ( new CampaignOperation() )->setRemove( $campaign_resource_name );
+		return ( new MutateOperation() )->setCampaignOperation( $operation );
 	}
 
 	/**
@@ -300,20 +366,28 @@ class AdsCampaign implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Run a single mutate campaign operation.
+	 * Send a batch of operations to mutate a campaign.
 	 *
-	 * @param CampaignOperation $operation Operation we would like to run.
+	 * @param MutateOperation[] $operations
 	 *
-	 * @return MutateCampaignResult
-	 * @throws ApiException If the campaign mutate fails.
+	 * @return int Campaign ID from the MutateOperationResponse.
+	 * @throws ApiException If any of the operations fail.
 	 */
-	protected function mutate_campaign( CampaignOperation $operation ): MutateCampaignResult {
-		$response = $this->client->getCampaignServiceClient()->mutateCampaigns(
+	protected function mutate( array $operations ): int {
+		$responses = $this->client->getGoogleAdsServiceClient()->mutate(
 			$this->options->get_ads_id(),
-			[ $operation ]
+			$operations
 		);
 
-		return $response->getResults()[0];
+		foreach ( $responses->getMutateOperationResponses() as $response ) {
+			if ( 'campaign_result' === $response->getResponse() ) {
+				$campaign_result = $response->getCampaignResult();
+				return $this->parse_campaign_id( $campaign_result->getResourceName() );
+			}
+		}
+
+		// When editing only the budget there is no campaign mutate result.
+		return 0;
 	}
 
 	/**
