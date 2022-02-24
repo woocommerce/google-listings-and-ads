@@ -22,10 +22,10 @@ class InvalidDomainName extends InvalidArgumentException implements GoogleListin
 	 *
 	 * @return static
 	 */
-	public static function invalid_top_level_domain_name( string $domain_name ): InvalidDomainName {
+	public static function create_account_failed_invalid_top_level_domain_name( string $domain_name ): InvalidDomainName {
 		return new static(
 		/* translators: 1 top level domain name. */
-			sprintf( __( 'Error creating account: "%1$s" URL ends with an invalid top-level domain name.', 'google-listings-and-ads' ), $domain_name )
+			sprintf( __( 'Unable to create an account, the domain name "%s" must end with a valid top-level domain name.', 'google-listings-and-ads' ), $domain_name )
 		);
 	}
 }

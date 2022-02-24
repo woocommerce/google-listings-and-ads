@@ -138,7 +138,7 @@ class Proxy implements OptionsAwareInterface {
 	 *
 	 * @throws Exception   When an Exception is caught or we receive an invalid response.
 	 * @throws InvalidTerm When the account name contains invalid terms.
-	 * @throws InvalidDomainName When an Exception related to an invalid top level domain is received.
+	 * @throws InvalidDomainName When the site URL ends with an invalid top-level domain.
 	 */
 	protected function create_merchant_account_request( string $name, string $site_url ): int {
 		try {
@@ -175,8 +175,12 @@ class Proxy implements OptionsAwareInterface {
 				throw InvalidTerm::contains_invalid_terms( $name );
 			}
 
-			if ( preg_match( '/URL?.* invalid top-level domain name/', $message ) ) {
-				throw InvalidDomainName::invalid_top_level_domain_name( $this->get_site_url() );
+			if ( strpos( $message, 'URL ends with an invalid top-level domain name' ) !== false ) {
+				throw InvalidDomainName::create_account_failed_invalid_top_level_domain_name(
+					$this->strip_url_protocol(
+						esc_url_raw( $this->get_site_url() )
+					)
+				);
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
