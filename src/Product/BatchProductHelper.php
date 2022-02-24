@@ -265,20 +265,24 @@ class BatchProductHelper implements Service {
 	/**
 	 * Filters the list of invalid product entries and returns an array of WooCommerce product IDs with internal errors
 	 *
-	 * @param BatchInvalidProductEntry[] $invalid_products
+	 * @param BatchInvalidProductEntry[] $invalid_products - ...
 	 *
 	 * @return int[] An array of WooCommerce product ids.
 	 */
 	public function get_internal_error_products( array $invalid_products ): array {
-		$internal_error_ids = [];
+		$internal_error_ids = array();
 		foreach ( $invalid_products as $invalid_product ) {
 			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
-				$product_id = $invalid_product->get_wc_product_id();
-
-				$internal_error_ids[ $product_id ] = $product_id;
+				$wc_product_id = $invalid_product->get_wc_product_id();
+				$wc_product    = $this->wc->maybe_get_product( $wc_product_id );
+				$this->product_helper->increment_failed_update_attempt( $wc_product );
+				// Only schedule for retry if the failure threshold has not been reached.
+				if ( ! $this->product_helper->is_delete_failed_threshold_reached( $wc_product ) ) {
+					$product_id                        = $invalid_product->get_wc_product_id();
+					$internal_error_ids[ $product_id ] = $product_id;
+				}
 			}
 		}
-
 		return $internal_error_ids;
 	}
 

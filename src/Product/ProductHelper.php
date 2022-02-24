@@ -388,6 +388,32 @@ class ProductHelper implements Service {
 	}
 
 	/**
+	 * Increment failed delete attempts.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 */
+	public function increment_failed_update_attempt( WC_Product $product ) {
+		$failed_attempts = $this->meta_handler->get_failed_update_attempts( $product ) ?? 0;
+		$this->meta_handler->update_failed_update_attempts( $product, $failed_attempts + 1 );
+	}
+
+	/**
+	 * Whether deleting has failed more times than the specified threshold.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return boolean
+	 */
+	public function is_update_failed_threshold_reached( WC_Product $product ): bool {
+		$failed_attempts = $this->meta_handler->get_failed_update_attempts( $product ) ?? 0;
+		return $failed_attempts >= ProductSyncer::FAILURE_THRESHOLD;
+	}
+
+	/**
 	 * @param WC_Product $wc_product
 	 *
 	 * @return string|null
