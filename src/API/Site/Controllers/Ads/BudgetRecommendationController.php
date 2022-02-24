@@ -96,7 +96,7 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 			if ( ! $currency ) {
 				return new Response(
 					[
-						'message'       => __( 'Invalid currency', 'google-listings-and-ads' ),
+						'message'       => __( 'No currency available for the Ads account.', 'google-listings-and-ads' ),
 						'currency'      => $currency,
 						'country_codes' => $country_codes,
 					],

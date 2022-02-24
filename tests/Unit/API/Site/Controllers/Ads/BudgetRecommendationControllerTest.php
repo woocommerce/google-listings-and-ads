@@ -143,7 +143,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals(
 			[
-				'message'       => 'Invalid currency',
+				'message'       => 'No currency available for the Ads account.',
 				'currency'      => '',
 				'country_codes' => ['JP', 'TW', 'GB', 'US'],
 			],
@@ -169,7 +169,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 
 		$this->assertEquals(
 			[
-				'message'       => 'Cannot find any budget recommendations',
+				'message'       => 'Cannot find any budget recommendations.',
 				'currency'      => 'TWD',
 				'country_codes' => ['JP', 'TW', 'GB', 'US'],
 			],
