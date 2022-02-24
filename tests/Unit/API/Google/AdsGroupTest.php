@@ -48,44 +48,6 @@ class AdsGroupTest extends UnitTest {
 		$this->ad_group->set_options_object( $this->options );
 	}
 
-	public function test_create_operations() {
-		$campaign_resource_name = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
-		$ad_group_resource_name = $this->generate_ad_group_resource_name( -3 );
-
-		$operations = $this->ad_group->create_operations(
-			$campaign_resource_name,
-			'New Campaign'
-		);
-
-		$operation_ad_group = $operations[0]->getAdGroupOperation();
-		$this->assertTrue( $operation_ad_group->hasCreate() );
-
-		$ad_group = $operation_ad_group->getCreate();
-		$this->assertEquals( 'New Campaign Ad Group', $ad_group->getName() );
-		$this->assertEquals( $campaign_resource_name, $ad_group->getCampaign() );
-		$this->assertEquals( $ad_group_resource_name, $ad_group->getResourceName() );
-		$this->assertEquals( AdGroupStatus::ENABLED, $ad_group->getStatus() );
-		$this->assertEquals( AdGroupType::SHOPPING_SMART_ADS, $ad_group->getType() );
-
-		$operation_ad_group_ad = $operations[1]->getAdGroupAdOperation();
-		$this->assertTrue( $operation_ad_group_ad->hasCreate() );
-
-		$ad_group_ad = $operation_ad_group_ad->getCreate();
-		$this->assertEquals( $ad_group_resource_name, $ad_group_ad->getAdGroup() );
-		$this->assertEquals( new ShoppingSmartAdInfo(), $ad_group_ad->getAd()->getShoppingSmartAd() );
-
-		$operation_listing_group = $operations[2]->getAdGroupCriterionOperation();
-		$this->assertTrue( $operation_listing_group->hasCreate() );
-
-		$listing_group = $operation_listing_group->getCreate();
-		$this->assertEquals( $ad_group_resource_name, $listing_group->getAdGroup() );
-		$this->assertEquals( AdGroupAdStatus::ENABLED, $listing_group->getStatus() );
-		$this->assertEquals(
-			ListingGroupType::UNIT,
-			$listing_group->getListingGroup()->getType()
-		);
-	}
-
 	public function test_delete_operations() {
 		$campaign_resource_name      = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
 		$ad_group_resource_name      = $this->generate_ad_group_resource_name( self::TEST_AD_GROUP_ID );
