@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
@@ -22,6 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
  * @property MockObject|AdsGroup          $ad_group
+ * @property MockObject|AdsAssetGroup     $asset_group
  * @property MockObject|AdsCampaignBudget $budget
  * @property MockObject|OptionsInterface  $options
  * @property AdsCampaign                  $campaign
@@ -42,10 +44,12 @@ class AdsCampaignTest extends UnitTest {
 		$this->ads_client_setup();
 
 		$this->ad_group    = $this->createMock( AdsGroup::class );
+		$this->asset_group = $this->createMock( AdsAssetGroup::class );
 		$this->budget      = $this->createMock( AdsCampaignBudget::class );
 		$this->options     = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
+		$this->container->share( AdsAssetGroup::class, $this->asset_group );
 		$this->container->share( AdsGroup::class, $this->ad_group );
 
 		$this->campaign = new AdsCampaign( $this->client, $this->budget );
@@ -66,6 +70,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Campaign One',
 				'status'  => 'paused',
+				'type'    => 'shopping',
 				'amount'  => 10,
 				'country' => 'US',
 			],
@@ -73,6 +78,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => 5678901234,
 				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
+				'type'    => 'performance_max',
 				'amount'  => 20,
 				'country' => 'UK',
 			],
@@ -104,6 +110,7 @@ class AdsCampaignTest extends UnitTest {
 			'id'      => self::TEST_CAMPAIGN_ID,
 			'name'    => 'Single Campaign',
 			'status'  => 'enabled',
+			'type'    => 'performance_max',
 			'amount'  => 10,
 			'country' => 'US',
 		];
@@ -142,6 +149,7 @@ class AdsCampaignTest extends UnitTest {
 		$expected = [
 			'id'     => self::TEST_CAMPAIGN_ID,
 			'status' => 'enabled',
+			'type'   => 'performance_max',
 		] + $campaign_data;
 
 		$this->assertEquals(
