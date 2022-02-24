@@ -10,4 +10,10 @@
 			white-space: normal !important;
 		}
 	}
+
+	// Hack to prevent the read-only input from having the focused border style.
+	// Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/components/src/input-control/styles/input-control-styles.js#L238-L247
+	.components-input-control__input[readonly] {
+		pointer-events: none;
+	}
 }
