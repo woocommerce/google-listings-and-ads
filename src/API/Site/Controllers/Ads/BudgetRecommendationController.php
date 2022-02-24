@@ -167,11 +167,11 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 						],
 						'daily_budget_low'  => [
 							'type'        => 'number',
-							'description' => __( 'Daily budget lower bound ', 'google-listings-and-ads' ),
+							'description' => __( 'The lower bound recommended daily budget for a country.', 'google-listings-and-ads' ),
 						],
 						'daily_budget_high' => [
 							'type'        => 'number',
-							'description' => __( 'Daily budget upper bound ', 'google-listings-and-ads' ),
+							'description' => __( 'The upper bound recommended daily budget for a country.', 'google-listings-and-ads' ),
 						],
 					],
 				],
