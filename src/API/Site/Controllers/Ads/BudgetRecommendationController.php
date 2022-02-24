@@ -154,7 +154,6 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				'description'       => __( 'The currency to use for the shipping rate.', 'google-listings-and-ads' ),
 				'context'           => [ 'view' ],
 				'validate_callback' => 'rest_validate_request_arg',
-				'required'          => true,
 			],
 			'recommendations' => [
 				'type'  => 'array',
@@ -162,22 +161,17 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 					'type'       => 'object',
 					'properties' => [
 						'country'           => [
-							'type'              => 'string',
-							'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
-							'context'           => [ 'view' ],
-							'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-							'validate_callback' => $this->get_country_code_validate_callback(),
-							'required'          => true,
+							'type'        => 'string',
+							'description' => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+							'context'     => [ 'view' ],
 						],
 						'daily_budget_low'  => [
 							'type'        => 'number',
 							'description' => __( 'Daily budget lower bound ', 'google-listings-and-ads' ),
-							'required'    => true,
 						],
 						'daily_budget_high' => [
 							'type'        => 'number',
 							'description' => __( 'Daily budget upper bound ', 'google-listings-and-ads' ),
-							'required'    => true,
 						],
 					],
 				],
