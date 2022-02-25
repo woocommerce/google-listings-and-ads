@@ -14,7 +14,6 @@ use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V9\Services\CampaignBudgetOperation;
 use Google\Ads\GoogleAds\V9\Services\CampaignBudgetServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MutateOperation;
-use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
 
@@ -83,7 +82,6 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 	 * @param float $amount Budget amount in the local currency.
 	 *
 	 * @return string Resource name of the updated budget.
-	 * @throws ApiException If the campaign budget can't be mutated.
 	 * @throws Exception If no linked budget has been found.
 	 */
 	public function edit_operation( int $campaign_id, float $amount ): MutateOperation {
