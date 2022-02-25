@@ -54,6 +54,8 @@ export function handleFetchError( error, message ) {
  *   For single-country campaigns, it will an empty array.
  * @property {boolean} allowMultiple Indicate whether this campaign allows multi-country targeting.
  *   This can be used to distinguish this campaign is multi-country or single-country targeting.
+ * @property {Array<CountryCode>} displayCountries Campaign's targeting countries used to present on the UI without making merchants feel ambiguous.
+ *   Please refer to the descriptions of `country`, `targeted_locations` and `allowMultiple` for more context about this property.
  */
 
 /**
@@ -765,9 +767,14 @@ export function* saveTargetAudience( targetAudience ) {
  * @return {Campaign} Campaign data.
  */
 function adapteAdsCampaign( campaign ) {
+	const allowMultiple = campaign.targeted_locations.length > 0;
+	const displayCountries = allowMultiple
+		? campaign.targeted_locations
+		: [ campaign.country ];
 	return {
 		...campaign,
-		allowMultiple: campaign.targeted_locations.length > 0,
+		allowMultiple,
+		displayCountries,
 	};
 }
 

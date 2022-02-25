@@ -21,13 +21,9 @@ import validateForm from '.~/utils/paid-ads/validateForm';
 
 const EditPaidAdsCampaignForm = ( props ) => {
 	const { campaign } = props;
-	const { amount, allowMultiple } = campaign;
+	const { amount, allowMultiple, displayCountries: countryCodes } = campaign;
 	const [ loading, setLoading ] = useState( false );
 	const { updateAdsCampaign } = useAppDispatch();
-
-	const countryCodes = allowMultiple
-		? campaign.targeted_locations
-		: [ campaign.country ];
 
 	const handleValidate = ( values ) => {
 		return validateForm( values );

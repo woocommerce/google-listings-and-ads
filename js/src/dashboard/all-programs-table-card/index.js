@@ -95,16 +95,13 @@ const AllProgramsTableCard = ( props ) => {
 			active: true,
 		},
 		...adsCampaignsData.map( ( el ) => {
-			const countryCodes = el.allowMultiple
-				? el.targeted_locations
-				: [ el.country ];
 			return {
 				id: el.id,
 				title: el.name,
 				dailyBudget: formatAmount( el.amount, true ),
 				country: (
 					<CountryColumn
-						countryCodes={ countryCodes }
+						countryCodes={ el.displayCountries }
 						countryNameMap={ map }
 					/>
 				),
