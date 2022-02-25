@@ -13,20 +13,20 @@ import useFetchBudgetRecommendationEffect from './useFetchBudgetRecommendationEf
 import './index.scss';
 
 const BudgetRecommendation = ( props ) => {
-	const { countryCode, dailyAverageCost } = props;
-	const { data: recommendation } = useFetchBudgetRecommendationEffect(
-		countryCode
-	);
+	const { countryCodes, dailyAverageCost } = props;
+	const [ countryCode ] = countryCodes;
+	const { data } = useFetchBudgetRecommendationEffect( countryCodes );
 	const map = useCountryKeyNameMap();
 
-	if ( ! recommendation ) {
+	if ( ! data ) {
 		return null;
 	}
 
+	const { currency, recommendations } = data;
+	const [ recommendation ] = recommendations;
 	const {
 		daily_budget_low: dailyBudgetLow,
 		daily_budget_high: dailyBudgetHigh,
-		currency,
 	} = recommendation;
 	const countryName = map[ countryCode ];
 

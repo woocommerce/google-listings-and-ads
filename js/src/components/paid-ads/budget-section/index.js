@@ -32,10 +32,7 @@ const BudgetSection = ( props ) => {
 		formProps: { getInputProps, setValue, values },
 		disabled = false,
 	} = props;
-	const {
-		countryCodes: [ selectedCountryCode ],
-		amount,
-	} = values;
+	const { countryCodes, amount } = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
 	const monthlyMaxEstimated = getMonthlyMaxEstimated( amount );
 	// Display the currency code that will be used by Google Ads, but still use the store's currency formatting settings.
@@ -102,9 +99,9 @@ const BudgetSection = ( props ) => {
 								value={ monthlyMaxEstimated }
 							/>
 						</div>
-						{ selectedCountryCode && (
+						{ countryCodes.length > 0 && (
 							<BudgetRecommendation
-								countryCode={ selectedCountryCode }
+								countryCodes={ countryCodes }
 								dailyAverageCost={ amount }
 							/>
 						) }
