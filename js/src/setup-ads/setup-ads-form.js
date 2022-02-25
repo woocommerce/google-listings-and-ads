@@ -58,11 +58,10 @@ const SetupAdsForm = () => {
 
 	const handleSubmit = ( values ) => {
 		const { amount, countryCodes } = values;
-		const country = countryCodes[ 0 ];
 
-		recordLaunchPaidCampaignClickEvent( amount, country );
+		recordLaunchPaidCampaignClickEvent( amount, countryCodes );
 
-		handleSetupComplete( amount, country, () => {
+		handleSetupComplete( amount, countryCodes, () => {
 			setSubmitted( true );
 		} );
 	};

@@ -796,18 +796,18 @@ export function* fetchAdsCampaigns() {
  * Create a new ads campaign.
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
- * @param {string} country Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
-export function* createAdsCampaign( amount, country ) {
+export function* createAdsCampaign( amount, countryCodes ) {
 	try {
 		const createdCampaign = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns`,
 			method: 'POST',
 			data: {
 				amount,
-				country,
+				targeted_locations: countryCodes,
 			},
 		} );
 

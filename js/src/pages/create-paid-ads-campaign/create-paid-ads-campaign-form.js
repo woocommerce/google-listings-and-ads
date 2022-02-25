@@ -35,11 +35,10 @@ const CreatePaidAdsCampaignForm = () => {
 
 		try {
 			const { amount, countryCodes } = values;
-			const country = countryCodes[ 0 ];
 
-			recordLaunchPaidCampaignClickEvent( amount, country );
+			recordLaunchPaidCampaignClickEvent( amount, countryCodes );
 
-			await createAdsCampaign( amount, country );
+			await createAdsCampaign( amount, countryCodes );
 
 			createNotice(
 				'success',
