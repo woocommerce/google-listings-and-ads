@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import GridiconInfoOutline from 'gridicons/dist/info-outline';
 
@@ -29,8 +29,28 @@ function getHighestBudget( recommendations ) {
 	} );
 }
 
+function toRecommendationRange( isMultiple, ...values ) {
+	const conversionMap = { strong: <strong /> };
+	const template = isMultiple
+		? // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount.
+		  __(
+				'Most merchants targeting similar countries set a daily budget of <strong>%1$f to %2$f %3$s</strong> for approximately 10 conversions a week.',
+				'google-listings-and-ads'
+		  )
+		: // translators: it's a range of recommended budget amount. 1: the low value of the range, 2: the high value of the range, 3: the currency of amount, 4: a country name selected by the merchant.
+		  __(
+				'Most merchants targeting <strong>%4$s</strong> set a daily budget of <strong>%1$f to %2$f %3$s</strong> for approximately 10 conversions a week.',
+				'google-listings-and-ads'
+		  );
+
+	return createInterpolateElement(
+		sprintf( template, ...values ),
+		conversionMap
+	);
+}
+
 const BudgetRecommendation = ( props ) => {
-	const { countryCodes, dailyAverageCost } = props;
+	const { countryCodes, dailyAverageCost = Infinity } = props;
 	const { data } = useFetchBudgetRecommendationEffect( countryCodes );
 	const map = useCountryKeyNameMap();
 
@@ -44,43 +64,23 @@ const BudgetRecommendation = ( props ) => {
 		daily_budget_high: dailyBudgetHigh,
 		country,
 	} = getHighestBudget( recommendations );
-	const [ recommendation ] = recommendations;
-	const countryName = map[ country ];
 
-	const showLowerBudgetNotice =
-		dailyAverageCost !== '' &&
-		Number( dailyAverageCost ) < Number( recommendation.daily_budget_low );
+	const countryName = map[ country ];
+	const recommendationRange = toRecommendationRange(
+		recommendations.length > 1,
+		dailyBudgetLow,
+		dailyBudgetHigh,
+		currency,
+		countryName
+	);
+
+	const showLowerBudgetNotice = dailyAverageCost < dailyBudgetLow;
 
 	return (
 		<div className="gla-budget-recommendation">
 			<div className="gla-budget-recommendation__recommendation">
 				<GridiconInfoOutline />
-				<div>
-					{ createInterpolateElement(
-						__(
-							'Most merchants targeting <countryname /> set a daily budget of <budgetrange /> for approximately 10 conversions a week.',
-							'google-listings-and-ads'
-						),
-						{
-							countryname: <strong>{ countryName }</strong>,
-							budgetrange: (
-								<strong>
-									{ createInterpolateElement(
-										__(
-											'<low /> to <high /> <currency />',
-											'google-listings-and-ads'
-										),
-										{
-											low: <>{ dailyBudgetLow }</>,
-											high: <>{ dailyBudgetHigh }</>,
-											currency: <>{ currency }</>,
-										}
-									) }
-								</strong>
-							),
-						}
-					) }
-				</div>
+				<div>{ recommendationRange }</div>
 			</div>
 			{ showLowerBudgetNotice && (
 				<div className="gla-budget-recommendation__low-budget">
