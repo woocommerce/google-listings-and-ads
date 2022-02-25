@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AccountService as AdsAccountService;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
@@ -83,7 +84,7 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( SettingsController::class );
 		$this->share( ConnectionController::class );
 		$this->share( AdsAccountController::class, AdsAccountService::class );
-		$this->share_with_container( AdsCampaignController::class );
+		$this->share( AdsCampaignController::class, AdsCampaign::class );
 		$this->share_with_container( AdsReportsController::class );
 		$this->share( GoogleAccountController::class, Connection::class );
 		$this->share( JetpackAccountController::class, Manager::class, Middleware::class );
