@@ -119,14 +119,9 @@ const TreeSelectControl = ( {
 	 * @param {Option} option The option to change
 	 */
 	const handleSingleChange = ( checked, option ) => {
-		const idPosition = value.indexOf( option.id );
-		const newValue = [ ...value ];
-
-		if ( ! checked ) {
-			newValue.splice( idPosition, 1 );
-		} else {
-			newValue.push( option.id );
-		}
+		const newValue = checked
+			? [ ...value, option.id ]
+			: value.filter( ( el ) => el !== option.id );
 
 		onChange( newValue );
 	};
