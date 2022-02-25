@@ -21,8 +21,13 @@ import validateForm from '.~/utils/paid-ads/validateForm';
 
 const EditPaidAdsCampaignForm = ( props ) => {
 	const { campaign } = props;
+	const { amount, allowMultiple } = campaign;
 	const [ loading, setLoading ] = useState( false );
 	const { updateAdsCampaign } = useAppDispatch();
+
+	const countryCodes = allowMultiple
+		? campaign.targeted_locations
+		: [ campaign.country ];
 
 	const handleValidate = ( values ) => {
 		return validateForm( values );
@@ -43,11 +48,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 
 	return (
 		<Form
-			initialValues={ {
-				id: campaign.id,
-				amount: campaign.amount,
-				country: [ campaign.country ],
-			} }
+			initialValues={ { amount, countryCodes } }
 			validate={ handleValidate }
 			onSubmit={ handleSubmit }
 		>
@@ -82,7 +83,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 						/>
 						<EditPaidAdsCampaignFormContent
 							formProps={ formProps }
-							allowMultiple={ campaign.allowMultiple }
+							allowMultiple={ allowMultiple }
 						/>
 						<StepContentFooter>
 							<AppButton

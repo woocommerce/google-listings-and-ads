@@ -21,7 +21,7 @@ import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 // it will cause runtime error with the Form component.
 const initialValues = {
 	amount: 0,
-	country: [],
+	countryCodes: [],
 };
 
 const SetupAdsForm = () => {
@@ -57,8 +57,8 @@ const SetupAdsForm = () => {
 	);
 
 	const handleSubmit = ( values ) => {
-		const { amount, country: countryArr } = values;
-		const country = countryArr && countryArr[ 0 ];
+		const { amount, countryCodes } = values;
+		const country = countryCodes[ 0 ];
 
 		recordLaunchPaidCampaignClickEvent( amount, country );
 

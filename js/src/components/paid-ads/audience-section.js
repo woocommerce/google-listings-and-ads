@@ -36,7 +36,7 @@ const AudienceSection = ( props ) => {
 	} = props;
 
 	const countryNameMap = useCountryKeyNameMap();
-	const inputProps = getInputProps( 'country' );
+	const inputProps = getInputProps( 'countryCodes' );
 
 	/**
 	 * Hack to prevent tags being removed even when disabled.

@@ -34,8 +34,8 @@ const CreatePaidAdsCampaignForm = () => {
 		setLoading( true );
 
 		try {
-			const { amount, country: countryArr } = values;
-			const country = countryArr && countryArr[ 0 ];
+			const { amount, countryCodes } = values;
+			const country = countryCodes[ 0 ];
 
 			recordLaunchPaidCampaignClickEvent( amount, country );
 
@@ -60,7 +60,7 @@ const CreatePaidAdsCampaignForm = () => {
 		<Form
 			initialValues={ {
 				amount: 0,
-				country: [],
+				countryCodes: [],
 			} }
 			validate={ handleValidate }
 			onSubmit={ handleSubmit }
