@@ -9,11 +9,11 @@ import classnames from 'classnames';
  *
  * @param {Object} props The component props
  * @param {Option[]} props.options The component options
- * @param {string[]} props.selected Array of selected keys
+ * @param {string[]} props.value Array of selected keys
  * @param {Function} props.onChange Callback when the options change
  * @return {JSX.Element} The component to be rendered
  */
-const List = ( { options = [], selected = [], onChange = () => {} } ) => {
+const List = ( { options = [], value = [], onChange = () => {} } ) => {
 	return (
 		<div
 			className="woocommerce-tree-select-control__listbox"
@@ -22,14 +22,14 @@ const List = ( { options = [], selected = [], onChange = () => {} } ) => {
 		>
 			<Options
 				options={ options }
-				selected={ selected }
+				value={ value }
 				onChange={ onChange }
 			/>
 		</div>
 	);
 };
 
-const Options = ( { options = [], selected, parent = '', onChange } ) => {
+const Options = ( { options = [], value, parent = '', onChange } ) => {
 	/**
 	 * Returns true if all the children for the parent are selected
 	 *
@@ -41,8 +41,7 @@ const Options = ( { options = [], selected, parent = '', onChange } ) => {
 		}
 
 		return option.children.every(
-			( child ) =>
-				selected.includes( child.id ) || isParentSelected( child )
+			( child ) => value.includes( child.id ) || isParentSelected( child )
 		);
 	};
 
@@ -62,7 +61,7 @@ const Options = ( { options = [], selected, parent = '', onChange } ) => {
 					) }
 					label={ option.name }
 					checked={
-						selected.includes( option.id ) ||
+						value.includes( option.id ) ||
 						isParentSelected( option )
 					}
 					onChange={ ( checked ) => {
@@ -76,7 +75,7 @@ const Options = ( { options = [], selected, parent = '', onChange } ) => {
 							parent={ option.id }
 							options={ option.children }
 							onChange={ onChange }
-							selected={ selected }
+							value={ value }
 						/>
 					</div>
 				) }

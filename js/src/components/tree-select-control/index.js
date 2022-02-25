@@ -201,7 +201,7 @@ const TreeSelectControl = ( {
 			{ isExpanded && (
 				<List
 					options={ options }
-					selected={ value }
+					value={ value }
 					onChange={ handleListChange }
 				/>
 			) }
