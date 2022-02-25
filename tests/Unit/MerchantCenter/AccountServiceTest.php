@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
@@ -29,6 +30,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\MerchantCenter
  *
+ * @property MockObject|CleanupSyncedProducts $cleanup_synced
  * @property MockObject|Merchant              $merchant
  * @property MockObject|MerchantCenterService $mc_service
  * @property MockObject|MerchantIssueTable    $issue_table
@@ -73,6 +75,7 @@ class AccountServiceTest extends UnitTest {
 	public function setUp() {
 		parent::setUp();
 
+		$this->cleanup_synced    = $this->createMock( CleanupSyncedProducts::class );
 		$this->merchant          = $this->createMock( Merchant::class );
 		$this->mc_service        = $this->createMock( MerchantCenterService::class );
 		$this->issue_table       = $this->createMock( MerchantIssueTable::class );
@@ -85,6 +88,7 @@ class AccountServiceTest extends UnitTest {
 		$this->options           = $this->createMock( OptionsInterface::class );
 
 		$this->container = new Container();
+		$this->container->share( CleanupSyncedProducts::class, $this->cleanup_synced );
 		$this->container->share( Merchant::class, $this->merchant );
 		$this->container->share( MerchantCenterService::class, $this->mc_service );
 		$this->container->share( MerchantIssueTable::class, $this->issue_table );
@@ -670,6 +674,8 @@ class AccountServiceTest extends UnitTest {
 		$this->issue_table->expects( $this->once() )->method( 'truncate' );
 		$this->rate_table->expects( $this->once() )->method( 'truncate' );
 		$this->time_table->expects( $this->once() )->method( 'truncate' );
+
+		$this->cleanup_synced->expects( $this->once() )->method( 'schedule' );
 
 		$this->account->disconnect();
 	}
