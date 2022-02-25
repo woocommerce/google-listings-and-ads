@@ -4,7 +4,10 @@
 import { useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
-import { __experimentalUseFocusOutside as useFocusOutside } from '@wordpress/compose';
+import {
+	__experimentalUseFocusOutside as useFocusOutside,
+	useInstanceId,
+} from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -48,6 +51,8 @@ const TreeSelectControl = ( {
 	value = [],
 	onChange = () => {},
 } ) => {
+	let instanceId = useInstanceId( TreeSelectControl );
+	instanceId = id ?? instanceId;
 	const [ isExpanded, setIsExpanded ] = useState( false );
 	const optionsRef = useIsEqualRefValue( options );
 	const focusOutside = useFocusOutside( () => {
@@ -181,7 +186,7 @@ const TreeSelectControl = ( {
 		>
 			{ !! label && (
 				<label
-					htmlFor={ `woocommerce-tree-select-control-${ id }__control-input` }
+					htmlFor={ `woocommerce-tree-select-control-${ instanceId }__control-input` }
 					className="woocommerce-tree-select-control__label"
 				>
 					{ label }
@@ -195,7 +200,7 @@ const TreeSelectControl = ( {
 				onFocus={ () => {
 					setIsExpanded( true );
 				} }
-				instanceId={ id }
+				instanceId={ instanceId }
 				placeholder={ placeholder }
 				label={ label }
 				onTagsChange={ handleTagsChange }
