@@ -192,7 +192,9 @@ const TreeSelectControl = ( {
 				disabled={ disabled || ! options.length }
 				tags={ getTags() }
 				isExpanded={ isExpanded }
-				setExpanded={ setIsExpanded }
+				onFocus={ () => {
+					setIsExpanded( true );
+				} }
 				instanceId={ id }
 				placeholder={ placeholder }
 				label={ label }

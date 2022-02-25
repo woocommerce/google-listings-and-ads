@@ -19,7 +19,7 @@ import Tags from './tags';
  * @param {string} props.placeholder Placeholder of the search input
  * @param {boolean} props.isExpanded True if the tree is expanded
  * @param {boolean} props.disabled True if the component is disabled
- * @param {Function} props.setExpanded Callback to expand the tree
+ * @param {Function} props.onFocus On Focus Callback
  * @param {Function} props.onTagsChange Callback when the Tags change
  * @return {JSX.Element} The rendered component
  */
@@ -29,7 +29,7 @@ const Control = ( {
 	placeholder,
 	isExpanded,
 	disabled,
-	setExpanded = () => {},
+	onFocus = () => {},
 	onTagsChange = () => {},
 } ) => {
 	const inputRef = useRef();
@@ -76,9 +76,7 @@ const Control = ( {
 					aria-expanded={ isExpanded }
 					aria-haspopup="true"
 					disabled={ disabled }
-					onFocus={ () => {
-						setExpanded( true );
-					} }
+					onFocus={ onFocus }
 				/>
 			</div>
 		</div>
