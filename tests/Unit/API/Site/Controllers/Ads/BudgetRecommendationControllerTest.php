@@ -71,23 +71,23 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			'recommendations' => [
 				[
 					'country'           => 'US',
-					'daily_budget_low'  => 330.0,
-					'daily_budget_high' => 930.0,
+					'daily_budget_low'  => 330,
+					'daily_budget_high' => 930,
 				],
 				[
 					'country'           => 'GB',
-					'daily_budget_low'  => 245.0,
-					'daily_budget_high' => 625.0,
+					'daily_budget_low'  => 245,
+					'daily_budget_high' => 625,
 				],
 				[
 					'country'           => 'TW',
-					'daily_budget_low'  => 95.0,
-					'daily_budget_high' => 255.0,
+					'daily_budget_low'  => 95,
+					'daily_budget_high' => 255,
 				],
 				[
 					'country'           => 'JP',
-					'daily_budget_low'  => 110.0,
-					'daily_budget_high' => 320.0,
+					'daily_budget_low'  => 110,
+					'daily_budget_high' => 320,
 				]
 			],
 		];

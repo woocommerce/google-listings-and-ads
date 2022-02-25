@@ -125,8 +125,8 @@ class BudgetRecommendationController extends BaseController implements ISO3166Aw
 				function ( $recommendation ) {
 					return [
 						'country'           => $recommendation['country'],
-						'daily_budget_low'  => (float) $recommendation['daily_budget_low'],
-						'daily_budget_high' => (float) $recommendation['daily_budget_high'],
+						'daily_budget_low'  => (int) $recommendation['daily_budget_low'],
+						'daily_budget_high' => (int) $recommendation['daily_budget_high'],
 					];
 				},
 				$recommendations
