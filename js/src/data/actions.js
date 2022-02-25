@@ -26,7 +26,7 @@ export function handleFetchError( error, message ) {
 /**
  * CountryCode
  *
- * @typedef {string} CountryCode
+ * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
  */
 
 /**
@@ -36,6 +36,24 @@ export function handleFetchError( error, message ) {
  * @property {CountryCode} countryCode Destination country code.
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
+ */
+
+/**
+ * Campaign data.
+ *
+ * @typedef {Object} Campaign
+ * @property {number} id Campaign ID.
+ * @property {string} name Campaign name.
+ * @property {'enabled'|'paused'} status Campaign is currently running or has been paused.
+ * @property {number} amount Amount of daily budget for running ads.
+ * @property {CountryCode} country The sales country of this campain.
+ *   Please note that this is a targeting country for advertising,
+ *   but it is NOT set up via the location-based method.
+ * @property {Array<CountryCode>} targeted_locations The location-based targeting countries associated with this campaign for advertising.
+ *   Please note that only multi-country campaigns will have at least one country in this array.
+ *   For single-country campaigns, it will an empty array.
+ * @property {boolean} allowMultiple Indicate whether this campaign allows multi-country targeting.
+ *   This can be used to distinguish this campaign is multi-country or single-country targeting.
  */
 
 /**
@@ -740,13 +758,29 @@ export function* saveTargetAudience( targetAudience ) {
 	}
 }
 
+/**
+ * Adaptes the campaign entity received from API.
+ *
+ * @param {Object} campaign The campaign entity to be adapted.
+ * @return {Campaign} Campaign data.
+ */
+function adapteAdsCampaign( campaign ) {
+	return {
+		...campaign,
+		allowMultiple: campaign.targeted_locations.length > 0,
+	};
+}
+
 export function* fetchAdsCampaigns() {
 	try {
-		const response = yield apiFetch( {
+		const campaigns = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns`,
 		} );
 
-		return receiveAdsCampaigns( response );
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+			adsCampaigns: campaigns.map( adapteAdsCampaign ),
+		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
@@ -756,13 +790,6 @@ export function* fetchAdsCampaigns() {
 			)
 		);
 	}
-}
-
-export function receiveAdsCampaigns( adsCampaigns ) {
-	return {
-		type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-		adsCampaigns,
-	};
 }
 
 /**
@@ -786,7 +813,7 @@ export function* createAdsCampaign( amount, country ) {
 
 		return {
 			type: TYPES.CREATE_ADS_CAMPAIGN,
-			createdCampaign,
+			createdCampaign: adapteAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
 		yield handleFetchError(
