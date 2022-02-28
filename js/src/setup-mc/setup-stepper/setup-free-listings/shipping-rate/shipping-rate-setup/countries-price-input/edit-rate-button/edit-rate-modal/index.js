@@ -80,7 +80,6 @@ const EditRateModal = ( props ) => {
 				price: rate.price,
 			} }
 			validate={ handleValidate }
-			onSubmitCallback={ handleSubmitCallback }
 			onSubmit={ handleSubmitCallback }
 		>
 			{ ( formProps ) => {

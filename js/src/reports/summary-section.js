@@ -51,16 +51,16 @@ export default function SummarySection( {
 	return (
 		<SummaryList>
 			{ () =>
-				metrics.map( ( { key, label, isCurrency = false } ) => {
+				metrics.map( ( metric ) => {
+					const { key } = metric;
 					const selected = selectedMetric === key;
 					const href = getNewPath( { selectedMetric: key } );
 					return (
 						<MetricNumber
 							key={ key }
-							label={ label }
+							metric={ metric }
 							href={ href }
 							selected={ selected }
-							isCurrency={ isCurrency }
 							data={ totals[ key ] || noValidData }
 							onLinkClickCallback={ () => trackClickEvent( key ) }
 						/>

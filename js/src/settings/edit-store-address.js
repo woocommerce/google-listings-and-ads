@@ -11,8 +11,8 @@ import { Flex } from '@wordpress/components';
  */
 import { getSettingsUrl } from '.~/utils/urls';
 import { useAppDispatch } from '.~/data';
+import useLayout from '.~/hooks/useLayout';
 import useStoreAddress from '.~/hooks/useStoreAddress';
-import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
 import Section from '.~/wcdl/section';
@@ -31,6 +31,8 @@ const learnMoreUrl =
  * @see StoreAddressCard
  */
 export default function EditStoreAddress() {
+	useLayout( 'full-content' );
+
 	const { updateGoogleMCContactInformation } = useAppDispatch();
 	const { data: address } = useStoreAddress();
 	const [ isSaving, setSaving ] = useState( false );
@@ -46,7 +48,7 @@ export default function EditStoreAddress() {
 		address.isAddressFilled && address.isMCAddressDifferent;
 
 	return (
-		<FullContainer>
+		<>
 			<TopBar
 				title={ __( 'Edit store address', 'google-listings-and-ads' ) }
 				helpButton={
@@ -96,6 +98,6 @@ export default function EditStoreAddress() {
 					</Flex>
 				</Section>
 			</div>
-		</FullContainer>
+		</>
 	);
 }
