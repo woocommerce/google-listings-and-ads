@@ -189,6 +189,8 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$this->assertNotEmpty( $error_entry->get_errors() );
 			// product remains synced if delete failed
 			$this->assertTrue( $this->product_helper->is_product_synced( $wc_product ) );
+			// first failed delete attempt
+			$this->assertEquals( 1, $this->product_meta->get_failed_delete_attempts( $wc_product ) );
 		}
 	}
 

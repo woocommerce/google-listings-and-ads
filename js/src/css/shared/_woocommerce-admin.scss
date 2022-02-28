@@ -1,0 +1,94 @@
+/**
+ * Workaround to hide the initial loading spinner that causes whole page flickering.
+ * The flickering issue has been fixed and released with WC-admin 2.9.0.
+ *   - https://github.com/woocommerce/woocommerce-admin/pull/7886
+ *   - https://github.com/woocommerce/woocommerce-admin/blob/v2.9.0/changelog.txt#L16
+ *
+ * This workaround can be removed after the L-2 version ≥ WC 6.0, which uses WC-admin 2.9.4
+ */
+.woocommerce-layout__primary {
+	> .woocommerce-spinner:first-child {
+		display: none;
+	}
+}
+
+// Used in .~/hooks/useLayout.js
+.gla-full-content {
+	// #wpbody `margin-top` style is set onto DOM node directly in WC Admin.
+	// Here force override it to 0.
+	// Ref: https://github.com/woocommerce/woocommerce-admin/blob/95c487247416ab34eb8e492b984e2b068618e0d3/client/header/index.js#L92-L118.
+	#wpbody {
+		margin-top: 0 !important;
+	}
+
+	.woocommerce-layout {
+		padding-top: 0;
+
+		// set the layout header width to 0 to hide it.
+		// do not set the header to display: none,
+		// because we want the offsetHeight value
+		// and set it to wpbody-content margin-top to counter back.
+		.woocommerce-layout__header {
+			width: 0;
+
+			// only display the top left WC navigation,
+			// do not display the h1 page title element
+			// and the top right activity panel.
+			&-wrapper > *:not(.woocommerce-navigation) {
+				display: none;
+			}
+		}
+
+		// Hide StoreAlerts.
+		.woocommerce-store-alerts,
+		.woocommerce-layout__notice-list {
+			display: none;
+		}
+		.woocommerce-layout__primary {
+			margin: 0;
+
+			.woocommerce-layout__main {
+				padding: 0;
+
+			}
+		}
+	}
+
+	// the following is only applicable when WC Navigation is enabled
+	// and the page is on a large screen with .is-wc-nav-expanded applied.
+	&.has-woocommerce-navigation.is-wc-nav-expanded {
+		.woocommerce-layout__header {
+			// WC Navigation lies inside woocommerce-layout__header,
+			// so we need to display this.
+			display: block;
+
+			// width of the WC Navigation sidebar.
+			width: 240px;
+		}
+	}
+}
+
+// Used in .~/hooks/useLayout.js
+.gla-full-page {
+	// hack to fix the margin-top when WC Navigation is not enabled
+	// and width is between 600px and 782px.
+	// without this, the margin-top would be -32px,
+	// and there would be a visible small grey gap.
+	&.is-wp-toolbar-disabled:not(.has-woocommerce-navigation) {
+		@media (min-width: #{ ($break-small) }) and (max-width: #{ ($break-medium) }) {
+			margin-top: -46px;
+		}
+	}
+
+	.woocommerce-layout {
+		padding-top: 0;
+
+		.woocommerce-layout__primary {
+			margin: 0;
+
+			.woocommerce-layout__main {
+				padding: 0;
+			}
+		}
+	}
+}

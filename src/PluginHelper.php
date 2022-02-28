@@ -179,4 +179,16 @@ trait PluginHelper {
 	protected function get_site_url(): string {
 		return apply_filters( 'woocommerce_gla_site_url', get_home_url() );
 	}
+
+	/**
+	 * Removes the protocol (http:// or https://) and trailing slash from the provided URL.
+	 *
+	 * @param string $url
+	 *
+	 * @return string
+	 */
+	protected function strip_url_protocol( string $url ): string {
+		return preg_replace( '#^https?://#', '', untrailingslashit( $url ) );
+	}
+
 }

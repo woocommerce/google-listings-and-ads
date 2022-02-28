@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.5
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.9.0
+Stable tag: 1.11.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -45,18 +45,9 @@ Connect your Google Ads account, choose a budget, and launch your campaign strai
 
 *Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
 
-= Get started with up to $150 in ad credit when you create a Google Ads account =
+= Get $500 in Google Ads credit when you spend your first $500! =
 
-Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaigns. The promotional code will be applied when you start spending and serve your first ad impression, and whatever you spend over the next 30 days, up to $150, will be added back to your account.
-
-*\*Ad credit amounts vary by country and region.*
-
-= The eligibility criteria: =
-- The account has no other promotions applied.
-- The account is billed to a country where Google Partners promotions are offered.
-- The account served its first ad impression within the last 14 days.
-
-*Review the static terms [here](http://www.google.com/ads/coupons/terms.html).*
+Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit. See full terms and conditions [here](https://www.google.com/ads/coupons/terms/).
 
 == Installation ==
 
@@ -118,32 +109,38 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.9.0 - 2021-12-15 =
-* Add - Pre-fill target audience countries during onboarding using WooCommerce shipping zones. #1131
-* Add - Pre-fill target audience countries with suggestions based on WooCommerce settings. #1145
-* Fix -  Fatal error on plugin deactivation. #1142
-* Fix - Fix UI loading flicker in Setup MC Step 2 "Choose your audience" page. #1146
-* Fix - Fix e2e test after copy update. #1134
-* Tweak - Display help cursor for tooltip. #1130
-* Tweak - Update product channel visibility's styling to match that of coupons channel visibility. #1135
-* Tweak - Updated `@wordpress/scripts@17.1.0`. #1132
-* Tweak - WC 6.0 compatibility.
-* Tweak - WP 5.9 compatibility.
-* Update - min. WC version to 5.7. #1110
+= 1.11.1 - 2022-02-10 =
+* Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
 
-= 1.8.0 - 2021-11-30 =
-* Update - UX improvements on account connections in Setup Merchant Center flow.
+= 1.11.0 - 2022-02-02 =
+* Add - Unit tests for the Ads AccountController and AccountService.
+* Fix - Failure handling was not correctly displayed when the ads campaign creation and editing failed.
+* Fix - Fix the incorrect text color of the disabled "Disconnect account" buttons on the Settings page.
+* Fix - Makes country dropdown list always below the input box.
+* Fix - Prevent page flickering when loading admin pages of this extension.
+* Tweak - Change the importing way of lodash package to reduce the bundle size by 4 KB.
+* Tweak - Clean up outdated workarounds for WooCommerce 5.7.
+* Update - Google Ads API to V9.
+* Update - Google Content API library to 2.12.1.
+* Update - Inbox notifications have update promotion information from Google.
+* Update - Update Google Ads credit incentive in WordPress.org plugin landing page.
+* Update - Update Google Ads credit incentive info in plugin UI.
 
-= 1.7.0 - 2021-11-24 =
-* Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
-* Add - Accept login_hint when generating OAuth URL.
-* Add - Review request inbox notification after 10 conversions and 100 free listing clicks
-* Update – Add support for retrieving the name and domain from the Google API
-* Fix - Add support for Norwegian language, nb and nn
-* Fix - Report tabs lose active state when changing chart.
-* Tweak - Update `in_stock` and `out_of_stock` availability enums
-* Tweak - Retry async jobs on timeout
-* Tweak - Reduce the bundle size of the index.js file.
-* Tweak - refactored legacy WC menu highlighting effect.
+= 1.10.0 - 2022-01-13 =
+* Add - Bulk update channel visibility for coupons.
+* Add - CES prompts for initial setup and campaign creation.
+* Add - Pre-fill shipping rates during free listing configuration wizard.
+* Add - Pre-fill shipping rates in Setup Merchant Center flow based on store's shipping settings.
+* Add - Sync products' shipping label/class to Merchant Center.
+* Fix - Drop WC 5.7 support.
+* Fix - Fatal error when creating Ads account without Site Title.
+* Fix - Fix/1078 shipping values flash during onboarding setup.
+* Fix - Fixing coupon test issue.
+* Fix - Group shipping rate by price and currency, and display the right currency in shipping rate input.
+* Fix - MC address validation.
+* Fix - Remove WC's `is_ajax` (deprecated in 6.1) in favor of proxied WP `wp_doing_ajax`.
+* Fix - Removed state/region address validation .
+* Fix - Replace `cloneDeep` within `.~/data/reducer.js` with functions that would not mutate other references of the state tree.
+* Tweak - WC 6.1 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

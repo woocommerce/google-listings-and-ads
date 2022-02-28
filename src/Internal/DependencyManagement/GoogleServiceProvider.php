@@ -100,16 +100,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Settings::class, ContainerInterface::class );
 
 		$this->share( Ads::class, GoogleAdsClient::class );
+		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class );
 		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsGroup::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );
-		$this->share(
-			AdsCampaign::class,
-			GoogleAdsClient::class,
-			AdsCampaignBudget::class,
-			AdsGroup::class
-		);
 
 		$this->share( Merchant::class, ShoppingContent::class );
 		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Ads;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -19,8 +20,32 @@ class AdsService implements OptionsAwareInterface, Service {
 
 	use OptionsAwareTrait;
 
+	/** @var AdsAccountState */
+	protected $account_state;
+
 	/**
-	 * Get whether Ads setup is completed.
+	 * AdsService constructor.
+	 *
+	 * @since 1.11.0
+	 *
+	 * @param AdsAccountState $account_state
+	 */
+	public function __construct( AdsAccountState $account_state ) {
+		$this->account_state = $account_state;
+	}
+
+	/**
+	 * Determine whether Ads setup has been started.
+	 *
+	 * @since 1.11.0
+	 * @return bool
+	 */
+	public function is_setup_started(): bool {
+		return $this->account_state->last_incomplete_step() !== '' && ! $this->is_setup_complete();
+	}
+
+	/**
+	 * Determine whether Ads setup has completed.
 	 *
 	 * @return bool
 	 */
@@ -29,7 +54,7 @@ class AdsService implements OptionsAwareInterface, Service {
 	}
 
 	/**
-	 * Get whether Ads is connected.
+	 * Determine whether Ads has connected.
 	 *
 	 * @return bool
 	 */
@@ -38,15 +63,4 @@ class AdsService implements OptionsAwareInterface, Service {
 		return $google_connected && $this->is_setup_complete();
 	}
 
-	/**
-	 * Disconnect Ads account
-	 */
-	public function disconnect() {
-		$this->options->delete( OptionsInterface::ADS_ACCOUNT_CURRENCY );
-		$this->options->delete( OptionsInterface::ADS_ACCOUNT_STATE );
-		$this->options->delete( OptionsInterface::ADS_BILLING_URL );
-		$this->options->delete( OptionsInterface::ADS_CONVERSION_ACTION );
-		$this->options->delete( OptionsInterface::ADS_ID );
-		$this->options->delete( OptionsInterface::ADS_SETUP_COMPLETED_AT );
-	}
 }

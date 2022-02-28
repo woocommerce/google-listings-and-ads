@@ -150,7 +150,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 *
 	 * @return callable
 	 *
-	 * @since x.x.x
+	 * @since 1.10.0
 	 */
 	protected function get_suggestions_callback(): callable {
 		return function( Request $request ) {
@@ -318,7 +318,7 @@ class ShippingRateController extends BaseController implements ISO3166AwareInter
 	 *
 	 * @return array|null
 	 *
-	 * @since x.x.x
+	 * @since 1.10.0
 	 */
 	protected function get_suggested_shipping_rate_for_country( string $country ): ?array {
 		$methods = $this->shipping_zone->get_shipping_methods_for_country( $country );

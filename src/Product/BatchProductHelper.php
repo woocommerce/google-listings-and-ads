@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
@@ -108,6 +109,26 @@ class BatchProductHelper implements Service {
 		$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
 
 		$this->product_helper->mark_as_unsynced( $wc_product );
+	}
+
+	/**
+	 * Mark a batch of WooCommerce product IDs as unsynced.
+	 * Invalid products will be skipped.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param array $product_ids
+	 */
+	public function mark_batch_as_unsynced( array $product_ids ) {
+		foreach ( $product_ids as $product_id ) {
+			try {
+				$product = $this->product_helper->get_wc_product( $product_id );
+			} catch ( InvalidValue $exception ) {
+				continue;
+			}
+
+			$this->product_helper->mark_as_unsynced( $product );
+		}
 	}
 
 	/**
