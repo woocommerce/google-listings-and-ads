@@ -13,7 +13,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import EditPaidAdsCampaignFormContent from './edit-paid-ads-campaign-form-content';
+import EditPaidAdsCampaignFormContent from '.~/components/paid-ads/edit-paid-ads-campaign-form-content';
 import AppButton from '.~/components/app-button';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
@@ -82,6 +82,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 						/>
 						<EditPaidAdsCampaignFormContent
 							formProps={ formProps }
+							allowMultiple={ campaign.allowMultiple }
 						/>
 						<StepContentFooter>
 							<AppButton
