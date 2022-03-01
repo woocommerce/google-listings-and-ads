@@ -55,10 +55,7 @@ const Options = ( { options = [], value, parent = '', onChange } ) => {
 			>
 				<CheckboxControl
 					value={ option.id }
-					className={ classnames(
-						'woocommerce-tree-select-control__option',
-						'woocommerce-tree-select-control__parent'
-					) }
+					className={ 'woocommerce-tree-select-control__option' }
 					label={ option.name }
 					checked={
 						value.includes( option.id ) ||
