@@ -28,13 +28,6 @@ const options = [
 ];
 
 describe( 'TreeSelectControl Component', () => {
-	it( 'Is disabled without options', () => {
-		const { queryByRole } = render( <TreeSelectControl /> );
-		const selector = queryByRole( 'combobox' );
-
-		expect( selector ).toBeTruthy();
-		expect( selector.hasAttribute( 'disabled' ) ).toBeTruthy();
-	} );
 
 	it( 'Renders the provided options and selected values', () => {
 		const selectedValues = [ 'ES' ];
