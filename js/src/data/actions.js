@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import isSameShippingRate from '.~/utils/isSameShippingRate';
+import isInShippingRates from '.~/utils/isInShippingRates';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { STORE_KEY } from '.';
@@ -90,17 +90,12 @@ export function* saveShippingRates( newShippingRates ) {
 		 * to find out the old ones to be deleted.
 		 */
 		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
-		const deleteIds = oldShippingRates.reduce( ( acc, cur ) => {
-			const found = newShippingRates.find( ( el ) =>
-				isSameShippingRate( el, cur )
-			);
-
-			if ( ! found ) {
-				acc.push( cur.id );
-			}
-
-			return acc;
-		}, [] );
+		const deleteIds = oldShippingRates
+			.filter(
+				( oldShippingRate ) =>
+					! isInShippingRates( oldShippingRate, newShippingRates )
+			)
+			.map( ( oldShippingRate ) => oldShippingRate.id );
 
 		if ( deleteIds.length ) {
 			yield apiFetch( {
