@@ -28,7 +28,6 @@ const options = [
 ];
 
 describe( 'TreeSelectControl Component', () => {
-
 	it( 'Renders the provided options and selected values', () => {
 		const selectedValues = [ 'ES' ];
 

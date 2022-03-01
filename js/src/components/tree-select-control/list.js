@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { CheckboxControl } from '@wordpress/components';
-import classnames from 'classnames';
 
 /**
  * List component showing the option tree.
