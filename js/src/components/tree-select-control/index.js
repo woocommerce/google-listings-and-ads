@@ -190,7 +190,7 @@ const TreeSelectControl = ( {
 			) }
 
 			<Control
-				disabled={ disabled || ! options.length }
+				disabled={ disabled }
 				tags={ getTags() }
 				isExpanded={ isExpanded }
 				onFocus={ () => {
