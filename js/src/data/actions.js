@@ -35,9 +35,12 @@ export function handleFetchError( error, message ) {
  * Individual shipping rate.
  *
  * @typedef {Object} ShippingRate
- * @property {CountryCode} countryCode Destination country code.
+ * @property {string} id id.
+ * @property {CountryCode} country Destination country code.
+ * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
+ * @property {Object} options options depending on the shipping method.
  */
 
 /**
