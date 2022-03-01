@@ -78,6 +78,13 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			},
 			1000000
 		);
+		add_action(
+			'wp_body_open',
+			function() {
+				$this->display_view_item_event_snippet();
+			},
+			1000002
+		);
 	}
 
 	/**
@@ -161,6 +168,37 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $order->get_total() ),
 			esc_js( $order->get_currency() ),
 			esc_js( $order->get_id() ),
+		);
+	}
+
+	/**
+	 * Display the JavaScript code to track the product view page.
+	 */
+	public function display_view_item_event_snippet(): void {
+		// Only display on the order confirmation page.
+		if ( ! is_product() ) {
+			return;
+		}
+		$product = wc_get_product( get_the_ID() );
+		printf(
+			'<script>gtag("event", "view_item", {
+				"send_to": "GLA", 
+				"developer_id.%s": "true", 
+				"ecomm_pagetype": "product", 
+				"value": "%s", 
+				items:[{
+				"id": "gla_%s", 
+				"price": %s, 
+				"google_business_vertical": "retail", 
+				"name":"%s", 
+				"category":"%s",
+			}]});</script>',
+			esc_js( self::DEVELOPER_ID ),
+			esc_js( (string) $product->get_price() ),
+			esc_js( $product->get_id() ),
+			esc_js( (string) $product->get_price() ),
+			esc_js( $product->get_name() ),
+			esc_js( join( '& ', $product->get_categories() ) ),
 		);
 	}
 
