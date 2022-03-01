@@ -14,7 +14,10 @@ import * as actions from './actions';
 import * as selectors from './selectors';
 import * as resolvers from './resolvers';
 import reducer from './reducer';
-import { createErrorResponseCatcher } from './api-fetch-middlewares';
+import {
+	createErrorResponseCatcher,
+	mockCampaignForMultiCountryTargeting,
+} from './api-fetch-middlewares';
 import { getReconnectAccountsUrl } from '.~/utils/urls';
 
 registerStore( STORE_KEY, {
@@ -51,6 +54,8 @@ apiFetch.use(
 		throw response;
 	} )
 );
+
+apiFetch.use( mockCampaignForMultiCountryTargeting );
 
 export { STORE_KEY };
 

@@ -68,3 +68,117 @@ export function createErrorResponseCatcher( onErrorResponse ) {
 			} );
 	};
 }
+
+/*
+ * === Please note ===
+ * The codes below this comment are temporarily mimic some ads API
+ * for the multi-country targeting campaign project.
+ * It will be removed after the API implementation is completed.
+ */
+function adapteCampaignEntity( campaign, i = 0 ) {
+	// Single-country for odd index
+	// Multi-country for even index
+	const locations = i % 2 ? [] : [ 'US', 'JP', 'GB' ];
+	return {
+		...campaign,
+		targeted_locations: locations,
+	};
+}
+
+function adapteBudgetResponse( response ) {
+	const codes = this;
+
+	return response
+		.json()
+		.then( ( data ) => {
+			const {
+				currency,
+				country_code: country,
+				daily_budget_low: low,
+				daily_budget_high: high,
+			} = data;
+
+			const baseHigh = Number( high );
+			return {
+				currency,
+				recommendations: [
+					{
+						country,
+						daily_budget_low: Number( low ),
+						daily_budget_high: baseHigh,
+					},
+					...codes.map( ( code, i ) => ( {
+						country: code,
+						daily_budget_low: 5,
+						daily_budget_high:
+							i % 2 ? baseHigh * 1.2 : baseHigh + 200,
+					} ) ),
+				],
+			};
+		} )
+		.then( ( resolvedBody ) => {
+			const json = () => resolvedBody;
+			return {
+				clone: () => ( { json } ),
+				resolvedBody,
+			};
+		} );
+}
+
+export function mockCampaignForMultiCountryTargeting( options, next ) {
+	const { path, method = 'GET' } = options;
+	const route = path.replace( '/wc/gla/', `${ method } ` );
+
+	function logMocks( body ) {
+		const patterns = [
+			/^GET ads\/campaigns$/,
+			/^POST ads\/campaigns$/,
+			/^GET ads\/campaigns\/budget-recommendation\?/,
+		];
+
+		if ( patterns.some( route.match.bind( route ) ) ) {
+			const json = JSON.stringify( body.resolvedBody ?? body, null, 2 );
+			console.log( `%cMocked: ${ route }`, 'color:#005caf' ); // eslint-disable-line no-console
+			console.log( `%c${ json }`, 'color:#0b346e' ); // eslint-disable-line no-console
+		}
+		return body;
+	}
+
+	if ( route.startsWith( 'GET ads/campaigns/budget-recommendation?' ) ) {
+		const [ code, ...codes ] = wp.url.getQueryArgs( path ).country_codes;
+		options.path = `/wc/gla/ads/campaigns/budget-recommendation/${ code }`;
+		return next( options )
+			.then( adapteBudgetResponse.bind( codes ) )
+			.then( logMocks );
+	}
+
+	if ( route === 'POST ads/campaigns' && options.data.targeted_locations ) {
+		options.data.country = options.data.targeted_locations[ 0 ];
+	}
+
+	return next( options )
+		.then( ( body ) => {
+			switch ( route ) {
+				case 'GET ads/campaigns': {
+					return body.map( adapteCampaignEntity );
+				}
+
+				case 'POST ads/campaigns': {
+					return adapteCampaignEntity( body );
+				}
+			}
+			return body;
+		} )
+		.then( logMocks );
+}
+
+if ( window.wc ) {
+	window.wc.gla = {
+		queryBudget( ...countryCodes ) {
+			const url = `${ API_NAMESPACE }/ads/campaigns/budget-recommendation`;
+			const query = { country_codes: countryCodes };
+			const path = wp.url.addQueryArgs( url, query );
+			wp.apiFetch( { path, parse: false } );
+		},
+	};
+}
