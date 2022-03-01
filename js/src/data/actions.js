@@ -133,7 +133,12 @@ export function* saveShippingRates( newShippingRates ) {
 			},
 		} );
 
-		const upsertedShippingRates = data.success?.map( ( el ) => el.rate );
+		const upsertedShippingRates = data.success?.map( ( el ) => {
+			return {
+				...el.rate,
+				rate: Number( el.rate.rate ),
+			};
+		} );
 
 		return {
 			type: TYPES.RECEIVE_SHIPPING_RATES,
