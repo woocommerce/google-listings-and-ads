@@ -77,8 +77,8 @@ export function* fetchShippingRates() {
 
 function* maybeDeleteShippingRates( newShippingRates, oldShippingRates ) {
 	/**
-	 * Compare the new shipping rates and the old ones from the store
-	 * to find out the old ones to be deleted.
+	 * Find the old shipping rates that are not in the new ones,
+	 * and delete them.
 	 */
 	const deleteIds = oldShippingRates
 		.filter(
@@ -125,10 +125,6 @@ function* upsertShippingRates( shippingRates ) {
  */
 export function* saveShippingRates( newShippingRates ) {
 	try {
-		/**
-		 * Compare the new shipping rates and the old ones from the store
-		 * and delete the old ones.
-		 */
 		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
 		yield maybeDeleteShippingRates( newShippingRates, oldShippingRates );
 
