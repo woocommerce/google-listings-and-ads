@@ -70,15 +70,11 @@ const TreeSelectControl = ( {
 		function loadOption( option ) {
 			if ( ! option.children ) {
 				repository[ option.id ] = { ...option };
-			}
-
-			option.children.forEach( ( child ) => {
-				repository[ child.id ] = { ...child };
-
-				if ( child.children ) {
+			} else {
+				option.children.forEach( ( child ) => {
 					loadOption( child );
-				}
-			} );
+				} );
+			}
 		}
 
 		optionsRef.forEach( ( option ) => loadOption( option ) );
