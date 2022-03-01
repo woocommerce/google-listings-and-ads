@@ -75,6 +75,46 @@ export function* fetchShippingRates() {
 	}
 }
 
+function* maybeDeleteShippingRates( newShippingRates, oldShippingRates ) {
+	/**
+	 * Compare the new shipping rates and the old ones from the store
+	 * to find out the old ones to be deleted.
+	 */
+	const deleteIds = oldShippingRates
+		.filter(
+			( oldShippingRate ) =>
+				! isInShippingRates( oldShippingRate, newShippingRates )
+		)
+		.map( ( oldShippingRate ) => oldShippingRate.id );
+
+	if ( deleteIds.length ) {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+			method: 'DELETE',
+			data: {
+				ids: deleteIds,
+			},
+		} );
+	}
+}
+
+function* upsertShippingRates( shippingRates ) {
+	const data = yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'POST',
+		data: {
+			rates: shippingRates,
+		},
+	} );
+
+	return data.success?.map( ( el ) => {
+		return {
+			...el.rate,
+			rate: Number( el.rate.rate ),
+		};
+	} );
+}
+
 /**
  * Saves shipping rates.
  *
@@ -87,25 +127,10 @@ export function* saveShippingRates( newShippingRates ) {
 	try {
 		/**
 		 * Compare the new shipping rates and the old ones from the store
-		 * to find out the old ones to be deleted.
+		 * and delete the old ones.
 		 */
 		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
-		const deleteIds = oldShippingRates
-			.filter(
-				( oldShippingRate ) =>
-					! isInShippingRates( oldShippingRate, newShippingRates )
-			)
-			.map( ( oldShippingRate ) => oldShippingRate.id );
-
-		if ( deleteIds.length ) {
-			yield apiFetch( {
-				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-				method: 'DELETE',
-				data: {
-					ids: deleteIds,
-				},
-			} );
-		}
+		yield maybeDeleteShippingRates( newShippingRates, oldShippingRates );
 
 		/**
 		 * No new shipping rate, no need to call API.
@@ -120,20 +145,9 @@ export function* saveShippingRates( newShippingRates ) {
 		/**
 		 * There are new shipping rates, we call API to upsert them.
 		 */
-		const data = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'POST',
-			data: {
-				rates: newShippingRates,
-			},
-		} );
-
-		const upsertedShippingRates = data.success?.map( ( el ) => {
-			return {
-				...el.rate,
-				rate: Number( el.rate.rate ),
-			};
-		} );
+		const upsertedShippingRates = yield upsertShippingRates(
+			newShippingRates
+		);
 
 		return {
 			type: TYPES.RECEIVE_SHIPPING_RATES,
