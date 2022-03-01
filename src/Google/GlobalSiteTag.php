@@ -175,7 +175,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * Display the JavaScript code to track the product view page.
 	 */
 	public function display_view_item_event_snippet(): void {
-		// Only display on the order confirmation page.
+		// Only display on the product view page.
 		if ( ! is_product() ) {
 			return;
 		}
@@ -192,7 +192,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				"google_business_vertical": "retail", 
 				"name":"%s", 
 				"category":"%s",
-			}]});</script>',
+				}]});
+			</script>',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( (string) $product->get_price() ),
 			esc_js( $product->get_id() ),
