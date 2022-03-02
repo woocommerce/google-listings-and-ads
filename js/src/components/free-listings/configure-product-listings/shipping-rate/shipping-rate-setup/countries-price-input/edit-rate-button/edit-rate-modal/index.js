@@ -117,17 +117,15 @@ const EditRateModal = ( {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<AppCountrySelect
-									label={ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-									options={ availableCountries }
-									multiple
-									{ ...getInputProps( 'countries' ) }
-								/>
-							</div>
+							<AppCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								options={ availableCountries }
+								multiple
+								{ ...getInputProps( 'countries' ) }
+							/>
 							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
