@@ -9,20 +9,20 @@ import TreeSelectControl from '.~/components/tree-select-control/index';
 
 const options = [
 	{
-		id: 'EU',
-		name: 'Europe',
+		value: 'EU',
+		label: 'Europe',
 		children: [
-			{ id: 'ES', name: 'Spain' },
-			{ id: 'FR', name: 'France' },
-			{ id: 'IT', name: 'Italy' },
+			{ value: 'ES', label: 'Spain' },
+			{ value: 'FR', label: 'France' },
+			{ value: 'IT', label: 'Italy' },
 		],
 	},
 	{
-		id: 'AS',
-		name: 'Asia',
+		value: 'AS',
+		label: 'Asia',
 		children: [
-			{ id: 'JP', name: 'Japan' },
-			{ id: 'CH', name: 'China' },
+			{ value: 'JP', label: 'Japan' },
+			{ value: 'CH', label: 'China' },
 		],
 	},
 ];
@@ -39,7 +39,7 @@ describe( 'TreeSelectControl Component', () => {
 		expect( queryByRole( 'listbox' ) ).toBeFalsy();
 		options.forEach( ( { children } ) => {
 			children.forEach( ( item ) => {
-				expect( queryByLabelText( item.name ) ).toBeFalsy();
+				expect( queryByLabelText( item.label ) ).toBeFalsy();
 			} );
 		} );
 
@@ -48,10 +48,10 @@ describe( 'TreeSelectControl Component', () => {
 
 		options.forEach( ( { children } ) => {
 			children.forEach( ( item ) => {
-				const checkbox = queryByLabelText( item.name );
+				const checkbox = queryByLabelText( item.label );
 				expect( checkbox ).toBeTruthy();
 				expect( checkbox.checked ).toEqual(
-					selectedValues.includes( item.id )
+					selectedValues.includes( item.value )
 				);
 			} );
 		} );

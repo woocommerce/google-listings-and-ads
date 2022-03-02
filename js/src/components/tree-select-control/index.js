@@ -21,8 +21,8 @@ import './index.scss';
  * The Option type Object. This is how we send the options to the selector.
  *
  * @typedef { Object } Option
- * @property {string} id The unique ID for the option
- * @property {string} name The name for the option
+ * @property {string} value The unique value for the option
+ * @property {string} label The label for the option
  * @property {Option[]} [children] The children Option objects
  */
 
@@ -69,7 +69,7 @@ const TreeSelectControl = ( {
 
 		function loadOption( option ) {
 			if ( ! option.children ) {
-				repository[ option.id ] = { ...option };
+				repository[ option.value ] = { ...option };
 			} else {
 				option.children.forEach( ( child ) => {
 					loadOption( child );
@@ -85,7 +85,7 @@ const TreeSelectControl = ( {
 	/**
 	 * Get formatted Tags from the selected values.
 	 *
-	 * @return {{name: {string}, id: {string}}[]} An array of Tags
+	 * @return {{label: {string}, id: {string}}[]} An array of Tags
 	 */
 	const getTags = () => {
 		if ( ! options.length ) {
@@ -94,7 +94,7 @@ const TreeSelectControl = ( {
 
 		return value.map( ( key ) => {
 			const option = optionsRepository[ key ];
-			return { id: key, name: option.name };
+			return { id: key, label: option.label };
 		} );
 	};
 
@@ -121,8 +121,8 @@ const TreeSelectControl = ( {
 	 */
 	const handleSingleChange = ( checked, option ) => {
 		const newValue = checked
-			? [ ...value, option.id ]
-			: value.filter( ( el ) => el !== option.id );
+			? [ ...value, option.value ]
+			: value.filter( ( el ) => el !== option.value );
 
 		onChange( newValue );
 	};
@@ -147,14 +147,14 @@ const TreeSelectControl = ( {
 					return;
 				}
 
-				const childIdPosition = newValue.indexOf( child.id );
+				const childIdPosition = newValue.indexOf( child.value );
 
 				if ( ! checked && childIdPosition >= 0 ) {
 					newValue.splice( childIdPosition, 1 );
 				}
 
 				if ( checked && childIdPosition < 0 ) {
-					newValue.push( child.id );
+					newValue.push( child.value );
 				}
 			} );
 		}
