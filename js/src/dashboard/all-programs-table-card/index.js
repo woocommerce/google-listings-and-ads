@@ -51,8 +51,8 @@ function CountryColumn( { countryCodes, countryNameMap } ) {
 			{ countryNameMap[ first ] }
 			{ countryCodes.length >= 2 &&
 				sprintf(
-					// translators: %s: number of countries, with minimum value of 1.
-					__( ' + %s more', 'google-listings-and-ads' ),
+					// translators: %d: number of countries, with minimum value of 1.
+					__( ' + %d more', 'google-listings-and-ads' ),
 					countryCodes.length - 1
 				) }
 		</span>
