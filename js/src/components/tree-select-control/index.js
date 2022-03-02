@@ -1,56 +1,213 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
-// import { __, _n, sprintf } from '@wordpress/i18n';
-// import { Component, createElement } from '@wordpress/element';
-// import { debounce, escapeRegExp, identity, noop } from 'lodash';
-// import PropTypes from 'prop-types';
-// import { withFocusOutside, withSpokenMessages } from '@wordpress/components';
-// import { withInstanceId, compose } from '@wordpress/compose';
+// eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
+import {
+	__experimentalUseFocusOutside as useFocusOutside,
+	useInstanceId,
+} from '@wordpress/compose';
 
 /**
  * Internal dependencies
  */
-import List from './list';
+import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
+import List from './list';
 import './index.scss';
 
-const TreeSelectControl = ( props ) => {
-	const { className, disabled, value = [], onChange = () => {} } = props;
-	const [ isExpanded, setIsExpanded ] = useState( true );
+/**
+ * The Option type Object. This is how we send the options to the selector.
+ *
+ * @typedef { Object } Option
+ * @property {string} id The unique ID for the option
+ * @property {string} name The name for the option
+ * @property {Option[]} [children] The children Option objects
+ */
+
+/**
+ * Renders a component with a searchable control, tags and a tree selector.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.id Component id
+ * @param {string} props.label Label for the component
+ * @param {string} props.placeholder Placeholder for the search control input
+ * @param {string} props.className The class name for this component
+ * @param {boolean} props.disabled Disables the component
+ * @param {Option[]} props.options Options to show in the component
+ * @param {{string}[]} props.value Selected values
+ * @param {Function} props.onChange Callback when the selector changes
+ *
+ * @return {JSX.Element|null} The component
+ */
+const TreeSelectControl = ( {
+	id,
+	label,
+	placeholder,
+	className,
+	disabled,
+	options = [],
+	value = [],
+	onChange = () => {},
+} ) => {
+	let instanceId = useInstanceId( TreeSelectControl );
+	instanceId = id ?? instanceId;
+	const [ isExpanded, setIsExpanded ] = useState( false );
+	const optionsRef = useIsEqualRefValue( options );
+	const focusOutside = useFocusOutside( () => {
+		setIsExpanded( false );
+	} );
+
+	/**
+	 * Optimizes the performance for getting the tags info
+	 *
+	 * @see getTags
+	 */
+	const optionsRepository = useMemo( () => {
+		const repository = {};
+
+		function loadOption( option ) {
+			if ( ! option.children ) {
+				repository[ option.id ] = { ...option };
+			} else {
+				option.children.forEach( ( child ) => {
+					loadOption( child );
+				} );
+			}
+		}
+
+		optionsRef.forEach( ( option ) => loadOption( option ) );
+
+		return repository;
+	}, [ optionsRef ] );
+
+	/**
+	 * Get formatted Tags from the selected values.
+	 *
+	 * @return {{name: {string}, id: {string}}[]} An array of Tags
+	 */
+	const getTags = () => {
+		if ( ! options.length ) {
+			return [];
+		}
+
+		return value.map( ( key ) => {
+			const option = optionsRepository[ key ];
+			return { id: key, name: option.name };
+		} );
+	};
+
+	/**
+	 * Handles a change on the Tree List of options. Could be a click on a parent option
+	 * or a child option
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {Option} option The option to change
+	 */
+	const handleListChange = ( checked, option ) => {
+		if ( option.children?.length ) {
+			handleParentChange( checked, option );
+		} else {
+			handleSingleChange( checked, option );
+		}
+	};
+
+	/**
+	 * Handles a change of a child element.
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {Option} option The option to change
+	 */
+	const handleSingleChange = ( checked, option ) => {
+		const newValue = checked
+			? [ ...value, option.id ]
+			: value.filter( ( el ) => el !== option.id );
+
+		onChange( newValue );
+	};
+
+	/**
+	 * Handles a change of a Parent element.
+	 *
+	 * @param {boolean} checked Indicates if the item should be checked
+	 * @param {Option} option The option to change
+	 */
+	const handleParentChange = ( checked, option ) => {
+		const newValue = [ ...value ];
+
+		function loadChildren( parent ) {
+			if ( ! parent.children ) {
+				return;
+			}
+
+			parent.children.forEach( ( child ) => {
+				if ( child.children?.length ) {
+					loadChildren( child );
+					return;
+				}
+
+				const childIdPosition = newValue.indexOf( child.id );
+
+				if ( ! checked && childIdPosition >= 0 ) {
+					newValue.splice( childIdPosition, 1 );
+				}
+
+				if ( checked && childIdPosition < 0 ) {
+					newValue.push( child.id );
+				}
+			} );
+		}
+
+		loadChildren( option );
+		onChange( newValue );
+	};
+
+	/**
+	 * Handles a change of a Tag element. We map them to Value format.
+	 *
+	 * @param {Array} tags List of current tags
+	 */
+	const handleTagsChange = ( tags ) => {
+		onChange( [ ...tags.map( ( el ) => el.id ) ] );
+	};
 
 	return (
 		<div
+			{ ...focusOutside }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
 			) }
 		>
+			{ !! label && (
+				<label
+					htmlFor={ `woocommerce-tree-select-control-${ instanceId }__control-input` }
+					className="woocommerce-tree-select-control__label"
+				>
+					{ label }
+				</label>
+			) }
+
 			<Control
 				disabled={ disabled }
-				hasTags
+				tags={ getTags() }
 				isExpanded={ isExpanded }
-				// onSearch={ this.search }
-				// selected={ this.getSelected() }
-				onChange={ onChange }
-				setExpanded={ setIsExpanded }
-				// updateSearchOptions={ this.updateSearchOptions }
-				// decrementSelectedIndex={ this.decrementSelectedIndex }
-				// incrementSelectedIndex={ this.incrementSelectedIndex }
+				onFocus={ () => {
+					setIsExpanded( true );
+				} }
+				instanceId={ instanceId }
+				placeholder={ placeholder }
+				label={ label }
+				onTagsChange={ handleTagsChange }
 			/>
-			{ /* { isExpanded && (
+			{ isExpanded && (
 				<List
-					node={ this.node }
-					onSelect={ this.selectOption }
-					onSearch={ this.search }
-					options={ this.getOptions() }
-					decrementSelectedIndex={ this.decrementSelectedIndex }
-					incrementSelectedIndex={ this.incrementSelectedIndex }
-					setExpanded={ this.setExpanded }
+					options={ options }
+					value={ value }
+					onChange={ handleListChange }
 				/>
-			) } */ }
+			) }
 		</div>
 	);
 };

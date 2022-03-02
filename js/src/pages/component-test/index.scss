@@ -1,0 +1,32 @@
+.gla-tree-select-control {
+
+	.woocommerce-tree-select-control__label {
+		font-size: 13px;
+		color: $black;
+	}
+
+	.woocommerce-tree-select-control__control {
+		padding: 8px;
+		height: auto;
+
+		.woocommerce-tag {
+			max-height: 20px;
+
+			&__remove {
+				height: 20px;
+			}
+		}
+	}
+
+	.woocommerce-tree-select-control__control-input {
+		font-size: 13px;
+	}
+
+	.woocommerce-tree-select-control__option {
+		font-size: 13px;
+		padding: 13px;
+		min-height: auto;
+	}
+
+
+}

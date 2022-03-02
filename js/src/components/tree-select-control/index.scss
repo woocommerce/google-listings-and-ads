@@ -1,4 +1,4 @@
-@import '@automattic/color-studio/dist/color-variables.scss';
+@import "@automattic/color-studio/dist/color-variables.scss";
 
 $gap-largest: 40px;
 $gap-larger: 36px;
@@ -20,6 +20,13 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 .woocommerce-tree-select-control {
 	position: relative;
 
+	&__label {
+		display: block;
+		font-size: 16px;
+		color: $studio-gray-50;
+		padding-bottom: $gap-smaller;
+	}
+
 	.components-base-control {
 		height: 56px;
 		display: flex;
@@ -30,13 +37,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		padding: $gap-small;
 		position: relative;
 
-		.woocommerce-tree-select-control__tags {
-			margin: $gap-small $gap-smallest 0 0;
-		}
-
-		.woocommerce-tag {
-			max-height: 20px;
-		}
 
 		.components-base-control__field {
 			display: flex;
@@ -44,14 +44,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			flex: 1;
 			margin-bottom: 0;
 			max-width: 100%;
-		}
-
-		.components-base-control__label {
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			color: $studio-gray-50;
-			font-size: 16px;
 		}
 
 		.woocommerce-tree-select-control__control-input {
@@ -100,6 +92,10 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			.components-base-control__label {
 				cursor: default;
 			}
+			.woocommerce-tag__remove {
+				cursor: default;
+				pointer-events: none;
+			}
 		}
 	}
 
@@ -110,7 +106,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 
 	.woocommerce-tree-select-control__tags {
 		position: relative;
-		margin: $gap-small 0 0 0;
+		margin: 0;
 
 		&.has-clear {
 			padding-right: $gap-large;
@@ -141,7 +137,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		position: absolute;
 		left: 0;
 		right: 0;
-		top: 57px;
 		z-index: 10;
 		overflow-y: auto;
 		max-height: 350px;
@@ -151,16 +146,30 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		}
 	}
 
+	.woocommerce-tree-select-control__children {
+		padding: 0 $gap;
+	}
+
 	.woocommerce-tree-select-control__option {
-		padding: $gap;
-		min-height: 56px;
+		padding: 0 $gap;
 		font-size: 16px;
 		text-align: left;
+		border: none;
+		min-height: 0;
+		display: flex;
+		height: auto;
 
 		&.is-selected,
 		&:hover {
 			background: $studio-gray-0;
 		}
+	}
+
+	.components-checkbox-control__label {
+		width: 100%;
+		display: flex;
+		min-height: 56px;
+		align-items: center;
 	}
 
 	&.is-searchable {

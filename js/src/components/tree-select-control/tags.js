@@ -2,119 +2,63 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
-import { Icon, cancelCircleFilled } from '@wordpress/icons';
-import { createElement, Component, Fragment } from '@wordpress/element';
-import { findIndex } from 'lodash';
-import PropTypes from 'prop-types';
 import { Tag } from '@woocommerce/components';
 
 /**
- * Internal dependencies
- */
-// import Tag from '../tag';
-
-/**
  * A list of tags to display selected items.
+ *
+ * @param {Object} props The component props
+ * @param {Object[]} props.tags The tags
+ * @param {Function} props.onChange The method called when a tag is removed
+ * @param {boolean} props.disabled True if the plugin is disabled
  */
-class Tags extends Component {
-	constructor( props ) {
-		super( props );
-		this.removeAll = this.removeAll.bind( this );
-		this.removeResult = this.removeResult.bind( this );
+const Tags = ( { tags, disabled, onChange = () => {} } ) => {
+	if ( ! tags.length ) {
+		return null;
 	}
 
-	removeAll() {
-		const { onChange } = this.props;
-		onChange( [] );
-	}
-
-	removeResult( key ) {
+	/**
+	 * Callback to remove a Tag.
+	 * The function is defined this way because in the WooCommerce Tag Component the remove logic
+	 * is defined as `onClick={ remove(key) }` hence we need to do this to avoid calling remove function
+	 * on each render.
+	 *
+	 * @param {string} key The key for the Tag to be deleted
+	 */
+	const remove = ( key ) => {
 		return () => {
-			const { selected, onChange } = this.props;
-			const i = findIndex( selected, { key } );
-			onChange( [
-				...selected.slice( 0, i ),
-				...selected.slice( i + 1 ),
-			] );
+			if ( disabled ) {
+				return;
+			}
+			onChange( tags.filter( ( tag ) => tag.id !== key ) );
 		};
-	}
+	};
 
-	render() {
-		const { selected, showClearButton } = this.props;
-		if ( ! selected.length ) {
-			return null;
-		}
-
-		return (
-			<Fragment>
-				<div className="woocommerce-select-control__tags">
-					{ selected.map( ( item, i ) => {
-						if ( ! item.label ) {
-							return null;
-						}
-						const screenReaderLabel = sprintf(
-							__( '%1$s (%2$s of %3$s)', 'woocommerce-admin' ),
-							item.label,
-							i + 1,
-							selected.length
-						);
-						return (
-							<Tag
-								key={ item.key }
-								id={ item.key }
-								label={ item.label }
-								remove={ this.removeResult }
-								screenReaderLabel={ screenReaderLabel }
-							/>
-						);
-					} ) }
-				</div>
-				{ showClearButton && (
-					<Button
-						className="woocommerce-select-control__clear"
-						isLink
-						onClick={ this.removeAll }
-					>
-						<Icon
-							icon={ cancelCircleFilled }
-							className="clear-icon"
-						/>
-						<span className="screen-reader-text">
-							{ __( 'Clear all', 'woocommerce-admin' ) }
-						</span>
-					</Button>
-				) }
-			</Fragment>
-		);
-	}
-}
-
-Tags.propTypes = {
-	/**
-	 * Function called when selected results change, passed result list.
-	 */
-	onChange: PropTypes.func,
-	/**
-	 * Function to execute when an option is selected.
-	 */
-	onSelect: PropTypes.func,
-	/**
-	 * An array of objects describing selected values. If the label of the selected
-	 * value is omitted, the Tag of that value will not be rendered inside the
-	 * search box.
-	 */
-	selected: PropTypes.arrayOf(
-		PropTypes.shape( {
-			key: PropTypes.oneOfType( [ PropTypes.number, PropTypes.string ] )
-				.isRequired,
-			label: PropTypes.string,
-		} )
-	),
-	/**
-	 * Render a 'Clear' button next to the input box to remove its contents.
-	 */
-	showClearButton: PropTypes.bool,
+	return (
+		<div className="woocommerce-tree-select-control__tags">
+			{ tags.map( ( item, i ) => {
+				if ( ! item.name ) {
+					return null;
+				}
+				const screenReaderLabel = sprintf(
+					// translators: 1: Tag Name, 2: Current Tag index, 3: Total amount of tags.
+					__( '%1$s (%2$s of %3$s)', 'woocommerce-admin' ),
+					item.name,
+					i + 1,
+					tags.length
+				);
+				return (
+					<Tag
+						key={ item.id }
+						id={ item.id }
+						label={ item.name }
+						screenReaderLabel={ screenReaderLabel }
+						remove={ remove }
+					/>
+				);
+			} ) }
+		</div>
+	);
 };
 
 export default Tags;

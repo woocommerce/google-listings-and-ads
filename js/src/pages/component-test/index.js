@@ -1,16 +1,15 @@
 /**
  * External dependencies
  */
-import { SelectControl } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { SelectControl } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
 import SupportedCountrySelect from '.~/components/supported-country-select';
 import TreeSelectControl from '.~/components/tree-select-control';
-import LocalSelectControl from '.~/components/select-control';
-import useCountryKeyNameMap from '.~/hooks/useCountryKeyNameMap';
+import './index.scss';
 
 const ComponentTest = () => {
 	const [ value, setValue ] = useState();
@@ -18,42 +17,89 @@ const ComponentTest = () => {
 	/**
 	 * For LocalSelectControl
 	 */
-	const [ selected, setSelected ] = useState( [] );
-	const keyNameMap = useCountryKeyNameMap();
-	const options = [ 'AU', 'CN', 'US' ];
-	const labelledOptions = options.map( ( option ) => {
-		return {
-			key: option,
-			label: keyNameMap[ option ],
-			value: { id: option },
-		};
-	} );
+	const [ selected, setSelected ] = useState( [ 'ES' ] );
+	const [ disabled, setDisabled ] = useState( false );
+
+	const treeSelectControlOptions = [
+		{
+			id: 'EU',
+			name: 'Europe',
+			children: [
+				{ id: 'ES', name: 'Spain' },
+				{ id: 'FR', name: 'France' },
+				{ id: 'IT', name: 'Italy' },
+			],
+		},
+		{
+			id: 'AS',
+			name: 'Asia',
+			children: [
+				{ id: 'JP', name: 'Japan' },
+				{ id: 'CH', name: 'China' },
+				{ id: 'MY', name: 'Malaysia' },
+			],
+		},
+		{
+			id: 'NA',
+			name: 'North America',
+			children: [
+				{
+					id: 'US',
+					name: 'United States',
+					children: [
+						{ id: 'NY', name: 'New York' },
+						{ id: 'TX', name: 'Texas' },
+					],
+				},
+				{ id: 'CA', name: 'Canada' },
+			],
+		},
+	];
 
 	return (
 		<div>
+			<button
+				onClick={ () => {
+					setDisabled( ! disabled );
+				} }
+			>
+				Toggle Disable
+			</button>
 			<h2>TreeSelectControl</h2>
-			<TreeSelectControl />
-			<hr />
-			<h2>Local SelectControl</h2>
-			<LocalSelectControl
-				multiple
-				inlineTags
-				isSearchable
-				options={ labelledOptions }
-				selected={ selected }
+			<TreeSelectControl
+				disabled={ disabled }
+				options={ treeSelectControlOptions }
+				value={ selected }
 				onChange={ setSelected }
+				label="Select Country"
+				placeholder="Select"
 			/>
+			<hr />
+			<hr />
+			<h2>TreeSelectControl Custom style</h2>
+			<TreeSelectControl
+				className="gla-tree-select-control"
+				disabled={ disabled }
+				options={ treeSelectControlOptions }
+				value={ selected }
+				onChange={ setSelected }
+				label="Select Country"
+				placeholder="Select"
+			/>
+			<hr />
 			<hr />
 			<h2>Existing SupportedCountrySelect:</h2>
 			<SupportedCountrySelect
 				multiple
+				disabled={ disabled }
 				value={ value }
 				onChange={ setValue }
 			/>
 			<hr></hr>
-			<h2>@wordpress/components SelectControl with multiple:</h2>
+			<h2>@woocommerce/components SelectControl with multiple:</h2>
 			<SelectControl
 				multiple
+				disabled={ disabled }
 				options={ [
 					{ value: null, label: 'Select a User', disabled: true },
 					{ value: 'a', label: 'User A' },
