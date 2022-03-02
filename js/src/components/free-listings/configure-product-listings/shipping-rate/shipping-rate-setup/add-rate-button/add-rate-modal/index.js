@@ -86,19 +86,15 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AppCountrySelect
-									options={ countries }
-									multiple
-									{ ...getInputProps( 'countries' ) }
-								/>
-							</div>
+							<AppCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								options={ countries }
+								multiple
+								{ ...getInputProps( 'countries' ) }
+							/>
 							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
