@@ -149,8 +149,8 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `launch_paid_campaign_button_click` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
 
-    -   `audience`: country code of the paid campaign audience country. This is inapplicable when a campaign is created with the multi-country targeting feature.
-    -   `audiences`: country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`
+    -   `audience`: country code of the paid campaign audience country. e.g. `'US`. This means the campaign is created with the "sales country" targeting only, and it is inapplicable when created with the multi-country targeting feature.
+    -   `audiences`: country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
     -   `budget`: daily average cost of the paid campaign
 
 -   `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
