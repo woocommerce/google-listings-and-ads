@@ -107,7 +107,7 @@ function* upsertShippingRates( shippingRates ) {
 		},
 	} );
 
-	return data.success?.map( ( el ) => {
+	return data.success.map( ( el ) => {
 		return {
 			...el.rate,
 			rate: Number( el.rate.rate ),
