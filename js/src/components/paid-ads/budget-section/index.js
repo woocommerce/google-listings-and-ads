@@ -33,7 +33,7 @@ const BudgetSection = ( props ) => {
 		disabled = false,
 	} = props;
 	const {
-		country: [ selectedCountryCode ],
+		countryCodes: [ selectedCountryCode ],
 		amount,
 	} = values;
 	const { googleAdsAccount } = useGoogleAdsAccount();
