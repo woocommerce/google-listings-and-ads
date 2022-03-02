@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -760,24 +761,6 @@ export function* saveTargetAudience( targetAudience ) {
 	}
 }
 
-/**
- * Adaptes the campaign entity received from API.
- *
- * @param {Object} campaign The campaign entity to be adapted.
- * @return {Campaign} Campaign data.
- */
-function adapteAdsCampaign( campaign ) {
-	const allowMultiple = campaign.targeted_locations.length > 0;
-	const displayCountries = allowMultiple
-		? campaign.targeted_locations
-		: [ campaign.country ];
-	return {
-		...campaign,
-		allowMultiple,
-		displayCountries,
-	};
-}
-
 export function* fetchAdsCampaigns() {
 	try {
 		const campaigns = yield apiFetch( {
@@ -786,7 +769,7 @@ export function* fetchAdsCampaigns() {
 
 		return {
 			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-			adsCampaigns: campaigns.map( adapteAdsCampaign ),
+			adsCampaigns: campaigns.map( adaptAdsCampaign ),
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -820,7 +803,7 @@ export function* createAdsCampaign( amount, countryCodes ) {
 
 		return {
 			type: TYPES.CREATE_ADS_CAMPAIGN,
-			createdCampaign: adapteAdsCampaign( createdCampaign ),
+			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
 		yield handleFetchError(
