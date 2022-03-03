@@ -40,7 +40,8 @@ const Options = ( { options = [], value, parent = '', onChange } ) => {
 		}
 
 		return option.children.every(
-			( child ) => value.includes( child.id ) || isParentSelected( child )
+			( child ) =>
+				value.includes( child.value ) || isParentSelected( child )
 		);
 	};
 
@@ -49,15 +50,15 @@ const Options = ( { options = [], value, parent = '', onChange } ) => {
 	return options.map( ( option ) => {
 		return (
 			<div
-				key={ `${ parent }-${ option.id }` }
+				key={ `${ parent }-${ option.value }` }
 				className="woocommerce-tree-select-control__group"
 			>
 				<CheckboxControl
-					value={ option.id }
+					value={ option.value }
 					className={ 'woocommerce-tree-select-control__option' }
-					label={ option.name }
+					label={ option.label }
 					checked={
-						value.includes( option.id ) ||
+						value.includes( option.value ) ||
 						isParentSelected( option )
 					}
 					onChange={ ( checked ) => {
@@ -68,7 +69,7 @@ const Options = ( { options = [], value, parent = '', onChange } ) => {
 				{ hasChildren( option ) && (
 					<div className="woocommerce-tree-select-control__children">
 						<Options
-							parent={ option.id }
+							parent={ option.value }
 							options={ option.children }
 							onChange={ onChange }
 							value={ value }

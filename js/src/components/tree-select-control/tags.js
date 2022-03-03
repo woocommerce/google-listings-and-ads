@@ -37,13 +37,13 @@ const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 	return (
 		<div className="woocommerce-tree-select-control__tags">
 			{ tags.map( ( item, i ) => {
-				if ( ! item.name ) {
+				if ( ! item.label || ! item.id ) {
 					return null;
 				}
 				const screenReaderLabel = sprintf(
-					// translators: 1: Tag Name, 2: Current Tag index, 3: Total amount of tags.
-					__( '%1$s (%2$s of %3$s)', 'woocommerce-admin' ),
-					item.name,
+					// translators: 1: Tag Label, 2: Current Tag index, 3: Total amount of tags.
+					__( '%1$s (%2$d of %3$d)', 'woocommerce-admin' ),
+					item.label,
 					i + 1,
 					tags.length
 				);
@@ -51,7 +51,7 @@ const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 					<Tag
 						key={ item.id }
 						id={ item.id }
-						label={ item.name }
+						label={ item.label }
 						screenReaderLabel={ screenReaderLabel }
 						remove={ remove }
 					/>

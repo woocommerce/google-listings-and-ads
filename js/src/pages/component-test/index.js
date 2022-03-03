@@ -22,36 +22,36 @@ const ComponentTest = () => {
 
 	const treeSelectControlOptions = [
 		{
-			id: 'EU',
-			name: 'Europe',
+			value: 'EU',
+			label: 'Europe',
 			children: [
-				{ id: 'ES', name: 'Spain' },
-				{ id: 'FR', name: 'France' },
-				{ id: 'IT', name: 'Italy' },
+				{ value: 'ES', label: 'Spain' },
+				{ value: 'FR', label: 'France' },
+				{ value: 'IT', label: 'Italy' },
 			],
 		},
 		{
-			id: 'AS',
-			name: 'Asia',
+			value: 'AS',
+			label: 'Asia',
 			children: [
-				{ id: 'JP', name: 'Japan' },
-				{ id: 'CH', name: 'China' },
-				{ id: 'MY', name: 'Malaysia' },
+				{ value: 'JP', label: 'Japan' },
+				{ value: 'CH', label: 'China' },
+				{ value: 'MY', label: 'Malaysia' },
 			],
 		},
 		{
-			id: 'NA',
-			name: 'North America',
+			value: 'NA',
+			label: 'North America',
 			children: [
 				{
-					id: 'US',
-					name: 'United States',
+					value: 'US',
+					label: 'United States',
 					children: [
-						{ id: 'NY', name: 'New York' },
-						{ id: 'TX', name: 'Texas' },
+						{ value: 'NY', label: 'New York' },
+						{ value: 'TX', label: 'Texas' },
 					],
 				},
-				{ id: 'CA', name: 'Canada' },
+				{ value: 'CA', label: 'Canada' },
 			],
 		},
 	];
