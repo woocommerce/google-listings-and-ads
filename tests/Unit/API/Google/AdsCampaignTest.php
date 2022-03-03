@@ -56,11 +56,42 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_get_campaigns_empty_list() {
-		$this->generate_ads_campaign_query_mock( [] );
+		$this->generate_ads_campaign_query_mock( [], [] );
 		$this->assertEquals( [], $this->campaign->get_campaigns() );
 	}
 
 	public function test_get_campaigns() {
+		$campaign_criterion_data = [
+			[
+				'campaign_id'         => self::TEST_CAMPAIGN_ID,
+				'geo_target_constant' => 'geoTargetConstants/2158',
+			],
+			[
+				'campaign_id'         => self::TEST_CAMPAIGN_ID,
+				'geo_target_constant' => '',
+			],
+			[
+				'campaign_id'         => self::TEST_CAMPAIGN_ID,
+				'geo_target_constant' => null,
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'geoTargetConstants/2344',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => '',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'geoTargetConstants/2826',
+			],
+			[
+				'campaign_id'         => 8888877777,
+				'geo_target_constant' => '',
+			],
+		];
+
 		$campaigns_data = [
 			[
 				'id'      => self::TEST_CAMPAIGN_ID,
@@ -68,6 +99,7 @@ class AdsCampaignTest extends UnitTest {
 				'status'  => 'paused',
 				'amount'  => 10,
 				'country' => 'US',
+				'targeted_locations' => ['geoTargetConstants/2158'],
 			],
 			[
 				'id'      => 5678901234,
@@ -75,10 +107,19 @@ class AdsCampaignTest extends UnitTest {
 				'status'  => 'enabled',
 				'amount'  => 20,
 				'country' => 'UK',
+				'targeted_locations' => ['geoTargetConstants/2344', 'geoTargetConstants/2826'],
+			],
+			[
+				'id'      => 8888877777,
+				'name'    => 'Campaign Three',
+				'status'  => 'enabled',
+				'amount'  => 30,
+				'country' => 'TW',
+				'targeted_locations' => [],
 			],
 		];
 
-		$this->generate_ads_campaign_query_mock( $campaigns_data );
+		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
 		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
 	}
 
@@ -100,15 +141,21 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_get_campaign() {
+		$campaign_criterion_data = [
+			'campaign_id'         => self::TEST_CAMPAIGN_ID,
+			'geo_target_constant' => '',
+		];
+
 		$campaign_data = [
 			'id'      => self::TEST_CAMPAIGN_ID,
 			'name'    => 'Single Campaign',
 			'status'  => 'enabled',
 			'amount'  => 10,
 			'country' => 'US',
+			'targeted_locations' => [],
 		];
 
-		$this->generate_ads_campaign_query_mock( [ $campaign_data ] );
+		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
 		$this->assertEquals( $campaign_data, $this->campaign->get_campaign( self::TEST_CAMPAIGN_ID ) );
 	}
 

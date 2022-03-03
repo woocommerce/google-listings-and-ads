@@ -43,6 +43,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'status'  => 'paused',
 				'amount'  => 10,
 				'country' => 'US',
+				'targeted_locations' => [],
 			],
 			[
 				'id'      => 5678901234,
@@ -50,6 +51,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'status'  => 'enabled',
 				'amount'  => 20,
 				'country' => 'UK',
+				'targeted_locations' => [],
 			],
 		];
 
@@ -79,6 +81,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'name'    => 'New Campaign',
 			'amount'  => 20,
 			'country' => 'US',
+			'targeted_locations' => [],
 		];
 
 		$expected = [
@@ -101,6 +104,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$campaign_data = [
 			'amount'  => 30,
 			'country' => 'GB',
+			'targeted_locations' => [],
 		];
 
 		$expected = [
@@ -177,6 +181,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'status'  => 'enabled',
 			'amount'  => 10,
 			'country' => 'US',
+			'targeted_locations' => [],
 		];
 
 		$this->ads_campaign->expects( $this->once() )
