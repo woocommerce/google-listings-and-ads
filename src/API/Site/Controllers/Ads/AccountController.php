@@ -98,6 +98,8 @@ class AccountController extends BaseController {
 		return function() {
 			try {
 				return new Response( $this->account->get_account_ids() );
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}

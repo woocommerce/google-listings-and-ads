@@ -7,17 +7,17 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Exception;
-use Google\Ads\GoogleAds\V8\Resources\ConversionAction as ConversionAction;
-use Google\Ads\GoogleAds\V8\Common\TagSnippet;
-use Google\Ads\GoogleAds\V8\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
-use Google\Ads\GoogleAds\V8\Enums\ConversionActionStatusEnum\ConversionActionStatus;
-use Google\Ads\GoogleAds\V8\Enums\ConversionActionTypeEnum\ConversionActionType;
-use Google\Ads\GoogleAds\V8\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
-use Google\Ads\GoogleAds\V8\Enums\TrackingCodeTypeEnum\TrackingCodeType;
-use Google\Ads\GoogleAds\V8\Resources\ConversionAction\ValueSettings;
-use Google\Ads\GoogleAds\V8\Services\ConversionActionOperation;
-use Google\Ads\GoogleAds\V8\Services\ConversionActionServiceClient;
-use Google\Ads\GoogleAds\V8\Services\MutateConversionActionResult;
+use Google\Ads\GoogleAds\V9\Resources\ConversionAction as ConversionAction;
+use Google\Ads\GoogleAds\V9\Common\TagSnippet;
+use Google\Ads\GoogleAds\V9\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
+use Google\Ads\GoogleAds\V9\Enums\ConversionActionStatusEnum\ConversionActionStatus;
+use Google\Ads\GoogleAds\V9\Enums\ConversionActionTypeEnum\ConversionActionType;
+use Google\Ads\GoogleAds\V9\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
+use Google\Ads\GoogleAds\V9\Enums\TrackingCodeTypeEnum\TrackingCodeType;
+use Google\Ads\GoogleAds\V9\Resources\ConversionAction\ValueSettings;
+use Google\Ads\GoogleAds\V9\Services\ConversionActionOperation;
+use Google\Ads\GoogleAds\V9\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\MutateConversionActionResult;
 use Google\ApiCore\ApiException;
 
 /**

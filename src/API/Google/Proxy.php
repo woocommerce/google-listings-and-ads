@@ -3,9 +3,11 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidDomainName;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\AdsAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -17,7 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\Util\V8\ResourceNames;
+use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\ApiCore\ApiException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -136,6 +138,7 @@ class Proxy implements OptionsAwareInterface {
 	 *
 	 * @throws Exception   When an Exception is caught or we receive an invalid response.
 	 * @throws InvalidTerm When the account name contains invalid terms.
+	 * @throws InvalidDomainName When the site URL ends with an invalid top-level domain.
 	 */
 	protected function create_merchant_account_request( string $name, string $site_url ): int {
 		try {
@@ -170,6 +173,14 @@ class Proxy implements OptionsAwareInterface {
 
 			if ( preg_match( '/terms?.* are|is not allowed/', $message ) ) {
 				throw InvalidTerm::contains_invalid_terms( $name );
+			}
+
+			if ( strpos( $message, 'URL ends with an invalid top-level domain name' ) !== false ) {
+				throw InvalidDomainName::create_account_failed_invalid_top_level_domain_name(
+					$this->strip_url_protocol(
+						esc_url_raw( $this->get_site_url() )
+					)
+				);
 			}
 
 			do_action( 'woocommerce_gla_guzzle_client_exception', $e, __METHOD__ );
@@ -282,7 +293,7 @@ class Proxy implements OptionsAwareInterface {
 	 * Get Ads IDs associated with the connected Google account.
 	 *
 	 * @return int[]
-	 * @throws Exception When an ApiException is caught.
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_ads_account_ids(): array {
 		try {
@@ -300,15 +311,19 @@ class Proxy implements OptionsAwareInterface {
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
+			$errors = $this->get_api_exception_errors( $e );
+
 			// Return an empty list if the user has not signed up to ads yet.
-			if ( $this->has_api_exception_error( $e, 'NOT_ADS_USER' ) ) {
+			if ( isset( $errors['NOT_ADS_USER'] ) ) {
 				return [];
 			}
 
-			throw new Exception(
+			throw new ExceptionWithResponseData(
 				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), $e->getBasicMessage() ),
-				$e->getCode()
+				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
 			);
 		}
 	}
@@ -441,6 +456,7 @@ class Proxy implements OptionsAwareInterface {
 			'status'   => $id ? 'connected' : 'disconnected',
 		];
 
+		/** @var AdsAccountState $state */
 		$state      = $this->container->get( AdsAccountState::class );
 		$incomplete = $state->last_incomplete_step();
 		if ( ! empty( $incomplete ) ) {

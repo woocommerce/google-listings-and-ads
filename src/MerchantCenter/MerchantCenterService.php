@@ -6,9 +6,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\MerchantIssueTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
@@ -37,8 +34,6 @@ defined( 'ABSPATH' ) || exit;
  * - MerchantAccountState
  * - MerchantStatuses
  * - Settings
- * - ShippingRateTable
- * - ShippingTimeTable
  * - WC
  * - WP
  * - GoogleHelper
@@ -209,27 +204,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	}
 
 	/**
-	 * Get the connected merchant account.
-	 *
-	 * @return array
-	 */
-	public function get_connected_status(): array {
-		$id     = $this->options->get_merchant_id();
-		$status = [
-			'id'     => $id,
-			'status' => $id ? 'connected' : 'disconnected',
-		];
-
-		$incomplete = $this->container->get( MerchantAccountState::class )->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
-			$status['status'] = 'incomplete';
-			$status['step']   = $incomplete;
-		}
-
-		return $status;
-	}
-
-	/**
 	 * Return the setup status to determine what step to continue at.
 	 *
 	 * @return array
@@ -256,25 +230,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			'status' => 'incomplete',
 			'step'   => $step,
 		];
-	}
-
-	/**
-	 * Disconnect Merchant Center account
-	 */
-	public function disconnect() {
-		$this->options->delete( OptionsInterface::CONTACT_INFO_SETUP );
-		$this->options->delete( OptionsInterface::MC_SETUP_COMPLETED_AT );
-		$this->options->delete( OptionsInterface::MERCHANT_ACCOUNT_STATE );
-		$this->options->delete( OptionsInterface::MERCHANT_CENTER );
-		$this->options->delete( OptionsInterface::SITE_VERIFICATION );
-		$this->options->delete( OptionsInterface::TARGET_AUDIENCE );
-		$this->options->delete( OptionsInterface::MERCHANT_ID );
-
-		$this->container->get( MerchantStatuses::class )->delete();
-
-		$this->container->get( MerchantIssueTable::class )->truncate();
-		$this->container->get( ShippingRateTable::class )->truncate();
-		$this->container->get( ShippingTimeTable::class )->truncate();
 	}
 
 	/**

@@ -51,6 +51,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Reports;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupAds;
 use Automattic\WooCommerce\GoogleListingsAndAds\Menu\SetupMerchantCenter;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\AccountService as MerchantAccountService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\ContactInformation;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
@@ -58,7 +59,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notes\Note;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as ReviewAfterClicksNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterConversions as ReviewAfterConversionsNote;
@@ -177,6 +177,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		DeprecatedFilters::class      => true,
 		ShippingZone::class           => true,
 		AdsAccountService::class      => true,
+		MerchantAccountService::class => true,
 	];
 
 	/**
@@ -213,7 +214,8 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			 ->invokeMethod( 'set_merchant_center_object', [ MerchantCenterService::class ] );
 
 		// Set up Ads service, and inflect classes that need it.
-		$this->share_with_tags( AdsService::class );
+		$this->share_with_tags( AdsAccountState::class );
+		$this->share_with_tags( AdsService::class, AdsAccountState::class );
 		$this->getLeagueContainer()
 			 ->inflector( AdsAwareInterface::class )
 			 ->invokeMethod( 'set_ads_object', [ AdsService::class ] );
@@ -262,23 +264,23 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->conditionally_share_with_tags( MerchantSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsSetupCompleted::class );
 		$this->conditionally_share_with_tags( AdsAccountService::class, ContainerInterface::class );
+		$this->conditionally_share_with_tags( MerchantAccountService::class, ContainerInterface::class );
 
 		// Inbox Notes
 		$this->share_with_tags( ContactInformationNote::class );
 		$this->share_with_tags( CompleteSetupNote::class );
 		$this->share_with_tags( ReviewAfterClicksNote::class, MerchantMetrics::class, WP::class );
 		$this->share_with_tags( ReviewAfterConversionsNote::class, MerchantMetrics::class, WP::class );
-		$this->share_with_tags( SetupCampaignNote::class );
-		$this->share_with_tags( SetupCampaign2Note::class );
+		$this->share_with_tags( SetupCampaignNote::class, MerchantStatuses::class );
+		$this->share_with_tags( SetupCampaign2Note::class, MerchantStatuses::class );
 		$this->share_with_tags( SetupCouponSharingNote::class, MerchantStatuses::class );
-		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class, Note::class );
+		$this->share_with_tags( NoteInitializer::class, ActionScheduler::class );
 
 		// Product attributes
 		$this->conditionally_share_with_tags( AttributeManager::class );
 		$this->conditionally_share_with_tags( AttributesTab::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 		$this->conditionally_share_with_tags( VariationsAttributes::class, Admin::class, AttributeManager::class, MerchantCenterService::class );
 
-		$this->share_with_tags( AdsAccountState::class );
 		$this->share_with_tags( MerchantAccountState::class );
 		$this->share_with_tags( MerchantStatuses::class );
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );

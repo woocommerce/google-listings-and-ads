@@ -95,42 +95,26 @@ const pages = [
 		content: (
 			<GuidePageContent
 				title={ __(
-					'Boost listings with up to $150 free ad credits',
+					'Spend $500 to get $500 in Google Ads credits',
 					'google-listings-and-ads'
 				) }
 			>
 				<p>
-					{ createInterpolateElement(
-						__(
-							'Give your products a boost and create a paid <link>Smart Shopping campaign</link>! Your ads will run once your products are approved by Google.',
-							'google-listings-and-ads'
-						),
-						{
-							link: (
-								<ContentLink
-									href="https://support.google.com/google-ads/answer/7674739"
-									context="about-smart-shopping-campaigns"
-								/>
-							),
-						}
-					) }
-				</p>
-				<p>
 					{ __(
-						'Get up to $150* in free ad credit for if you’re new to Google Ads. You can edit or cancel your campaign at any time.',
+						'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days* You can edit or cancel your campaign at any time.',
 						'google-listings-and-ads'
 					) }
 				</p>
 				<cite>
 					{ createInterpolateElement(
 						__(
-							'*Ad credit amounts vary by country and region. Eligibility criteria: The account has no other promotions applied. The account is billed to a country where Google Partners promotions are offered. The account served its first ad impression within the last 14 days. Review the static terms <link>here</link>.',
+							'*Full terms and conditions <link>here</link>.',
 							'google-listings-and-ads'
 						),
 						{
 							link: (
 								<ContentLink
-									href="https://www.google.com/ads/coupons/terms.html"
+									href="https://www.google.com/ads/coupons/terms/"
 									context="terms-of-ads-coupons"
 								/>
 							),
