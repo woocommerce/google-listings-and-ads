@@ -147,13 +147,13 @@ const TreeSelectControl = ( {
 					return;
 				}
 
-				const childIdPosition = newValue.indexOf( child.value );
+				const childPosition = newValue.indexOf( child.value );
 
-				if ( ! checked && childIdPosition >= 0 ) {
-					newValue.splice( childIdPosition, 1 );
+				if ( ! checked && childPosition >= 0 ) {
+					newValue.splice( childPosition, 1 );
 				}
 
-				if ( checked && childIdPosition < 0 ) {
+				if ( checked && childPosition < 0 ) {
 					newValue.push( child.value );
 				}
 			} );
