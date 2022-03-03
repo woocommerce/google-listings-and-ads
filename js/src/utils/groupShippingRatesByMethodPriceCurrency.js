@@ -39,7 +39,7 @@
  *     },
  * ]
  *
- * const result = groupShippingRatesByPriceCurrency( shippingRates );
+ * const result = groupShippingRatesByMethodPriceCurrency( shippingRates );
  *
  * // result:
  * // [
