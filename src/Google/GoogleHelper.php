@@ -1,9 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Automattic\WooCommerce\GoogleListingsAndAds;
+namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 
 /**
  * Class GoogleHelper
@@ -35,10 +36,10 @@ class GoogleHelper implements Service {
 		],
 		// Australia
 		'AU' => [
-			'code'       => 'AU',
-			'currency'   => 'AUD',
-			'id'         => 2036,
-			'subregions' => [
+			'code'         => 'AU',
+			'currency'     => 'AUD',
+			'id'           => 2036,
+			'subdivisions' => [
 				'ACT' => [
 					'id'   => 20034,
 					'code' => 'ACT',
@@ -287,10 +288,10 @@ class GoogleHelper implements Service {
 		],
 		// Japan
 		'JP' => [
-			'code'       => 'JP',
-			'currency'   => 'JPY',
-			'id'         => 2392,
-			'subregions' => [
+			'code'         => 'JP',
+			'currency'     => 'JPY',
+			'id'           => 2392,
+			'subdivisions' => [
 				'JP01' => [
 					'id'   => 20624,
 					'code' => 'JP01',
@@ -812,10 +813,10 @@ class GoogleHelper implements Service {
 		],
 		// United States
 		'US' => [
-			'code'       => 'US',
-			'currency'   => 'USD',
-			'id'         => 2840,
-			'subregions' => [
+			'code'         => 'US',
+			'currency'     => 'USD',
+			'id'           => 2840,
+			'subdivisions' => [
 				'AK' => [
 					'id'   => 21132,
 					'code' => 'AK',
@@ -1112,6 +1113,26 @@ class GoogleHelper implements Service {
 	];
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
+	 * @var array Map of location ids to ISO 3166-1 codes.
+	 */
+	private $location_id_code_map;
+
+	/**
+	 * GoogleHelper constructor.
+	 *
+	 * @param WC $wc
+	 */
+	public function __construct( WC $wc ) {
+		$this->wc = $wc;
+	}
+
+
+	/**
 	 * Get the data for countries supported by Google.
 	 *
 	 * @return array[]
@@ -1120,7 +1141,7 @@ class GoogleHelper implements Service {
 		$supported = self::SUPPORTED_COUNTRIES;
 
 		// Currency conversion is unavailable in South Korea: https://support.google.com/merchants/answer/7055540
-		if ( 'KRW' === get_woocommerce_currency() ) {
+		if ( 'KRW' === $this->wc->get_woocommerce_currency() ) {
 			// South Korea
 			$supported['KR'] = [
 				'code'     => 'KR',
@@ -1242,5 +1263,78 @@ class GoogleHelper implements Service {
 			strtoupper( $country ),
 			$this->get_mc_supported_countries_data()
 		);
+	}
+
+	/**
+	 * Maps the ID of the Merchant Center supported locations to their ISO 3166-1 codes.
+	 */
+	protected function map_location_id_to_code(): void {
+		$this->location_id_code_map = [];
+
+		$countries = $this->get_mc_supported_countries_data();
+		foreach ( $countries as $country ) {
+			$this->location_id_code_map[ $country['id'] ] = $country['code'];
+			if ( isset( $country['subdivisions'] ) ) {
+				foreach ( $country['subdivisions'] as $subdivision ) {
+					$this->location_id_code_map[ $subdivision['id'] ] = $subdivision['code'];
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param int $id
+	 *
+	 * @return string|null
+	 */
+	public function find_location_code_by_id( int $id ): ?string {
+		if ( ! isset( $this->location_id_code_map ) ) {
+			$this->map_location_id_to_code();
+		}
+
+		return $this->location_id_code_map[ $id ] ?? null;
+	}
+
+	/**
+	 * Find and return the location id for the given country code.
+	 *
+	 * @param string $code
+	 *
+	 * @return int|null
+	 */
+	public function find_location_id_by_country_code( string $code ): ?int {
+		$countries = $this->get_mc_supported_countries_data();
+
+		if ( isset( $countries[ $code ] ) ) {
+			return $countries[ $code ]['id'];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Find and return the location id for the given subdivision (state, province, etc.) code.
+	 *
+	 * @param string      $code
+	 * @param string|null $country_code If provided, will only search for the subdivision in the given country.
+	 *
+	 * @return int|null
+	 */
+	public function find_location_id_by_subdivision_code( string $code, string $country_code = null ): ?int {
+		$countries = $this->get_mc_supported_countries_data();
+
+		if ( $country_code ) {
+			if ( isset( $countries[ $country_code ]['subdivisions'] ) && isset( $countries[ $country_code ]['subdivisions'][ $code ] ) ) {
+				return $countries[ $country_code ]['subdivisions'][ $code ]['id'];
+			}
+		} else {
+			foreach ( $countries as $country ) {
+				if ( isset( $country['subdivisions'] ) && isset( $country['subdivisions'][ $code ] ) ) {
+					return $country['subdivisions'][ $code ]['id'];
+				}
+			}
+		}
+
+		return null;
 	}
 }
