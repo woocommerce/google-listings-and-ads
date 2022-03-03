@@ -22,7 +22,6 @@ class SupportedCountriesController extends BaseController {
 
 	use CountryCodeTrait;
 	use EmptySchemaPropertiesTrait;
-	use GoogleHelper;
 
 	/**
 	 * The WC proxy object.
@@ -32,14 +31,21 @@ class SupportedCountriesController extends BaseController {
 	protected $wc;
 
 	/**
+	 * @var GoogleHelper
+	 */
+	protected $google_helper;
+
+	/**
 	 * BaseController constructor.
 	 *
-	 * @param RESTServer $server
-	 * @param WC         $wc
+	 * @param RESTServer   $server
+	 * @param WC           $wc
+	 * @param GoogleHelper $google_helper
 	 */
-	public function __construct( RESTServer $server, WC $wc ) {
+	public function __construct( RESTServer $server, WC $wc, GoogleHelper $google_helper ) {
 		parent::__construct( $server );
-		$this->wc = $wc;
+		$this->wc            = $wc;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -76,7 +82,7 @@ class SupportedCountriesController extends BaseController {
 	 */
 	protected function get_supported_countries(): array {
 		$all_countries = $this->wc->get_countries();
-		$mc_countries  = $this->get_mc_supported_countries_currencies();
+		$mc_countries  = $this->google_helper->get_mc_supported_countries_currencies();
 
 		$supported = [];
 		foreach ( $mc_countries as $country => $currency ) {

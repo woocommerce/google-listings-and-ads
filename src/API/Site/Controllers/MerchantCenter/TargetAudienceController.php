@@ -29,7 +29,6 @@ defined( 'ABSPATH' ) || exit;
 class TargetAudienceController extends BaseOptionsController implements ISO3166AwareInterface {
 
 	use CountryCodeTrait;
-	use GoogleHelper;
 
 	/**
 	 * The WP proxy object.
@@ -49,18 +48,25 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 	protected $wc;
 
 	/**
+	 * @var GoogleHelper
+	 */
+	protected $google_helper;
+
+	/**
 	 * TargetAudienceController constructor.
 	 *
 	 * @param RESTServer   $server
 	 * @param WP           $wp
 	 * @param WC           $wc
 	 * @param ShippingZone $shipping_zone
+	 * @param GoogleHelper $google_helper
 	 */
-	public function __construct( RESTServer $server, WP $wp, WC $wc, ShippingZone $shipping_zone ) {
+	public function __construct( RESTServer $server, WP $wp, WC $wc, ShippingZone $shipping_zone, GoogleHelper $google_helper ) {
 		parent::__construct( $server );
 		$this->wp            = $wp;
 		$this->wc            = $wc;
 		$this->shipping_zone = $shipping_zone;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -198,7 +204,7 @@ class TargetAudienceController extends BaseOptionsController implements ISO3166A
 		$countries    = $this->shipping_zone->get_shipping_countries();
 		$base_country = $this->wc->get_base_country();
 		// Add WooCommerce store country if it's supported and not already in the list.
-		if ( ! in_array( $base_country, $countries, true ) && $this->is_country_supported( $base_country ) ) {
+		if ( ! in_array( $base_country, $countries, true ) && $this->google_helper->is_country_supported( $base_country ) ) {
 			$countries[] = $base_country;
 		}
 

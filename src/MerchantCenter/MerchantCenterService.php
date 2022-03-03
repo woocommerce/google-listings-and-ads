@@ -41,13 +41,13 @@ defined( 'ABSPATH' ) || exit;
  * - ShippingTimeTable
  * - WC
  * - WP
+ * - GoogleHelper
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
 class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInterface, Service {
 
 	use ContainerAwareTrait;
-	use GoogleHelper;
 	use OptionsAwareTrait;
 	use PluginHelper;
 
@@ -102,7 +102,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	public function is_store_country_supported(): bool {
 		$country = $this->container->get( WC::class )->get_base_country();
 
-		return $this->is_country_supported( $country );
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
+		return $google_helper->is_country_supported( $country );
 	}
 
 	/**
@@ -117,9 +120,12 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$language = substr( $this->container->get( WP::class )->get_locale(), 0, 2 );
 		}
 
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
 		return array_key_exists(
 			strtolower( $language ),
-			$this->get_mc_supported_languages()
+			$google_helper->get_mc_supported_languages()
 		);
 	}
 
@@ -158,7 +164,9 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		$location = strtolower( $target_audience['location'] );
 		if ( 'all' === $location ) {
-			$target_countries = $this->get_mc_supported_countries();
+			/** @var GoogleHelper $google_helper */
+			$google_helper    = $this->container->get( GoogleHelper::class );
+			$target_countries = $google_helper->get_mc_supported_countries();
 		} elseif ( 'selected' === $location && ! empty( $target_audience['countries'] ) ) {
 			$target_countries = $target_audience['countries'];
 		}
@@ -194,7 +202,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$country = $this->container->get( WC::class )->get_base_country();
 		}
 
-		return in_array( $country, $this->get_mc_promotion_supported_countries(), true );
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
+		return in_array( $country, $google_helper->get_mc_promotion_supported_countries(), true );
 	}
 
 	/**

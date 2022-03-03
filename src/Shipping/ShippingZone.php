@@ -24,8 +24,6 @@ class ShippingZone implements Service {
 	public const METHOD_PICKUP    = 'local_pickup';
 	public const METHOD_FREE      = 'free_shipping';
 
-	use GoogleHelper;
-
 	/**
 	 * @var WC
 	 */
@@ -37,12 +35,19 @@ class ShippingZone implements Service {
 	protected $methods_countries = null;
 
 	/**
+	 * @var GoogleHelper
+	 */
+	protected $google_helper;
+
+	/**
 	 * ShippingZone constructor.
 	 *
-	 * @param WC $wc
+	 * @param WC           $wc
+	 * @param GoogleHelper $google_helper
 	 */
-	public function __construct( WC $wc ) {
-		$this->wc = $wc;
+	public function __construct( WC $wc, GoogleHelper $google_helper ) {
+		$this->wc            = $wc;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -58,7 +63,7 @@ class ShippingZone implements Service {
 		$countries = array_keys( $this->methods_countries ?: [] );
 
 		// Match the list of shipping countries with the list of Merchant Center supported countries.
-		$countries = array_intersect( $countries, $this->get_mc_supported_countries() );
+		$countries = array_intersect( $countries, $this->google_helper->get_mc_supported_countries() );
 
 		return array_values( $countries );
 	}
