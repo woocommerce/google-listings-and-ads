@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -23,6 +24,7 @@ use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V9\Services\MutateOperation;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\PagedListResponse;
 use Google\ApiCore\ValidationException;
 use Exception;
 
@@ -76,24 +78,30 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a list of campaigns
+	 * Returns a list of campaigns with targeted locations retrieved from campaign criterion.
 	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_campaigns(): array {
 		try {
-			$return  = [];
-			$results = ( new AdsCampaignQuery() )
+			$campaign_results = ( new AdsCampaignQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
 				->where( 'campaign.status', 'REMOVED', '!=' )
 				->get_results();
 
-			foreach ( $results->iterateAllElements() as $row ) {
-				$return[] = $this->convert_campaign( $row );
+			$campaign_criterion_results = ( new AdsCampaignCriterionQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.status', 'REMOVED', '!=' )
+				->get_results();
+
+			$converted_campaigns = [];
+
+			foreach ( $campaign_results->iterateAllElements() as $row ) {
+				$converted_campaigns[] = $this->convert_campaign( $row );
 			}
 
-			return $return;
+			return $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns, $campaign_criterion_results );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -109,7 +117,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Retrieve a single campaign.
+	 * Retrieve a single campaign with targeted locations retrieved from campaign criterion.
 	 *
 	 * @param int $id Campaign ID.
 	 *
@@ -118,13 +126,26 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$results = ( new AdsCampaignQuery() )
+			$campaign_results = ( new AdsCampaignQuery() )
 				->set_client( $this->client, $this->options->get_ads_id() )
 				->where( 'campaign.id', $id )
 				->get_results();
 
-			foreach ( $results->iterateAllElements() as $row ) {
-				return $this->convert_campaign( $row );
+			$campaign_criterion_results = ( new AdsCampaignCriterionQuery() )
+				->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.id', $id )
+				->get_results();
+
+			$converted_campaigns = [];
+
+			foreach ( $campaign_results->iterateAllElements() as $row ) {
+				$converted_campaigns[] = $this->convert_campaign( $row );
+				break;
+			}
+
+			if ( ! empty( $converted_campaigns ) ) {
+				$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns, $campaign_criterion_results );
+				return reset( $combined_results );
 			}
 
 			return [];
@@ -386,6 +407,42 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Combine converted campaigns data with campaign criterion results data
+	 *
+	 * @param array             $campaigns                  Campaigns data returned from a query request and converted by convert_campaign function.
+	 * @param PagedListResponse $campaign_criterion_results Campaigns criterion results returned from a query request.
+	 *
+	 * @return array
+	 */
+	protected function combine_campaigns_and_campaign_criterion_results( array $campaigns, PagedListResponse $campaign_criterion_results ): array {
+		$campaign_ids = array_column( $campaigns, 'id' );
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $campaign_criterion_results->iterateAllElements() as $row ) {
+			$campaign           = $row->getCampaign();
+			$campaign_id        = $campaign->getId();
+			$campaign_criterion = $row->getCampaignCriterion();
+			$location           = $campaign_criterion->getLocation();
+
+			// TODO: Convert the geo_traget_constant to the ISO 3166-1 alpha-2 country code
+			// after https://github.com/woocommerce/google-listings-and-ads/issues/1229 is done.
+			$geo_target_constant = $location ? $location->getGeoTargetConstant() : null;
+
+			$campaign_key = array_search( $campaign_id, $campaign_ids, true );
+
+			if ( ! array_key_exists( 'targeted_locations', $campaigns[ $campaign_key ] ) ) {
+				$campaigns[ $campaign_key ]['targeted_locations'] = [];
+			}
+
+			if ( ! empty( $geo_target_constant ) ) {
+				$campaigns[ $campaign_key ]['targeted_locations'][] = $geo_target_constant;
+			}
+		}
+
+		return $campaigns;
 	}
 
 	/**
