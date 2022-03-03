@@ -34,7 +34,6 @@ defined( 'ABSPATH' ) || exit;
 class Proxy implements OptionsAwareInterface {
 
 	use ApiExceptionTrait;
-	use GoogleHelper;
 	use OptionsAwareTrait;
 	use PluginHelper;
 
@@ -337,9 +336,11 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	public function create_ads_account(): array {
 		try {
-			$country   = WC()->countries->get_base_country();
-			$countries = $this->get_mc_supported_countries();
-			if ( ! in_array( $country, $countries, true ) ) {
+			$country = WC()->countries->get_base_country();
+
+			/** @var GoogleHelper $google_helper */
+			$google_helper = $this->container->get( GoogleHelper::class );
+			if ( ! $google_helper->is_country_supported( $country ) ) {
 				throw new Exception( __( 'Store country is not supported', 'google-listings-and-ads' ) );
 			}
 
