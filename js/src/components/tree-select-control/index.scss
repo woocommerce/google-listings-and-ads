@@ -51,7 +51,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			border: 0;
 			box-shadow: none;
 			color: $studio-gray-80;
-			// margin: $gap-small 0 0 0;
 			margin: 0;
 			padding-left: 0;
 			padding-right: 0;
@@ -147,12 +146,17 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 	}
 
 	.woocommerce-tree-select-control__children {
-		padding: 0 $gap;
+		padding-left: calc(#{$gap} * 2);
+	}
+
+	.woocommerce-tree-select-control__node {
+		padding-left: $gap;
 	}
 
 	.woocommerce-tree-select-control__option {
-		padding: 0 $gap;
 		font-size: 16px;
+		padding: 0 0 0 $gap;
+		width: 100%;
 		text-align: left;
 		border: none;
 		min-height: 0;
@@ -161,7 +165,17 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 
 		&.is-selected,
 		&:hover {
-			background: $studio-gray-0;
+			color: $studio-wordpress-blue-50;
+		}
+	}
+
+	.woocommerce-tree-select-control__expander-icon {
+		cursor: pointer;
+		margin-right: 0;
+
+		&.is-hidden {
+			visibility: hidden;
+			pointer-events: none;
 		}
 	}
 

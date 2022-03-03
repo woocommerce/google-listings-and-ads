@@ -14,7 +14,7 @@ import {
  */
 import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
-import List from './list';
+import Options from './options';
 import './index.scss';
 
 /**
@@ -99,13 +99,13 @@ const TreeSelectControl = ( {
 	};
 
 	/**
-	 * Handles a change on the Tree List of options. Could be a click on a parent option
+	 * Handles a change on the Tree options. Could be a click on a parent option
 	 * or a child option
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
 	 * @param {Option} option The option to change
 	 */
-	const handleListChange = ( checked, option ) => {
+	const handleOptionsChange = ( checked, option ) => {
 		if ( option.children?.length ) {
 			handleParentChange( checked, option );
 		} else {
@@ -202,11 +202,17 @@ const TreeSelectControl = ( {
 				onTagsChange={ handleTagsChange }
 			/>
 			{ isExpanded && (
-				<List
-					options={ options }
-					value={ value }
-					onChange={ handleListChange }
-				/>
+				<div
+					className="woocommerce-tree-select-control__listbox"
+					role="tree"
+					tabIndex="-1"
+				>
+					<Options
+						options={ options }
+						value={ value }
+						onChange={ handleOptionsChange }
+					/>
+				</div>
 			) }
 		</div>
 	);

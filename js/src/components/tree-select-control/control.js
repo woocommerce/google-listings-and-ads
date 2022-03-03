@@ -74,7 +74,6 @@ const Control = ( {
 					role="combobox"
 					aria-autocomplete="list"
 					aria-expanded={ isExpanded }
-					aria-haspopup="true"
 					disabled={ disabled }
 					onFocus={ onFocus }
 				/>
