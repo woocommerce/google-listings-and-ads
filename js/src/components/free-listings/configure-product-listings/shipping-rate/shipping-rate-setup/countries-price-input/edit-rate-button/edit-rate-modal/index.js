@@ -12,7 +12,6 @@ import AppModal from '.~/components/app-modal';
 import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
-import './index.scss';
 
 /**
  * Form to edit rate for selected country(-ies).
@@ -118,19 +117,15 @@ const EditRateModal = ( {
 						onRequestClose={ onRequestClose }
 					>
 						<VerticalGapLayout>
-							<div>
-								<div className="label">
-									{ __(
-										'If customer is in',
-										'google-listings-and-ads'
-									) }
-								</div>
-								<AppCountrySelect
-									options={ availableCountries }
-									multiple
-									{ ...getInputProps( 'countries' ) }
-								/>
-							</div>
+							<AppCountrySelect
+								label={ __(
+									'If customer is in',
+									'google-listings-and-ads'
+								) }
+								options={ availableCountries }
+								multiple
+								{ ...getInputProps( 'countries' ) }
+							/>
 							<AppInputPriceControl
 								label={ __(
 									'Then the estimated shipping rate displayed in the product listing is',
