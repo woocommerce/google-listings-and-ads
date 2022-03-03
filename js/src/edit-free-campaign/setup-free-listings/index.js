@@ -98,8 +98,6 @@ const SetupFreeListings = ( {
 			<Form
 				initialValues={ {
 					shipping_rate: settings.shipping_rate,
-					offers_free_shipping: settings.offers_free_shipping,
-					free_shipping_threshold: settings.free_shipping_threshold,
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
 					website_live: settings.website_live,

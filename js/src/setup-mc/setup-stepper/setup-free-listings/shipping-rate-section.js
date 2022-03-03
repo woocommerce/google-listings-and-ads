@@ -115,7 +115,7 @@ const ShippingRateSection = ( { formProps } ) => {
 									'google-listings-and-ads'
 								) }
 							</Subsection.Title>
-							<ShippingRateSetup formProps={ formProps } />
+							<ShippingRateSetup />
 						</Section.Card.Body>
 					</Section.Card>
 				) }
