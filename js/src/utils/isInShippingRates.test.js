@@ -11,7 +11,6 @@ describe( 'isInShippingRates', () => {
 			method: 'flat_rate',
 			currency: 'USD',
 			rate: 25,
-			options: [],
 		};
 		const shippingRates = [
 			{
@@ -20,7 +19,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
-				options: [],
 			},
 			{
 				id: '2',
@@ -28,7 +26,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
-				options: [],
 			},
 			{
 				id: '3',
@@ -36,7 +33,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 40,
-				options: [],
 			},
 		];
 
@@ -51,7 +47,6 @@ describe( 'isInShippingRates', () => {
 			method: 'flat_rate',
 			currency: 'USD',
 			rate: 25,
-			options: [],
 		};
 		const shippingRates = [
 			{
@@ -60,7 +55,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
-				options: [],
 			},
 			{
 				id: '2',
@@ -68,7 +62,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
-				options: [],
 			},
 			{
 				id: '3',
@@ -76,7 +69,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 40,
-				options: [],
 			},
 		];
 
@@ -95,7 +87,6 @@ describe( 'isInShippingRates', () => {
 			method: 'flat_rate',
 			currency: 'USD',
 			rate: 99,
-			options: [],
 		};
 		const shippingRates = [
 			{
@@ -104,7 +95,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
-				options: [],
 			},
 			{
 				id: '2',
@@ -112,7 +102,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
-				options: [],
 			},
 			{
 				id: '3',
@@ -120,7 +109,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 40,
-				options: [],
 			},
 		];
 
@@ -135,7 +123,6 @@ describe( 'isInShippingRates', () => {
 			method: 'flat_rate',
 			currency: 'USD',
 			rate: 99,
-			options: [],
 		};
 		const shippingRates = [
 			{
@@ -144,7 +131,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 4.99,
-				options: [],
 			},
 			{
 				id: '2',
@@ -152,7 +138,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
-				options: [],
 			},
 			{
 				id: '3',
@@ -160,7 +145,6 @@ describe( 'isInShippingRates', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 40,
-				options: [],
 			},
 		];
 
