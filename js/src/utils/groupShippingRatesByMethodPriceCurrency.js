@@ -71,12 +71,11 @@ const groupShippingRatesByMethodPriceCurrency = ( shippingRates ) => {
 
 	shippingRates.forEach( ( shippingRate ) => {
 		const { country, method, rate, currency } = shippingRate;
-		const price = Number( rate );
-		const methodPriceCurrency = `${ method } ${ price } ${ currency }`;
+		const methodPriceCurrency = `${ method } ${ rate } ${ currency }`;
 		const group = rateGroupMap.get( methodPriceCurrency ) || {
 			countries: [],
 			method,
-			price,
+			price: rate,
 			currency,
 		};
 		group.countries.push( country );
