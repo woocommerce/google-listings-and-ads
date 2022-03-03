@@ -1,15 +1,17 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, select } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import isInShippingRates from '.~/utils/isInShippingRates';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { STORE_KEY } from '.';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -33,9 +35,12 @@ export function handleFetchError( error, message ) {
  * Individual shipping rate.
  *
  * @typedef {Object} ShippingRate
- * @property {CountryCode} countryCode Destination country code.
+ * @property {string} id id.
+ * @property {CountryCode} country Destination country code.
+ * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
+ * @property {Object} options options depending on the shipping method.
  */
 
 /**
@@ -44,14 +49,13 @@ export function handleFetchError( error, message ) {
  */
 export function* fetchShippingRates() {
 	try {
-		const response = yield apiFetch( {
+		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 		} );
 
-		const shippingRates = Object.values( response ).map( ( el ) => {
+		const shippingRates = data.map( ( el ) => {
 			return {
-				countryCode: el.country_code,
-				currency: el.currency,
+				...el,
 				rate: Number( el.rate ),
 			};
 		} );
@@ -71,78 +75,91 @@ export function* fetchShippingRates() {
 	}
 }
 
-/**
- * Aggregated shipping rate.
- *
- * @typedef {Object} AggregatedShippingRate
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {string} currency Currency of the price.
- * @property {number} rate Shipping price.
- */
+function* maybeDeleteShippingRates( newShippingRates, oldShippingRates ) {
+	/**
+	 * Find the old shipping rates that are not in the new ones,
+	 * and delete them.
+	 */
+	const deleteIds = oldShippingRates
+		.filter(
+			( oldShippingRate ) =>
+				! isInShippingRates( oldShippingRate, newShippingRates )
+		)
+		.map( ( oldShippingRate ) => oldShippingRate.id );
 
-/**
- * Updates or inserts given aggregated shipping rate.
- *
- * @param {AggregatedShippingRate} shippingRate
- */
-export function* upsertShippingRates( shippingRate ) {
-	const { countryCodes, currency, rate } = shippingRate;
-
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'POST',
-			data: {
-				country_codes: countryCodes,
-				currency,
-				rate,
-			},
-		} );
-
-		return {
-			type: TYPES.UPSERT_SHIPPING_RATES,
-			shippingRate,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to add / update shipping rates. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
-/**
- * Deletes shipping rates associated with given country codes.
- *
- * @param {Array<CountryCode>} countryCodes
- */
-export function* deleteShippingRates( countryCodes ) {
-	try {
+	if ( deleteIds.length ) {
 		yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 			method: 'DELETE',
 			data: {
-				country_codes: countryCodes,
+				ids: deleteIds,
 			},
 		} );
+	}
+}
+
+function* upsertShippingRates( shippingRates ) {
+	const data = yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'POST',
+		data: {
+			rates: shippingRates,
+		},
+	} );
+
+	return data.success.map( ( el ) => {
+		return {
+			...el.rate,
+			rate: Number( el.rate.rate ),
+		};
+	} );
+}
+
+/**
+ * Saves shipping rates.
+ *
+ * This is done by removing the old shipping rates first,
+ * and then upserting the new shipping rates.
+ *
+ * @param {Array<ShippingRate>} newShippingRates
+ */
+export function* saveShippingRates( newShippingRates ) {
+	try {
+		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
+		yield maybeDeleteShippingRates( newShippingRates, oldShippingRates );
+
+		/**
+		 * No new shipping rate, no need to call API.
+		 */
+		if ( ! newShippingRates.length ) {
+			return {
+				type: TYPES.RECEIVE_SHIPPING_RATES,
+				shippingRates: [],
+			};
+		}
+
+		/**
+		 * There are new shipping rates, we call API to upsert them.
+		 */
+		const upsertedShippingRates = yield upsertShippingRates(
+			newShippingRates
+		);
 
 		return {
-			type: TYPES.DELETE_SHIPPING_RATES,
-			countryCodes,
+			type: TYPES.RECEIVE_SHIPPING_RATES,
+			shippingRates: upsertedShippingRates,
 		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
 			__(
-				'There was an error trying to delete shipping rates. Please try again later.',
+				'There was an error trying to save shipping rates. Please try again later.',
 				'google-listings-and-ads'
 			)
 		);
 	}
 }
+
 /**
  * Individual shipping time.
  *
