@@ -332,7 +332,7 @@ class Proxy implements OptionsAwareInterface {
 	 * Create a new Google Ads account.
 	 *
 	 * @return array
-	 * @throws Exception When a ClientException is caught or we receive an invalid response.
+	 * @throws Exception When a ClientException is caught, unsupported store country, or we receive an invalid response.
 	 */
 	public function create_ads_account(): array {
 		try {
