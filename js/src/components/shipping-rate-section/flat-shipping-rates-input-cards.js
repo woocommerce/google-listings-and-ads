@@ -1,13 +1,13 @@
 /**
  * Internal dependencies
  */
-import isNonZeroFlatShippingRate from '.~/utils/isNonZeroFlatShippingRate';
+import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import FreeShippingCards from './free-shipping-cards';
 import EstimatedShippingRatesCard from './estimated-shipping-rates-card';
 
 const FlatShippingRatesInputCards = ( props ) => {
 	const { audienceCountries, value, onChange = () => {} } = props;
-	const displayFreeShippingCards = value.some( isNonZeroFlatShippingRate );
+	const displayFreeShippingCards = value.some( isNonFreeFlatShippingRate );
 
 	return (
 		<>
