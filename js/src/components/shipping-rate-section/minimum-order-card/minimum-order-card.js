@@ -138,7 +138,9 @@ const MinimumOrderCard = ( props ) => {
 							}
 							modal={
 								<AddMinimumOrderModal
-									countryOptions={ countryOptions }
+									countryOptions={
+										emptyThresholdGroup.countries
+									}
 									value={ emptyThresholdGroup }
 									onChange={ handleAddChange }
 								/>
