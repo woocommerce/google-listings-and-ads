@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
@@ -21,21 +21,29 @@ const MinimumOrderInputLabelText = ( props ) => {
 
 	const string =
 		countries.length > firstCountryNames.length
-			? __(
-					`Minimum order for <countries /> + <count /> more`,
+			? // translators: 1: list of country names separated by comma, up to 5 countries; 2: the remaining count of countries.
+			  __(
+					`Minimum order for <strong>%1$s</strong> + %2$d more`,
 					'google-listings-and-ads'
 			  )
-			: __(
-					`Minimum order for <countries />`,
+			: // translators: 1: list of country names separated by comma.
+			  __(
+					`Minimum order for <strong>%1$s</strong>`,
 					'google-listings-and-ads'
 			  );
 
 	return (
 		<div>
-			{ createInterpolateElement( string, {
-				countries: <strong>{ firstCountryNames.join( ', ' ) }</strong>,
-				count: <>{ countries.length - firstCountryNames.length }</>,
-			} ) }
+			{ createInterpolateElement(
+				sprintf(
+					string,
+					firstCountryNames.join( ', ' ),
+					countries.length - firstCountryNames.length
+				),
+				{
+					strong: <strong />,
+				}
+			) }
 		</div>
 	);
 };

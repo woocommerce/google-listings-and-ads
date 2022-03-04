@@ -13,7 +13,7 @@ const FreeShippingCards = ( props ) => {
 	const { value, onChange } = props;
 
 	const initialOfferFreeShippingValue = value.some(
-		( el ) => el.options?.free_shipping_threshold > 0
+		( el ) => el.options.free_shipping_threshold > 0
 	);
 
 	const [ offerFreeShippingValue, setOfferFreeShippingValue ] = useState(

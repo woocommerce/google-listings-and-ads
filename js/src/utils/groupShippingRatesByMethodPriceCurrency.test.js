@@ -3,7 +3,7 @@
  */
 import groupShippingRatesByMethodPriceCurrency from './groupShippingRatesByMethodPriceCurrency';
 
-describe( 'groupShippingRatesByPriceCurrency', () => {
+describe( 'groupShippingRatesByMethodPriceCurrency', () => {
 	it( 'should group the shipping rates based on method, price and currency', () => {
 		const shippingRates = [
 			{
@@ -12,7 +12,7 @@ describe( 'groupShippingRatesByPriceCurrency', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
-				options: [],
+				options: {},
 			},
 			{
 				id: '2',
@@ -20,7 +20,7 @@ describe( 'groupShippingRatesByPriceCurrency', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 20,
-				options: [],
+				options: {},
 			},
 			{
 				id: '3',
@@ -28,7 +28,7 @@ describe( 'groupShippingRatesByPriceCurrency', () => {
 				method: 'flat_rate',
 				currency: 'USD',
 				rate: 25,
-				options: [],
+				options: {},
 			},
 			{
 				id: '4',
@@ -36,7 +36,7 @@ describe( 'groupShippingRatesByPriceCurrency', () => {
 				method: 'flat_rate',
 				currency: 'BRL',
 				rate: 20,
-				options: [],
+				options: {},
 			},
 		];
 

@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import isSameShippingRate from '.~/utils/isSameShippingRate';
+import isInShippingRates from '.~/utils/isInShippingRates';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
 import { STORE_KEY } from '.';
@@ -35,9 +35,12 @@ export function handleFetchError( error, message ) {
  * Individual shipping rate.
  *
  * @typedef {Object} ShippingRate
- * @property {CountryCode} countryCode Destination country code.
+ * @property {string} id id.
+ * @property {CountryCode} country Destination country code.
+ * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
+ * @property {Object} options options depending on the shipping method.
  */
 
 /**
@@ -72,6 +75,46 @@ export function* fetchShippingRates() {
 	}
 }
 
+function* maybeDeleteShippingRates( newShippingRates, oldShippingRates ) {
+	/**
+	 * Find the old shipping rates that are not in the new ones,
+	 * and delete them.
+	 */
+	const deleteIds = oldShippingRates
+		.filter(
+			( oldShippingRate ) =>
+				! isInShippingRates( oldShippingRate, newShippingRates )
+		)
+		.map( ( oldShippingRate ) => oldShippingRate.id );
+
+	if ( deleteIds.length ) {
+		yield apiFetch( {
+			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+			method: 'DELETE',
+			data: {
+				ids: deleteIds,
+			},
+		} );
+	}
+}
+
+function* upsertShippingRates( shippingRates ) {
+	const data = yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'POST',
+		data: {
+			rates: shippingRates,
+		},
+	} );
+
+	return data.success.map( ( el ) => {
+		return {
+			...el.rate,
+			rate: Number( el.rate.rate ),
+		};
+	} );
+}
+
 /**
  * Saves shipping rates.
  *
@@ -82,32 +125,8 @@ export function* fetchShippingRates() {
  */
 export function* saveShippingRates( newShippingRates ) {
 	try {
-		/**
-		 * Compare the new shipping rates and the old ones from the store
-		 * to find out the old ones to be deleted.
-		 */
 		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
-		const deleteIds = oldShippingRates.reduce( ( acc, cur ) => {
-			const found = newShippingRates.find( ( el ) =>
-				isSameShippingRate( el, cur )
-			);
-
-			if ( ! found ) {
-				acc.push( cur.id );
-			}
-
-			return acc;
-		}, [] );
-
-		if ( deleteIds.length ) {
-			yield apiFetch( {
-				path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-				method: 'DELETE',
-				data: {
-					ids: deleteIds,
-				},
-			} );
-		}
+		yield maybeDeleteShippingRates( newShippingRates, oldShippingRates );
 
 		/**
 		 * No new shipping rate, no need to call API.
@@ -122,15 +141,9 @@ export function* saveShippingRates( newShippingRates ) {
 		/**
 		 * There are new shipping rates, we call API to upsert them.
 		 */
-		const data = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'POST',
-			data: {
-				rates: newShippingRates,
-			},
-		} );
-
-		const upsertedShippingRates = data.success?.map( ( el ) => el.rate );
+		const upsertedShippingRates = yield upsertShippingRates(
+			newShippingRates
+		);
 
 		return {
 			type: TYPES.RECEIVE_SHIPPING_RATES,

@@ -2,10 +2,7 @@ const groupShippingRatesByMethodFreeShippingThreshold = ( shippingRates ) => {
 	const map = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
-		const threshold =
-			shippingRate.options?.free_shipping_threshold === undefined
-				? undefined
-				: Number( shippingRate.options.free_shipping_threshold );
+		const threshold = shippingRate.options.free_shipping_threshold;
 		const thresholdCurrency = `${ shippingRate.method } ${ threshold } ${ shippingRate.currency }`;
 
 		const group = map.get( thresholdCurrency ) || {

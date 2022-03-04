@@ -35,9 +35,9 @@ const EditMinimumOrderModal = ( props ) => {
 			);
 		}
 
-		if ( values.threshold < 0 ) {
+		if ( ! ( values.threshold > 0 ) ) {
 			errors.price = __(
-				'The minimum order amount cannot be less than 0.',
+				'The minimum order amount must be greater than 0.',
 				'google-listings-and-ads'
 			);
 		}
@@ -64,6 +64,7 @@ const EditMinimumOrderModal = ( props ) => {
 				const {
 					getInputProps,
 					values,
+					setValue,
 					isValidForm,
 					handleSubmit,
 				} = formProps;
@@ -114,6 +115,17 @@ const EditMinimumOrderModal = ( props ) => {
 								) }
 								suffix={ values.currency }
 								{ ...getInputProps( 'threshold' ) }
+								onBlur={ ( event, numberValue ) => {
+									getInputProps( 'threshold' ).onBlur(
+										event
+									);
+									setValue(
+										'threshold',
+										numberValue > 0
+											? numberValue
+											: undefined
+									);
+								} }
 							/>
 						</VerticalGapLayout>
 					</AppModal>
