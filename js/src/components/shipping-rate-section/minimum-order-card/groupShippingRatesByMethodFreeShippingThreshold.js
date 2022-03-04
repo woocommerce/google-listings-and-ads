@@ -2,18 +2,23 @@ const groupShippingRatesByMethodFreeShippingThreshold = ( shippingRates ) => {
 	const map = new Map();
 
 	shippingRates.forEach( ( shippingRate ) => {
-		const threshold = shippingRate.options.free_shipping_threshold;
-		const thresholdCurrency = `${ shippingRate.method } ${ threshold } ${ shippingRate.currency }`;
+		const {
+			method,
+			options: { free_shipping_threshold: threshold },
+			currency,
+		} = shippingRate;
 
-		const group = map.get( thresholdCurrency ) || {
+		const methodThresholdCurrency = `${ method } ${ threshold } ${ currency }`;
+
+		const group = map.get( methodThresholdCurrency ) || {
 			countries: [],
-			method: shippingRate.method,
+			method,
 			threshold,
-			currency: shippingRate.currency,
+			currency,
 		};
 		group.countries.push( shippingRate.country );
 
-		map.set( thresholdCurrency, group );
+		map.set( methodThresholdCurrency, group );
 	} );
 
 	return Array.from( map.values() );
