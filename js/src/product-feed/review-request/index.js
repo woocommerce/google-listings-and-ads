@@ -8,9 +8,9 @@ import { recordEvent } from '@woocommerce/tracks';
  * Internal dependencies
  */
 import useActiveIssueType from '.~/hooks/useActiveIssueType';
-import { ISSUE_TYPE_ACCOUNT } from '.~/constants';
 import ReviewRequestModal from './review-request-modal';
 import ReviewRequestNotice from './review-request-notice';
+import { ISSUE_TYPE_ACCOUNT, REQUEST_REVIEW } from '.~/constants';
 import REVIEW_STATUSES from './review-request-statuses';
 import './index.scss';
 
@@ -32,19 +32,19 @@ const ReviewRequest = ( { account = {} } ) => {
 
 	const handleNoticeClick = () => {
 		setModalActive( true );
-		recordEvent( 'gla_modal_open', { context: 'request_review' } );
+		recordEvent( 'gla_modal_open', { context: REQUEST_REVIEW } );
 	};
 
 	const handleModalClose = ( action ) => {
 		setModalActive( false );
 		recordEvent( 'gla_modal_closed', {
-			context: 'request_review',
+			context: REQUEST_REVIEW,
 			action,
 		} );
 	};
 
 	const handleReviewRequest = () => {
-		handleModalClose( 'request_review' );
+		handleModalClose( 'confirm_request_review' );
 		recordEvent( 'gla_request_review' );
 		// TODO: Implement call to Review Request API
 	};

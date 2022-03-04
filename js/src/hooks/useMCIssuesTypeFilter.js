@@ -1,8 +1,7 @@
 /**
  * Internal dependencies
  */
-import { ISSUE_TABLE_PER_PAGE } from '.~/product-feed/constants';
-import { ISSUE_TYPE_ACCOUNT } from '.~/constants';
+import { ISSUE_TYPE_ACCOUNT, ISSUE_TABLE_PER_PAGE } from '.~/constants';
 import useAppSelectDispatch from '.~/hooks/useAppSelectDispatch';
 
 const defaultQuery = {
