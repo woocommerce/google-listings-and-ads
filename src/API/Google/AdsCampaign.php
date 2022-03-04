@@ -5,8 +5,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
@@ -85,15 +87,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaigns(): array {
 		try {
-			$campaign_results = ( new AdsCampaignQuery() )
-				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.status', 'REMOVED', '!=' )
-				->get_results();
-
-			$campaign_criterion_results = ( new AdsCampaignCriterionQuery() )
-				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.status', 'REMOVED', '!=' )
-				->get_results();
+			$query_condition            = [ 'campaign.status', 'REMOVED', '!=' ];
+			$campaign_results           = $this->get_ads_query_results( new AdsCampaignQuery(), $query_condition );
+			$campaign_criterion_results = $this->get_ads_query_results( new AdsCampaignCriterionQuery(), $query_condition );
 
 			$converted_campaigns = [];
 
@@ -126,15 +122,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$campaign_results = ( new AdsCampaignQuery() )
-				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.id', $id )
-				->get_results();
-
-			$campaign_criterion_results = ( new AdsCampaignCriterionQuery() )
-				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.id', $id )
-				->get_results();
+			$query_condition            = [ 'campaign.id', $id, '=' ];
+			$campaign_results           = $this->get_ads_query_results( new AdsCampaignQuery(), $query_condition );
+			$campaign_criterion_results = $this->get_ads_query_results( new AdsCampaignCriterionQuery(), $query_condition );
 
 			$converted_campaigns = [];
 
@@ -485,5 +475,25 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		} catch ( ValidationException $e ) {
 			throw new Exception( __( 'Invalid campaign ID', 'google-listings-and-ads' ) );
 		}
+	}
+
+	/**
+	 * Perform the query with conditions for AdsQuery.
+	 *
+	 * @param AdsQuery $ads_query Instance of AdsQuery class.
+	 * @param array    $condition Array of where conditions for querying values.
+	 *
+	 * @return PagedListResponse
+	 * @throws InvalidQuery When an empty condition array is provided.
+	 */
+	protected function get_ads_query_results( AdsQuery $ads_query, array $condition = [] ): PagedListResponse {
+		if ( empty( $condition ) ) {
+			throw InvalidQuery::empty_where();
+		}
+
+		return $ads_query
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( ...$condition )
+			->get_results();
 	}
 }
