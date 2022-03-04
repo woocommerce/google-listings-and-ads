@@ -11,7 +11,7 @@
  *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 20,
- *         options: [],
+ *         options: {},
  *     },
  *     {
  *         id: "2",
@@ -19,7 +19,7 @@
  *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 20,
- *         options: [],
+ *         options: {},
  *     },
  *     {
  *         id: "3",
@@ -27,7 +27,7 @@
  *         method: "flat_rate",
  *         currency: 'USD',
  *         rate: 25,
- *         options: [],
+ *         options: {},
  *     },
  *     {
  *         id: "4",
@@ -35,7 +35,7 @@
  *         method: "flat_rate",
  *         currency: 'BRL',
  *         rate: 20,
- *         options: [],
+ *         options: {},
  *     },
  * ]
  *

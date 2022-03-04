@@ -86,7 +86,7 @@ describe( 'reducer', () => {
 						method: 'flat_rate',
 						currency: 'USD',
 						rate: 4.99,
-						options: [],
+						options: {},
 					},
 					{
 						id: '2',
@@ -94,7 +94,7 @@ describe( 'reducer', () => {
 						method: 'flat_rate',
 						currency: 'USD',
 						rate: 25,
-						options: [],
+						options: {},
 					},
 				],
 			};
