@@ -423,6 +423,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 			$campaign_key = array_search( $campaign_id, $campaign_ids, true );
 
+			if ( $campaign_key === false ) {
+				continue;
+			}
+
 			if ( ! array_key_exists( 'targeted_locations', $campaigns[ $campaign_key ] ) ) {
 				$campaigns[ $campaign_key ]['targeted_locations'] = [];
 			}
