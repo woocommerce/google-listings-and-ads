@@ -52,14 +52,14 @@ describe( 'Request Review Component', () => {
 			fireEvent.click( button );
 			expect( queryByRole( 'dialog' ) ).toBeTruthy();
 			expect( recordEvent ).toHaveBeenCalledWith( 'gla_modal_open', {
-				context: 'request_review',
+				context: 'request-review',
 			} );
 
 			fireEvent.click( screen.queryByText( 'Cancel' ) );
 			expect( queryByRole( 'dialog' ) ).toBeFalsy();
 			expect( recordEvent ).toHaveBeenCalledWith( 'gla_modal_closed', {
-				context: 'request_review',
-				action: 'cancel',
+				context: 'request-review',
+				action: 'maybe-later',
 			} );
 		}
 	);

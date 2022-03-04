@@ -44,7 +44,7 @@ const ReviewRequest = ( { account = {} } ) => {
 	};
 
 	const handleReviewRequest = () => {
-		handleModalClose( 'confirm_request_review' );
+		handleModalClose( 'confirm-request-review' );
 		recordEvent( 'gla_request_review' );
 		// TODO: Implement call to Review Request API
 	};

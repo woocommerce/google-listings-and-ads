@@ -42,7 +42,7 @@ const ReviewRequestModal = ( {
 					key="secondary"
 					isSecondary
 					onClick={ () => {
-						onClose( 'cancel' );
+						onClose( 'maybe-later' );
 					} }
 				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
