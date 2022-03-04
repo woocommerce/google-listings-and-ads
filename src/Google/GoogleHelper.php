@@ -36,51 +36,9 @@ class GoogleHelper implements Service {
 		],
 		// Australia
 		'AU' => [
-			'code'         => 'AU',
-			'currency'     => 'AUD',
-			'id'           => 2036,
-			'subdivisions' => [
-				'ACT' => [
-					'id'   => 20034,
-					'code' => 'ACT',
-					'name' => 'Australian Capital Territory',
-				],
-				'NSW' => [
-					'id'   => 20035,
-					'code' => 'NSW',
-					'name' => 'New South Wales',
-				],
-				'NT'  => [
-					'id'   => 20036,
-					'code' => 'NT',
-					'name' => 'Northern Territory',
-				],
-				'QLD' => [
-					'id'   => 20037,
-					'code' => 'QLD',
-					'name' => 'Queensland',
-				],
-				'SA'  => [
-					'id'   => 20038,
-					'code' => 'SA',
-					'name' => 'South Australia',
-				],
-				'TAS' => [
-					'id'   => 20039,
-					'code' => 'TAS',
-					'name' => 'Tasmania',
-				],
-				'VIC' => [
-					'id'   => 20040,
-					'code' => 'VIC',
-					'name' => 'Victoria',
-				],
-				'WA'  => [
-					'id'   => 20041,
-					'code' => 'WA',
-					'name' => 'Western Australia',
-				],
-			],
+			'code'     => 'AU',
+			'currency' => 'AUD',
+			'id'       => 2036,
 		],
 		// Austria
 		'AT' => [
@@ -288,246 +246,9 @@ class GoogleHelper implements Service {
 		],
 		// Japan
 		'JP' => [
-			'code'         => 'JP',
-			'currency'     => 'JPY',
-			'id'           => 2392,
-			'subdivisions' => [
-				'JP01' => [
-					'id'   => 20624,
-					'code' => 'JP01',
-					'name' => 'Hokkaido',
-				],
-				'JP02' => [
-					'id'   => 20625,
-					'code' => 'JP02',
-					'name' => 'Aomori',
-				],
-				'JP03' => [
-					'id'   => 20626,
-					'code' => 'JP03',
-					'name' => 'Iwate',
-				],
-				'JP04' => [
-					'id'   => 20627,
-					'code' => 'JP04',
-					'name' => 'Miyagi',
-				],
-				'JP05' => [
-					'id'   => 20628,
-					'code' => 'JP05',
-					'name' => 'Akita',
-				],
-				'JP06' => [
-					'id'   => 20629,
-					'code' => 'JP06',
-					'name' => 'Yamagata',
-				],
-				'JP07' => [
-					'id'   => 20630,
-					'code' => 'JP07',
-					'name' => 'Fukushima',
-				],
-				'JP08' => [
-					'id'   => 20631,
-					'code' => 'JP08',
-					'name' => 'Ibaraki',
-				],
-				'JP09' => [
-					'id'   => 20632,
-					'code' => 'JP09',
-					'name' => 'Tochigi',
-				],
-				'JP10' => [
-					'id'   => 20633,
-					'code' => 'JP10',
-					'name' => 'Gunma',
-				],
-				'JP11' => [
-					'id'   => 20634,
-					'code' => 'JP11',
-					'name' => 'Saitama',
-				],
-				'JP12' => [
-					'id'   => 20635,
-					'code' => 'JP12',
-					'name' => 'Chiba',
-				],
-				'JP13' => [
-					'id'   => 20636,
-					'code' => 'JP13',
-					'name' => 'Tokyo',
-				],
-				'JP14' => [
-					'id'   => 20637,
-					'code' => 'JP14',
-					'name' => 'Kanagawa',
-				],
-				'JP15' => [
-					'id'   => 20638,
-					'code' => 'JP15',
-					'name' => 'Niigata',
-				],
-				'JP16' => [
-					'id'   => 20639,
-					'code' => 'JP16',
-					'name' => 'Toyama',
-				],
-				'JP17' => [
-					'id'   => 20640,
-					'code' => 'JP17',
-					'name' => 'Ishikawa',
-				],
-				'JP18' => [
-					'id'   => 20641,
-					'code' => 'JP18',
-					'name' => 'Fukui',
-				],
-				'JP19' => [
-					'id'   => 20642,
-					'code' => 'JP19',
-					'name' => 'Yamanashi',
-				],
-				'JP20' => [
-					'id'   => 20643,
-					'code' => 'JP20',
-					'name' => 'Nagano',
-				],
-				'JP21' => [
-					'id'   => 20644,
-					'code' => 'JP21',
-					'name' => 'Gifu',
-				],
-				'JP22' => [
-					'id'   => 20645,
-					'code' => 'JP22',
-					'name' => 'Shizuoka',
-				],
-				'JP23' => [
-					'id'   => 20646,
-					'code' => 'JP23',
-					'name' => 'Aichi',
-				],
-				'JP24' => [
-					'id'   => 20647,
-					'code' => 'JP24',
-					'name' => 'Mie',
-				],
-				'JP25' => [
-					'id'   => 20648,
-					'code' => 'JP25',
-					'name' => 'Shiga',
-				],
-				'JP26' => [
-					'id'   => 20649,
-					'code' => 'JP26',
-					'name' => 'Kyoto',
-				],
-				'JP27' => [
-					'id'   => 20650,
-					'code' => 'JP27',
-					'name' => 'Osaka',
-				],
-				'JP28' => [
-					'id'   => 20651,
-					'code' => 'JP28',
-					'name' => 'Hyogo',
-				],
-				'JP29' => [
-					'id'   => 20652,
-					'code' => 'JP29',
-					'name' => 'Nara',
-				],
-				'JP30' => [
-					'id'   => 20653,
-					'code' => 'JP30',
-					'name' => 'Wakayama',
-				],
-				'JP31' => [
-					'id'   => 20654,
-					'code' => 'JP31',
-					'name' => 'Tottori',
-				],
-				'JP32' => [
-					'id'   => 20655,
-					'code' => 'JP32',
-					'name' => 'Shimane',
-				],
-				'JP33' => [
-					'id'   => 20656,
-					'code' => 'JP33',
-					'name' => 'Okayama',
-				],
-				'JP34' => [
-					'id'   => 20657,
-					'code' => 'JP34',
-					'name' => 'Hiroshima',
-				],
-				'JP35' => [
-					'id'   => 20658,
-					'code' => 'JP35',
-					'name' => 'Yamaguchi',
-				],
-				'JP36' => [
-					'id'   => 20659,
-					'code' => 'JP36',
-					'name' => 'Tokushima',
-				],
-				'JP37' => [
-					'id'   => 20660,
-					'code' => 'JP37',
-					'name' => 'Kagawa',
-				],
-				'JP38' => [
-					'id'   => 20661,
-					'code' => 'JP38',
-					'name' => 'Ehime',
-				],
-				'JP39' => [
-					'id'   => 20662,
-					'code' => 'JP39',
-					'name' => 'Kochi',
-				],
-				'JP40' => [
-					'id'   => 20663,
-					'code' => 'JP40',
-					'name' => 'Fukuoka',
-				],
-				'JP41' => [
-					'id'   => 20664,
-					'code' => 'JP41',
-					'name' => 'Saga',
-				],
-				'JP42' => [
-					'id'   => 20665,
-					'code' => 'JP42',
-					'name' => 'Nagasaki',
-				],
-				'JP43' => [
-					'id'   => 20666,
-					'code' => 'JP43',
-					'name' => 'Kumamoto',
-				],
-				'JP44' => [
-					'id'   => 20667,
-					'code' => 'JP44',
-					'name' => 'Oita',
-				],
-				'JP45' => [
-					'id'   => 20668,
-					'code' => 'JP45',
-					'name' => 'Miyazaki',
-				],
-				'JP46' => [
-					'id'   => 20669,
-					'code' => 'JP46',
-					'name' => 'Kagoshima',
-				],
-				'JP47' => [
-					'id'   => 20670,
-					'code' => 'JP47',
-					'name' => 'Okinawa',
-				],
-			],
+			'code'     => 'JP',
+			'currency' => 'JPY',
+			'id'       => 2392,
 		],
 		// Jordan
 		'JO' => [
@@ -813,266 +534,9 @@ class GoogleHelper implements Service {
 		],
 		// United States
 		'US' => [
-			'code'         => 'US',
-			'currency'     => 'USD',
-			'id'           => 2840,
-			'subdivisions' => [
-				'AK' => [
-					'id'   => 21132,
-					'code' => 'AK',
-					'name' => 'Alaska',
-				],
-				'AL' => [
-					'id'   => 21133,
-					'code' => 'AL',
-					'name' => 'Alabama',
-				],
-				'AR' => [
-					'id'   => 21135,
-					'code' => 'AR',
-					'name' => 'Arkansas',
-				],
-				'AZ' => [
-					'id'   => 21136,
-					'code' => 'AZ',
-					'name' => 'Arizona',
-				],
-				'CA' => [
-					'id'   => 21137,
-					'code' => 'CA',
-					'name' => 'California',
-				],
-				'CO' => [
-					'id'   => 21138,
-					'code' => 'CO',
-					'name' => 'Colorado',
-				],
-				'CT' => [
-					'id'   => 21139,
-					'code' => 'CT',
-					'name' => 'Connecticut',
-				],
-				'DC' => [
-					'id'   => 21140,
-					'code' => 'DC',
-					'name' => 'District of Columbia',
-				],
-				'DE' => [
-					'id'   => 21141,
-					'code' => 'DE',
-					'name' => 'Delaware',
-				],
-				'FL' => [
-					'id'   => 21142,
-					'code' => 'FL',
-					'name' => 'Florida',
-				],
-				'GA' => [
-					'id'   => 21143,
-					'code' => 'GA',
-					'name' => 'Georgia',
-				],
-				'HI' => [
-					'id'   => 21144,
-					'code' => 'HI',
-					'name' => 'Hawaii',
-				],
-				'IA' => [
-					'id'   => 21145,
-					'code' => 'IA',
-					'name' => 'Iowa',
-				],
-				'ID' => [
-					'id'   => 21146,
-					'code' => 'ID',
-					'name' => 'Idaho',
-				],
-				'IL' => [
-					'id'   => 21147,
-					'code' => 'IL',
-					'name' => 'Illinois',
-				],
-				'IN' => [
-					'id'   => 21148,
-					'code' => 'IN',
-					'name' => 'Indiana',
-				],
-				'KS' => [
-					'id'   => 21149,
-					'code' => 'KS',
-					'name' => 'Kansas',
-				],
-				'KY' => [
-					'id'   => 21150,
-					'code' => 'KY',
-					'name' => 'Kentucky',
-				],
-				'LA' => [
-					'id'   => 21151,
-					'code' => 'LA',
-					'name' => 'Louisiana',
-				],
-				'MA' => [
-					'id'   => 21152,
-					'code' => 'MA',
-					'name' => 'Massachusetts',
-				],
-				'MD' => [
-					'id'   => 21153,
-					'code' => 'MD',
-					'name' => 'Maryland',
-				],
-				'ME' => [
-					'id'   => 21154,
-					'code' => 'ME',
-					'name' => 'Maine',
-				],
-				'MI' => [
-					'id'   => 21155,
-					'code' => 'MI',
-					'name' => 'Michigan',
-				],
-				'MN' => [
-					'id'   => 21156,
-					'code' => 'MN',
-					'name' => 'Minnesota',
-				],
-				'MO' => [
-					'id'   => 21157,
-					'code' => 'MO',
-					'name' => 'Missouri',
-				],
-				'MS' => [
-					'id'   => 21158,
-					'code' => 'MS',
-					'name' => 'Mississippi',
-				],
-				'MT' => [
-					'id'   => 21159,
-					'code' => 'MT',
-					'name' => 'Montana',
-				],
-				'NC' => [
-					'id'   => 21160,
-					'code' => 'NC',
-					'name' => 'North Carolina',
-				],
-				'ND' => [
-					'id'   => 21161,
-					'code' => 'ND',
-					'name' => 'North Dakota',
-				],
-				'NE' => [
-					'id'   => 21162,
-					'code' => 'NE',
-					'name' => 'Nebraska',
-				],
-				'NH' => [
-					'id'   => 21163,
-					'code' => 'NH',
-					'name' => 'New Hampshire',
-				],
-				'NJ' => [
-					'id'   => 21164,
-					'code' => 'NJ',
-					'name' => 'New Jersey',
-				],
-				'NM' => [
-					'id'   => 21165,
-					'code' => 'NM',
-					'name' => 'New Mexico',
-				],
-				'NV' => [
-					'id'   => 21166,
-					'code' => 'NV',
-					'name' => 'Nevada',
-				],
-				'NY' => [
-					'id'   => 21167,
-					'code' => 'NY',
-					'name' => 'New York',
-				],
-				'OH' => [
-					'id'   => 21168,
-					'code' => 'OH',
-					'name' => 'Ohio',
-				],
-				'OK' => [
-					'id'   => 21169,
-					'code' => 'OK',
-					'name' => 'Oklahoma',
-				],
-				'OR' => [
-					'id'   => 21170,
-					'code' => 'OR',
-					'name' => 'Oregon',
-				],
-				'PA' => [
-					'id'   => 21171,
-					'code' => 'PA',
-					'name' => 'Pennsylvania',
-				],
-				'RI' => [
-					'id'   => 21172,
-					'code' => 'RI',
-					'name' => 'Rhode Island',
-				],
-				'SC' => [
-					'id'   => 21173,
-					'code' => 'SC',
-					'name' => 'South Carolina',
-				],
-				'SD' => [
-					'id'   => 21174,
-					'code' => 'SD',
-					'name' => 'South Dakota',
-				],
-				'TN' => [
-					'id'   => 21175,
-					'code' => 'TN',
-					'name' => 'Tennessee',
-				],
-				'TX' => [
-					'id'   => 21176,
-					'code' => 'TX',
-					'name' => 'Texas',
-				],
-				'UT' => [
-					'id'   => 21177,
-					'code' => 'UT',
-					'name' => 'Utah',
-				],
-				'VA' => [
-					'id'   => 21178,
-					'code' => 'VA',
-					'name' => 'Virginia',
-				],
-				'VT' => [
-					'id'   => 21179,
-					'code' => 'VT',
-					'name' => 'Vermont',
-				],
-				'WA' => [
-					'id'   => 21180,
-					'code' => 'WA',
-					'name' => 'Washington',
-				],
-				'WI' => [
-					'id'   => 21182,
-					'code' => 'WI',
-					'name' => 'Wisconsin',
-				],
-				'WV' => [
-					'id'   => 21183,
-					'code' => 'WV',
-					'name' => 'West Virginia',
-				],
-				'WY' => [
-					'id'   => 21184,
-					'code' => 'WY',
-					'name' => 'Wyoming',
-				],
-			],
+			'code'     => 'US',
+			'currency' => 'USD',
+			'id'       => 2840,
 		],
 		// Uruguay
 		'UY' => [
@@ -1109,6 +573,548 @@ class GoogleHelper implements Service {
 			'code'     => 'ZW',
 			'currency' => 'USD',
 			'id'       => 2716,
+		],
+	];
+
+	protected const COUNTRY_SUBDIVISIONS = [
+		// Australia
+		'AU' => [
+			'ACT' => [
+				'id'   => 20034,
+				'code' => 'ACT',
+				'name' => 'Australian Capital Territory',
+			],
+			'NSW' => [
+				'id'   => 20035,
+				'code' => 'NSW',
+				'name' => 'New South Wales',
+			],
+			'NT'  => [
+				'id'   => 20036,
+				'code' => 'NT',
+				'name' => 'Northern Territory',
+			],
+			'QLD' => [
+				'id'   => 20037,
+				'code' => 'QLD',
+				'name' => 'Queensland',
+			],
+			'SA'  => [
+				'id'   => 20038,
+				'code' => 'SA',
+				'name' => 'South Australia',
+			],
+			'TAS' => [
+				'id'   => 20039,
+				'code' => 'TAS',
+				'name' => 'Tasmania',
+			],
+			'VIC' => [
+				'id'   => 20040,
+				'code' => 'VIC',
+				'name' => 'Victoria',
+			],
+			'WA'  => [
+				'id'   => 20041,
+				'code' => 'WA',
+				'name' => 'Western Australia',
+			],
+		],
+		// Japan
+		'JP' => [
+			'JP01' => [
+				'id'   => 20624,
+				'code' => 'JP01',
+				'name' => 'Hokkaido',
+			],
+			'JP02' => [
+				'id'   => 20625,
+				'code' => 'JP02',
+				'name' => 'Aomori',
+			],
+			'JP03' => [
+				'id'   => 20626,
+				'code' => 'JP03',
+				'name' => 'Iwate',
+			],
+			'JP04' => [
+				'id'   => 20627,
+				'code' => 'JP04',
+				'name' => 'Miyagi',
+			],
+			'JP05' => [
+				'id'   => 20628,
+				'code' => 'JP05',
+				'name' => 'Akita',
+			],
+			'JP06' => [
+				'id'   => 20629,
+				'code' => 'JP06',
+				'name' => 'Yamagata',
+			],
+			'JP07' => [
+				'id'   => 20630,
+				'code' => 'JP07',
+				'name' => 'Fukushima',
+			],
+			'JP08' => [
+				'id'   => 20631,
+				'code' => 'JP08',
+				'name' => 'Ibaraki',
+			],
+			'JP09' => [
+				'id'   => 20632,
+				'code' => 'JP09',
+				'name' => 'Tochigi',
+			],
+			'JP10' => [
+				'id'   => 20633,
+				'code' => 'JP10',
+				'name' => 'Gunma',
+			],
+			'JP11' => [
+				'id'   => 20634,
+				'code' => 'JP11',
+				'name' => 'Saitama',
+			],
+			'JP12' => [
+				'id'   => 20635,
+				'code' => 'JP12',
+				'name' => 'Chiba',
+			],
+			'JP13' => [
+				'id'   => 20636,
+				'code' => 'JP13',
+				'name' => 'Tokyo',
+			],
+			'JP14' => [
+				'id'   => 20637,
+				'code' => 'JP14',
+				'name' => 'Kanagawa',
+			],
+			'JP15' => [
+				'id'   => 20638,
+				'code' => 'JP15',
+				'name' => 'Niigata',
+			],
+			'JP16' => [
+				'id'   => 20639,
+				'code' => 'JP16',
+				'name' => 'Toyama',
+			],
+			'JP17' => [
+				'id'   => 20640,
+				'code' => 'JP17',
+				'name' => 'Ishikawa',
+			],
+			'JP18' => [
+				'id'   => 20641,
+				'code' => 'JP18',
+				'name' => 'Fukui',
+			],
+			'JP19' => [
+				'id'   => 20642,
+				'code' => 'JP19',
+				'name' => 'Yamanashi',
+			],
+			'JP20' => [
+				'id'   => 20643,
+				'code' => 'JP20',
+				'name' => 'Nagano',
+			],
+			'JP21' => [
+				'id'   => 20644,
+				'code' => 'JP21',
+				'name' => 'Gifu',
+			],
+			'JP22' => [
+				'id'   => 20645,
+				'code' => 'JP22',
+				'name' => 'Shizuoka',
+			],
+			'JP23' => [
+				'id'   => 20646,
+				'code' => 'JP23',
+				'name' => 'Aichi',
+			],
+			'JP24' => [
+				'id'   => 20647,
+				'code' => 'JP24',
+				'name' => 'Mie',
+			],
+			'JP25' => [
+				'id'   => 20648,
+				'code' => 'JP25',
+				'name' => 'Shiga',
+			],
+			'JP26' => [
+				'id'   => 20649,
+				'code' => 'JP26',
+				'name' => 'Kyoto',
+			],
+			'JP27' => [
+				'id'   => 20650,
+				'code' => 'JP27',
+				'name' => 'Osaka',
+			],
+			'JP28' => [
+				'id'   => 20651,
+				'code' => 'JP28',
+				'name' => 'Hyogo',
+			],
+			'JP29' => [
+				'id'   => 20652,
+				'code' => 'JP29',
+				'name' => 'Nara',
+			],
+			'JP30' => [
+				'id'   => 20653,
+				'code' => 'JP30',
+				'name' => 'Wakayama',
+			],
+			'JP31' => [
+				'id'   => 20654,
+				'code' => 'JP31',
+				'name' => 'Tottori',
+			],
+			'JP32' => [
+				'id'   => 20655,
+				'code' => 'JP32',
+				'name' => 'Shimane',
+			],
+			'JP33' => [
+				'id'   => 20656,
+				'code' => 'JP33',
+				'name' => 'Okayama',
+			],
+			'JP34' => [
+				'id'   => 20657,
+				'code' => 'JP34',
+				'name' => 'Hiroshima',
+			],
+			'JP35' => [
+				'id'   => 20658,
+				'code' => 'JP35',
+				'name' => 'Yamaguchi',
+			],
+			'JP36' => [
+				'id'   => 20659,
+				'code' => 'JP36',
+				'name' => 'Tokushima',
+			],
+			'JP37' => [
+				'id'   => 20660,
+				'code' => 'JP37',
+				'name' => 'Kagawa',
+			],
+			'JP38' => [
+				'id'   => 20661,
+				'code' => 'JP38',
+				'name' => 'Ehime',
+			],
+			'JP39' => [
+				'id'   => 20662,
+				'code' => 'JP39',
+				'name' => 'Kochi',
+			],
+			'JP40' => [
+				'id'   => 20663,
+				'code' => 'JP40',
+				'name' => 'Fukuoka',
+			],
+			'JP41' => [
+				'id'   => 20664,
+				'code' => 'JP41',
+				'name' => 'Saga',
+			],
+			'JP42' => [
+				'id'   => 20665,
+				'code' => 'JP42',
+				'name' => 'Nagasaki',
+			],
+			'JP43' => [
+				'id'   => 20666,
+				'code' => 'JP43',
+				'name' => 'Kumamoto',
+			],
+			'JP44' => [
+				'id'   => 20667,
+				'code' => 'JP44',
+				'name' => 'Oita',
+			],
+			'JP45' => [
+				'id'   => 20668,
+				'code' => 'JP45',
+				'name' => 'Miyazaki',
+			],
+			'JP46' => [
+				'id'   => 20669,
+				'code' => 'JP46',
+				'name' => 'Kagoshima',
+			],
+			'JP47' => [
+				'id'   => 20670,
+				'code' => 'JP47',
+				'name' => 'Okinawa',
+			],
+		],
+		// United States
+		'US' => [
+			'AK' => [
+				'id'   => 21132,
+				'code' => 'AK',
+				'name' => 'Alaska',
+			],
+			'AL' => [
+				'id'   => 21133,
+				'code' => 'AL',
+				'name' => 'Alabama',
+			],
+			'AR' => [
+				'id'   => 21135,
+				'code' => 'AR',
+				'name' => 'Arkansas',
+			],
+			'AZ' => [
+				'id'   => 21136,
+				'code' => 'AZ',
+				'name' => 'Arizona',
+			],
+			'CA' => [
+				'id'   => 21137,
+				'code' => 'CA',
+				'name' => 'California',
+			],
+			'CO' => [
+				'id'   => 21138,
+				'code' => 'CO',
+				'name' => 'Colorado',
+			],
+			'CT' => [
+				'id'   => 21139,
+				'code' => 'CT',
+				'name' => 'Connecticut',
+			],
+			'DC' => [
+				'id'   => 21140,
+				'code' => 'DC',
+				'name' => 'District of Columbia',
+			],
+			'DE' => [
+				'id'   => 21141,
+				'code' => 'DE',
+				'name' => 'Delaware',
+			],
+			'FL' => [
+				'id'   => 21142,
+				'code' => 'FL',
+				'name' => 'Florida',
+			],
+			'GA' => [
+				'id'   => 21143,
+				'code' => 'GA',
+				'name' => 'Georgia',
+			],
+			'HI' => [
+				'id'   => 21144,
+				'code' => 'HI',
+				'name' => 'Hawaii',
+			],
+			'IA' => [
+				'id'   => 21145,
+				'code' => 'IA',
+				'name' => 'Iowa',
+			],
+			'ID' => [
+				'id'   => 21146,
+				'code' => 'ID',
+				'name' => 'Idaho',
+			],
+			'IL' => [
+				'id'   => 21147,
+				'code' => 'IL',
+				'name' => 'Illinois',
+			],
+			'IN' => [
+				'id'   => 21148,
+				'code' => 'IN',
+				'name' => 'Indiana',
+			],
+			'KS' => [
+				'id'   => 21149,
+				'code' => 'KS',
+				'name' => 'Kansas',
+			],
+			'KY' => [
+				'id'   => 21150,
+				'code' => 'KY',
+				'name' => 'Kentucky',
+			],
+			'LA' => [
+				'id'   => 21151,
+				'code' => 'LA',
+				'name' => 'Louisiana',
+			],
+			'MA' => [
+				'id'   => 21152,
+				'code' => 'MA',
+				'name' => 'Massachusetts',
+			],
+			'MD' => [
+				'id'   => 21153,
+				'code' => 'MD',
+				'name' => 'Maryland',
+			],
+			'ME' => [
+				'id'   => 21154,
+				'code' => 'ME',
+				'name' => 'Maine',
+			],
+			'MI' => [
+				'id'   => 21155,
+				'code' => 'MI',
+				'name' => 'Michigan',
+			],
+			'MN' => [
+				'id'   => 21156,
+				'code' => 'MN',
+				'name' => 'Minnesota',
+			],
+			'MO' => [
+				'id'   => 21157,
+				'code' => 'MO',
+				'name' => 'Missouri',
+			],
+			'MS' => [
+				'id'   => 21158,
+				'code' => 'MS',
+				'name' => 'Mississippi',
+			],
+			'MT' => [
+				'id'   => 21159,
+				'code' => 'MT',
+				'name' => 'Montana',
+			],
+			'NC' => [
+				'id'   => 21160,
+				'code' => 'NC',
+				'name' => 'North Carolina',
+			],
+			'ND' => [
+				'id'   => 21161,
+				'code' => 'ND',
+				'name' => 'North Dakota',
+			],
+			'NE' => [
+				'id'   => 21162,
+				'code' => 'NE',
+				'name' => 'Nebraska',
+			],
+			'NH' => [
+				'id'   => 21163,
+				'code' => 'NH',
+				'name' => 'New Hampshire',
+			],
+			'NJ' => [
+				'id'   => 21164,
+				'code' => 'NJ',
+				'name' => 'New Jersey',
+			],
+			'NM' => [
+				'id'   => 21165,
+				'code' => 'NM',
+				'name' => 'New Mexico',
+			],
+			'NV' => [
+				'id'   => 21166,
+				'code' => 'NV',
+				'name' => 'Nevada',
+			],
+			'NY' => [
+				'id'   => 21167,
+				'code' => 'NY',
+				'name' => 'New York',
+			],
+			'OH' => [
+				'id'   => 21168,
+				'code' => 'OH',
+				'name' => 'Ohio',
+			],
+			'OK' => [
+				'id'   => 21169,
+				'code' => 'OK',
+				'name' => 'Oklahoma',
+			],
+			'OR' => [
+				'id'   => 21170,
+				'code' => 'OR',
+				'name' => 'Oregon',
+			],
+			'PA' => [
+				'id'   => 21171,
+				'code' => 'PA',
+				'name' => 'Pennsylvania',
+			],
+			'RI' => [
+				'id'   => 21172,
+				'code' => 'RI',
+				'name' => 'Rhode Island',
+			],
+			'SC' => [
+				'id'   => 21173,
+				'code' => 'SC',
+				'name' => 'South Carolina',
+			],
+			'SD' => [
+				'id'   => 21174,
+				'code' => 'SD',
+				'name' => 'South Dakota',
+			],
+			'TN' => [
+				'id'   => 21175,
+				'code' => 'TN',
+				'name' => 'Tennessee',
+			],
+			'TX' => [
+				'id'   => 21176,
+				'code' => 'TX',
+				'name' => 'Texas',
+			],
+			'UT' => [
+				'id'   => 21177,
+				'code' => 'UT',
+				'name' => 'Utah',
+			],
+			'VA' => [
+				'id'   => 21178,
+				'code' => 'VA',
+				'name' => 'Virginia',
+			],
+			'VT' => [
+				'id'   => 21179,
+				'code' => 'VT',
+				'name' => 'Vermont',
+			],
+			'WA' => [
+				'id'   => 21180,
+				'code' => 'WA',
+				'name' => 'Washington',
+			],
+			'WI' => [
+				'id'   => 21182,
+				'code' => 'WI',
+				'name' => 'Wisconsin',
+			],
+			'WV' => [
+				'id'   => 21183,
+				'code' => 'WV',
+				'name' => 'West Virginia',
+			],
+			'WY' => [
+				'id'   => 21184,
+				'code' => 'WY',
+				'name' => 'Wyoming',
+			],
 		],
 	];
 
@@ -1266,7 +1272,7 @@ class GoogleHelper implements Service {
 	}
 
 	/**
-	 * Maps the ID of the Merchant Center supported locations to their ISO 3166-1 codes.
+	 * Maps the ID of the Merchant Center supported locations to their ISO 3166-1/ISO 3166-2 codes.
 	 */
 	protected function map_location_id_to_code(): void {
 		$this->location_id_code_map = [];
@@ -1274,20 +1280,38 @@ class GoogleHelper implements Service {
 		$countries = $this->get_mc_supported_countries_data();
 		foreach ( $countries as $country ) {
 			$this->location_id_code_map[ $country['id'] ] = $country['code'];
-			if ( isset( $country['subdivisions'] ) ) {
-				foreach ( $country['subdivisions'] as $subdivision ) {
-					$this->location_id_code_map[ $subdivision['id'] ] = $subdivision['code'];
-				}
+		}
+
+		foreach ( self::COUNTRY_SUBDIVISIONS as $subdivisions ) {
+			foreach ( $subdivisions as $item ) {
+				$this->location_id_code_map[ $item['id'] ] = $item['code'];
 			}
 		}
 	}
 
 	/**
+	 * Find the ISO 3166-1 code of the Merchant Center supported country by its location ID.
+	 *
 	 * @param int $id
 	 *
-	 * @return string|null
+	 * @return string|null ISO 3166-1 representation of the country code.
 	 */
-	public function find_location_code_by_id( int $id ): ?string {
+	public function find_country_code_by_id( int $id ): ?string {
+		if ( ! isset( $this->location_id_code_map ) ) {
+			$this->map_location_id_to_code();
+		}
+
+		return $this->location_id_code_map[ $id ] ?? null;
+	}
+
+	/**
+	 * Find the ISO 3166-2 code of the Merchant Center supported subdivision by its location ID.
+	 *
+	 * @param int $id
+	 *
+	 * @return string|null ISO 3166-2 representation of the country code.
+	 */
+	public function find_subdivision_code_by_id( int $id ): ?string {
 		if ( ! isset( $this->location_id_code_map ) ) {
 			$this->map_location_id_to_code();
 		}
@@ -1302,7 +1326,7 @@ class GoogleHelper implements Service {
 	 *
 	 * @return int|null
 	 */
-	public function find_location_id_by_country_code( string $code ): ?int {
+	public function find_country_id_by_code( string $code ): ?int {
 		$countries = $this->get_mc_supported_countries_data();
 
 		if ( isset( $countries[ $code ] ) ) {
@@ -1315,26 +1339,12 @@ class GoogleHelper implements Service {
 	/**
 	 * Find and return the location id for the given subdivision (state, province, etc.) code.
 	 *
-	 * @param string      $code
-	 * @param string|null $country_code If provided, will only search for the subdivision in the given country.
+	 * @param string $code
+	 * @param string $country_code
 	 *
 	 * @return int|null
 	 */
-	public function find_location_id_by_subdivision_code( string $code, string $country_code = null ): ?int {
-		$countries = $this->get_mc_supported_countries_data();
-
-		if ( $country_code ) {
-			if ( isset( $countries[ $country_code ]['subdivisions'] ) && isset( $countries[ $country_code ]['subdivisions'][ $code ] ) ) {
-				return $countries[ $country_code ]['subdivisions'][ $code ]['id'];
-			}
-		} else {
-			foreach ( $countries as $country ) {
-				if ( isset( $country['subdivisions'] ) && isset( $country['subdivisions'][ $code ] ) ) {
-					return $country['subdivisions'][ $code ]['id'];
-				}
-			}
-		}
-
-		return null;
+	public function find_subdivision_id_by_code( string $code, string $country_code ): ?int {
+		return self::COUNTRY_SUBDIVISIONS[ $country_code ][ $code ]['id'] ?? null;
 	}
 }

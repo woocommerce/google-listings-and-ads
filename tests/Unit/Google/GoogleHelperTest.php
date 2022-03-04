@@ -64,37 +64,31 @@ class GoogleHelperTest extends UnitTest {
 		$this->assertFalse( $this->google_helper->is_country_supported('XX') );
 	}
 
-	public function test_find_location_code_by_id() {
-		// Country code.
-		$this->assertEquals( 'US', $this->google_helper->find_location_code_by_id( 2840 ) );
+	public function test_find_country_code_by_id() {
+		$this->assertEquals( 'US', $this->google_helper->find_country_code_by_id( 2840 ) );
+	}
 
-		// Subdivision location code.
-		$this->assertEquals( 'OR', $this->google_helper->find_location_code_by_id(21170) );
+	public function test_find_subdivision_code_by_id() {
+		$this->assertEquals( 'OR', $this->google_helper->find_subdivision_code_by_id(21170) );
 	}
 
 	public function test_find_location_id_by_country_code() {
-		$this->assertEquals( 2840, $this->google_helper->find_location_id_by_country_code( 'US' ) );
+		$this->assertEquals( 2840, $this->google_helper->find_country_id_by_code( 'US' ) );
 	}
 
 	public function test_find_location_id_by_subdivision_code() {
-		// With no country code provided.
-		$this->assertEquals( 21170, $this->google_helper->find_location_id_by_subdivision_code( 'OR' ) );
-		$this->assertEquals( 20035, $this->google_helper->find_location_id_by_subdivision_code( 'NSW' ) );
-
-		// With a country code provided.
-		$this->assertEquals( 21170, $this->google_helper->find_location_id_by_subdivision_code( 'OR', 'US' ) );
-		$this->assertEquals( 20035, $this->google_helper->find_location_id_by_subdivision_code( 'NSW', 'AU' ) );
+		$this->assertEquals( 21170, $this->google_helper->find_subdivision_id_by_code( 'OR', 'US' ) );
+		$this->assertEquals( 20035, $this->google_helper->find_subdivision_id_by_code( 'NSW', 'AU' ) );
 
 		// With an invalid country code provided.
-		$this->assertNull( $this->google_helper->find_location_id_by_subdivision_code( 'NSW', 'US' ) );
-		$this->assertNull( $this->google_helper->find_location_id_by_subdivision_code( 'NSW', 'XX' ) );
+		$this->assertNull( $this->google_helper->find_subdivision_id_by_code( 'NSW', 'US' ) );
+		$this->assertNull( $this->google_helper->find_subdivision_id_by_code( 'NSW', 'XX' ) );
 
 		// If there is no matching location code.
-		$this->assertNull( $this->google_helper->find_location_id_by_subdivision_code( 'XX' ) );
-		$this->assertNull( $this->google_helper->find_location_id_by_subdivision_code( 'XX', 'US' ) );
+		$this->assertNull( $this->google_helper->find_subdivision_id_by_code( 'XX', 'US' ) );
 
 		// If there are no subdivision codes for the country code.
-		$this->assertNull( $this->google_helper->find_location_id_by_subdivision_code( 'OR', 'LB' ) );
+		$this->assertNull( $this->google_helper->find_subdivision_id_by_code( 'OR', 'LB' ) );
 	}
 
 	/**
