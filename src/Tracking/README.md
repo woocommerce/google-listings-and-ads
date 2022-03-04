@@ -19,12 +19,13 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 
 All event names are prefixed by `wcadmin_gla_`.
 
-- `activated_from_source` - Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
-    - 	`utm_source`
-    - 	`utm_medium`
-    - 	`utm_campaign`
-    - 	`utm_term`
-    - 	`utm_content` 
+-   `activated_from_source` - Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
+
+    -       `utm_source`
+    -       `utm_medium`
+    -       `utm_campaign`
+    -       `utm_term`
+    -       `utm_content`
 
 -   `add_paid_campaign_clicked` - "Add paid campaign" button is clicked.
 
@@ -191,21 +192,32 @@ All event names are prefixed by `wcadmin_gla_`.
 
     -   `context`: indicate which modal is closed
     -   `action`: indicate the modal is closed by what action (e.g. `maybe-later`|`dismiss` | `create-another-campaign`)
-        -   `maybe-later` is used when the "Maybe later" button on the modal is clicked
+        -   `maybe-later` is used when the "Maybe later" cancel button on the modal is clicked
         -   `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
         -   `create-another-campaign` is used when the button "Create another campaign" is clicked
         -   `create-paid-campaign` is used when the button "Create paid campaign" is clicked
+        -   `confirm-request-review` is used when the button "Request Review" is clicked in the Request Review modal
 
 -   `modal_content_link_click` - Clicking on a text link within the modal content
 
     -   `context`: indicate which link is clicked
     -   `href`: link's URL
 
--   `modal_open` - A modal is opend
+-   `modal_open` - A modal is opened
 
     -   `context`: indicate which modal is opened
 
 -   `pre_launch_checklist_complete` - Triggered when all checklist items are complete / checked.
+
+-   `request_review` - Triggered when the user confirms the Request Review modal and run the Request Review
+
+-   `request_review_issue_list_toggle_click` - Triggered when the user clicks on the Show more / Show less button in the Request Review modal.
+
+    -   `action`: (`expand`|`collapse`)
+
+-   `request_review_issues_solved_checkbox_click` - Triggered when the user clicks on the "I solved all the issues" checkbox inside the Request Review modal.
+
+    -   `action`: (`check`|`uncheck`)
 
 -   `setup_ads` - Triggered on events during ads setup and editing
 
@@ -227,7 +239,7 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `id`: (faq identifier)
     -   `action`: (`expand`|`collapse`)
 
--   `gla_site_claim` event
+-   `site_claim` event
 
     -   `action` property is `overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required
     -   `action` property is `success`: URL has been successfully set or overwritten.

@@ -24,3 +24,5 @@ export const LOCAL_STORAGE_KEYS = {
 // MC Issues Related
 export const ISSUE_TYPE_PRODUCT = 'product';
 export const ISSUE_TYPE_ACCOUNT = 'account';
+export const REQUEST_REVIEW = 'request-review';
+export const ISSUE_TABLE_PER_PAGE = 5;

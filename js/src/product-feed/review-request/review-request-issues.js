@@ -4,6 +4,7 @@
 import { __experimentalText as Text, Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { recordEvent } from '@woocommerce/tracks';
 
 const COLLAPSED_ISSUES_SIZE = 5;
 
@@ -11,6 +12,9 @@ const ReviewRequestIssues = ( { issues = [] } ) => {
 	const [ expanded, setExpanded ] = useState( false );
 
 	const toggleExpanded = () => {
+		recordEvent( 'gla_request_review_issue_list_toggle_click', {
+			action: expanded ? 'collapse' : 'expand',
+		} );
 		setExpanded( ! expanded );
 	};
 

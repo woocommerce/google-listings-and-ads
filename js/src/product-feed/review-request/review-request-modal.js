@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { CheckboxControl, Notice } from '@wordpress/components';
 import { createInterpolateElement, useState } from '@wordpress/element';
+import { recordEvent } from '@woocommerce/tracks';
 
 /**
  * Internal dependencies
@@ -25,12 +26,25 @@ const ReviewRequestModal = ( {
 		return null;
 	}
 
+	const handleCheckboxChange = ( checked ) => {
+		setCheckBoxChecked( checked );
+		recordEvent( 'gla_request_review_issues_solved_checkbox_click', {
+			action: checked ? 'check' : 'uncheck',
+		} );
+	};
+
 	return (
 		<AppModal
 			className="gla-review-request-modal"
 			title={ __( 'Request account review', 'google-listings-and-ads' ) }
 			buttons={ [
-				<AppButton key="secondary" isSecondary onClick={ onClose }>
+				<AppButton
+					key="secondary"
+					isSecondary
+					onClick={ () => {
+						onClose( 'maybe-later' );
+					} }
+				>
 					{ __( 'Cancel', 'google-listings-and-ads' ) }
 				</AppButton>,
 				<AppButton
@@ -45,7 +59,9 @@ const ReviewRequestModal = ( {
 					) }
 				</AppButton>,
 			] }
-			onRequestClose={ onClose }
+			onRequestClose={ () => {
+				onClose( 'dismiss' );
+			} }
 		>
 			<Notice
 				className="gla-review-request-modal__notice"
@@ -78,7 +94,7 @@ const ReviewRequestModal = ( {
 					'google-listings-and-ads'
 				) }
 				checked={ checkBoxChecked }
-				onChange={ setCheckBoxChecked }
+				onChange={ handleCheckboxChange }
 			/>
 		</AppModal>
 	);

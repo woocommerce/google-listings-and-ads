@@ -57,7 +57,7 @@ class AccountReviewController extends BaseOptionsController {
 			// TODO: Temporary. Implement this after Google finishes new API implementation.
 			// Statuses: APPROVED, UNDER_REVIEW, DISAPPROVED, WARNING, BLOCKED
 			$response = [
-				'status' => 'BLOCKED',
+				'status' => 'DISAPPROVED',
 				'issues' => [
 					'#1 Issue one',
 					'#2 Issue two',

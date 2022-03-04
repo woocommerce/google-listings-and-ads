@@ -8,7 +8,7 @@ import { Pagination, TablePlaceholder } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { ISSUE_TABLE_PER_PAGE } from '../constants';
+import { ISSUE_TABLE_PER_PAGE } from '.~/constants';
 import { recordTablePageEvent } from '.~/utils/recordEvent';
 import IssuesTableData from '.~/product-feed/issues-table-card/issues-table-data';
 import useMCIssuesTypeFilter from '.~/hooks/useMCIssuesTypeFilter';
