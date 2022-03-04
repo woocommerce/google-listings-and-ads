@@ -123,33 +123,6 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
 	}
 
-	public function test_get_campaigns_with_campaign_id_of_criterion_not_found_in_campaigns() {
-		$campaign_criterion_data = [
-			[
-				'campaign_id'         => self::TEST_CAMPAIGN_ID,
-				'geo_target_constant' => 'geoTargetConstants/2158',
-			],
-			[
-				'campaign_id'         => 5678901234,
-				'geo_target_constant' => 'geoTargetConstants/2344',
-			],
-		];
-
-		$campaigns_data = [
-			[
-				'id'      => self::TEST_CAMPAIGN_ID,
-				'name'    => 'Campaign One',
-				'status'  => 'paused',
-				'amount'  => 10,
-				'country' => 'US',
-				'targeted_locations' => ['geoTargetConstants/2158'],
-			],
-		];
-
-		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
-		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
-	}
-
 	public function test_get_campaigns_exception() {
 		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
 

@@ -87,17 +87,19 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaigns(): array {
 		try {
-			$query_condition            = [ 'campaign.status', 'REMOVED', '!=' ];
-			$campaign_results           = $this->get_ads_query_results( new AdsCampaignQuery(), $query_condition );
-			$campaign_criterion_results = $this->get_ads_query_results( new AdsCampaignCriterionQuery(), $query_condition );
+			$query_conditions = [
+				[ 'campaign.status', 'REMOVED', '!=' ],
+			];
+			$campaign_results = $this->get_ads_query_results( new AdsCampaignQuery(), $query_conditions );
 
 			$converted_campaigns = [];
 
 			foreach ( $campaign_results->iterateAllElements() as $row ) {
-				$converted_campaigns[] = $this->convert_campaign( $row );
+				$campaign                               = $this->convert_campaign( $row );
+				$converted_campaigns[ $campaign['id'] ] = $campaign;
 			}
 
-			return $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns, $campaign_criterion_results );
+			return $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -122,19 +124,22 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$query_condition            = [ 'campaign.id', $id, '=' ];
-			$campaign_results           = $this->get_ads_query_results( new AdsCampaignQuery(), $query_condition );
-			$campaign_criterion_results = $this->get_ads_query_results( new AdsCampaignCriterionQuery(), $query_condition );
+			$query_conditions = [
+				[ 'campaign.id', $id, '=' ],
+			];
+			$campaign_results = $this->get_ads_query_results( new AdsCampaignQuery(), $query_conditions );
 
 			$converted_campaigns = [];
 
+			// Get only the first element from campaign results
 			foreach ( $campaign_results->iterateAllElements() as $row ) {
-				$converted_campaigns[] = $this->convert_campaign( $row );
+				$campaign                               = $this->convert_campaign( $row );
+				$converted_campaigns[ $campaign['id'] ] = $campaign;
 				break;
 			}
 
 			if ( ! empty( $converted_campaigns ) ) {
-				$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns, $campaign_criterion_results );
+				$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
 				return reset( $combined_results );
 			}
 
@@ -377,9 +382,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected function convert_campaign( GoogleAdsRow $row ): array {
 		$campaign = $row->getCampaign();
 		$data     = [
-			'id'     => $campaign->getId(),
-			'name'   => $campaign->getName(),
-			'status' => CampaignStatus::label( $campaign->getStatus() ),
+			'id'                 => $campaign->getId(),
+			'name'               => $campaign->getName(),
+			'status'             => CampaignStatus::label( $campaign->getStatus() ),
+			'targeted_locations' => [],
 		];
 
 		$budget = $row->getCampaignBudget();
@@ -402,13 +408,19 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Combine converted campaigns data with campaign criterion results data
 	 *
-	 * @param array             $campaigns                  Campaigns data returned from a query request and converted by convert_campaign function.
-	 * @param PagedListResponse $campaign_criterion_results Campaigns criterion results returned from a query request.
+	 * @param array $campaigns Campaigns data returned from a query request and converted by convert_campaign function.
 	 *
 	 * @return array
 	 */
-	protected function combine_campaigns_and_campaign_criterion_results( array $campaigns, PagedListResponse $campaign_criterion_results ): array {
-		$campaign_ids = array_column( $campaigns, 'id' );
+	protected function combine_campaigns_and_campaign_criterion_results( array $campaigns ): array {
+		$query_conditions = [
+			[ 'campaign.id', array_keys( $campaigns ), 'IN' ],
+			// negative: Whether to target (false) or exclude (true) the criterion.
+			[ 'campaign_criterion.negative', 'false', '=' ],
+			[ 'campaign_criterion.status', 'REMOVED', '!=' ],
+		];
+
+		$campaign_criterion_results = $this->get_ads_query_results( new AdsCampaignCriterionQuery(), $query_conditions );
 
 		/** @var GoogleAdsRow $row */
 		foreach ( $campaign_criterion_results->iterateAllElements() as $row ) {
@@ -421,22 +433,16 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// after https://github.com/woocommerce/google-listings-and-ads/issues/1229 is done.
 			$geo_target_constant = $location ? $location->getGeoTargetConstant() : null;
 
-			$campaign_key = array_search( $campaign_id, $campaign_ids, true );
-
-			if ( $campaign_key === false ) {
-				continue;
-			}
-
-			if ( ! array_key_exists( 'targeted_locations', $campaigns[ $campaign_key ] ) ) {
-				$campaigns[ $campaign_key ]['targeted_locations'] = [];
+			if ( ! array_key_exists( 'targeted_locations', $campaigns[ $campaign_id ] ) ) {
+				$campaigns[ $campaign_id ]['targeted_locations'] = [];
 			}
 
 			if ( ! empty( $geo_target_constant ) ) {
-				$campaigns[ $campaign_key ]['targeted_locations'][] = $geo_target_constant;
+				$campaigns[ $campaign_id ]['targeted_locations'][] = $geo_target_constant;
 			}
 		}
 
-		return $campaigns;
+		return array_values( $campaigns );
 	}
 
 	/**
@@ -484,20 +490,22 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * Perform the query with conditions for AdsQuery.
 	 *
-	 * @param AdsQuery $ads_query Instance of AdsQuery class.
-	 * @param array    $condition Array of where conditions for querying values.
+	 * @param AdsQuery $ads_query  Instance of AdsQuery class.
+	 * @param array    $conditions Nested array for multiple where conditions for querying values.
 	 *
 	 * @return PagedListResponse
-	 * @throws InvalidQuery When an empty condition array is provided.
+	 * @throws InvalidQuery When any condition array in conditions array is empty.
 	 */
-	protected function get_ads_query_results( AdsQuery $ads_query, array $condition = [] ): PagedListResponse {
-		if ( empty( $condition ) ) {
-			throw InvalidQuery::empty_where();
+	protected function get_ads_query_results( AdsQuery $ads_query, array $conditions = [] ): PagedListResponse {
+		$ads_query = $ads_query->set_client( $this->client, $this->options->get_ads_id() );
+
+		foreach ( $conditions as $condition ) {
+			if ( ! is_array( $condition ) || empty( $condition ) ) {
+				throw InvalidQuery::empty_where();
+			}
+			$ads_query = $ads_query->where( ...$condition );
 		}
 
-		return $ads_query
-			->set_client( $this->client, $this->options->get_ads_id() )
-			->where( ...$condition )
-			->get_results();
+		return $ads_query->get_results();
 	}
 }
