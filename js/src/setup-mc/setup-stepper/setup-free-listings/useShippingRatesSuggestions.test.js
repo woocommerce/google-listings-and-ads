@@ -55,14 +55,14 @@ describe( 'useShippingRatesSuggestions', () => {
 					method: 'flat_rate',
 					currency: 'US',
 					rate: 12,
-					options: [],
+					options: {},
 				},
 				{
 					country: 'US',
 					method: 'flat_rate',
 					currency: 'US',
 					rate: 10,
-					options: [],
+					options: {},
 				},
 			],
 		} );
@@ -76,14 +76,14 @@ describe( 'useShippingRatesSuggestions', () => {
 				method: 'flat_rate',
 				currency: 'US',
 				rate: 12,
-				options: [],
+				options: {},
 			},
 			{
 				country: 'US',
 				method: 'flat_rate',
 				currency: 'US',
 				rate: 10,
-				options: [],
+				options: {},
 			},
 		] );
 	} );
