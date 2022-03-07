@@ -299,7 +299,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			],
 			'targeted_locations' => [
 				'type'        => 'array',
-				'description' => __( 'Ads campaign targeted locations retrieved from campaign criterion.', 'google-listings-and-ads' ),
+				'description' => __( 'The locations that an Ads campaign is targeting.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'items'       => [
 					'type' => 'string',
