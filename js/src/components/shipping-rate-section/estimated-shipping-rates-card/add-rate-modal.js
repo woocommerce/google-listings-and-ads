@@ -46,8 +46,8 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 	};
 
 	const handleSubmitCallback = ( values ) => {
-		onSubmit( values );
 		onRequestClose();
+		onSubmit( values );
 	};
 
 	return (
@@ -113,6 +113,6 @@ const AddRateModal = ( { countries, onRequestClose, onSubmit } ) => {
 
 export default AddRateModal;
 /**
- * @typedef {import("../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

@@ -12,13 +12,9 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import ShippingRateSetup from './shipping-rate/shipping-rate-setup';
-import Subsection from '.~/wcdl/subsection';
+import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 
-const ShippingRateSection = ( {
-	formProps,
-	countries: selectedCountryCodes,
-} ) => {
+const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 	const { getInputProps, values } = formProps;
 	const inputProps = getInputProps( 'shipping_rate' );
 
@@ -110,20 +106,15 @@ const ShippingRateSection = ( {
 					</Section.Card.Body>
 				</Section.Card>
 				{ values.shipping_rate === 'flat' && (
-					<Section.Card>
-						<Section.Card.Body>
-							<Subsection.Title>
-								{ __(
-									'Estimated shipping rates',
-									'google-listings-and-ads'
-								) }
-							</Subsection.Title>
-							<ShippingRateSetup
-								selectedCountryCodes={ selectedCountryCodes }
-								formProps={ formProps }
-							/>
-						</Section.Card.Body>
-					</Section.Card>
+					<FlatShippingRatesInputCards
+						audienceCountries={ audienceCountries }
+						value={
+							getInputProps( 'shipping_country_rates' ).value
+						}
+						onChange={
+							getInputProps( 'shipping_country_rates' ).onChange
+						}
+					/>
 				) }
 			</VerticalGapLayout>
 		</Section>

@@ -3,15 +3,17 @@
  */
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { Pill } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
+import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import EditRateButton from './edit-rate-button';
-import AppSpinner from '.~/components/app-spinner';
 import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
-import './index.scss';
+import EditRateModal from './edit-rate-modal';
+import './shipping-rate-input-control.scss';
 
 /**
  * Input control to edit a shipping rate.
@@ -25,7 +27,7 @@ import './index.scss';
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
-const CountriesPriceInput = ( {
+const ShippingRateInputControl = ( {
 	value,
 	audienceCountries,
 	totalCountyCount,
@@ -33,10 +35,6 @@ const CountriesPriceInput = ( {
 	onDelete,
 } ) => {
 	const { countries, currency, price } = value;
-
-	if ( ! audienceCountries ) {
-		return <AppSpinner />;
-	}
 
 	const handleBlur = ( event, numberValue ) => {
 		if ( price === numberValue ) {
@@ -51,7 +49,7 @@ const CountriesPriceInput = ( {
 	};
 
 	return (
-		<div className="gla-countries-price-input">
+		<div className="gla-shipping-rate-input-control">
 			<AppInputPriceControl
 				label={
 					<div className="label">
@@ -71,11 +69,23 @@ const CountriesPriceInput = ( {
 								}
 							) }
 						</div>
-						<EditRateButton
-							audienceCountries={ audienceCountries }
-							onChange={ onChange }
-							onDelete={ onDelete }
-							rate={ value }
+						<AppButtonModalTrigger
+							button={
+								<AppButton
+									className="gla-shipping-rate-input-control__edit-button"
+									isTertiary
+								>
+									{ __( 'Edit', 'google-listings-and-ads' ) }
+								</AppButton>
+							}
+							modal={
+								<EditRateModal
+									audienceCountries={ audienceCountries }
+									rate={ value }
+									onSubmit={ onChange }
+									onDelete={ onDelete }
+								/>
+							}
 						/>
 					</div>
 				}
@@ -83,13 +93,23 @@ const CountriesPriceInput = ( {
 				value={ price }
 				onBlur={ handleBlur }
 			/>
+			{ price === 0 && (
+				<div className="gla-input-pill-div">
+					<Pill>
+						{ __(
+							'Free shipping for all orders',
+							'google-listings-and-ads'
+						) }
+					</Pill>
+				</div>
+			) }
 		</div>
 	);
 };
 
-export default CountriesPriceInput;
+export default ShippingRateInputControl;
 
 /**
- * @typedef {import("../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

@@ -36,6 +36,7 @@ const EditRateModal = ( {
 	);
 
 	const handleDeleteClick = () => {
+		onRequestClose();
 		onDelete( rate.countries );
 	};
 
@@ -60,6 +61,8 @@ const EditRateModal = ( {
 	};
 
 	const handleSubmitCallback = ( newAggregatedRate ) => {
+		onRequestClose();
+
 		const remainingCountries = new Set( newAggregatedRate.countries );
 		const removedCountries = rate.countries.filter(
 			( el ) => ! remainingCountries.has( el )
@@ -145,6 +148,6 @@ const EditRateModal = ( {
 export default EditRateModal;
 
 /**
- * @typedef {import("../../../countries-form.js").AggregatedShippingRate} AggregatedShippingRate
+ * @typedef {import("./estimated-shipping-rates-card.js").AggregatedShippingRate} AggregatedShippingRate
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */

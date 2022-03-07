@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import groupShippingRatesByPriceCurrency from '.~/utils/groupShippingRatesByPriceCurrency';
+import groupShippingRatesByMethodPriceCurrency from '.~/utils/groupShippingRatesByMethodPriceCurrency';
 import { useAppDispatch } from '.~/data';
 
 /**
@@ -19,7 +19,7 @@ import { useAppDispatch } from '.~/data';
  * @return {Array<import('.~/data/actions').AggregatedShippingRate>} Aggregated shipping rates.
  */
 const convertSuggestionsToAggregatedShippingRates = ( suggestions ) => {
-	const countriesPriceArray = groupShippingRatesByPriceCurrency(
+	const countriesPriceArray = groupShippingRatesByMethodPriceCurrency(
 		suggestions
 	);
 	const values = countriesPriceArray.map( ( el ) => ( {
