@@ -98,14 +98,14 @@ const MinimumOrderCard = ( props ) => {
 		}
 
 		/**
-		 * When there is more than one group,
-		 * we render the groups with defined threshold first.
-		 * Then, if there is a group with undefined threshold,
-		 * we render an "Add another minimum order" button last.
+		 * The group with undefined threshold. This is used
+		 * to render the "Add another minimum order" button
+		 * after all the groups with defined threshold.
 		 */
 		const emptyThresholdGroup = groups.find(
 			( group ) => group.threshold === undefined
 		);
+
 		const thresholdGroups = groups.filter(
 			( group ) => group !== emptyThresholdGroup
 		);
