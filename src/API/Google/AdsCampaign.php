@@ -429,8 +429,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// after https://github.com/woocommerce/google-listings-and-ads/issues/1229 is done.
 			$geo_target_constant = $location ? $location->getGeoTargetConstant() : null;
 
-			if ( ! array_key_exists( 'targeted_locations', $campaigns[ $campaign_id ] ) ) {
-				$campaigns[ $campaign_id ]['targeted_locations'] = [];
+			if ( ! isset( $campaigns[ $campaign_id ] ) ) {
+				continue;
 			}
 
 			if ( ! empty( $geo_target_constant ) ) {
