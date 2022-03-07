@@ -96,7 +96,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$converted_campaigns[ $campaign['id'] ] = $campaign;
 			}
 
-			return $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+			$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+			return array_values( $combined_results );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -135,8 +136,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			if ( ! empty( $converted_campaigns ) ) {
-				$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
-				return reset( $combined_results );
+				$combined_results        = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+				$combined_results_values = array_values( $combined_results );
+				return reset( $combined_results_values );
 			}
 
 			return [];
@@ -436,7 +438,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 		}
 
-		return array_values( $campaigns );
+		return $campaigns;
 	}
 
 	/**
