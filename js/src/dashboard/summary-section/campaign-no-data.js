@@ -36,10 +36,11 @@ const CONTENT = {
 /**
  * Show the notice and link to Google Ads when no data is available
  *
- * @param {string} campaignType The Campaign type (free|paid)
+ * @param {Object} props React props
+ * @param {string} props.campaignType The Campaign type (free|paid)
  * @return {JSX.Element} The Component to be rendered
  */
-const CampaignNoData = ( campaignType = REPORT_SOURCE_FREE ) => {
+const CampaignNoData = ( { campaignType = REPORT_SOURCE_FREE } ) => {
 	return (
 		<div className="gla-summary-card__body">
 			<p>{ CONTENT[ campaignType ].body }</p>
