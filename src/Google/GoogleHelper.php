@@ -1124,7 +1124,7 @@ class GoogleHelper implements Service {
 	protected $wc;
 
 	/**
-	 * @var array Map of location ids to ISO 3166-1 codes.
+	 * @var array Map of location ids to country/subdivision codes.
 	 */
 	private $location_id_code_map;
 
@@ -1272,9 +1272,15 @@ class GoogleHelper implements Service {
 	}
 
 	/**
-	 * Maps the ID of the Merchant Center supported locations to their ISO 3166-1/ISO 3166-2 codes.
+	 * Returns an array mapping the ID of the Merchant Center supported locations to their respective codes.
+	 *
+	 * @return string[] Array of country/subdivision codes with location IDs as keys. e.g. [ 2840 => 'US', 20035 => 'NSW' ]
 	 */
-	protected function map_location_id_to_code(): void {
+	protected function get_location_id_to_code_map(): array {
+		if ( isset( $this->location_id_code_map ) ) {
+			return $this->location_id_code_map;
+		}
+
 		$this->location_id_code_map = [];
 
 		$countries = $this->get_mc_supported_countries_data();
@@ -1287,6 +1293,8 @@ class GoogleHelper implements Service {
 				$this->location_id_code_map[ $item['id'] ] = $item['code'];
 			}
 		}
+
+		return $this->location_id_code_map;
 	}
 
 	/**
@@ -1297,26 +1305,18 @@ class GoogleHelper implements Service {
 	 * @return string|null ISO 3166-1 representation of the country code.
 	 */
 	public function find_country_code_by_id( int $id ): ?string {
-		if ( ! isset( $this->location_id_code_map ) ) {
-			$this->map_location_id_to_code();
-		}
-
-		return $this->location_id_code_map[ $id ] ?? null;
+		return $this->get_location_id_to_code_map()[ $id ] ?? null;
 	}
 
 	/**
-	 * Find the ISO 3166-2 code of the Merchant Center supported subdivision by its location ID.
+	 * Find the code of the Merchant Center supported subdivision by its location ID.
 	 *
 	 * @param int $id
 	 *
-	 * @return string|null ISO 3166-2 representation of the country code.
+	 * @return string|null
 	 */
 	public function find_subdivision_code_by_id( int $id ): ?string {
-		if ( ! isset( $this->location_id_code_map ) ) {
-			$this->map_location_id_to_code();
-		}
-
-		return $this->location_id_code_map[ $id ] ?? null;
+		return $this->get_location_id_to_code_map()[ $id ] ?? null;
 	}
 
 	/**
