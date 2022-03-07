@@ -6,7 +6,7 @@ import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
  * Internal dependencies
  */
 import SummaryCard from './summary-card';
-import CampaignNoData from '.~/dashboard/summary-section/campaign-no-data';
+import PerformanceCardNoData from '.~/dashboard/summary-section/performance-card-no-data';
 
 /**
  * @typedef {import('@woocommerce/components').SummaryNumber} SummaryNumber
@@ -36,7 +36,7 @@ const PerformanceCard = ( {
 	if ( ! loaded ) {
 		content = <SummaryListPlaceholder numberOfItems={ numberOfItems } />;
 	} else if ( ! data ) {
-		content = <CampaignNoData campaignType={ campaignType } />;
+		content = <PerformanceCardNoData campaignType={ campaignType } />;
 	} else {
 		content = (
 			<SummaryList>
