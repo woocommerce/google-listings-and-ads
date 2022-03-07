@@ -72,6 +72,7 @@ const ComponentTest = () => {
 				value={ selected }
 				onChange={ setSelected }
 				label="Select Country"
+				selectAllLabel="All Countries"
 				placeholder="Select"
 			/>
 			<hr />

@@ -149,6 +149,10 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		padding-left: calc(#{$gap} * 2);
 	}
 
+	.woocommerce-tree-select-control__main {
+		padding-left: $gap-small;
+	}
+
 	.woocommerce-tree-select-control__node {
 		padding-left: $gap;
 	}

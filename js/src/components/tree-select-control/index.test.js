@@ -76,4 +76,50 @@ describe( 'TreeSelectControl Component', () => {
 
 		expect( queryByLabelText( 'Select' ) ).toBeTruthy();
 	} );
+
+	it( 'Renders the All Options', () => {
+		const onChange = jest.fn().mockName( 'onChange' );
+		const { queryByLabelText, queryByRole, rerender } = render(
+			<TreeSelectControl
+				options={ options }
+				label="Select"
+				onChange={ onChange }
+			/>
+		);
+
+		const control = queryByRole( 'combobox' );
+		fireEvent.click( control );
+		const allCheckbox = queryByLabelText( 'All' );
+
+		expect( allCheckbox ).toBeTruthy();
+
+		fireEvent.click( allCheckbox );
+		expect( onChange ).toHaveBeenCalledWith( [ 'ES', 'FR', 'IT', 'AS' ] );
+
+		rerender(
+			<TreeSelectControl
+				value={ [ 'ES', 'FR', 'IT', 'AS' ] }
+				options={ options }
+				label="Select"
+				onChange={ onChange }
+			/>
+		);
+		fireEvent.click( allCheckbox );
+		expect( onChange ).toHaveBeenCalledWith( [] );
+	} );
+
+	it( 'Renders the All Options custom Label', () => {
+		const { queryByLabelText, queryByRole } = render(
+			<TreeSelectControl
+				options={ options }
+				selectAllLabel="All countries"
+			/>
+		);
+
+		const control = queryByRole( 'combobox' );
+		fireEvent.click( control );
+		const allCheckbox = queryByLabelText( 'All countries' );
+
+		expect( allCheckbox ).toBeTruthy();
+	} );
 } );
