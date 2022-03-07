@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 import { Pill } from '@woocommerce/components';
 
 /**
@@ -11,9 +10,9 @@ import { Pill } from '@woocommerce/components';
 import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import AppButton from '.~/components/app-button';
 import AppInputPriceControl from '.~/components/app-input-price-control';
-import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 import EditRateModal from './edit-rate-modal';
 import './shipping-rate-input-control.scss';
+import ShippingRateInputControlLabelText from './shipping-rate-input-control-label-text';
 
 /**
  * Input control to edit a shipping rate.
@@ -23,14 +22,12 @@ import './shipping-rate-input-control.scss';
  * @param {Object} props
  * @param {AggregatedShippingRate} props.value Aggregate, rat: Array object to be used as the initial value.
  * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
- * @param {number} props.totalCountyCount Number of all anticipated countries.
  * @param {(newRate: AggregatedShippingRate, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when rate changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
 const ShippingRateInputControl = ( {
 	value,
 	audienceCountries,
-	totalCountyCount,
 	onChange,
 	onDelete,
 } ) => {
@@ -53,22 +50,9 @@ const ShippingRateInputControl = ( {
 			<AppInputPriceControl
 				label={
 					<div className="label">
-						<div>
-							{ createInterpolateElement(
-								__(
-									`Shipping rate for <countries />`,
-									'google-listings-and-ads'
-								),
-								{
-									countries: (
-										<CountryNames
-											countries={ countries }
-											total={ totalCountyCount }
-										/>
-									),
-								}
-							) }
-						</div>
+						<ShippingRateInputControlLabelText
+							countries={ countries }
+						/>
 						<AppButtonModalTrigger
 							button={
 								<AppButton

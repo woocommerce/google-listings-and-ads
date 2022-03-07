@@ -45,9 +45,6 @@ export default function EstimatedShippingRatesCard( {
 		( el ) => ! actualCountries.has( el )
 	);
 	const remainingCount = remainingCountries.length;
-	// We may have shipping rates defined for more than the audience countries.
-	// Therefore, the number of countries we anticipate is what we acutally have + missing audience ones.
-	const totalCountyCount = actualCountryCount + remainingCount;
 
 	// Group countries with the same rate.
 	const countriesPriceArray = groupShippingRatesByMethodPriceCurrency(
@@ -126,7 +123,6 @@ export default function EstimatedShippingRatesCard( {
 								<ShippingRateInputControl
 									value={ el }
 									audienceCountries={ audienceCountries }
-									totalCountyCount={ totalCountyCount }
 									onChange={ handleChange }
 									onDelete={ handleDelete }
 								/>
