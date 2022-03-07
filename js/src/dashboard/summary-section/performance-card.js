@@ -21,7 +21,7 @@ import CampaignNoData from '.~/dashboard/summary-section/campaign-no-data';
  * @param {Object | null} props.data Data to be forwarded to `children` once available.
  * @param {(availableData: Object) => Array<SummaryNumber>} props.children Data to be forwarded to `children` once available.
  * @param {number} [props.numberOfItems=2] Number of expected SummaryNumbers.
- * @param {string} props.type Type of Campaign (paid|free)
+ * @param {string} props.campaignType The Campaign type (free|paid) used to define text an links when no data
  * @return {SummaryCard} SummaryCard with Metrics data, preloader or error message.
  */
 const PerformanceCard = ( {
@@ -30,13 +30,13 @@ const PerformanceCard = ( {
 	data,
 	children,
 	numberOfItems = 2,
-	type,
+	campaignType,
 } ) => {
 	let content;
 	if ( ! loaded ) {
 		content = <SummaryListPlaceholder numberOfItems={ numberOfItems } />;
 	} else if ( ! data ) {
-		content = <CampaignNoData type={ type } />;
+		content = <CampaignNoData campaignType={ campaignType } />;
 	} else {
 		content = (
 			<SummaryList>

@@ -10,7 +10,7 @@ import AppButton from '.~/components/app-button';
 import { REPORT_SOURCE_FREE, REPORT_SOURCE_PAID } from '.~/constants';
 
 const CONTENT = {
-	REPORT_SOURCE_FREE: {
+	[ REPORT_SOURCE_FREE ]: {
 		body: __(
 			"We're having trouble loading this data. Try again later, or track your performance in Google Merchant Center.",
 			'google-listings-and-ads'
@@ -22,7 +22,7 @@ const CONTENT = {
 			'google-listings-and-ads'
 		),
 	},
-	REPORT_SOURCE_PAID: {
+	[ REPORT_SOURCE_PAID ]: {
 		body: __(
 			"We're having trouble loading this data. Try again later, or track your performance in Google Ads.",
 			'google-listings-and-ads'
@@ -32,28 +32,29 @@ const CONTENT = {
 		buttonLabel: __( 'Open Google Ads', 'google-listings-and-ads' ),
 	},
 };
+
 /**
  * Show the notice and link to Google Ads when no data is available
  *
- * @param {string} type The Account type (free|paid)
+ * @param {string} campaignType The Campaign type (free|paid)
  * @return {JSX.Element} The Component to be rendered
  */
-const CampaignNoData = ( type ) => {
+const CampaignNoData = ( campaignType = REPORT_SOURCE_FREE ) => {
 	return (
 		<div className="gla-summary-card__body">
-			<p>{ CONTENT[ type ].body }</p>
+			<p>{ CONTENT[ campaignType ].body }</p>
 			<AppButton
-				eventName={ CONTENT[ type ].eventName }
+				eventName={ CONTENT[ campaignType ].eventName }
 				eventProps={ {
 					context: 'dashboard',
-					href: CONTENT[ type ].link,
+					href: CONTENT[ campaignType ].link,
 				} }
-				href={ CONTENT[ type ].link }
+				href={ CONTENT[ campaignType ].link }
 				target="_blank"
 				isSmall
 				isSecondary
 			>
-				{ CONTENT[ type ].buttonLabel }
+				{ CONTENT[ campaignType ].buttonLabel }
 			</AppButton>
 		</div>
 	);
