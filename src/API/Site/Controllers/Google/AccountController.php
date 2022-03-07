@@ -9,7 +9,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Exception;
 use WP_REST_Request as Request;
-use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -110,7 +109,7 @@ class AccountController extends BaseController {
 					),
 				];
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -171,7 +170,7 @@ class AccountController extends BaseController {
 					'scope'  => array_key_exists( 'scope', $status ) ? $status['scope'] : [],
 				];
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -190,7 +189,7 @@ class AccountController extends BaseController {
 
 				return $status;
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}

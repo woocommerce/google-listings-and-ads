@@ -140,7 +140,7 @@ class Connection implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_reconnect_status(): array {
 		$status = $this->get_status();
-		$email  = $status['email'] ?: '';
+		$email  = $status['email'] ?? '';
 
 		if ( ! isset( $status['status'] ) || 'connected' !== $status['status'] ) {
 			return $status;

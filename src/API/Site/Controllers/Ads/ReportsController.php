@@ -3,14 +3,12 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseReportsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Exception;
 use WP_REST_Request as Request;
-use WP_REST_Response as Response;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -64,10 +62,8 @@ class ReportsController extends BaseReportsController {
 				$ads  = $this->container->get( AdsReport::class );
 				$data = $ads->get_report_data( 'campaigns', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
-			} catch ( ExceptionWithResponseData $e ) {
-				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
@@ -84,10 +80,8 @@ class ReportsController extends BaseReportsController {
 				$ads  = $this->container->get( AdsReport::class );
 				$data = $ads->get_report_data( 'products', $this->prepare_query_arguments( $request ) );
 				return $this->prepare_item_for_response( $data, $request );
-			} catch ( ExceptionWithResponseData $e ) {
-				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
-				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
+				return $this->response_from_exception( $e );
 			}
 		};
 	}
