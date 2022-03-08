@@ -130,6 +130,52 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	}
 
 	/**
+	 * Get a route name which is safe to use as a filter (removes namespace prefix).
+	 *
+	 * @param array $schema Controller schema
+	 * @param array $data Response data
+	 *
+	 * @return array
+	 */
+	protected function match_data_with_schema( $schema, $data ): array {
+		$prepared = [];
+
+		foreach ( $schema as $key => $property ) {
+
+			if ( ! isset( $data [ $key ] ) ) {
+				$prepared[ $key ] = $property['default'] ?? null;
+			} elseif ( $property['type'] === 'array' ) {
+
+				$items = [];
+				foreach ( $data[ $key ] as $value_item ) {
+					$items[ $key ][] = $this->match_data_with_schema( [ $key => $property['items'] ], [ $key => $value_item ?? null ] )[ $key ];
+				}
+
+				$prepared = array_merge( $prepared, $items );
+			} elseif ( $property['type'] === 'object' ) {
+				$properties = [];
+				foreach ( $property['properties'] as $key_property => $value_property ) {
+					$properties = array_merge( $properties, $this->match_data_with_schema( [ $key_property => $value_property ], $data [ $key ] ?? null ) );
+				}
+				$prepared[ $key ] = $properties;
+			} else {
+				$prepared[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
+
+				// Cast empty arrays to empty objects if property is supposed to be an object.
+				if ( is_array( $prepared[ $key ] ) && empty( $prepared[ $key ] ) && isset( $property['type'] ) && 'object' === $property['type'] ) {
+					$prepared[ $key ] = (object) [];
+				}
+			}
+		}
+
+		return $prepared;
+
+	}
+
+
+
+
+	/**
 	 * Prepares the item for the REST response.
 	 *
 	 * @param mixed   $item    WordPress representation of the item.
@@ -141,9 +187,8 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 		$prepared = [];
 		$context  = $request['context'] ?? 'view';
 		$schema   = $this->get_schema_properties();
-		foreach ( $schema as $key => $property ) {
-			$prepared[ $key ] = $item[ $key ] ?? $property['default'] ?? null;
-		}
+
+		$prepared = $this->match_data_with_schema( $schema, $item );
 
 		$prepared = $this->add_additional_fields_to_object( $prepared, $request );
 		$prepared = $this->filter_response_by_context( $prepared, $context );
