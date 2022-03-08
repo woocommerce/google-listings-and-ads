@@ -33,7 +33,7 @@ import './index.scss';
  * @param {Object} props Component props.
  * @param {string} props.id Component id
  * @param {string} props.label Label for the component
- * @param {string} props.selectAllLabel Label for the Select All option
+ * @param {string | false} props.selectAllLabel Label for the Select All root element. False for disable.
  * @param {string} props.placeholder Placeholder for the search control input
  * @param {string} props.className The class name for this component
  * @param {boolean} props.disabled Disables the component
@@ -56,9 +56,11 @@ const TreeSelectControl = ( {
 	let instanceId = useInstanceId( TreeSelectControl );
 	instanceId = id ?? instanceId;
 	const [ isExpanded, setIsExpanded ] = useState( false );
-	const optionsRef = useIsEqualRefValue( [
-		{ value: 'all', label: selectAllLabel, children: options },
-	] );
+	const optionsRef = useIsEqualRefValue(
+		selectAllLabel
+			? [ { label: selectAllLabel, value: '', children: options } ]
+			: options
+	);
 
 	const focusOutside = useFocusOutside( () => {
 		setIsExpanded( false );

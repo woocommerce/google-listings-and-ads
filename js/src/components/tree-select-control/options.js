@@ -46,11 +46,12 @@ const Options = ( {
 		);
 	};
 
-	const isRoot = ( option ) => option.value === 'all';
+	const isRoot = ( option ) => option.value === '';
 
 	return options.map( ( option ) => {
 		const isExpanded =
 			isRoot( option ) || expanded.includes( option.value );
+
 		const hasChildren = !! option.children?.length;
 
 		return (
