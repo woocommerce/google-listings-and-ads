@@ -108,12 +108,7 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 				{ values.shipping_rate === 'flat' && (
 					<FlatShippingRatesInputCards
 						audienceCountries={ audienceCountries }
-						value={
-							getInputProps( 'shipping_country_rates' ).value
-						}
-						onChange={
-							getInputProps( 'shipping_country_rates' ).onChange
-						}
+						formProps={ formProps }
 					/>
 				) }
 			</VerticalGapLayout>
