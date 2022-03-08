@@ -58,6 +58,7 @@ export default function EstimatedShippingRatesCard( {
 	if ( countriesPriceArray.length === 0 ) {
 		countriesPriceArray.push( {
 			countries: audienceCountries,
+			method: SHIPPING_RATE_METHOD.FLAT_RATE,
 			price: null,
 			currency: currencyCode,
 		} );

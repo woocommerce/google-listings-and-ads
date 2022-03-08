@@ -15,13 +15,13 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
 import AddMinimumOrderModal from './add-minimum-order-modal';
-import groupShippingRatesByFreeShippingThreshold from './groupShippingRatesByFreeShippingThreshold';
+import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
 import './minimum-order-card.scss';
 
 const MinimumOrderCard = ( props ) => {
 	const { value = [], onChange = noop } = props;
 	const nonZeroShippingRates = value.filter( isNonFreeFlatShippingRate );
-	const groups = groupShippingRatesByFreeShippingThreshold(
+	const groups = groupShippingRatesByMethodFreeShippingThreshold(
 		nonZeroShippingRates
 	);
 	const countryOptions = nonZeroShippingRates.map(
@@ -98,16 +98,20 @@ const MinimumOrderCard = ( props ) => {
 		}
 
 		/**
-		 * When there is more than one group,
-		 * we render the groups with defined threshold first.
-		 * Then, if there is a group with undefined threshold,
-		 * we render an "Add another minimum order" button last.
+		 * Groups with defined threshold. This is used
+		 * to render MinimumOrderInputControl.
+		 */
+		const thresholdGroups = groups.filter(
+			( group ) => group.threshold !== undefined
+		);
+
+		/**
+		 * The first group with undefined threshold. This is used
+		 * to render the "Add another minimum order" button
+		 * after all the groups with defined threshold.
 		 */
 		const emptyThresholdGroup = groups.find(
 			( group ) => group.threshold === undefined
-		);
-		const thresholdGroups = groups.filter(
-			( group ) => group !== emptyThresholdGroup
 		);
 
 		return (

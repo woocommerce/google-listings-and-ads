@@ -49,20 +49,22 @@ describe( 'useShippingRatesSuggestions', () => {
 		} );
 		useApiFetchEffect.mockReturnValue( {
 			loading: false,
-			data: {
-				success: [
-					{
-						country_code: 'GB',
-						currency: 'US',
-						rate: 12,
-					},
-					{
-						country_code: 'US',
-						currency: 'US',
-						rate: 10,
-					},
-				],
-			},
+			data: [
+				{
+					country: 'GB',
+					method: 'flat_rate',
+					currency: 'US',
+					rate: 12,
+					options: {},
+				},
+				{
+					country: 'US',
+					method: 'flat_rate',
+					currency: 'US',
+					rate: 10,
+					options: {},
+				},
+			],
 		} );
 
 		const { result } = renderHook( () => useShippingRatesSuggestions() );
@@ -70,14 +72,18 @@ describe( 'useShippingRatesSuggestions', () => {
 		expect( result.current.loading ).toBe( false );
 		expect( result.current.data ).toStrictEqual( [
 			{
-				countryCode: 'GB',
+				country: 'GB',
+				method: 'flat_rate',
 				currency: 'US',
 				rate: 12,
+				options: {},
 			},
 			{
-				countryCode: 'US',
+				country: 'US',
+				method: 'flat_rate',
 				currency: 'US',
 				rate: 10,
+				options: {},
 			},
 		] );
 	} );
