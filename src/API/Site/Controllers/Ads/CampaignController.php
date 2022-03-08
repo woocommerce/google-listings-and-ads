@@ -262,40 +262,48 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'      => [
+			'id'                 => [
 				'type'        => 'integer',
 				'description' => __( 'ID number.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'name'    => [
+			'name'               => [
 				'type'              => 'string',
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],
-			'status'  => [
+			'status'             => [
 				'type'              => 'string',
 				'enum'              => CampaignStatus::labels(),
 				'description'       => __( 'Campaign status.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'amount'  => [
+			'amount'             => [
 				'type'              => 'number',
 				'description'       => __( 'Daily budget amount in the local currency.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
-			'country' => [
+			'country'            => [
 				'type'              => 'string',
 				'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
 				'required'          => true,
+			],
+			'targeted_locations' => [
+				'type'        => 'array',
+				'description' => __( 'The locations that an Ads campaign is targeting.', 'google-listings-and-ads' ),
+				'context'     => [ 'view' ],
+				'items'       => [
+					'type' => 'string',
+				],
 			],
 		];
 	}
