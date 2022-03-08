@@ -136,9 +136,8 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			}
 
 			if ( ! empty( $converted_campaigns ) ) {
-				$combined_results        = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
-				$combined_results_values = array_values( $combined_results );
-				return reset( $combined_results_values );
+				$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+				return reset( $combined_results );
 			}
 
 			return [];
