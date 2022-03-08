@@ -10,35 +10,14 @@ import { useState } from '@wordpress/element';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
+import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
 import FormContent from './form-content';
-import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 
 /**
  * @typedef {import('.~/data/actions').ShippingRate} ShippingRateFromServerSide
  * @typedef {import('.~/data/actions').ShippingTime} ShippingTime
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
-
-const getOfferFreeShippingValue = ( shippingRates ) => {
-	/**
-	 * If all the shipping rates are free shipping,
-	 * the offer_free_shipping value should be undefined,
-	 * so that when users add a non-free shipping rate,
-	 * they would need to choose "yes" / "no" for offer_free_shipping.
-	 */
-	if ( ! shippingRates.some( isNonFreeFlatShippingRate ) ) {
-		return undefined;
-	}
-
-	/**
-	 * If there are non-free shipping rates,
-	 * the offer_free_shipping value should be true / false
-	 * based on shippingRate.options.free_shipping_threshold.
-	 */
-	return shippingRates.some(
-		( el ) => el.options.free_shipping_threshold > 0
-	);
-};
 
 /**
  * Setup step to configure free listings.
@@ -129,7 +108,7 @@ const SetupFreeListings = ( {
 					contact_info_visible: settings.contact_info_visible,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
-					offer_free_shipping: getOfferFreeShippingValue(
+					offer_free_shipping: getOfferFreeShippingInitialValue(
 						shippingRates
 					),
 					shipping_country_times: shippingTimes,
