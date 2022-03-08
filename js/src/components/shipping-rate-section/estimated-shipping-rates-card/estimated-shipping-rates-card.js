@@ -103,6 +103,17 @@ export default function EstimatedShippingRatesCard( {
 				country,
 				currency,
 				rate: price, // TODO: unify that
+
+				/*
+				 * If the shipping rate is nonfree,
+				 * then we continue use its own old option.
+				 * Else, we reset the option to empty object
+				 * to remove the free_shipping_threshold.
+				 */
+				options:
+					price > 0
+						? oldShippingRate.options
+						: defaultShippingRate.options,
 			};
 
 			actualCountries.set( country, newShippingrate );
