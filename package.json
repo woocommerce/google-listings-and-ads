@@ -21,7 +21,7 @@
 		"docker:up": "npx wc-e2e docker:up",
 		"docker:down": "npx wc-e2e docker:down",
 		"format:js": "wp-scripts format",
-		"i18n": "php -d memory_limit=2048M ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
+		"i18n": "WP_CLI_PHP_ARGS='-d memory_limit=2048M' ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
 		"lint": "npm run lint:php && npm run lint:js && npm run lint:css",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
