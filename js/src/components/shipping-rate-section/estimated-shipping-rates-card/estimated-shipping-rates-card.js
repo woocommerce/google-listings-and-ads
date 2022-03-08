@@ -16,6 +16,7 @@ import groupShippingRatesByMethodPriceCurrency from '.~/utils/groupShippingRates
 import ShippingRateInputControl from './shipping-rate-input-control';
 import AddRateModal from './add-rate-modal';
 import { SHIPPING_RATE_METHOD } from '.~/constants';
+import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 
 const defaultShippingRate = {
 	method: SHIPPING_RATE_METHOD.FLAT_RATE,
@@ -97,26 +98,23 @@ export default function EstimatedShippingRatesCard( {
 		// Upsert rates.
 		countries.forEach( ( country ) => {
 			const oldShippingRate = actualCountries.get( country );
-			const newShippingrate = {
+			const newShippingRate = {
 				...defaultShippingRate,
 				...oldShippingRate,
 				country,
 				currency,
 				rate: price, // TODO: unify that
-
-				/*
-				 * If the shipping rate is nonfree,
-				 * then we continue use its own old option.
-				 * Else, we reset the option to empty object
-				 * to remove the free_shipping_threshold.
-				 */
-				options:
-					price > 0
-						? oldShippingRate.options
-						: defaultShippingRate.options,
 			};
 
-			actualCountries.set( country, newShippingrate );
+			/*
+			 * If the shipping rate is free,
+			 * we remove the free_shipping_threshold.
+			 */
+			if ( ! isNonFreeFlatShippingRate( newShippingRate ) ) {
+				newShippingRate.options.free_shipping_threshold = undefined;
+			}
+
+			actualCountries.set( country, newShippingRate );
 		} );
 		onChange( Array.from( actualCountries.values() ) );
 	}
