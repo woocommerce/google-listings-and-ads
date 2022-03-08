@@ -98,16 +98,20 @@ const MinimumOrderCard = ( props ) => {
 		}
 
 		/**
-		 * The group with undefined threshold. This is used
+		 * Groups with defined threshold. This is used
+		 * to render MinimumOrderInputControl.
+		 */
+		const thresholdGroups = groups.filter(
+			( group ) => group.threshold !== undefined
+		);
+
+		/**
+		 * The first group with undefined threshold. This is used
 		 * to render the "Add another minimum order" button
 		 * after all the groups with defined threshold.
 		 */
 		const emptyThresholdGroup = groups.find(
 			( group ) => group.threshold === undefined
-		);
-
-		const thresholdGroups = groups.filter(
-			( group ) => group !== emptyThresholdGroup
 		);
 
 		return (
