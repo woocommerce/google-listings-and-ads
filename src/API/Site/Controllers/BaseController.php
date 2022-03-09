@@ -130,41 +130,37 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	}
 
 	/**
-	 * Get a route name which is safe to use as a filter (removes namespace prefix).
+	 * Match the data with the controller schema
 	 *
-	 * @param array $schema Controller schema
+	 * @param array $schema a valid controller schema
 	 * @param array $data Response data
 	 *
 	 * @return array
 	 */
-	protected function match_data_with_schema( $schema, $data ): array {
+	protected function match_data_with_schema( array $schema, array $data ): array {
 		$prepared = [];
 
 		foreach ( $schema as $key => $property ) {
 
-			if ( ! isset( $data [ $key ] ) ) {
-				$prepared[ $key ] = $property['default'] ?? null;
-			} elseif ( $property['type'] === 'array' ) {
-
-				$items = [];
+			if ( 'array' === $property['type'] && isset( $data [ $key ] ) && is_array( $data [ $key ] ) ) {
+				$items[ $key ] = [];
+				// Check every item in the array.
 				foreach ( $data[ $key ] as $value_item ) {
 					$items[ $key ][] = $this->match_data_with_schema( [ $key => $property['items'] ], [ $key => $value_item ?? null ] )[ $key ];
 				}
-
 				$prepared = array_merge( $prepared, $items );
-			} elseif ( $property['type'] === 'object' ) {
+			} elseif ( 'object' === $property['type'] && isset( $data [ $key ] ) && is_array( $property['properties'] ) ) {
 				$properties = [];
+				// Check every object's property.
 				foreach ( $property['properties'] as $key_property => $value_property ) {
-					$properties = array_merge( $properties, $this->match_data_with_schema( [ $key_property => $value_property ], $data [ $key ] ?? null ) );
+					if ( isset( $data [ $key ][ $key_property ] ) || isset( $value_property['default'] ) ) {
+						$properties = array_merge( $properties, $this->match_data_with_schema( [ $key_property => $value_property ], $data [ $key ] ?? null ) );
+					}
 				}
-				$prepared[ $key ] = $properties;
+				// Cast empty arrays to empty objects if property is supposed to be an object.
+				$prepared[ $key ] = empty( $properties ) ? (object) [] : $properties;
 			} else {
 				$prepared[ $key ] = $data[ $key ] ?? $property['default'] ?? null;
-
-				// Cast empty arrays to empty objects if property is supposed to be an object.
-				if ( is_array( $prepared[ $key ] ) && empty( $prepared[ $key ] ) && isset( $property['type'] ) && 'object' === $property['type'] ) {
-					$prepared[ $key ] = (object) [];
-				}
 			}
 		}
 

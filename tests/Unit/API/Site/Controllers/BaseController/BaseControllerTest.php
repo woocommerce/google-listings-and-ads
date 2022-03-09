@@ -1,252 +1,271 @@
 <?php
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Helpers\ExtendedBaseController;
 
-class MockController extends BaseController {
-
-    public function __construct( $server ) {
-		parent::__construct( $server );
-	}
-
-    protected function get_schema_properties() : array {
-        return [];
-    }
-
-    protected function get_schema_title() : string {
-        return '';
-    }
-
-    public function test_response( $schema, $data ){
-        return $this->match_data_with_schema( $schema , $data );
-    }
-
-
-}
-
-class AccountControllerTest extends RESTControllerUnitTest {
+class BaseControllerTest extends RESTControllerUnitTest {
 
 	public function setUp() {
 		parent::setUp();
-        $this->controller = new MockController( $this->server );
-	}    
+		$this->controller = new ExtendedBaseController( $this->server );
+	}
 
-    public function test_one_level_nesting() {
+	public function test_empty_obj() {
+		$schema = [
+			'options' => [
+				'type'       => 'object',
+				'properties' => [
+					'city'     => [
+						'type' => 'string',
+					],
+					'postcode' => [
+						'type' => 'string',
+					],
+				],
+			],
+		];
 
-        $schema =  [
-            'country_code' => [
-                'type'              => 'string',
-            ],
-            'currency'     => [
-                'type'              => 'string',
-                'default'           => 'USD',
-            ],
-            'rate'         => [
-                'type'              => 'number',
-            ],
-        ]; 
+		$items = [
+			'options'          => [],
+			'fieldNotInSchema' => 'TestName',
+		];
 
-        $items = [
-            'country_code' => 'ES',
-            'currency' => 'EUR',
-            'rate' => 7,
-        ];        
+		$result = $this->controller->get_matched_data_with_schema( $schema, $items );
 
-        $result = $this->controller->test_response( $schema, $items );
-        $this->assertEquals( $items, $result );
+		$this->assertIsObject( $result['options'] );
+		$this->assertArrayNotHasKey( 'fieldNotInSchema', $result );
 
-    }
+	}
 
-    public function test_array_of_strings() {
+	public function test_empty_array() {
+		$schema = [
+			'options' => [
+				'type'  => 'array',
+				'items' => [
+					'type' => 'string',
+				],
+			],
+		];
 
-        $schema =  [
-            'country_code' => [
-                'type'   => 'array',
-                'items'  => [
-                    'type'       => 'string',
-                ],
-            ],
-            'currency'     => [
-                'type'              => 'string',
-                'default'           => 'USD',
-            ],
-            'rate'         => [
-                'type'              => 'number',
-            ],
-        ]; 
+		$items = [
+			'options' => [],
+		];
 
-        $items = [
-            'country_code' => [
-                'CountryOne'
-            ],
-            'currency' => 'EUR',
-            'rate' => 7,
-        ];
+		$result = $this->controller->get_matched_data_with_schema( $schema, $items );
+		$this->assertEquals( $items, $result );
 
-        $result = $this->controller->test_response( $schema, $items );
+	}
 
-        $expected = [ "country_code" => ['CountryOne'], "currency" => 'EUR', "rate" => 7 ];
-        $this->assertEquals( $expected, $result );
+	public function test_one_level_nesting() {
+		$schema = [
+			'country_code' => [
+				'type' => 'string',
+			],
+			'currency'     => [
+				'type'    => 'string',
+				'default' => 'USD',
+			],
+			'rate'         => [
+				'type' => 'number',
+			],
+		];
 
-    } 
+		$items = [
+			'country_code' => 'ES',
+			'currency'     => 'EUR',
+			'rate'         => 7,
+		];
 
+		$result = $this->controller->get_matched_data_with_schema( $schema, $items );
+		$this->assertEquals( $items, $result );
 
-    public function test_array_of_strings_with_default() {
-
-        $schema =  [
-            'currency'     => [
-                'type'              => 'string',
-                'default'           => 'USD',
-            ],
-            'country_code' => [
-                'type'   => 'array',
-                'default'    => ['CountryDefault'],
-                'items'  => [
-                    'type'       => 'string',
-                ],
-            ],
-        ]; 
-
-        $items = [
-            'currency' => 'EUR',
-            'rate' => 7,
-        ];
-
-        $result = $this->controller->test_response( $schema, $items );
-        $expected = [ 'currency' => 'EUR', "country_code" => ['CountryDefault'] ];
-        $this->assertEquals( $expected, $result );
-
-    }    
+	}
 
 
 
-    public function test_two_level_nesting() {
+	public function test_array_of_strings() {
+		$schema = [
+			'country_code' => [
+				'type'  => 'array',
+				'items' => [
+					'type' => 'string',
+				],
+			],
+			'currency'     => [
+				'type'    => 'string',
+				'default' => 'USD',
+			],
+			'rate'         => [
+				'type' => 'number',
+			],
+		];
 
-        $schema =  [
-            'country_code' => [
-                'type'   => 'array',
-                'items'  => [
-                    'type'       => 'object',
+		$items = [
+			'country_code' => [
+				'CountryOne',
+			],
+			'currency'     => 'EUR',
+			'rate'         => 7,
+		];
+
+		$result = $this->controller->get_matched_data_with_schema( $schema, $items );
+
+		$expected = [
+			'country_code' => [ 'CountryOne' ],
+			'currency'     => 'EUR',
+			'rate'         => 7,
+		];
+		$this->assertEquals( $expected, $result );
+
+	}
+
+	public function test_array_of_strings_with_default() {
+		$schema = [
+			'currency'     => [
+				'type'    => 'string',
+				'default' => 'USD',
+			],
+			'country_code' => [
+				'type'    => 'array',
+				'default' => [ 'CountryDefault' ],
+				'items'   => [
+					'type' => 'string',
+				],
+			],
+		];
+
+		$items = [
+			'currency' => 'EUR',
+		];
+
+		$result   = $this->controller->get_matched_data_with_schema( $schema, $items );
+		$expected = [
+			'currency'     => 'EUR',
+			'country_code' => [ 'CountryDefault' ],
+		];
+		$this->assertEquals( $expected, $result );
+
+	}
+
+
+
+	public function test_two_level_nesting() {
+		$schema = [
+			'country_code' => [
+				'type'  => 'array',
+				'items' => [
+					'type'       => 'object',
 					'properties' => [
 						'product' => [
-							'type'        => 'string',
-							'context'     => [ 'view' ],
-                            'default'     => 'TestProduct',
+							'type'    => 'string',
+							'context' => [ 'view' ],
+							'default' => 'ProductDefault',
+						],
 					],
-                ],
-                ]
-            ],
-        ]; 
+				],
+			],
+		];
 
-        $items = [
-            'country_code' => [
-               ["productp" => "ProductOne"],
-               ["product" => "ProductTwo"],
-            ],
-        ];
+		$items = [
+			'country_code' => [
+				[ 'fieldNotInSchema' => 'ProductOne' ],
+				[ 'product' => 'ProductTwo' ],
+			],
+		];
 
-        $result = $this->controller->test_response( $schema, $items );
-        //var_dump( $result );
-        $expected = [
-            'country_code' => [
-               ["product" => "TestProduct"],
-               ["product" => "ProductTwo"],
-            ],
-        ];
-        $this->assertEquals( $expected, $result );
+		$result   = $this->controller->get_matched_data_with_schema( $schema, $items );
+		$expected = [
+			'country_code' => [
+				[ 'product' => 'ProductDefault' ],
+				[ 'product' => 'ProductTwo' ],
+			],
+		];
+		$this->assertEquals( $expected, $result );
+		$this->assertArrayNotHasKey( 'fieldNotInSchema', $result['country_code'][0] );
 
-    }    
+	}
 
 
-    public function test_multiple_level_nesting_object() {
-
-        $schema =  [
-            'country_code' => [
-                'type'   => 'array',
-                'items'  => [
-                    'type'       => 'object',
+	public function test_multiple_level_nesting_object() {
+		$schema = [
+			'country_code' => [
+				'type'  => 'array',
+				'items' => [
+					'type'       => 'object',
 					'properties' => [
-						'product' => [
-							'type'        => 'string',
-                            'default'     => 'TestProduct',
+						'product'   => [
+							'type'    => 'string',
+							'default' => 'ProductDefault',
+						],
+						'variation' => [
+							'type'       => 'object',
+							'properties' => [
+								'id'         => [
+									'type'    => 'number',
+									'default' => 0,
+								],
+								'attributes' => [
+									'type'       => 'object',
+									'properties' => [
+										'name'  => [
+											'type' => 'string',
+										],
+										'color' => [
+											'type' => 'string',
+										],
+									],
+								],
+							],
+
+						],
 					],
-                        'variation' => [
-                        'type'        => 'object',
-                        'properties'  => [
-                            'id' => [
-                                'type' => 'number',
-                                'default' => 0
-                            ],
-                            'attributes' => [
-                                'type' => 'variation',
-                                'property' => [
-                                    'name' => [
-                                        'type' => 'string',
-                                    ],
-                                    'color' => [
-                                        'type' => 'string',
-                                    ]
-                                ]
-                            ],                            
-                        ]
+				],
+			],
+		];
 
-                    ],                    
-                ],
-                ]
-            ],
-        ]; 
+		$items = [
+			'country_code' => [
+				[
+					'product'   => 'ProductOne',
+					'variation' => [
+						'id'         => 1,
+						'attributes' => [
+							'name'  => 'TestAttribute',
+							'color' => 'red',
+						],
+					],
+				],
+				[
+					'product'          => 'ProductTwo',
+					'fieldNotInSchema' => 'fieldNotInSchema',
+					'variation'        => [ 'price' => 2 ],
+				],
+			],
+		];
 
-        $items = [
-            'country_code' => [
-               ["product" => "ProductOne", 'variation' => ['id' => 1, 'attributes' => ['name' => 'TestAttribute', 'color' => 'red'] ]],
-               ["product" => "ProductTwo", 'variation' => ['price' => 2 ]],
-            ],
-        ];
+		$result   = $this->controller->get_matched_data_with_schema( $schema, $items );
+		$expected = [
+			'country_code' => [
+				[
+					'product'   => 'ProductOne',
+					'variation' => [
+						'id'         => 1,
+						'attributes' => [
+							'name'  => 'TestAttribute',
+							'color' => 'red',
+						],
+					],
+				],
+				[
+					'product'   => 'ProductTwo',
+					'variation' => [ 'id' => 0 ],
+				],
+			],
+		];
+		$this->assertEquals( $expected, $result );
+		$this->assertArrayNotHasKey( 'fieldNotInSchema', $result['country_code'][1] );
 
-        $result = $this->controller->test_response( $schema, $items );
-        $expected = [
-            'country_code' => [
-                ["product" => "ProductOne", 'variation' => ['id' => 1, 'attributes' => ['name' => 'TestAttribute', 'color' => 'red'] ]],
-                ["product" => "ProductTwo", 'variation' => ['id' => 0, 'attributes' => null ]],
-             ],
-        ];
-        $this->assertEquals( $expected, $result );
-
-    }     
-    
-
-    /*
-    public function test_empty_array_is_obj() {
-
-        $schema =  [           
-            'country_code' => [
-                'type'   => 'array',
-                'items' => [
-                    'type' => 'string',
-                    
-                ],
-            ],
-            'name' => [
-                'type' => 'string'
-            ]
-        ]; 
-
-        $items = [
-            'country_code' => [],
-            'name' => 'JM'
-        ];
-
-        $result = $this->controller->test_response( $schema, $items );
-        var_dump( $result );
-        $expected = [
-            'country_code' => [
-               "productp" => "ProductOne" 
-               //["product" => "ProductTwo", "variation" => ['id' => 0 ] ],
-            ],
-        ];
-        $this->assertEquals( $items, $result );
-
-    } */  
+	}
 
 
 }
