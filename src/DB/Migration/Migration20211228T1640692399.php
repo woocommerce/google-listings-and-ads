@@ -64,7 +64,7 @@ class Migration20211228T1640692399 extends AbstractMigration {
 			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ALTER COLUMN `method` DROP DEFAULT" );
 
 			$mc_settings = $this->options->get( Options::MERCHANT_CENTER );
-			if ( isset( $mc_settings['free_shipping_threshold'] ) ) {
+			if ( isset( $mc_settings['offers_free_shipping'] ) && false !== boolval( $mc_settings['offers_free_shipping'] ) && isset( $mc_settings['free_shipping_threshold'] ) ) {
 				// Move the free shipping threshold from the options to the shipping rate table.
 				$serialized_options = json_encode( [ 'free_shipping_threshold' => (float) $mc_settings['free_shipping_threshold'] ] );
 				$this->wpdb->query( $this->wpdb->prepare( "UPDATE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` SET `options`=%s WHERE `method` = 'flat_rate'", $serialized_options ) );
