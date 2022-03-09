@@ -37,6 +37,11 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 * @throws ProductSyncerException If an error occurs. The exception will be logged by ActionScheduler.
 	 */
 	public function process_items( array $product_id_map ) {
+		$ready_ids = $this->product_repository->find_delete_product_ids( $product_id_map );
+
+		// Exclude any ID's which are not ready to delete.
+		$product_id_map = array_intersect( $product_id_map, $ready_ids );
+
 		$product_entries = BatchProductIDRequestEntry::create_from_id_map( new ProductIDMap( $product_id_map ) );
 		$this->product_syncer->delete_by_batch_requests( $product_entries );
 	}
@@ -56,7 +61,10 @@ class DeleteProducts extends AbstractProductSyncerJob implements StartOnHookInte
 			throw JobException::item_not_provided( 'Array of WooCommerce product IDs' );
 		}
 
-		if ( $this->can_schedule( [ $id_map ] ) ) {
+		if ( did_action( 'woocommerce_gla_batch_retry_delete_products' ) ) {
+			// Retry after one minute.
+			$this->action_scheduler->schedule_single( gmdate( 'U' ) + 60, $this->get_process_item_hook(), [ $id_map ] );
+		} elseif ( $this->can_schedule( [ $id_map ] ) ) {
 			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $id_map ] );
 		}
 	}

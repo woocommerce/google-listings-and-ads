@@ -8,11 +8,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
 use Exception;
-use Psr\Container\ContainerInterface;
 use WP_REST_Request as Request;
 use WP_REST_Response as Response;
 
@@ -33,13 +33,14 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected $ads_campaign;
 
 	/**
-	 * BaseController constructor.
+	 * CampaignController constructor.
 	 *
-	 * @param ContainerInterface $container
+	 * @param RESTServer  $server
+	 * @param AdsCampaign $ads_campaign
 	 */
-	public function __construct( ContainerInterface $container ) {
-		parent::__construct( $container->get( RESTServer::class ) );
-		$this->ads_campaign = $container->get( AdsCampaign::class );
+	public function __construct( RESTServer $server, AdsCampaign $ads_campaign ) {
+		parent::__construct( $server );
+		$this->ads_campaign = $ads_campaign;
 	}
 
 	/**
@@ -103,6 +104,8 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					},
 					$this->ads_campaign->get_campaigns()
 				);
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -132,6 +135,8 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				$campaign = $this->ads_campaign->create_campaign( $fields );
 
 				return $this->prepare_item_for_response( $campaign, $request );
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -160,6 +165,8 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				}
 
 				return $this->prepare_item_for_response( $campaign, $request );
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -192,6 +199,8 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'message' => __( 'Successfully edited campaign.', 'google-listings-and-ads' ),
 					'id'      => $campaign_id,
 				];
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}
@@ -213,6 +222,8 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 					'message' => __( 'Successfully deleted campaign.', 'google-listings-and-ads' ),
 					'id'      => $deleted_id,
 				];
+			} catch ( ExceptionWithResponseData $e ) {
+				return new Response( $e->get_response_data( true ), $e->getCode() ?: 400 );
 			} catch ( Exception $e ) {
 				return new Response( [ 'message' => $e->getMessage() ], $e->getCode() ?: 400 );
 			}

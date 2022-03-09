@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\MerchantApiException;
-use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
@@ -37,13 +37,13 @@ defined( 'ABSPATH' ) || exit;
  * - WC
  * - WP
  * - TargetAudience
+ * - GoogleHelper
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
  */
 class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInterface, Service {
 
 	use ContainerAwareTrait;
-	use GoogleHelper;
 	use OptionsAwareTrait;
 	use PluginHelper;
 
@@ -98,7 +98,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	public function is_store_country_supported(): bool {
 		$country = $this->container->get( WC::class )->get_base_country();
 
-		return $this->is_country_supported( $country );
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
+		return $google_helper->is_country_supported( $country );
 	}
 
 	/**
@@ -113,9 +116,12 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$language = substr( $this->container->get( WP::class )->get_locale(), 0, 2 );
 		}
 
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
 		return array_key_exists(
 			strtolower( $language ),
-			$this->get_mc_supported_languages()
+			$google_helper->get_mc_supported_languages()
 		);
 	}
 
@@ -154,7 +160,10 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			$country = $this->container->get( WC::class )->get_base_country();
 		}
 
-		return in_array( $country, $this->get_mc_promotion_supported_countries(), true );
+		/** @var GoogleHelper $google_helper */
+		$google_helper = $this->container->get( GoogleHelper::class );
+
+		return in_array( $country, $google_helper->get_mc_promotion_supported_countries(), true );
 	}
 
 	/**
@@ -299,24 +308,41 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			return false;
 		}
 
-		// Shipping options saved if: 'manual' OR records for all countries
+		// Shipping time saved if: 'manual' OR records for all countries
 		if ( isset( $merchant_center_settings['shipping_time'] ) && 'manual' === $merchant_center_settings['shipping_time'] ) {
 			$saved_shipping_time = true;
 		} else {
-			$shipping_time_rows  = $this->container->get( ShippingTimeQuery::class )->get_count();
-			$saved_shipping_time = $shipping_time_rows === count( $target_countries );
+			$shipping_time_rows = $this->container->get( ShippingTimeQuery::class )->get_results();
+
+			// Get the name of countries that have saved shipping times.
+			$saved_time_countries = array_column( $shipping_time_rows, 'country' );
+
+			// Check if all target countries have a shipping time.
+			$saved_shipping_time = count( $shipping_time_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_time_countries ) );
 		}
 
-		if ( isset( $merchant_center_settings['shipping_rate'] ) && 'manual' === $merchant_center_settings['shipping_rate'] ) {
+		// Shipping rates saved if: 'manual', 'automatic', OR there are records for all countries
+		if (
+			isset( $merchant_center_settings['shipping_rate'] ) &&
+			in_array( $merchant_center_settings['shipping_rate'], [ 'manual', 'automatic' ], true )
+		) {
 			$saved_shipping_rate = true;
 		} else {
+			// Get the list of saved shipping rates grouped by country.
 			/**
 			 * @var ShippingRateQuery $shipping_rate_query
 			 */
 			$shipping_rate_query = $this->container->get( ShippingRateQuery::class );
 			$shipping_rate_query->group_by( 'country' );
-			$shipping_rate_rows  = $shipping_rate_query->get_count();
-			$saved_shipping_rate = $shipping_rate_rows === count( $target_countries );
+			$shipping_rate_rows = $shipping_rate_query->get_results();
+
+			// Get the name of countries that have saved shipping rates.
+			$saved_rates_countries = array_column( $shipping_rate_rows, 'country' );
+
+			// Check if all target countries have a shipping rate.
+			$saved_shipping_rate = count( $shipping_rate_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_rates_countries ) );
 		}
 
 		return $saved_shipping_rate && $saved_shipping_time;

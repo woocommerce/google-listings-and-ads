@@ -86,6 +86,18 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertFalse( $this->product_helper->is_product_synced( $product ) );
 	}
 
+	public function test_mark_batch_as_unsynced() {
+		$products    = $this->create_simple_product_set( 2 );
+		$product_ids = array_keys( $products );
+
+		$this->batch_product_helper->mark_batch_as_unsynced( $product_ids );
+
+		foreach ( $product_ids as $product_id ) {
+			$product = $this->wc->get_product( $product_id );
+			$this->assertFalse( $this->product_helper->is_product_synced( $product ) );
+		}
+	}
+
 	public function test_mark_as_invalid() {
 		$product = WC_Helper_Product::create_simple_product();
 		$errors  = [

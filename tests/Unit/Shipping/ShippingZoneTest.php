@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
@@ -19,6 +20,7 @@ use WC_Shipping_Zone;
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Shipping
  *
  * @property MockObject|WC $wc
+ * @property GoogleHelper  $google_helper
  * @property ShippingZone  $shipping_zone
  */
 class ShippingZoneTest extends UnitTest {
@@ -1138,6 +1140,8 @@ class ShippingZoneTest extends UnitTest {
 				 ->method( 'get_woocommerce_currency' )
 				 ->willReturn( 'USD' );
 
-		$this->shipping_zone = new ShippingZone( $this->wc );
+		$this->google_helper = new GoogleHelper( $this->wc );
+
+		$this->shipping_zone = new ShippingZone( $this->wc, $this->google_helper );
 	}
 }

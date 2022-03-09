@@ -12,6 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ApiNotReady;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupSyncedProducts;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\MerchantAccountState;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -27,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * Class AccountService
  *
  * Container used to access:
+ * - CleanupSyncedProducts
  * - Merchant
  * - MerchantAccountState
  * - MerchantCenterService
@@ -254,6 +256,8 @@ class AccountService implements OptionsAwareInterface, Service {
 		$this->container->get( MerchantIssueTable::class )->truncate();
 		$this->container->get( ShippingRateTable::class )->truncate();
 		$this->container->get( ShippingTimeTable::class )->truncate();
+
+		$this->container->get( CleanupSyncedProducts::class )->schedule();
 	}
 
 	/**
