@@ -299,24 +299,41 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 			return false;
 		}
 
-		// Shipping options saved if: 'manual' OR records for all countries
+		// Shipping time saved if: 'manual' OR records for all countries
 		if ( isset( $merchant_center_settings['shipping_time'] ) && 'manual' === $merchant_center_settings['shipping_time'] ) {
 			$saved_shipping_time = true;
 		} else {
-			$shipping_time_rows  = $this->container->get( ShippingTimeQuery::class )->get_count();
-			$saved_shipping_time = $shipping_time_rows === count( $target_countries );
+			$shipping_time_rows = $this->container->get( ShippingTimeQuery::class )->get_results();
+
+			// Get the name of countries that have saved shipping times.
+			$saved_time_countries = array_column( $shipping_time_rows, 'country' );
+
+			// Check if all target countries have a shipping time.
+			$saved_shipping_time = count( $shipping_time_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_time_countries ) );
 		}
 
-		if ( isset( $merchant_center_settings['shipping_rate'] ) && 'manual' === $merchant_center_settings['shipping_rate'] ) {
+		// Shipping rates saved if: 'manual', 'automatic', OR there are records for all countries
+		if (
+			isset( $merchant_center_settings['shipping_rate'] ) &&
+			in_array( $merchant_center_settings['shipping_rate'], [ 'manual', 'automatic' ], true )
+		) {
 			$saved_shipping_rate = true;
 		} else {
+			// Get the list of saved shipping rates grouped by country.
 			/**
 			 * @var ShippingRateQuery $shipping_rate_query
 			 */
 			$shipping_rate_query = $this->container->get( ShippingRateQuery::class );
 			$shipping_rate_query->group_by( 'country' );
-			$shipping_rate_rows  = $shipping_rate_query->get_count();
-			$saved_shipping_rate = $shipping_rate_rows === count( $target_countries );
+			$shipping_rate_rows = $shipping_rate_query->get_results();
+
+			// Get the name of countries that have saved shipping rates.
+			$saved_rates_countries = array_column( $shipping_rate_rows, 'country' );
+
+			// Check if all target countries have a shipping rate.
+			$saved_shipping_rate = count( $shipping_rate_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_rates_countries ) );
 		}
 
 		return $saved_shipping_rate && $saved_shipping_time;
