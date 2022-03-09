@@ -13,7 +13,9 @@ const FlatShippingRatesInputCards = ( props ) => {
 		isNonFreeFlatShippingRate
 	);
 
-	const handleShippingRatesChange = ( onChange ) => ( newShippingRates ) => {
+	const getShippingRatesChangeHandler = ( onChange ) => (
+		newShippingRates
+	) => {
 		/**
 		 * If all the shipping rates are free shipping,
 		 * we set the offer_free_shipping to undefined,
@@ -27,7 +29,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 		onChange( newShippingRates );
 	};
 
-	const handleOfferFreeShippingChange = ( onChange ) => (
+	const getOfferFreeShippingChangeHandler = ( onChange ) => (
 		newOfferFreeShippingValue
 	) => {
 		/**
@@ -56,7 +58,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 			<EstimatedShippingRatesCard
 				audienceCountries={ audienceCountries }
 				{ ...getInputProps( 'shipping_country_rates' ) }
-				onChange={ handleShippingRatesChange(
+				onChange={ getShippingRatesChangeHandler(
 					getInputProps( 'shipping_country_rates' ).onChange
 				) }
 			/>
@@ -64,7 +66,7 @@ const FlatShippingRatesInputCards = ( props ) => {
 				<>
 					<OfferFreeShippingCard
 						{ ...getInputProps( 'offer_free_shipping' ) }
-						onChange={ handleOfferFreeShippingChange(
+						onChange={ getOfferFreeShippingChangeHandler(
 							getInputProps( 'offer_free_shipping' ).onChange
 						) }
 					/>
