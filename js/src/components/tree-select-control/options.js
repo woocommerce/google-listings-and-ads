@@ -46,8 +46,12 @@ const Options = ( {
 		);
 	};
 
+	const isRoot = ( option ) => option.value === '';
+
 	return options.map( ( option ) => {
-		const isExpanded = expanded.includes( option.value );
+		const isExpanded =
+			isRoot( option ) || expanded.includes( option.value );
+
 		const hasChildren = !! option.children?.length;
 
 		return (
@@ -60,16 +64,18 @@ const Options = ( {
 					className="woocommerce-tree-select-control__node"
 					justify="flex-start"
 				>
-					<Icon
-						className={ classnames(
-							'woocommerce-tree-select-control__expander-icon',
-							! hasChildren ? 'is-hidden' : false
-						) }
-						icon={ isExpanded ? chevronUp : chevronDown }
-						onClick={ () => {
-							toggleExpanded( option.value );
-						} }
-					/>
+					{ ! isRoot( option ) && (
+						<Icon
+							className={ classnames(
+								'woocommerce-tree-select-control__expander-icon',
+								! hasChildren ? 'is-hidden' : false
+							) }
+							icon={ isExpanded ? chevronUp : chevronDown }
+							onClick={ () => {
+								toggleExpanded( option.value );
+							} }
+						/>
+					) }
 
 					<CheckboxControl
 						className={ 'woocommerce-tree-select-control__option' }
@@ -86,7 +92,14 @@ const Options = ( {
 				</Flex>
 
 				{ hasChildren && isExpanded && (
-					<div className="woocommerce-tree-select-control__children">
+					<div
+						className={ classnames(
+							'woocommerce-tree-select-control__children',
+							isRoot( option )
+								? 'woocommerce-tree-select-control__main'
+								: false
+						) }
+					>
 						<Options
 							parent={ option.value }
 							options={ option.children }

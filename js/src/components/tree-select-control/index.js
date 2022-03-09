@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
@@ -32,18 +33,19 @@ import './index.scss';
  * @param {Object} props Component props.
  * @param {string} props.id Component id
  * @param {string} props.label Label for the component
+ * @param {string | false} props.selectAllLabel Label for the Select All root element. False for disable.
  * @param {string} props.placeholder Placeholder for the search control input
  * @param {string} props.className The class name for this component
  * @param {boolean} props.disabled Disables the component
  * @param {Option[]} props.options Options to show in the component
  * @param {{string}[]} props.value Selected values
  * @param {Function} props.onChange Callback when the selector changes
- *
  * @return {JSX.Element|null} The component
  */
 const TreeSelectControl = ( {
 	id,
 	label,
+	selectAllLabel = __( 'All', 'google-listings-and-ads' ),
 	placeholder,
 	className,
 	disabled,
@@ -54,7 +56,12 @@ const TreeSelectControl = ( {
 	let instanceId = useInstanceId( TreeSelectControl );
 	instanceId = id ?? instanceId;
 	const [ isExpanded, setIsExpanded ] = useState( false );
-	const optionsRef = useIsEqualRefValue( options );
+	const optionsRef = useIsEqualRefValue(
+		selectAllLabel
+			? [ { label: selectAllLabel, value: '', children: options } ]
+			: options
+	);
+
 	const focusOutside = useFocusOutside( () => {
 		setIsExpanded( false );
 	} );
@@ -208,7 +215,7 @@ const TreeSelectControl = ( {
 					tabIndex="-1"
 				>
 					<Options
-						options={ options }
+						options={ optionsRef }
 						value={ value }
 						onChange={ handleOptionsChange }
 					/>
