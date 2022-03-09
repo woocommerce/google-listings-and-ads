@@ -42,11 +42,11 @@ class ShippingRateQuery extends Query {
 		}
 
 		if ( 'options' === $column ) {
-			if ( is_array( $value ) ) {
-				$value = maybe_serialize( $value );
-			} else {
+			if ( ! is_array( $value ) ) {
 				throw InvalidQuery::invalid_value( $column );
 			}
+
+			$value = json_encode( $value );
 		}
 
 		return $value;
@@ -60,7 +60,7 @@ class ShippingRateQuery extends Query {
 
 		$this->results = array_map(
 			function ( $row ) {
-				$row['options'] = maybe_unserialize( $row['options'] );
+				$row['options'] = ! empty( $row['options'] ) ? json_decode( $row['options'] ) : $row['options'];
 
 				return $row;
 			},
