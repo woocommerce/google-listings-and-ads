@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 
 import CountryNamesPlusMore from '.~/components/country-names-plus-more';
 
-const MinimumOrderInputLabelText = ( props ) => {
+const MinimumOrderInputControlLabelText = ( props ) => {
 	const { countries } = props;
 
 	return (
@@ -35,4 +35,4 @@ const MinimumOrderInputLabelText = ( props ) => {
 	);
 };
 
-export default MinimumOrderInputLabelText;
+export default MinimumOrderInputControlLabelText;
