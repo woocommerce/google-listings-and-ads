@@ -1124,9 +1124,14 @@ class GoogleHelper implements Service {
 	protected $wc;
 
 	/**
-	 * @var array Map of location ids to country/subdivision codes.
+	 * @var array Map of location ids to country codes.
 	 */
-	private $location_id_code_map;
+	private $country_id_code_map;
+
+	/**
+	 * @var array Map of location ids to subdivision codes.
+	 */
+	private $subdivision_id_code_map;
 
 	/**
 	 * GoogleHelper constructor.
@@ -1272,32 +1277,6 @@ class GoogleHelper implements Service {
 	}
 
 	/**
-	 * Returns an array mapping the ID of the Merchant Center supported locations to their respective codes.
-	 *
-	 * @return string[] Array of country/subdivision codes with location IDs as keys. e.g. [ 2840 => 'US', 20035 => 'NSW' ]
-	 */
-	protected function get_location_id_to_code_map(): array {
-		if ( isset( $this->location_id_code_map ) ) {
-			return $this->location_id_code_map;
-		}
-
-		$this->location_id_code_map = [];
-
-		$countries = $this->get_mc_supported_countries_data();
-		foreach ( $countries as $country ) {
-			$this->location_id_code_map[ $country['id'] ] = $country['code'];
-		}
-
-		foreach ( self::COUNTRY_SUBDIVISIONS as $subdivisions ) {
-			foreach ( $subdivisions as $item ) {
-				$this->location_id_code_map[ $item['id'] ] = $item['code'];
-			}
-		}
-
-		return $this->location_id_code_map;
-	}
-
-	/**
 	 * Find the ISO 3166-1 code of the Merchant Center supported country by its location ID.
 	 *
 	 * @param int $id
@@ -1305,7 +1284,7 @@ class GoogleHelper implements Service {
 	 * @return string|null ISO 3166-1 representation of the country code.
 	 */
 	public function find_country_code_by_id( int $id ): ?string {
-		return $this->get_location_id_to_code_map()[ $id ] ?? null;
+		return $this->get_country_id_code_map()[ $id ] ?? null;
 	}
 
 	/**
@@ -1316,7 +1295,7 @@ class GoogleHelper implements Service {
 	 * @return string|null
 	 */
 	public function find_subdivision_code_by_id( int $id ): ?string {
-		return $this->get_location_id_to_code_map()[ $id ] ?? null;
+		return $this->get_subdivision_id_code_map()[ $id ] ?? null;
 	}
 
 	/**
@@ -1346,5 +1325,44 @@ class GoogleHelper implements Service {
 	 */
 	public function find_subdivision_id_by_code( string $code, string $country_code ): ?int {
 		return self::COUNTRY_SUBDIVISIONS[ $country_code ][ $code ]['id'] ?? null;
+	}
+
+	/**
+	 * Returns an array mapping the ID of the Merchant Center supported countries to their respective codes.
+	 *
+	 * @return string[] Array of country codes with location IDs as keys. e.g. [ 2840 => 'US' ]
+	 */
+	protected function get_country_id_code_map(): array {
+		if ( isset( $this->country_id_code_map ) ) {
+			return $this->country_id_code_map;
+		}
+		$this->country_id_code_map = [];
+
+		$countries = $this->get_mc_supported_countries_data();
+		foreach ( $countries as $country ) {
+			$this->country_id_code_map[ $country['id'] ] = $country['code'];
+		}
+
+		return $this->country_id_code_map;
+	}
+
+	/**
+	 * Returns an array mapping the ID of the Merchant Center supported subdivisions to their respective codes.
+	 *
+	 * @return string[] Array of subdivision codes with location IDs as keys. e.g. [ 20035 => 'NSW' ]
+	 */
+	protected function get_subdivision_id_code_map(): array {
+		if ( isset( $this->subdivision_id_code_map ) ) {
+			return $this->subdivision_id_code_map;
+		}
+		$this->subdivision_id_code_map = [];
+
+		foreach ( self::COUNTRY_SUBDIVISIONS as $subdivisions ) {
+			foreach ( $subdivisions as $item ) {
+				$this->subdivision_id_code_map[ $item['id'] ] = $item['code'];
+			}
+		}
+
+		return $this->subdivision_id_code_map;
 	}
 }
