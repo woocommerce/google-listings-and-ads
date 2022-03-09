@@ -30,7 +30,7 @@ trait ApiExceptionTrait {
 		}
 
 		foreach ( $meta as $data ) {
-			if ( empty( $data['errors'] || ! is_array( $data['errors'] ) ) ) {
+			if ( empty( $data['errors'] ) || ! is_array( $data['errors'] ) ) {
 				continue;
 			}
 
@@ -42,6 +42,44 @@ trait ApiExceptionTrait {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns a list of detailed errors from an ApiException.
+	 * If no errors are found the default Exception message is returned.
+	 *
+	 * @param ApiException $exception Exception to check.
+	 *
+	 * @return array
+	 */
+	protected function get_api_exception_errors( ApiException $exception ): array {
+		$errors = [];
+		$meta   = $exception->getMetadata();
+
+		if ( is_array( $meta ) ) {
+			foreach ( $meta as $data ) {
+				if ( empty( $data['errors'] ) || ! is_array( $data['errors'] ) ) {
+					continue;
+				}
+
+				foreach ( $data['errors'] as $error ) {
+					if ( empty( $error['message'] ) ) {
+						continue;
+					}
+
+					if ( ! empty( $error['errorCode'] ) && is_array( $error['errorCode'] ) ) {
+						$error_code = reset( $error['errorCode'] );
+					} else {
+						$error_code = 'ERROR';
+					}
+
+					$errors[ $error_code ] = $error['message'];
+				}
+			}
+		}
+
+		$errors[ $exception->getStatus() ] = $exception->getBasicMessage();
+		return $errors;
 	}
 
 	/**
