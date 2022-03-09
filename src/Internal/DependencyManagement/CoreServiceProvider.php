@@ -206,11 +206,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			 ->inflector( OptionsAwareInterface::class )
 			 ->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
-		// Set up the TargetAudience service.
-		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class );
-
 		// Share helper classes.
 		$this->share_with_tags( GoogleHelper::class, WC::class );
+
+		// Set up the TargetAudience service.
+		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );

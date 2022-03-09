@@ -3,7 +3,7 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -17,7 +17,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
  */
 class TargetAudience implements Service {
 
-	use GoogleHelper;
+	/**
+	 * @var WC
+	 */
+	protected $wc;
 
 	/**
 	 * @var OptionsInterface
@@ -25,14 +28,21 @@ class TargetAudience implements Service {
 	protected $options;
 
 	/**
+	 * @var GoogleHelper
+	 */
+	protected $google_helper;
+
+	/**
 	 * TargetAudience constructor.
 	 *
 	 * @param WC               $wc
 	 * @param OptionsInterface $options
+	 * @param GoogleHelper     $google_helper
 	 */
-	public function __construct( WC $wc, OptionsInterface $options ) {
-		$this->wc      = $wc;
-		$this->options = $options;
+	public function __construct( WC $wc, OptionsInterface $options, GoogleHelper $google_helper ) {
+		$this->wc            = $wc;
+		$this->options       = $options;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -48,7 +58,7 @@ class TargetAudience implements Service {
 
 		$location = strtolower( $target_audience['location'] );
 		if ( 'all' === $location ) {
-			$target_countries = $this->get_mc_supported_countries();
+			$target_countries = $this->google_helper->get_mc_supported_countries();
 		} elseif ( 'selected' === $location && ! empty( $target_audience['countries'] ) ) {
 			$target_countries = $target_audience['countries'];
 		}
