@@ -6,8 +6,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
@@ -41,12 +43,15 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->ad_group    = $this->createMock( AdsGroup::class );
-		$this->budget      = $this->createMock( AdsCampaignBudget::class );
-		$this->options     = $this->createMock( OptionsInterface::class );
+		$this->ad_group      = $this->createMock( AdsGroup::class );
+		$this->budget        = $this->createMock( AdsCampaignBudget::class );
+		$this->options       = $this->createMock( OptionsInterface::class );
+		$this->wc            = $this->createMock( WC::class );
+		$this->google_helper = new GoogleHelper( $this->wc );
 
 		$this->container = new Container();
 		$this->container->share( AdsGroup::class, $this->ad_group );
+		$this->container->share( GoogleHelper::class, $this->google_helper );
 
 		$this->campaign = new AdsCampaign( $this->client, $this->budget );
 		$this->campaign->set_options_object( $this->options );
@@ -83,7 +88,7 @@ class AdsCampaignTest extends UnitTest {
 				'status'  => 'paused',
 				'amount'  => 10,
 				'country' => 'US',
-				'targeted_locations' => ['geoTargetConstants/2158'],
+				'targeted_locations' => ['TW'],
 			],
 			[
 				'id'      => 5678901234,
@@ -91,7 +96,7 @@ class AdsCampaignTest extends UnitTest {
 				'status'  => 'enabled',
 				'amount'  => 20,
 				'country' => 'UK',
-				'targeted_locations' => ['geoTargetConstants/2344', 'geoTargetConstants/2826'],
+				'targeted_locations' => ['HK', 'GB'],
 			],
 		];
 
@@ -128,7 +133,7 @@ class AdsCampaignTest extends UnitTest {
 			'status'  => 'enabled',
 			'amount'  => 10,
 			'country' => 'US',
-			'targeted_locations' => ['geoTargetConstants/2158'],
+			'targeted_locations' => ['TW'],
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
