@@ -19,6 +19,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingTimeTable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidClass;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\DefinitionInterface;
@@ -91,7 +92,7 @@ class DBServiceProvider extends AbstractServiceProvider {
 
 		// Share DB migrations
 		$this->share_migration( MigrationVersion141::class, MerchantIssueTable::class );
-		$this->share_migration( Migration20211228T1640692399::class, ShippingRateTable::class );
+		$this->share_migration( Migration20211228T1640692399::class, ShippingRateTable::class, OptionsInterface::class );
 		$this->share_with_tags( Migrator::class, MigrationInterface::class );
 	}
 
