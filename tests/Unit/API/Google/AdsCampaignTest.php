@@ -67,28 +67,12 @@ class AdsCampaignTest extends UnitTest {
 				'geo_target_constant' => 'geoTargetConstants/2158',
 			],
 			[
-				'campaign_id'         => self::TEST_CAMPAIGN_ID,
-				'geo_target_constant' => '',
-			],
-			[
-				'campaign_id'         => self::TEST_CAMPAIGN_ID,
-				'geo_target_constant' => null,
-			],
-			[
 				'campaign_id'         => 5678901234,
 				'geo_target_constant' => 'geoTargetConstants/2344',
 			],
 			[
 				'campaign_id'         => 5678901234,
-				'geo_target_constant' => '',
-			],
-			[
-				'campaign_id'         => 5678901234,
 				'geo_target_constant' => 'geoTargetConstants/2826',
-			],
-			[
-				'campaign_id'         => 8888877777,
-				'geo_target_constant' => '',
 			],
 		];
 
@@ -108,14 +92,6 @@ class AdsCampaignTest extends UnitTest {
 				'amount'  => 20,
 				'country' => 'UK',
 				'targeted_locations' => ['geoTargetConstants/2344', 'geoTargetConstants/2826'],
-			],
-			[
-				'id'      => 8888877777,
-				'name'    => 'Campaign Three',
-				'status'  => 'enabled',
-				'amount'  => 30,
-				'country' => 'TW',
-				'targeted_locations' => [],
 			],
 		];
 
@@ -143,7 +119,7 @@ class AdsCampaignTest extends UnitTest {
 	public function test_get_campaign() {
 		$campaign_criterion_data = [
 			'campaign_id'         => self::TEST_CAMPAIGN_ID,
-			'geo_target_constant' => '',
+			'geo_target_constant' => 'geoTargetConstants/2158',
 		];
 
 		$campaign_data = [
@@ -152,7 +128,7 @@ class AdsCampaignTest extends UnitTest {
 			'status'  => 'enabled',
 			'amount'  => 10,
 			'country' => 'US',
-			'targeted_locations' => [],
+			'targeted_locations' => ['geoTargetConstants/2158'],
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );

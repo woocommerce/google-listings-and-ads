@@ -415,6 +415,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// negative: Whether to target (false) or exclude (true) the criterion.
 			->where( 'campaign_criterion.negative', 'false', '=' )
 			->where( 'campaign_criterion.status', 'REMOVED', '!=' )
+			->where( 'campaign_criterion.location.geo_target_constant', '', 'IS NOT NULL' )
 			->get_results();
 
 		/** @var GoogleAdsRow $row */
@@ -426,15 +427,13 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 			// TODO: Convert the geo_traget_constant to the ISO 3166-1 alpha-2 country code
 			// after https://github.com/woocommerce/google-listings-and-ads/issues/1229 is done.
-			$geo_target_constant = $location ? $location->getGeoTargetConstant() : null;
+			$geo_target_constant = $location->getGeoTargetConstant();
 
 			if ( ! isset( $campaigns[ $campaign_id ] ) ) {
 				continue;
 			}
 
-			if ( ! empty( $geo_target_constant ) ) {
-				$campaigns[ $campaign_id ]['targeted_locations'][] = $geo_target_constant;
-			}
+			$campaigns[ $campaign_id ]['targeted_locations'][] = $geo_target_constant;
 		}
 
 		return $campaigns;
