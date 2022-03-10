@@ -160,7 +160,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 	.woocommerce-tree-select-control__option {
 		font-size: 16px;
 		padding: 0 0 0 $gap;
-		width: 100%;
+		flex: 1;
 		text-align: left;
 		border: none;
 		min-height: 0;
