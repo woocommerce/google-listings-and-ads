@@ -15,6 +15,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAd
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -141,6 +142,49 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
 		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
+	}
+
+	public function test_get_campaigns_with_invalid_location_id() {
+		$campaign_criterion_data = [
+			[
+				'campaign_id'         => self::TEST_CAMPAIGN_ID,
+				'geo_target_constant' => 'unknownResource1/2158',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'unknownResource2/2344',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'unknownResource3/2826',
+			],
+		];
+
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'paused',
+				'amount'  => 10,
+				'country' => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'amount'  => 20,
+				'country' => 'UK',
+				'targeted_locations' => [],
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid geo target location ID' );
+
+		$this->campaign->get_campaigns();
 	}
 
 	public function test_get_campaigns_exception() {
