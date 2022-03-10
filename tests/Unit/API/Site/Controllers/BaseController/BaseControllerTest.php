@@ -267,5 +267,53 @@ class BaseControllerTest extends RESTControllerUnitTest {
 
 	}
 
+	public function test_type_array_with_wrong_data() {
+		$schema = [
+			'country_code' => [
+				'type' => 'array',
+				'items' => [
+					'type' => 'string'
+				]
+			],
+			'rate'         => [
+				'type' => 'number',
+			],
+		];
+
+		$items = [
+			'country_code' => 'ES', // It is not array
+			'rate'         => 7,
+		];
+
+		//In case to receive an incorrect array, it will skip the schema matching and will continue to the next field.
+		$result = $this->controller->get_matched_data_with_schema( $schema, $items );
+		$this->assertEquals( $items, $result );
+
+	}	
+
+	public function test_type_object_with_wrong_data() {
+		$schema = [
+			'country_code' => [
+				'type' => 'object',
+				'properties' => [
+					'type' => 'string'
+				]
+			],
+			'rate'         => [
+				'type' => 'number',
+			],
+		];
+
+		$items = [
+			'country_code' => 'ES', // It is not an object
+			'rate'         => 7,
+		];
+
+		//In case to receive an incorrect object, it will skip the schema matching and will continue to the next field.
+		$result = $this->controller->get_matched_data_with_schema( $schema, $items );
+		$this->assertEquals( $items, $result );
+
+	}	
+
 
 }
