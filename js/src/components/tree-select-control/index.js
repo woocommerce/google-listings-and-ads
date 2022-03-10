@@ -55,7 +55,10 @@ const TreeSelectControl = ( {
 } ) => {
 	let instanceId = useInstanceId( TreeSelectControl );
 	instanceId = id ?? instanceId;
-	const [ isExpanded, setIsExpanded ] = useState( false );
+
+	const [ treeVisible, setTreeVisible ] = useState( false );
+	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
+
 	const treeOptions = useIsEqualRefValue(
 		selectAllLabel
 			? [ { label: selectAllLabel, value: '', children: options } ]
@@ -63,7 +66,7 @@ const TreeSelectControl = ( {
 	);
 
 	const focusOutside = useFocusOutside( () => {
-		setIsExpanded( false );
+		setTreeVisible( false );
 	} );
 
 	/**
@@ -199,18 +202,18 @@ const TreeSelectControl = ( {
 			<Control
 				disabled={ disabled }
 				tags={ getTags() }
-				isExpanded={ isExpanded }
+				isExpanded={ treeVisible }
 				onFocus={ () => {
-					setIsExpanded( true );
+					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }
 				placeholder={ placeholder }
 				label={ label }
 				onTagsChange={ handleTagsChange }
 			/>
-			{ isExpanded && (
+			{ treeVisible && (
 				<div
-					className="woocommerce-tree-select-control__listbox"
+					className="woocommerce-tree-select-control__tree"
 					role="tree"
 					tabIndex="-1"
 				>
@@ -218,6 +221,8 @@ const TreeSelectControl = ( {
 						options={ treeOptions }
 						value={ value }
 						onChange={ handleOptionsChange }
+						nodesExpanded={ nodesExpanded }
+						onNodesExpandedChange={ setNodesExpanded }
 					/>
 				</div>
 			) }

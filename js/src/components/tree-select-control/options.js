@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { CheckboxControl, Flex } from '@wordpress/components';
-import { useState } from '@wordpress/element';
 import { Icon, chevronUp, chevronDown } from '@wordpress/icons';
 import classnames from 'classnames';
 
@@ -16,10 +15,17 @@ import classnames from 'classnames';
  * @param {Object} params Component parameters
  * @param {Option[]} params.options List of options to be rendered
  * @param {string[]} params.value List of selected values
+ * @param {string[]} params.nodesExpanded List of expanded nodes.
  * @param {Function} params.onChange Callback when an option changes
+ * @param {Function} params.onNodesExpandedChange Callback when a node is expanded/collapsed
  */
-const Options = ( { options = [], value = [], onChange = () => {} } ) => {
-	const [ expanded, setExpanded ] = useState( [] );
+const Options = ( {
+	options = [],
+	value = [],
+	onChange = () => {},
+	nodesExpanded = [],
+	onNodesExpandedChange = () => {},
+} ) => {
 	/**
 	 * Returns true if all the children for the parent are selected
 	 *
@@ -38,17 +44,17 @@ const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 	};
 
 	const toggleExpanded = ( option ) => {
-		setExpanded(
-			expanded.includes( option.value )
-				? expanded.filter( ( el ) => option.value !== el )
-				: [ ...expanded, option.value ]
+		onNodesExpandedChange(
+			nodesExpanded.includes( option.value )
+				? nodesExpanded.filter( ( el ) => option.value !== el )
+				: [ ...nodesExpanded, option.value ]
 		);
 	};
 
 	return options.map( ( option ) => {
 		const isRoot = option.value === '';
 
-		const isExpanded = isRoot || expanded.includes( option.value );
+		const isExpanded = isRoot || nodesExpanded.includes( option.value );
 
 		const hasChildren = !! option.children?.length;
 
@@ -100,8 +106,10 @@ const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 					>
 						<Options
 							options={ option.children }
-							onChange={ onChange }
 							value={ value }
+							onChange={ onChange }
+							nodesExpanded={ nodesExpanded }
+							onNodesExpandedChange={ onNodesExpandedChange }
 						/>
 					</div>
 				) }
