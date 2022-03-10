@@ -33,7 +33,7 @@ import './index.scss';
 			label: 'Europe',
 			children: [
 				{ value: 'ES', label: 'Spain' },
-				{ value: 'FR', label: 'France', children: [] }, // defining children as [] is equivalent to not have no children
+				{ value: 'FR', label: 'France', children: [] }, // defining children as [] is equivalent to don't have children
 			],
 		},
 		{
