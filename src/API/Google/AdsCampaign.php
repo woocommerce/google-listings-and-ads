@@ -72,10 +72,12 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 *
 	 * @param GoogleAdsClient   $client
 	 * @param AdsCampaignBudget $budget
+	 * @param GoogleHelper      $google_helper
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget ) {
-		$this->client = $client;
-		$this->budget = $budget;
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, GoogleHelper $google_helper ) {
+		$this->client        = $client;
+		$this->budget        = $budget;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -432,9 +434,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$location            = $campaign_criterion->getLocation();
 			$geo_target_constant = $location->getGeoTargetConstant();
 			$location_id         = $this->parse_geo_target_location_id( $geo_target_constant );
-
-			$google_helper = $this->container->get( GoogleHelper::class );
-			$country_code  = $google_helper->find_country_code_by_id( $location_id );
+			$country_code        = $this->google_helper->find_country_code_by_id( $location_id );
 
 			$campaigns[ $campaign_id ]['targeted_locations'][] = $country_code;
 		}

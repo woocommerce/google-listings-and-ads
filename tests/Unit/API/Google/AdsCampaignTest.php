@@ -28,6 +28,7 @@ defined( 'ABSPATH' ) || exit;
  * @property MockObject|OptionsInterface  $options
  * @property AdsCampaign                  $campaign
  * @property Container                    $container
+ * @property GoogleHelper                 $google_helper
  */
 class AdsCampaignTest extends UnitTest {
 
@@ -43,17 +44,16 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->ad_group      = $this->createMock( AdsGroup::class );
-		$this->budget        = $this->createMock( AdsCampaignBudget::class );
-		$this->options       = $this->createMock( OptionsInterface::class );
-		$this->wc            = $this->createMock( WC::class );
-		$this->google_helper = new GoogleHelper( $this->wc );
+		$this->ad_group = $this->createMock( AdsGroup::class );
+		$this->budget   = $this->createMock( AdsCampaignBudget::class );
+		$this->options  = $this->createMock( OptionsInterface::class );
+
+		$this->google_helper = new GoogleHelper( $this->createMock( WC::class ) );
 
 		$this->container = new Container();
 		$this->container->share( AdsGroup::class, $this->ad_group );
-		$this->container->share( GoogleHelper::class, $this->google_helper );
 
-		$this->campaign = new AdsCampaign( $this->client, $this->budget );
+		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->google_helper );
 		$this->campaign->set_options_object( $this->options );
 		$this->campaign->set_container( $this->container );
 
