@@ -64,16 +64,17 @@ class Migration20211228T1640692399 extends AbstractMigration {
 			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ALTER COLUMN `method` DROP DEFAULT" );
 
 			$mc_settings = $this->options->get( Options::MERCHANT_CENTER );
+
 			if ( isset( $mc_settings['offers_free_shipping'] ) && false !== boolval( $mc_settings['offers_free_shipping'] ) && isset( $mc_settings['free_shipping_threshold'] ) ) {
 				// Move the free shipping threshold from the options to the shipping rate table.
 				$serialized_options = json_encode( [ 'free_shipping_threshold' => (float) $mc_settings['free_shipping_threshold'] ] );
 				$this->wpdb->query( $this->wpdb->prepare( "UPDATE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` SET `options`=%s WHERE `method` = 'flat_rate'", $serialized_options ) );
-
-				// Remove the free shipping threshold from the options.
-				unset( $mc_settings['free_shipping_threshold'] );
-				unset( $mc_settings['offers_free_shipping'] );
-				$this->options->update( Options::MERCHANT_CENTER, $mc_settings );
 			}
+
+			// Remove the free shipping threshold from the options.
+			unset( $mc_settings['free_shipping_threshold'] );
+			unset( $mc_settings['offers_free_shipping'] );
+			$this->options->update( Options::MERCHANT_CENTER, $mc_settings );
 		}
 		// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
