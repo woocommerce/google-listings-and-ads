@@ -1,12 +1,18 @@
 /**
  * Internal dependencies
  */
+import { SHIPPING_RATE_METHOD } from '.~/constants';
 import checkErrors from './checkErrors';
 
 function toRates( ...tuples ) {
-	return tuples.map( ( [ countryCode, rate ] ) => ( {
-		countryCode,
+	return tuples.map( ( [ country, rate, threshold ] ) => ( {
+		country,
+		method: SHIPPING_RATE_METHOD.FLAT_RATE,
+		currency: 'USD',
 		rate,
+		options: {
+			free_shipping_threshold: threshold,
+		},
 	} ) );
 }
 
@@ -35,7 +41,8 @@ describe( 'checkErrors', () => {
 			shipping_rate: 'flat',
 			shipping_time: 'flat',
 			tax_rate: 'manual',
-			shipping_country_rates: toRates( [ 'US', 10 ], [ 'JP', 30 ] ),
+			shipping_country_rates: toRates( [ 'US', 10 ], [ 'JP', 30, 88 ] ),
+			offer_free_shipping: true,
 		};
 		const times = toTimes( [ 'US', 3 ], [ 'JP', 10 ] );
 		const codes = [ 'US', 'JP' ];
@@ -173,6 +180,60 @@ describe( 'checkErrors', () => {
 
 				expect( errors ).not.toHaveProperty( 'shipping_rate' );
 			} );
+		} );
+	} );
+
+	describe( 'Offer free shipping', () => {
+		it( 'When all shipping rates are free, and offer free shipping is undefined, should pass', () => {
+			const values = {
+				...defaultFormValues,
+				shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 0 ] ),
+				offer_free_shipping: undefined,
+			};
+			const codes = [ 'US', 'JP' ];
+
+			const errors = checkErrors( values, [], codes );
+
+			expect( errors ).not.toHaveProperty( 'offer_free_shipping' );
+		} );
+
+		it( 'When there are some non-free shipping rates, and offer free shipping is unchecked, should not pass', () => {
+			const values = {
+				...defaultFormValues,
+				shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
+				offer_free_shipping: undefined,
+			};
+			const codes = [ 'US', 'JP' ];
+
+			const errors = checkErrors( values, [], codes );
+
+			expect( errors ).toHaveProperty( 'offer_free_shipping' );
+		} );
+
+		it( 'When there are some non-free shipping rates, and offer free shipping is checked, and there is minimum order amount for non-free shipping rates, should pass', () => {
+			const values = {
+				...defaultFormValues,
+				shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1, 88 ] ),
+				offer_free_shipping: true,
+			};
+			const codes = [ 'US', 'JP' ];
+
+			const errors = checkErrors( values, [], codes );
+
+			expect( errors ).not.toHaveProperty( 'offer_free_shipping' );
+		} );
+
+		it( 'When there are some non-free shipping rates, and offer free shipping is checked, and there is no minimum order amount for non-free shipping rates, should not pass', () => {
+			const values = {
+				...defaultFormValues,
+				shipping_country_rates: toRates( [ 'US', 0 ], [ 'JP', 1 ] ),
+				offer_free_shipping: true,
+			};
+			const codes = [ 'US', 'JP' ];
+
+			const errors = checkErrors( values, [], codes );
+
+			expect( errors ).toHaveProperty( 'offer_free_shipping' );
 		} );
 	} );
 
