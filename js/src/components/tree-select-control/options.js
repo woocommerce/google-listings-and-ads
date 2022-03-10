@@ -32,7 +32,7 @@ const Options = ( {
 	 * @param {Option} parent The parent option to check
 	 */
 	const isEveryChildrenSelected = ( parent ) => {
-		if ( ! parent.children ) {
+		if ( ! parent.children?.length ) {
 			return false;
 		}
 

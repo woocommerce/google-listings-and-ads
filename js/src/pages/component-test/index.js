@@ -34,7 +34,7 @@ const ComponentTest = () => {
 			value: 'AS',
 			label: 'Asia',
 			children: [
-				{ value: 'JP', label: 'Japan' },
+				{ value: 'JP', label: 'Japan', children: [] },
 				{ value: 'CH', label: 'China' },
 				{ value: 'MY', label: 'Malaysia' },
 			],

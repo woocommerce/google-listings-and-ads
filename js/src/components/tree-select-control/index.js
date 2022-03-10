@@ -78,7 +78,7 @@ const TreeSelectControl = ( {
 		const repository = {};
 
 		function loadOption( option ) {
-			if ( ! option.children ) {
+			if ( ! option.children?.length ) {
 				repository[ option.value ] = { ...option };
 			} else {
 				option.children.forEach( ( child ) => {
