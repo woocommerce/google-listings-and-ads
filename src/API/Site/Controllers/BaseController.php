@@ -132,8 +132,8 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 	/**
 	 * Match the data with the controller schema
 	 *
-	 * @param array $schema a valid controller schema
-	 * @param array $data Response data
+	 * @param array $schema schema
+	 * @param array $data data to match with the schema
 	 *
 	 * @return array
 	 */
@@ -146,7 +146,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 				$items[ $key ] = [];
 				// Check every item in the array.
 				foreach ( $data[ $key ] as $value_item ) {
-					$items[ $key ][] = $this->match_data_with_schema( [ $key => $property['items'] ], [ $key => $value_item ?? null ] )[ $key ];
+					$items[ $key ][] = $this->match_data_with_schema( [ $key => $property['items'] ], [ $key => $value_item ] )[ $key ];
 				}
 				$prepared = array_merge( $prepared, $items );
 			} elseif ( 'object' === $property['type'] && isset( $data [ $key ] ) && is_array( $property['properties'] ) ) {
@@ -154,7 +154,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 				// Check every object's property.
 				foreach ( $property['properties'] as $key_property => $value_property ) {
 					if ( isset( $data [ $key ][ $key_property ] ) || isset( $value_property['default'] ) ) {
-						$properties = array_merge( $properties, $this->match_data_with_schema( [ $key_property => $value_property ], $data [ $key ] ?? null ) );
+						$properties = array_merge( $properties, $this->match_data_with_schema( [ $key_property => $value_property ], $data [ $key ] ) );
 					}
 				}
 				// Cast empty arrays to empty objects if property is supposed to be an object.
