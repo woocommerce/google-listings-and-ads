@@ -149,7 +149,7 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 					$items[ $key ][] = $this->match_data_with_schema( [ $key => $property['items'] ], [ $key => $value_item ] )[ $key ];
 				}
 				$prepared = array_merge( $prepared, $items );
-			} elseif ( 'object' === $property['type'] && isset( $data [ $key ] ) && is_array( $property['properties'] ) ) {
+			} elseif ( 'object' === $property['type'] && isset( $data [ $key ] ) && is_array( $property['properties'] ) && is_array( $data [ $key ] ) ) {
 				$properties = [];
 				// Check every object's property.
 				foreach ( $property['properties'] as $key_property => $value_property ) {
