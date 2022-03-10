@@ -1,34 +1,24 @@
 <?php
-
+declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
-use Psr\Container\ContainerInterface;
+
+defined( 'ABSPATH' ) || exit;
 
 /**
  * Class SiteVerificationMeta
  *
- * @package Automattic\WooCommerce\GoogleListingsAndAds
+ * @package Automattic\WooCommerce\GoogleListingsAndAds\Google
  */
-class SiteVerificationMeta implements Service, Registerable {
+class SiteVerificationMeta implements OptionsAwareInterface, Registerable, Service {
 
-	/**
-	 * @var array
-	 */
-	private $settings;
-
-	/**
-	 * SiteVerificationMeta constructor.
-	 *
-	 * @param ContainerInterface $container The container object.
-	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->settings = $container->get( OptionsInterface::class )->get( OptionsInterface::SITE_VERIFICATION, [] );
-	}
-
+	use OptionsAwareTrait;
 
 	/**
 	 * Add the meta header hook.
@@ -46,12 +36,15 @@ class SiteVerificationMeta implements Service, Registerable {
 	 * Display the meta tag with the site verification token.
 	 */
 	protected function display_meta_token() {
-		if ( empty( $this->settings['meta_tag'] ) ) {
+		$settings = $this->options->get( OptionsInterface::SITE_VERIFICATION, [] );
+
+		if ( empty( $settings['meta_tag'] ) ) {
 			return;
 		}
+
 		echo '<!-- Google site verification - Google Listings & Ads -->' . PHP_EOL;
 		echo wp_kses(
-			$this->settings['meta_tag'],
+			$settings['meta_tag'],
 			[
 				'meta' => [
 					'name'    => true,
