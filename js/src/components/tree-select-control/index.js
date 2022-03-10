@@ -56,7 +56,7 @@ const TreeSelectControl = ( {
 	let instanceId = useInstanceId( TreeSelectControl );
 	instanceId = id ?? instanceId;
 	const [ isExpanded, setIsExpanded ] = useState( false );
-	const optionsRef = useIsEqualRefValue(
+	const treeOptions = useIsEqualRefValue(
 		selectAllLabel
 			? [ { label: selectAllLabel, value: '', children: options } ]
 			: options
@@ -84,10 +84,10 @@ const TreeSelectControl = ( {
 			}
 		}
 
-		optionsRef.forEach( ( option ) => loadOption( option ) );
+		treeOptions.forEach( ( option ) => loadOption( option ) );
 
 		return repository;
-	}, [ optionsRef ] );
+	}, [ treeOptions ] );
 
 	/**
 	 * Get formatted Tags from the selected values.
@@ -215,7 +215,7 @@ const TreeSelectControl = ( {
 					tabIndex="-1"
 				>
 					<Options
-						options={ optionsRef }
+						options={ treeOptions }
 						value={ value }
 						onChange={ handleOptionsChange }
 					/>
