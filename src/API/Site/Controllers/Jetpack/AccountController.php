@@ -123,6 +123,7 @@ class AccountController extends BaseOptionsController {
 		return function() {
 			$this->manager->remove_connection();
 			$this->options->delete( OptionsInterface::WP_TOS_ACCEPTED );
+			$this->options->delete( OptionsInterface::JETPACK_CONNECTED );
 
 			return [
 				'status'  => 'success',

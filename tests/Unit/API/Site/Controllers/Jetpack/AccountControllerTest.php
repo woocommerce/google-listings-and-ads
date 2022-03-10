@@ -76,9 +76,12 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	public function test_disconnect() {
 		$this->manager->expects( $this->once() )
 			->method( 'remove_connection' );
-		$this->options->expects( $this->once() )
+		$this->options->expects( $this->exactly( 2 ) )
 			->method( 'delete' )
-			->with( OptionsInterface::WP_TOS_ACCEPTED );
+			->withConsecutive(
+				[ OptionsInterface::WP_TOS_ACCEPTED ],
+				[ OptionsInterface::JETPACK_CONNECTED ]
+			);
 
 		$response = $this->do_request( self::ROUTE_CONNECT, 'DELETE' );
 
