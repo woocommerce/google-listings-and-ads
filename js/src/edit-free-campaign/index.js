@@ -24,6 +24,7 @@ import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import HelpIconButton from '.~/components/help-icon-button';
+import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -147,7 +148,11 @@ export default function EditFreeCampaign() {
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
 	const didSettingsChanged = ! isEqual( settings, savedSettings );
-	const didRatesChanged = ! isEqual( shippingRates, savedShippingRates );
+	const didRatesChanged = hasUnsavedShippingRates(
+		shippingRates,
+		savedShippingRates
+	);
+
 	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
 	const didAnythingChanged =
 		didAudienceChanged ||
