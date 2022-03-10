@@ -41,21 +41,22 @@ const CONTENT = {
  * @return {JSX.Element} The Component to be rendered
  */
 const PerformanceCardNoData = ( { campaignType = REPORT_SOURCE_FREE } ) => {
+	const content = CONTENT[ campaignType ];
 	return (
 		<div className="gla-summary-card__body">
-			<p>{ CONTENT[ campaignType ].body }</p>
+			<p>{ content.body }</p>
 			<AppButton
-				eventName={ CONTENT[ campaignType ].eventName }
+				eventName={ content.eventName }
 				eventProps={ {
 					context: 'dashboard',
-					href: CONTENT[ campaignType ].link,
+					href: content.link,
 				} }
-				href={ CONTENT[ campaignType ].link }
+				href={ content.link }
 				target="_blank"
 				isSmall
 				isSecondary
 			>
-				{ CONTENT[ campaignType ].buttonLabel }
+				{ content.buttonLabel }
 			</AppButton>
 		</div>
 	);
