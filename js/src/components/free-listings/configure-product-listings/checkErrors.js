@@ -26,6 +26,20 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	}
 
 	if (
+		values.shipping_rate === 'flat' &&
+		( values.shipping_country_rates.length < finalCountryCodes.length ||
+			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
+	) {
+		errors.shipping_rate = __(
+			'Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0.',
+			'google-listings-and-ads'
+		);
+	}
+
+	/**
+	 * Check offer free shipping.
+	 */
+	if (
 		values.offer_free_shipping === undefined &&
 		values.shipping_country_rates.some( isNonFreeFlatShippingRate )
 	) {
@@ -44,17 +58,6 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	) {
 		errors.offer_free_shipping = __(
 			'Please enter minimum order for free shipping.',
-			'google-listings-and-ads'
-		);
-	}
-
-	if (
-		values.shipping_rate === 'flat' &&
-		( values.shipping_country_rates.length < finalCountryCodes.length ||
-			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
-	) {
-		errors.shipping_rate = __(
-			'Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0.',
 			'google-listings-and-ads'
 		);
 	}
