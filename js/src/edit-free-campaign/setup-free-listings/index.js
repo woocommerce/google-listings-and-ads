@@ -10,6 +10,7 @@ import { useState } from '@wordpress/element';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
+import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
 import FormContent from './form-content';
 
 /**
@@ -107,6 +108,9 @@ const SetupFreeListings = ( {
 					contact_info_visible: settings.contact_info_visible,
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
+					offer_free_shipping: getOfferFreeShippingInitialValue(
+						shippingRates
+					),
 					shipping_country_times: shippingTimes,
 				} }
 				onChange={ handleChange }

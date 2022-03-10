@@ -18,6 +18,7 @@ import useIsMounted from '.~/hooks/useIsMounted';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
 import useShippingRatesWithSavedSuggestions from './useShippingRatesWithSavedSuggestions';
 import { useAppDispatch } from '.~/data';
 
@@ -115,6 +116,9 @@ const SetupFreeListings = ( props ) => {
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
 					shipping_country_rates: dataShippingRates,
+					offer_free_shipping: getOfferFreeShippingInitialValue(
+						dataShippingRates
+					),
 				} }
 				validate={ handleValidate }
 				onSubmit={ handleSubmitCallback }
