@@ -21,6 +21,7 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
 import useShippingRatesWithSavedSuggestions from './useShippingRatesWithSavedSuggestions';
 import { useAppDispatch } from '.~/data';
+import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 
 /**
  * Setup step to configure free listings.
@@ -41,7 +42,8 @@ const SetupFreeListings = ( props ) => {
 	const {
 		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();
-	const { saveSettings, saveShippingRates } = useAppDispatch();
+	const { saveSettings } = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
 	const [ saving, setSaving ] = useState( false );
 	const { createNotice } = useDispatchCoreNotices();
 	const isMounted = useIsMounted();

@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import { useAppDispatch } from '.~/data';
+import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 
 /**
  * A hook that returns a `saveSuggestions` callback.
@@ -20,7 +20,7 @@ import { useAppDispatch } from '.~/data';
  */
 const useSaveSuggestions = () => {
 	const { createNotice } = useDispatchCoreNotices();
-	const { saveShippingRates } = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
 
 	const saveSuggestions = useCallback(
 		async ( suggestions ) => {

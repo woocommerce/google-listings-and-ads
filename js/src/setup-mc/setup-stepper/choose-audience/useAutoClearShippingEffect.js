@@ -9,12 +9,14 @@ import { useDebouncedCallback } from 'use-debounce';
  */
 import { useAppDispatch } from '.~/data';
 import useShippingTimes from '.~/hooks/useShippingTimes';
+import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 
 const wait = 500;
 
 const useAutoClearShippingEffect = ( location, countries ) => {
 	const { data: shippingTimes } = useShippingTimes();
-	const { saveShippingRates, deleteShippingTimes } = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
+	const { deleteShippingTimes } = useAppDispatch();
 
 	const debouncedDelete = useDebouncedCallback( async () => {
 		saveShippingRates( [] );
