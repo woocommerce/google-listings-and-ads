@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -14,7 +16,6 @@ use Google\Service\SiteVerification\SiteVerificationWebResourceResource as WebRe
 use Google\Service\SiteVerification\SiteVerificationWebResourceResourceSite as WebResourceSite;
 use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequest as GetTokenRequest;
 use Google\Service\SiteVerification\SiteVerificationWebResourceGettokenRequestSite as GetTokenRequestSite;
-use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,17 +24,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class SiteVerification implements OptionsAwareInterface {
+class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface {
 
+	use ContainerAwareTrait;
 	use OptionsAwareTrait;
 	use PluginHelper;
-
-	/**
-	 * The container object.
-	 *
-	 * @var ContainerInterface
-	 */
-	protected $container;
 
 	/** @var string */
 	private const VERIFICATION_METHOD = 'META';
@@ -43,16 +38,6 @@ class SiteVerification implements OptionsAwareInterface {
 
 	/** @var string */
 	public const VERIFICATION_STATUS_UNVERIFIED = 'no';
-
-
-	/**
-	 * SiteVerification constructor.
-	 *
-	 * @param ContainerInterface $container
-	 */
-	public function __construct( ContainerInterface $container ) {
-		$this->container = $container;
-	}
 
 	/**
 	 * Get the META token for site verification.

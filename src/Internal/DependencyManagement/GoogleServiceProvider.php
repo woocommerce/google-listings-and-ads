@@ -110,10 +110,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( MerchantMetrics::class, ShoppingContent::class, GoogleAdsClient::class, WP::class, TransientsInterface::class );
 		$this->share( MerchantReport::class, ShoppingContent::class, ProductHelper::class );
 
-		$this->add(
-			SiteVerification::class,
-			$this->getLeagueContainer()
-		);
+		$this->share( SiteVerification::class );
 
 		$this->getLeagueContainer()->add( 'connect_server_root', $this->get_connect_server_url_root() );
 	}
