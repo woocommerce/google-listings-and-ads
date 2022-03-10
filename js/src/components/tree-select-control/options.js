@@ -41,11 +41,10 @@ const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 		);
 	};
 
-	const isRoot = ( option ) => option.value === '';
-
 	return options.map( ( option ) => {
-		const isExpanded =
-			isRoot( option ) || expanded.includes( option.value );
+		const isRoot = option.value === '';
+
+		const isExpanded = isRoot || expanded.includes( option.value );
 
 		const hasChildren = !! option.children?.length;
 
@@ -59,7 +58,7 @@ const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 					className="woocommerce-tree-select-control__node"
 					justify="flex-start"
 				>
-					{ ! isRoot( option ) && (
+					{ ! isRoot && (
 						<Icon
 							className={ classnames(
 								'woocommerce-tree-select-control__expander-icon',
@@ -90,7 +89,7 @@ const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 					<div
 						className={ classnames(
 							'woocommerce-tree-select-control__children',
-							isRoot( option )
+							isRoot
 								? 'woocommerce-tree-select-control__main'
 								: false
 						) }
