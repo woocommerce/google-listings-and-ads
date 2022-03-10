@@ -22,7 +22,7 @@ import { isEqual, differenceWith, at } from 'lodash';
  * @param  {Array<ShippingRate>} savedRates The saved shipping rates received from API.
  * @return {boolean} Whether there are any unsaved shipping changes.
  */
-export default function hasUnsavedShippingRages( rates, savedRates ) {
+export default function hasUnsavedShippingRates( rates, savedRates ) {
 	if ( rates.length !== savedRates.length ) {
 		return true;
 	}
