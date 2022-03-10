@@ -60,7 +60,7 @@ class ShippingRateQuery extends Query {
 
 		$this->results = array_map(
 			function ( $row ) {
-				$row['options'] = ! empty( $row['options'] ) ? json_decode( $row['options'] ) : $row['options'];
+				$row['options'] = ! empty( $row['options'] ) ? json_decode( $row['options'], true ) : $row['options'];
 
 				return $row;
 			},
