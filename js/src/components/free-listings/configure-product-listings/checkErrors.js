@@ -3,6 +3,11 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+
 const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
 const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
@@ -21,6 +26,29 @@ const checkErrors = (
 	if ( ! validShippingRateSet.has( values.shipping_rate ) ) {
 		errors.shipping_rate = __(
 			'Please select a shipping rate option.',
+			'google-listings-and-ads'
+		);
+	}
+
+	if (
+		values.offer_free_shipping === undefined &&
+		values.shipping_country_rates.some( isNonFreeFlatShippingRate )
+	) {
+		errors.offer_free_shipping = __(
+			'Please select an option for offering free shipping.',
+			'google-listings-and-ads'
+		);
+	}
+
+	if (
+		values.offer_free_shipping === true &&
+		values.shipping_country_rates.every(
+			( shippingRate ) =>
+				shippingRate.options.free_shipping_threshold === undefined
+		)
+	) {
+		errors.offer_free_shipping = __(
+			'Please enter minimum order for free shipping.',
 			'google-listings-and-ads'
 		);
 	}
