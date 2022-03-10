@@ -21,7 +21,7 @@ import './index.scss';
 /**
  * The Option type Object. This is how we send the options to the selector.
  *
- * @typedef { Object } Option
+ * @typedef {Object} Option
  * @property {string} value The value for the option
  * @property {string} label The label for the option
  * @property {Option[]} [children] The children Option objects
@@ -38,9 +38,9 @@ import './index.scss';
  * @param {string} props.className The class name for this component
  * @param {boolean} props.disabled Disables the component
  * @param {Option[]} props.options Options to show in the component
- * @param {{string}[]} props.value Selected values
+ * @param {string[]} props.value Selected values
  * @param {Function} props.onChange Callback when the selector changes
- * @return {JSX.Element|null} The component
+ * @return {JSX.Element} The component
  */
 const TreeSelectControl = ( {
 	id,
