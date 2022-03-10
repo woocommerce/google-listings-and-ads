@@ -14,6 +14,15 @@ import useShippingRates from './useShippingRates';
  * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
  */
 
+const getDeleteIds = ( newShippingRates, oldShippingRates ) => {
+	return oldShippingRates
+		.filter(
+			( oldShippingRate ) =>
+				! isInShippingRates( oldShippingRate, newShippingRates )
+		)
+		.map( ( oldShippingRate ) => oldShippingRate.id );
+};
+
 const useSaveShippingRates = () => {
 	const { data: oldShippingRates } = useShippingRates();
 	const { deleteShippingRates, upsertShippingRates } = useAppDispatch();
@@ -28,12 +37,10 @@ const useSaveShippingRates = () => {
 		 * @param {Array<ShippingRate>} newShippingRates
 		 */
 		async ( newShippingRates ) => {
-			const deleteIds = oldShippingRates
-				.filter(
-					( oldShippingRate ) =>
-						! isInShippingRates( oldShippingRate, newShippingRates )
-				)
-				.map( ( oldShippingRate ) => oldShippingRate.id );
+			const deleteIds = getDeleteIds(
+				newShippingRates,
+				oldShippingRates
+			);
 
 			if ( deleteIds.length ) {
 				await deleteShippingRates( deleteIds );
