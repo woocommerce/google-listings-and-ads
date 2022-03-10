@@ -12,12 +12,7 @@ const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
 const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
 
-const checkErrors = (
-	values,
-	shippingRates,
-	shippingTimes,
-	finalCountryCodes
-) => {
+const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	const errors = {};
 
 	/**
@@ -55,8 +50,8 @@ const checkErrors = (
 
 	if (
 		values.shipping_rate === 'flat' &&
-		( shippingRates.length < finalCountryCodes.length ||
-			shippingRates.some( ( el ) => el.rate < 0 ) )
+		( values.shipping_country_rates.length < finalCountryCodes.length ||
+			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
 	) {
 		errors.shipping_rate = __(
 			'Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0.',

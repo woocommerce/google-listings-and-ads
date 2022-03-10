@@ -128,7 +128,6 @@ const SetupFreeListings = ( props ) => {
 
 					const errors = checkErrors(
 						values,
-						values.shipping_country_rates,
 						shippingTimesData,
 						finalCountryCodesData
 					);
