@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\DB\Migration;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Table\ShippingRateTable;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use wpdb;
 
