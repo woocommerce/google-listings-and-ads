@@ -56,7 +56,7 @@ class ReconnectWordPress extends AbstractNote {
 			__( 'Re-connect your store to Google Listings & Ads', 'google-listings-and-ads' )
 		);
 		$note->set_content(
-			__( 'Your WordPress.com account has been disconnected from Google Listings & Ads. Connect your WordPress.com account again to ensure your products stay listed on Google through the Google Listings & Ads extension.<br/><br/>If you do not re-connect, your products can’t be automatically synced to Google, and any existing listings may be removed from Google.', 'google-listings-and-ads' )
+			__( 'Your WordPress.com account has been disconnected from Google Listings & Ads. Connect your WordPress.com account again to ensure your products stay listed on Google through the Google Listings & Ads extension.<br/><br/>If you do not re-connect, any existing listings may be removed from Google.', 'google-listings-and-ads' )
 		);
 		$note->set_content_data( (object) [] );
 		$note->set_type( NoteEntry::E_WC_ADMIN_NOTE_INFORMATIONAL );
