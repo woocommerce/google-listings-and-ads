@@ -63,22 +63,26 @@ const Options = ( {
 				key={ `${ option.value }` }
 				role={ hasChildren ? 'treegroup' : 'treeitem' }
 				aria-expanded={ hasChildren ? isExpanded : undefined }
+				className={ classnames(
+					'woocommerce-tree-select-control__node',
+					hasChildren && 'has-children'
+				) }
 			>
-				<Flex
-					className="woocommerce-tree-select-control__node"
-					justify="flex-start"
-				>
+				<Flex justify="flex-start">
 					{ ! isRoot && (
-						<Icon
-							className={ classnames(
-								'woocommerce-tree-select-control__expander-icon',
-								! hasChildren ? 'is-hidden' : false
-							) }
-							icon={ isExpanded ? chevronUp : chevronDown }
+						<button
 							onClick={ () => {
 								toggleExpanded( option );
 							} }
-						/>
+							className={ classnames(
+								'woocommerce-tree-select-control__expander',
+								! hasChildren && 'is-hidden'
+							) }
+						>
+							<Icon
+								icon={ isExpanded ? chevronUp : chevronDown }
+							/>
+						</button>
 					) }
 
 					<CheckboxControl
@@ -99,9 +103,7 @@ const Options = ( {
 					<div
 						className={ classnames(
 							'woocommerce-tree-select-control__children',
-							isRoot
-								? 'woocommerce-tree-select-control__main'
-								: false
+							isRoot && 'woocommerce-tree-select-control__main'
 						) }
 					>
 						<Options
