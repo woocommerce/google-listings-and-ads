@@ -25,16 +25,17 @@ const Options = ( {
 	/**
 	 * Returns true if all the children for the parent are selected
 	 *
-	 * @param {Option} option The parent option to check
+	 * @param {Option} parentOption The parent option to check
 	 */
-	const isParentSelected = ( option ) => {
-		if ( ! option.children ) {
+	const isEveryChildrenSelected = ( parentOption ) => {
+		if ( ! parentOption.children ) {
 			return false;
 		}
 
-		return option.children.every(
+		return parentOption.children.every(
 			( child ) =>
-				value.includes( child.value ) || isParentSelected( child )
+				value.includes( child.value ) ||
+				isEveryChildrenSelected( child )
 		);
 	};
 
@@ -83,7 +84,7 @@ const Options = ( {
 						label={ option.label }
 						checked={
 							value.includes( option.value ) ||
-							isParentSelected( option )
+							isEveryChildrenSelected( option )
 						}
 						onChange={ ( checked ) => {
 							onChange( checked, option );
