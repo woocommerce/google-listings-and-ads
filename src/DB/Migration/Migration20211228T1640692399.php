@@ -63,7 +63,7 @@ class Migration20211228T1640692399 extends AbstractMigration {
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ALTER COLUMN `method` DROP DEFAULT" );
 
-			$mc_settings = $this->options->get( Options::MERCHANT_CENTER );
+			$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER );
 			if ( isset( $mc_settings['offers_free_shipping'] ) && false !== boolval( $mc_settings['offers_free_shipping'] ) && isset( $mc_settings['free_shipping_threshold'] ) ) {
 				// Move the free shipping threshold from the options to the shipping rate table.
 				$options_json = json_encode( [ 'free_shipping_threshold' => (float) $mc_settings['free_shipping_threshold'] ] );
@@ -75,7 +75,7 @@ class Migration20211228T1640692399 extends AbstractMigration {
 			// Remove the free shipping threshold from the options.
 			unset( $mc_settings['free_shipping_threshold'] );
 			unset( $mc_settings['offers_free_shipping'] );
-			$this->options->update( Options::MERCHANT_CENTER, $mc_settings );
+			$this->options->update( OptionsInterface::MERCHANT_CENTER, $mc_settings );
 		}
 	}
 }
