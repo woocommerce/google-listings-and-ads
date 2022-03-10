@@ -51,6 +51,6 @@ class SiteVerificationMeta implements OptionsAwareInterface, Registerable, Servi
 					'content' => true,
 				],
 			]
-		) . "\n";
+		) . PHP_EOL;
 	}
 }
