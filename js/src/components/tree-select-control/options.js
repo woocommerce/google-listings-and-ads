@@ -7,6 +7,10 @@ import { Icon, chevronUp, chevronDown } from '@wordpress/icons';
 import classnames from 'classnames';
 
 /**
+ * @typedef {import('./').Option} Option
+ */
+
+/**
  * This component renders a list of options and its children recursively
  *
  * @param {Object} params Component parameters

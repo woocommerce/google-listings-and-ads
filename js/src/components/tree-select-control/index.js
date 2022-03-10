@@ -22,7 +22,7 @@ import './index.scss';
  * The Option type Object. This is how we send the options to the selector.
  *
  * @typedef { Object } Option
- * @property {string} value The unique value for the option
+ * @property {string} value The value for the option
  * @property {string} label The label for the option
  * @property {Option[]} [children] The children Option objects
  */
