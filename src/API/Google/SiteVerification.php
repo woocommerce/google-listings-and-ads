@@ -42,7 +42,7 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 	/**
 	 * Performs the three-step process of verifying the current site:
 	 * 1. Retrieves the meta tag with the verification token.
-	 * 2. Enables the meta tag in the head of the store.
+	 * 2. Enables the meta tag in the head of the store (handled by SiteVerificationMeta).
 	 * 3. Instructs the Site Verification API to verify the meta tag.
 	 *
 	 * @since x.x.x
@@ -77,23 +77,14 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 
 		// Attempt verification.
 		try {
-			if ( $this->insert( $site_url ) ) {
-				$site_verification_options['verified'] = self::VERIFICATION_STATUS_VERIFIED;
-				$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
-				do_action( 'woocommerce_gla_site_verify_success', [] );
-
-				return;
-			}
+			$this->insert( $site_url );
+			$site_verification_options['verified'] = self::VERIFICATION_STATUS_VERIFIED;
+			$this->options->update( OptionsInterface::SITE_VERIFICATION, $site_verification_options );
+			do_action( 'woocommerce_gla_site_verify_success', [] );
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'meta-tag' ] );
-
 			throw $e;
 		}
-
-		// Should never reach this point.
-		do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
-
-		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
 	}
 
 	/**
@@ -101,8 +92,9 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 	 * https://developers.google.com/site-verification/v1/webResource/getToken
 	 *
 	 * @param string $identifier The URL of the site to verify (including protocol).
-	 * @throws Exception When unable to retrieve meta token.
+	 *
 	 * @return string The meta tag to be used for verification.
+	 * @throws Exception When unable to retrieve meta token.
 	 */
 	protected function get_token( string $identifier ): string {
 		/** @var SiteVerificationService $service */
@@ -138,10 +130,10 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 	 * using the META method.
 	 *
 	 * @param string $identifier The URL of the site to verify (including protocol).
+	 *
 	 * @throws Exception When unable to verify token.
-	 * @return bool True if the site was verified correctly.
 	 */
-	protected function insert( string $identifier ): bool {
+	protected function insert( string $identifier ) {
 		/** @var SiteVerificationService $service */
 		$service   = $this->container->get( SiteVerificationService::class );
 		$post_body = new WebResource(
@@ -165,8 +157,6 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 				$e->getCode()
 			);
 		}
-
-		return true;
 	}
 
 }
