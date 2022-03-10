@@ -177,6 +177,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		cursor: pointer;
 		margin-right: 0;
 
+		// For nodes without children, we show still the space of the Expand Icon for alignment purposes.
 		&.is-hidden {
 			visibility: hidden;
 			pointer-events: none;
