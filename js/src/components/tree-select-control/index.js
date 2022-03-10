@@ -24,7 +24,30 @@ import './index.scss';
  * @typedef {Object} Option
  * @property {string} value The value for the option
  * @property {string} label The label for the option
- * @property {Option[]} [children] The children Option objects
+ * @property {Option[]} [children] The children Option objects.
+ *
+ * Example of Options data structure:
+ *   [
+       {
+			value: 'EU',
+			label: 'Europe',
+			children: [
+				{ value: 'ES', label: 'Spain' },
+				{ value: 'FR', label: 'France', children: [] }, // defining children as [] is equivalent to not have no children
+			],
+		},
+		{
+			value: 'NA',
+			label: 'North America',
+			children: [
+				{ value: 'US', label: 'United States', [
+					{ value: 'TX', label: 'Texas' },
+					{ value: 'NY', label: 'New York' },
+				] },
+				{ value: 'CA', label: 'Canada' },
+			],
+		}
+     ],
  */
 
 /**
