@@ -12,27 +12,21 @@ import classnames from 'classnames';
  * @param {Object} params Component parameters
  * @param {Option[]} params.options List of options to be rendered
  * @param {string[]} params.value List of selected values
- * @param {string} params.parent The parent of these set of options
  * @param {Function} params.onChange Callback when an option changes
  */
-const Options = ( {
-	options = [],
-	value = [],
-	parent = '',
-	onChange = () => {},
-} ) => {
+const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 	const [ expanded, setExpanded ] = useState( [] );
 	/**
 	 * Returns true if all the children for the parent are selected
 	 *
-	 * @param {Option} parentOption The parent option to check
+	 * @param {Option} parent The parent option to check
 	 */
-	const isEveryChildrenSelected = ( parentOption ) => {
-		if ( ! parentOption.children ) {
+	const isEveryChildrenSelected = ( parent ) => {
+		if ( ! parent.children ) {
 			return false;
 		}
 
-		return parentOption.children.every(
+		return parent.children.every(
 			( child ) =>
 				value.includes( child.value ) ||
 				isEveryChildrenSelected( child )
@@ -57,7 +51,7 @@ const Options = ( {
 
 		return (
 			<div
-				key={ `${ parent }-${ option.value }` }
+				key={ `${ option.value }` }
 				role={ hasChildren ? 'treegroup' : 'treeitem' }
 				aria-expanded={ hasChildren ? isExpanded : undefined }
 			>
@@ -102,7 +96,6 @@ const Options = ( {
 						) }
 					>
 						<Options
-							parent={ option.value }
 							options={ option.children }
 							onChange={ onChange }
 							value={ value }
