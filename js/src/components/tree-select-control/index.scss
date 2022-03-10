@@ -149,7 +149,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 	.woocommerce-tree-select-control__node {
 
 		&.has-children {
-			border-bottom: 1px solid #EEEEEE;
+			border-bottom: 1px solid #eee;
 
 			&:last-child {
 				border-bottom: 0;
@@ -163,7 +163,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 	}
 
 	.woocommerce-tree-select-control__main {
-		border-top: 1px solid #EEEEEE;
+		border-top: 1px solid #eee;
 		padding-left: 0;
 	}
 
