@@ -40,79 +40,6 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 	public const VERIFICATION_STATUS_UNVERIFIED = 'no';
 
 	/**
-	 * Get the META token for site verification.
-	 * https://developers.google.com/site-verification/v1/webResource/getToken
-	 *
-	 * @param string $identifier The URL of the site to verify (including protocol).
-	 * @throws Exception When unable to retrieve meta token.
-	 * @return string The meta tag to be used for verification.
-	 */
-	public function get_token( string $identifier ): string {
-		/** @var SiteVerificationService $service */
-		$service   = $this->container->get( SiteVerificationService::class );
-		$post_body = new GetTokenRequest(
-			[
-				'verificationMethod' => self::VERIFICATION_METHOD,
-				'site'               => new GetTokenRequestSite(
-					[
-						'type'       => 'SITE',
-						'identifier' => $identifier,
-					]
-				),
-			]
-		);
-
-		try {
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			$response = $service->webResource->getToken( $post_body );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception(
-				__( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ),
-				$e->getCode()
-			);
-		}
-
-		return $response->getToken();
-	}
-
-	/**
-	 * Instructs the Google Site Verification API to verify site ownership
-	 * using the META method.
-	 *
-	 * @param string $identifier The URL of the site to verify (including protocol).
-	 * @throws Exception When unable to verify token.
-	 * @return bool True if the site was verified correctly.
-	 */
-	public function insert( string $identifier ): bool {
-		/** @var SiteVerificationService $service */
-		$service   = $this->container->get( SiteVerificationService::class );
-		$post_body = new WebResource(
-			[
-				'site' => new WebResourceSite(
-					[
-						'type'       => 'SITE',
-						'identifier' => $identifier,
-					]
-				),
-			]
-		);
-
-		try {
-			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
-		} catch ( GoogleException $e ) {
-			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
-			throw new Exception(
-				__( 'Unable to insert site verification.', 'google-listings-and-ads' ),
-				$e->getCode()
-			);
-		}
-
-		return true;
-	}
-
-	/**
 	 * Performs the three-step process of verifying the current site:
 	 * 1. Retrieves the meta tag with the verification token.
 	 * 2. Enables the meta tag in the head of the store.
@@ -167,6 +94,79 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 		do_action( 'woocommerce_gla_site_verify_failure', [ 'step' => 'unknown' ] );
 
 		throw new Exception( __( 'Site verification failed.', 'google-listings-and-ads' ) );
+	}
+
+	/**
+	 * Get the META token for site verification.
+	 * https://developers.google.com/site-verification/v1/webResource/getToken
+	 *
+	 * @param string $identifier The URL of the site to verify (including protocol).
+	 * @throws Exception When unable to retrieve meta token.
+	 * @return string The meta tag to be used for verification.
+	 */
+	protected function get_token( string $identifier ): string {
+		/** @var SiteVerificationService $service */
+		$service   = $this->container->get( SiteVerificationService::class );
+		$post_body = new GetTokenRequest(
+			[
+				'verificationMethod' => self::VERIFICATION_METHOD,
+				'site'               => new GetTokenRequestSite(
+					[
+						'type'       => 'SITE',
+						'identifier' => $identifier,
+					]
+				),
+			]
+		);
+
+		try {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$response = $service->webResource->getToken( $post_body );
+		} catch ( GoogleException $e ) {
+			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
+			throw new Exception(
+				__( 'Unable to retrieve site verification token.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
+		}
+
+		return $response->getToken();
+	}
+
+	/**
+	 * Instructs the Google Site Verification API to verify site ownership
+	 * using the META method.
+	 *
+	 * @param string $identifier The URL of the site to verify (including protocol).
+	 * @throws Exception When unable to verify token.
+	 * @return bool True if the site was verified correctly.
+	 */
+	protected function insert( string $identifier ): bool {
+		/** @var SiteVerificationService $service */
+		$service   = $this->container->get( SiteVerificationService::class );
+		$post_body = new WebResource(
+			[
+				'site' => new WebResourceSite(
+					[
+						'type'       => 'SITE',
+						'identifier' => $identifier,
+					]
+				),
+			]
+		);
+
+		try {
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$service->webResource->insert( self::VERIFICATION_METHOD, $post_body );
+		} catch ( GoogleException $e ) {
+			do_action( 'woocommerce_gla_sv_client_exception', $e, __METHOD__ );
+			throw new Exception(
+				__( 'Unable to insert site verification.', 'google-listings-and-ads' ),
+				$e->getCode()
+			);
+		}
+
+		return true;
 	}
 
 }
