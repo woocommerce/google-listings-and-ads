@@ -35,9 +35,9 @@ const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 
 	const toggleExpanded = ( option ) => {
 		setExpanded(
-			expanded.includes( option )
-				? expanded.filter( ( el ) => option !== el )
-				: [ ...expanded, option ]
+			expanded.includes( option.value )
+				? expanded.filter( ( el ) => option.value !== el )
+				: [ ...expanded, option.value ]
 		);
 	};
 
@@ -66,7 +66,7 @@ const Options = ( { options = [], value = [], onChange = () => {} } ) => {
 							) }
 							icon={ isExpanded ? chevronUp : chevronDown }
 							onClick={ () => {
-								toggleExpanded( option.value );
+								toggleExpanded( option );
 							} }
 						/>
 					) }
