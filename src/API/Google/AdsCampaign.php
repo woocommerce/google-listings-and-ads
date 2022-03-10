@@ -436,7 +436,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$location_id         = $this->parse_geo_target_location_id( $geo_target_constant );
 			$country_code        = $this->google_helper->find_country_code_by_id( $location_id );
 
-			$campaigns[ $campaign_id ]['targeted_locations'][] = $country_code;
+			if ( isset( $country_code ) ) {
+				$campaigns[ $campaign_id ]['targeted_locations'][] = $country_code;
+			}
 		}
 
 		return $campaigns;

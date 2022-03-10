@@ -104,6 +104,45 @@ class AdsCampaignTest extends UnitTest {
 		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
 	}
 
+	public function test_get_campaigns_with_nonexist_location_id() {
+		$campaign_criterion_data = [
+			[
+				'campaign_id'         => self::TEST_CAMPAIGN_ID,
+				'geo_target_constant' => 'geoTargetConstants/999999999',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'geoTargetConstants/999999999',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'geoTargetConstants/999999999',
+			],
+		];
+
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'paused',
+				'amount'  => 10,
+				'country' => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'amount'  => 20,
+				'country' => 'UK',
+				'targeted_locations' => [],
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
+		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
+	}
+
 	public function test_get_campaigns_exception() {
 		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
 
