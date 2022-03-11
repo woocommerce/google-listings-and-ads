@@ -37,29 +37,31 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	}
 
 	/**
-	 * Check offer free shipping.
+	 * Check offer free shipping, only when shipping_rate is 'flat'.
 	 */
-	if (
-		values.offer_free_shipping === undefined &&
-		values.shipping_country_rates.some( isNonFreeFlatShippingRate )
-	) {
-		errors.offer_free_shipping = __(
-			'Please select an option for whether to offer free shipping.',
-			'google-listings-and-ads'
-		);
-	}
+	if ( values.shipping_rate === 'flat' ) {
+		if (
+			values.offer_free_shipping === undefined &&
+			values.shipping_country_rates.some( isNonFreeFlatShippingRate )
+		) {
+			errors.offer_free_shipping = __(
+				'Please select an option for whether to offer free shipping.',
+				'google-listings-and-ads'
+			);
+		}
 
-	if (
-		values.offer_free_shipping === true &&
-		values.shipping_country_rates.every(
-			( shippingRate ) =>
-				shippingRate.options.free_shipping_threshold === undefined
-		)
-	) {
-		errors.offer_free_shipping = __(
-			'Please enter minimum order for free shipping.',
-			'google-listings-and-ads'
-		);
+		if (
+			values.offer_free_shipping === true &&
+			values.shipping_country_rates.every(
+				( shippingRate ) =>
+					shippingRate.options.free_shipping_threshold === undefined
+			)
+		) {
+			errors.offer_free_shipping = __(
+				'Please enter minimum order for free shipping.',
+				'google-listings-and-ads'
+			);
+		}
 	}
 
 	/**
