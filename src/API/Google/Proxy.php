@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidTerm;
@@ -34,7 +34,6 @@ defined( 'ABSPATH' ) || exit;
 class Proxy implements OptionsAwareInterface {
 
 	use ApiExceptionTrait;
-	use GoogleHelper;
 	use OptionsAwareTrait;
 	use PluginHelper;
 
@@ -333,13 +332,15 @@ class Proxy implements OptionsAwareInterface {
 	 * Create a new Google Ads account.
 	 *
 	 * @return array
-	 * @throws Exception When a ClientException is caught or we receive an invalid response.
+	 * @throws Exception When a ClientException is caught, unsupported store country, or we receive an invalid response.
 	 */
 	public function create_ads_account(): array {
 		try {
-			$country   = WC()->countries->get_base_country();
-			$countries = $this->get_mc_supported_countries();
-			if ( ! in_array( $country, $countries, true ) ) {
+			$country = WC()->countries->get_base_country();
+
+			/** @var GoogleHelper $google_helper */
+			$google_helper = $this->container->get( GoogleHelper::class );
+			if ( ! $google_helper->is_country_supported( $country ) ) {
 				throw new Exception( __( 'Store country is not supported', 'google-listings-and-ads' ) );
 			}
 
