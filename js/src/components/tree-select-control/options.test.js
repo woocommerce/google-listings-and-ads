@@ -51,4 +51,36 @@ describe( 'TreeSelectControl - Options Component', () => {
 			} );
 		} );
 	} );
+
+	it( 'Partially selects groups', () => {
+		const { queryByText } = render(
+			<Options options={ options } value={ [ 'ES' ] } />
+		);
+
+		const partiallyCheckedOption = queryByText( 'Europe' );
+		const unCheckedOption = queryByText( 'North America' );
+
+		expect( partiallyCheckedOption ).toBeTruthy();
+		expect( unCheckedOption ).toBeTruthy();
+
+		const partiallyCheckedOptionWrapper = partiallyCheckedOption.closest(
+			'.woocommerce-tree-select-control__option'
+		);
+		const unCheckedOptionWrapper = unCheckedOption.closest(
+			'.woocommerce-tree-select-control__option'
+		);
+
+		expect( partiallyCheckedOptionWrapper ).toBeTruthy();
+		expect( unCheckedOptionWrapper ).toBeTruthy();
+
+		expect(
+			partiallyCheckedOptionWrapper.classList.contains(
+				'is-partially-checked'
+			)
+		).toBeTruthy();
+
+		expect(
+			unCheckedOptionWrapper.classList.contains( 'is-partially-checked' )
+		).toBeFalsy();
+	} );
 } );

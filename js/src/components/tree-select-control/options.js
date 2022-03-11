@@ -27,6 +27,36 @@ const Options = ( {
 	onNodesExpandedChange = () => {},
 } ) => {
 	/**
+	 * Verifies if an option is checked.
+	 * An option is checked if their value is selected or all of their children are selected
+	 *
+	 * @param {Option} option The option to verify if is checked
+	 * @return {boolean} True if checked, false otherwise
+	 */
+	const isChecked = ( option ) => {
+		return (
+			value.includes( option.value ) || isEveryChildrenSelected( option )
+		);
+	};
+
+	/**
+	 * Verifies if an option is partially checked.
+	 * An option is partially checked if any of their children is checked or partially checked
+	 *
+	 * @param {Option} parent the Option to verify if its partially checked
+	 * @return {boolean} True if it's partially Checked, false otherwise
+	 */
+	const isPartiallyChecked = ( parent ) => {
+		if ( ! parent.children?.length ) {
+			return false;
+		}
+
+		return parent.children.some(
+			( child ) => isChecked( child ) || isPartiallyChecked( child )
+		);
+	};
+
+	/**
 	 * Returns true if all the children for the parent are selected
 	 *
 	 * @param {Option} parent The parent option to check
@@ -36,11 +66,7 @@ const Options = ( {
 			return false;
 		}
 
-		return parent.children.every(
-			( child ) =>
-				value.includes( child.value ) ||
-				isEveryChildrenSelected( child )
-		);
+		return parent.children.every( ( child ) => isChecked( child ) );
 	};
 
 	const toggleExpanded = ( option ) => {
@@ -86,13 +112,14 @@ const Options = ( {
 					) }
 
 					<CheckboxControl
-						className={ 'woocommerce-tree-select-control__option' }
+						className={ classnames(
+							'woocommerce-tree-select-control__option',
+							isPartiallyChecked( option ) &&
+								'is-partially-checked'
+						) }
 						value={ option.value }
 						label={ option.label }
-						checked={
-							value.includes( option.value ) ||
-							isEveryChildrenSelected( option )
-						}
+						checked={ isChecked( option ) }
 						onChange={ ( checked ) => {
 							onChange( checked, option );
 						} }
