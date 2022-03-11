@@ -51,7 +51,6 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			border: 0;
 			box-shadow: none;
 			color: $studio-gray-80;
-			// margin: $gap-small 0 0 0;
 			margin: 0;
 			padding-left: 0;
 			padding-right: 0;
@@ -127,7 +126,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		}
 	}
 
-	.woocommerce-tree-select-control__listbox {
+	.woocommerce-tree-select-control__tree {
 		background: $studio-white;
 		display: flex;
 		flex-direction: column;
@@ -140,19 +139,38 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		z-index: 10;
 		overflow-y: auto;
 		max-height: 350px;
+		padding: $gap;
 
 		&.is-static {
 			position: static;
 		}
 	}
 
+	.woocommerce-tree-select-control__node {
+
+		&.has-children {
+			border-bottom: 1px solid #eee;
+
+			&:last-child {
+				border-bottom: 0;
+			}
+		}
+
+	}
+
 	.woocommerce-tree-select-control__children {
-		padding: 0 $gap;
+		padding-left: calc(#{$gap} * 2);
+	}
+
+	.woocommerce-tree-select-control__main {
+		border-top: 1px solid #eee;
+		padding-left: 0;
 	}
 
 	.woocommerce-tree-select-control__option {
-		padding: 0 $gap;
 		font-size: 16px;
+		padding: 0 0 0 $gap-smaller;
+		flex: 1;
 		text-align: left;
 		border: none;
 		min-height: 0;
@@ -161,7 +179,21 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 
 		&.is-selected,
 		&:hover {
-			background: $studio-gray-0;
+			color: $studio-wordpress-blue-50;
+		}
+	}
+
+	.woocommerce-tree-select-control__expander {
+		padding: $gap-smallest;
+		cursor: pointer;
+		margin-right: 0;
+		background: transparent;
+		border: none;
+
+		// For nodes without children, we show still the space of the Expand Icon for alignment purposes.
+		&.is-hidden {
+			visibility: hidden;
+			pointer-events: none;
 		}
 	}
 

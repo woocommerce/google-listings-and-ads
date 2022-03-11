@@ -34,7 +34,7 @@ const ComponentTest = () => {
 			value: 'AS',
 			label: 'Asia',
 			children: [
-				{ value: 'JP', label: 'Japan' },
+				{ value: 'JP', label: 'Japan', children: [] },
 				{ value: 'CH', label: 'China' },
 				{ value: 'MY', label: 'Malaysia' },
 			],
@@ -72,6 +72,7 @@ const ComponentTest = () => {
 				value={ selected }
 				onChange={ setSelected }
 				label="Select Country"
+				selectAllLabel="All Countries"
 				placeholder="Select"
 			/>
 			<hr />

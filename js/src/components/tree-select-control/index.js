@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import { useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
@@ -14,16 +15,39 @@ import {
  */
 import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
-import List from './list';
+import Options from './options';
 import './index.scss';
 
 /**
  * The Option type Object. This is how we send the options to the selector.
  *
- * @typedef { Object } Option
- * @property {string} value The unique value for the option
+ * @typedef {Object} Option
+ * @property {string} value The value for the option
  * @property {string} label The label for the option
- * @property {Option[]} [children] The children Option objects
+ * @property {Option[]} [children] The children Option objects.
+ *
+ * Example of Options data structure:
+ *   [
+       {
+			value: 'EU',
+			label: 'Europe',
+			children: [
+				{ value: 'ES', label: 'Spain' },
+				{ value: 'FR', label: 'France', children: [] }, // defining children as [] is equivalent to don't have children
+			],
+		},
+		{
+			value: 'NA',
+			label: 'North America',
+			children: [
+				{ value: 'US', label: 'United States', [
+					{ value: 'TX', label: 'Texas' },
+					{ value: 'NY', label: 'New York' },
+				] },
+				{ value: 'CA', label: 'Canada' },
+			],
+		}
+     ],
  */
 
 /**
@@ -32,18 +56,19 @@ import './index.scss';
  * @param {Object} props Component props.
  * @param {string} props.id Component id
  * @param {string} props.label Label for the component
+ * @param {string | false} props.selectAllLabel Label for the Select All root element. False for disable.
  * @param {string} props.placeholder Placeholder for the search control input
  * @param {string} props.className The class name for this component
  * @param {boolean} props.disabled Disables the component
  * @param {Option[]} props.options Options to show in the component
- * @param {{string}[]} props.value Selected values
+ * @param {string[]} props.value Selected values
  * @param {Function} props.onChange Callback when the selector changes
- *
- * @return {JSX.Element|null} The component
+ * @return {JSX.Element} The component
  */
 const TreeSelectControl = ( {
 	id,
 	label,
+	selectAllLabel = __( 'All', 'google-listings-and-ads' ),
 	placeholder,
 	className,
 	disabled,
@@ -53,10 +78,18 @@ const TreeSelectControl = ( {
 } ) => {
 	let instanceId = useInstanceId( TreeSelectControl );
 	instanceId = id ?? instanceId;
-	const [ isExpanded, setIsExpanded ] = useState( false );
-	const optionsRef = useIsEqualRefValue( options );
+
+	const [ treeVisible, setTreeVisible ] = useState( false );
+	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
+
+	const treeOptions = useIsEqualRefValue(
+		selectAllLabel
+			? [ { label: selectAllLabel, value: '', children: options } ]
+			: options
+	);
+
 	const focusOutside = useFocusOutside( () => {
-		setIsExpanded( false );
+		setTreeVisible( false );
 	} );
 
 	/**
@@ -68,7 +101,7 @@ const TreeSelectControl = ( {
 		const repository = {};
 
 		function loadOption( option ) {
-			if ( ! option.children ) {
+			if ( ! option.children?.length ) {
 				repository[ option.value ] = { ...option };
 			} else {
 				option.children.forEach( ( child ) => {
@@ -77,10 +110,10 @@ const TreeSelectControl = ( {
 			}
 		}
 
-		optionsRef.forEach( ( option ) => loadOption( option ) );
+		treeOptions.forEach( ( option ) => loadOption( option ) );
 
 		return repository;
-	}, [ optionsRef ] );
+	}, [ treeOptions ] );
 
 	/**
 	 * Get formatted Tags from the selected values.
@@ -99,13 +132,13 @@ const TreeSelectControl = ( {
 	};
 
 	/**
-	 * Handles a change on the Tree List of options. Could be a click on a parent option
+	 * Handles a change on the Tree options. Could be a click on a parent option
 	 * or a child option
 	 *
 	 * @param {boolean} checked Indicates if the item should be checked
 	 * @param {Option} option The option to change
 	 */
-	const handleListChange = ( checked, option ) => {
+	const handleOptionsChange = ( checked, option ) => {
 		if ( option.children?.length ) {
 			handleParentChange( checked, option );
 		} else {
@@ -192,21 +225,29 @@ const TreeSelectControl = ( {
 			<Control
 				disabled={ disabled }
 				tags={ getTags() }
-				isExpanded={ isExpanded }
+				isExpanded={ treeVisible }
 				onFocus={ () => {
-					setIsExpanded( true );
+					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }
 				placeholder={ placeholder }
 				label={ label }
 				onTagsChange={ handleTagsChange }
 			/>
-			{ isExpanded && (
-				<List
-					options={ options }
-					value={ value }
-					onChange={ handleListChange }
-				/>
+			{ treeVisible && (
+				<div
+					className="woocommerce-tree-select-control__tree"
+					role="tree"
+					tabIndex="-1"
+				>
+					<Options
+						options={ treeOptions }
+						value={ value }
+						onChange={ handleOptionsChange }
+						nodesExpanded={ nodesExpanded }
+						onNodesExpandedChange={ setNodesExpanded }
+					/>
+				</div>
 			) }
 		</div>
 	);
