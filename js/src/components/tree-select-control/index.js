@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
+import { escapeRegExp, cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useMemo, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
@@ -81,6 +82,8 @@ const TreeSelectControl = ( {
 
 	const [ treeVisible, setTreeVisible ] = useState( false );
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
+	const [ filter, setFilter ] = useState( '' );
+	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
 	const treeOptions = useIsEqualRefValue(
 		selectAllLabel
@@ -92,6 +95,8 @@ const TreeSelectControl = ( {
 		setTreeVisible( false );
 	} );
 
+	const hasChildren = ( option ) => option.children?.length;
+
 	/**
 	 * Optimizes the performance for getting the tags info
 	 *
@@ -101,7 +106,7 @@ const TreeSelectControl = ( {
 		const repository = {};
 
 		function loadOption( option ) {
-			if ( ! option.children?.length ) {
+			if ( ! hasChildren( option ) ) {
 				repository[ option.value ] = { ...option };
 			} else {
 				option.children.forEach( ( child ) => {
@@ -139,7 +144,7 @@ const TreeSelectControl = ( {
 	 * @param {Option} option The option to change
 	 */
 	const handleOptionsChange = ( checked, option ) => {
-		if ( option.children?.length ) {
+		if ( hasChildren( option ) ) {
 			handleParentChange( checked, option );
 		} else {
 			handleSingleChange( checked, option );
@@ -175,7 +180,7 @@ const TreeSelectControl = ( {
 			}
 
 			parent.children.forEach( ( child ) => {
-				if ( child.children?.length ) {
+				if ( hasChildren( child ) ) {
 					loadChildren( child );
 					return;
 				}
@@ -205,6 +210,35 @@ const TreeSelectControl = ( {
 		onChange( [ ...tags.map( ( el ) => el.id ) ] );
 	};
 
+	const handleOnSearch = ( e ) => {
+		const search = e.target.value.trim();
+		setFilter( search.length >= 3 ? search : '' );
+	};
+
+	const queryOptions = () => {
+		const query = new RegExp( escapeRegExp( filter ), 'i' );
+
+		if ( ! query ) {
+			setFilteredOptions( treeOptions );
+		}
+
+		const filterOption = ( option ) => {
+			if ( hasChildren( option ) ) {
+				option.children = option.children.filter( filterOption );
+				return option.children.length;
+			}
+
+			return query.test( option.label ) || hasChildren( option );
+		};
+
+		const newTreeOptions = cloneDeep( treeOptions ).filter( filterOption );
+		setFilteredOptions( newTreeOptions );
+	};
+
+	useEffect( () => {
+		queryOptions();
+	}, [ treeOptions, filter ] );
+
 	return (
 		<div
 			{ ...focusOutside }
@@ -233,6 +267,7 @@ const TreeSelectControl = ( {
 				placeholder={ placeholder }
 				label={ label }
 				onTagsChange={ handleTagsChange }
+				onSearch={ handleOnSearch }
 			/>
 			{ treeVisible && (
 				<div
@@ -241,7 +276,8 @@ const TreeSelectControl = ( {
 					tabIndex="-1"
 				>
 					<Options
-						options={ treeOptions }
+						filter={ filter }
+						options={ filteredOptions }
 						value={ value }
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }

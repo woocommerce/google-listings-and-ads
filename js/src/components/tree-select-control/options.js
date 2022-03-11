@@ -12,20 +12,23 @@ import classnames from 'classnames';
 /**
  * This component renders a list of options and its children recursively
  *
- * @param {Object} params Component parameters
- * @param {Option[]} params.options List of options to be rendered
- * @param {string[]} params.value List of selected values
- * @param {string[]} params.nodesExpanded List of expanded nodes.
- * @param {Function} params.onChange Callback when an option changes
- * @param {Function} params.onNodesExpandedChange Callback when a node is expanded/collapsed
+ * @param {Object} props Component parameters
+ * @param {Option[]} props.options List of options to be rendered
+ * @param {string[]} props.value List of selected values
+ * @param {string[]} props.nodesExpanded List of expanded nodes.
+ * @param {string} props.filter The filter applied to the Tree Options
+ * @param {Function} props.onChange Callback when an option changes
+ * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
  */
-const Options = ( {
-	options = [],
-	value = [],
-	onChange = () => {},
-	nodesExpanded = [],
-	onNodesExpandedChange = () => {},
-} ) => {
+const Options = ( props ) => {
+	const {
+		options = [],
+		value = [],
+		filter,
+		nodesExpanded = [],
+		onChange = () => {},
+		onNodesExpandedChange = () => {},
+	} = props;
 	/**
 	 * Returns true if all the children for the parent are selected
 	 *
@@ -51,12 +54,34 @@ const Options = ( {
 		);
 	};
 
+	const highlightedLabel = ( option ) => {
+		if ( ! filter.length || option.children?.length ) return option.label;
+
+		const highlightPosition = option.label.indexOf( filter );
+
+		return (
+			<span>
+				<span>{ option.label.substring( 0, highlightPosition ) }</span>
+				<strong>
+					{ option.label.substring(
+						highlightPosition,
+						highlightPosition + filter.length
+					) }
+				</strong>
+				<span>
+					{ option.label.substring(
+						highlightPosition + filter.length
+					) }
+				</span>
+			</span>
+		);
+	};
+
 	return options.map( ( option ) => {
 		const isRoot = option.value === '';
-
-		const isExpanded = isRoot || nodesExpanded.includes( option.value );
-
 		const hasChildren = !! option.children?.length;
+		const isExpanded =
+			filter.length || isRoot || nodesExpanded.includes( option.value );
 
 		return (
 			<div
@@ -88,7 +113,7 @@ const Options = ( {
 					<CheckboxControl
 						className={ 'woocommerce-tree-select-control__option' }
 						value={ option.value }
-						label={ option.label }
+						label={ highlightedLabel( option ) }
 						checked={
 							value.includes( option.value ) ||
 							isEveryChildrenSelected( option )
@@ -108,6 +133,7 @@ const Options = ( {
 					>
 						<Options
 							options={ option.children }
+							filter={ filter }
 							value={ value }
 							onChange={ onChange }
 							nodesExpanded={ nodesExpanded }
