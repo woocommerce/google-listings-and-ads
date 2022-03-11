@@ -17,6 +17,7 @@ import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
 import Options from './options';
 import './index.scss';
+import { ROOT_VALUE } from '.~/components/tree-select-control/constants';
 
 /**
  * The Option type Object. This is how we send the options to the selector.
@@ -24,7 +25,8 @@ import './index.scss';
  * @typedef {Object} Option
  * @property {string} value The value for the option
  * @property {string} label The label for the option
- * @property {Option[]} [children] The children Option objects.
+ * @property {Option[]} [children] The children Option objects
+ * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
  *
  * Example of Options data structure:
  *   [
@@ -83,8 +85,14 @@ const TreeSelectControl = ( {
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 
 	const treeOptions = useIsEqualRefValue(
-		selectAllLabel
-			? [ { label: selectAllLabel, value: '', children: options } ]
+		selectAllLabel !== false
+			? [
+					{
+						label: selectAllLabel,
+						value: ROOT_VALUE,
+						children: options,
+					},
+			  ]
 			: options
 	);
 
@@ -168,6 +176,10 @@ const TreeSelectControl = ( {
 	 */
 	const handleParentChange = ( checked, option ) => {
 		const newValue = [ ...value ];
+
+		if ( checked && ! nodesExpanded.includes( option.value ) ) {
+			setNodesExpanded( [ ...nodesExpanded, option.value ] );
+		}
 
 		function loadChildren( parent ) {
 			if ( ! parent.children ) {

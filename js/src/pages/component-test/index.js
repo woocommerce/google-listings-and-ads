@@ -27,7 +27,7 @@ const ComponentTest = () => {
 			children: [
 				{ value: 'ES', label: 'Spain' },
 				{ value: 'FR', label: 'France' },
-				{ value: 'IT', label: 'Italy' },
+				{ key: 'FR-Colonies', value: 'FR', label: 'France (Colonies)' },
 			],
 		},
 		{
@@ -49,10 +49,15 @@ const ComponentTest = () => {
 					children: [
 						{ value: 'NY', label: 'New York' },
 						{ value: 'TX', label: 'Texas' },
+						{ value: 'GE', label: 'Georgia' },
 					],
 				},
 				{ value: 'CA', label: 'Canada' },
 			],
+		},
+		{
+			value: '',
+			label: 'I dont know yet',
 		},
 	];
 
