@@ -44,7 +44,7 @@ const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 		values.shipping_country_rates.some( isNonFreeFlatShippingRate )
 	) {
 		errors.offer_free_shipping = __(
-			'Please select an option for offering free shipping.',
+			'Please select an option for whether to offer free shipping.',
 			'google-listings-and-ads'
 		);
 	}
