@@ -17,7 +17,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\Reports
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\SetupCompleteController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\DisconnectController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\AccountController as GoogleAccountController;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Google\SiteVerificationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Jetpack\AccountController as JetpackAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\AccountController as MerchantCenterAccountController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ConnectionController;
@@ -102,7 +101,6 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( ShippingRateController::class, ShippingRateQuery::class, ShippingZone::class );
 		$this->share_with_container( ShippingTimeBatchController::class );
 		$this->share_with_container( ShippingTimeController::class );
-		$this->share( SiteVerificationController::class, SiteVerification::class );
 		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class, GoogleHelper::class );
 		$this->share( SupportedCountriesController::class, WC::class, GoogleHelper::class );
 		$this->share( SettingsSyncController::class, Settings::class );
