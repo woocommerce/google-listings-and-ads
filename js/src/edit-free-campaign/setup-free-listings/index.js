@@ -19,6 +19,19 @@ import FormContent from './form-content';
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
+const getSettings = ( values ) => {
+	return {
+		shipping_rate: values.shipping_rate,
+		shipping_time: values.shipping_time,
+		tax_rate: values.tax_rate,
+		website_live: values.website_live,
+		checkout_process_secure: values.checkout_process_secure,
+		payment_methods_visible: values.payment_methods_visible,
+		refund_tos_visible: values.refund_tos_visible,
+		contact_info_visible: values.contact_info_visible,
+	};
+};
+
 /**
  * Setup step to configure free listings.
  *
@@ -78,7 +91,6 @@ const SetupFreeListings = ( {
 		const {
 			shipping_country_rates: newShippingRates,
 			shipping_country_times: newShippingTimes,
-			...newSettings
 		} = newVals;
 
 		switch ( change.name ) {
@@ -89,7 +101,7 @@ const SetupFreeListings = ( {
 				onShippingTimesChange( newShippingTimes );
 				break;
 			default:
-				onSettingsChange( change, newSettings );
+				onSettingsChange( change, getSettings( newVals ) );
 		}
 	};
 
