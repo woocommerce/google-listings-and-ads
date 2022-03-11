@@ -54,17 +54,9 @@ const SetupFreeListings = ( {
 	}
 
 	const handleValidate = ( values ) => {
-		const {
-			shipping_country_rates: shippingRatesData,
-			shipping_country_times: shippingTimesData,
-		} = values;
+		const { shipping_country_times: shippingTimesData } = values;
 
-		return checkErrors(
-			values,
-			shippingRatesData,
-			shippingTimesData,
-			countries
-		);
+		return checkErrors( values, shippingTimesData, countries );
 	};
 
 	const handleSubmit = async () => {
