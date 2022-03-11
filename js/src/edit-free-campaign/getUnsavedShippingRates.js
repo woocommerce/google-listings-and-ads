@@ -26,10 +26,6 @@ export default function getUnsavedShippingRates(
 	newShippingRates,
 	oldShippingRates
 ) {
-	if ( newShippingRates.length !== oldShippingRates.length ) {
-		return true;
-	}
-
 	const paths = [
 		'country',
 		'method',
