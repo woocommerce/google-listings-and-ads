@@ -9,6 +9,7 @@ import { useCallback } from '@wordpress/element';
 import { useAppDispatch } from '.~/data';
 import isInShippingRates from '.~/utils/isInShippingRates';
 import useShippingRates from './useShippingRates';
+import getUnsavedShippingRates from '.~/edit-free-campaign/getUnsavedShippingRates';
 
 /**
  * @typedef { import(".~/data/actions").ShippingRate } ShippingRate
@@ -46,8 +47,13 @@ const useSaveShippingRates = () => {
 				await deleteShippingRates( deleteIds );
 			}
 
-			if ( newShippingRates.length ) {
-				await upsertShippingRates( newShippingRates );
+			const unsavedShippingRates = getUnsavedShippingRates(
+				newShippingRates,
+				oldShippingRates
+			);
+
+			if ( unsavedShippingRates.length ) {
+				await upsertShippingRates( unsavedShippingRates );
 			}
 		},
 		[ deleteShippingRates, oldShippingRates, upsertShippingRates ]
