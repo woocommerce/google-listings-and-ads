@@ -39,6 +39,14 @@ abstract class RequirementValidator implements RequirementValidatorInterface {
 	 * @param RuntimeException $e
 	 */
 	protected function add_admin_notice( RuntimeException $e ) {
+		// Check if the plugin is active. If not, display error message and terminate.
+		if ( ! is_plugin_active( 'woocommerce-google-listings-and-ads/woocommerce-google-listings-and-ads.php' ) ) {
+			die(
+				esc_html( $e->getMessage() )
+			);
+		}
+
+		// Display notice error message.
 		add_action(
 			'admin_notices',
 			function() use ( $e ) {
