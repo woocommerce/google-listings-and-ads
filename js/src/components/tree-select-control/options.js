@@ -40,19 +40,18 @@ const Options = ( {
 	};
 
 	/**
-	 * Verifies if an option is partially checked.
-	 * An option is partially checked if any of their children is checked or partially checked
+	 * Verifies if an option has some children checked.
 	 *
-	 * @param {Option} parent the Option to verify if its partially checked
-	 * @return {boolean} True if it's partially Checked, false otherwise
+	 * @param {Option} parent the Option to verify
+	 * @return {boolean} True if any at least one of the children is checked, false otherwsie
 	 */
-	const isPartiallyChecked = ( parent ) => {
+	const hasSomeChildrenChecked = ( parent ) => {
 		if ( ! parent.children?.length ) {
 			return false;
 		}
 
 		return parent.children.some(
-			( child ) => isChecked( child ) || isPartiallyChecked( child )
+			( child ) => isChecked( child ) || hasSomeChildrenChecked( child )
 		);
 	};
 
@@ -79,10 +78,9 @@ const Options = ( {
 
 	return options.map( ( option ) => {
 		const isRoot = option.value === '';
-
 		const isExpanded = isRoot || nodesExpanded.includes( option.value );
-
 		const hasChildren = !! option.children?.length;
+		const optionIsChecked = isChecked( option );
 
 		return (
 			<div
@@ -114,12 +112,13 @@ const Options = ( {
 					<CheckboxControl
 						className={ classnames(
 							'woocommerce-tree-select-control__option',
-							isPartiallyChecked( option ) &&
+							! optionIsChecked &&
+								hasSomeChildrenChecked( option ) &&
 								'is-partially-checked'
 						) }
 						value={ option.value }
 						label={ option.label }
-						checked={ isChecked( option ) }
+						checked={ optionIsChecked }
 						onChange={ ( checked ) => {
 							onChange( checked, option );
 						} }
