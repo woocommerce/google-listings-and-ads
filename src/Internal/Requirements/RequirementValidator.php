@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use RuntimeException;
 
 defined( 'ABSPATH' ) || exit;
@@ -13,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
  * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
 abstract class RequirementValidator implements RequirementValidatorInterface {
+
+	use PluginHelper;
 
 	/**
 	 * @var RequirementValidator[]
@@ -40,9 +43,14 @@ abstract class RequirementValidator implements RequirementValidatorInterface {
 	 */
 	protected function add_admin_notice( RuntimeException $e ) {
 		// Check if the plugin is active. If not, display error message and terminate.
-		if ( ! is_plugin_active( 'woocommerce-google-listings-and-ads/woocommerce-google-listings-and-ads.php' ) ) {
+
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . '/wp-admin/includes/plugin.php';
+		}
+
+		if ( ! is_plugin_active( $this->get_plugin_basename() ) ) {
 			die(
-				esc_html( $e->getMessage() )
+				esc_html( $e->getMessage() ) . PHP_EOL
 			);
 		}
 
