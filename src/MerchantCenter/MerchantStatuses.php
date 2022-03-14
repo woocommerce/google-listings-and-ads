@@ -98,7 +98,7 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 
 	/**
 	 * Get the Product Statistics (updating caches if necessary). This is the
-	 * number of product IDs with each status (active and partially active are combined).
+	 * number of product IDs with each status (approved and partially approved are combined as active).
 	 *
 	 * @param bool $force_refresh Force refresh of all product status data.
 	 *
