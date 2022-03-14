@@ -291,17 +291,20 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 			],
 			'country'            => [
 				'type'              => 'string',
-				'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+				'description'       => __( 'Country code of sale country in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
+				'validate_callback' => $this->get_country_code_validate_callback(),
+				'readonly'          => true,
+			],
+			'targeted_locations' => [
+				'type'              => 'array',
+				'description'       => __( 'The locations that an Ads campaign is targeting in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
 				'validate_callback' => $this->get_country_code_validate_callback(),
 				'required'          => true,
-			],
-			'targeted_locations' => [
-				'type'        => 'array',
-				'description' => __( 'The locations that an Ads campaign is targeting.', 'google-listings-and-ads' ),
-				'context'     => [ 'view' ],
-				'items'       => [
+				'items'             => [
 					'type' => 'string',
 				],
 			],
