@@ -86,7 +86,9 @@ const Options = ( {
 	const highlightedLabel = ( option ) => {
 		if ( ! filter.length || option.children?.length ) return option.label;
 
-		const highlightPosition = option.label.indexOf( filter );
+		const highlightPosition = option.label
+			.toLowerCase()
+			.indexOf( filter.toLowerCase() );
 
 		return (
 			<span>
@@ -109,9 +111,9 @@ const Options = ( {
 	return options.map( ( option ) => {
 		const isRoot = option.value === ROOT_VALUE;
 		const hasChildren = !! option.children?.length;
+		const optionIsChecked = isChecked( option );
 		const isExpanded =
 			filter.length || isRoot || nodesExpanded.includes( option.value );
-		const optionIsChecked = isChecked( option );
 
 		return (
 			<div
