@@ -3,7 +3,7 @@
  */
 import { escapeRegExp, cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useMemo, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
@@ -87,6 +87,8 @@ const TreeSelectControl = ( {
 	const [ filter, setFilter ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
+	const searchFiltersCache = useRef( {} );
+
 	const treeOptions = useIsEqualRefValue(
 		selectAllLabel !== false
 			? [
@@ -104,6 +106,13 @@ const TreeSelectControl = ( {
 	} );
 
 	const hasChildren = ( option ) => option.children?.length;
+
+	const getSearchFilterCache = () =>
+		searchFiltersCache.current && searchFiltersCache.current[ filter ];
+
+	const setSearchFilterCache = ( newValue ) => {
+		searchFiltersCache.current[ filter ] = newValue;
+	};
 
 	/**
 	 * Optimizes the performance for getting the tags info
@@ -229,10 +238,14 @@ const TreeSelectControl = ( {
 
 	const queryOptions = () => {
 		const query = new RegExp( escapeRegExp( filter ), 'i' );
+		const cachedFilter = getSearchFilterCache( filter );
 
-		if ( ! query ) {
-			setFilteredOptions( treeOptions );
+		if ( cachedFilter ) {
+			setFilteredOptions( cachedFilter );
+			return;
 		}
+
+		let filteredTreeOptions = cloneDeep( treeOptions );
 
 		const filterOption = ( option ) => {
 			if ( hasChildren( option ) ) {
@@ -240,11 +253,15 @@ const TreeSelectControl = ( {
 				return option.children.length;
 			}
 
-			return query.test( option.label ) || hasChildren( option );
+			return query.test( option.label );
 		};
 
-		const newTreeOptions = cloneDeep( treeOptions ).filter( filterOption );
-		setFilteredOptions( newTreeOptions );
+		if ( filter ) {
+			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
+		}
+
+		setSearchFilterCache( filteredTreeOptions );
+		setFilteredOptions( filteredTreeOptions );
 	};
 
 	useEffect( () => {
@@ -288,9 +305,9 @@ const TreeSelectControl = ( {
 					tabIndex="-1"
 				>
 					<Options
-						filter={ filter }
 						options={ filteredOptions }
 						value={ value }
+						filter={ filter }
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }
