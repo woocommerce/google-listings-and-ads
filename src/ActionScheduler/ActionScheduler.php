@@ -90,7 +90,7 @@ class ActionScheduler implements ActionSchedulerInterface, Service {
 	 *
 	 * @return int The action ID.
 	 *
-	 * @see http://en.wikipedia.org/wiki/Cron
+	 * @see https://en.wikipedia.org/wiki/Cron
 	 *   *    *    *    *    *    *
 	 *   ┬    ┬    ┬    ┬    ┬    ┬
 	 *   |    |    |    |    |    |
