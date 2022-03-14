@@ -5,7 +5,15 @@ on:
     branches:
       - trunk
       - develop
+    paths:
+      - "**.js"
+      - ./.github/workflows/js-unit-tests.yml
+      - ./.github/actions/prepare-node/action.yml
   pull_request:
+    paths:
+      - "**.js"
+      - ./.github/workflows/js-unit-tests.yml
+      - ./.github/actions/prepare-node/action.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
