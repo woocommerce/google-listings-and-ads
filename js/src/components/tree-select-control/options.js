@@ -6,6 +6,11 @@ import { Icon, chevronUp, chevronDown } from '@wordpress/icons';
 import classnames from 'classnames';
 
 /**
+ * Internal dependencies
+ */
+import { ROOT_VALUE } from './constants';
+
+/**
  * @typedef {import('./').Option} Option
  */
 
@@ -77,14 +82,14 @@ const Options = ( {
 	};
 
 	return options.map( ( option ) => {
-		const isRoot = option.value === '';
+		const isRoot = option.value === ROOT_VALUE;
 		const isExpanded = isRoot || nodesExpanded.includes( option.value );
 		const hasChildren = !! option.children?.length;
 		const optionIsChecked = isChecked( option );
 
 		return (
 			<div
-				key={ `${ option.value }` }
+				key={ `${ option.key ?? option.value }` }
 				role={ hasChildren ? 'treegroup' : 'treeitem' }
 				aria-expanded={ hasChildren ? isExpanded : undefined }
 				className={ classnames(

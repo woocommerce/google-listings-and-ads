@@ -6,6 +6,7 @@ import { fireEvent, render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
+import TreeSelectControl from '.~/components/tree-select-control/index';
 import Options from '.~/components/tree-select-control/options';
 
 const options = [
@@ -21,34 +22,48 @@ const options = [
 	{
 		value: 'NA',
 		label: 'North America',
-		children: [
-			{ value: 'US', label: 'United States' },
-			{ value: 'CA', label: 'Canada' },
-		],
-	},
-	{
-		value: 'AS',
-		label: 'Asia',
+		children: [ { value: 'US', label: 'United States' } ],
 	},
 ];
 
 describe( 'TreeSelectControl - Options Component', () => {
 	it( 'Expands and collapses groups', () => {
-		const { queryByText } = render( <Options options={ options } /> );
+		const { queryAllByRole, queryByText, queryByRole } = render(
+			<TreeSelectControl options={ options } />
+		);
 
-		options.forEach( ( option ) => {
-			const optionItem = queryByText( option.label );
-			expect( optionItem ).toBeTruthy();
-			options.children?.forEach( ( child ) => {
-				const childItem = queryByText( child.label );
-				expect( childItem ).toBeFalsy();
-			} );
+		const control = queryByRole( 'combobox' );
+		fireEvent.click( control );
 
-			fireEvent.click( optionItem );
-			options.children?.forEach( ( child ) => {
-				const childItem = queryByText( child.label );
-				expect( childItem ).toBeTruthy();
-			} );
+		const optionItem = queryByText( 'Europe' );
+		const option = options[ 0 ];
+		expect( optionItem ).toBeTruthy();
+
+		option.children.forEach( ( child ) => {
+			const childItem = queryByText( child.label );
+			expect( childItem ).toBeFalsy();
+		} );
+
+		const button = queryAllByRole( 'button' );
+		fireEvent.click( button[ 0 ] );
+
+		option.children.forEach( ( child ) => {
+			const childItem = queryByText( child.label );
+			expect( childItem ).toBeTruthy();
+		} );
+
+		fireEvent.click( button[ 0 ] );
+
+		option.children.forEach( ( child ) => {
+			const childItem = queryByText( child.label );
+			expect( childItem ).toBeFalsy();
+		} );
+
+		fireEvent.click( optionItem );
+
+		option.children.forEach( ( child ) => {
+			const childItem = queryByText( child.label );
+			expect( childItem ).toBeTruthy();
 		} );
 	} );
 
