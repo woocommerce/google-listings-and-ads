@@ -68,6 +68,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected $budget;
 
 	/**
+	 * @var GoogleHelper $google_helper
+	 */
+	protected $google_helper;
+
+	/**
 	 * AdsCampaign constructor.
 	 *
 	 * @param GoogleAdsClient   $client
