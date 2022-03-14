@@ -5,7 +5,15 @@ on:
     branches:
       - trunk
       - develop
+    paths:
+      - "**.php"
+      - ./.github/workflows/php-unit-tests.yml
+      - ./.github/actions/prepare-php/action.yml
   pull_request:
+    paths:
+      - "**.php"
+      - ./.github/workflows/php-unit-tests.yml
+      - ./.github/actions/prepare-php/action.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
