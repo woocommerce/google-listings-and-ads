@@ -28,7 +28,7 @@ import { ROOT_VALUE } from './constants';
 const Options = ( {
 	options = [],
 	value = [],
-	filter,
+	filter = '',
 	onChange = () => {},
 	nodesExpanded = [],
 	onNodesExpandedChange = () => {},
@@ -75,36 +75,16 @@ const Options = ( {
 		return parent.children.every( ( child ) => isChecked( child ) );
 	};
 
+	/**
+	 * Expands/Collapses the Option
+	 *
+	 * @param {Option} option The option to be expanded or collapsed
+	 */
 	const toggleExpanded = ( option ) => {
 		onNodesExpandedChange(
 			nodesExpanded.includes( option.value )
 				? nodesExpanded.filter( ( el ) => option.value !== el )
 				: [ ...nodesExpanded, option.value ]
-		);
-	};
-
-	const highlightedLabel = ( option ) => {
-		if ( ! filter.length || option.children?.length ) return option.label;
-
-		const highlightPosition = option.label
-			.toLowerCase()
-			.indexOf( filter.toLowerCase() );
-
-		return (
-			<span>
-				<span>{ option.label.substring( 0, highlightPosition ) }</span>
-				<strong>
-					{ option.label.substring(
-						highlightPosition,
-						highlightPosition + filter.length
-					) }
-				</strong>
-				<span>
-					{ option.label.substring(
-						highlightPosition + filter.length
-					) }
-				</span>
-			</span>
 		);
 	};
 
@@ -150,7 +130,7 @@ const Options = ( {
 								'is-partially-checked'
 						) }
 						value={ option.value }
-						label={ highlightedLabel( option ) }
+						label={ option.label }
 						checked={ optionIsChecked }
 						onChange={ ( checked ) => {
 							onChange( checked, option );

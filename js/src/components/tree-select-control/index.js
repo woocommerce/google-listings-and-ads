@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { escapeRegExp, cloneDeep } from 'lodash';
+import { cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import classnames from 'classnames';
@@ -87,6 +87,7 @@ const TreeSelectControl = ( {
 	const [ filter, setFilter ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
+	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const searchFiltersCache = useRef( {} );
 
 	const treeOptions = useIsEqualRefValue(
@@ -105,14 +106,11 @@ const TreeSelectControl = ( {
 		setTreeVisible( false );
 	} );
 
+	useEffect( () => {
+		queryOptions();
+	}, [ treeOptions, filter ] );
+
 	const hasChildren = ( option ) => option.children?.length;
-
-	const getSearchFilterCache = () =>
-		searchFiltersCache.current && searchFiltersCache.current[ filter ];
-
-	const setSearchFilterCache = ( newValue ) => {
-		searchFiltersCache.current[ filter ] = newValue;
-	};
 
 	/**
 	 * Optimizes the performance for getting the tags info
@@ -136,6 +134,12 @@ const TreeSelectControl = ( {
 
 		return repository;
 	}, [ treeOptions ] );
+
+	const getSearchFilterCache = () => searchFiltersCache.current[ filter ];
+
+	const setSearchFilterCache = ( newValue ) => {
+		searchFiltersCache.current[ filter ] = newValue;
+	};
 
 	/**
 	 * Get formatted Tags from the selected values.
@@ -231,13 +235,76 @@ const TreeSelectControl = ( {
 		onChange( [ ...tags.map( ( el ) => el.id ) ] );
 	};
 
+	/**
+	 * Prepares and sets the search filter.
+	 * Filters of less than 3 characters are not considered, so we convert them to ''
+	 *
+	 * @param {Event} e Event returned by the On Change function
+	 */
 	const handleOnSearch = ( e ) => {
 		const search = e.target.value.trim();
 		setFilter( search.length >= 3 ? search : '' );
 	};
 
+	/**
+	 * Applies the strong tag in the Option label characters matching the filter
+	 *
+	 * @param {string} optionLabel The label to highlight
+	 * @param {number} matchPosition The position when the highlight starts based on the filter match
+	 * @return {JSX.Element|*} A highlighted label
+	 */
+	const highlightOptionLabel = ( optionLabel, matchPosition ) => {
+		if ( matchPosition < 0 || ! filter?.length ) return optionLabel;
+
+		return (
+			<span>
+				<span>{ optionLabel.substring( 0, matchPosition ) }</span>
+				<strong>
+					{ optionLabel.substring(
+						matchPosition,
+						matchPosition + filter.length
+					) }
+				</strong>
+				<span>
+					{ optionLabel.substring( matchPosition + filter.length ) }
+				</span>
+			</span>
+		);
+	};
+
+	/**
+	 * Filters an option and transforms its label if so
+	 *
+	 * This function mutates the option
+	 *
+	 * @param {Option} option The option to filter
+	 * @return {boolean} True if it pass the filter, false otherwise
+	 */
+	const filterOption = ( option ) => {
+		if ( hasChildren( option ) ) {
+			option.children = option.children.filter( filterOption );
+			return !! option.children.length;
+		}
+
+		const match = option.label
+			.toLowerCase()
+			.indexOf( filter.toLowerCase() );
+
+		if ( match >= 0 ) {
+			option.label = highlightOptionLabel( option.label, match );
+			return true;
+		}
+	};
+
+	/**
+	 * Perform the search query filter in the Tree options
+	 *
+	 * 1. Check if the search query is already cached and return it if so.
+	 * 2. Deep Copy the tree. Since we are going to modify his children and labels recursively.
+	 * 3. In case of filter, we apply the filter option function to the tree.
+	 *
+	 */
 	const queryOptions = () => {
-		const query = new RegExp( escapeRegExp( filter ), 'i' );
 		const cachedFilter = getSearchFilterCache( filter );
 
 		if ( cachedFilter ) {
@@ -247,15 +314,6 @@ const TreeSelectControl = ( {
 
 		let filteredTreeOptions = cloneDeep( treeOptions );
 
-		const filterOption = ( option ) => {
-			if ( hasChildren( option ) ) {
-				option.children = option.children.filter( filterOption );
-				return option.children.length;
-			}
-
-			return query.test( option.label );
-		};
-
 		if ( filter ) {
 			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
 		}
@@ -263,10 +321,6 @@ const TreeSelectControl = ( {
 		setSearchFilterCache( filteredTreeOptions );
 		setFilteredOptions( filteredTreeOptions );
 	};
-
-	useEffect( () => {
-		queryOptions();
-	}, [ treeOptions, filter ] );
 
 	return (
 		<div
