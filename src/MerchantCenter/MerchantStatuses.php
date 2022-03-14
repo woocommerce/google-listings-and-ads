@@ -806,9 +806,9 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 */
 	private function maybe_override_issue_values( array $issue ): array {
 		if ( 'merchant_quality_low' === $issue['code'] ) {
-			$issue['issue']      = 'Show products on additional surfaces across Google through enhanced free listings';
+			$issue['issue']      = 'Show products on additional surfaces across Google through free listings';
 			$issue['severity']   = self::SEVERITY_WARNING;
-			$issue['action']     = 'Read about enhanced free listings';
+			$issue['action']     = 'Read about free listings';
 			$issue['action_url'] = 'https://support.google.com/merchants/answer/9199328?hl=en';
 		}
 

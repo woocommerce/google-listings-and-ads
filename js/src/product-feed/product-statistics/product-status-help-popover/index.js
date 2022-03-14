@@ -41,7 +41,7 @@ const ProductStatusHelpPopover = () => {
 			<p>
 				{ createInterpolateElement(
 					__(
-						'After submission, Google assigns each product a status: <strong>Active, Partially Active, Expiring, Pending, or Disapproved.</strong>',
+						'After submission, Google assigns each product a status: <strong>Active, Expiring, Pending, or Disapproved.</strong>',
 						'google-listings-and-ads'
 					),
 					map
@@ -50,16 +50,7 @@ const ProductStatusHelpPopover = () => {
 			<p>
 				{ createInterpolateElement(
 					__(
-						'<strong>‘Active’ products</strong> are fully approved and eligible to appear in standard and enhanced listings on Google.',
-						'google-listings-and-ads'
-					),
-					map
-				) }
-			</p>
-			<p>
-				{ createInterpolateElement(
-					__(
-						'<strong>‘Partially active’ products</strong> are fully approved and eligible to appear in standard listings only.',
+						'<strong>‘Active’ products</strong> are fully approved and eligible to appear in free listings on Google.',
 						'google-listings-and-ads'
 					),
 					map
