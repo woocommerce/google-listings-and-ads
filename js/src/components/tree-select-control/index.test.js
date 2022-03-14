@@ -80,11 +80,7 @@ describe( 'TreeSelectControl Component', () => {
 	it( 'Renders the All Options', () => {
 		const onChange = jest.fn().mockName( 'onChange' );
 		const { queryByLabelText, queryByRole, rerender } = render(
-			<TreeSelectControl
-				options={ options }
-				label="Select"
-				onChange={ onChange }
-			/>
+			<TreeSelectControl options={ options } onChange={ onChange } />
 		);
 
 		const control = queryByRole( 'combobox' );
@@ -100,7 +96,6 @@ describe( 'TreeSelectControl Component', () => {
 			<TreeSelectControl
 				value={ [ 'ES', 'FR', 'IT', 'AS' ] }
 				options={ options }
-				label="Select"
 				onChange={ onChange }
 			/>
 		);

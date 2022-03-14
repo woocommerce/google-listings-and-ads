@@ -76,8 +76,8 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		}
 
 		&.is-active {
-			box-shadow: 0 0 0 1px $studio-wordpress-blue-50;
-			border-color: $studio-wordpress-blue-50;
+			box-shadow: 0 0 0 1px var(--wp-admin-theme-color);
+			border-color: var(--wp-admin-theme-color);
 		}
 
 		&.with-value .components-base-control__label,
@@ -179,8 +179,19 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 
 		&.is-selected,
 		&:hover {
-			color: $studio-wordpress-blue-50;
+			color: var(--wp-admin-theme-color);
 		}
+
+		&.is-partially-checked {
+
+			.components-checkbox-control__input {
+				background: var(--wp-admin-theme-color);
+				border: $gap-smallest solid $studio-white;
+				box-shadow: 0 0 0 1px #1e1e1e;
+			}
+
+		}
+
 	}
 
 	.woocommerce-tree-select-control__expander {

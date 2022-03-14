@@ -37,7 +37,7 @@ const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 	return (
 		<div className="woocommerce-tree-select-control__tags">
 			{ tags.map( ( item, i ) => {
-				if ( ! item.label || ! item.id ) {
+				if ( ! item.label ) {
 					return null;
 				}
 				const screenReaderLabel = sprintf(
