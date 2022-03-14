@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCrit
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
@@ -23,6 +23,7 @@ use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V9\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V9\Services\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
@@ -67,14 +68,21 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected $budget;
 
 	/**
+	 * @var GoogleHelper $google_helper
+	 */
+	protected $google_helper;
+
+	/**
 	 * AdsCampaign constructor.
 	 *
 	 * @param GoogleAdsClient   $client
 	 * @param AdsCampaignBudget $budget
+	 * @param GoogleHelper      $google_helper
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget ) {
-		$this->client = $client;
-		$this->budget = $budget;
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, GoogleHelper $google_helper ) {
+		$this->client        = $client;
+		$this->budget        = $budget;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -415,25 +423,26 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			// negative: Whether to target (false) or exclude (true) the criterion.
 			->where( 'campaign_criterion.negative', 'false', '=' )
 			->where( 'campaign_criterion.status', 'REMOVED', '!=' )
+			->where( 'campaign_criterion.location.geo_target_constant', '', 'IS NOT NULL' )
 			->get_results();
 
 		/** @var GoogleAdsRow $row */
 		foreach ( $campaign_criterion_results->iterateAllElements() as $row ) {
-			$campaign           = $row->getCampaign();
-			$campaign_id        = $campaign->getId();
-			$campaign_criterion = $row->getCampaignCriterion();
-			$location           = $campaign_criterion->getLocation();
-
-			// TODO: Convert the geo_traget_constant to the ISO 3166-1 alpha-2 country code
-			// after https://github.com/woocommerce/google-listings-and-ads/issues/1229 is done.
-			$geo_target_constant = $location ? $location->getGeoTargetConstant() : null;
+			$campaign    = $row->getCampaign();
+			$campaign_id = $campaign->getId();
 
 			if ( ! isset( $campaigns[ $campaign_id ] ) ) {
 				continue;
 			}
 
-			if ( ! empty( $geo_target_constant ) ) {
-				$campaigns[ $campaign_id ]['targeted_locations'][] = $geo_target_constant;
+			$campaign_criterion  = $row->getCampaignCriterion();
+			$location            = $campaign_criterion->getLocation();
+			$geo_target_constant = $location->getGeoTargetConstant();
+			$location_id         = $this->parse_geo_target_location_id( $geo_target_constant );
+			$country_code        = $this->google_helper->find_country_code_by_id( $location_id );
+
+			if ( $country_code ) {
+				$campaigns[ $campaign_id ]['targeted_locations'][] = $country_code;
 			}
 		}
 
@@ -479,6 +488,23 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			return absint( $parts['campaign_id'] );
 		} catch ( ValidationException $e ) {
 			throw new Exception( __( 'Invalid campaign ID', 'google-listings-and-ads' ) );
+		}
+	}
+
+	/**
+	 * Convert location ID from a geo target constant resource name to an int.
+	 *
+	 * @param string $geo_target_constant Resource name containing ID number.
+	 *
+	 * @return int
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_geo_target_location_id( string $geo_target_constant ): int {
+		try {
+			$parts = GeoTargetConstantServiceClient::parseName( $geo_target_constant );
+			return absint( $parts['criterion_id'] );
+		} catch ( ValidationException $e ) {
+			throw new Exception( __( 'Invalid geo target location ID', 'google-listings-and-ads' ) );
 		}
 	}
 }

@@ -6,13 +6,16 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
 use PHPUnit\Framework\MockObject\MockObject;
+use Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -26,6 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * @property MockObject|OptionsInterface  $options
  * @property AdsCampaign                  $campaign
  * @property Container                    $container
+ * @property GoogleHelper                 $google_helper
  */
 class AdsCampaignTest extends UnitTest {
 
@@ -41,14 +45,16 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->ad_group    = $this->createMock( AdsGroup::class );
-		$this->budget      = $this->createMock( AdsCampaignBudget::class );
-		$this->options     = $this->createMock( OptionsInterface::class );
+		$this->ad_group = $this->createMock( AdsGroup::class );
+		$this->budget   = $this->createMock( AdsCampaignBudget::class );
+		$this->options  = $this->createMock( OptionsInterface::class );
+
+		$this->google_helper = new GoogleHelper( $this->createMock( WC::class ) );
 
 		$this->container = new Container();
 		$this->container->share( AdsGroup::class, $this->ad_group );
 
-		$this->campaign = new AdsCampaign( $this->client, $this->budget );
+		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->google_helper );
 		$this->campaign->set_options_object( $this->options );
 		$this->campaign->set_container( $this->container );
 
@@ -67,28 +73,12 @@ class AdsCampaignTest extends UnitTest {
 				'geo_target_constant' => 'geoTargetConstants/2158',
 			],
 			[
-				'campaign_id'         => self::TEST_CAMPAIGN_ID,
-				'geo_target_constant' => '',
-			],
-			[
-				'campaign_id'         => self::TEST_CAMPAIGN_ID,
-				'geo_target_constant' => null,
-			],
-			[
 				'campaign_id'         => 5678901234,
 				'geo_target_constant' => 'geoTargetConstants/2344',
 			],
 			[
 				'campaign_id'         => 5678901234,
-				'geo_target_constant' => '',
-			],
-			[
-				'campaign_id'         => 5678901234,
 				'geo_target_constant' => 'geoTargetConstants/2826',
-			],
-			[
-				'campaign_id'         => 8888877777,
-				'geo_target_constant' => '',
 			],
 		];
 
@@ -99,7 +89,7 @@ class AdsCampaignTest extends UnitTest {
 				'status'  => 'paused',
 				'amount'  => 10,
 				'country' => 'US',
-				'targeted_locations' => ['geoTargetConstants/2158'],
+				'targeted_locations' => ['TW'],
 			],
 			[
 				'id'      => 5678901234,
@@ -107,20 +97,94 @@ class AdsCampaignTest extends UnitTest {
 				'status'  => 'enabled',
 				'amount'  => 20,
 				'country' => 'UK',
-				'targeted_locations' => ['geoTargetConstants/2344', 'geoTargetConstants/2826'],
+				'targeted_locations' => ['HK', 'GB'],
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
+		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
+	}
+
+	public function test_get_campaigns_with_nonexist_location_id() {
+		$campaign_criterion_data = [
+			[
+				'campaign_id'         => self::TEST_CAMPAIGN_ID,
+				'geo_target_constant' => 'geoTargetConstants/999999999',
 			],
 			[
-				'id'      => 8888877777,
-				'name'    => 'Campaign Three',
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'geoTargetConstants/999999999',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'geoTargetConstants/999999999',
+			],
+		];
+
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'paused',
+				'amount'  => 10,
+				'country' => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
-				'amount'  => 30,
-				'country' => 'TW',
+				'amount'  => 20,
+				'country' => 'UK',
 				'targeted_locations' => [],
 			],
 		];
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
 		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
+	}
+
+	public function test_get_campaigns_with_invalid_location_id() {
+		$campaign_criterion_data = [
+			[
+				'campaign_id'         => self::TEST_CAMPAIGN_ID,
+				'geo_target_constant' => 'unknownResource1/2158',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'unknownResource2/2344',
+			],
+			[
+				'campaign_id'         => 5678901234,
+				'geo_target_constant' => 'unknownResource3/2826',
+			],
+		];
+
+		$campaigns_data = [
+			[
+				'id'      => self::TEST_CAMPAIGN_ID,
+				'name'    => 'Campaign One',
+				'status'  => 'paused',
+				'amount'  => 10,
+				'country' => 'US',
+				'targeted_locations' => [],
+			],
+			[
+				'id'      => 5678901234,
+				'name'    => 'Campaign Two',
+				'status'  => 'enabled',
+				'amount'  => 20,
+				'country' => 'UK',
+				'targeted_locations' => [],
+			],
+		];
+
+		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Invalid geo target location ID' );
+
+		$this->campaign->get_campaigns();
 	}
 
 	public function test_get_campaigns_exception() {
@@ -143,7 +207,7 @@ class AdsCampaignTest extends UnitTest {
 	public function test_get_campaign() {
 		$campaign_criterion_data = [
 			'campaign_id'         => self::TEST_CAMPAIGN_ID,
-			'geo_target_constant' => '',
+			'geo_target_constant' => 'geoTargetConstants/2158',
 		];
 
 		$campaign_data = [
@@ -152,7 +216,7 @@ class AdsCampaignTest extends UnitTest {
 			'status'  => 'enabled',
 			'amount'  => 10,
 			'country' => 'US',
-			'targeted_locations' => [],
+			'targeted_locations' => ['TW'],
 		];
 
 		$this->generate_ads_campaign_query_mock( [ $campaign_data ], [ $campaign_criterion_data ] );
