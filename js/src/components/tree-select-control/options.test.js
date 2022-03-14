@@ -7,6 +7,7 @@ import { fireEvent, render } from '@testing-library/react';
  * Internal dependencies
  */
 import TreeSelectControl from '.~/components/tree-select-control/index';
+import Options from '.~/components/tree-select-control/options';
 
 const options = [
 	{
@@ -17,6 +18,11 @@ const options = [
 			{ value: 'FR', label: 'France' },
 			{ value: 'IT', label: 'Italy' },
 		],
+	},
+	{
+		value: 'NA',
+		label: 'North America',
+		children: [ { value: 'US', label: 'United States' } ],
 	},
 ];
 
