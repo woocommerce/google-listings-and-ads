@@ -23,6 +23,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	protected const TEST_CAMPAIGN_ID = 1234567890;
 	protected const ROUTE_CAMPAIGNS  = '/wc/gla/ads/campaigns';
 	protected const ROUTE_CAMPAIGN   = '/wc/gla/ads/campaigns/' . self::TEST_CAMPAIGN_ID;
+	protected const BASE_COUNTRY     = 'US';
 
 	public function setUp() {
 		parent::setUp();
@@ -38,19 +39,19 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	public function test_get_campaigns() {
 		$campaigns_data = [
 			[
-				'id'      => self::TEST_CAMPAIGN_ID,
-				'name'    => 'Campaign One',
-				'status'  => 'paused',
-				'amount'  => 10,
-				'country' => 'US',
+				'id'                 => self::TEST_CAMPAIGN_ID,
+				'name'               => 'Campaign One',
+				'status'             => 'paused',
+				'amount'             => 10,
+				'country'            => 'US',
 				'targeted_locations' => [],
 			],
 			[
-				'id'      => 5678901234,
-				'name'    => 'Campaign Two',
-				'status'  => 'enabled',
-				'amount'  => 20,
-				'country' => 'UK',
+				'id'                 => 5678901234,
+				'name'               => 'Campaign Two',
+				'status'             => 'enabled',
+				'amount'             => 20,
+				'country'            => 'UK',
 				'targeted_locations' => [],
 			],
 		];
@@ -78,15 +79,15 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function test_create_campaign() {
 		$campaign_data = [
-			'name'    => 'New Campaign',
-			'amount'  => 20,
-			'country' => 'US',
-			'targeted_locations' => [],
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => ['US', 'GB', 'TW'],
 		];
 
 		$expected = [
-			'id'     => self::TEST_CAMPAIGN_ID,
-			'status' => 'enabled',
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -102,15 +103,15 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function test_create_campaign_without_name() {
 		$campaign_data = [
-			'amount'  => 30,
-			'country' => 'GB',
-			'targeted_locations' => [],
+			'amount'             => 30,
+			'targeted_locations' => ['US', 'GB', 'TW'],
 		];
 
 		$expected = [
-			'name'   => 'Campaign 2022-02-22 02:22:02',
-			'id'     => self::TEST_CAMPAIGN_ID,
-			'status' => 'enabled',
+			'name'    => 'Campaign 2022-02-22 02:22:02',
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
 		$this->ads_campaign->expects( $this->once() )
@@ -136,8 +137,8 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function test_create_campaign_invalid_country_code() {
 		$campaign_data = [
-			'amount'  => 20,
-			'country' => 'United States',
+			'amount'             => 20,
+			'targeted_locations' => ['United States'],
 		];
 
 		$this->iso_provider
@@ -147,14 +148,38 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
 		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
-		$this->assertEquals( 'Invalid parameter(s): country', $response->get_data()['message'] );
+		$this->assertEquals( 'Invalid parameter(s): targeted_locations', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_create_campaign_empty_targeted_locations() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => [],
+		];
+
+		$expected = [
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'country' => self::BASE_COUNTRY,
+		] + $campaign_data;
+
+		$this->ads_campaign->expects( $this->once() )
+			->method( 'create_campaign' )
+			->with( $campaign_data )
+			->willReturn( $expected );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( $expected, $response->get_data() );
+		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_create_campaign_with_api_exception() {
 		$campaign_data = [
 			'amount'  => 20,
-			'country' => 'US',
+			'targeted_locations' => ['US'],
 		];
 
 		$this->ads_campaign->expects( $this->once() )
@@ -170,17 +195,17 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 	public function test_create_campaign_missing_parameters() {
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', [] );
 
-		$this->assertEquals( 'Missing parameter(s): amount, country', $response->get_data()['message'] );
+		$this->assertEquals( 'Missing parameter(s): amount, targeted_locations', $response->get_data()['message'] );
 		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_get_campaign() {
 		$campaign_data = [
-			'id'      => self::TEST_CAMPAIGN_ID,
-			'name'    => 'Campaign Name',
-			'status'  => 'enabled',
-			'amount'  => 10,
-			'country' => 'US',
+			'id'                 => self::TEST_CAMPAIGN_ID,
+			'name'               => 'Campaign Name',
+			'status'             => 'enabled',
+			'amount'             => 10,
+			'country'            => 'US',
 			'targeted_locations' => [],
 		];
 
