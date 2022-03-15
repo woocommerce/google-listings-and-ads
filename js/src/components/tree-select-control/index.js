@@ -3,7 +3,13 @@
  */
 import { cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
+import {
+	useEffect,
+	useMemo,
+	useState,
+	useRef,
+	useCallback,
+} from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
@@ -105,6 +111,65 @@ const TreeSelectControl = ( {
 	const focusOutside = useFocusOutside( () => {
 		setTreeVisible( false );
 	} );
+
+	/**
+	 * Perform the search query filter in the Tree options
+	 *
+	 * 1. Check if the search query is already cached and return it if so.
+	 * 2. Deep Copy the tree. Since we are going to modify his children and labels recursively.
+	 * 3. In case of filter, we apply the filter option function to the tree.
+	 * 4. In the filter function we also highlight the label with the matching letters
+	 * 5. Finally we set the cache with the obtained results and apply the filters
+	 *
+	 */
+	const queryOptions = useCallback( () => {
+		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
+
+		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
+			const matchLength = matchPosition + filter.length;
+			return (
+				<span>
+					<span>{ optionLabel.substring( 0, matchPosition ) }</span>
+					<strong>
+						{ optionLabel.substring( matchPosition, matchLength ) }
+					</strong>
+					<span>{ optionLabel.substring( matchLength ) }</span>
+				</span>
+			);
+		};
+
+		const filterOption = ( option ) => {
+			if ( hasChildren( option ) ) {
+				option.children = option.children.filter( filterOption );
+				return !! option.children.length;
+			}
+
+			const match = option.label.toLowerCase().indexOf( filter );
+
+			if ( match >= 0 ) {
+				option.label = highlightOptionLabel( option.label, match );
+				return true;
+			}
+		};
+
+		if ( cachedFilteredOptions ) {
+			setFilteredOptions( cachedFilteredOptions );
+			return;
+		}
+
+		let filteredTreeOptions = cloneDeep( treeOptions );
+
+		if ( filter ) {
+			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
+		}
+
+		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
+		setFilteredOptions( filteredTreeOptions );
+	}, [ treeOptions, filter ] );
+
+	useEffect( () => {
+		queryOptions();
+	}, [ queryOptions ] );
 
 	const hasChildren = ( option ) => option.children?.length;
 
@@ -237,78 +302,6 @@ const TreeSelectControl = ( {
 		const search = e.target.value.trim().toLowerCase();
 		setFilter( search.length >= 3 ? search : '' );
 	};
-
-	/**
-	 * Applies the strong tag in the Option label characters matching the filter
-	 *
-	 * @param {string} optionLabel The label to highlight
-	 * @param {number} matchPosition The position when the highlight starts based on the filter match
-	 * @return {JSX.Element|*} A highlighted label
-	 */
-	const highlightOptionLabel = ( optionLabel, matchPosition ) => {
-		const matchLength = matchPosition + filter.length;
-		return (
-			<span>
-				<span>{ optionLabel.substring( 0, matchPosition ) }</span>
-				<strong>
-					{ optionLabel.substring( matchPosition, matchLength ) }
-				</strong>
-				<span>{ optionLabel.substring( matchLength ) }</span>
-			</span>
-		);
-	};
-
-	/**
-	 * Filters an option and transforms its label if so
-	 *
-	 * This function mutates the option
-	 *
-	 * @param {Option} option The option to filter
-	 * @return {boolean} True if it pass the filter, false otherwise
-	 */
-	const filterOption = ( option ) => {
-		if ( hasChildren( option ) ) {
-			option.children = option.children.filter( filterOption );
-			return !! option.children.length;
-		}
-
-		const match = option.label.toLowerCase().indexOf( filter );
-
-		if ( match >= 0 ) {
-			option.label = highlightOptionLabel( option.label, match );
-			return true;
-		}
-	};
-
-	/**
-	 * Perform the search query filter in the Tree options
-	 *
-	 * 1. Check if the search query is already cached and return it if so.
-	 * 2. Deep Copy the tree. Since we are going to modify his children and labels recursively.
-	 * 3. In case of filter, we apply the filter option function to the tree.
-	 *
-	 */
-	const queryOptions = () => {
-		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
-
-		if ( cachedFilteredOptions ) {
-			setFilteredOptions( cachedFilteredOptions );
-			return;
-		}
-
-		let filteredTreeOptions = cloneDeep( treeOptions );
-
-		if ( filter ) {
-			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
-		}
-
-		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
-		setFilteredOptions( filteredTreeOptions );
-	};
-
-	useEffect( () => {
-		queryOptions();
-	}, [ treeOptions, filter, queryOptions ] );
 
 	return (
 		<div
