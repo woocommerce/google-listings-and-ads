@@ -3,6 +3,7 @@
  */
 import { Form } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
+import { pick } from 'lodash';
 
 /**
  * Internal dependencies
@@ -26,16 +27,16 @@ import FormContent from './form-content';
  * @return {Object} Settings object.
  */
 const getSettings = ( values ) => {
-	return {
-		shipping_rate: values.shipping_rate,
-		shipping_time: values.shipping_time,
-		tax_rate: values.tax_rate,
-		website_live: values.website_live,
-		checkout_process_secure: values.checkout_process_secure,
-		payment_methods_visible: values.payment_methods_visible,
-		refund_tos_visible: values.refund_tos_visible,
-		contact_info_visible: values.contact_info_visible,
-	};
+	return pick( values, [
+		'shipping_rate',
+		'shipping_time',
+		'tax_rate',
+		'website_live',
+		'checkout_process_secure',
+		'payment_methods_visible',
+		'refund_tos_visible',
+		'contact_info_visible',
+	] );
 };
 
 /**
