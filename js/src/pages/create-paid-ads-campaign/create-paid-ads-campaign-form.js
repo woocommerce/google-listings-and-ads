@@ -15,7 +15,7 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
-import useTargetAudience from '.~/hooks/useTargetAudience';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
 import validateForm from '.~/utils/paid-ads/validateForm';
@@ -26,10 +26,7 @@ const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
 	const { createAdsCampaign } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
-	const {
-		hasFinishedResolution: isResolvedTargetAudience,
-		data: targetAudience,
-	} = useTargetAudience();
+	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 
 	const handleValidate = ( values ) => {
 		return validateForm( values );
@@ -60,7 +57,7 @@ const CreatePaidAdsCampaignForm = () => {
 		getHistory().push( getDashboardUrl() );
 	};
 
-	if ( ! isResolvedTargetAudience ) {
+	if ( ! targetAudience ) {
 		return null;
 	}
 
@@ -68,7 +65,7 @@ const CreatePaidAdsCampaignForm = () => {
 		<Form
 			initialValues={ {
 				amount: 0,
-				countryCodes: targetAudience.countries,
+				countryCodes: targetAudience,
 			} }
 			validate={ handleValidate }
 			onSubmit={ handleSubmit }

@@ -12,7 +12,7 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
-import useTargetAudience from '.~/hooks/useTargetAudience';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
 import validateForm from '.~/utils/paid-ads/validateForm';
@@ -23,14 +23,11 @@ const SetupAdsForm = () => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ handleSetupComplete, isSubmitting ] = useSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
-	const {
-		hasFinishedResolution: isResolvedTargetAudience,
-		data: targetAudience,
-	} = useTargetAudience();
+	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 
 	const initialValues = {
 		amount: 0,
-		countryCodes: targetAudience?.countries,
+		countryCodes: targetAudience,
 	};
 
 	useEffect( () => {
@@ -68,7 +65,7 @@ const SetupAdsForm = () => {
 		setFormChanged( ! isEqual( initialValues, values ) );
 	};
 
-	if ( ! isResolvedTargetAudience ) {
+	if ( ! targetAudience ) {
 		return null;
 	}
 
