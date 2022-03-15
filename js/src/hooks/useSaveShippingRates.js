@@ -7,6 +7,7 @@ import { useCallback } from '@wordpress/element';
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
+import getDifferentShippingRates from '.~/utils/getDifferentShippingRates';
 import isInShippingRates from '.~/utils/isInShippingRates';
 import useShippingRates from './useShippingRates';
 
@@ -46,8 +47,12 @@ const useSaveShippingRates = () => {
 				await deleteShippingRates( deleteIds );
 			}
 
-			if ( newShippingRates.length ) {
-				await upsertShippingRates( newShippingRates );
+			const diffShippingRates = getDifferentShippingRates(
+				newShippingRates,
+				oldShippingRates
+			);
+			if ( diffShippingRates.length ) {
+				await upsertShippingRates( diffShippingRates );
 			}
 		},
 		[ deleteShippingRates, oldShippingRates, upsertShippingRates ]
