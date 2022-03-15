@@ -95,6 +95,10 @@ const SetupFreeListings = ( props ) => {
 			] );
 			onContinue();
 		} catch ( error ) {
+			if ( isMounted() ) {
+				setSaving( false );
+			}
+
 			createNotice(
 				'error',
 				__(
@@ -102,10 +106,6 @@ const SetupFreeListings = ( props ) => {
 					'google-listings-and-ads'
 				)
 			);
-		}
-
-		if ( isMounted() ) {
-			setSaving( false );
 		}
 	};
 
