@@ -19,6 +19,12 @@ import FormContent from './form-content';
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
+/**
+ * Get settings object from Form values.
+ *
+ * @param {Object} values Form values.
+ * @return {Object} Settings object.
+ */
 const getSettings = ( values ) => {
 	return {
 		shipping_rate: values.shipping_rate,
