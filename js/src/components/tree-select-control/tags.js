@@ -74,6 +74,7 @@ const Tags = ( {
 			{ maxTags > 0 && tags.length > maxTags && (
 				<Button
 					isTertiary
+					className="woocommerce-tree-select-control__show-more"
 					onClick={ () => {
 						setShowAll( ! showAll );
 					} }
@@ -82,7 +83,7 @@ const Tags = ( {
 						? __( 'Show less', 'google-listing-and-ads' )
 						: sprintf(
 								// translators: %d: The number of extra tags to show
-								__( '+ %d More', 'google-listing-and-ads' ),
+								__( '+ %d more', 'google-listing-and-ads' ),
 								tags.length - maxTags
 						  ) }
 				</Button>
