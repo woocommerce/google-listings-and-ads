@@ -202,7 +202,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 					$params['name']
 				),
 				$this->criterion->create_operations(
-					self::TEMPORARY_ID,
 					$this->temporary_resource_name(),
 					$location_ids
 				)

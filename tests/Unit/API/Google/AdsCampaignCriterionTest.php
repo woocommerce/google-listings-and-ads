@@ -40,7 +40,6 @@ class AdsCampaignCriterionTest extends UnitTest {
 		$location_ids           = [2158, 2344, 2826];
 
 		$operations = $this->campaign_criterion->create_operations(
-			self::TEST_CAMPAIGN_ID,
 			$campaign_resource_name,
 			$location_ids
 		);

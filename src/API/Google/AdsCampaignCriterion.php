@@ -21,16 +21,15 @@ class AdsCampaignCriterion {
 	/**
 	 * Returns a set of operations to create multiple campaign criteria.
 	 *
-	 * @param int    $campaign_id            Campaign ID.
 	 * @param string $campaign_resource_name Campaign resource name.
 	 * @param array  $location_ids           Targeted locations IDs.
 	 *
 	 * @return array
 	 */
-	public function create_operations( int $campaign_id, string $campaign_resource_name, array $location_ids ): array {
+	public function create_operations( string $campaign_resource_name, array $location_ids ): array {
 		return array_map(
-			function ( $location_id ) use ( $campaign_id, $campaign_resource_name ) {
-				return $this->create_operation( $campaign_id, $campaign_resource_name, $location_id );
+			function ( $location_id ) use ( $campaign_resource_name ) {
+				return $this->create_operation( $campaign_resource_name, $location_id );
 			},
 			$location_ids
 		);
@@ -39,13 +38,12 @@ class AdsCampaignCriterion {
 	/**
 	 * Returns a new campaign criterion create operation.
 	 *
-	 * @param int    $campaign_id            Campaign ID.
 	 * @param string $campaign_resource_name Campaign resource name.
 	 * @param int    $location_id            Targeted location ID.
 	 *
 	 * @return MutateOperation
 	 */
-	protected function create_operation( int $campaign_id, string $campaign_resource_name, int $location_id ): MutateOperation {
+	protected function create_operation( string $campaign_resource_name, int $location_id ): MutateOperation {
 		$campaign_criterion = new CampaignCriterion(
 			[
 				'campaign' => $campaign_resource_name,
