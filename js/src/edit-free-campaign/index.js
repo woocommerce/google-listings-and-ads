@@ -24,7 +24,7 @@ import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import HelpIconButton from '.~/components/help-icon-button';
-import getUnsavedShippingRates from './getUnsavedShippingRates';
+import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 
 /**
@@ -149,11 +149,10 @@ export default function EditFreeCampaign() {
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
 	const didSettingsChanged = ! isEqual( settings, savedSettings );
-	const unsavedShippingRates = getUnsavedShippingRates(
+	const didRatesChanged = hasUnsavedShippingRates(
 		shippingRates,
 		savedShippingRates
 	);
-	const didRatesChanged = unsavedShippingRates.length > 0;
 
 	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
 	const didAnythingChanged =
