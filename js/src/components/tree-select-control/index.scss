@@ -28,8 +28,9 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 	}
 
 	.components-base-control {
-		height: 56px;
+		height: auto;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		border: 1px solid $studio-gray-20;
 		border-radius: 3px;
@@ -42,6 +43,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			display: flex;
 			align-items: center;
 			flex: 1;
+			flex-basis: content;
 			margin-bottom: 0;
 			max-width: 100%;
 		}
@@ -87,7 +89,12 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		}
 
 		&.is-disabled {
-			opacity: 0.5;
+			border: 1px solid rgba(167, 170, 173, 0.5);
+			background: rgba(255, 255, 255, 0.5);
+
+			.components-base-control__field {
+				display: none;
+			}
 			.components-base-control__label {
 				cursor: default;
 			}
@@ -110,6 +117,10 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		&.has-clear {
 			padding-right: $gap-large;
 		}
+	}
+
+	.woocommerce-tree-select-control__show-more {
+		max-height: 24px;
 	}
 
 	.woocommerce-tag {

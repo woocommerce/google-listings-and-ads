@@ -19,6 +19,7 @@ import Tags from './tags';
  * @param {string} props.placeholder Placeholder of the search input
  * @param {boolean} props.isExpanded True if the tree is expanded
  * @param {boolean} props.disabled True if the component is disabled
+ * @param {number} props.maxVisibleTags The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
  * @param {Function} props.onFocus On Focus Callback
  * @param {Function} props.onTagsChange Callback when the Tags change
  * @return {JSX.Element} The rendered component
@@ -29,6 +30,7 @@ const Control = ( {
 	placeholder,
 	isExpanded,
 	disabled,
+	maxVisibleTags,
 	onFocus = () => {},
 	onTagsChange = () => {},
 } ) => {
@@ -59,6 +61,7 @@ const Control = ( {
 				<Tags
 					disabled={ disabled }
 					tags={ tags }
+					maxVisibleTags={ maxVisibleTags }
 					onChange={ onTagsChange }
 				/>
 			) }

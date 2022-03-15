@@ -72,6 +72,7 @@ const ComponentTest = () => {
 			</button>
 			<h2>TreeSelectControl</h2>
 			<TreeSelectControl
+				maxVisibleTags="5"
 				disabled={ disabled }
 				options={ treeSelectControlOptions }
 				value={ selected }

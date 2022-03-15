@@ -64,6 +64,7 @@ import { ROOT_VALUE } from '.~/components/tree-select-control/constants';
  * @param {boolean} props.disabled Disables the component
  * @param {Option[]} props.options Options to show in the component
  * @param {string[]} props.value Selected values
+ * @param {number} props.maxVisibleTags The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
  * @param {Function} props.onChange Callback when the selector changes
  * @return {JSX.Element} The component
  */
@@ -76,6 +77,7 @@ const TreeSelectControl = ( {
 	disabled,
 	options = [],
 	value = [],
+	maxVisibleTags,
 	onChange = () => {},
 } ) => {
 	let instanceId = useInstanceId( TreeSelectControl );
@@ -244,6 +246,7 @@ const TreeSelectControl = ( {
 				instanceId={ instanceId }
 				placeholder={ placeholder }
 				label={ label }
+				maxVisibleTags={ maxVisibleTags }
 				onTagsChange={ handleTagsChange }
 			/>
 			{ treeVisible && (
