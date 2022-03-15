@@ -32,6 +32,14 @@ const isEqualShippingRate = ( a, b ) => {
 /**
  * Get shipping rates from `shippingRates1` that are different from shipping rates in `shippingRates2`.
  *
+ * A shipping rate in `shippingRates1` is considered different when:
+ *
+ * - it is a newly added shipping rate and does not exist in `shippingRates2`, or
+ * - it has been edited and it is different from the one in `shippingRates2`.
+ *
+ * Note that the term "difference" here relates to the term "set difference" in set theory.
+ * See https://en.wikipedia.org/wiki/Complement_(set_theory)#Relative_complement.
+ *
  * @param {Array<ShippingRate>} shippingRates1 Array of shipping rates. This will be used to compare against shippingRates2.
  * @param {Array<ShippingRate>} shippingRates2 Array of shipping rates.
  * @return {Array<ShippingRate>} Array containing shipping rates from shippingRates1 that are different from shipping rates in shippingRates2.
