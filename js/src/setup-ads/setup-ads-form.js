@@ -12,26 +12,22 @@ import { getNewPath } from '@woocommerce/navigation';
  */
 import useAdminUrl from '.~/hooks/useAdminUrl';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import SetupAdsFormContent from './setup-ads-form-content';
 import useSetupCompleteCallback from './useSetupCompleteCallback';
 import validateForm from '.~/utils/paid-ads/validateForm';
 import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
-// when amount is null or undefined in an onChange callback,
-// it will cause runtime error with the Form component.
-const initialValues = {
-	amount: 0,
-	countryCodes: [],
-};
-
 const SetupAdsForm = () => {
-	const [ editedValues, setEditedValues ] = useState( initialValues );
+	const [ didFormChanged, setFormChanged ] = useState( false );
 	const [ isSubmitted, setSubmitted ] = useState( false );
 	const [ handleSetupComplete, isSubmitting ] = useSetupCompleteCallback();
 	const adminUrl = useAdminUrl();
+	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 
-	const handleValidate = ( values ) => {
-		return validateForm( values );
+	const initialValues = {
+		amount: 0,
+		countryCodes: targetAudience,
 	};
 
 	useEffect( () => {
@@ -45,8 +41,7 @@ const SetupAdsForm = () => {
 		}
 	}, [ isSubmitted, adminUrl ] );
 
-	const didCampaignChanged = ! isEqual( initialValues, editedValues );
-	const shouldPreventLeave = didCampaignChanged && ! isSubmitted;
+	const shouldPreventLeave = didFormChanged && ! isSubmitted;
 
 	useNavigateAwayPromptEffect(
 		__(
@@ -67,13 +62,17 @@ const SetupAdsForm = () => {
 	};
 
 	const handleChange = ( _, values ) => {
-		setEditedValues( values );
+		setFormChanged( ! isEqual( initialValues, values ) );
 	};
+
+	if ( ! targetAudience ) {
+		return null;
+	}
 
 	return (
 		<Form
 			initialValues={ initialValues }
-			validate={ handleValidate }
+			validate={ validateForm }
 			onChange={ handleChange }
 			onSubmit={ handleSubmit }
 		>
