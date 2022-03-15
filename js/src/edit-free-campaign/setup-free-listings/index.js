@@ -20,6 +20,11 @@ import FormContent from './form-content';
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
+/**
+ * Field names for settings.
+ *
+ * If we are adding a new settings field, it should be added into this array.
+ */
 const settingsFieldNames = [
 	'shipping_rate',
 	'shipping_time',
@@ -34,11 +39,11 @@ const settingsFieldNames = [
 /**
  * Get settings object from Form values.
  *
- * This method is used to intentionally pick out form fields that are specific to settings.
- * If we are adding a new settings field, it should be added into this function.
+ * This method is used to pick out form fields that are specific to settings.
+ * If we are adding a new settings field, it should be added into `settingsFieldNames`.
  *
- * If a new field is added into the form that is not related to settings (i.e. `offer_free_shipping`),
- * we do not need to add the field into the function,
+ * If a new field is added into the form that is not related to settings (e.g. `offer_free_shipping`),
+ * we do not need to add the field into `settingsFieldNames`,
  * and things should continue to work as expected (e.g. the navigate away prompt).
  *
  * @param {Object} values Form values.
