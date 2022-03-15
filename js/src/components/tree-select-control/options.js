@@ -21,14 +21,14 @@ import { ROOT_VALUE } from './constants';
  * @param {Option[]} props.options List of options to be rendered
  * @param {string[]} props.value List of selected values
  * @param {string[]} props.nodesExpanded List of expanded nodes.
- * @param {string} props.filter The filter applied to the Tree Options
+ * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
  * @param {Function} props.onChange Callback when an option changes
  * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
  */
 const Options = ( {
 	options = [],
 	value = [],
-	filter = '',
+	isFiltered = false,
 	onChange = () => {},
 	nodesExpanded = [],
 	onNodesExpandedChange = () => {},
@@ -93,7 +93,7 @@ const Options = ( {
 		const hasChildren = !! option.children?.length;
 		const optionIsChecked = isChecked( option );
 		const isExpanded =
-			filter.length || isRoot || nodesExpanded.includes( option.value );
+			isFiltered || isRoot || nodesExpanded.includes( option.value );
 
 		return (
 			<div
@@ -147,7 +147,7 @@ const Options = ( {
 					>
 						<Options
 							options={ option.children }
-							filter={ filter }
+							isFiltered={ isFiltered }
 							value={ value }
 							onChange={ onChange }
 							nodesExpanded={ nodesExpanded }

@@ -234,7 +234,7 @@ const TreeSelectControl = ( {
 	 * @param {Event} e Event returned by the On Change function
 	 */
 	const handleOnSearch = ( e ) => {
-		const search = e.target.value.trim();
+		const search = e.target.value.trim().toLowerCase();
 		setFilter( search.length >= 3 ? search : '' );
 	};
 
@@ -246,20 +246,14 @@ const TreeSelectControl = ( {
 	 * @return {JSX.Element|*} A highlighted label
 	 */
 	const highlightOptionLabel = ( optionLabel, matchPosition ) => {
-		if ( matchPosition < 0 || ! filter?.length ) return optionLabel;
-
+		const matchLength = matchPosition + filter.length;
 		return (
 			<span>
 				<span>{ optionLabel.substring( 0, matchPosition ) }</span>
 				<strong>
-					{ optionLabel.substring(
-						matchPosition,
-						matchPosition + filter.length
-					) }
+					{ optionLabel.substring( matchPosition, matchLength ) }
 				</strong>
-				<span>
-					{ optionLabel.substring( matchPosition + filter.length ) }
-				</span>
+				<span>{ optionLabel.substring( matchLength ) }</span>
 			</span>
 		);
 	};
@@ -278,9 +272,7 @@ const TreeSelectControl = ( {
 			return !! option.children.length;
 		}
 
-		const match = option.label
-			.toLowerCase()
-			.indexOf( filter.toLowerCase() );
+		const match = option.label.toLowerCase().indexOf( filter );
 
 		if ( match >= 0 ) {
 			option.label = highlightOptionLabel( option.label, match );
@@ -357,7 +349,7 @@ const TreeSelectControl = ( {
 					<Options
 						options={ filteredOptions }
 						value={ value }
-						filter={ filter }
+						isFiltered={ !! filter }
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }
