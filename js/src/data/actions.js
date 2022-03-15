@@ -73,6 +73,12 @@ export function* fetchShippingRates() {
 	}
 }
 
+/**
+ * Upsert shipping rates.
+ *
+ * @param {Array<ShippingRate>} shippingRates Shipping rates to be upserted.
+ * @return {Object} Action object to update shipping rates.
+ */
 export function* upsertShippingRates( shippingRates ) {
 	const data = yield apiFetch( {
 		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
@@ -95,6 +101,12 @@ export function* upsertShippingRates( shippingRates ) {
 	};
 }
 
+/**
+ * Delete shipping rates.
+ *
+ * @param {Array<string>} ids IDs of shiping rates to be deleted.
+ * @return {Object} Action object to delete shipping rates.
+ */
 export function* deleteShippingRates( ids ) {
 	yield apiFetch( {
 		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
