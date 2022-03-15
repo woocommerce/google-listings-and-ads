@@ -28,7 +28,7 @@ describe( 'TreeSelectControl - Tags Component', () => {
 		expect( queryByText( 'Spain' ) ).toBeTruthy();
 		expect( queryByText( 'France' ) ).toBeFalsy();
 
-		const showMore = queryByText( '+ 1 More' );
+		const showMore = queryByText( '+ 1 more' );
 		expect( queryByText( 'Show less' ) ).toBeFalsy();
 		expect( showMore ).toBeTruthy();
 		fireEvent.click( showMore );
@@ -43,6 +43,6 @@ describe( 'TreeSelectControl - Tags Component', () => {
 		expect( queryByText( 'France' ) ).toBeFalsy();
 
 		expect( queryByText( 'Show less' ) ).toBeFalsy();
-		expect( queryByText( '+ 1 More' ) ).toBeTruthy();
+		expect( queryByText( '+ 1 more' ) ).toBeTruthy();
 	} );
 } );
