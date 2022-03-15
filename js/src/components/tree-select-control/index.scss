@@ -89,7 +89,12 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 		}
 
 		&.is-disabled {
-			opacity: 0.5;
+			border: 1px solid rgba(167, 170, 173, 0.5);
+			background: rgba(255, 255, 255, 0.5);
+
+			.components-base-control__field {
+				display: none;
+			}
 			.components-base-control__label {
 				cursor: default;
 			}
