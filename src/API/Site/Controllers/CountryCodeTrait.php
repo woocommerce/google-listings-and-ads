@@ -6,6 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\ISO3166Awareness;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\Exception\OutOfBoundsException;
+use Exception;
 use Throwable;
 
 defined( 'ABSPATH' ) || exit;
@@ -58,6 +59,12 @@ trait CountryCodeTrait {
 				$value = (array) $value;
 				foreach ( $value as $item ) {
 					$this->validate_country_code( $item );
+					if ( isset( $this->google_helper ) ) {
+						$country_supported = $this->google_helper->is_country_supported( $item );
+						if ( ! $country_supported ) {
+							throw new Exception( __( 'Country is not supported', 'google-listings-and-ads' ) );
+						}
+					}
 				}
 
 				return true;

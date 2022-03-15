@@ -4,6 +4,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Contro
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\CampaignController;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\ISO3166\ISO3166DataProvider;
 use Exception;
@@ -31,7 +32,13 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->ads_campaign = $this->createMock( AdsCampaign::class );
 		$this->iso_provider = $this->createMock( ISO3166DataProvider::class );
 
-		$this->controller = new CampaignController( $this->server, $this->ads_campaign );
+		$this->country_supported = true;
+
+		$this->google_helper = $this->createMock( GoogleHelper::class );
+		$this->google_helper->method( 'is_country_supported' )
+			->willReturnCallback( function () { return $this->country_supported; } );
+
+		$this->controller = new CampaignController( $this->server, $this->ads_campaign, $this->google_helper );
 		$this->controller->register();
 		$this->controller->set_iso3166_provider( $this->iso_provider );
 	}
@@ -144,6 +151,23 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->iso_provider
 			->method( 'alpha2' )
 			->willThrowException( new Exception( 'invalid_country' ) );
+
+		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
+
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): targeted_locations', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
+	}
+
+	public function test_create_campaign_unsupported_country() {
+		$this->country_supported = false;
+		$this->google_helper->method( 'is_country_supported' )
+			->willReturnCallback( function () { return $this->country_supported; } );
+
+		$campaign_data = [
+			'amount'             => 20,
+			'targeted_locations' => ['CN', 'KP'],
+		];
 
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 

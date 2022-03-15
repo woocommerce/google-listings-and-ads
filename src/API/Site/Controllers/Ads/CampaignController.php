@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
@@ -33,14 +34,21 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected $ads_campaign;
 
 	/**
+	 * @var GoogleHelper
+	 */
+	protected $google_helper;
+
+	/**
 	 * CampaignController constructor.
 	 *
-	 * @param RESTServer  $server
-	 * @param AdsCampaign $ads_campaign
+	 * @param RESTServer   $server
+	 * @param AdsCampaign  $ads_campaign
+	 * @param GoogleHelper $google_helper
 	 */
-	public function __construct( RESTServer $server, AdsCampaign $ads_campaign ) {
+	public function __construct( RESTServer $server, AdsCampaign $ads_campaign, GoogleHelper $google_helper ) {
 		parent::__construct( $server );
-		$this->ads_campaign = $ads_campaign;
+		$this->ads_campaign  = $ads_campaign;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
