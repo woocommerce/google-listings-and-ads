@@ -53,7 +53,7 @@ class GoogleGtagJs {
 	 */
 	private function is_gtag_page(): bool {
 		$standard_tracking_enabled = 'yes' === $this->wcga_settings['ga_standard_tracking_enabled'];
-		$is_wc_page                = is_order_received_page() || is_woocommerce() || is_cart() || is_checkout();
+		$is_wc_page                = is_order_received_page() || is_woocommerce() || is_cart() || is_checkout() || || is_product();
 
 		return $standard_tracking_enabled || $is_wc_page;
 	}
