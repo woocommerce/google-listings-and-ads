@@ -68,6 +68,34 @@ register_deactivation_hook(
 );
 
 /**
+ * Remove our plugin if WooCommerce is deactivated.
+ *
+ * @param string $plugin
+ *   Path to the plugin file relative to the plugins directory.
+ * @param bool   $network_activation
+ *  Whether the plugin is being activated for all sites in the network
+ */
+function detect_wc_deactivation( string $plugin, bool $network_activation ): void {
+	if ( $plugin === 'woocommerce/woocommerce.php' ) {
+		if ( ! $network_activation ) {
+			if ( is_plugin_active( plugin_basename( __FILE__ ) ) ) {
+				add_action( 'update_option_active_plugins', 'force_deactivate_gla_plugin' );
+			}
+		}
+	}
+
+}
+
+add_action( 'deactivated_plugin', 'detect_wc_deactivation', 10, 2 );
+
+/**
+ * Deactivate plugin.
+ */
+function force_deactivate_gla_plugin(): void {
+	deactivate_plugins( plugin_basename( __FILE__ ) );
+}
+
+/**
  * Get our main container object.
  *
  * @return ContainerInterface
