@@ -23,6 +23,13 @@ import FormContent from './form-content';
 /**
  * Get settings object from Form values.
  *
+ * This method is used to intentionally pick out form fields that are specific to settings.
+ * If we are adding a new settings field, it should be added into this function.
+ *
+ * If a new field is added into the form that is not related to settings (i.e. `offer_free_shipping`),
+ * we do not need to add the field into the function,
+ * and things should continue to work as expected (e.g. the navigate away prompt).
+ *
  * @param {Object} values Form values.
  * @return {Object} Settings object.
  */
@@ -111,6 +118,7 @@ const SetupFreeListings = ( {
 			<Hero />
 			<Form
 				initialValues={ {
+					// These are the fields for settings.
 					shipping_rate: settings.shipping_rate,
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
