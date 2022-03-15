@@ -92,22 +92,16 @@ const SetupFreeListings = ( {
 		setSaving( false );
 	};
 
-	const handleChange = ( change, newVals ) => {
-		// Un-glue form data.
-		const {
-			shipping_country_rates: newShippingRates,
-			shipping_country_times: newShippingTimes,
-		} = newVals;
-
+	const handleChange = ( change, values ) => {
 		switch ( change.name ) {
 			case 'shipping_country_rates':
-				onShippingRatesChange( newShippingRates );
+				onShippingRatesChange( values.shipping_country_rates );
 				break;
 			case 'shipping_country_times':
-				onShippingTimesChange( newShippingTimes );
+				onShippingTimesChange( values.shipping_country_times );
 				break;
 			default:
-				onSettingsChange( change, getSettings( newVals ) );
+				onSettingsChange( change, getSettings( values ) );
 		}
 	};
 
