@@ -103,6 +103,117 @@ describe( 'reducer', () => {
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty( path, action.shippingRates );
 		} );
+
+		it( 'should return with upserted shipping rates by matching `countryCode`', () => {
+			const originalState = prepareState( path, [
+				{
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 4.99,
+					options: {},
+				},
+				{
+					id: '2',
+					country: 'CA',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 25,
+					options: {},
+				},
+			] );
+			const action = {
+				type: TYPES.UPSERT_SHIPPING_RATES,
+				shippingRates: [
+					{
+						id: '2',
+						country: 'CA',
+						method: 'flat_rate',
+						currency: 'USD',
+						rate: 12,
+						options: {},
+					},
+					{
+						id: '3',
+						country: 'JP',
+						method: 'flat_rate',
+						currency: 'USD',
+						rate: 12,
+						options: {},
+					},
+				],
+			};
+
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 4.99,
+					options: {},
+				},
+				{
+					id: '2',
+					country: 'CA',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 12,
+					options: {},
+				},
+				{
+					id: '3',
+					country: 'JP',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 12,
+					options: {},
+				},
+			] );
+		} );
+
+		it( 'should return with remaining shipping rates after deleting specific items by matching `countryCode`', () => {
+			const originalState = prepareState( path, [
+				{
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 4.99,
+					options: {},
+				},
+				{
+					id: '2',
+					country: 'CA',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 25,
+					options: {},
+				},
+			] );
+			const action = {
+				type: TYPES.DELETE_SHIPPING_RATES,
+				ids: [ '2' ],
+			};
+
+			const state = reducer( originalState, action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( path, [
+				{
+					id: '1',
+					country: 'US',
+					method: 'flat_rate',
+					currency: 'USD',
+					rate: 4.99,
+					options: {},
+				},
+			] );
+		} );
 	} );
 
 	describe( 'Merchant center shipping time at `mc.shipping.times`', () => {
