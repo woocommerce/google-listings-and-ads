@@ -88,7 +88,7 @@ const TreeSelectControl = ( {
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
-	const searchFiltersCache = useRef( {} );
+	const filteredOptionsCache = useRef( {} );
 
 	const treeOptions = useIsEqualRefValue(
 		selectAllLabel !== false
@@ -106,10 +106,6 @@ const TreeSelectControl = ( {
 		setTreeVisible( false );
 	} );
 
-	useEffect( () => {
-		queryOptions();
-	}, [ treeOptions, filter ] );
-
 	const hasChildren = ( option ) => option.children?.length;
 
 	/**
@@ -119,6 +115,8 @@ const TreeSelectControl = ( {
 	 */
 	const optionsRepository = useMemo( () => {
 		const repository = {};
+
+		filteredOptionsCache.current = []; // clear cache if options change
 
 		function loadOption( option ) {
 			if ( ! hasChildren( option ) ) {
@@ -135,12 +133,6 @@ const TreeSelectControl = ( {
 		return repository;
 	}, [ treeOptions ] );
 
-	const getSearchFilterCache = () => searchFiltersCache.current[ filter ];
-
-	const setSearchFilterCache = ( newValue ) => {
-		searchFiltersCache.current[ filter ] = newValue;
-	};
-
 	/**
 	 * Get formatted Tags from the selected values.
 	 *
@@ -153,7 +145,7 @@ const TreeSelectControl = ( {
 
 		return value.map( ( key ) => {
 			const option = optionsRepository[ key ];
-			return { id: key, label: option.label };
+			return { id: key, label: option?.label };
 		} );
 	};
 
@@ -305,10 +297,10 @@ const TreeSelectControl = ( {
 	 *
 	 */
 	const queryOptions = () => {
-		const cachedFilter = getSearchFilterCache( filter );
+		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
 
-		if ( cachedFilter ) {
-			setFilteredOptions( cachedFilter );
+		if ( cachedFilteredOptions ) {
+			setFilteredOptions( cachedFilteredOptions );
 			return;
 		}
 
@@ -318,9 +310,13 @@ const TreeSelectControl = ( {
 			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
 		}
 
-		setSearchFilterCache( filteredTreeOptions );
+		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
 	};
+
+	useEffect( () => {
+		queryOptions();
+	}, [ treeOptions, filter, queryOptions ] );
 
 	return (
 		<div
