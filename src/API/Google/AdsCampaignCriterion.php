@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\LocationInfo;
+use Google\Ads\GoogleAds\V9\Enums\CampaignCriterionStatusEnum\CampaignCriterionStatus;
 use Google\Ads\GoogleAds\V9\Resources\CampaignCriterion;
 use Google\Ads\GoogleAds\V9\Services\CampaignCriterionOperation;
 use Google\Ads\GoogleAds\V9\Services\MutateOperation;
@@ -48,7 +49,7 @@ class AdsCampaignCriterion {
 			[
 				'campaign' => $campaign_resource_name,
 				'negative' => false,
-				'status'   => CampaignCriterionStatus::number( 'enabled' ),
+				'status'   => CampaignCriterionStatus::ENABLED,
 				'location' => new LocationInfo(
 					[
 						'geo_target_constant' => ResourceNames::forGeoTargetConstant( $location_id ),
