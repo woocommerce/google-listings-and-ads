@@ -28,8 +28,9 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 	}
 
 	.components-base-control {
-		height: 56px;
+		height: auto;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		border: 1px solid $studio-gray-20;
 		border-radius: 3px;
@@ -42,6 +43,7 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 			display: flex;
 			align-items: center;
 			flex: 1;
+			flex-basis: content;
 			margin-bottom: 0;
 			max-width: 100%;
 		}

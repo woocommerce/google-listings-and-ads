@@ -3,6 +3,8 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Tag } from '@woocommerce/components';
+import { useState } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 /**
  * A list of tags to display selected items.
@@ -11,8 +13,19 @@ import { Tag } from '@woocommerce/components';
  * @param {Object[]} props.tags The tags
  * @param {Function} props.onChange The method called when a tag is removed
  * @param {boolean} props.disabled True if the plugin is disabled
+ * @param {number} props.maxVisibleTags The maximum number of tags to show. 0 or less than 0 evaluates to "Show All".
  */
-const Tags = ( { tags, disabled, onChange = () => {} } ) => {
+const Tags = ( {
+	tags = [],
+	disabled,
+	maxVisibleTags = 0,
+	onChange = () => {},
+} ) => {
+	const [ showAll, setShowAll ] = useState( false );
+	const maxTags = Math.max( 0, maxVisibleTags );
+	const shouldShowAll = showAll || ! maxTags;
+	const visibleTags = shouldShowAll ? tags : tags.slice( 0, maxTags );
+
 	if ( ! tags.length ) {
 		return null;
 	}
@@ -36,7 +49,7 @@ const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 
 	return (
 		<div className="woocommerce-tree-select-control__tags">
-			{ tags.map( ( item, i ) => {
+			{ visibleTags.map( ( item, i ) => {
 				if ( ! item.label ) {
 					return null;
 				}
@@ -57,6 +70,23 @@ const Tags = ( { tags, disabled, onChange = () => {} } ) => {
 					/>
 				);
 			} ) }
+
+			{ maxTags > 0 && tags.length > maxTags && (
+				<Button
+					isTertiary
+					onClick={ () => {
+						setShowAll( ! showAll );
+					} }
+				>
+					{ showAll
+						? __( 'Show less', 'google-listing-and-ads' )
+						: sprintf(
+								// translators: %d: The number of extra tags to show
+								__( '+ %d More', 'google-listing-and-ads' ),
+								tags.length - maxTags
+						  ) }
+				</Button>
+			) }
 		</div>
 	);
 };
