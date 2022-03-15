@@ -20,6 +20,17 @@ import FormContent from './form-content';
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
 
+const settingsFieldNames = [
+	'shipping_rate',
+	'shipping_time',
+	'tax_rate',
+	'website_live',
+	'checkout_process_secure',
+	'payment_methods_visible',
+	'refund_tos_visible',
+	'contact_info_visible',
+];
+
 /**
  * Get settings object from Form values.
  *
@@ -34,16 +45,7 @@ import FormContent from './form-content';
  * @return {Object} Settings object.
  */
 const getSettings = ( values ) => {
-	return pick( values, [
-		'shipping_rate',
-		'shipping_time',
-		'tax_rate',
-		'website_live',
-		'checkout_process_secure',
-		'payment_methods_visible',
-		'refund_tos_visible',
-		'contact_info_visible',
-	] );
+	return pick( values, settingsFieldNames );
 };
 
 /**
@@ -101,15 +103,12 @@ const SetupFreeListings = ( {
 	};
 
 	const handleChange = ( change, values ) => {
-		switch ( change.name ) {
-			case 'shipping_country_rates':
-				onShippingRatesChange( values.shipping_country_rates );
-				break;
-			case 'shipping_country_times':
-				onShippingTimesChange( values.shipping_country_times );
-				break;
-			default:
-				onSettingsChange( change, getSettings( values ) );
+		if ( change.name === 'shipping_country_rates' ) {
+			onShippingRatesChange( values.shipping_country_rates );
+		} else if ( change.name === 'shipping_country_times' ) {
+			onShippingTimesChange( values.shipping_country_times );
+		} else if ( settingsFieldNames.includes( change.name ) ) {
+			onSettingsChange( change, getSettings( values ) );
 		}
 	};
 
