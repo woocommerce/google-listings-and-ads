@@ -2,13 +2,14 @@
  * External dependencies
  */
 import { useCallback } from '@wordpress/element';
+import { differenceWith } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
 import getDifferentShippingRates from '.~/utils/getDifferentShippingRates';
-import isInShippingRates from '.~/utils/isInShippingRates';
+import isSameShippingRate from '.~/utils/isSameShippingRate';
 import useShippingRates from './useShippingRates';
 
 /**
@@ -16,12 +17,13 @@ import useShippingRates from './useShippingRates';
  */
 
 const getDeleteIds = ( newShippingRates, oldShippingRates ) => {
-	return oldShippingRates
-		.filter(
-			( oldShippingRate ) =>
-				! isInShippingRates( oldShippingRate, newShippingRates )
-		)
-		.map( ( oldShippingRate ) => oldShippingRate.id );
+	const deletedShippingRates = differenceWith(
+		oldShippingRates,
+		newShippingRates,
+		isSameShippingRate
+	);
+
+	return deletedShippingRates.map( ( shippingRate ) => shippingRate.id );
 };
 
 const useSaveShippingRates = () => {
