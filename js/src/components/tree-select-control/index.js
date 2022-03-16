@@ -3,13 +3,7 @@
  */
 import { cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import {
-	useEffect,
-	useMemo,
-	useState,
-	useRef,
-	useCallback,
-} from '@wordpress/element';
+import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
