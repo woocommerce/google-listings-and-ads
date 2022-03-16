@@ -20,9 +20,9 @@ const useAutoSaveShippingRatesEffect = ( shippingRates ) => {
 	 * and want it to fail silently in the background.
 	 */
 	const saveShippingRatesCallback = useCallback(
-		( value ) => {
+		async ( value ) => {
 			try {
-				saveShippingRates( value );
+				await saveShippingRates( value );
 			} catch ( error ) {}
 		},
 		[ saveShippingRates ]
