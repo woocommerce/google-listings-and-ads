@@ -315,6 +315,7 @@ const TreeSelectControl = ( {
 	};
 
 	return (
+		// eslint-disable-next-line jsx-a11y/no-static-element-interactions
 		<div
 			{ ...focusOutside }
 			onKeyDown={ onKeyDown }

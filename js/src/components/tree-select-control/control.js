@@ -2,7 +2,7 @@
  * External dependencies
  */
 import classnames from 'classnames';
-import { forwardRef, useRef } from '@wordpress/element';
+import { forwardRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
