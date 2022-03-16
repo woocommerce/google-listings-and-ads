@@ -21,7 +21,7 @@ import Tags from './tags';
  * @param {boolean} props.disabled True if the component is disabled
  * @param {Function} props.onFocus On Focus Callback
  * @param {Function} props.onTagsChange Callback when the Tags change
- * @param {Function} props.onSearch Callback when the Input value changes
+ * @param {Function} props.onInputChange Callback when the Input value changes
  * @return {JSX.Element} The rendered component
  */
 const Control = ( {
@@ -32,7 +32,7 @@ const Control = ( {
 	disabled,
 	onFocus = () => {},
 	onTagsChange = () => {},
-	onSearch = () => {},
+	onInputChange = () => {},
 } ) => {
 	const inputRef = useRef();
 	const hasTags = tags.length > 0;
@@ -78,7 +78,7 @@ const Control = ( {
 					aria-expanded={ isExpanded }
 					disabled={ disabled }
 					onFocus={ onFocus }
-					onChange={ onSearch }
+					onChange={ onInputChange }
 				/>
 			</div>
 		</div>

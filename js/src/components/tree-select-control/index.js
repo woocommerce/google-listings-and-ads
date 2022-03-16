@@ -122,7 +122,7 @@ const TreeSelectControl = ( {
 	 * 5. Finally we set the cache with the obtained results and apply the filters
 	 *
 	 */
-	const queryOptions = useCallback( () => {
+	useEffect( () => {
 		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
@@ -166,10 +166,6 @@ const TreeSelectControl = ( {
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
 	}, [ treeOptions, filter ] );
-
-	useEffect( () => {
-		queryOptions();
-	}, [ queryOptions ] );
 
 	const hasChildren = ( option ) => option.children?.length;
 
@@ -296,9 +292,9 @@ const TreeSelectControl = ( {
 	 * Prepares and sets the search filter.
 	 * Filters of less than 3 characters are not considered, so we convert them to ''
 	 *
-	 * @param {Event} e Event returned by the On Change function
+	 * @param {Event} e Event returned by the On Change function in the Input control
 	 */
-	const handleOnSearch = ( e ) => {
+	const handleOnInputChange = ( e ) => {
 		const search = e.target.value.trim().toLowerCase();
 		setFilter( search.length >= 3 ? search : '' );
 	};
@@ -331,7 +327,7 @@ const TreeSelectControl = ( {
 				placeholder={ placeholder }
 				label={ label }
 				onTagsChange={ handleTagsChange }
-				onSearch={ handleOnSearch }
+				onInputChange={ handleOnInputChange }
 			/>
 			{ treeVisible && (
 				<div
