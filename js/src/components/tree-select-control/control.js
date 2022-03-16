@@ -8,6 +8,7 @@ import { useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import Tags from './tags';
+import { BACKSPACE } from '.~/components/tree-select-control/constants';
 
 /**
  * The Control Component renders a search input and also the Tags.
@@ -39,6 +40,13 @@ const Control = ( {
 	const inputRef = useRef();
 	const hasTags = tags.length > 0;
 	const showPlaceholder = ! hasTags && ! isExpanded;
+
+	const onKeyDown = ( event ) => {
+		if ( BACKSPACE === event.key && ! inputRef.current.value ) {
+			onTagsChange( tags.slice( 0, -1 ) );
+			event.preventDefault();
+		}
+	};
 
 	return (
 		/*
@@ -82,6 +90,7 @@ const Control = ( {
 					disabled={ disabled }
 					onFocus={ onFocus }
 					onChange={ onInputChange }
+					onKeyDown={ onKeyDown }
 				/>
 			</div>
 		</div>
