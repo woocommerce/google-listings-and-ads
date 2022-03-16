@@ -38,9 +38,10 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$this->google_helper->method( 'is_country_supported' )
 			->willReturnCallback( function () { return $this->country_supported; } );
 
-		$this->controller = new CampaignController( $this->server, $this->ads_campaign, $this->google_helper );
+		$this->controller = new CampaignController( $this->server, $this->ads_campaign );
 		$this->controller->register();
 		$this->controller->set_iso3166_provider( $this->iso_provider );
+		$this->controller->set_google_helper_object( $this->google_helper );
 	}
 
 	public function test_get_campaigns() {

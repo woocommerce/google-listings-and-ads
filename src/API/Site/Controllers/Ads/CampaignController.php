@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseControl
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
-use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class CampaignController extends BaseController implements ISO3166AwareInterface {
+class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface {
 
 	use CountryCodeTrait;
 
@@ -34,21 +34,14 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	protected $ads_campaign;
 
 	/**
-	 * @var GoogleHelper
-	 */
-	protected $google_helper;
-
-	/**
 	 * CampaignController constructor.
 	 *
-	 * @param RESTServer   $server
-	 * @param AdsCampaign  $ads_campaign
-	 * @param GoogleHelper $google_helper
+	 * @param RESTServer  $server
+	 * @param AdsCampaign $ads_campaign
 	 */
-	public function __construct( RESTServer $server, AdsCampaign $ads_campaign, GoogleHelper $google_helper ) {
+	public function __construct( RESTServer $server, AdsCampaign $ads_campaign ) {
 		parent::__construct( $server );
-		$this->ads_campaign  = $ads_campaign;
-		$this->google_helper = $google_helper;
+		$this->ads_campaign = $ads_campaign;
 	}
 
 	/**
@@ -302,7 +295,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				'description'       => __( 'Country code of sale country in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-				'validate_callback' => $this->get_country_code_validate_callback(),
+				'validate_callback' => $this->get_supported_country_code_validate_callback(),
 				'readonly'          => true,
 			],
 			'targeted_locations' => [
@@ -310,7 +303,7 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 				'description'       => __( 'The locations that an Ads campaign is targeting in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-				'validate_callback' => $this->get_country_code_validate_callback(),
+				'validate_callback' => $this->get_supported_country_code_validate_callback(),
 				'required'          => true,
 				'items'             => [
 					'type' => 'string',
