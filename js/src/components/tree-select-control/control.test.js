@@ -3,7 +3,6 @@
  */
 import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,7 +15,6 @@ describe( 'TreeSelectControl - Control Component', () => {
 	it( 'Renders the tags and calls onTagsChange when they change', () => {
 		const { queryByText, queryByLabelText, rerender } = render(
 			<Control
-				ref={ createRef() }
 				tags={ [ { id: 'es', label: 'Spain' } ] }
 				onTagsChange={ onTagsChange }
 			/>
@@ -29,7 +27,6 @@ describe( 'TreeSelectControl - Control Component', () => {
 
 		rerender(
 			<Control
-				ref={ createRef() }
 				tags={ [ { id: 'es', label: 'Spain' } ] }
 				disabled={ true }
 				onTagsChange={ onTagsChange }
@@ -42,7 +39,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 	} );
 
 	it( 'Renders the input', () => {
-		const { queryByRole } = render( <Control ref={ createRef() } /> );
+		const { queryByRole } = render( <Control /> );
 
 		const input = queryByRole( 'combobox' );
 		expect( input ).toBeTruthy();
@@ -52,9 +49,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 	} );
 
 	it( 'Allows disabled input', () => {
-		const { queryByRole } = render(
-			<Control ref={ createRef() } disabled={ true } />
-		);
+		const { queryByRole } = render( <Control disabled={ true } /> );
 
 		const input = queryByRole( 'combobox' );
 		expect( input ).toBeTruthy();
@@ -65,24 +60,19 @@ describe( 'TreeSelectControl - Control Component', () => {
 
 	it( 'Calls onFocus callback when it is focused', () => {
 		const onFocus = jest.fn().mockName( 'onFocus' );
-		const { queryByRole } = render(
-			<Control ref={ createRef() } onFocus={ onFocus } />
-		);
+		const { queryByRole } = render( <Control onFocus={ onFocus } /> );
 		userEvent.click( queryByRole( 'combobox' ) );
 		expect( onFocus ).toHaveBeenCalled();
 	} );
 
 	it( 'Renders placeholder when there are no tags and is not expanded', () => {
-		const { rerender } = render(
-			<Control ref={ createRef() } placeholder="Select" />
-		);
+		const { rerender } = render( <Control placeholder="Select" /> );
 		let input = screen.queryByRole( 'combobox' );
 		let placeholder = input.getAttribute( 'placeholder' );
 		expect( placeholder ).toBe( 'Select' );
 
 		rerender(
 			<Control
-				ref={ createRef() }
 				placeholder="Select"
 				tags={ [ { id: 'es', label: 'Spain' } ] }
 			/>
@@ -92,13 +82,7 @@ describe( 'TreeSelectControl - Control Component', () => {
 		placeholder = input.getAttribute( 'placeholder' );
 		expect( placeholder ).toBeFalsy();
 
-		rerender(
-			<Control
-				ref={ createRef() }
-				placeholder="Select"
-				isExpanded={ true }
-			/>
-		);
+		rerender( <Control placeholder="Select" isExpanded={ true } /> );
 		input = screen.queryByRole( 'combobox' );
 		placeholder = input.getAttribute( 'placeholder' );
 		expect( placeholder ).toBeFalsy();

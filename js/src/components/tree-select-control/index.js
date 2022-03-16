@@ -90,9 +90,8 @@ const TreeSelectControl = ( {
 
 	const [ treeVisible, setTreeVisible ] = useState( false );
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
-	const [ filter, setFilter ] = useState( '' );
+	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
-	const inputRef = useRef();
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
@@ -112,6 +111,10 @@ const TreeSelectControl = ( {
 	const focusOutside = useFocusOutside( () => {
 		setTreeVisible( false );
 	} );
+
+	const hasChildren = ( option ) => option.children?.length;
+	const filterQuery = inputControlValue.trim().toLowerCase();
+	const filter = filterQuery.length >= 3 ? filterQuery : '';
 
 	/**
 	 * Perform the search query filter in the Tree options
@@ -169,7 +172,7 @@ const TreeSelectControl = ( {
 	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
-		if ( inputRef.current.value ) return;
+		if ( inputControlValue ) return;
 
 		if ( BACKSPACE === event.key ) {
 			onChange( value.slice( 0, -1 ) );
@@ -181,8 +184,6 @@ const TreeSelectControl = ( {
 			event.preventDefault();
 		}
 	};
-
-	const hasChildren = ( option ) => option.children?.length;
 
 	/**
 	 * Optimizes the performance for getting the tags info
@@ -310,8 +311,7 @@ const TreeSelectControl = ( {
 	 * @param {Event} e Event returned by the On Change function in the Input control
 	 */
 	const handleOnInputChange = ( e ) => {
-		const search = e.target.value.trim().toLowerCase();
-		setFilter( search.length >= 3 ? search : '' );
+		setInputControlValue( e.target.value );
 	};
 
 	return (
@@ -337,7 +337,6 @@ const TreeSelectControl = ( {
 			) }
 
 			<Control
-				ref={ inputRef }
 				disabled={ disabled }
 				tags={ getTags() }
 				isExpanded={ treeVisible }
