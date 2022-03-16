@@ -18,7 +18,11 @@ import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
 import Options from './options';
 import './index.scss';
-import { ROOT_VALUE } from '.~/components/tree-select-control/constants';
+import {
+	BACKSPACE,
+	ESCAPE,
+	ROOT_VALUE,
+} from '.~/components/tree-select-control/constants';
 
 /**
  * The Option type Object. This is how we send the options to the selector.
@@ -88,6 +92,7 @@ const TreeSelectControl = ( {
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ filter, setFilter ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
+	const inputRef = useRef();
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
@@ -162,6 +167,20 @@ const TreeSelectControl = ( {
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
 	}, [ treeOptions, filter ] );
+
+	const onKeyDown = ( event ) => {
+		if ( inputRef.current.value ) return;
+
+		if ( BACKSPACE === event.key ) {
+			onChange( value.slice( 0, -1 ) );
+			event.preventDefault();
+		}
+
+		if ( ESCAPE === event.key ) {
+			setTreeVisible( false );
+			event.preventDefault();
+		}
+	};
 
 	const hasChildren = ( option ) => option.children?.length;
 
@@ -298,6 +317,10 @@ const TreeSelectControl = ( {
 	return (
 		<div
 			{ ...focusOutside }
+			onKeyDown={ onKeyDown }
+			onClick={ () => {
+				setTreeVisible( true );
+			} }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
@@ -313,6 +336,7 @@ const TreeSelectControl = ( {
 			) }
 
 			<Control
+				ref={ inputRef }
 				disabled={ disabled }
 				tags={ getTags() }
 				isExpanded={ treeVisible }

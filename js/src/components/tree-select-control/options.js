@@ -108,13 +108,14 @@ const Options = ( {
 				<Flex justify="flex-start">
 					{ ! isRoot && (
 						<button
-							onClick={ () => {
-								toggleExpanded( option );
-							} }
 							className={ classnames(
 								'woocommerce-tree-select-control__expander',
 								! hasChildren && 'is-hidden'
 							) }
+							tabIndex="-1"
+							onClick={ () => {
+								toggleExpanded( option );
+							} }
 						>
 							<Icon
 								icon={ isExpanded ? chevronUp : chevronDown }
@@ -129,6 +130,7 @@ const Options = ( {
 								hasSomeChildrenChecked( option ) &&
 								'is-partially-checked'
 						) }
+						tabIndex="-1"
 						value={ option.value }
 						label={ option.label }
 						checked={ optionIsChecked }
