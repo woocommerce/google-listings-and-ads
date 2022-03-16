@@ -40,9 +40,11 @@ const settingsFieldNames = [
  * Get settings object from Form values.
  *
  * This method is used to pick out form fields that are specific to settings.
- * If we are adding a new settings field, it should be added into `settingsFieldNames`.
+ * If we are adding a new settings field that will be saved via the settings API,
+ * it should be added into `settingsFieldNames`.
  *
- * If a new field is added into the form that is not related to settings (e.g. `offer_free_shipping`),
+ * If a new field is added into the form that is not related to settings (e.g. `offer_free_shipping`)
+ * and will NOT be saved via settings API,
  * we do not need to add the field into `settingsFieldNames`,
  * and things should continue to work as expected (e.g. the navigate away prompt).
  *
