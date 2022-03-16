@@ -22,6 +22,7 @@ import Tags from './tags';
  * @param {number} props.maxVisibleTags The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
  * @param {Function} props.onFocus On Focus Callback
  * @param {Function} props.onTagsChange Callback when the Tags change
+ * @param {Function} props.onInputChange Callback when the Input value changes
  * @return {JSX.Element} The rendered component
  */
 const Control = ( {
@@ -33,6 +34,7 @@ const Control = ( {
 	maxVisibleTags,
 	onFocus = () => {},
 	onTagsChange = () => {},
+	onInputChange = () => {},
 } ) => {
 	const inputRef = useRef();
 	const hasTags = tags.length > 0;
@@ -79,6 +81,7 @@ const Control = ( {
 					aria-expanded={ isExpanded }
 					disabled={ disabled }
 					onFocus={ onFocus }
+					onChange={ onInputChange }
 				/>
 			</div>
 		</div>

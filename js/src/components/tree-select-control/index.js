@@ -1,8 +1,9 @@
 /**
  * External dependencies
  */
+import { cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useMemo, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
@@ -85,6 +86,11 @@ const TreeSelectControl = ( {
 
 	const [ treeVisible, setTreeVisible ] = useState( false );
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
+	const [ filter, setFilter ] = useState( '' );
+	const [ filteredOptions, setFilteredOptions ] = useState( [] );
+
+	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
+	const filteredOptionsCache = useRef( {} );
 
 	const treeOptions = useIsEqualRefValue(
 		selectAllLabel !== false
@@ -103,6 +109,63 @@ const TreeSelectControl = ( {
 	} );
 
 	/**
+	 * Perform the search query filter in the Tree options
+	 *
+	 * 1. Check if the search query is already cached and return it if so.
+	 * 2. Deep Copy the tree. Since we are going to modify its children and labels recursively.
+	 * 3. In case of filter, we apply the filter option function to the tree.
+	 * 4. In the filter function we also highlight the label with the matching letters
+	 * 5. Finally we set the cache with the obtained results and apply the filters
+	 *
+	 */
+	useEffect( () => {
+		const cachedFilteredOptions = filteredOptionsCache.current[ filter ];
+
+		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
+			const matchLength = matchPosition + filter.length;
+			return (
+				<span>
+					<span>{ optionLabel.substring( 0, matchPosition ) }</span>
+					<strong>
+						{ optionLabel.substring( matchPosition, matchLength ) }
+					</strong>
+					<span>{ optionLabel.substring( matchLength ) }</span>
+				</span>
+			);
+		};
+
+		const filterOption = ( option ) => {
+			if ( hasChildren( option ) ) {
+				option.children = option.children.filter( filterOption );
+				return !! option.children.length;
+			}
+
+			const match = option.label.toLowerCase().indexOf( filter );
+
+			if ( match >= 0 ) {
+				option.label = highlightOptionLabel( option.label, match );
+				return true;
+			}
+		};
+
+		if ( cachedFilteredOptions ) {
+			setFilteredOptions( cachedFilteredOptions );
+			return;
+		}
+
+		let filteredTreeOptions = cloneDeep( treeOptions );
+
+		if ( filter ) {
+			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
+		}
+
+		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
+		setFilteredOptions( filteredTreeOptions );
+	}, [ treeOptions, filter ] );
+
+	const hasChildren = ( option ) => option.children?.length;
+
+	/**
 	 * Optimizes the performance for getting the tags info
 	 *
 	 * @see getTags
@@ -110,8 +173,10 @@ const TreeSelectControl = ( {
 	const optionsRepository = useMemo( () => {
 		const repository = {};
 
+		filteredOptionsCache.current = []; // clear cache if options change
+
 		function loadOption( option ) {
-			if ( ! option.children?.length ) {
+			if ( ! hasChildren( option ) ) {
 				repository[ option.value ] = { ...option };
 			} else {
 				option.children.forEach( ( child ) => {
@@ -137,7 +202,7 @@ const TreeSelectControl = ( {
 
 		return value.map( ( key ) => {
 			const option = optionsRepository[ key ];
-			return { id: key, label: option.label };
+			return { id: key, label: option?.label };
 		} );
 	};
 
@@ -149,7 +214,7 @@ const TreeSelectControl = ( {
 	 * @param {Option} option The option to change
 	 */
 	const handleOptionsChange = ( checked, option ) => {
-		if ( option.children?.length ) {
+		if ( hasChildren( option ) ) {
 			handleParentChange( checked, option );
 		} else {
 			handleSingleChange( checked, option );
@@ -189,7 +254,7 @@ const TreeSelectControl = ( {
 			}
 
 			parent.children.forEach( ( child ) => {
-				if ( child.children?.length ) {
+				if ( hasChildren( child ) ) {
 					loadChildren( child );
 					return;
 				}
@@ -217,6 +282,17 @@ const TreeSelectControl = ( {
 	 */
 	const handleTagsChange = ( tags ) => {
 		onChange( [ ...tags.map( ( el ) => el.id ) ] );
+	};
+
+	/**
+	 * Prepares and sets the search filter.
+	 * Filters of less than 3 characters are not considered, so we convert them to ''
+	 *
+	 * @param {Event} e Event returned by the On Change function in the Input control
+	 */
+	const handleOnInputChange = ( e ) => {
+		const search = e.target.value.trim().toLowerCase();
+		setFilter( search.length >= 3 ? search : '' );
 	};
 
 	return (
@@ -248,6 +324,7 @@ const TreeSelectControl = ( {
 				label={ label }
 				maxVisibleTags={ maxVisibleTags }
 				onTagsChange={ handleTagsChange }
+				onInputChange={ handleOnInputChange }
 			/>
 			{ treeVisible && (
 				<div
@@ -256,8 +333,9 @@ const TreeSelectControl = ( {
 					tabIndex="-1"
 				>
 					<Options
-						options={ treeOptions }
+						options={ filteredOptions }
 						value={ value }
+						isFiltered={ !! filter }
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }

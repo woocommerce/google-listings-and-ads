@@ -17,16 +17,18 @@ import { ROOT_VALUE } from './constants';
 /**
  * This component renders a list of options and its children recursively
  *
- * @param {Object} params Component parameters
- * @param {Option[]} params.options List of options to be rendered
- * @param {string[]} params.value List of selected values
- * @param {string[]} params.nodesExpanded List of expanded nodes.
- * @param {Function} params.onChange Callback when an option changes
- * @param {Function} params.onNodesExpandedChange Callback when a node is expanded/collapsed
+ * @param {Object} props Component parameters
+ * @param {Option[]} props.options List of options to be rendered
+ * @param {string[]} props.value List of selected values
+ * @param {string[]} props.nodesExpanded List of expanded nodes.
+ * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
+ * @param {Function} props.onChange Callback when an option changes
+ * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
  */
 const Options = ( {
 	options = [],
 	value = [],
+	isFiltered = false,
 	onChange = () => {},
 	nodesExpanded = [],
 	onNodesExpandedChange = () => {},
@@ -73,6 +75,11 @@ const Options = ( {
 		return parent.children.every( ( child ) => isChecked( child ) );
 	};
 
+	/**
+	 * Expands/Collapses the Option
+	 *
+	 * @param {Option} option The option to be expanded or collapsed
+	 */
 	const toggleExpanded = ( option ) => {
 		onNodesExpandedChange(
 			nodesExpanded.includes( option.value )
@@ -83,9 +90,10 @@ const Options = ( {
 
 	return options.map( ( option ) => {
 		const isRoot = option.value === ROOT_VALUE;
-		const isExpanded = isRoot || nodesExpanded.includes( option.value );
 		const hasChildren = !! option.children?.length;
 		const optionIsChecked = isChecked( option );
+		const isExpanded =
+			isFiltered || isRoot || nodesExpanded.includes( option.value );
 
 		return (
 			<div
@@ -139,6 +147,7 @@ const Options = ( {
 					>
 						<Options
 							options={ option.children }
+							isFiltered={ isFiltered }
 							value={ value }
 							onChange={ onChange }
 							nodesExpanded={ nodesExpanded }

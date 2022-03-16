@@ -117,4 +117,33 @@ describe( 'TreeSelectControl Component', () => {
 
 		expect( allCheckbox ).toBeTruthy();
 	} );
+
+	it( 'Filters Options on Search', () => {
+		const { queryByLabelText, queryByRole } = render(
+			<TreeSelectControl options={ options } />
+		);
+
+		const control = queryByRole( 'combobox' );
+		fireEvent.click( control );
+		expect( queryByLabelText( 'Europe' ) ).toBeTruthy();
+		expect( queryByLabelText( 'Asia' ) ).toBeTruthy();
+
+		fireEvent.change( control, { target: { value: 'Asi' } } );
+
+		expect( queryByLabelText( 'Europe' ) ).toBeFalsy(); // none of its children match Asi
+		expect( queryByLabelText( 'Asia' ) ).toBeTruthy(); // match Asi
+
+		fireEvent.change( control, { target: { value: 'As' } } ); // doesnt trigger if length < 3
+
+		expect( queryByLabelText( 'Europe' ) ).toBeTruthy();
+		expect( queryByLabelText( 'Asia' ) ).toBeTruthy();
+		expect( queryByLabelText( 'Spain' ) ).toBeFalsy(); // not expanded
+
+		fireEvent.change( control, { target: { value: 'pain' } } );
+
+		expect( queryByLabelText( 'Europe' ) ).toBeTruthy(); // contains Spain
+		expect( queryByLabelText( 'Spain' ) ).toBeTruthy(); // match pain
+		expect( queryByLabelText( 'France' ) ).toBeFalsy(); // doesn't match pain
+		expect( queryByLabelText( 'Asia' ) ).toBeFalsy(); // doesn't match pain
+	} );
 } );
