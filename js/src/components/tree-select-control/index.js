@@ -116,7 +116,7 @@ const TreeSelectControl = ( {
 	 * Perform the search query filter in the Tree options
 	 *
 	 * 1. Check if the search query is already cached and return it if so.
-	 * 2. Deep Copy the tree. Since we are going to modify his children and labels recursively.
+	 * 2. Deep Copy the tree. Since we are going to modify its children and labels recursively.
 	 * 3. In case of filter, we apply the filter option function to the tree.
 	 * 4. In the filter function we also highlight the label with the matching letters
 	 * 5. Finally we set the cache with the obtained results and apply the filters
