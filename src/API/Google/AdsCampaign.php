@@ -186,11 +186,19 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	public function create_campaign( array $params ): array {
 		try {
 			$base_country = $this->container->get( WC::class )->get_base_country();
+
 			$location_ids = array_map(
 				function ( $country_code ) {
 					return $this->google_helper->find_country_id_by_code( $country_code );
 				},
 				$params['targeted_locations']
+			);
+
+			$location_ids = array_filter(
+				$location_ids,
+				function ( $location_id ) {
+					return isset( $location_id );
+				}
 			);
 
 			// Operations must be in a specific order to match the temporary ID's.
