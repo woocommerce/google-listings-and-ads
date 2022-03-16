@@ -805,7 +805,18 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 	 * @return array The original issue with any possibly overridden values.
 	 */
 	private function maybe_override_issue_values( array $issue ): array {
-		if ( 'merchant_quality_low' === $issue['code'] ) {
+		/**
+		 * Code 'merchant_quality_low' for matching the original issue.
+		 * Ref: https://developers.google.com/shopping-content/guides/account-issues#merchant_quality_low
+		 *
+		 * Issue string "Account isn't eligible for free listings" for matching
+		 * the updated copy after Free and Enhanced Listings merge.
+		 *
+		 * TODO: Remove the condition of matching the $issue['issue']
+		 *       if its issue code is the same as 'merchant_quality_low'
+		 *       after Free and Enhanced Listings merge.
+		 */
+		if ( 'merchant_quality_low' === $issue['code'] || "Account isn't eligible for free listings" === $issue['issue'] ) {
 			$issue['issue']      = 'Show products on additional surfaces across Google through free listings';
 			$issue['severity']   = self::SEVERITY_WARNING;
 			$issue['action']     = 'Read about free listings';
