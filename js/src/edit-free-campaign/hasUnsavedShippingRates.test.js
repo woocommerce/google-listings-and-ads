@@ -1,258 +1,93 @@
 /**
+ * External dependencies
+ */
+import { cloneDeep, set } from 'lodash';
+
+/**
  * Internal dependencies
  */
+import { SHIPPING_RATE_METHOD } from '.~/constants';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
 
+const method = SHIPPING_RATE_METHOD.FLAT_RATE;
+
 describe( 'hasUnsavedShippingRates', () => {
-	it( 'returns false when both shipping rates are the same', () => {
-		const newShippingRates = [
+	let savedRates;
+	let rates;
+
+	beforeEach( () => {
+		savedRates = [
 			{
 				id: '1',
 				country: 'US',
-				method: 'flat_rate',
+				rate: 12.34,
 				currency: 'USD',
-				rate: 4.99,
-				options: {},
+				options: { free_shipping_threshold: 1000 },
+				method,
 			},
 			{
 				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
+				country: 'JP',
+				rate: 4900,
+				currency: 'JPY',
+				options: { free_shipping_threshold: 2000 },
+				method,
 			},
 		];
-		const oldShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 4.99,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
-
-		const result = hasUnsavedShippingRates(
-			newShippingRates,
-			oldShippingRates
-		);
-
-		expect( result ).toBe( false );
+		rates = cloneDeep( savedRates );
 	} );
 
-	it( 'returns true when there are deleted shipping rates', () => {
-		const newShippingRates = [
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
-		const oldShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 4.99,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
-
-		const result = hasUnsavedShippingRates(
-			newShippingRates,
-			oldShippingRates
-		);
-
-		expect( result ).toBe( true );
+	it( 'when both shipping rates are the same, should return false', () => {
+		expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( false );
 	} );
 
-	it( 'returns true when there are new shipping rates', () => {
-		const newShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 4.99,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-			{
-				// new shipping rate
-				country: 'MY',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 20,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
-		const oldShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 4.99,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
+	it( 'when the `id` of shipping rates are different, should still return false', () => {
+		delete rates[ 0 ].id;
+		delete savedRates[ 1 ].id;
 
-		const result = hasUnsavedShippingRates(
-			newShippingRates,
-			oldShippingRates
-		);
-
-		expect( result ).toBe( true );
+		expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( false );
 	} );
 
-	it( `returns true when shipping rates' free_shipping_threshold are edited`, () => {
-		const newShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 4.99,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 1500, // edited.
-				},
-			},
-		];
-		const oldShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 4.99,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
+	it( 'when the `options.free_shipping_threshold` property of one of the shipping rates does not exist and the other is `undefined`, should still return false', () => {
+		rates[ 0 ].options.free_shipping_threshold = undefined;
+		savedRates[ 0 ].options = {};
 
-		const result = hasUnsavedShippingRates(
-			newShippingRates,
-			oldShippingRates
-		);
-
-		expect( result ).toBe( true );
+		expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( false );
 	} );
 
-	it( `returns true when shipping rates' rate are edited`, () => {
-		const newShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 2000, // edited
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
-		const oldShippingRates = [
-			{
-				id: '1',
-				country: 'US',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 4.99,
-				options: {},
-			},
-			{
-				id: '2',
-				country: 'AU',
-				method: 'flat_rate',
-				currency: 'USD',
-				rate: 25,
-				options: {
-					free_shipping_threshold: 100,
-				},
-			},
-		];
+	it( 'the comparison is not sequential, two same sets of shipping rates should return false', () => {
+		rates.reverse();
 
-		const result = hasUnsavedShippingRates(
-			newShippingRates,
-			oldShippingRates
-		);
-
-		expect( result ).toBe( true );
+		expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( false );
 	} );
+
+	it( 'when there are deleted shipping rates, should return true', () => {
+		rates.pop();
+
+		expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( true );
+	} );
+
+	it( 'when there are new shipping rates, should return true', () => {
+		rates.push( {} );
+
+		expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( true );
+	} );
+
+	// (Test each property in an atomical way.)
+	it.each( [
+		[ 'currency', 'AUD' ],
+		[ 'rate', 50.88 ],
+		[ 'country', 'AU' ],
+		[ 'options', {} ],
+		[ 'options.free_shipping_threshold', undefined ],
+		[ 'options.free_shipping_threshold', 5000 ],
+		[ 'method', 'bumpy_rate' ],
+	] )(
+		'when the property `%s` is edited, for example to %s, should return false',
+		( path, value ) => {
+			set( rates[ 0 ], path, value );
+
+			expect( hasUnsavedShippingRates( rates, savedRates ) ).toBe( true );
+		}
+	);
 } );
