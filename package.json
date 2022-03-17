@@ -109,6 +109,9 @@
 			"google-listings-and-ads.php"
 		]
 	},
+	"browserslist": [
+		"extends @wordpress/browserslist-config"
+	],
 	"bundlewatch": {
 		"files": [
 			{
