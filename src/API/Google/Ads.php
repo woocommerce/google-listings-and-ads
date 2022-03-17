@@ -105,14 +105,11 @@ class Ads implements OptionsAwareInterface {
 				$status        = BillingSetupStatus::label( $billing_setup->getStatus() );
 				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $ads_id );
 			}
-		} catch ( ApiException $e ) {
+		} catch ( ApiException | ValidationException $e ) {
 			// Do not act upon error as we might not have permission to access this account yet.
 			if ( 'PERMISSION_DENIED' !== $e->getStatus() ) {
 				do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			}
-		} catch ( ValidationException $e ) {
-			// If no billing setups are found, just return UNKNOWN
-			return BillingSetupStatus::UNKNOWN;
 		}
 
 		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $ads_id );
