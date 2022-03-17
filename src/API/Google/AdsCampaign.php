@@ -194,12 +194,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 				$params['targeted_locations']
 			);
 
-			$location_ids = array_filter(
-				$location_ids,
-				function ( $location_id ) {
-					return isset( $location_id );
-				}
-			);
+			$location_ids = array_filter( $location_ids );
 
 			// Operations must be in a specific order to match the temporary ID's.
 			$operations = array_merge(

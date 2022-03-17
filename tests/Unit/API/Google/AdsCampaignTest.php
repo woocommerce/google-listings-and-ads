@@ -273,6 +273,31 @@ class AdsCampaignTest extends UnitTest {
 		);
 	}
 
+	public function test_create_campaign_null_location_id() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => ['Null location'],
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_base_country' )
+			->willReturn( self::BASE_COUNTRY );
+
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$expected = [
+			'id'     => self::TEST_CAMPAIGN_ID,
+			'status' => 'enabled',
+			'country' => self::BASE_COUNTRY,
+		] + $campaign_data;
+
+		$this->assertEquals(
+			$expected,
+			$this->campaign->create_campaign( $campaign_data )
+		);
+	}
+
 	public function test_create_campaign_exception_duplicate_campaign_name() {
 		$campaign_data = [
 			'name'    => 'Invalid Campaign',
@@ -349,31 +374,6 @@ class AdsCampaignTest extends UnitTest {
 			);
 			$this->assertEquals( 400, $e->getCode() );
 		}
-	}
-
-	public function test_create_campaign_exception_null_location_id() {
-		$campaign_data = [
-			'name'               => 'New Campaign',
-			'amount'             => 20,
-			'targeted_locations' => ['Null location'],
-		];
-
-		$this->wc->expects( $this->once() )
-			->method( 'get_base_country' )
-			->willReturn( self::BASE_COUNTRY );
-
-		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
-
-		$expected = [
-			'id'     => self::TEST_CAMPAIGN_ID,
-			'status' => 'enabled',
-			'country' => self::BASE_COUNTRY,
-		] + $campaign_data;
-
-		$this->assertEquals(
-			$expected,
-			$this->campaign->create_campaign( $campaign_data )
-		);
 	}
 
 	public function test_edit_campaign() {
