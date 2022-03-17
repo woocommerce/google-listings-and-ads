@@ -3,7 +3,13 @@
  */
 import { cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
+import {
+	useEffect,
+	useMemo,
+	useState,
+	useRef,
+	createRef,
+} from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
@@ -92,6 +98,7 @@ const TreeSelectControl = ( {
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
+	const [ focused, setFocused ] = useState( null );
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
@@ -143,6 +150,8 @@ const TreeSelectControl = ( {
 		};
 
 		const filterOption = ( option ) => {
+			option.ref = optionsRepository[ option.value ].ref;
+
 			if ( hasChildren( option ) ) {
 				option.children = option.children.filter( filterOption );
 				return !! option.children.length;
@@ -163,16 +172,28 @@ const TreeSelectControl = ( {
 
 		let filteredTreeOptions = cloneDeep( treeOptions );
 
-		if ( filter ) {
-			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
-		}
-
+		filteredTreeOptions = filteredTreeOptions.filter( filterOption );
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
 	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
 		if ( inputControlValue ) return;
+
+		function getSibling( element ) {
+			if ( ! element ) return;
+
+			const child = element.parent.el.children[ element.idx + 1 ];
+
+			if ( child ) {
+				return {
+					el: child,
+					parent: element.parent,
+					idx: element.idx + 1,
+				};
+			}
+			return child || getSibling( element.parent );
+		}
 
 		if ( BACKSPACE === event.key ) {
 			onChange( value.slice( 0, -1 ) );
@@ -183,7 +204,41 @@ const TreeSelectControl = ( {
 			setTreeVisible( false );
 			event.preventDefault();
 		}
+
+		if ( event.key === 'ArrowDown' ) {
+			if ( focused === null ) {
+				setFocused( {
+					el: filteredOptions[ 0 ],
+					parent: null,
+					idx: 0,
+				} );
+			} else if (
+				nodesExpanded.includes( focused.el.value ) ||
+				focused.el.value === ROOT_VALUE
+			) {
+				setFocused( {
+					el: focused.el.children[ 0 ],
+					parent: focused,
+					idx: 0,
+				} );
+			} else {
+				const child = focused.parent.el.children[ focused.idx + 1 ];
+				const sibling = ! child && getSibling( focused.parent );
+				setFocused( {
+					el: child || sibling?.el,
+					parent: child ? focused.parent : sibling?.parent,
+					idx: child ? focused.idx + 1 : sibling?.idx,
+				} );
+			}
+			event.preventDefault();
+		}
 	};
+
+	useEffect( () => {
+		if ( focused?.el ) {
+			focused.el.ref.current.focus();
+		}
+	}, [ focused ] );
 
 	/**
 	 * Optimizes the performance for getting the tags info
@@ -196,13 +251,11 @@ const TreeSelectControl = ( {
 		filteredOptionsCache.current = []; // clear cache if options change
 
 		function loadOption( option ) {
-			if ( ! hasChildren( option ) ) {
-				repository[ option.value ] = { ...option };
-			} else {
-				option.children.forEach( ( child ) => {
-					loadOption( child );
-				} );
-			}
+			option.children?.forEach( ( child ) => {
+				loadOption( child );
+			} );
+
+			repository[ option.value ] = { ...option, ref: createRef() };
 		}
 
 		treeOptions.forEach( ( option ) => loadOption( option ) );
@@ -341,6 +394,7 @@ const TreeSelectControl = ( {
 				tags={ getTags() }
 				isExpanded={ treeVisible }
 				onFocus={ () => {
+					setFocused( null );
 					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }

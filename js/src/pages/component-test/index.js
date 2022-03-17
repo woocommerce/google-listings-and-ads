@@ -34,9 +34,27 @@ const ComponentTest = () => {
 			value: 'AS',
 			label: 'Asia',
 			children: [
-				{ value: 'JP', label: 'Japan', children: [] },
+				{
+					value: 'JP',
+					label: 'Japan',
+					children: [
+						{
+							value: 'TO',
+							label: 'Tokio',
+							children: [
+								{ value: 'SI', label: 'Shibuya' },
+								{ value: 'GI', label: 'Ginza' },
+							],
+						},
+						{ value: 'OK', label: 'Okinawa' },
+					],
+				},
 				{ value: 'CH', label: 'China' },
-				{ value: 'MY', label: 'Malaysia' },
+				{
+					value: 'MY',
+					label: 'Malaysia',
+					children: [ { value: 'KU', label: 'Kuala Lumpur' } ],
+				},
 			],
 		},
 		{

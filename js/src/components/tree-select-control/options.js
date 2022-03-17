@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { CheckboxControl, Flex } from '@wordpress/components';
+import { Flex } from '@wordpress/components';
 import { Icon, chevronUp, chevronDown } from '@wordpress/icons';
 import classnames from 'classnames';
 
@@ -123,21 +123,42 @@ const Options = ( {
 						</button>
 					) }
 
-					<CheckboxControl
+					<div
 						className={ classnames(
+							'components-base-control',
 							'woocommerce-tree-select-control__option',
 							! optionIsChecked &&
 								hasSomeChildrenChecked( option ) &&
 								'is-partially-checked'
 						) }
-						tabIndex="-1"
-						value={ option.value }
-						label={ option.label }
-						checked={ optionIsChecked }
-						onChange={ ( checked ) => {
-							onChange( checked, option );
-						} }
-					/>
+					>
+						<div className="components-base-control__field">
+							<span className="components-checkbox-control__input-container">
+								<input
+									ref={ option.ref }
+									id={ `inspector-checkbox-control-${
+										option.key ?? option.value
+									}` }
+									className="components-checkbox-control__input"
+									type="checkbox"
+									tabIndex="-1"
+									value={ option.value }
+									checked={ optionIsChecked }
+									onChange={ ( e ) => {
+										onChange( e.target.checked, option );
+									} }
+								/>
+							</span>
+							<label
+								className="components-checkbox-control__label"
+								htmlFor={ `inspector-checkbox-control-${
+									option.key ?? option.value
+								}` }
+							>
+								{ option.label }
+							</label>
+						</div>
+					</div>
 				</Flex>
 
 				{ hasChildren && isExpanded && (

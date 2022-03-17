@@ -199,6 +199,10 @@ $muriel-box-shadow-8dp: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
 				background: var(--wp-admin-theme-color);
 				border: $gap-smallest solid $studio-white;
 				box-shadow: 0 0 0 1px #1e1e1e;
+
+				&:focus {
+					box-shadow: 0 0 0 1px #fff, 0 0 0 3px var(--wp-admin-theme-color);
+				}
 			}
 
 		}
