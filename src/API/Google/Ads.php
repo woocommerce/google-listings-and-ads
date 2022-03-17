@@ -180,7 +180,7 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function get_ads_currency(): string {
 		// Retrieve account currency from the API if we haven't done so previously.
-		if ( $this->options->get( OptionsInterface::ADS_ID ) && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
+		if ( $this->options->get_ads_id() && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
 			$this->request_ads_currency();
 		}
 
@@ -196,10 +196,8 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function request_ads_currency(): bool {
 		try {
-			/** @var GoogleAdsClient $client */
-			$client   = $this->container->get( GoogleAdsClient::class );
-			$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
-			$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
+			$resource = ResourceNames::forCustomer( $this->options->get_ads_id() );
+			$customer = $this->client->getCustomerServiceClient()->getCustomer( $resource );
 			$currency = $customer->getCurrencyCode();
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
