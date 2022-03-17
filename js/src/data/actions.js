@@ -1,17 +1,15 @@
 /**
  * External dependencies
  */
-import { apiFetch, select } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import isInShippingRates from '.~/utils/isInShippingRates';
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
-import { STORE_KEY } from '.';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -75,30 +73,13 @@ export function* fetchShippingRates() {
 	}
 }
 
-function* maybeDeleteShippingRates( newShippingRates, oldShippingRates ) {
-	/**
-	 * Find the old shipping rates that are not in the new ones,
-	 * and delete them.
-	 */
-	const deleteIds = oldShippingRates
-		.filter(
-			( oldShippingRate ) =>
-				! isInShippingRates( oldShippingRate, newShippingRates )
-		)
-		.map( ( oldShippingRate ) => oldShippingRate.id );
-
-	if ( deleteIds.length ) {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'DELETE',
-			data: {
-				ids: deleteIds,
-			},
-		} );
-	}
-}
-
-function* upsertShippingRates( shippingRates ) {
+/**
+ * Upsert shipping rates.
+ *
+ * @param {Array<ShippingRate>} shippingRates Shipping rates to be upserted.
+ * @return {Object} Action object to update shipping rates.
+ */
+export function* upsertShippingRates( shippingRates ) {
 	const data = yield apiFetch( {
 		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
 		method: 'POST',
@@ -107,57 +88,38 @@ function* upsertShippingRates( shippingRates ) {
 		},
 	} );
 
-	return data.success.map( ( el ) => {
+	const successShippingRates = data.success.map( ( el ) => {
 		return {
 			...el.rate,
 			rate: Number( el.rate.rate ),
 		};
 	} );
+
+	return {
+		type: TYPES.UPSERT_SHIPPING_RATES,
+		shippingRates: successShippingRates,
+	};
 }
 
 /**
- * Saves shipping rates.
+ * Delete shipping rates.
  *
- * This is done by removing the old shipping rates first,
- * and then upserting the new shipping rates.
- *
- * @param {Array<ShippingRate>} newShippingRates
+ * @param {Array<string>} ids IDs of shiping rates to be deleted.
+ * @return {Object} Action object to delete shipping rates.
  */
-export function* saveShippingRates( newShippingRates ) {
-	try {
-		const oldShippingRates = yield select( STORE_KEY, 'getShippingRates' );
-		yield maybeDeleteShippingRates( newShippingRates, oldShippingRates );
+export function* deleteShippingRates( ids ) {
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'DELETE',
+		data: {
+			ids,
+		},
+	} );
 
-		/**
-		 * No new shipping rate, no need to call API.
-		 */
-		if ( ! newShippingRates.length ) {
-			return {
-				type: TYPES.RECEIVE_SHIPPING_RATES,
-				shippingRates: [],
-			};
-		}
-
-		/**
-		 * There are new shipping rates, we call API to upsert them.
-		 */
-		const upsertedShippingRates = yield upsertShippingRates(
-			newShippingRates
-		);
-
-		return {
-			type: TYPES.RECEIVE_SHIPPING_RATES,
-			shippingRates: upsertedShippingRates,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to save shipping rates. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.DELETE_SHIPPING_RATES,
+		ids,
+	};
 }
 
 /**

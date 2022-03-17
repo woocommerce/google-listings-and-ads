@@ -25,6 +25,7 @@ import useShippingTimes from '.~/hooks/useShippingTimes';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import HelpIconButton from '.~/components/help-icon-button';
 import hasUnsavedShippingRates from './hasUnsavedShippingRates';
+import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -95,9 +96,9 @@ export default function EditFreeCampaign() {
 	const {
 		saveTargetAudience,
 		saveSettings,
-		saveShippingRates,
 		upsertShippingTimes,
 	} = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience

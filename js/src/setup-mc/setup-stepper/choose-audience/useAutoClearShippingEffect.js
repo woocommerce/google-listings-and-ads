@@ -3,25 +3,42 @@
  */
 import { useEffect, useRef } from '@wordpress/element';
 import { useDebouncedCallback } from 'use-debounce';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
 import useShippingTimes from '.~/hooks/useShippingTimes';
+import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 
 const wait = 500;
 
 const useAutoClearShippingEffect = ( location, countries ) => {
 	const { data: shippingTimes } = useShippingTimes();
-	const { saveShippingRates, deleteShippingTimes } = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
+	const { deleteShippingTimes } = useAppDispatch();
+	const { createNotice } = useDispatchCoreNotices();
 
 	const debouncedDelete = useDebouncedCallback( async () => {
-		saveShippingRates( [] );
+		try {
+			saveShippingRates( [] );
 
-		if ( shippingTimes.length ) {
-			const countryCodes = shippingTimes.map( ( el ) => el.countryCode );
-			deleteShippingTimes( countryCodes );
+			if ( shippingTimes.length ) {
+				const countryCodes = shippingTimes.map(
+					( el ) => el.countryCode
+				);
+				deleteShippingTimes( countryCodes );
+			}
+		} catch ( error ) {
+			createNotice(
+				'error',
+				__(
+					'Something went wrong while trying to clear your shipping data. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
 		}
 	}, wait );
 

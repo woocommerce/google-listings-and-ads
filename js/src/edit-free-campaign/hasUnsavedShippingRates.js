@@ -1,7 +1,7 @@
 /**
- * External dependencies
+ * Internal dependencies
  */
-import { isEqual, differenceWith, at } from 'lodash';
+import getDifferentShippingRates from '.~/utils/getDifferentShippingRates';
 
 /**
  * @typedef {import('.~/data/actions').ShippingRate} ShippingRate
@@ -10,6 +10,14 @@ import { isEqual, differenceWith, at } from 'lodash';
 /**
  * This function compares the key fields of two shipping rate arrays
  * and returns whether there are any unsaved shipping changes.
+ *
+ * There are unsaved shipping changes when there are:
+ *
+ * - deleted shipping rates.
+ * - newly added shipping rates.
+ * - edited shiping rates.
+ *
+ * Notes:
  *
  * - Order:     The order of two arrays does not need to be the same.
  * - ID:        The `id` is not compared.
@@ -27,17 +35,7 @@ export default function hasUnsavedShippingRates( rates, savedRates ) {
 		return true;
 	}
 
-	const paths = [
-		'country',
-		'method',
-		'currency',
-		'rate',
-		'options.free_shipping_threshold',
-	];
-
-	const diffRates = differenceWith( rates, savedRates, ( a, b ) => {
-		return isEqual( at( a, paths ), at( b, paths ) );
-	} );
+	const diffRates = getDifferentShippingRates( rates, savedRates );
 
 	return diffRates.length > 0;
 }
