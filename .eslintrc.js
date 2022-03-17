@@ -7,6 +7,7 @@ module.exports = {
 		jsdoc: {
 			mode: 'typescript',
 		},
+		'import/core-modules': [ 'webpack' ],
 		'import/resolver': 'webpack',
 	},
 	rules: {

@@ -1,3 +1,4 @@
+const webpack = require( 'webpack' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 const path = require( 'path' );
@@ -98,6 +99,20 @@ const webpackConfig = {
 			externalizedReport: '../../.externalized.json',
 			requestToExternal,
 			requestToHandle,
+		} ),
+		/**
+		 * Automatic polyfills for native node.js modules were removed from webpack v5.
+		 * And `@wordpress/components` below version 16.x depends on `@wordpress/compose`,
+		 * which directly accesses `process.env`.
+		 * Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/compose/src/hooks/use-reduced-motion/index.js#L21
+		 *
+		 * So the fallback is required here.
+		 * It may be possible to remove this fallback
+		 * when `@wordpress/components` is upgraded above 17.0.0+,
+		 * or when it is removed from the `requestToExternal` function above.
+		 */
+		new webpack.ProvidePlugin( {
+			process: 'process/browser',
 		} ),
 	],
 	entry: {
