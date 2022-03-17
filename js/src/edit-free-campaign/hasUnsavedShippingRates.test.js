@@ -83,7 +83,7 @@ describe( 'hasUnsavedShippingRates', () => {
 		[ 'options.free_shipping_threshold', 5000 ],
 		[ 'method', 'bumpy_rate' ],
 	] )(
-		'when the property `%s` is edited, for example to %s, should return false',
+		'when the property `%s` is edited, for example to %s, should return true',
 		( path, value ) => {
 			set( rates[ 0 ], path, value );
 
