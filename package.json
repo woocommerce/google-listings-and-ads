@@ -65,7 +65,8 @@
 		"path-browserify": "^1.0.1",
 		"postcss": "^8.4.5",
 		"prettier": "npm:wp-prettier@2.2.1-beta-1",
-		"stylelint": "^14.2.0"
+		"stylelint": "^14.2.0",
+		"stylelint-config-standard-scss": "^3.0.0"
 	},
 	"dependencies": {
 		"@woocommerce/components": "8.1.0",
