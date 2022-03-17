@@ -470,13 +470,6 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Disconnect the connected ads account.
-	 */
-	public function disconnect_ads_account() {
-		$this->update_ads_id( 0 );
-	}
-
-	/**
 	 * Get the ads account currency.
 	 *
 	 * @since 1.4.1
