@@ -287,46 +287,6 @@ class Proxy implements OptionsAwareInterface {
 		}
 	}
 
-
-	/**
-	 * Get Ads IDs associated with the connected Google account.
-	 *
-	 * @return int[]
-	 * @throws ExceptionWithResponseData When an ApiException is caught.
-	 */
-	public function get_ads_account_ids(): array {
-		try {
-			/** @var GoogleAdsClient $client */
-			$client    = $this->container->get( GoogleAdsClient::class );
-			$customers = $client->getCustomerServiceClient()->listAccessibleCustomers();
-			$ids       = [];
-
-			foreach ( $customers->getResourceNames() as $name ) {
-				/** @var string $name */
-				$ids[] = $this->parse_ads_id( $name );
-			}
-
-			return $ids;
-		} catch ( ApiException $e ) {
-			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-
-			$errors = $this->get_api_exception_errors( $e );
-
-			// Return an empty list if the user has not signed up to ads yet.
-			if ( isset( $errors['NOT_ADS_USER'] ) ) {
-				return [];
-			}
-
-			throw new ExceptionWithResponseData(
-				/* translators: %s Error message */
-				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), reset( $errors ) ),
-				$this->map_grpc_code_to_http_status_code( $e ),
-				null,
-				[ 'errors' => $errors ]
-			);
-		}
-	}
-
 	/**
 	 * Create a new Google Ads account.
 	 *
@@ -370,7 +330,7 @@ class Proxy implements OptionsAwareInterface {
 				/** @var Ads $ads */
 				$ads = $this->container->get( Ads::class );
 
-				$id = $this->parse_ads_id( $response['resourceName'] );
+				$id = $ads->parse_ads_id( $response['resourceName'] );
 				$this->update_ads_id( $id );
 				$ads->use_store_currency();
 
@@ -526,17 +486,6 @@ class Proxy implements OptionsAwareInterface {
 	protected function get_manager_url( string $name = '' ): string {
 		$url = $this->container->get( 'connect_server_root' ) . 'google/manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
-	}
-
-	/**
-	 * Convert ads ID from a resource name to an int.
-	 *
-	 * @param string $name Resource name containing ID number.
-	 *
-	 * @return int
-	 */
-	protected function parse_ads_id( string $name ): int {
-		return absint( str_replace( 'customers/', '', $name ) );
 	}
 
 	/**

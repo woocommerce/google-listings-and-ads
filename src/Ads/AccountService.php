@@ -63,7 +63,7 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @throws Exception When an API error occurs.
 	 */
 	public function get_account_ids(): array {
-		return $this->container->get( Middleware::class )->get_ads_account_ids();
+		return $this->container->get( Ads::class )->get_ads_account_ids();
 	}
 
 	/**

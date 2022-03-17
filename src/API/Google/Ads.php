@@ -47,6 +47,43 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get Ads IDs associated with the connected Google account.
+	 *
+	 * @return int[]
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_ads_account_ids(): array {
+		try {
+			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers();
+			$ids       = [];
+
+			foreach ( $customers->getResourceNames() as $name ) {
+				/** @var string $name */
+				$ids[] = $this->parse_ads_id( $name );
+			}
+
+			return $ids;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_api_exception_errors( $e );
+
+			// Return an empty list if the user has not signed up to ads yet.
+			if ( isset( $errors['NOT_ADS_USER'] ) ) {
+				return [];
+			}
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+	}
+
+	/**
 	 * Get billing status.
 	 *
 	 * @return string
@@ -182,6 +219,17 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function use_store_currency(): bool {
 		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, get_woocommerce_currency() );
+	}
+
+	/**
+	 * Convert ads ID from a resource name to an int.
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 */
+	public function parse_ads_id( string $name ): int {
+		return absint( str_replace( 'customers/', '', $name ) );
 	}
 
 	/**

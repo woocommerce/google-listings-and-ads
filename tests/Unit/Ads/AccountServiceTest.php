@@ -97,7 +97,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_get_accounts() {
-		$this->middleware->expects( $this->once() )
+		$this->ads->expects( $this->once() )
 			->method( 'get_ads_account_ids' )
 			->willReturn( self::TEST_ACCOUNT_IDS );
 
@@ -105,7 +105,7 @@ class AccountServiceTest extends UnitTest {
 	}
 
 	public function test_get_accounts_with_api_exception() {
-		$this->middleware->expects( $this->once() )
+		$this->ads->expects( $this->once() )
 			->method( 'get_ads_account_ids' )
 			->willThrowException( new Exception( 'error' ) );
 

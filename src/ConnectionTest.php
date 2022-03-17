@@ -10,6 +10,7 @@
 namespace Automattic\WooCommerce\GoogleListingsAndAds;
 
 use Automattic\Jetpack\Connection\Manager;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
@@ -910,9 +911,7 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
 			try {
-				/** @var Proxy $proxy */
-				$proxy    = $this->container->get( Proxy::class );
-				$accounts = $proxy->get_ads_account_ids();
+				$accounts = $this->container->get( Ads::class )->get_ads_account_ids();
 
 				$this->response .= 'Total accounts: ' . count( $accounts ) . "\n";
 				foreach ( $accounts as $id ) {
