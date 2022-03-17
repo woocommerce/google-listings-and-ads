@@ -21,8 +21,8 @@
 use Automattic\Jetpack\Config;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
-use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\VersionValidator;
 use Psr\Container\ContainerInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -34,11 +34,6 @@ define( 'WC_GLA_MIN_WC_VER', '5.8' );
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
 if ( ! Autoloader::init() ) {
-	return;
-}
-
-// Validate the required versions of everything our plugin depends on.
-if ( ! VersionValidator::instance()->validate() ) {
 	return;
 }
 
@@ -68,34 +63,6 @@ register_deactivation_hook(
 );
 
 /**
- * Remove our plugin if WooCommerce is deactivated.
- *
- * @param string $plugin
- *   Path to the plugin file relative to the plugins directory.
- * @param bool   $network_activation
- *  Whether the plugin is being activated for all sites in the network
- */
-function detect_wc_deactivation( string $plugin, bool $network_activation ): void {
-	if ( $plugin === 'woocommerce/woocommerce.php' ) {
-		if ( ! $network_activation ) {
-			if ( is_plugin_active( plugin_basename( __FILE__ ) ) ) {
-				add_action( 'update_option_active_plugins', 'force_deactivate_gla_plugin' );
-			}
-		}
-	}
-
-}
-
-add_action( 'deactivated_plugin', 'detect_wc_deactivation', 10, 2 );
-
-/**
- * Deactivate plugin.
- */
-function force_deactivate_gla_plugin(): void {
-	deactivate_plugins( plugin_basename( __FILE__ ) );
-}
-
-/**
  * Get our main container object.
  *
  * @return ContainerInterface
@@ -116,6 +83,10 @@ function woogle_get_container(): ContainerInterface {
 add_action(
 	'plugins_loaded',
 	function() {
+		// Check requirements.
+		if ( ! PluginValidator::validate() ) {
+			return;
+		}
 		woogle_get_container()->get( Config::class );
 	},
 	1

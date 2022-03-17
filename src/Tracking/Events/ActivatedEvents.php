@@ -3,13 +3,21 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Activateable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+
 /**
  * This class adds actions to track when the extension is activated.
  * *
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
-class ActivatedEvents extends BaseEvent {
+class ActivatedEvents extends BaseEvent implements Activateable, Deactivateable, OptionsAwareInterface {
+
+	use OptionsAwareTrait;
 
 	/**
 	 * The page where activation with a source can occur.
@@ -50,6 +58,9 @@ class ActivatedEvents extends BaseEvent {
 	 * Track when the extension is activated from a source.
 	 */
 	public function maybe_track_activation_source(): void {
+		// Update db flag.
+		$this->options->set( OptionsInterface::TRACKED_ACTIVATION_SOURCE, true );
+
 		// Skip WP-CLI activations
 		if ( empty( $this->server_vars['HTTP_REFERER'] ) ) {
 			return;
@@ -74,5 +85,24 @@ class ActivatedEvents extends BaseEvent {
 		}
 
 		$this->record_event( 'activated_from_source', $available_source_params );
+
+	}
+
+	/**
+	 * Activate the service.
+	 *
+	 * @return void
+	 */
+	public function activate(): void {
+		$this->maybe_track_activation_source();
+	}
+
+	/**
+	 * Deactivate the service.
+	 *
+	 * @return void
+	 */
+	public function deactivate(): void {
+		$this->options->delete( OptionsInterface::TRACKED_ACTIVATION_SOURCE );
 	}
 }

@@ -6,6 +6,10 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure;
 use Automattic\WooCommerce\GoogleListingsAndAds\Assets\AssetsHandlerInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\JobInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Psr\Container\ContainerInterface;
 
@@ -14,7 +18,9 @@ use Psr\Container\ContainerInterface;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
-final class GoogleListingsAndAdsPlugin implements Plugin {
+final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin {
+
+	use OptionsAwareTrait;
 
 	/**
 	 * The hook for registering our plugin's services.
@@ -40,6 +46,7 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 */
 	public function __construct( ContainerInterface $container ) {
 		$this->container = $container;
+		$this->set_options_object( new Options() );
 	}
 
 	/**
@@ -58,7 +65,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 
 		flush_rewrite_rules();
 
-		$this->container->get( ActivatedEvents::class )->maybe_track_activation_source();
 	}
 
 	/**
@@ -88,6 +94,11 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			self::SERVICE_REGISTRATION_HOOK,
 			function() {
 				$this->maybe_register_services();
+
+				// Check if activation source is set.
+				if ( ! $this->get_options()->get( OptionsInterface::TRACKED_ACTIVATION_SOURCE ) ) {
+					$this->container->get( ActivatedEvents::class )->maybe_track_activation_source();
+				}
 			},
 			20
 		);

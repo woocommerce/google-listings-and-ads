@@ -42,18 +42,6 @@ abstract class RequirementValidator implements RequirementValidatorInterface {
 	 * @param RuntimeException $e
 	 */
 	protected function add_admin_notice( RuntimeException $e ) {
-		// Check if the plugin is active. If not, display error message and terminate.
-
-		if ( ! function_exists( 'is_plugin_active' ) ) {
-			require_once ABSPATH . '/wp-admin/includes/plugin.php';
-		}
-
-		if ( ! is_plugin_active( $this->get_plugin_basename() ) ) {
-			die(
-				esc_html( $e->getMessage() ) . PHP_EOL
-			);
-		}
-
 		// Display notice error message.
 		add_action(
 			'admin_notices',
