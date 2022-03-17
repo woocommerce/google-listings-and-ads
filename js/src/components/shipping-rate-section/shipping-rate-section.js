@@ -12,23 +12,20 @@ import AppRadioContentControl from '.~/components/app-radio-content-control';
 import RadioHelperText from '.~/wcdl/radio-helper-text';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
-import ShippingTimeSetup from './shipping-time/shipping-time-setup';
+import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 
-const ShippingTimeSection = ( {
-	formProps,
-	countries: selectedCountryCodes,
-} ) => {
+const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 	const { getInputProps, values } = formProps;
-	const inputProps = getInputProps( 'shipping_time' );
+	const inputProps = getInputProps( 'shipping_rate' );
 
 	return (
 		<Section
-			title={ __( 'Shipping times', 'google-listings-and-ads' ) }
+			title={ __( 'Shipping rates', 'google-listings-and-ads' ) }
 			description={
 				<div>
 					<p>
 						{ __(
-							'Your shipping times will be shown to potential customers on Google.',
+							'Your shipping rates will be shown to potential customers on Google.',
 							'google-listings-and-ads'
 						) }
 					</p>
@@ -50,8 +47,29 @@ const ShippingTimeSection = ( {
 						<VerticalGapLayout size="large">
 							<AppRadioContentControl
 								{ ...inputProps }
+								label={ createInterpolateElement(
+									__(
+										'<strong>Recommended:</strong> Automatically sync my store’s shipping settings to Google.',
+										'google-listings-and-ads'
+									),
+									{
+										strong: <strong></strong>,
+									}
+								) }
+								value="automatic"
+								collapsible
+							>
+								<RadioHelperText>
+									{ __(
+										'My current settings and any future changes to my store’s shipping rates and classes will be automatically synced to Google Merchant Center.',
+										'google-listings-and-ads'
+									) }
+								</RadioHelperText>
+							</AppRadioContentControl>
+							<AppRadioContentControl
+								{ ...inputProps }
 								label={ __(
-									'My shipping settings are simple. I can manually estimate flat shipping times.',
+									'My shipping settings are simple. I can manually estimate flat shipping rates.',
 									'google-listings-and-ads'
 								) }
 								value="flat"
@@ -60,7 +78,7 @@ const ShippingTimeSection = ( {
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(
-									'My shipping settings are complex. I will enter my shipping times manually in Google Merchant Center.',
+									'My shipping settings are complex. I will enter my shipping rates manually in Google Merchant Center.',
 									'google-listings-and-ads'
 								) }
 								value="manual"
@@ -87,25 +105,15 @@ const ShippingTimeSection = ( {
 						</VerticalGapLayout>
 					</Section.Card.Body>
 				</Section.Card>
-				{ values.shipping_time === 'flat' && (
-					<Section.Card>
-						<Section.Card.Body>
-							<Section.Card.Title>
-								{ __(
-									'Estimated shipping times',
-									'google-listings-and-ads'
-								) }
-							</Section.Card.Title>
-							<ShippingTimeSetup
-								selectedCountryCodes={ selectedCountryCodes }
-								formProps={ formProps }
-							/>
-						</Section.Card.Body>
-					</Section.Card>
+				{ values.shipping_rate === 'flat' && (
+					<FlatShippingRatesInputCards
+						audienceCountries={ audienceCountries }
+						formProps={ formProps }
+					/>
 				) }
 			</VerticalGapLayout>
 		</Section>
 	);
 };
 
-export default ShippingTimeSection;
+export default ShippingRateSection;

@@ -33,9 +33,12 @@ export function handleFetchError( error, message ) {
  * Individual shipping rate.
  *
  * @typedef {Object} ShippingRate
- * @property {CountryCode} countryCode Destination country code.
+ * @property {string} id id.
+ * @property {CountryCode} country Destination country code.
+ * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
+ * @property {Object} options options depending on the shipping method.
  */
 
 /**
@@ -44,14 +47,13 @@ export function handleFetchError( error, message ) {
  */
 export function* fetchShippingRates() {
 	try {
-		const response = yield apiFetch( {
+		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 		} );
 
-		const shippingRates = Object.values( response ).map( ( el ) => {
+		const shippingRates = data.map( ( el ) => {
 			return {
-				countryCode: el.country_code,
-				currency: el.currency,
+				...el,
 				rate: Number( el.rate ),
 			};
 		} );
@@ -72,77 +74,54 @@ export function* fetchShippingRates() {
 }
 
 /**
- * Aggregated shipping rate.
+ * Upsert shipping rates.
  *
- * @typedef {Object} AggregatedShippingRate
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {string} currency Currency of the price.
- * @property {number} rate Shipping price.
+ * @param {Array<ShippingRate>} shippingRates Shipping rates to be upserted.
+ * @return {Object} Action object to update shipping rates.
  */
+export function* upsertShippingRates( shippingRates ) {
+	const data = yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'POST',
+		data: {
+			rates: shippingRates,
+		},
+	} );
 
-/**
- * Updates or inserts given aggregated shipping rate.
- *
- * @param {AggregatedShippingRate} shippingRate
- */
-export function* upsertShippingRates( shippingRate ) {
-	const { countryCodes, currency, rate } = shippingRate;
-
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'POST',
-			data: {
-				country_codes: countryCodes,
-				currency,
-				rate,
-			},
-		} );
-
+	const successShippingRates = data.success.map( ( el ) => {
 		return {
-			type: TYPES.UPSERT_SHIPPING_RATES,
-			shippingRate,
+			...el.rate,
+			rate: Number( el.rate.rate ),
 		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to add / update shipping rates. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	} );
+
+	return {
+		type: TYPES.UPSERT_SHIPPING_RATES,
+		shippingRates: successShippingRates,
+	};
 }
 
 /**
- * Deletes shipping rates associated with given country codes.
+ * Delete shipping rates.
  *
- * @param {Array<CountryCode>} countryCodes
+ * @param {Array<string>} ids IDs of shiping rates to be deleted.
+ * @return {Object} Action object to delete shipping rates.
  */
-export function* deleteShippingRates( countryCodes ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'DELETE',
-			data: {
-				country_codes: countryCodes,
-			},
-		} );
+export function* deleteShippingRates( ids ) {
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'DELETE',
+		data: {
+			ids,
+		},
+	} );
 
-		return {
-			type: TYPES.DELETE_SHIPPING_RATES,
-			countryCodes,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to delete shipping rates. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.DELETE_SHIPPING_RATES,
+		ids,
+	};
 }
+
 /**
  * Individual shipping time.
  *
