@@ -84,15 +84,6 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get merchant IDs associated with the connected Merchant Center account.
-	 *
-	 * @return int[]
-	 */
-	public function get_merchant_ids(): array {
-		return array_column( $this->get_merchant_accounts(), 'id' );
-	}
-
-	/**
 	 * Create a new Merchant Center account.
 	 *
 	 * @return int Created merchant account ID
