@@ -51,7 +51,7 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ad_group  = $this->createMock( AdsGroup::class );
 		$this->budget    = $this->createMock( AdsCampaignBudget::class );
-		$this->criterion = new AdsCampaignCriterion();
+		$this->criterion = $this->createMock( AdsCampaignCriterion::class );
 		$this->options   = $this->createMock( OptionsInterface::class );
 
 		$this->wc            = $this->createMock( WC::class );

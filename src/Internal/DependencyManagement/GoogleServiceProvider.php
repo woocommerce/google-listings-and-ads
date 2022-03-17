@@ -75,6 +75,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Ads::class                    => true,
 		AdsCampaign::class            => true,
 		AdsCampaignBudget::class      => true,
+		AdsCampaignCriterion::class   => true,
 		AdsConversionAction::class    => true,
 		AdsGroup::class               => true,
 		AdsReport::class              => true,
@@ -104,7 +105,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->share( Ads::class, GoogleAdsClient::class );
 		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class, AdsCampaignCriterion::class, GoogleHelper::class );
 		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class );
-		$this->share( AdsCampaignCriterion::class );
+		$this->share( AdsCampaignCriterion::class, GoogleAdsClient::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsGroup::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );

@@ -31,7 +31,7 @@ class AdsCampaignCriterionTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->campaign_criterion = new AdsCampaignCriterion();
+		$this->campaign_criterion = new AdsCampaignCriterion( $this->client );
 	}
 
 	public function test_create_operations() {

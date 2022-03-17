@@ -3,6 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\LocationInfo;
 use Google\Ads\GoogleAds\V9\Enums\CampaignCriterionStatusEnum\CampaignCriterionStatus;
@@ -15,9 +19,25 @@ use Google\Ads\GoogleAds\V9\Services\MutateOperation;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class AdsCampaignCriterion {
+class AdsCampaignCriterion implements OptionsAwareInterface {
 
-	use ApiExceptionTrait;
+	use OptionsAwareTrait;
+
+	/**
+	 * The Google Ads Client.
+	 *
+	 * @var GoogleAdsClient
+	 */
+	protected $client;
+
+	/**
+	 * AdsCampaignCriterion constructor.
+	 *
+	 * @param GoogleAdsClient $client
+	 */
+	public function __construct( GoogleAdsClient $client ) {
+		$this->client = $client;
+	}
 
 	/**
 	 * Returns a set of operations to create multiple campaign criteria.
@@ -35,6 +55,35 @@ class AdsCampaignCriterion {
 			$location_ids
 		);
 	}
+	/**
+	 * Returns a set of operations to delete multiple campaign criteria.
+	 *
+	 * @param string $campaign_resource_name
+	 * @return array
+	 */
+	public function delete_operations( string $campaign_resource_name ): array {
+		$operations = [];
+
+		$results = ( new AdsCampaignCriterionQuery() )
+			->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign_criterion.campaign', $campaign_resource_name )
+			->where( 'campaign_criterion.negative', 'false', '=' )
+			->where( 'campaign_criterion.status', 'REMOVED', '!=' )
+			->where( 'campaign_criterion.location.geo_target_constant', '', 'IS NOT NULL' )
+			->get_results();
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $results->iterateAllElements() as $row ) {
+			$criterion               = $row->getCampaignCriterion();
+			$criterion_resource_name = $criterion->getResourceName();
+
+			$operation    = ( new CampaignCriterionOperation() )->setRemove( $criterion_resource_name );
+			$operations[] = ( new MutateOperation() )->setCampaignCriterionOperation( $operation );
+		}
+
+		return $operations;
+	}
+
 
 	/**
 	 * Returns a new campaign criterion create operation.

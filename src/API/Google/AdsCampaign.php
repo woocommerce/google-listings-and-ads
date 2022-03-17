@@ -303,6 +303,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 
 			// Budget must be removed after the campaign.
 			$operations = array_merge(
+				$this->criterion->delete_operations( $campaign_resource_name ),
 				$this->container->get( AdsGroup::class )->delete_operations( $campaign_resource_name ),
 				[ $this->delete_operation( $campaign_resource_name ) ],
 				[ $this->budget->delete_operation( $campaign_id ) ]
@@ -447,7 +448,6 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			->where( 'campaign.id', array_keys( $campaigns ), 'IN' )
 			// negative: Whether to target (false) or exclude (true) the criterion.
 			->where( 'campaign_criterion.negative', 'false', '=' )
-			->where( 'campaign_criterion.status', 'REMOVED', '!=' )
 			->where( 'campaign_criterion.location.geo_target_constant', '', 'IS NOT NULL' )
 			->get_results();
 
