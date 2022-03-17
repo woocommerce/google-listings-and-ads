@@ -8,7 +8,8 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
-import { ROOT_VALUE } from './constants';
+import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE, SPACE } from './constants';
+import Checkbox from '.~/components/tree-select-control/checkbox';
 
 /**
  * @typedef {import('./').Option} Option
@@ -24,6 +25,7 @@ import { ROOT_VALUE } from './constants';
  * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
  * @param {Function} props.onChange Callback when an option changes
  * @param {Function} props.onNodesExpandedChange Callback when a node is expanded/collapsed
+ * @param {Function} props.onOptionFocused Callback when an option get the focus via change or expansion
  */
 const Options = ( {
 	options = [],
@@ -32,6 +34,7 @@ const Options = ( {
 	onChange = () => {},
 	nodesExpanded = [],
 	onNodesExpandedChange = () => {},
+	onOptionFocused = () => {},
 } ) => {
 	/**
 	 * Verifies if an option is checked.
@@ -81,6 +84,8 @@ const Options = ( {
 	 * @param {Option} option The option to be expanded or collapsed
 	 */
 	const toggleExpanded = ( option ) => {
+		if ( ! option.children?.length ) return;
+
 		onNodesExpandedChange(
 			nodesExpanded.includes( option.value )
 				? nodesExpanded.filter( ( el ) => option.value !== el )
@@ -88,10 +93,30 @@ const Options = ( {
 		);
 	};
 
-	return options.map( ( option ) => {
+	/**
+	 * Alters the node with some keys for accessibility
+	 * ArrowRight - Expands the node
+	 * ArrowLeft - Collapses the node
+	 * Space - Checks/Unchecks the node
+	 *
+	 * @param {Event} event The KeyDown event
+	 * @param {Option} option The option where the event happened
+	 * @param {boolean} isExpanded True if the node is expanded, false otherwise
+	 */
+	const handleKeyDown = ( event, option, isExpanded ) => {
+		if ( event.key === ARROW_RIGHT && ! isExpanded ) {
+			toggleExpanded( option );
+		} else if ( event.key === ARROW_LEFT && isExpanded ) {
+			toggleExpanded( option );
+		} else if ( event.key === SPACE ) {
+			onChange( event.target.checked, option );
+		}
+	};
+
+	return options.map( ( option, idx ) => {
 		const isRoot = option.value === ROOT_VALUE;
 		const hasChildren = !! option.children?.length;
-		const optionIsChecked = isChecked( option );
+		const checked = isChecked( option );
 		const isExpanded =
 			isFiltered || isRoot || nodesExpanded.includes( option.value );
 
@@ -114,6 +139,7 @@ const Options = ( {
 							) }
 							tabIndex="-1"
 							onClick={ () => {
+								onOptionFocused( option, idx );
 								toggleExpanded( option );
 							} }
 						>
@@ -123,42 +149,25 @@ const Options = ( {
 						</button>
 					) }
 
-					<div
+					<Checkbox
 						className={ classnames(
 							'components-base-control',
 							'woocommerce-tree-select-control__option',
-							! optionIsChecked &&
+							! checked &&
 								hasSomeChildrenChecked( option ) &&
 								'is-partially-checked'
 						) }
-					>
-						<div className="components-base-control__field">
-							<span className="components-checkbox-control__input-container">
-								<input
-									ref={ option.ref }
-									id={ `inspector-checkbox-control-${
-										option.key ?? option.value
-									}` }
-									className="components-checkbox-control__input"
-									type="checkbox"
-									tabIndex="-1"
-									value={ option.value }
-									checked={ optionIsChecked }
-									onChange={ ( e ) => {
-										onChange( e.target.checked, option );
-									} }
-								/>
-							</span>
-							<label
-								className="components-checkbox-control__label"
-								htmlFor={ `inspector-checkbox-control-${
-									option.key ?? option.value
-								}` }
-							>
-								{ option.label }
-							</label>
-						</div>
-					</div>
+						option={ option }
+						index={ idx }
+						checked={ checked }
+						onChange={ ( e ) => {
+							onOptionFocused( option, idx );
+							onChange( e.target.checked, option );
+						} }
+						onKeyDown={ ( e ) => {
+							handleKeyDown( e, option, isExpanded );
+						} }
+					/>
 				</Flex>
 
 				{ hasChildren && isExpanded && (
@@ -175,6 +184,7 @@ const Options = ( {
 							onChange={ onChange }
 							nodesExpanded={ nodesExpanded }
 							onNodesExpandedChange={ onNodesExpandedChange }
+							onOptionFocused={ onOptionFocused }
 						/>
 					</div>
 				) }

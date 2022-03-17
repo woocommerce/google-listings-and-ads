@@ -9,6 +9,7 @@ import {
 	useState,
 	useRef,
 	createRef,
+	useCallback,
 } from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
@@ -25,7 +26,10 @@ import Control from './control';
 import Options from './options';
 import './index.scss';
 import {
+	ARROW_DOWN,
+	ARROW_UP,
 	BACKSPACE,
+	ENTER,
 	ESCAPE,
 	ROOT_VALUE,
 } from '.~/components/tree-select-control/constants';
@@ -38,6 +42,7 @@ import {
  * @property {string} label The label for the option
  * @property {Option[]} [children] The children Option objects
  * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
+ * @property {Object} [ref] React Ref associated to the option. This is for system purposes only.
  *
  * Example of Options data structure:
  *   [
@@ -102,18 +107,16 @@ const TreeSelectControl = ( {
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
-
-	const treeOptions = useIsEqualRefValue(
+	const root =
 		selectAllLabel !== false
-			? [
-					{
-						label: selectAllLabel,
-						value: ROOT_VALUE,
-						children: options,
-					},
-			  ]
-			: options
-	);
+			? {
+					label: selectAllLabel,
+					value: ROOT_VALUE,
+					children: options,
+			  }
+			: null;
+
+	const treeOptions = useIsEqualRefValue( root ? [ root ] : options );
 
 	const focusOutside = useFocusOutside( () => {
 		setTreeVisible( false );
@@ -122,6 +125,102 @@ const TreeSelectControl = ( {
 	const hasChildren = ( option ) => option.children?.length;
 	const filterQuery = inputControlValue.trim().toLowerCase();
 	const filter = filterQuery.length >= 3 ? filterQuery : '';
+
+	/**
+	 * Optimizes the performance for getting the tags info
+	 */
+	const optionsRepository = useMemo( () => {
+		const repository = {};
+
+		filteredOptionsCache.current = []; // clear cache if options change
+
+		function loadOption( option, parent ) {
+			option.children?.forEach( ( child ) => {
+				loadOption( child, option );
+			} );
+
+			repository[ option.key ?? option.value ] = {
+				...option,
+				parent,
+				ref: createRef(),
+			};
+		}
+
+		treeOptions.forEach( ( option ) => loadOption( option ) );
+
+		return repository;
+	}, [ treeOptions ] );
+
+	/**
+	 * Get the parent for an option in the repository
+	 *
+	 * @param {Option} option The option to get the parent
+	 * @return {Option} The parent option
+	 */
+	const getParent = ( option ) => {
+		const parent = getOption( option )?.parent;
+		return getOption( parent );
+	};
+
+	/**
+	 * Gets the index of the option inside a group
+	 *
+	 * @param {Option} option The option to get the index
+	 * @return {number} The index
+	 */
+	const getIndex = ( option ) => {
+		return Number( option.ref.current.dataset.index );
+	};
+
+	/**
+	 * Get the last child in an Option
+	 *
+	 * @param {Option} option The option to get the last child
+	 * @return {Option} The last Option child
+	 */
+	const getLastChild = ( option ) => {
+		return getOption( option.children[ option.children.length - 1 ] );
+	};
+
+	/**
+	 * Get the next sibling in the tree
+	 *
+	 * @param {Option} option The option to get the sibling
+	 * @return {Option} The next sibling
+	 */
+	const getSibling = ( option ) => {
+		if ( ! option ) return;
+
+		const parent = getParent( option );
+
+		if ( ! parent ) {
+			return;
+		}
+		const index = getIndex( option );
+		const child = parent.children[ index + 1 ];
+
+		if ( child ) {
+			return {
+				el: getOption( child ),
+				parent,
+				idx: index + 1,
+			};
+		}
+		return child || getSibling( parent );
+	};
+
+	/**
+	 * Gets an option from the repository
+	 *
+	 * @param {Option} option The option to get from the Repository
+	 */
+	const getOption = useCallback(
+		( option ) => {
+			if ( ! option ) return;
+			return optionsRepository[ option.key ?? option.value ];
+		},
+		[ optionsRepository ]
+	);
 
 	/**
 	 * Perform the search query filter in the Tree options
@@ -150,7 +249,7 @@ const TreeSelectControl = ( {
 		};
 
 		const filterOption = ( option ) => {
-			option.ref = optionsRepository[ option.value ].ref;
+			option.ref = getOption( option ).ref;
 
 			if ( hasChildren( option ) ) {
 				option.children = option.children.filter( filterOption );
@@ -175,61 +274,95 @@ const TreeSelectControl = ( {
 		filteredTreeOptions = filteredTreeOptions.filter( filterOption );
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
-	}, [ treeOptions, filter ] );
+	}, [ treeOptions, filter, getOption ] );
 
 	const onKeyDown = ( event ) => {
-		if ( inputControlValue ) return;
-
-		function getSibling( element ) {
-			if ( ! element ) return;
-
-			const child = element.parent.el.children[ element.idx + 1 ];
-
-			if ( child ) {
-				return {
-					el: child,
-					parent: element.parent,
-					idx: element.idx + 1,
-				};
-			}
-			return child || getSibling( element.parent );
-		}
-
-		if ( BACKSPACE === event.key ) {
-			onChange( value.slice( 0, -1 ) );
-			event.preventDefault();
-		}
-
 		if ( ESCAPE === event.key ) {
 			setTreeVisible( false );
+		}
+
+		if ( ENTER === event.key ) {
+			setTreeVisible( true );
 			event.preventDefault();
 		}
 
-		if ( event.key === 'ArrowDown' ) {
-			if ( focused === null ) {
+		if ( inputControlValue ) return;
+
+		if ( ARROW_UP === event.key ) {
+			const parent = getParent( focused.el );
+			const child = parent?.children[ focused.idx - 1 ];
+
+			if ( ! parent ) {
+				const el = root
+					? getLastChild( root )
+					: filteredOptions[ filteredOptions.length - 1 ];
+
 				setFocused( {
-					el: filteredOptions[ 0 ],
-					parent: null,
-					idx: 0,
+					el,
+					parent: getParent( el ),
+					idx: getIndex( el ),
 				} );
+			} else if ( child ) {
+				const el = nodesExpanded.includes( child.value )
+					? getLastChild( child )
+					: getOption( child );
+
+				setFocused( {
+					el,
+					parent: getParent( el ),
+					idx: getIndex( el ),
+				} );
+			} else {
+				setFocused( {
+					el: parent,
+					parent: getParent( parent ),
+					idx: getIndex( parent ),
+				} );
+			}
+			event.preventDefault();
+		}
+
+		if ( ARROW_DOWN === event.key ) {
+			const rootFocus = {
+				el: filteredOptions[ 0 ],
+				parent: null,
+				idx: 0,
+			};
+
+			if ( focused === null ) {
+				setFocused( rootFocus );
 			} else if (
 				nodesExpanded.includes( focused.el.value ) ||
 				focused.el.value === ROOT_VALUE
 			) {
+				const child = focused.el.children[ 0 ];
 				setFocused( {
-					el: focused.el.children[ 0 ],
-					parent: focused,
+					el: getOption( child ),
+					parent: getParent( child ),
 					idx: 0,
 				} );
 			} else {
-				const child = focused.parent.el.children[ focused.idx + 1 ];
-				const sibling = ! child && getSibling( focused.parent );
+				const newIndex = getIndex( focused.el ) + 1;
+				const parent = getParent( focused.el );
+				const child = parent?.children[ newIndex ];
+				const sibling = ! child && getSibling( parent );
+
+				if ( ! child && ! sibling ) {
+					setFocused( rootFocus );
+					return;
+				}
+
 				setFocused( {
-					el: child || sibling?.el,
-					parent: child ? focused.parent : sibling?.parent,
-					idx: child ? focused.idx + 1 : sibling?.idx,
+					el: child ? getOption( child ) : sibling?.el,
+					parent: child ? parent : sibling?.parent,
+					idx: child ? newIndex : sibling?.idx,
 				} );
 			}
+			event.preventDefault();
+		}
+
+		if ( BACKSPACE === event.key ) {
+			onChange( value.slice( 0, -1 ) );
 			event.preventDefault();
 		}
 	};
@@ -239,29 +372,6 @@ const TreeSelectControl = ( {
 			focused.el.ref.current.focus();
 		}
 	}, [ focused ] );
-
-	/**
-	 * Optimizes the performance for getting the tags info
-	 *
-	 * @see getTags
-	 */
-	const optionsRepository = useMemo( () => {
-		const repository = {};
-
-		filteredOptionsCache.current = []; // clear cache if options change
-
-		function loadOption( option ) {
-			option.children?.forEach( ( child ) => {
-				loadOption( child );
-			} );
-
-			repository[ option.value ] = { ...option, ref: createRef() };
-		}
-
-		treeOptions.forEach( ( option ) => loadOption( option ) );
-
-		return repository;
-	}, [ treeOptions ] );
 
 	/**
 	 * Get formatted Tags from the selected values.
@@ -367,6 +477,14 @@ const TreeSelectControl = ( {
 		setInputControlValue( e.target.value );
 	};
 
+	const handleOptionFocused = ( option, idx ) => {
+		setFocused( {
+			el: option,
+			parent: getParent( option ),
+			idx,
+		} );
+	};
+
 	return (
 		// eslint-disable-next-line jsx-a11y/no-static-element-interactions
 		<div
@@ -417,6 +535,7 @@ const TreeSelectControl = ( {
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }
+						onOptionFocused={ handleOptionFocused }
 					/>
 				</div>
 			) }
