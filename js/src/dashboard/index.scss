@@ -5,7 +5,7 @@
 		align-items: flex-end;
 		margin-bottom: var(--main-gap);
 
-		@include break-medium() {
+		@include break-medium {
 			flex-direction: row;
 			justify-content: space-between;
 		}
@@ -13,7 +13,7 @@
 		.woocommerce-filters-filter {
 			margin-bottom: calc(var(--main-gap) / 2);
 
-			@include break-medium() {
+			@include break-medium {
 				margin-bottom: 0;
 			}
 		}
@@ -25,7 +25,7 @@
 		gap: var(--main-gap);
 		margin-bottom: var(--main-gap);
 
-		@include break-medium() {
+		@include break-medium {
 			flex-direction: row;
 		}
 

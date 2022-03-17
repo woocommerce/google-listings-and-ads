@@ -146,6 +146,7 @@ const updatedSassOptions = {
 		includePaths: [ 'js/src/css/abstracts' ],
 	},
 	additionalData:
+		'@use "sass:color";' +
 		'@import "_colors"; ' +
 		'@import "_variables"; ' +
 		'@import "_mixins"; ' +
