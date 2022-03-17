@@ -59,7 +59,7 @@ class ActivatedEvents extends BaseEvent implements Activateable, Deactivateable,
 	 */
 	public function maybe_track_activation_source(): void {
 		// Update db flag.
-		$this->options->set( OptionsInterface::TRACKED_ACTIVATION_SOURCE, true );
+		$this->options->update( OptionsInterface::TRACKED_ACTIVATION_SOURCE, true );
 
 		// Skip WP-CLI activations
 		if ( empty( $this->server_vars['HTTP_REFERER'] ) ) {

@@ -96,7 +96,7 @@ final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin 
 				$this->maybe_register_services();
 
 				// Check if activation source is set.
-				if ( ! $this->get_options()->get( OptionsInterface::TRACKED_ACTIVATION_SOURCE ) ) {
+				if ( ! $this->options->get( OptionsInterface::TRACKED_ACTIVATION_SOURCE ) ) {
 					$this->container->get( ActivatedEvents::class )->maybe_track_activation_source();
 				}
 			},
