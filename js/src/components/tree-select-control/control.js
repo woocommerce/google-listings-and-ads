@@ -36,15 +36,14 @@ const Control = ( {
 	onTagsChange = () => {},
 	onInputChange = () => {},
 } ) => {
-	const inputRef = useRef();
 	const hasTags = tags.length > 0;
 	const showPlaceholder = ! hasTags && ! isExpanded;
-
+	const inputRef = useRef();
 	return (
-		/*
-		ESLint Disable reason
-		https://github.com/woocommerce/woocommerce-admin/blob/main/packages/components/src/select-control/control.js#L200
-		*/
+		/**
+		 * ESLint Disable reason
+		 * https://github.com/woocommerce/woocommerce-admin/blob/main/packages/components/src/select-control/control.js#L200
+		 */
 		/* eslint-disable jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
 		<div
 			className={ classnames(

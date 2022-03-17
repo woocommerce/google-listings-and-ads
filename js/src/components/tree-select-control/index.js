@@ -18,7 +18,11 @@ import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
 import Options from './options';
 import './index.scss';
-import { ROOT_VALUE } from '.~/components/tree-select-control/constants';
+import {
+	BACKSPACE,
+	ESCAPE,
+	ROOT_VALUE,
+} from '.~/components/tree-select-control/constants';
 
 /**
  * The Option type Object. This is how we send the options to the selector.
@@ -86,7 +90,7 @@ const TreeSelectControl = ( {
 
 	const [ treeVisible, setTreeVisible ] = useState( false );
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
-	const [ filter, setFilter ] = useState( '' );
+	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
@@ -107,6 +111,10 @@ const TreeSelectControl = ( {
 	const focusOutside = useFocusOutside( () => {
 		setTreeVisible( false );
 	} );
+
+	const hasChildren = ( option ) => option.children?.length;
+	const filterQuery = inputControlValue.trim().toLowerCase();
+	const filter = filterQuery.length >= 3 ? filterQuery : '';
 
 	/**
 	 * Perform the search query filter in the Tree options
@@ -163,7 +171,19 @@ const TreeSelectControl = ( {
 		setFilteredOptions( filteredTreeOptions );
 	}, [ treeOptions, filter ] );
 
-	const hasChildren = ( option ) => option.children?.length;
+	const onKeyDown = ( event ) => {
+		if ( inputControlValue ) return;
+
+		if ( BACKSPACE === event.key ) {
+			onChange( value.slice( 0, -1 ) );
+			event.preventDefault();
+		}
+
+		if ( ESCAPE === event.key ) {
+			setTreeVisible( false );
+			event.preventDefault();
+		}
+	};
 
 	/**
 	 * Optimizes the performance for getting the tags info
@@ -291,13 +311,17 @@ const TreeSelectControl = ( {
 	 * @param {Event} e Event returned by the On Change function in the Input control
 	 */
 	const handleOnInputChange = ( e ) => {
-		const search = e.target.value.trim().toLowerCase();
-		setFilter( search.length >= 3 ? search : '' );
+		setInputControlValue( e.target.value );
 	};
 
 	return (
+		// eslint-disable-next-line jsx-a11y/no-static-element-interactions
 		<div
 			{ ...focusOutside }
+			onKeyDown={ onKeyDown }
+			onClick={ () => {
+				setTreeVisible( true );
+			} }
 			className={ classnames(
 				'woocommerce-tree-select-control',
 				className
