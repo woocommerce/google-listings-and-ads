@@ -178,18 +178,23 @@ const TreeSelectControl = ( {
 	}, [ treeOptions, filter ] );
 
 	const onKeyDown = ( event ) => {
-		if ( inputControlValue ) return;
+		console.log( event.key );
 
-		function getSibling( element ) {
+		if ( inputControlValue ) return;
+		event.preventDefault();
+
+		function getSibling( element, goDown = true ) {
 			if ( ! element ) return;
 
-			const child = element.parent.el.children[ element.idx + 1 ];
+			const nextIndex = goDown ? element.idx + 1 : element.idx - 1;
+
+			const child = element.parent.el.children[ nextIndex ];
 
 			if ( child ) {
 				return {
 					el: child,
 					parent: element.parent,
-					idx: element.idx + 1,
+					idx: nextIndex,
 				};
 			}
 			return child || getSibling( element.parent );
@@ -202,6 +207,35 @@ const TreeSelectControl = ( {
 
 		if ( ESCAPE === event.key ) {
 			setTreeVisible( false );
+		}
+
+		if ( event.key === 'Enter' ) {
+			setTreeVisible( true );
+			event.preventDefault();
+		}
+
+		if ( event.key === 'ArrowUp' ) {
+			const child = focused.parent.el.children[ focused.idx - 1 ];
+
+			if ( child?.children && nodesExpanded.includes( child.value ) ) {
+				setFocused( {
+					el: child.children[ child.children.length - 1 ],
+					parent: {
+						el: child,
+						parent: focused.parent,
+						idx: focused.idx - 1,
+					},
+					idx: child.children.length - 1,
+				} );
+			} else if ( child ) {
+				setFocused( {
+					el: child,
+					parent: focused.parent,
+					idx: focused.idx - 1,
+				} );
+			} else {
+				setFocused( focused.parent );
+			}
 			event.preventDefault();
 		}
 

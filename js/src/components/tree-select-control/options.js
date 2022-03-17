@@ -88,6 +88,16 @@ const Options = ( {
 		);
 	};
 
+	const handleKeyDown = ( event, option, isExpanded, checked ) => {
+		if ( event.key === 'ArrowRight' && ! isExpanded ) {
+			toggleExpanded( option );
+		} else if ( event.key === 'ArrowLeft' && isExpanded ) {
+			toggleExpanded( option );
+		} else if ( event.key === ' ' ) {
+			onChange( ! checked, option );
+		}
+	};
+
 	return options.map( ( option ) => {
 		const isRoot = option.value === ROOT_VALUE;
 		const hasChildren = !! option.children?.length;
@@ -146,6 +156,14 @@ const Options = ( {
 									checked={ optionIsChecked }
 									onChange={ ( e ) => {
 										onChange( e.target.checked, option );
+									} }
+									onKeyDown={ ( e ) => {
+										handleKeyDown(
+											e,
+											option,
+											isExpanded,
+											optionIsChecked
+										);
 									} }
 								/>
 							</span>
