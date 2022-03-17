@@ -154,6 +154,27 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsCampaignCriterionQuery response.
+	 *
+	 * @param string $campaign_criterion_resource_name
+	 */
+	protected function generate_campaign_criterion_query_mock( string $campaign_criterion_resource_name ) {
+		$campaign_criterion = $this->createMock( CampaignCriterion::class );
+		$campaign_criterion->method( 'getResourceName' )->willReturn( $campaign_criterion_resource_name );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->expects( $this->once() )
+			->method( 'iterateAllElements' )
+			->willReturn(
+				[
+					( new GoogleAdsRow )->setCampaignCriterion( $campaign_criterion ),
+				]
+			);
+
+		$this->service_client->method( 'search' )->willReturn( $list_response );
+	}
+
+	/**
 	 * Generates a mocked AdsGroupQuery response.
 	 *
 	 * @param string $ad_group_resource_name
@@ -285,5 +306,15 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_listing_group_resource_name( int $ad_group_id, int $listing_group_id ) {
 		return ResourceNames::forAdGroupCriterion( $this->ads_id, $ad_group_id, $listing_group_id );
+	}
+
+	/**
+	 * Generates a campaign criterion resource name.
+	 *
+	 * @param int $campaign_id
+	 * @param int $campaign_critreion_id
+	 */
+	protected function generate_campaign_criterion_resource_name( int $campaign_id, int $campaign_criterion_id ) {
+		return ResourceNames::forCampaignCriterion( $this->ads_id, $campaign_id, $campaign_criterion_id );
 	}
 }
