@@ -61,6 +61,7 @@
 		"eslint-plugin-import": "^2.25.4",
 		"file-loader": "^6.2.0",
 		"h2o2": "^8.2.0",
+		"path-browserify": "^1.0.1",
 		"postcss": "^8.4.5",
 		"prettier": "npm:wp-prettier@2.2.1-beta-1",
 		"stylelint": "^14.2.0"
