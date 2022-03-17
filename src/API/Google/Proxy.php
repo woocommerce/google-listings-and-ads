@@ -322,11 +322,11 @@ class Proxy implements OptionsAwareInterface {
 				$ads = $this->container->get( Ads::class );
 
 				$id = $ads->parse_ads_id( $response['resourceName'] );
-				$this->update_ads_id( $id );
+				$ads->update_ads_id( $id );
 				$ads->use_store_currency();
 
 				$billing_url = $response['invitationLink'] ?? '';
-				$this->update_billing_url( $billing_url );
+				$ads->update_billing_url( $billing_url );
 
 				return [
 					'id'          => $id,
@@ -378,7 +378,7 @@ class Proxy implements OptionsAwareInterface {
 				/** @var Ads $ads */
 				$ads = $this->container->get( Ads::class );
 
-				$this->update_ads_id( $id );
+				$ads->update_ads_id( $id );
 				$ads->request_ads_currency();
 
 				return [ 'id' => $id ];
@@ -488,28 +488,6 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	protected function update_merchant_id( int $id ): bool {
 		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
-	}
-
-	/**
-	 * Update the Ads ID to use for requests.
-	 *
-	 * @param int $id Ads ID number.
-	 *
-	 * @return bool
-	 */
-	protected function update_ads_id( int $id ): bool {
-		return $this->options->update( OptionsInterface::ADS_ID, $id );
-	}
-
-	/**
-	 * Update the billing flow URL so we can retrieve it again later.
-	 *
-	 * @param string $url Billing flow URL.
-	 *
-	 * @return bool
-	 */
-	protected function update_billing_url( string $url ): bool {
-		return $this->options->update( OptionsInterface::ADS_BILLING_URL, $url );
 	}
 
 	/**
