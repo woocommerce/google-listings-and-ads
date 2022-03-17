@@ -72,7 +72,24 @@ class AccountService implements OptionsAwareInterface, Service {
 	 * @return array
 	 */
 	public function get_connected_account(): array {
-		return $this->container->get( Middleware::class )->get_connected_ads_account();
+		$id = $this->options->get_ads_id();
+
+		$status = [
+			'id'       => $id,
+			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
+			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
+			'status'   => $id ? 'connected' : 'disconnected',
+		];
+
+		$incomplete = $this->state->last_incomplete_step();
+		if ( ! empty( $incomplete ) ) {
+			$status['status'] = 'incomplete';
+			$status['step']   = $incomplete;
+		}
+
+		$status += $this->state->get_step_data( 'set_id' );
+
+		return $status;
 	}
 
 	/**

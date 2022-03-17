@@ -448,34 +448,6 @@ class Proxy implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get the connected ads account.
-	 *
-	 * @return array
-	 */
-	public function get_connected_ads_account(): array {
-		$id = $this->options->get( OptionsInterface::ADS_ID );
-
-		$status = [
-			'id'       => $id,
-			'currency' => $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ),
-			'symbol'   => html_entity_decode( get_woocommerce_currency_symbol( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) ),
-			'status'   => $id ? 'connected' : 'disconnected',
-		];
-
-		/** @var AdsAccountState $state */
-		$state      = $this->container->get( AdsAccountState::class );
-		$incomplete = $state->last_incomplete_step();
-		if ( ! empty( $incomplete ) ) {
-			$status['status'] = 'incomplete';
-			$status['step']   = $incomplete;
-		}
-
-		$status += $state->get_step_data( 'set_id' );
-
-		return $status;
-	}
-
-	/**
 	 * Determine whether the TOS have been accepted.
 	 *
 	 * @param string $service Name of service.
