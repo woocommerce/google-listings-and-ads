@@ -19,7 +19,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Value\TosAccepted;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Client;
 use DateTime;
 use Exception;
-use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\ApiCore\ApiException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -368,9 +367,12 @@ class Proxy implements OptionsAwareInterface {
 			$response = json_decode( $result->getBody()->getContents(), true );
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) ) {
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
+
 				$id = $this->parse_ads_id( $response['resourceName'] );
 				$this->update_ads_id( $id );
-				$this->use_store_currency();
+				$ads->use_store_currency();
 
 				$billing_url = $response['invitationLink'] ?? '';
 				$this->update_billing_url( $billing_url );
@@ -422,8 +424,12 @@ class Proxy implements OptionsAwareInterface {
 			$name     = "customers/{$id}";
 
 			if ( 200 === $result->getStatusCode() && isset( $response['resourceName'] ) && 0 === strpos( $response['resourceName'], $name ) ) {
+				/** @var Ads $ads */
+				$ads = $this->container->get( Ads::class );
+
 				$this->update_ads_id( $id );
-				$this->request_ads_currency();
+				$ads->request_ads_currency();
+
 				return [ 'id' => $id ];
 			}
 
@@ -467,22 +473,6 @@ class Proxy implements OptionsAwareInterface {
 		$status += $state->get_step_data( 'set_id' );
 
 		return $status;
-	}
-
-	/**
-	 * Get the ads account currency.
-	 *
-	 * @since 1.4.1
-	 *
-	 * @return string
-	 */
-	public function get_ads_currency(): string {
-		// Retrieve account currency from the API if we haven't done so previously.
-		if ( $this->options->get( OptionsInterface::ADS_ID ) && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
-			$this->request_ads_currency();
-		}
-
-		return strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ?? get_woocommerce_currency() );
 	}
 
 	/**
@@ -606,39 +596,6 @@ class Proxy implements OptionsAwareInterface {
 	 */
 	protected function update_ads_id( int $id ): bool {
 		return $this->options->update( OptionsInterface::ADS_ID, $id );
-	}
-
-	/**
-	 * Save the Ads account currency to the same value as the Store currency.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return boolean
-	 */
-	protected function use_store_currency(): bool {
-		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, get_woocommerce_currency() );
-	}
-
-	/**
-	 * Request the Ads Account currency, and cache it as an option.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return boolean
-	 */
-	protected function request_ads_currency(): bool {
-		try {
-			/** @var GoogleAdsClient $client */
-			$client   = $this->container->get( GoogleAdsClient::class );
-			$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
-			$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
-			$currency = $customer->getCurrencyCode();
-		} catch ( ApiException $e ) {
-			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
-			$currency = null;
-		}
-
-		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, $currency );
 	}
 
 	/**

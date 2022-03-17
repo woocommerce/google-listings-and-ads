@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Exception;
 use Google\Ads\GoogleAds\Util\FieldMasks;
+use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
@@ -132,6 +133,55 @@ class Ads implements OptionsAwareInterface {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the ads account currency.
+	 *
+	 * @since 1.4.1
+	 *
+	 * @return string
+	 */
+	public function get_ads_currency(): string {
+		// Retrieve account currency from the API if we haven't done so previously.
+		if ( $this->options->get( OptionsInterface::ADS_ID ) && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
+			$this->request_ads_currency();
+		}
+
+		return strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ?? get_woocommerce_currency() );
+	}
+
+	/**
+	 * Request the Ads Account currency, and cache it as an option.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return boolean
+	 */
+	public function request_ads_currency(): bool {
+		try {
+			/** @var GoogleAdsClient $client */
+			$client   = $this->container->get( GoogleAdsClient::class );
+			$resource = ResourceNames::forCustomer( $this->options->get( OptionsInterface::ADS_ID ) );
+			$customer = $client->getCustomerServiceClient()->getCustomer( $resource );
+			$currency = $customer->getCurrencyCode();
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			$currency = null;
+		}
+
+		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, $currency );
+	}
+
+	/**
+	 * Save the Ads account currency to the same value as the Store currency.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return boolean
+	 */
+	public function use_store_currency(): bool {
+		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, get_woocommerce_currency() );
 	}
 
 	/**
