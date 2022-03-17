@@ -14,7 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Jobs\CleanupProductsJob;
@@ -777,9 +777,7 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-google-sv-link' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-link' ) ) {
 			try {
-				/** @var Proxy $proxy */
-				$proxy = $this->container->get( Proxy::class );
-				if ( $proxy->link_merchant_to_mca() ) {
+				if ( $this->container->get( Middleware::class )->link_merchant_to_mca() ) {
 					$this->response .= "Linked merchant to MCA\n";
 				}
 			} catch ( \Exception $e ) {
@@ -871,9 +869,7 @@ class ConnectionTest implements Service, Registerable {
 			try {
 				$this->response = 'Proxied request > get merchant ID' . "\n";
 
-				/** @var Proxy $proxy */
-				$proxy = $this->container->get( Proxy::class );
-				foreach ( $proxy->get_merchant_accounts() as $account ) {
+				foreach ( $this->container->get( Middleware::class )->get_merchant_accounts() as $account ) {
 					$this->response     .= sprintf(
 						"Merchant ID: %s%s\n",
 						$account['id'],
@@ -947,9 +943,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-accept-tos' === $_GET['action'] && check_admin_referer( 'wcs-accept-tos' ) ) {
-			/** @var Proxy $proxy */
-			$proxy  = $this->container->get( Proxy::class );
-			$result = $proxy->mark_tos_accepted( 'google-mc', 'john.doe@example.com' );
+			$result = $this->container->get( Middleware::class )->mark_tos_accepted( 'google-mc', 'john.doe@example.com' );
 
 			$this->response .= sprintf(
 				'Attempting to accept Tos. Successful? %s<br>Response body: %s',
@@ -959,9 +953,7 @@ class ConnectionTest implements Service, Registerable {
 		}
 
 		if ( 'wcs-check-tos' === $_GET['action'] && check_admin_referer( 'wcs-check-tos' ) ) {
-			/** @var Proxy $proxy */
-			$proxy    = $this->container->get( Proxy::class );
-			$accepted = $proxy->check_tos_accepted( 'google-mc' );
+			$accepted = $this->container->get( Middleware::class )->check_tos_accepted( 'google-mc' );
 
 			$this->response .= sprintf(
 				'Tos Accepted? %s<br>Response body: %s',

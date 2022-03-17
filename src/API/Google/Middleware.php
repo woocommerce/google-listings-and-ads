@@ -21,11 +21,11 @@ use Psr\Http\Client\ClientExceptionInterface;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Proxy
+ * Class Middleware
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
-class Proxy implements OptionsAwareInterface {
+class Middleware implements OptionsAwareInterface {
 
 	use ApiExceptionTrait;
 	use OptionsAwareTrait;
@@ -37,7 +37,7 @@ class Proxy implements OptionsAwareInterface {
 	protected $container;
 
 	/**
-	 * Proxy constructor.
+	 * Middleware constructor.
 	 *
 	 * @param ContainerInterface $container
 	 */

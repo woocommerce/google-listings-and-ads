@@ -14,7 +14,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
@@ -67,7 +67,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		ShoppingContent::class        => true,
 		GoogleAdsClient::class        => true,
 		GuzzleClient::class           => true,
-		Proxy::class                  => true,
+		Middleware::class             => true,
 		Merchant::class               => true,
 		MerchantMetrics::class        => true,
 		Ads::class                    => true,
@@ -95,7 +95,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_guzzle();
 		$this->register_ads_client();
 		$this->register_google_classes();
-		$this->add( Proxy::class, ContainerInterface::class );
+		$this->share( Middleware::class, ContainerInterface::class );
 		$this->add( Connection::class );
 		$this->add( Settings::class, ContainerInterface::class );
 
