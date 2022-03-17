@@ -206,7 +206,7 @@ class Proxy implements OptionsAwareInterface {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $this->get_merchant_id(),
+							'accountId' => $this->options->get_merchant_id(),
 						]
 					),
 				]
@@ -248,7 +248,7 @@ class Proxy implements OptionsAwareInterface {
 				[
 					'body' => json_encode(
 						[
-							'accountId' => $this->get_merchant_id(),
+							'accountId' => $this->options->get_merchant_id(),
 							'overwrite' => $overwrite,
 						]
 					),
@@ -477,15 +477,6 @@ class Proxy implements OptionsAwareInterface {
 	protected function get_manager_url( string $name = '' ): string {
 		$url = $this->container->get( 'connect_server_root' ) . 'google/manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
-	}
-
-	/**
-	 * Get the Merchant Center ID.
-	 *
-	 * @return int
-	 */
-	protected function get_merchant_id(): int {
-		return $this->options->get( OptionsInterface::MERCHANT_ID );
 	}
 
 	/**
