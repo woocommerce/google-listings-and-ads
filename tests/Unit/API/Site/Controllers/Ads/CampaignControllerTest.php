@@ -162,8 +162,6 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 
 	public function test_create_campaign_unsupported_country() {
 		$this->country_supported = false;
-		$this->google_helper->method( 'is_country_supported' )
-			->willReturnCallback( function () { return $this->country_supported; } );
 
 		$campaign_data = [
 			'amount'             => 20,
