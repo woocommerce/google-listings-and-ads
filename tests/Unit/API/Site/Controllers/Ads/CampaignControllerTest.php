@@ -188,15 +188,11 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
-		$this->ads_campaign->expects( $this->once() )
-			->method( 'create_campaign' )
-			->with( $campaign_data )
-			->willReturn( $expected );
-
 		$response = $this->do_request( self::ROUTE_CAMPAIGNS, 'POST', $campaign_data );
 
-		$this->assertEquals( $expected, $response->get_data() );
-		$this->assertEquals( 200, $response->get_status() );
+		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
+		$this->assertEquals( 'Invalid parameter(s): targeted_locations', $response->get_data()['message'] );
+		$this->assertEquals( 400, $response->get_status() );
 	}
 
 	public function test_create_campaign_with_api_exception() {

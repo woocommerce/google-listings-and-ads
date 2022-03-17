@@ -48,6 +48,11 @@ trait CountryCodeTrait {
 		try {
 			// This is used for individual strings and an array of strings.
 			$countries = (array) $countries;
+
+			if ( empty( $countries ) ) {
+				throw new Exception( __( 'No countries provided.', 'google-listings-and-ads' ) );
+			}
+
 			foreach ( $countries as $country ) {
 				$this->validate_country_code( $country );
 				if ( $check_supported_country ) {
@@ -64,7 +69,7 @@ trait CountryCodeTrait {
 				'gla_invalid_country',
 				[
 					'status'  => 400,
-					'country' => $country,
+					'country' => $countries,
 				]
 			);
 		}
