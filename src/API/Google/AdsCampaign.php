@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwa
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\MaximizeConversionValue;
@@ -35,6 +36,7 @@ use Exception;
  *
  * ContainerAware used for:
  * - AdsGroup
+ * - WC
  *
  * @since x.x.x Refactored to use batch requests when operating on campaigns.
  *
@@ -68,6 +70,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected $budget;
 
 	/**
+	 * @var AdsCampaignCriterion $criterion
+	 */
+	protected $criterion;
+
+	/**
 	 * @var GoogleHelper $google_helper
 	 */
 	protected $google_helper;
@@ -75,13 +82,15 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	/**
 	 * AdsCampaign constructor.
 	 *
-	 * @param GoogleAdsClient   $client
-	 * @param AdsCampaignBudget $budget
-	 * @param GoogleHelper      $google_helper
+	 * @param GoogleAdsClient      $client
+	 * @param AdsCampaignBudget    $budget
+	 * @param AdsCampaignCriterion $criterion
+	 * @param GoogleHelper         $google_helper
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, GoogleHelper $google_helper ) {
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper ) {
 		$this->client        = $client;
 		$this->budget        = $budget;
+		$this->criterion     = $criterion;
 		$this->google_helper = $google_helper;
 	}
 
@@ -176,21 +185,37 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function create_campaign( array $params ): array {
 		try {
+			$base_country = $this->container->get( WC::class )->get_base_country();
+
+			$location_ids = array_map(
+				function ( $country_code ) {
+					return $this->google_helper->find_country_id_by_code( $country_code );
+				},
+				$params['targeted_locations']
+			);
+
+			$location_ids = array_filter( $location_ids );
+
 			// Operations must be in a specific order to match the temporary ID's.
 			$operations = array_merge(
 				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
-				[ $this->create_operation( $params['name'], $params['country'] ) ],
+				[ $this->create_operation( $params['name'], $base_country ) ],
 				$this->container->get( AdsGroup::class )->create_operations(
 					$this->temporary_resource_name(),
 					$params['name']
+				),
+				$this->criterion->create_operations(
+					$this->temporary_resource_name(),
+					$location_ids
 				)
 			);
 
 			$campaign_id = $this->mutate( $operations );
 
 			return [
-				'id'     => $campaign_id,
-				'status' => CampaignStatus::ENABLED,
+				'id'      => $campaign_id,
+				'status'  => CampaignStatus::ENABLED,
+				'country' => $base_country,
 			] + $params;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );

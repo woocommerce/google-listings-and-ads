@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
@@ -24,18 +25,21 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
- * @property MockObject|AdsGroup          $ad_group
- * @property MockObject|AdsCampaignBudget $budget
- * @property MockObject|OptionsInterface  $options
- * @property AdsCampaign                  $campaign
- * @property Container                    $container
- * @property GoogleHelper                 $google_helper
+ * @property MockObject|AdsGroup             $ad_group
+ * @property MockObject|AdsCampaignBudget    $budget
+ * @property MockObject|AdsCampaignCriterion $criterion
+ * @property MockObject|OptionsInterface     $options
+ * @property AdsCampaign                     $campaign
+ * @property Container                       $container
+ * @property GoogleHelper                    $google_helper
+ * @property WC                              $wc
  */
 class AdsCampaignTest extends UnitTest {
 
 	use GoogleAdsClientTrait;
 
 	protected const TEST_CAMPAIGN_ID = 1234567890;
+	protected const BASE_COUNTRY     = 'US';
 
 	/**
 	 * Runs before each test is executed.
@@ -45,16 +49,19 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->ad_group = $this->createMock( AdsGroup::class );
-		$this->budget   = $this->createMock( AdsCampaignBudget::class );
-		$this->options  = $this->createMock( OptionsInterface::class );
+		$this->ad_group  = $this->createMock( AdsGroup::class );
+		$this->budget    = $this->createMock( AdsCampaignBudget::class );
+		$this->criterion = new AdsCampaignCriterion();
+		$this->options   = $this->createMock( OptionsInterface::class );
 
-		$this->google_helper = new GoogleHelper( $this->createMock( WC::class ) );
+		$this->wc            = $this->createMock( WC::class );
+		$this->google_helper = new GoogleHelper( $this->wc );
 
 		$this->container = new Container();
 		$this->container->share( AdsGroup::class, $this->ad_group );
+		$this->container->share( WC::class, $this->wc );
 
-		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->google_helper );
+		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper );
 		$this->campaign->set_options_object( $this->options );
 		$this->campaign->set_container( $this->container );
 
@@ -245,14 +252,19 @@ class AdsCampaignTest extends UnitTest {
 		$campaign_data = [
 			'name'    => 'New Campaign',
 			'amount'  => 20,
-			'country' => 'US',
+			'targeted_locations' => ['US', 'GB'],
 		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_base_country' )
+			->willReturn( self::BASE_COUNTRY );
 
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
 			'id'     => self::TEST_CAMPAIGN_ID,
 			'status' => 'enabled',
+			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
 		$this->assertEquals(
@@ -261,11 +273,36 @@ class AdsCampaignTest extends UnitTest {
 		);
 	}
 
-	public function test_create_campaign_exception() {
+	public function test_create_campaign_null_location_id() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => ['Null location'],
+		];
+
+		$this->wc->expects( $this->once() )
+			->method( 'get_base_country' )
+			->willReturn( self::BASE_COUNTRY );
+
+		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
+
+		$expected = [
+			'id'     => self::TEST_CAMPAIGN_ID,
+			'status' => 'enabled',
+			'country' => self::BASE_COUNTRY,
+		] + $campaign_data;
+
+		$this->assertEquals(
+			$expected,
+			$this->campaign->create_campaign( $campaign_data )
+		);
+	}
+
+	public function test_create_campaign_exception_duplicate_campaign_name() {
 		$campaign_data = [
 			'name'    => 'Invalid Campaign',
 			'amount'  => 20,
-			'country' => 'US',
+			'targeted_locations' => ['US', 'GB'],
 		];
 
 		$errors = [
@@ -291,6 +328,45 @@ class AdsCampaignTest extends UnitTest {
 					'message' => 'A campaign with this name already exists',
 					'errors'  => [
 						'DUPLICATE_CAMPAIGN_NAME' => 'Duplicate campaign name',
+						'INVALID_ARGUMENT'        => 'invalid',
+					],
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 400, $e->getCode() );
+		}
+	}
+
+	public function test_create_campaign_exception_invalid_location_id() {
+		$campaign_data = [
+			'name'               => 'New Campaign',
+			'amount'             => 20,
+			'targeted_locations' => ['Invalid location'],
+		];
+
+		$errors = [
+			'errors' => [
+				[
+					'errorCode' => [
+						'campaignCriterionError' => 'INVALID_CRITERION_ID',
+					],
+					'message'   => 'Invalid criterion ID',
+				],
+			],
+		];
+
+		$this->generate_campaign_mutate_mock_exception(
+			new ApiException( 'invalid', 3, 'INVALID_ARGUMENT', [ 'metadata' => [ $errors ] ] )
+		);
+
+		try {
+			$this->campaign->create_campaign( $campaign_data );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error creating campaign: Invalid criterion ID',
+					'errors'  => [
+						'INVALID_CRITERION_ID' => 'Invalid criterion ID',
 						'INVALID_ARGUMENT'        => 'invalid',
 					],
 				],
