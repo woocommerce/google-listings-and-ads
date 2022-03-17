@@ -150,7 +150,7 @@ class Proxy implements OptionsAwareInterface {
 
 			if ( 200 === $result->getStatusCode() && isset( $response['id'] ) ) {
 				$id = absint( $response['id'] );
-				$this->update_merchant_id( $id );
+				$this->container->get( Merchant::class )->update_merchant_id( $id );
 				return $id;
 			}
 
@@ -186,7 +186,7 @@ class Proxy implements OptionsAwareInterface {
 	 * @return int
 	 */
 	public function link_merchant_account( int $id ): int {
-		$this->update_merchant_id( $id );
+		$this->container->get( Merchant::class )->update_merchant_id( $id );
 
 		return $id;
 	}
@@ -477,17 +477,6 @@ class Proxy implements OptionsAwareInterface {
 	protected function get_manager_url( string $name = '' ): string {
 		$url = $this->container->get( 'connect_server_root' ) . 'google/manager';
 		return $name ? trailingslashit( $url ) . $name : $url;
-	}
-
-	/**
-	 * Update the Merchant Center ID to use for requests.
-	 *
-	 * @param int $id  Merchant ID number.
-	 *
-	 * @return bool
-	 */
-	protected function update_merchant_id( int $id ): bool {
-		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
 	}
 
 	/**

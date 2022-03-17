@@ -314,4 +314,15 @@ class Merchant implements OptionsAwareInterface {
 
 		return false;
 	}
+
+	/**
+	 * Update the Merchant Center ID to use for requests.
+	 *
+	 * @param int $id  Merchant ID number.
+	 *
+	 * @return bool
+	 */
+	public function update_merchant_id( int $id ): bool {
+		return $this->options->update( OptionsInterface::MERCHANT_ID, $id );
+	}
 }
