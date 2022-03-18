@@ -90,10 +90,13 @@ const webpackConfig = {
 		},
 	},
 	plugins: [
-		...defaultConfig.plugins.filter(
-			( plugin ) =>
-				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
-		),
+		...defaultConfig.plugins.filter( ( plugin ) => {
+			const filteredPlugins = [
+				'DependencyExtractionWebpackPlugin',
+				'CopyPlugin',
+			];
+			return ! filteredPlugins.includes( plugin.constructor.name );
+		} ),
 		new DependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			externalizedReport: '../../.externalized.json',
