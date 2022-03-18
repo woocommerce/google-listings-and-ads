@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as Ti
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRate;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use Google\Service\ShoppingContent;
 use Google\Service\ShoppingContent\AccountAddress;
@@ -74,8 +75,12 @@ class Settings {
 		$settings = new ShippingSettings();
 		$settings->setAccountId( $this->get_account_id() );
 
+		/** @var WC $wc_proxy */
+		$wc_proxy = $this->container->get( WC::class );
+		$currency = $wc_proxy->get_woocommerce_currency();
+
 		$services = [];
-		foreach ( $rates as ['country' => $country, 'method' => $method, 'currency' => $currency, 'rate' => $rate, 'options' => $options] ) {
+		foreach ( $rates as ['country' => $country, 'method' => $method, 'rate' => $rate, 'options' => $options] ) {
 			// No negative rates.
 			if ( $rate < 0 ) {
 				continue;
@@ -227,7 +232,13 @@ class Settings {
 
 		$rates = [];
 		foreach ( $target_countries as $country ) {
-			$country_rates = $shipping_zone->get_shipping_rates_for_country( $country );
+			$country_rates = $shipping_zone->get_shipping_rates_grouped_by_country( $country );
+			$country_rates = array_map(
+				function( LocationRate $rate ) {
+					return $rate->jsonSerialize();
+				},
+				$country_rates
+			);
 			$rates         = array_merge( $rates, $country_rates );
 		}
 
@@ -360,7 +371,7 @@ class Settings {
 	 * @return Service
 	 */
 	protected function create_conditional_free_shipping_service( string $country, string $currency, float $minimum_order_value ): Service {
-		$service = $this->create_shipping_service( $country, ShippingZone::METHOD_FREE, $currency, 0 );
+		$service = $this->create_shipping_service( $country, 'free_shipping', $currency, 0 );
 
 		// Set the minimum order value to be eligible for free shipping.
 		$service->setMinimumOrderValue(
