@@ -23,6 +23,14 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Middleware
  *
+ * Container used for:
+ * - Ads
+ * - Client
+ * - DateTimeUtility
+ * - GoogleHelper
+ * - Merchant
+ * - WP
+ *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
 class Middleware implements OptionsAwareInterface {
