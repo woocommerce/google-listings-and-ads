@@ -21,7 +21,7 @@ Sync your store with Google to list products for free, run paid ads, and track p
 With Google Listings & Ads:
 - **Connect your store seamlessly** with Google Merchant Center.
 - **Reach online shoppers** with free listings.
-- **Boost store traffic and sales** with Smart Shopping Campaigns.
+- **Boost store traffic and sales** with Performance Max Campaigns.
 
 = Connect your store seamlessly =
 
@@ -39,11 +39,11 @@ Your products can also appear on Google Search, Google Images, and Gmail if you�
 
 = Boost store traffic and sales with Google Ads =
 
-Grow your business with Smart Shopping campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
+Grow your business with Performance Max campaigns. Create an ad campaign to promote your products across Google Search, Shopping, YouTube, Gmail, and the Display Network.
 
 Connect your Google Ads account, choose a budget, and launch your campaign straight from your WooCommerce dashboard. You can also review campaign analytics and access automated reports to easily see how your ads are performing.
 
-*Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
+*Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
 
 = Get $500 in Google Ads credit when you spend your first $500! =
 
@@ -88,24 +88,24 @@ The Google Merchant Center helps you sync your store and product data with Googl
 = Which countries are available for Google Listings & Ads? =
 Learn more about supported countries for Google free listings [here](https://support.google.com/merchants/answer/10033607?hl=en).
 
-Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
+Learn more about supported countries and currencies for Performance Max campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).
 
 = Where will my products appear? =
 If you’re selling in the US, then eligible free listings can appear in search results across Google Search, Google Images, and the Google Shopping tab. If you're selling outside the US, free listings will appear on the Shopping tab.
 
-If you’re running a Smart Shopping campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
+If you’re running a Performance Max campaign, your approved products can appear on Google Search, the Shopping tab, Gmail, Youtube and the Google Display Network.
 
 = Will my deals and promotions display on Google? =
 To show your coupons and promotions on Google Shopping listings, make sure you’re using the latest version of Google Listings & Ads.  When you create or update a coupon in your WordPress dashboard under Marketing > Coupons, you’ll see a Channel Visibility settings box on the right: select “Show coupon on Google” to enable. This is currently available in the US only.
 
-= What are Smart Shopping campaigns? =
-Smart Shopping campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
+= What are Performance Max campaigns? =
+Performance Max campaigns are Google Ads that combine Google’s machine learning with automated bidding and ad placements to maximize conversion value and strategically display your ads to people searching for products like yours, at your given budget. The best part? You only pay when people click on your ad.
 
-= How much do Smart Shopping campaigns cost? =
-Smart Shopping campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
+= How much do Performance Max campaigns cost? =
+Performance Max campaigns are pay-per-click, meaning you only pay when someone clicks on your ads. You can customize your daily budget in Google Listings & Ads but we recommend starting off with the suggested minimum budget, and you can change this budget at any time.
 
-= Can I run both free listings and Smart Shopping campaigns at the same time? =
-Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Smart Shopping campaign.
+= Can I run both free listings and Performance Max campaigns at the same time? =
+Yes, you can run both at the same time, and we recommend it! In the US, advertisers running free listings and ads together have seen an average of over 50% increase in clicks and over 100% increase in impressions on both free listings and ads on the Shopping tab. Your store is automatically opted into free listings automatically and can choose to run a paid Performance Max campaign.
 
 == Changelog ==
 

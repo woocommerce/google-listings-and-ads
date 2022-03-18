@@ -66,7 +66,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 							) }
 							description={ createInterpolateElement(
 								__(
-									'Paid Smart Shopping campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
+									'Paid ad campaigns are automatically optimized for you by Google. <link>See what your ads will look like.</link>',
 									'google-listings-and-ads'
 								),
 								{
