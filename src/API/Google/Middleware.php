@@ -409,7 +409,6 @@ class Middleware implements OptionsAwareInterface {
 	 * @return TosAccepted
 	 */
 	public function check_tos_accepted( string $service ): TosAccepted {
-		// todo: see about using the WooCommerce Services code here
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
@@ -432,7 +431,6 @@ class Middleware implements OptionsAwareInterface {
 	 * @return TosAccepted
 	 */
 	public function mark_tos_accepted( string $service, string $email ): TosAccepted {
-		// todo: see about using WooCommerce Services code here.
 		try {
 			/** @var Client $client */
 			$client = $this->container->get( Client::class );
