@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\ShippingRat
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
 use WP_REST_Request as Request;
 
@@ -37,14 +38,21 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 	protected $shipping_zone;
 
 	/**
+	 * @var WC
+	 */
+	protected $wc;
+
+	/**
 	 * ShippingRateSuggestionsController constructor.
 	 *
 	 * @param RESTServer   $server
 	 * @param ShippingZone $shipping_zone
+	 * @param WC           $wc
 	 */
-	public function __construct( RESTServer $server, ShippingZone $shipping_zone ) {
+	public function __construct( RESTServer $server, ShippingZone $shipping_zone, WC $wc ) {
 		parent::__construct( $server );
 		$this->shipping_zone = $shipping_zone;
+		$this->wc            = $wc;
 	}
 
 	/**
@@ -89,16 +97,22 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 			$country_codes = $request->get_param( 'country_codes' );
 			$rates_output  = [];
 			foreach ( $country_codes as $country_code ) {
-				$suggestions = $this->shipping_zone->get_shipping_rates_for_country( $country_code );
+				$suggestions = $this->shipping_zone->get_shipping_rates_grouped_by_country( $country_code );
 
 				// Prepare the output.
 				$suggestions = array_map(
-					function ( $rate ) use ( $request ) {
-						// Remove the shipping class rates from the response because they are not needed.
-						if ( isset( $rate['options']['shipping_class_rates'] ) ) {
-							unset( $rate['options']['shipping_class_rates'] );
+					function ( $location_rate ) use ( $request ) {
+						$item = $location_rate->jsonSerialize();
+
+						// Add the store currency to each rate.
+						$item['currency'] = $this->wc->get_woocommerce_currency();
+
+						// Set the rate to 0 if it is not set.
+						if ( ! isset( $item['rate'] ) ) {
+							$item['rate'] = 0;
 						}
-						$response = $this->prepare_item_for_response( $rate, $request );
+
+						$response = $this->prepare_item_for_response( $item, $request );
 
 						return $this->prepare_response_for_collection( $response );
 					},
