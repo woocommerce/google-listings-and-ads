@@ -1328,6 +1328,17 @@ class GoogleHelper implements Service {
 	}
 
 	/**
+	 * Check whether the given country code supports regional shipping (i.e. setting up rates for states/provinces and postal codes).
+	 *
+	 * @param string $country_code
+	 *
+	 * @return bool
+	 */
+	public function does_country_support_regional_shipping( string $country_code ): bool {
+		return in_array( $country_code, [ 'AU', 'JP', 'US' ], true );
+	}
+
+	/**
 	 * Returns an array mapping the ID of the Merchant Center supported countries to their respective codes.
 	 *
 	 * @return string[] Array of country codes with location IDs as keys. e.g. [ 2840 => 'US' ]
