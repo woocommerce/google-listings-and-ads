@@ -32,9 +32,6 @@ defined( 'ABSPATH' ) || exit;
  * @method update_failed_delete_attempts( WC_Product $product, int $value )
  * @method delete_failed_delete_attempts( WC_Product $product )
  * @method get_failed_delete_attempts( WC_Product $product ): int|null
- * @method update_failed_update_attempts( WC_Product $product, int $value )
- * @method delete_failed_update_attempts( WC_Product $product )
- * @method get_failed_update_attempts( WC_Product $product ): int|null
  * @method update_failed_sync_attempts( WC_Product $product, int $value )
  * @method delete_failed_sync_attempts( WC_Product $product )
  * @method get_failed_sync_attempts( WC_Product $product ): int|null

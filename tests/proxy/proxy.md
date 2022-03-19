@@ -24,6 +24,10 @@ Modes:
 - `delete_error` will return an internal error when deleting products
 - `update_error` will return an internal error when updating products
 
+```
+PROXY_MODE=<delete_error|update_error> npm run test-proxy
+```
+
 ### Log responses when running the proxy
 This option will allow us to view the responses which are returned from the API, this is useful for generating mocked responses to return.
 

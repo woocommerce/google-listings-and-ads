@@ -395,8 +395,8 @@ class ProductHelper implements Service {
 	 * @param WC_Product $product
 	 */
 	public function increment_failed_update_attempt( WC_Product $product ) {
-		$failed_attempts = $this->meta_handler->get_failed_update_attempts( $product ) ?? 0;
-		$this->meta_handler->update_failed_update_attempts( $product, $failed_attempts + 1 );
+		$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product ) ?? 0;
+		$this->meta_handler->update_failed_sync_attempts( $product, $failed_attempts + 1 );
 	}
 
 	/**
@@ -409,7 +409,7 @@ class ProductHelper implements Service {
 	 * @return boolean
 	 */
 	public function is_update_failed_threshold_reached( WC_Product $product ): bool {
-		$failed_attempts = $this->meta_handler->get_failed_update_attempts( $product ) ?? 0;
+		$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product ) ?? 0;
 		return $failed_attempts >= ProductSyncer::FAILURE_THRESHOLD;
 	}
 

@@ -24,17 +24,17 @@ module.exports.checkRequest = ( request ) => {
 		return require( `./mocks/mc/reports/${ file }${ page }.json` );
 	}
 
-	if (
-		[ 'delete_error', 'update_error' ].includes( config.proxyMode ) &&
-		request.params.path.includes( 'products/batch' )
-	) {
+	if ( request.params.path.includes( 'products/batch' ) ) {
 		const body = JSON.parse( request.payload );
-		if ( body.entries[ 0 ].method === 'delete' ) {
+		if ( 'delete_error' === config.proxyMode && 'delete' === body.entries[ 0 ].method ) {
 			const response = require( './mocks/mc/delete_errors' );
+
 			return response.deleteErrors( body );
 		}
-		if ( body.entries[ 0 ].method === 'insert' ) {
+
+		if ( 'update_error' === config.proxyMode && 'insert' === body.entries[ 0 ].method ) {
 			const response = require( './mocks/mc/update_errors' );
+
 			return response.updateErrors( body );
 		}
 	}
