@@ -119,6 +119,7 @@ class ProductSyncerTest extends ContainerAwareUnitTest {
 			$this->assertNotEmpty( $error_entry->get_errors() );
 			$this->assertNotEmpty( $this->product_meta->get_errors( $wc_product ) );
 			$this->assertEquals( SyncStatus::HAS_ERRORS, $this->product_meta->get_sync_status( $wc_product ) );
+			$this->assertEquals( 1, $this->product_meta->get_failed_sync_attempts( $wc_product ) );
 		}
 	}
 

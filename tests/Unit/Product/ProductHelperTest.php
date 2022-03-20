@@ -934,6 +934,33 @@ class ProductHelperTest extends ContainerAwareUnitTest {
 		$this->assertTrue( $this->product_helper->is_delete_failed_threshold_reached( $product ) );
 	}
 
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @dataProvider return_test_products
+	 */
+	public function test_increment_failed_update_attempt( WC_Product $product ) {
+		$this->product_meta->update_failed_sync_attempts( $product, 99 );
+
+		$this->product_helper->increment_failed_update_attempt( $product );
+
+		$this->assertEquals( 100, $this->product_meta->get_failed_sync_attempts( $product ) );
+	}
+
+	/**
+	 * @param WC_Product $product
+	 *
+	 * @dataProvider return_test_products
+	 */
+	public function test_is_update_failed_threshold_reached( WC_Product $product ) {
+		$this->product_meta->update_failed_sync_attempts( $product, 4 );
+		$this->assertFalse( $this->product_helper->is_update_failed_threshold_reached( $product ) );
+
+		$this->product_helper->increment_failed_update_attempt( $product );
+		$this->assertTrue( $this->product_helper->is_update_failed_threshold_reached( $product ) );
+	}
+
 	/**
 	 * @return array
 	 */

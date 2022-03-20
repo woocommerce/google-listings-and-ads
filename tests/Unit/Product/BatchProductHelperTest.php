@@ -283,28 +283,6 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$this->batch_product_helper->validate_and_generate_update_request_entries( $products );
 	}
 
-	public function test_get_internal_error_products() {
-		$invalid_entries = [
-			new BatchInvalidProductEntry(
-				1,
-				'online:en:US:gla_1',
-				[
-					GoogleProductService::INTERNAL_ERROR_REASON => 'Internal error!',
-					'another-type-of-error'                     => 'Some other error!',
-				]
-			),
-			new BatchInvalidProductEntry(
-				2,
-				'online:en:US:gla_2',
-				[ 'another-type-of-error' => 'Some other error!' ]
-			),
-		];
-
-		$results = $this->batch_product_helper->get_internal_error_products( $invalid_entries );
-
-		$this->assertEqualSets( [ 1 ], $results );
-	}
-
 	public function test_generate_stale_products_request_entries() {
 		$products         = $this->create_and_return_supported_test_products();
 		$stale_product    = $products[0];
