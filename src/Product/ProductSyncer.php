@@ -289,8 +289,7 @@ class ProductSyncer implements Service {
 
 			do_action(
 				'woocommerce_gla_error',
-				/*sprintf( 'Internal API errors while submitting the following products: %s', join( ', ', $error_products ) ),*/
-				sprintf( 'Internal API errors while submitting the following products: %s', print_r( array_keys( $error_products ), true ) ),
+				sprintf( 'Internal API errors while submitting the following products: %s', join( ', ', $error_products ) ),
 				__METHOD__
 			);
 		}
