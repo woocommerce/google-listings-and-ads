@@ -26,13 +26,13 @@ module.exports.checkRequest = ( request ) => {
 
 	if ( request.params.path.includes( 'products/batch' ) ) {
 		const body = JSON.parse( request.payload );
-		if ( 'delete_error' === config.proxyMode && 'delete' === body.entries[ 0 ].method ) {
+		if ( config.proxyMode === 'delete_error' && body.entries[ 0 ].method === 'delete' ) {
 			const response = require( './mocks/mc/delete_errors' );
 
 			return response.deleteErrors( body );
 		}
 
-		if ( 'update_error' === config.proxyMode && 'insert' === body.entries[ 0 ].method ) {
+		if ( config.proxyMode === 'update_error' && body.entries[ 0 ].method === 'insert' ) {
 			const response = require( './mocks/mc/update_errors' );
 
 			return response.updateErrors( body );

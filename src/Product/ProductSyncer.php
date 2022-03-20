@@ -271,7 +271,7 @@ class ProductSyncer implements Service {
 	 * @param BatchInvalidProductEntry[] $invalid_products
 	 */
 	protected function handle_update_errors( array $invalid_products ) {
-		$error_products = array();
+		$error_products = [];
 		foreach ( $invalid_products as $invalid_product ) {
 			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
 				$wc_product_id = $invalid_product->get_wc_product_id();

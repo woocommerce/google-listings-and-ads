@@ -270,7 +270,7 @@ class BatchProductHelper implements Service {
 	 * @return int[] An array of WooCommerce product ids.
 	 */
 	public function get_internal_error_products( array $invalid_products ): array {
-		$internal_error_ids = array();
+		$internal_error_ids = [];
 		foreach ( $invalid_products as $invalid_product ) {
 			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
 				$wc_product_id = $invalid_product->get_wc_product_id();

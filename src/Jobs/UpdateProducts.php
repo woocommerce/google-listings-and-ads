@@ -53,8 +53,8 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 	 *
 	 * @throws JobException If no product is provided as argument. The exception will be logged by ActionScheduler.
 	 */
-	public function schedule( array $args = array() ) {
-		$args = $args[0] ?? array();
+	public function schedule( array $args = [] ) {
+		$args = $args[0] ?? [];
 		$ids  = array_filter( $args, 'is_integer' );
 
 		if ( empty( $ids ) ) {
@@ -62,9 +62,9 @@ class UpdateProducts extends AbstractProductSyncerJob implements StartOnHookInte
 		}
 
 		if ( did_action( 'woocommerce_gla_batch_retry_update_products' ) ) {
-			$this->action_scheduler->schedule_single( gmdate( 'U' ) + 60, $this->get_process_item_hook(), array( $ids ) );
-		} elseif ( $this->can_schedule( array( $ids ) ) ) {
-			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), array( $ids ) );
+			$this->action_scheduler->schedule_single( gmdate( 'U' ) + 60, $this->get_process_item_hook(), [ $ids ] );
+		} elseif ( $this->can_schedule( [ $ids ] ) ) {
+			$this->action_scheduler->schedule_immediate( $this->get_process_item_hook(), [ $ids ] );
 		}
 	}
 
