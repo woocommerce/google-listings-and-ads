@@ -248,13 +248,12 @@ class Admin implements Service, Registerable, Conditional {
 	 * When Gutenberg is not installed or not activated, the react dependency will not have
 	 * the 'wp-react-refresh-entry' handle, so here injects the Fast Refresh scripts we built.
 	 *
+	 * The Fast Refresh also needs the development version of React and ReactDOM.
+	 * They will be replaced if the SCRIPT_DEBUG flag is not enabled.
+	 *
 	 * @param WP_Scripts $scripts WP_Scripts instance.
 	 */
 	private function inject_fast_refresh_for_dev( $scripts ) {
-		if ( ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ) {
-			return;
-		}
-
 		if ( ! file_exists( "{$this->get_root_dir()}/js/build/runtime.js" ) ) {
 			return;
 		}
@@ -263,6 +262,12 @@ class Admin implements Service, Registerable, Conditional {
 
 		if ( ! $react_script ) {
 			return;
+		}
+
+		if ( ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ) {
+			$react_dom_script      = $scripts->query( 'react-dom', 'registered' );
+			$react_dom_script->src = str_replace( '.min', '', $react_dom_script->src );
+			$react_script->src     = str_replace( '.min', '', $react_script->src );
 		}
 
 		$plugin_url = $this->get_plugin_url();
