@@ -2,6 +2,7 @@ const webpack = require( 'webpack' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
 const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const ReactRefreshWebpackPlugin = require( '@pmmmwh/react-refresh-webpack-plugin' );
 const path = require( 'path' );
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -98,6 +99,7 @@ const webpackConfig = {
 			const filteredPlugins = [
 				'DependencyExtractionWebpackPlugin',
 				'CopyPlugin',
+				'ReactRefreshPlugin',
 			];
 			return ! filteredPlugins.includes( plugin.constructor.name );
 		} ),
@@ -123,7 +125,15 @@ const webpackConfig = {
 		new webpack.ProvidePlugin( {
 			process: 'process/browser',
 		} ),
-	],
+		/**
+		 * If the development environment uses HTTPS,
+		 * it will fail when first connecting to webpack dev server,
+		 * so turn off the `overlay` option here.
+		 * Ref: https://github.com/pmmmwh/react-refresh-webpack-plugin/blob/v0.5.4/docs/TROUBLESHOOTING.md#component-not-updating-with-bundle-splitting-techniques
+		 */
+		hasReactFastRefresh &&
+			new ReactRefreshWebpackPlugin( { overlay: false } ),
+	].filter( Boolean ),
 	entry: {
 		index: path.resolve( process.cwd(), 'js/src', 'index.js' ),
 		'task-complete-setup': path.resolve(
