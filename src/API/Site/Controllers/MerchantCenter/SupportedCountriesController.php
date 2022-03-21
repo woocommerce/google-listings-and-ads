@@ -10,6 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
+use WP_REST_Request as Request;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -59,6 +60,7 @@ class SupportedCountriesController extends BaseController {
 					'methods'             => TransportMethods::READABLE,
 					'callback'            => $this->get_countries_callback(),
 					'permission_callback' => $this->get_permission_callback(),
+					'args'                => $this->get_query_args(),
 				],
 			]
 		);
@@ -70,17 +72,19 @@ class SupportedCountriesController extends BaseController {
 	 * @return callable
 	 */
 	protected function get_countries_callback(): callable {
-		return function() {
-			return $this->get_supported_countries();
+		return function( Request $request ) {
+			return $this->get_supported_countries( $request );
 		};
 	}
 
 	/**
 	 * Get the array of supported countries.
 	 *
+	 * @param Request $request
+	 *
 	 * @return array
 	 */
-	protected function get_supported_countries(): array {
+	protected function get_supported_countries( Request $request ): array {
 		$all_countries = $this->wc->get_countries();
 		$mc_countries  = $this->google_helper->get_mc_supported_countries_currencies();
 
@@ -103,7 +107,15 @@ class SupportedCountriesController extends BaseController {
 			}
 		);
 
-		return $supported;
+		$return = [
+			'countries' => $supported,
+		];
+
+		if ( $request->get_param( 'continents' ) ) {
+			$return['continents'] = $this->wc->get_continents();
+		}
+
+		return $return;
 	}
 
 	/**
@@ -115,5 +127,20 @@ class SupportedCountriesController extends BaseController {
 	 */
 	protected function get_schema_title(): string {
 		return 'supported_countries';
+	}
+
+	/**
+	 * Get the arguments for the query endpoint.
+	 *
+	 * @return array
+	 */
+	protected function get_query_args(): array {
+		return [
+			'continents' => [
+				'description'       => __( 'Include continents data if set to true.', 'google-listings-and-ads' ),
+				'type'              => 'boolean',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
+		];
 	}
 }
