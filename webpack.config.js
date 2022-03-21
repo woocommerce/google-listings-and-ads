@@ -1,7 +1,11 @@
 const webpack = require( 'webpack' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
+const { hasArgInCLI } = require( '@wordpress/scripts/utils' );
 const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 const path = require( 'path' );
+
+const isProduction = process.env.NODE_ENV === 'production';
+const hasReactFastRefresh = hasArgInCLI( '--hot' ) && ! isProduction;
 
 const requestToExternal = ( request ) => {
 	// Opt-out WordPress packages.
@@ -99,7 +103,9 @@ const webpackConfig = {
 		} ),
 		new DependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
-			externalizedReport: '../../.externalized.json',
+			externalizedReport: hasReactFastRefresh
+				? false
+				: '../../.externalized.json',
 			requestToExternal,
 			requestToHandle,
 		} ),
@@ -141,6 +147,15 @@ const webpackConfig = {
 		path: path.resolve( process.cwd(), 'js/build' ),
 	},
 };
+
+if ( hasReactFastRefresh ) {
+	webpackConfig.optimization = {
+		...webpackConfig.optimization,
+		// With multiple entries, it will need a webpack runtime to be shared
+		// for all generated chunks when enabling Fast Refresh.
+		runtimeChunk: 'single',
+	};
+}
 
 const sassTest = /\.(sc|sa)ss$/;
 const updatedSassOptions = {

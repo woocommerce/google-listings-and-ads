@@ -84,6 +84,13 @@ class Admin implements Service, Registerable, Conditional {
 				return $this->add_plugin_links( $links );
 			}
 		);
+
+		add_action(
+			'admin_enqueue_scripts',
+			function() {
+				$this->enqueue_webpack_runtime_for_dev();
+			}
+		);
 	}
 
 	/**
@@ -229,5 +236,31 @@ class Admin implements Service, Registerable, Conditional {
 	 */
 	protected function enableReports(): bool {
 		return apply_filters( 'woocommerce_gla_enable_reports', true );
+	}
+
+	/**
+	 * This method is ONLY used during development.
+	 *
+	 * The runtime.js file is created when the front-end is developed in Fast Refresh mode
+	 * and must be loaded together to enable the mode.
+	 */
+	private function enqueue_webpack_runtime_for_dev() {
+		if ( ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ) {
+			return;
+		}
+
+		$file_path = "{$this->get_root_dir()}/js/build/runtime.js";
+
+		if ( ! file_exists( $file_path ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			'gla-webpack-rumtime',
+			"{$this->get_plugin_url()}/js/build/runtime.js",
+			[],
+			(string) filemtime( $file_path ),
+			false
+		);
 	}
 }

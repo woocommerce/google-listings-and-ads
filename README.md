@@ -60,6 +60,9 @@ Now you can build the files using one of these commands:
 -   `npm run build` : Build a production version
 -   `npm run dev` : Build a development version
 -   `npm run start` : Build a development version, watch files for changes
+-   `npm run start:hot` : Build a development version in Fast Refresh mode, watch files for changes. To use this mode, it requires
+    1. The [`SCRIPT_DEBUG`](https://wordpress.org/support/article/debugging-in-wordpress/#script_debug) flag enabled.
+    1. The [Gutenberg](https://wordpress.org/plugins/gutenberg/) plugin activated.
 
 ## Helper Scripts
 
