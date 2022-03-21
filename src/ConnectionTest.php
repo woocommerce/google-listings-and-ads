@@ -397,22 +397,6 @@ class ConnectionTest implements Service, Registerable {
 					<p class="description">For single-step development testing, not used for normal account setup flow.</p>
 				<table class="form-table" role="presentation">
 					<tr>
-						<th>Perform Verification:</th>
-						<td>
-							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-sv-token' ], $url ), 'wcs-google-sv-token' ) ); ?>">Perform Site Verification</a>
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th>Check Verification:</th>
-						<td>
-							<p>
-								<a class="button" href="<?php echo esc_url( wp_nonce_url( add_query_arg( [ 'action' => 'wcs-google-sv-check' ], $url ), 'wcs-google-sv-check' ) ); ?>">Check Site Verification</a>
-							</p>
-						</td>
-					</tr>
-					<tr>
 						<th>Link Site to MCA:</th>
 						<td>
 							<p>
@@ -788,16 +772,6 @@ class ConnectionTest implements Service, Registerable {
 			$connection      = $this->container->get( Connection::class );
 			$response        = $connection->disconnect();
 			$this->response .= $response;
-		}
-
-		if ( 'wcs-google-sv-token' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-token' ) ) {
-			$request = new Request( 'POST', '/wc/gla/site/verify' );
-			$this->send_rest_request( $request );
-		}
-
-		if ( 'wcs-google-sv-check' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-check' ) ) {
-			$request = new Request( 'GET', '/wc/gla/site/verify' );
-			$this->send_rest_request( $request );
 		}
 
 		if ( 'wcs-google-sv-link' === $_GET['action'] && check_admin_referer( 'wcs-google-sv-link' ) ) {

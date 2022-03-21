@@ -46,7 +46,8 @@ if ( defined( 'WC_GLA_REMOVE_ALL_DATA' ) && true === WC_GLA_REMOVE_ALL_DATA ) {
 
 	// drop custom tables
 	foreach ( TableManager::get_all_table_names() as $table ) {
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}" . WC_GLA_SLUG . "_{$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL
+		// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}" . WC_GLA_SLUG . "_{$table}" );
 	}
 
 	// delete options
