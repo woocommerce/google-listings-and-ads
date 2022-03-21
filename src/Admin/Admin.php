@@ -86,10 +86,11 @@ class Admin implements Service, Registerable, Conditional {
 		);
 
 		add_action(
-			'admin_enqueue_scripts',
-			function() {
-				$this->enqueue_webpack_runtime_for_dev();
-			}
+			'wp_default_scripts',
+			function( $scripts ) {
+				$this->inject_fast_refresh_for_dev( $scripts );
+			},
+			20
 		);
 	}
 
@@ -243,24 +244,48 @@ class Admin implements Service, Registerable, Conditional {
 	 *
 	 * The runtime.js file is created when the front-end is developed in Fast Refresh mode
 	 * and must be loaded together to enable the mode.
+	 *
+	 * When Gutenberg is not installed or not activated, the react dependency will not have
+	 * the 'wp-react-refresh-entry' handle, so here injects the Fast Refresh scripts we built.
+	 *
+	 * @param WP_Scripts $scripts WP_Scripts instance.
 	 */
-	private function enqueue_webpack_runtime_for_dev() {
+	private function inject_fast_refresh_for_dev( $scripts ) {
 		if ( ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ) {
 			return;
 		}
 
-		$file_path = "{$this->get_root_dir()}/js/build/runtime.js";
-
-		if ( ! file_exists( $file_path ) ) {
+		if ( ! file_exists( "{$this->get_root_dir()}/js/build/runtime.js" ) ) {
 			return;
 		}
 
-		wp_enqueue_script(
+		$react_script = $scripts->query( 'react', 'registered' );
+
+		if ( ! $react_script ) {
+			return;
+		}
+
+		$plugin_url = $this->get_plugin_url();
+
+		$scripts->add(
 			'gla-webpack-rumtime',
-			"{$this->get_plugin_url()}/js/build/runtime.js",
-			[],
-			(string) filemtime( $file_path ),
-			false
+			"{$plugin_url}/js/build/runtime.js",
+			[]
 		);
+		$react_script->deps[] = 'gla-webpack-rumtime';
+
+		if ( ! in_array( 'wp-react-refresh-entry', $react_script->deps, true ) ) {
+			$scripts->add(
+				'wp-react-refresh-runtime',
+				"{$plugin_url}/js/build-dev/react-refresh-runtime.js",
+				[]
+			);
+			$scripts->add(
+				'wp-react-refresh-entry',
+				"{$plugin_url}/js/build-dev/react-refresh-entry.js",
+				[ 'wp-react-refresh-runtime' ]
+			);
+			$react_script->deps[] = 'wp-react-refresh-entry';
+		}
 	}
 }
