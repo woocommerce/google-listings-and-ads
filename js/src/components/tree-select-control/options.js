@@ -12,6 +12,7 @@ import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE, SPACE } from './constants';
 import Checkbox from '.~/components/tree-select-control/checkbox';
 
 /**
+ * @typedef {import('./').RepositoryOption} RepositoryOption
  * @typedef {import('./').Option} Option
  */
 
@@ -19,7 +20,7 @@ import Checkbox from '.~/components/tree-select-control/checkbox';
  * This component renders a list of options and its children recursively
  *
  * @param {Object} props Component parameters
- * @param {Option[]} props.options List of options to be rendered
+ * @param {RepositoryOption[]} props.options List of options to be rendered
  * @param {string[]} props.value List of selected values
  * @param {string[]} props.nodesExpanded List of expanded nodes.
  * @param {boolean} [props.isFiltered=false] Flag to know if there is a filter applied
@@ -93,6 +94,11 @@ const Options = ( {
 		);
 	};
 
+	/**
+	 * Expands the option
+	 *
+	 * @param {Option} option The option to expand
+	 */
 	const expand = ( option ) => {
 		if (
 			! option.children?.length ||
@@ -111,7 +117,6 @@ const Options = ( {
 	 * @param {Event} event The KeyDown event
 	 * @param {Option} option The option where the event happened
 	 * @param {boolean} isExpanded True if the node is expanded, false otherwise
-	 * @param checked
 	 */
 	const handleKeyDown = ( event, option, isExpanded ) => {
 		if ( event.key === ARROW_RIGHT && ! isExpanded ) {
@@ -149,7 +154,7 @@ const Options = ( {
 							) }
 							tabIndex="-1"
 							onClick={ () => {
-								onOptionFocused( option, idx );
+								onOptionFocused( option );
 								toggleExpanded( option );
 							} }
 						>
@@ -171,7 +176,7 @@ const Options = ( {
 						index={ idx }
 						checked={ checked }
 						onChange={ ( e ) => {
-							onOptionFocused( option, idx );
+							onOptionFocused( option );
 							onChange( e.target.checked, option );
 							if ( e.target.checked ) {
 								expand( option );

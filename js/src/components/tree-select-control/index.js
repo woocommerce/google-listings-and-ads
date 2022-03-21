@@ -35,15 +35,6 @@ import {
 } from '.~/components/tree-select-control/constants';
 
 /**
- * The Option type Object. This is how we send the options to the selector.
- *
- * @typedef {Object} Option
- * @property {string} value The value for the option
- * @property {string} label The label for the option
- * @property {Option[]} [children] The children Option objects
- * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
- * @property {Object} [ref] React Ref associated to the option. This is for system purposes only.
- *
  * Example of Options data structure:
  *   [
        {
@@ -66,7 +57,23 @@ import {
 			],
 		}
      ],
- */
+ **/
+
+/**
+ *
+ * @typedef {Object} Option
+ * @property {string} value The value for the option
+ * @property {string} label The label for the option
+ * @property {Option[]} [children] The children Option objects
+ * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
+ *
+ *
+ *
+ * @typedef {Object} RepositoryData
+ * @property {Object} [ref] React Ref associated to the option. This is for system purposes only.
+ *
+ * @typedef {Option & RepositoryData} RepositoryOption
+ **/
 
 /**
  * Renders a component with a searchable control, tags and a tree selector.
@@ -152,58 +159,58 @@ const TreeSelectControl = ( {
 	}, [ treeOptions ] );
 
 	/**
-	 * Get the parent for an option in the repository
+	 * Get the option parent
 	 *
 	 * @param {Option} option The option to get the parent
 	 * @return {Option} The parent option
 	 */
-	const getParent = ( option ) => {
-		const parent = getOption( option )?.parent;
-		return getOption( parent );
+	const getOptionParent = ( option ) => {
+		const parent = getOptionFromRepository( option )?.parent;
+		return getOptionFromRepository( parent );
 	};
 
 	/**
-	 * Gets the index of the option inside a group
+	 * Get the option index
 	 *
-	 * @param {Option} option The option to get the index
+	 * @param {RepositoryOption} option The option to get the index
 	 * @return {number} The index
 	 */
-	const getIndex = ( option ) => {
+	const getOptionIndex = ( option ) => {
 		return Number( option.ref.current.dataset.index );
 	};
 
 	/**
-	 * Get the last child in an Option recursively
+	 * Get the Option last child recursively
 	 *
 	 * @param {Option} option The option to get the last child
-	 * @return {Option} The last Option child
+	 * @return {Option} The last child in the option
 	 */
 	const getLastChild = ( option ) => {
 		return nodesExpanded.includes( option.value ) ||
 			option.value === ROOT_VALUE
 			? getLastChild( option.children[ option.children.length - 1 ] )
-			: getOption( option );
+			: getOptionFromRepository( option );
 	};
 
 	/**
-	 * Get the previous available node in the tree
+	 * Get the previous available Option in the tree
 	 *
-	 * @param {Object} node The reference node to get the previous element
-	 * @return {Object} The previous node
+	 * @param {Object} option The reference option to get the previous element
+	 * @return {Object} The previous option
 	 */
-	const getPreviousNode = ( node ) => {
-		if ( ! node ) {
+	const getPreviousOption = ( option ) => {
+		if ( ! option ) {
 			return getLastChild(
 				filteredOptions[ filteredOptions.length - 1 ]
 			);
 		}
 
-		const index = getIndex( node );
-		const parent = getParent( node );
+		const index = getOptionIndex( option );
+		const parent = getOptionParent( option );
 
-		// if the node has parent and is the first node in the group, then the previous node is the parent
+		// if the option has parent and is the first option in the group, then the previous option is the parent
 		if ( parent && index === 0 ) {
-			return getOption( parent );
+			return getOptionFromRepository( parent );
 		}
 
 		return parent
@@ -216,46 +223,47 @@ const TreeSelectControl = ( {
 	};
 
 	/**
-	 * Get the next node available in the tree
+	 * Get the next option available in the tree
 	 *
-	 * The function attempts to get the next node in the current level
-	 * if there is no more nodes, it tries to get the next node on the upper level.
+	 * The function attempts to get the next option in the current level
+	 * if there is no more options, it tries to get the next option on the upper level.
 	 *
-	 * @param {Option} option The option to get the next node
-	 * @return {Object} The next available node in the tree
+	 * @param {Option} option TThe reference option to get the next element
+	 * @return {Object} The next available option in the tree
 	 */
-	const getNextNode = ( option ) => {
+	const getNextOption = ( option ) => {
 		if ( ! option ) {
-			return getOption( filteredOptions[ 0 ] );
+			return getOptionFromRepository( filteredOptions[ 0 ] );
 		}
 
 		if (
 			nodesExpanded.includes( focused.value ) ||
 			focused.value === ROOT_VALUE
 		) {
-			return getOption( focused.children[ 0 ] );
+			return getOptionFromRepository( focused.children[ 0 ] );
 		}
 
-		const index = getIndex( option );
-		const parent = getParent( option );
+		const index = getOptionIndex( option );
+		const parent = getOptionParent( option );
 
 		const nextSibling = parent
 			? parent.children[ index + 1 ]
 			: filteredOptions[ ( index + 1 ) % filteredOptions.length ];
 
 		if ( nextSibling ) {
-			return getOption( nextSibling );
+			return getOptionFromRepository( nextSibling );
 		}
 
-		return getNextNode( parent );
+		return getNextOption( parent );
 	};
 
 	/**
-	 * Gets an option from the repository
+	 * Gets an option from the repository using the option key or the option value
 	 *
 	 * @param {Option} option The option to get from the Repository
+	 * @return {RepositoryOption|undefined} The Repository option or undefined if it's not found
 	 */
-	const getOption = useCallback(
+	const getOptionFromRepository = useCallback(
 		( option ) => {
 			if ( ! option ) return;
 			return optionsRepository[ option.key ?? option.value ];
@@ -293,7 +301,7 @@ const TreeSelectControl = ( {
 		};
 
 		const filterOption = ( option ) => {
-			option.ref = getOption( option ).ref;
+			option.ref = getOptionFromRepository( option ).ref;
 
 			if ( hasChildren( option ) ) {
 				option.children = option.children.filter( filterOption );
@@ -318,7 +326,7 @@ const TreeSelectControl = ( {
 		filteredTreeOptions = filteredTreeOptions.filter( filterOption );
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
-	}, [ treeOptions, filter, getOption ] );
+	}, [ treeOptions, filter, getOptionFromRepository ] );
 
 	const onKeyDown = ( event ) => {
 		if ( ESCAPE === event.key ) {
@@ -333,12 +341,12 @@ const TreeSelectControl = ( {
 		if ( inputControlValue ) return;
 
 		if ( ARROW_UP === event.key ) {
-			setFocused( getPreviousNode( focused ) );
+			setFocused( getPreviousOption( focused ) );
 			event.preventDefault();
 		}
 
 		if ( ARROW_DOWN === event.key ) {
-			setFocused( getNextNode( focused ) );
+			setFocused( getNextOption( focused ) );
 			event.preventDefault();
 		}
 
@@ -454,12 +462,8 @@ const TreeSelectControl = ( {
 		setInputControlValue( e.target.value );
 	};
 
-	const handleOptionFocused = ( option, idx ) => {
-		setFocused( {
-			el: option,
-			parent: getParent( option ),
-			idx,
-		} );
+	const handleOptionFocused = ( option ) => {
+		setFocused( option );
 	};
 
 	return (

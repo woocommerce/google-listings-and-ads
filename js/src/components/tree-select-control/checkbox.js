@@ -4,10 +4,14 @@
 import { Icon, check } from '@wordpress/icons';
 
 /**
+ * @typedef {import('./').RepositoryOption} RepositoryOption
+ */
+
+/**
  * Renders a custom Checkbox
  *
  * @param {Object} props Component properties
- * @param {Option} props.option Option for the checkbox
+ * @param {RepositoryOption} props.option Option for the checkbox
  * @param {number} props.index The position in the tree
  * @param {string} props.className The className for the component
  * @param {boolean} props.checked Defines if the checkbox is checked
