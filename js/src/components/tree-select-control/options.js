@@ -93,6 +93,15 @@ const Options = ( {
 		);
 	};
 
+	const expand = ( option ) => {
+		if (
+			! option.children?.length ||
+			nodesExpanded.includes( option.value )
+		)
+			return;
+		onNodesExpandedChange( [ ...nodesExpanded, option.value ] );
+	};
+
 	/**
 	 * Alters the node with some keys for accessibility
 	 * ArrowRight - Expands the node
@@ -102,6 +111,7 @@ const Options = ( {
 	 * @param {Event} event The KeyDown event
 	 * @param {Option} option The option where the event happened
 	 * @param {boolean} isExpanded True if the node is expanded, false otherwise
+	 * @param checked
 	 */
 	const handleKeyDown = ( event, option, isExpanded ) => {
 		if ( event.key === ARROW_RIGHT && ! isExpanded ) {
@@ -163,6 +173,9 @@ const Options = ( {
 						onChange={ ( e ) => {
 							onOptionFocused( option, idx );
 							onChange( e.target.checked, option );
+							if ( e.target.checked ) {
+								expand( option );
+							}
 						} }
 						onKeyDown={ ( e ) => {
 							handleKeyDown( e, option, isExpanded );

@@ -173,40 +173,81 @@ const TreeSelectControl = ( {
 	};
 
 	/**
-	 * Get the last child in an Option
+	 * Get the last child in an Option recursively
 	 *
 	 * @param {Option} option The option to get the last child
 	 * @return {Option} The last Option child
 	 */
 	const getLastChild = ( option ) => {
-		return getOption( option.children[ option.children.length - 1 ] );
+		return nodesExpanded.includes( option.value ) ||
+			option.value === ROOT_VALUE
+			? getLastChild( option.children[ option.children.length - 1 ] )
+			: getOption( option );
 	};
 
 	/**
-	 * Get the next sibling in the tree
+	 * Get the previous available node in the tree
 	 *
-	 * @param {Option} option The option to get the sibling
-	 * @return {Option} The next sibling
+	 * @param {Object} node The reference node to get the previous element
+	 * @return {Object} The previous node
 	 */
-	const getSibling = ( option ) => {
-		if ( ! option ) return;
+	const getPreviousNode = ( node ) => {
+		if ( ! node ) {
+			return getLastChild(
+				filteredOptions[ filteredOptions.length - 1 ]
+			);
+		}
 
+		const index = getIndex( node );
+		const parent = getParent( node );
+
+		// if the node has parent and is the first node in the group, then the previous node is the parent
+		if ( parent && index === 0 ) {
+			return getOption( parent );
+		}
+
+		return parent
+			? getLastChild( parent.children[ index - 1 ] )
+			: getLastChild(
+					filteredOptions[
+						index > 0 ? index - 1 : filteredOptions.length - 1
+					]
+			  );
+	};
+
+	/**
+	 * Get the next node available in the tree
+	 *
+	 * The function attempts to get the next node in the current level
+	 * if there is no more nodes, it tries to get the next node on the upper level.
+	 *
+	 * @param {Option} option The option to get the next node
+	 * @return {Object} The next available node in the tree
+	 */
+	const getNextNode = ( option ) => {
+		if ( ! option ) {
+			return getOption( filteredOptions[ 0 ] );
+		}
+
+		if (
+			nodesExpanded.includes( focused.value ) ||
+			focused.value === ROOT_VALUE
+		) {
+			return getOption( focused.children[ 0 ] );
+		}
+
+		const index = getIndex( option );
 		const parent = getParent( option );
 
-		if ( ! parent ) {
-			return;
-		}
-		const index = getIndex( option );
-		const child = parent.children[ index + 1 ];
+		const nextSibling = parent
+			? parent.children[ index + 1 ]
+			: filteredOptions[ ( index + 1 ) % filteredOptions.length ];
 
-		if ( child ) {
-			return {
-				el: getOption( child ),
-				parent,
-				idx: index + 1,
-			};
+		if ( nextSibling ) {
+			return getOption( nextSibling );
 		}
-		return child || getSibling( parent );
+
+		return getNextNode( parent );
 	};
 
 	/**
@@ -237,6 +278,9 @@ const TreeSelectControl = ( {
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
+
+			if ( ! filter ) return optionLabel;
+
 			return (
 				<span>
 					<span>{ optionLabel.substring( 0, matchPosition ) }</span>
@@ -289,75 +333,12 @@ const TreeSelectControl = ( {
 		if ( inputControlValue ) return;
 
 		if ( ARROW_UP === event.key ) {
-			const parent = getParent( focused.el );
-			const child = parent?.children[ focused.idx - 1 ];
-
-			if ( ! parent ) {
-				const el = root
-					? getLastChild( root )
-					: filteredOptions[ filteredOptions.length - 1 ];
-
-				setFocused( {
-					el,
-					parent: getParent( el ),
-					idx: getIndex( el ),
-				} );
-			} else if ( child ) {
-				const el = nodesExpanded.includes( child.value )
-					? getLastChild( child )
-					: getOption( child );
-
-				setFocused( {
-					el,
-					parent: getParent( el ),
-					idx: getIndex( el ),
-				} );
-			} else {
-				setFocused( {
-					el: parent,
-					parent: getParent( parent ),
-					idx: getIndex( parent ),
-				} );
-			}
+			setFocused( getPreviousNode( focused ) );
 			event.preventDefault();
 		}
 
 		if ( ARROW_DOWN === event.key ) {
-			const rootFocus = {
-				el: filteredOptions[ 0 ],
-				parent: null,
-				idx: 0,
-			};
-
-			if ( focused === null ) {
-				setFocused( rootFocus );
-			} else if (
-				nodesExpanded.includes( focused.el.value ) ||
-				focused.el.value === ROOT_VALUE
-			) {
-				const child = focused.el.children[ 0 ];
-				setFocused( {
-					el: getOption( child ),
-					parent: getParent( child ),
-					idx: 0,
-				} );
-			} else {
-				const newIndex = getIndex( focused.el ) + 1;
-				const parent = getParent( focused.el );
-				const child = parent?.children[ newIndex ];
-				const sibling = ! child && getSibling( parent );
-
-				if ( ! child && ! sibling ) {
-					setFocused( rootFocus );
-					return;
-				}
-
-				setFocused( {
-					el: child ? getOption( child ) : sibling?.el,
-					parent: child ? parent : sibling?.parent,
-					idx: child ? newIndex : sibling?.idx,
-				} );
-			}
+			setFocused( getNextNode( focused ) );
 			event.preventDefault();
 		}
 
@@ -368,8 +349,8 @@ const TreeSelectControl = ( {
 	};
 
 	useEffect( () => {
-		if ( focused?.el ) {
-			focused.el.ref.current.focus();
+		if ( focused ) {
+			focused.ref.current.focus();
 		}
 	}, [ focused ] );
 
@@ -426,10 +407,6 @@ const TreeSelectControl = ( {
 	 */
 	const handleParentChange = ( checked, option ) => {
 		const newValue = [ ...value ];
-
-		if ( checked && ! nodesExpanded.includes( option.value ) ) {
-			setNodesExpanded( [ ...nodesExpanded, option.value ] );
-		}
 
 		function loadChildren( parent ) {
 			if ( ! parent.children ) {
