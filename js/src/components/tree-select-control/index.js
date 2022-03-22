@@ -228,7 +228,7 @@ const TreeSelectControl = ( {
 	 * The function attempts to get the next option in the current level
 	 * if there is no more options, it tries to get the next option on the upper level.
 	 *
-	 * @param {Option} option TThe reference option to get the next element
+	 * @param {Option} option The reference option to get the next element
 	 * @return {Object} The next available option in the tree
 	 */
 	const getNextOption = ( option ) => {
