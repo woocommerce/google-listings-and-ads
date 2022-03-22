@@ -68,14 +68,24 @@ const ComponentTest = () => {
 						{ value: 'NY', label: 'New York' },
 						{ value: 'TX', label: 'Texas' },
 						{ value: 'GE', label: 'Georgia' },
+						{ value: 'TX2', label: 'Tex 123' },
 					],
 				},
-				{ value: 'CA', label: 'Canada' },
+				{
+					value: 'CA',
+					label: 'Canada',
+					children: [ { value: 'ZZZ', label: 'Texxxxxx' } ],
+				},
 			],
 		},
 		{
+			value: 'XXX',
+			label: 'KKK',
+			children: [ { value: 'VVVV', label: 'Texxxx' } ],
+		},
+		{
 			value: '',
-			label: 'I dont know yet',
+			label: 'Latex',
 		},
 	];
 

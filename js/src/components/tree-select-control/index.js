@@ -229,32 +229,70 @@ const TreeSelectControl = ( {
 	 * if there is no more options, it tries to get the next option on the upper level.
 	 *
 	 * @param {Option} option TThe reference option to get the next element
+	 * @param increaseLevel
+	 * @param position
+	 * @param offset
+	 * @param checkExpanded
 	 * @return {Object} The next available option in the tree
 	 */
-	const getNextOption = ( option ) => {
+	const getNextOption = ( option, offset = 0, checkExpanded = true ) => {
+		// if no option is provided means we are focused in the search control.
+		// Hence the element to focus is the first
 		if ( ! option ) {
 			return getOptionFromRepository( filteredOptions[ 0 ] );
 		}
 
+		// if the option is expanded (or is the root)...
 		if (
-			nodesExpanded.includes( focused.value ) ||
-			focused.value === ROOT_VALUE
+			checkExpanded &&
+			( nodesExpanded.includes( option.value ) ||
+				option.value === ROOT_VALUE ||
+				( hasChildren( option ) && !! filter ) )
 		) {
-			return getOptionFromRepository( focused.children[ 0 ] );
+			// if there are still elements to check in the children
+			if ( offset < option.children.length ) {
+				const nextEl = getOptionFromRepository(
+					option.children[ offset ]
+				);
+
+				// if element is not visible, continue checking the next
+				if ( ! nextEl.ref.current ) {
+					return getNextOption( option, offset + 1 );
+				}
+
+				return nextEl;
+			}
 		}
 
-		const index = getOptionIndex( option );
 		const parent = getOptionParent( option );
 
-		const nextSibling = parent
-			? parent.children[ index + 1 ]
-			: filteredOptions[ ( index + 1 ) % filteredOptions.length ];
+		if ( parent ) {
+			const index = parent.children.findIndex(
+				( el ) => el.value === option.value
+			);
 
-		if ( nextSibling ) {
-			return getOptionFromRepository( nextSibling );
+			const nextEl = getOptionFromRepository(
+				parent.children[ index + offset + 1 ]
+			);
+
+			if ( ! nextEl ) {
+				return getNextOption( parent, 0, false );
+			}
+
+			// if element is not visible, continue checking the next
+			if ( ! nextEl.ref.current ) {
+				return getNextOption( option, offset + 1, checkExpanded );
+			}
+
+			return nextEl;
 		}
 
-		return getNextOption( parent );
+		return getOptionFromRepository(
+			filteredOptions[
+				( getOptionIndex( option ) + offset + 1 ) %
+					filteredOptions.length
+			]
+		);
 	};
 
 	/**
@@ -338,8 +376,6 @@ const TreeSelectControl = ( {
 			event.preventDefault();
 		}
 
-		if ( inputControlValue ) return;
-
 		if ( ARROW_UP === event.key ) {
 			setFocused( getPreviousOption( focused ) );
 			event.preventDefault();
@@ -351,6 +387,7 @@ const TreeSelectControl = ( {
 		}
 
 		if ( BACKSPACE === event.key ) {
+			if ( inputControlValue ) return;
 			onChange( value.slice( 0, -1 ) );
 			event.preventDefault();
 		}
