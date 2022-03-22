@@ -80,8 +80,8 @@ function install_woocommerce() {
 	WC_Install::install();
 
 	// Initialize the WC API extensions.
-	\Automattic\WooCommerce\Admin\Install::create_tables();
-	\Automattic\WooCommerce\Admin\Install::create_events();
+	\Automattic\WooCommerce\Internal\Admin\Install::create_tables();
+	\Automattic\WooCommerce\Internal\Admin\Install::create_events();
 
 	// Reload capabilities after install, see https://core.trac.wordpress.org/ticket/28374.
 	$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
