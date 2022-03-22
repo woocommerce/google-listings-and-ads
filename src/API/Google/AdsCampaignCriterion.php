@@ -67,7 +67,6 @@ class AdsCampaignCriterion implements OptionsAwareInterface {
 		$results = ( new AdsCampaignCriterionQuery() )
 			->set_client( $this->client, $this->options->get_ads_id() )
 			->where( 'campaign_criterion.campaign', $campaign_resource_name )
-			->where( 'campaign_criterion.negative', 'false', '=' )
 			->where( 'campaign_criterion.status', 'REMOVED', '!=' )
 			->where( 'campaign_criterion.location.geo_target_constant', '', 'IS NOT NULL' )
 			->get_results();
