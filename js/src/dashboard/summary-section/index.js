@@ -33,6 +33,7 @@ const FreePerformanceCard = () => {
 			) }
 			loaded={ loaded }
 			data={ data }
+			campaignType={ REPORT_SOURCE_FREE }
 		>
 			{ ( loadedData ) => [
 				<SummaryNumber
@@ -64,6 +65,7 @@ const PaidPerformanceCard = () => {
 			title={ paidPerformanceTitle }
 			loaded={ loaded }
 			data={ data }
+			campaignType={ REPORT_SOURCE_PAID }
 		>
 			{ ( loadedData ) => [
 				<SummaryNumber

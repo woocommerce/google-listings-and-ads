@@ -203,7 +203,13 @@ class Merchant implements OptionsAwareInterface {
 		$id = $id ?: $this->options->get_merchant_id();
 
 		try {
-			$mc_account_status = $this->service->accountstatuses->get( $id, $id );
+			$mc_account_status = $this->service->accountstatuses->get(
+				$id,
+				$id,
+				[
+					'destinations' => 'Shopping',
+				]
+			);
 		} catch ( GoogleException $e ) {
 			do_action( 'woocommerce_gla_mc_client_exception', $e, __METHOD__ );
 			throw new Exception( __( 'Unable to retrieve Merchant Center account status.', 'google-listings-and-ads' ), $e->getCode() );
