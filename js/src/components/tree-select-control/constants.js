@@ -2,7 +2,6 @@ export const ROOT_VALUE = '__WC_TREE_SELECT_COMPONENT_ROOT__';
 export const BACKSPACE = 'Backspace';
 export const ESCAPE = 'Escape';
 export const ENTER = 'Enter';
-export const SPACE = ' ';
 export const ARROW_UP = 'ArrowUp';
 export const ARROW_DOWN = 'ArrowDown';
 export const ARROW_LEFT = 'ArrowLeft';

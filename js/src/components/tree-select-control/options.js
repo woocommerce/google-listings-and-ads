@@ -95,20 +95,6 @@ const Options = ( {
 	};
 
 	/**
-	 * Expands the option
-	 *
-	 * @param {Option} option The option to expand
-	 */
-	const expand = ( option ) => {
-		if (
-			! option.children?.length ||
-			nodesExpanded.includes( option.value )
-		)
-			return;
-		onNodesExpandedChange( [ ...nodesExpanded, option.value ] );
-	};
-
-	/**
 	 * Alters the node with some keys for accessibility
 	 * ArrowRight - Expands the node
 	 * ArrowLeft - Collapses the node
@@ -123,8 +109,6 @@ const Options = ( {
 			toggleExpanded( option );
 		} else if ( event.key === ARROW_LEFT && isExpanded ) {
 			toggleExpanded( option );
-		} else if ( event.key === SPACE ) {
-			onChange( event.target.checked, option );
 		}
 	};
 
@@ -178,9 +162,6 @@ const Options = ( {
 						onChange={ ( e ) => {
 							onOptionFocused( option );
 							onChange( e.target.checked, option );
-							if ( e.target.checked ) {
-								expand( option );
-							}
 						} }
 						onKeyDown={ ( e ) => {
 							handleKeyDown( e, option, isExpanded );

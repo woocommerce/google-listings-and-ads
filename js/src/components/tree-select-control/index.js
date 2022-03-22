@@ -505,6 +505,10 @@ const TreeSelectControl = ( {
 	const handleParentChange = ( checked, option ) => {
 		const newValue = [ ...value ];
 
+		if ( checked && ! nodesExpanded.includes( option.value ) ) {
+			setNodesExpanded( [ ...nodesExpanded, option.value ] );
+		}
+
 		function loadChildren( parent ) {
 			if ( ! parent.children ) {
 				return;
