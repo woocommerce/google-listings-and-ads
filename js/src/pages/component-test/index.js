@@ -68,7 +68,6 @@ const ComponentTest = () => {
 						{ value: 'NY', label: 'New York' },
 						{ value: 'TX', label: 'Texas' },
 						{ value: 'GE', label: 'Georgia' },
-						{ value: 'TX2', label: 'Tex 123' },
 					],
 				},
 				{
@@ -76,14 +75,6 @@ const ComponentTest = () => {
 					label: 'Canada',
 				},
 			],
-		},
-		{
-			value: 'XXX',
-			label: 'KKK',
-		},
-		{
-			value: '',
-			label: 'Latex',
 		},
 	];
 
