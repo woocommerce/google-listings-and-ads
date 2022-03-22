@@ -97,7 +97,7 @@ const faqItems = [
 							link: (
 								<AppDocumentationLink
 									context="faqs"
-									linkId="supported-countries-and-currencies-for-smart-shopping-campaigns"
+									linkId="supported-countries-and-currencies-for-performance-max-campaigns"
 									href="https://support.google.com/merchants/answer/160637#countrytable"
 								/>
 							),
@@ -148,7 +148,7 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'what-are-smart-shopping-campaigns',
+		trackId: 'what-are-performance-max-campaigns',
 		question: __(
 			'What are Performance Max campaigns?',
 			'google-listings-and-ads'
@@ -159,7 +159,7 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'how-much-do-smart-shopping-campaigns-cost',
+		trackId: 'how-much-do-performance-max-campaigns-cost',
 		question: __(
 			'How much do Performance Max campaigns cost?',
 			'google-listings-and-ads'
@@ -170,7 +170,7 @@ const faqItems = [
 		),
 	},
 	{
-		trackId: 'can-i-run-both-free-listings-and-smart-shopping-campaigns',
+		trackId: 'can-i-run-both-free-listings-and-performance-max-campaigns',
 		question: __(
 			'Can I run both free listings and Performance Max campaigns at the same time?',
 			'google-listings-and-ads'

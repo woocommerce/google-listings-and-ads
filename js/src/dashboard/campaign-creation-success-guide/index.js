@@ -101,7 +101,7 @@ export default function CampaignCreationSuccessGuide( {
 						link: (
 							<ContentLink
 								href="https://support.google.com/google-ads/answer/10724817"
-								context="campaign-creation-smart-shopping"
+								context="campaign-creation-performance-max"
 							/>
 						),
 					}
