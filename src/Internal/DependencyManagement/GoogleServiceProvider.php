@@ -23,6 +23,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
+use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\Options;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\TransientsInterface;
@@ -35,7 +36,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\Exception\Requ
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\GuzzleHttp\HandlerStack;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Argument\RawArgument;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Definition\Definition;
-use Exception;
 use Google\Client;
 use Google\Service\ShoppingContent;
 use Google\Service\SiteVerification as SiteVerificationService;
@@ -345,6 +345,32 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 	protected function set_jetpack_connected( bool $connected ) {
 		/** @var Options $options */
 		$options = $this->getLeagueContainer()->get( OptionsInterface::class );
+
+		// Save previous connected status before updating.
+		$previous_connected = boolval( $options->get( OptionsInterface::JETPACK_CONNECTED ) );
+
 		$options->update( OptionsInterface::JETPACK_CONNECTED, $connected );
+
+		if ( $previous_connected !== $connected ) {
+			$this->jetpack_connected_change( $connected );
+		}
+	}
+
+	/**
+	 * Handle the reconnect notification when the Jetpack connection status changes.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param boolean $connected
+	 */
+	protected function jetpack_connected_change( bool $connected ) {
+		/** @var ReconnectWordPress $note */
+		$note = $this->getLeagueContainer()->get( ReconnectWordPress::class );
+
+		if ( $connected ) {
+			$note->delete();
+		} else {
+			$note->get_entry()->save();
+		}
 	}
 }
