@@ -8,7 +8,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
-import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE, SPACE } from './constants';
+import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE } from './constants';
 import Checkbox from '.~/components/tree-select-control/checkbox';
 
 /**
