@@ -3,7 +3,14 @@
  */
 import { cloneDeep } from 'lodash';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useMemo, useState, useRef } from '@wordpress/element';
+import {
+	useEffect,
+	useMemo,
+	useState,
+	useRef,
+	createRef,
+	useCallback,
+} from '@wordpress/element';
 import classnames from 'classnames';
 // eslint-disable-next-line import/no-extraneous-dependencies,@woocommerce/dependency-group,@wordpress/no-unsafe-wp-apis
 import {
@@ -19,20 +26,15 @@ import Control from './control';
 import Options from './options';
 import './index.scss';
 import {
+	ARROW_DOWN,
+	ARROW_UP,
 	BACKSPACE,
+	ENTER,
 	ESCAPE,
 	ROOT_VALUE,
 } from '.~/components/tree-select-control/constants';
 
 /**
- * The Option type Object. This is how we send the options to the selector.
- *
- * @typedef {Object} Option
- * @property {string} value The value for the option
- * @property {string} label The label for the option
- * @property {Option[]} [children] The children Option objects
- * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
- *
  * Example of Options data structure:
  *   [
        {
@@ -55,7 +57,23 @@ import {
 			],
 		}
      ],
- */
+ **/
+
+/**
+ *
+ * @typedef {Object} Option
+ * @property {string} value The value for the option
+ * @property {string} label The label for the option
+ * @property {Option[]} [children] The children Option objects
+ * @property {string} [key] Optional unique key for the Option. It will fallback to the value property if not defined
+ *
+ *
+ *
+ * @typedef {Object} RepositoryData
+ * @property {Object} [ref] React Ref associated to the option. This is for system purposes only.
+ *
+ * @typedef {Option & RepositoryData} RepositoryOption
+ **/
 
 /**
  * Renders a component with a searchable control, tags and a tree selector.
@@ -92,21 +110,20 @@ const TreeSelectControl = ( {
 	const [ nodesExpanded, setNodesExpanded ] = useState( [] );
 	const [ inputControlValue, setInputControlValue ] = useState( '' );
 	const [ filteredOptions, setFilteredOptions ] = useState( [] );
+	const [ focused, setFocused ] = useState( null );
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
-
-	const treeOptions = useIsEqualRefValue(
+	const root =
 		selectAllLabel !== false
-			? [
-					{
-						label: selectAllLabel,
-						value: ROOT_VALUE,
-						children: options,
-					},
-			  ]
-			: options
-	);
+			? {
+					label: selectAllLabel,
+					value: ROOT_VALUE,
+					children: options,
+			  }
+			: null;
+
+	const treeOptions = useIsEqualRefValue( root ? [ root ] : options );
 
 	const focusOutside = useFocusOutside( () => {
 		setTreeVisible( false );
@@ -115,6 +132,144 @@ const TreeSelectControl = ( {
 	const hasChildren = ( option ) => option.children?.length;
 	const filterQuery = inputControlValue.trim().toLowerCase();
 	const filter = filterQuery.length >= 3 ? filterQuery : '';
+
+	/**
+	 * Optimizes the performance for getting the tags info
+	 */
+	const optionsRepository = useMemo( () => {
+		const repository = {};
+
+		filteredOptionsCache.current = []; // clear cache if options change
+
+		function loadOption( option, parent ) {
+			option.children?.forEach( ( child ) => {
+				loadOption( child, option );
+			} );
+
+			repository[ option.key ?? option.value ] = {
+				...option,
+				parent,
+				ref: createRef(),
+			};
+		}
+
+		treeOptions.forEach( ( option ) => loadOption( option ) );
+
+		return repository;
+	}, [ treeOptions ] );
+
+	/**
+	 * Get the option parent
+	 *
+	 * @param {Option} option The option to get the parent
+	 * @return {Option} The parent option
+	 */
+	const getOptionParent = ( option ) => {
+		const parent = getOptionFromRepository( option )?.parent;
+		return getOptionFromRepository( parent );
+	};
+
+	/**
+	 * Get the option index
+	 *
+	 * @param {RepositoryOption} option The option to get the index
+	 * @return {number} The index
+	 */
+	const getOptionIndex = ( option ) => {
+		return Number( option.ref.current.dataset.index );
+	};
+
+	/**
+	 * Get the Option last child recursively
+	 *
+	 * @param {Option} option The option to get the last child
+	 * @return {Option} The last child in the option
+	 */
+	const getLastChild = ( option ) => {
+		return nodesExpanded.includes( option.value ) ||
+			option.value === ROOT_VALUE
+			? getLastChild( option.children[ option.children.length - 1 ] )
+			: getOptionFromRepository( option );
+	};
+
+	/**
+	 * Get the previous available Option in the tree
+	 *
+	 * @param {Object} option The reference option to get the previous element
+	 * @return {Object} The previous option
+	 */
+	const getPreviousOption = ( option ) => {
+		if ( ! option ) {
+			return getLastChild(
+				filteredOptions[ filteredOptions.length - 1 ]
+			);
+		}
+
+		const index = getOptionIndex( option );
+		const parent = getOptionParent( option );
+
+		// if the option has parent and is the first option in the group, then the previous option is the parent
+		if ( parent && index === 0 ) {
+			return getOptionFromRepository( parent );
+		}
+
+		return parent
+			? getLastChild( parent.children[ index - 1 ] )
+			: getLastChild(
+					filteredOptions[
+						index > 0 ? index - 1 : filteredOptions.length - 1
+					]
+			  );
+	};
+
+	/**
+	 * Get the next option available in the tree
+	 *
+	 * The function attempts to get the next option in the current level
+	 * if there is no more options, it tries to get the next option on the upper level.
+	 *
+	 * @param {Option} option The reference option to get the next element
+	 * @return {Object} The next available option in the tree
+	 */
+	const getNextOption = ( option ) => {
+		if ( ! option ) {
+			return getOptionFromRepository( filteredOptions[ 0 ] );
+		}
+
+		if (
+			nodesExpanded.includes( focused.value ) ||
+			focused.value === ROOT_VALUE
+		) {
+			return getOptionFromRepository( focused.children[ 0 ] );
+		}
+
+		const index = getOptionIndex( option );
+		const parent = getOptionParent( option );
+
+		const nextSibling = parent
+			? parent.children[ index + 1 ]
+			: filteredOptions[ ( index + 1 ) % filteredOptions.length ];
+
+		if ( nextSibling ) {
+			return getOptionFromRepository( nextSibling );
+		}
+
+		return getNextOption( parent );
+	};
+
+	/**
+	 * Gets an option from the repository using the option key or the option value
+	 *
+	 * @param {Option} option The option to get from the Repository
+	 * @return {RepositoryOption|undefined} The Repository option or undefined if it's not found
+	 */
+	const getOptionFromRepository = useCallback(
+		( option ) => {
+			if ( ! option ) return;
+			return optionsRepository[ option.key ?? option.value ];
+		},
+		[ optionsRepository ]
+	);
 
 	/**
 	 * Perform the search query filter in the Tree options
@@ -131,6 +286,9 @@ const TreeSelectControl = ( {
 
 		const highlightOptionLabel = ( optionLabel, matchPosition ) => {
 			const matchLength = matchPosition + filter.length;
+
+			if ( ! filter ) return optionLabel;
+
 			return (
 				<span>
 					<span>{ optionLabel.substring( 0, matchPosition ) }</span>
@@ -143,6 +301,8 @@ const TreeSelectControl = ( {
 		};
 
 		const filterOption = ( option ) => {
+			option.ref = getOptionFromRepository( option ).ref;
+
 			if ( hasChildren( option ) ) {
 				option.children = option.children.filter( filterOption );
 				return !! option.children.length;
@@ -163,52 +323,44 @@ const TreeSelectControl = ( {
 
 		let filteredTreeOptions = cloneDeep( treeOptions );
 
-		if ( filter ) {
-			filteredTreeOptions = filteredTreeOptions.filter( filterOption );
-		}
-
+		filteredTreeOptions = filteredTreeOptions.filter( filterOption );
 		filteredOptionsCache.current[ filter ] = filteredTreeOptions;
 		setFilteredOptions( filteredTreeOptions );
-	}, [ treeOptions, filter ] );
+	}, [ treeOptions, filter, getOptionFromRepository ] );
 
 	const onKeyDown = ( event ) => {
+		if ( ESCAPE === event.key ) {
+			setTreeVisible( false );
+		}
+
+		if ( ENTER === event.key ) {
+			setTreeVisible( true );
+			event.preventDefault();
+		}
+
 		if ( inputControlValue ) return;
+
+		if ( ARROW_UP === event.key ) {
+			setFocused( getPreviousOption( focused ) );
+			event.preventDefault();
+		}
+
+		if ( ARROW_DOWN === event.key ) {
+			setFocused( getNextOption( focused ) );
+			event.preventDefault();
+		}
 
 		if ( BACKSPACE === event.key ) {
 			onChange( value.slice( 0, -1 ) );
 			event.preventDefault();
 		}
-
-		if ( ESCAPE === event.key ) {
-			setTreeVisible( false );
-			event.preventDefault();
-		}
 	};
 
-	/**
-	 * Optimizes the performance for getting the tags info
-	 *
-	 * @see getTags
-	 */
-	const optionsRepository = useMemo( () => {
-		const repository = {};
-
-		filteredOptionsCache.current = []; // clear cache if options change
-
-		function loadOption( option ) {
-			if ( ! hasChildren( option ) ) {
-				repository[ option.value ] = { ...option };
-			} else {
-				option.children.forEach( ( child ) => {
-					loadOption( child );
-				} );
-			}
+	useEffect( () => {
+		if ( focused ) {
+			focused.ref.current.focus();
 		}
-
-		treeOptions.forEach( ( option ) => loadOption( option ) );
-
-		return repository;
-	}, [ treeOptions ] );
+	}, [ focused ] );
 
 	/**
 	 * Get formatted Tags from the selected values.
@@ -264,10 +416,6 @@ const TreeSelectControl = ( {
 	const handleParentChange = ( checked, option ) => {
 		const newValue = [ ...value ];
 
-		if ( checked && ! nodesExpanded.includes( option.value ) ) {
-			setNodesExpanded( [ ...nodesExpanded, option.value ] );
-		}
-
 		function loadChildren( parent ) {
 			if ( ! parent.children ) {
 				return;
@@ -314,6 +462,10 @@ const TreeSelectControl = ( {
 		setInputControlValue( e.target.value );
 	};
 
+	const handleOptionFocused = ( option ) => {
+		setFocused( option );
+	};
+
 	return (
 		// eslint-disable-next-line jsx-a11y/no-static-element-interactions
 		<div
@@ -341,6 +493,7 @@ const TreeSelectControl = ( {
 				tags={ getTags() }
 				isExpanded={ treeVisible }
 				onFocus={ () => {
+					setFocused( null );
 					setTreeVisible( true );
 				} }
 				instanceId={ instanceId }
@@ -363,6 +516,7 @@ const TreeSelectControl = ( {
 						onChange={ handleOptionsChange }
 						nodesExpanded={ nodesExpanded }
 						onNodesExpandedChange={ setNodesExpanded }
+						onOptionFocused={ handleOptionFocused }
 					/>
 				</div>
 			) }
