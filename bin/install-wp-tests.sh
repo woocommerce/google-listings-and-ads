@@ -192,7 +192,8 @@ install_db() {
 }
 
 install_wc() {
-  if [ ! -f "${WC_DIR}/version-${WC_VERSION}" ]; then
+  WC_VERSION_FILE="${WC_DIR}/version-"$(echo $WC_VERSION | sed -e "s/\//-/")
+  if [ ! -f "$WC_VERSION_FILE" ]; then
     # set up testing suite
     rm -rf "$WC_DIR"
     mkdir -p "$WC_DIR"
@@ -202,7 +203,7 @@ install_wc() {
     rm -rf "${WC_TMPDIR}"
     git clone --quiet --depth=1 --branch="${WC_VERSION}" https://github.com/woocommerce/woocommerce.git "${WC_TMPDIR}"
     mv "${WC_TMPDIR}"/plugins/woocommerce/* "$WC_DIR"
-	touch "${WC_DIR}/version-${WC_VERSION}"
+	touch "$WC_VERSION_FILE"
 
     # Install composer for WooCommerce
     cd "${WC_DIR}"
