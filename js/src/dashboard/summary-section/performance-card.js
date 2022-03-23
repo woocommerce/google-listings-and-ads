@@ -5,7 +5,6 @@ import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import SummaryCard from './summary-card';
 import PerformanceCardNoData from '.~/dashboard/summary-section/performance-card-no-data';
 
 /**
@@ -13,17 +12,16 @@ import PerformanceCardNoData from '.~/dashboard/summary-section/performance-card
  */
 
 /**
- * Returns a Card with performance matrics according to the given data.
+ * Returns a Card's content with performance matrics according to the given data.
  *
  * @param {Object} props React props
- * @param {string} props.title Card titile.
  * @param {boolean} props.loaded Was the data loaded?
  * @param {Object | null} props.data Data to be forwarded to `children` once available.
  * @param {(availableData: Object) => Array<SummaryNumber>} props.children Data to be forwarded to `children` once available.
  * @param {string} props.campaignType The Campaign type (free|paid) used to define text an links when no data
- * @return {SummaryCard} SummaryCard with Metrics data, preloader or error message.
+ * @return {JSX.Element} Metrics data, preloader or error message.
  */
-const PerformanceCard = ( { title, loaded, data, children, campaignType } ) => {
+const PerformanceCard = ( { loaded, data, children, campaignType } ) => {
 	let content;
 	if ( ! loaded ) {
 		content = <SummaryListPlaceholder numberOfItems={ 2 } />;
@@ -39,7 +37,7 @@ const PerformanceCard = ( { title, loaded, data, children, campaignType } ) => {
 		);
 	}
 
-	return <SummaryCard title={ title }>{ content }</SummaryCard>;
+	return content;
 };
 
 export default PerformanceCard;

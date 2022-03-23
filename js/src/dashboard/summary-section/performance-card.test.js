@@ -12,7 +12,6 @@ describe( 'Performance Card', () => {
 	it( 'Shows Campaign No Data for Free Campaigns', () => {
 		const { queryByText } = render(
 			<PerformanceCard
-				title="test"
 				loaded={ true }
 				data={ false }
 				campaignType="free"
@@ -36,7 +35,6 @@ describe( 'Performance Card', () => {
 	it( 'Shows Campaign No Data for Paid Campaigns', () => {
 		const { queryByText } = render(
 			<PerformanceCard
-				title="test"
 				loaded={ true }
 				data={ false }
 				campaignType="paid"
