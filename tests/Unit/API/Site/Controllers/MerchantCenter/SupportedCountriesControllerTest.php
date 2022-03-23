@@ -44,7 +44,7 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 			'CN' => 'China',
 		];
 
-		$mc_supported_currencies_data = [
+		$mc_supported_countries_currencies_data = [
 			'US' => 'USD',
 			'GB' => 'GBP',
 			'TW' => 'TWD',
@@ -73,7 +73,7 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 
 		$this->google_helper->expects( $this->once() )
 			->method( 'get_mc_supported_countries_currencies' )
-			->willReturn( $mc_supported_currencies_data );
+			->willReturn( $mc_supported_countries_currencies_data );
 
 		$response = $this->do_request( self::ROUTE, 'GET' );
 
@@ -93,7 +93,13 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 			'CN' => 'China',
 		];
 
-		$mc_supported_currencies_data = [
+		$mc_supported_countries = [
+			'US',
+			'GB',
+			'TW',
+		];
+
+		$mc_supported_countries_currencies_data = [
 			'US' => 'USD',
 			'GB' => 'GBP',
 			'TW' => 'TWD',
@@ -117,11 +123,12 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 				],
 			],
 			'AS' => [
-				'name' => 'ASIA',
+				'name' => 'Asia',
 				'countries' => [
 					'JP',
 					'TW',
 					'SG',
+					'CN',
 				],
 			],
 		];
@@ -141,7 +148,26 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 					'currency' => 'TWD',
 				],
 			],
-			'continents' => $continents_data,
+			'continents' => [
+				'EU' => [
+					'name' => 'Europe',
+					'countries' => [
+						'GB',
+					],
+				],
+				'NA' => [
+					'name' => 'North America',
+					'countries' => [
+						'US',
+					],
+				],
+				'AS' => [
+					'name' => 'Asia',
+					'countries' => [
+						'TW',
+					],
+				],
+			],
 		];
 
 		$this->wc->expects( $this->once() )
@@ -153,8 +179,12 @@ class SupportedCountriesControllerTest extends RESTControllerUnitTest {
 			->willReturn( $continents_data );
 
 		$this->google_helper->expects( $this->once() )
+			->method( 'get_mc_supported_countries' )
+			->willReturn( $mc_supported_countries );
+
+		$this->google_helper->expects( $this->once() )
 			->method( 'get_mc_supported_countries_currencies' )
-			->willReturn( $mc_supported_currencies_data );
+			->willReturn( $mc_supported_countries_currencies_data );
 
 		$response = $this->do_request( self::ROUTE, 'GET', $countries_params );
 

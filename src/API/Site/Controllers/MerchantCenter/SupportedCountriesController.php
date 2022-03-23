@@ -73,18 +73,24 @@ class SupportedCountriesController extends BaseController {
 	 */
 	protected function get_countries_callback(): callable {
 		return function( Request $request ) {
-			return $this->get_supported_countries( $request );
+			$return = [
+				'countries' => $this->get_supported_countries( $request ),
+			];
+
+			if ( $request->get_param( 'continents' ) ) {
+				$return['continents'] = $this->get_supported_continents();
+			}
+
+			return $return;
 		};
 	}
 
 	/**
 	 * Get the array of supported countries.
 	 *
-	 * @param Request $request
-	 *
 	 * @return array
 	 */
-	protected function get_supported_countries( Request $request ): array {
+	protected function get_supported_countries(): array {
 		$all_countries = $this->wc->get_countries();
 		$mc_countries  = $this->google_helper->get_mc_supported_countries_currencies();
 
@@ -107,15 +113,36 @@ class SupportedCountriesController extends BaseController {
 			}
 		);
 
-		$return = [
-			'countries' => $supported,
-		];
+		return $supported;
+	}
 
-		if ( $request->get_param( 'continents' ) ) {
-			$return['continents'] = $this->wc->get_continents();
+	/**
+	 * Get the array of supported continents.
+	 *
+	 * @return array
+	 */
+	protected function get_supported_continents(): array {
+		$all_continents = $this->wc->get_continents();
+		$mc_countries   = $this->google_helper->get_mc_supported_countries();
+
+		// TODO: Create a shared function to get supported countries from a continent
+		// in GoogleHelper afer the below PR is merged into develop.
+		// https://github.com/woocommerce/google-listings-and-ads/pull/1341
+		foreach ( $all_continents as $continent_code => $continent ) {
+			$countries_of_continent           = $continent['countries'];
+			$supported_countries_of_continent = array_intersect(
+				$countries_of_continent,
+				$mc_countries
+			);
+
+			if ( empty( $supported_countries_of_continent ) ) {
+				unset( $all_continents[ $continent_code ] );
+			} else {
+				$all_continents[ $continent_code ]['countries'] = array_values( $supported_countries_of_continent );
+			}
 		}
 
-		return $return;
+		return $all_continents;
 	}
 
 	/**
