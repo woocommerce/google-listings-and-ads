@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use RuntimeException;
 
 defined( 'ABSPATH' ) || exit;
@@ -14,8 +13,6 @@ defined( 'ABSPATH' ) || exit;
  * @package AutomatticWooCommerceGoogleListingsAndAdsInternalRequirements
  */
 abstract class RequirementValidator implements RequirementValidatorInterface {
-
-	use PluginHelper;
 
 	/**
 	 * @var RequirementValidator[]
