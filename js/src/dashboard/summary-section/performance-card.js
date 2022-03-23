@@ -5,7 +5,7 @@ import { SummaryList, SummaryListPlaceholder } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import PerformanceCardNoData from '.~/dashboard/summary-section/performance-card-no-data';
+import AppButton from '.~/components/app-button';
 
 /**
  * @typedef {import('@woocommerce/components').SummaryNumber} SummaryNumber
@@ -18,15 +18,32 @@ import PerformanceCardNoData from '.~/dashboard/summary-section/performance-card
  * @param {boolean} props.loaded Was the data loaded?
  * @param {Object | null} props.data Data to be forwarded to `children` once available.
  * @param {(availableData: Object) => Array<SummaryNumber>} props.children Data to be forwarded to `children` once available.
- * @param {string} props.campaignType The Campaign type (free|paid) used to define text an links when no data
+ * @param {{body: string, buttonLabel: string, eventName: string, link: string}} props.noDataMessage Content of the message to be shown if there is no data loaded.
  * @return {JSX.Element} Metrics data, preloader or error message.
  */
-const PerformanceCard = ( { loaded, data, children, campaignType } ) => {
+const PerformanceCard = ( { loaded, data, children, noDataMessage } ) => {
 	let content;
 	if ( ! loaded ) {
 		content = <SummaryListPlaceholder numberOfItems={ 2 } />;
 	} else if ( ! data ) {
-		content = <PerformanceCardNoData campaignType={ campaignType } />;
+		content = (
+			<div className="gla-summary-card__body">
+				<p>{ noDataMessage.body }</p>
+				<AppButton
+					eventName={ noDataMessage.eventName }
+					eventProps={ {
+						context: 'dashboard',
+						href: noDataMessage.link,
+					} }
+					href={ noDataMessage.link }
+					target="_blank"
+					isSmall
+					isSecondary
+				>
+					{ noDataMessage.buttonLabel }
+				</AppButton>
+			</div>
+		);
 	} else {
 		content = (
 			<SummaryList>

@@ -9,47 +9,25 @@ import { render } from '@testing-library/react';
 import PerformanceCard from '.~/dashboard/summary-section/performance-card';
 
 describe( 'Performance Card', () => {
-	it( 'Shows Campaign No Data for Free Campaigns', () => {
+	it( 'Renders given no data message', () => {
 		const { queryByText } = render(
 			<PerformanceCard
 				loaded={ true }
 				data={ false }
-				campaignType="free"
+				noDataMessage={ {
+					body: 'Body Text',
+					link: 'https://example.com/link',
+					eventName: 'tracking_event',
+					buttonLabel: 'Click Me!',
+				} }
 			/>
 		);
 
-		expect(
-			queryByText(
-				"We're having trouble loading this data. Try again later, or track your performance in Google Merchant Center."
-			)
-		).toBeTruthy();
+		expect( queryByText( 'Body Text' ) ).toBeTruthy();
 
-		const link = queryByText( 'Open Google Merchant Center' );
+		const link = queryByText( 'Click Me!' );
 
 		expect( link ).toBeTruthy();
-		expect( link.href ).toBe(
-			'https://merchants.google.com/mc/reporting/dashboard'
-		);
-	} );
-
-	it( 'Shows Campaign No Data for Paid Campaigns', () => {
-		const { queryByText } = render(
-			<PerformanceCard
-				loaded={ true }
-				data={ false }
-				campaignType="paid"
-			/>
-		);
-
-		expect(
-			queryByText(
-				"We're having trouble loading this data. Try again later, or track your performance in Google Ads."
-			)
-		).toBeTruthy();
-
-		const link = queryByText( 'Open Google Ads' );
-
-		expect( link ).toBeTruthy();
-		expect( link.href ).toBe( 'https://ads.google.com/' );
+		expect( link.href ).toBe( 'https://example.com/link' );
 	} );
 } );
