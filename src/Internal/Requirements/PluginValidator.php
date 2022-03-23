@@ -37,7 +37,7 @@ class PluginValidator {
 				$validated = false;
 			}
 		}
-
 		return $validated;
 	}
+
 }

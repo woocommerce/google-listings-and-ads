@@ -22,6 +22,7 @@ use Automattic\Jetpack\Config;
 use Automattic\WooCommerce\GoogleListingsAndAds\Container;
 use Automattic\WooCommerce\GoogleListingsAndAds\Autoloader;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\PluginValidator;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Requirements\VersionValidator;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginFactory;
 use Psr\Container\ContainerInterface;
 
@@ -34,6 +35,11 @@ define( 'WC_GLA_MIN_WC_VER', '5.8' );
 // Load and initialize the autoloader.
 require_once __DIR__ . '/src/Autoloader.php';
 if ( ! Autoloader::init() ) {
+	return;
+}
+
+// Validate the required versions of everything our plugin depends on.
+if ( ! VersionValidator::instance()->validate() ) {
 	return;
 }
 

@@ -18,9 +18,7 @@ use Psr\Container\ContainerInterface;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure
  */
-final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin {
-
-	use OptionsAwareTrait;
+final class GoogleListingsAndAdsPlugin implements Plugin {
 
 	/**
 	 * The hook for registering our plugin's services.
@@ -46,7 +44,6 @@ final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin 
 	 */
 	public function __construct( ContainerInterface $container ) {
 		$this->container = $container;
-		$this->set_options_object( new Options() );
 	}
 
 	/**
@@ -57,12 +54,19 @@ final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin 
 	public function activate(): void {
 		$this->maybe_register_services();
 
+		// Do not run activate if service registration failed.
+		if ( empty( $this->registered_services ) ) {
+			return;
+		}
+
 		foreach ( $this->registered_services as $service ) {
 			if ( $service instanceof Activateable ) {
 				$service->activate();
 			}
 		}
 
+		// Update the plugin activated flag.
+		$this->container->get( OptionsInterface::class )->update( OptionsInterface::PLUGIN_ACTIVATED, true );
 		flush_rewrite_rules();
 
 	}
@@ -81,6 +85,8 @@ final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin 
 			}
 		}
 
+		// Update the plugin activated flag.
+		$this->container->get( OptionsInterface::class )->update( OptionsInterface::PLUGIN_ACTIVATED, false );
 		flush_rewrite_rules();
 	}
 
@@ -95,10 +101,6 @@ final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin 
 			function() {
 				$this->maybe_register_services();
 
-				// Check if activation source is set.
-				if ( ! $this->options->get( OptionsInterface::TRACKED_ACTIVATION_SOURCE ) ) {
-					$this->container->get( ActivatedEvents::class )->maybe_track_activation_source();
-				}
 			},
 			20
 		);
@@ -112,6 +114,13 @@ final class GoogleListingsAndAdsPlugin implements OptionsAwareInterface, Plugin 
 				if ( $this->container->has( JobInitializer::class ) ) {
 					$this->container->get( JobInitializer::class )->register();
 				}
+
+				// Check if plugin requirements are valid and run activation.
+				if ( PluginValidator::validate()
+					&& ! $this->container->get( OptionsInterface::class )->get( OptionsInterface::PLUGIN_ACTIVATED ) ) {
+					$this->activate();
+				}
+
 			}
 		);
 
