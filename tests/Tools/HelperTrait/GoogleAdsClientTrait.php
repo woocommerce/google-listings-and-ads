@@ -8,6 +8,9 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
+use Google\Ads\GoogleAds\V9\Resources\AdGroup;
+use Google\Ads\GoogleAds\V9\Resources\AdGroupAd;
+use Google\Ads\GoogleAds\V9\Resources\AdGroupCriterion;
 use Google\Ads\GoogleAds\V9\Resources\AssetGroup;
 use Google\Ads\GoogleAds\V9\Resources\AssetGroupListingGroupFilter;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
@@ -145,6 +148,47 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsGroupQuery response.
+	 *
+	 * @param string $ad_group_resource_name
+	 * @param string $ad_group_ad_resource_name
+	 * @param string $listing_group_resource_name
+	 */
+	protected function generate_ads_group_query_mock(
+		string $ad_group_resource_name,
+		string $ad_group_ad_resource_name,
+		string $listing_group_resource_name
+	) {
+		$ad_group = $this->createMock( AdGroup::class );
+		$ad_group->method( 'getResourceName' )->willReturn( $ad_group_resource_name );
+
+		$ad_group_ad = $this->createMock( AdGroupAd::class );
+		$ad_group_ad->method( 'getResourceName' )->willReturn( $ad_group_ad_resource_name );
+
+		$listing_group = $this->createMock( AdGroupCriterion::class );
+		$listing_group->method( 'getResourceName' )->willReturn( $listing_group_resource_name );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->expects( $this->exactly( 3 ) )
+			->method( 'iterateAllElements' )
+			->will(
+				$this->onConsecutiveCalls(
+					[
+						( new GoogleAdsRow )->setAdGroup( $ad_group ),
+					],
+					[
+						( new GoogleAdsRow )->setAdGroupAd( $ad_group_ad ),
+					],
+					[
+						( new GoogleAdsRow )->setAdGroupCriterion( $listing_group ),
+					]
+				)
+			);
+
+		$this->service_client->method( 'search' )->willReturn( $list_response );
+	}
+
+	/**
 	 * Generates a mocked AdsAssetGroupQuery response.
 	 *
 	 * @param string $asset_group_resource_name
@@ -216,6 +260,34 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_campaign_budget_resource_name( int $budget_id ) {
 		return ResourceNames::forCampaignBudget( $this->ads_id, $budget_id );
+	}
+
+	/**
+	 * Generates an ad group resource name.
+	 *
+	 * @param int $ad_group_id
+	 */
+	protected function generate_ad_group_resource_name( int $ad_group_id ) {
+		return ResourceNames::forAdGroup( $this->ads_id, $ad_group_id );
+	}
+
+	/**
+	 * Generates an ad group ad resource name.
+	 *
+	 * @param int $ad_group_ad_id
+	 */
+	protected function generate_ad_group_ad_resource_name( int $ad_group_id, int $ad_group_ad_id ) {
+		return ResourceNames::forAdGroupAd( $this->ads_id, $ad_group_id, $ad_group_ad_id );
+	}
+
+	/**
+	 * Generates an ad group criterion resource name.
+	 *
+	 * @param int $ad_group_id
+	 * @param int $listing_group_id
+	 */
+	protected function generate_ad_group_criterion_resource_name( int $ad_group_id, int $listing_group_id ) {
+		return ResourceNames::forAdGroupCriterion( $this->ads_id, $ad_group_id, $listing_group_id );
 	}
 
 	/**

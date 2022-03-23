@@ -29,6 +29,9 @@ defined( 'ABSPATH' ) || exit;
  * @method update_errors( WC_Product $product, array $value )
  * @method delete_errors( WC_Product $product )
  * @method get_errors( WC_Product $product ): array|null
+ * @method update_failed_delete_attempts( WC_Product $product, int $value )
+ * @method delete_failed_delete_attempts( WC_Product $product )
+ * @method get_failed_delete_attempts( WC_Product $product ): int|null
  * @method update_failed_sync_attempts( WC_Product $product, int $value )
  * @method delete_failed_sync_attempts( WC_Product $product )
  * @method get_failed_sync_attempts( WC_Product $product ): int|null
@@ -46,24 +49,26 @@ class ProductMetaHandler implements Service, Registerable {
 
 	use PluginHelper;
 
-	public const KEY_SYNCED_AT            = 'synced_at';
-	public const KEY_GOOGLE_IDS           = 'google_ids';
-	public const KEY_VISIBILITY           = 'visibility';
-	public const KEY_ERRORS               = 'errors';
-	public const KEY_FAILED_SYNC_ATTEMPTS = 'failed_sync_attempts';
-	public const KEY_SYNC_FAILED_AT       = 'sync_failed_at';
-	public const KEY_SYNC_STATUS          = 'sync_status';
-	public const KEY_MC_STATUS            = 'mc_status';
+	public const KEY_SYNCED_AT              = 'synced_at';
+	public const KEY_GOOGLE_IDS             = 'google_ids';
+	public const KEY_VISIBILITY             = 'visibility';
+	public const KEY_ERRORS                 = 'errors';
+	public const KEY_FAILED_DELETE_ATTEMPTS = 'failed_delete_attempts';
+	public const KEY_FAILED_SYNC_ATTEMPTS   = 'failed_sync_attempts';
+	public const KEY_SYNC_FAILED_AT         = 'sync_failed_at';
+	public const KEY_SYNC_STATUS            = 'sync_status';
+	public const KEY_MC_STATUS              = 'mc_status';
 
 	protected const TYPES = [
-		self::KEY_SYNCED_AT            => 'int',
-		self::KEY_GOOGLE_IDS           => 'array',
-		self::KEY_VISIBILITY           => 'string',
-		self::KEY_ERRORS               => 'array',
-		self::KEY_FAILED_SYNC_ATTEMPTS => 'int',
-		self::KEY_SYNC_FAILED_AT       => 'int',
-		self::KEY_SYNC_STATUS          => 'string',
-		self::KEY_MC_STATUS            => 'string',
+		self::KEY_SYNCED_AT              => 'int',
+		self::KEY_GOOGLE_IDS             => 'array',
+		self::KEY_VISIBILITY             => 'string',
+		self::KEY_ERRORS                 => 'array',
+		self::KEY_FAILED_DELETE_ATTEMPTS => 'int',
+		self::KEY_FAILED_SYNC_ATTEMPTS   => 'int',
+		self::KEY_SYNC_FAILED_AT         => 'int',
+		self::KEY_SYNC_STATUS            => 'string',
+		self::KEY_MC_STATUS              => 'string',
 	];
 
 	/**

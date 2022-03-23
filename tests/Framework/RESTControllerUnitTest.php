@@ -81,6 +81,7 @@ abstract class RESTControllerUnitTest extends UnitTest {
 	 */
 	protected function do_request( string $endpoint, string $type = 'GET', array $params = [] ): object {
 		$request = new Request( $type, $endpoint );
+
 		if ( 'GET' === $type ) {
 			$request->set_query_params( $params );
 		} else {
@@ -88,6 +89,7 @@ abstract class RESTControllerUnitTest extends UnitTest {
 			$request->set_header( 'content-type', 'application/json' );
 			$request->set_body( wp_json_encode( $params ) );
 		}
+
 		return $this->server->dispatch_request( $request );
 	}
 

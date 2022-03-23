@@ -7,12 +7,12 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Vendor\League\Container\Container;
 use Google\ApiCore\ApiException;
-use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
@@ -91,11 +91,18 @@ class AdsCampaignTest extends UnitTest {
 	public function test_get_campaigns_exception() {
 		$this->generate_ads_query_mock_exception( new ApiException( 'unavailable', 14, 'UNAVAILABLE' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Error retrieving campaigns: unavailable' );
-		$this->expectExceptionCode( 503 );
-
-		$this->campaign->get_campaigns();
+		try {
+			$this->campaign->get_campaigns();
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error retrieving campaigns: unavailable',
+					'errors'  => [ 'UNAVAILABLE' => 'unavailable' ],
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 503, $e->getCode() );
+		}
 	}
 
 	public function test_get_campaign() {
@@ -115,11 +122,19 @@ class AdsCampaignTest extends UnitTest {
 	public function test_get_campaign_exception() {
 		$this->generate_ads_query_mock_exception( new ApiException( 'not found', 5, 'NOT_FOUND' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Error retrieving campaign: not found' );
-		$this->expectExceptionCode( 404 );
-
-		$this->campaign->get_campaign( self::TEST_CAMPAIGN_ID );
+		try {
+			$this->campaign->get_campaign( self::TEST_CAMPAIGN_ID );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error retrieving campaign: not found',
+					'errors'  => [ 'NOT_FOUND' => 'not found' ],
+					'id'      => self::TEST_CAMPAIGN_ID,
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 404, $e->getCode() );
+		}
 	}
 
 	public function test_create_campaign() {
@@ -156,6 +171,7 @@ class AdsCampaignTest extends UnitTest {
 					'errorCode' => [
 						'campaignError' => 'DUPLICATE_CAMPAIGN_NAME',
 					],
+					'message'   => 'Duplicate campaign name',
 				],
 			],
 		];
@@ -164,11 +180,21 @@ class AdsCampaignTest extends UnitTest {
 			new ApiException( 'invalid', 3, 'INVALID_ARGUMENT', [ 'metadata' => [ $errors ] ] )
 		);
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'A campaign with this name already exists' );
-		$this->expectExceptionCode( 400 );
-
-		$this->campaign->create_campaign( $campaign_data );
+		try {
+			$this->campaign->create_campaign( $campaign_data );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'A campaign with this name already exists',
+					'errors'  => [
+						'DUPLICATE_CAMPAIGN_NAME' => 'Duplicate campaign name',
+						'INVALID_ARGUMENT'        => 'invalid',
+					],
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 400, $e->getCode() );
+		}
 	}
 
 	public function test_edit_campaign() {
@@ -192,11 +218,19 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->generate_campaign_mutate_mock_exception( new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' ) );
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Error editing campaign: invalid' );
-		$this->expectExceptionCode( 400 );
-
-		$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, $campaign_data );
+		try {
+			$this->campaign->edit_campaign( self::TEST_CAMPAIGN_ID, $campaign_data );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'Error editing campaign: invalid',
+					'errors'  => [ 'INVALID_ARGUMENT' => 'invalid' ],
+					'id'      => self::TEST_CAMPAIGN_ID,
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 400, $e->getCode() );
+		}
 	}
 
 	public function test_delete_campaign() {
@@ -215,6 +249,7 @@ class AdsCampaignTest extends UnitTest {
 					'errorCode' => [
 						'campaignError' => 'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE',
 					],
+					'message'   => 'Campaign already deleted',
 				],
 			],
 		];
@@ -223,11 +258,22 @@ class AdsCampaignTest extends UnitTest {
 			new ApiException( 'invalid', 3, 'INVALID_ARGUMENT', [ 'metadata' => [ $errors ] ] )
 		);
 
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'This campaign has already been deleted' );
-		$this->expectExceptionCode( 400 );
-
-		$this->campaign->delete_campaign( self::TEST_CAMPAIGN_ID );
+		try {
+			$this->campaign->delete_campaign( self::TEST_CAMPAIGN_ID );
+		} catch ( ExceptionWithResponseData $e ) {
+			$this->assertEquals(
+				[
+					'message' => 'This campaign has already been deleted',
+					'errors'  => [
+						'OPERATION_NOT_PERMITTED_FOR_REMOVED_RESOURCE' => 'Campaign already deleted',
+						'INVALID_ARGUMENT'                             => 'invalid',
+					],
+					'id'      => self::TEST_CAMPAIGN_ID,
+				],
+				$e->get_response_data( true )
+			);
+			$this->assertEquals( 400, $e->getCode() );
+		}
 	}
 
 }

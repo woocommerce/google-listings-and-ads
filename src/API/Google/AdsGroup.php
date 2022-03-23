@@ -31,6 +31,14 @@ class AdsGroup implements OptionsAwareInterface {
 	use OptionsAwareTrait;
 
 	/**
+	 * Temporary ID to use within a batch job.
+	 * A negative number which is unique for all the created resources.
+	 *
+	 * @var int
+	 */
+	protected const TEMPORARY_ID = -3;
+
+	/**
 	 * The Google Ads Client.
 	 *
 	 * @var GoogleAdsClient
