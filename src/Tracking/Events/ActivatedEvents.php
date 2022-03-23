@@ -4,10 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Activateable;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
-use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 
 /**
  * This class adds actions to track when the extension is activated.
