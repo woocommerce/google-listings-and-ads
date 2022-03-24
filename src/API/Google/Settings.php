@@ -91,7 +91,7 @@ class Settings {
 			if ( isset( $options['free_shipping_threshold'] ) ) {
 				$minimum_order_value = (float) $options['free_shipping_threshold'];
 
-				if ( 0 !== $rate ) {
+				if ( $rate > 0 ) {
 					// Add a conditional free-shipping service if the current rate is not free.
 					$services[] = $this->create_conditional_free_shipping_service( $country, $currency, $minimum_order_value );
 				} else {
