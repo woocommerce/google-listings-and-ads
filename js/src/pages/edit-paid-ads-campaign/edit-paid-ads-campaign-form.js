@@ -13,7 +13,7 @@ import StepContent from '.~/components/stepper/step-content';
 import StepContentHeader from '.~/components/stepper/step-content-header';
 import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
-import EditPaidAdsCampaignFormContent from './edit-paid-ads-campaign-form-content';
+import EditPaidAdsCampaignFormContent from '.~/components/paid-ads/edit-paid-ads-campaign-form-content';
 import AppButton from '.~/components/app-button';
 import { useAppDispatch } from '.~/data';
 import { getDashboardUrl } from '.~/utils/urls';
@@ -21,6 +21,7 @@ import validateForm from '.~/utils/paid-ads/validateForm';
 
 const EditPaidAdsCampaignForm = ( props ) => {
 	const { campaign } = props;
+	const { amount, allowMultiple, displayCountries: countryCodes } = campaign;
 	const [ loading, setLoading ] = useState( false );
 	const { updateAdsCampaign } = useAppDispatch();
 
@@ -43,11 +44,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 
 	return (
 		<Form
-			initialValues={ {
-				id: campaign.id,
-				amount: campaign.amount,
-				country: [ campaign.country ],
-			} }
+			initialValues={ { amount, countryCodes } }
 			validate={ handleValidate }
 			onSubmit={ handleSubmit }
 		>
@@ -82,6 +79,7 @@ const EditPaidAdsCampaignForm = ( props ) => {
 						/>
 						<EditPaidAdsCampaignFormContent
 							formProps={ formProps }
+							allowMultiple={ allowMultiple }
 						/>
 						<StepContentFooter>
 							<AppButton

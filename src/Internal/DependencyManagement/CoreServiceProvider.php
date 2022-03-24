@@ -33,6 +33,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\DB\TableManager;
 use Automattic\WooCommerce\GoogleListingsAndAds\Event\ClearProductStatsCache;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GlobalSiteTag;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\SiteVerificationMeta;
@@ -204,8 +205,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			 ->inflector( OptionsAwareInterface::class )
 			 ->invokeMethod( 'set_options_object', [ OptionsInterface::class ] );
 
-		// Share helper classes.
+		// Share helper classes, and inflect classes that need it.
 		$this->share_with_tags( GoogleHelper::class, WC::class );
+		$this->getLeagueContainer()
+			 ->inflector( GoogleHelperAwareInterface::class )
+			 ->invokeMethod( 'set_google_helper_object', [ GoogleHelper::class ] );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
