@@ -53,6 +53,8 @@ class UpdateProductsTest extends UnitTest {
 			$this->product_repository,
 			$this->merchant_center
 		);
+
+		$this->add_job_start_hook();
 	}
 
 	public function test_job_name() {
@@ -74,7 +76,7 @@ class UpdateProductsTest extends UnitTest {
 				self::PROCESS_ITEM_HOOK,
 				[ $ids ]
 			);
-		$this->add_start_hook();
+
 		do_action( 'woocommerce_gla_batch_retry_update_products', $ids );
 	}
 
@@ -92,7 +94,7 @@ class UpdateProductsTest extends UnitTest {
 				self::PROCESS_ITEM_HOOK,
 				[ $ids ]
 			);
-		$this->add_start_hook();
+
 		$this->job->schedule( [ $ids ] );
 	}
 }

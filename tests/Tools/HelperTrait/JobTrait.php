@@ -13,7 +13,7 @@ trait JobTrait {
 	/**
 	 * Adding Job start hook
 	 */
-	protected function add_start_hook() {
+	protected function add_job_start_hook() {
 		$this->job->init();
 		add_action(
 			$this->job->get_start_hook()->get_hook(),
