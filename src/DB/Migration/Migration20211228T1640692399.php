@@ -63,10 +63,31 @@ class Migration20211228T1640692399 extends AbstractMigration {
 			$this->wpdb->query( "ALTER TABLE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` ALTER COLUMN `method` DROP DEFAULT" );
 
 			$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER );
-			if ( isset( $mc_settings['offers_free_shipping'] ) && false !== boolval( $mc_settings['offers_free_shipping'] ) && isset( $mc_settings['free_shipping_threshold'] ) ) {
-				// Move the free shipping threshold from the options to the shipping rate table.
-				$options_json = json_encode( [ 'free_shipping_threshold' => (float) $mc_settings['free_shipping_threshold'] ] );
-				$this->wpdb->query( $this->wpdb->prepare( "UPDATE `{$this->wpdb->_escape( $this->shipping_rate_table->get_name() )}` SET `options`=%s WHERE `method` = 'flat_rate'", $options_json ) );
+			if ( isset( $mc_settings['offers_free_shipping'] ) && false !== boolval( $mc_settings['offers_free_shipping'] ) ) {
+				$options_json = isset( $mc_settings['free_shipping_threshold'] ) ?
+					json_encode( [ 'free_shipping_threshold' => (float) $mc_settings['free_shipping_threshold'] ] ) : '';
+
+				// Add a new free shipping rate including the minimum threshold for all countries.
+				$current_rates = $this->wpdb->get_results( "SELECT * FROM {$this->wpdb->_escape( $this->shipping_rate_table->get_name() )} WHERE `method` = 'flat_rate'" );
+				foreach ( $current_rates as $rate ) {
+					$this->wpdb->insert(
+						$this->shipping_rate_table->get_name(),
+						[
+							'country'  => $rate->country,
+							'currency' => $rate->currency,
+							'rate'     => 0,
+							'method'   => 'free_shipping',
+							'options'  => $options_json,
+						],
+						[
+							'%s',
+							'%s',
+							'%f',
+							'%s',
+							'%s',
+						]
+					);
+				}
 			}
 			// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared
 			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
