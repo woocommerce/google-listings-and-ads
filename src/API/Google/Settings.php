@@ -86,20 +86,14 @@ class Settings {
 			if ( isset( $options['free_shipping_threshold'] ) ) {
 				$minimum_order_value = (float) $options['free_shipping_threshold'];
 
-				if ( 0 !== $rate ) {
-					// Add a conditional free-shipping service if the current rate is not free.
-					$services[] = $this->create_conditional_free_shipping_service( $country, $currency, $minimum_order_value );
-				} else {
-					// Set the minimum order value if the current rate is free.
-					$service->setMinimumOrderValue(
-						new Price(
-							[
-								'value'    => $minimum_order_value,
-								'currency' => $currency,
-							]
-						)
-					);
-				}
+				$service->setMinimumOrderValue(
+					new Price(
+						[
+							'value'    => $minimum_order_value,
+							'currency' => $currency,
+						]
+					)
+				);
 			}
 
 			$services[] = $service;
@@ -346,31 +340,6 @@ class Settings {
 		if ( array_key_exists( $country, $times ) ) {
 			$service->setDeliveryTime( $this->create_time_object( intval( $times[ $country ] ) ) );
 		}
-
-		return $service;
-	}
-
-	/**
-	 * Create a free shipping service.
-	 *
-	 * @param string $country
-	 * @param string $currency
-	 * @param float  $minimum_order_value
-	 *
-	 * @return Service
-	 */
-	protected function create_conditional_free_shipping_service( string $country, string $currency, float $minimum_order_value ): Service {
-		$service = $this->create_shipping_service( $country, ShippingZone::METHOD_FREE, $currency, 0 );
-
-		// Set the minimum order value to be eligible for free shipping.
-		$service->setMinimumOrderValue(
-			new Price(
-				[
-					'value'    => $minimum_order_value,
-					'currency' => $currency,
-				]
-			)
-		);
 
 		return $service;
 	}
