@@ -48,7 +48,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * @return void
 	 */
 	public function activate(): void {
-
 		// Delay activation if a required plugin is missing or an incompatible plugin is active.
 		if ( ! PluginValidator::validate() ) {
 			// Using update_option because we cannot access the option service
