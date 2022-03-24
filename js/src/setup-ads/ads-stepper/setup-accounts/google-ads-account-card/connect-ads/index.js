@@ -33,6 +33,14 @@ const ConnectAds = ( props ) => {
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
 
+	/**
+	 * Boolean to display blurb message to advise users
+	 * to connect Google Ads sub-account and not manager account.
+	 *
+	 * The message is displayed when there are more than one Google Ads account.
+	 */
+	const displayMessage = accounts.length > 1;
+
 	const handleConnectClick = async () => {
 		if ( ! value ) {
 			return;
@@ -69,7 +77,7 @@ const ConnectAds = ( props ) => {
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
-				{ accounts.length > 1 && (
+				{ displayMessage && (
 					<Subsection.Body>
 						{ createInterpolateElement(
 							__(
