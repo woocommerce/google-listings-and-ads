@@ -19,6 +19,7 @@ describe( 'reducer', () => {
 			mc: {
 				target_audience: null,
 				countries: null,
+				continents: null,
 				shipping: {
 					rates: [],
 					times: [],
@@ -332,6 +333,32 @@ describe( 'reducer', () => {
 
 			state.assertConsistentRef();
 			expect( state ).toHaveProperty( path, get( defaultState, path ) );
+		} );
+	} );
+
+	describe( 'Countries and continents supported by Merchant Center', () => {
+		it( 'should return with received countries and continents', () => {
+			const data = {
+				countries: {
+					CA: { currency: 'CAD', name: 'Canada' },
+					US: { currency: 'USD', name: 'United States' },
+				},
+				continents: {
+					NA: {
+						name: 'North America',
+						countries: [ 'CA', 'US' ],
+					},
+				},
+			};
+			const action = {
+				type: TYPES.RECEIVE_MC_COUNTRIES_AND_CONTINENTS,
+				data,
+			};
+			const state = reducer( prepareState(), action );
+
+			state.assertConsistentRef();
+			expect( state ).toHaveProperty( 'mc.countries', data.countries );
+			expect( state ).toHaveProperty( 'mc.continents', data.continents );
 		} );
 	} );
 

@@ -92,6 +92,18 @@ export const getCountries = ( state ) => {
 	return state.mc.countries;
 };
 
+export const getMCCountriesAndContinents = createSelector(
+	( state ) => {
+		const { countries, continents } = state.mc;
+
+		return {
+			countries,
+			continents,
+		};
+	},
+	( state ) => [ state.mc.countries, state.mc.continents ]
+);
+
 export const getTargetAudience = ( state ) => {
 	return state.mc.target_audience;
 };

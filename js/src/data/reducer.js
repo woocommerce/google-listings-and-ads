@@ -12,6 +12,7 @@ const DEFAULT_STATE = {
 	mc: {
 		target_audience: null,
 		countries: null,
+		continents: null,
 		shipping: {
 			rates: [],
 			times: [],
@@ -248,6 +249,14 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 
 		case TYPES.RECEIVE_COUNTRIES: {
 			return setIn( state, 'mc.countries', action.countries );
+		}
+
+		case TYPES.RECEIVE_MC_COUNTRIES_AND_CONTINENTS: {
+			const { data } = action;
+			return chainState( state, 'mc' )
+				.setIn( 'countries', data.countries )
+				.setIn( 'continents', data.continents )
+				.end();
 		}
 
 		case TYPES.RECEIVE_TARGET_AUDIENCE:
