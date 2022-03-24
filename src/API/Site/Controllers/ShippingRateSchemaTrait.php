@@ -42,6 +42,7 @@ trait ShippingRateSchemaTrait {
 				'description'       => __( 'The shipping method.', 'google-listings-and-ads' ),
 				'enum'              => [
 					ShippingZone::METHOD_FLAT_RATE,
+					ShippingZone::METHOD_FREE,
 				],
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
