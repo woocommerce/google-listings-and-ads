@@ -109,7 +109,7 @@ class ShippingRateSuggestionsController extends BaseController implements ISO316
 
 						// Set the rate to 0 if it is not set.
 						if ( ! isset( $item['rate'] ) ) {
-							$item['rate'] = 0;
+							$item['rate'] = 0.0;
 						}
 
 						$response = $this->prepare_item_for_response( $item, $request );
