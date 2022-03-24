@@ -277,9 +277,11 @@ class ProductSyncer implements Service {
 				$wc_product_id = $invalid_product->get_wc_product_id();
 				$wc_product    = $this->wc->maybe_get_product( $wc_product_id );
 				// Only schedule for retry if the failure threshold has not been reached.
-				if ( ! $this->product_helper->is_update_failed_threshold_reached( $wc_product ) ) {
-					$product_id                    = $invalid_product->get_wc_product_id();
-					$error_products[ $product_id ] = $product_id;
+				if (
+					$wc_product instanceof WC_Product &&
+					! $this->product_helper->is_update_failed_threshold_reached( $wc_product )
+				) {
+					$error_products[ $wc_product_id ] = $wc_product_id;
 				}
 			}
 		}
