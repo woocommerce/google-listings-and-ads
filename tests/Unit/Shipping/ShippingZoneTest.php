@@ -894,6 +894,41 @@ class ShippingZoneTest extends UnitTest {
 					  return null;
 				  } );
 
+		$shipping_zone = $this->create_mock_shipping_zone( 'US', [ $flat_rate ] );
+
+		// Return the zone locations for the given zone id.
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zone' )
+				 ->willReturn( $shipping_zone );
+
+		$rates = $this->shipping_zone->get_shipping_rates_for_country( 'US' );
+
+		$this->assertCount( 1, $rates );
+		$this->assertEquals( 'US', $rates[0]['country'] );
+		$this->assertEquals( 'flat_rate', $rates[0]['method'] );
+		$this->assertEquals( 'USD', $rates[0]['currency'] );
+		$this->assertEquals( 10, $rates[0]['rate'] );
+	}
+
+	public function test_returns_free_shipping_rate_if_free_shipping_exists_and_has_min_threshold() {
+		$this->wc->expects( $this->any() )
+				 ->method( 'get_shipping_zones' )
+				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
+
+		$flat_rate = $this->createMock( WC_Shipping_Flat_Rate::class );
+		$flat_rate->id = ShippingZone::METHOD_FLAT_RATE;
+		$flat_rate->expects( $this->any() )
+				  ->method( 'is_enabled' )
+				  ->willReturn( true );
+		$flat_rate->expects( $this->any() )
+				  ->method( 'get_option' )
+				  ->willReturnCallback( function ( $option ) {
+					  if ( 'cost' === $option ) {
+						  return 10;
+					  }
+
+					  return null;
+				  } );
 		$free_shipping = $this->createMock( WC_Shipping_Free_Shipping::class );
 		$free_shipping->id = ShippingZone::METHOD_FREE;
 		$free_shipping->expects( $this->any() )
@@ -921,12 +956,18 @@ class ShippingZoneTest extends UnitTest {
 
 		$rates = $this->shipping_zone->get_shipping_rates_for_country( 'US' );
 
-		$this->assertCount( 1, $rates );
-		$this->assertEquals( 'US', $rates[0]['country'] );
-		$this->assertEquals( 'flat_rate', $rates[0]['method'] );
-		$this->assertEquals( 'USD', $rates[0]['currency'] );
-		$this->assertEquals( 10, $rates[0]['rate'] );
-		$this->assertEquals( 100, $rates[0]['options']['free_shipping_threshold'] );
+		$this->assertCount( 2, $rates );
+
+		$this->assertEqualSets( [ 'free_shipping', 'flat_rate' ], array_column( $rates, 'method' ) );
+
+		foreach ( $rates as $rate ) {
+			if ( 'free_shipping' === $rate['method'] ) {
+				$this->assertArrayHasKey( 'free_shipping_threshold', $rate['options'] );
+				$this->assertEquals( 100, $rate['options']['free_shipping_threshold'] );
+			} elseif ( 'flat_rate' === $rate['method'] ) {
+				$this->assertEquals( 10, $rate['rate'] );
+			}
+		}
 	}
 
 	public function test_returns_shipping_rate_with_zero_cost_if_free_shipping_exists() {

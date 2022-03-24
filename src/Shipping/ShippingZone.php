@@ -122,8 +122,26 @@ class ShippingZone implements Service {
 			return [ $rate ];
 		}
 
-		$free_shipping = self::find_available_free_shipping_method( $methods );
-		$rates         = [];
+		$rates = [];
+
+		$all_rates_free = false;
+		$free_shipping  = self::find_available_free_shipping_method( $methods );
+		if ( ! empty( $free_shipping ) ) {
+			if ( isset( $free_shipping['options']['min_amount'] ) ) {
+				// If there is a free shipping method, and it has a minimum order amount, we add it in the list of shipping rates.
+				$rates[] = [
+					'country'  => $country_code,
+					'method'   => $free_shipping['id'],
+					'currency' => $free_shipping['currency'],
+					'rate'     => 0,
+					'options'  => [ 'free_shipping_threshold' => $free_shipping['options']['min_amount'] ],
+				];
+			} else {
+				// Otherwise, if there is an unconditional free-shipping method available, we mark all other shipping rates as free.
+				$all_rates_free = true;
+			}
+		}
+
 		foreach ( $methods as $method ) {
 			// We process the free shipping method separately.
 			if ( self::METHOD_FREE === $method['id'] ) {
@@ -138,14 +156,9 @@ class ShippingZone implements Service {
 				'options'  => [],
 			];
 
-			if ( null !== $free_shipping ) {
-				if ( isset( $free_shipping['options']['min_amount'] ) ) {
-					// If there is a free shipping method, and it has a minimum order amount, we set it as an option for all rates.
-					$rate['options']['free_shipping_threshold'] = $free_shipping['options']['min_amount'];
-				} else {
-					// If there is a free shipping method without a minimum order amount, we set the rate to 0 to mark it as free.
-					$rate['rate'] = 0;
-				}
+			if ( $all_rates_free ) {
+				// If there is an unconditional free shipping method available, we set the rate to 0 to mark it as free.
+				$rate['rate'] = 0;
 			}
 
 			if ( ! empty( $method['options']['class_costs'] ) ) {
