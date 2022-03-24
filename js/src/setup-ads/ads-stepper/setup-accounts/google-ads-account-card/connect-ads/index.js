@@ -8,9 +8,9 @@ import { Button, CardDivider } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import AdsAccountSelectControl from './ads-account-select-control';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
@@ -18,8 +18,8 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import AdsAccountSelectControl from './ads-account-select-control';
 import './index.scss';
-import AppDocumentationLink from '.~/components/app-documentation-link';
 
 const ConnectAds = ( props ) => {
 	const { accounts, onCreateNew = () => {} } = props;
