@@ -87,7 +87,10 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\Tracks as TracksProxy;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\LocationRatesProcessor;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneMethodsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ShippingZone;
+use Automattic\WooCommerce\GoogleListingsAndAds\Shipping\ZoneLocationsParser;
 use Automattic\WooCommerce\GoogleListingsAndAds\TaskList\CompleteSetup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\ActivatedEvents;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events\SiteClaimEvents;
@@ -177,6 +180,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		AttributesTab::class          => true,
 		VariationsAttributes::class   => true,
 		DeprecatedFilters::class      => true,
+		ZoneLocationsParser::class    => true,
+		ZoneMethodsParser::class      => true,
+		LocationRatesProcessor::class => true,
 		ShippingZone::class           => true,
 		AdsAccountService::class      => true,
 		MerchantAccountService::class => true,
@@ -359,6 +365,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		$this->share_with_tags( DeprecatedFilters::class );
 
-		$this->share_with_tags( ShippingZone::class, WC::class, GoogleHelper::class );
+		$this->share_with_tags( LocationRatesProcessor::class );
+		$this->share_with_tags( ZoneLocationsParser::class, WC::class, GoogleHelper::class );
+		$this->share_with_tags( ZoneMethodsParser::class, WC::class );
+		$this->share_with_tags( ShippingZone::class, WC::class, ZoneLocationsParser::class, ZoneMethodsParser::class, LocationRatesProcessor::class );
 	}
 }
