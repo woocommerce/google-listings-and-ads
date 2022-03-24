@@ -8,7 +8,7 @@ import { Button, CardDivider } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import AdsAccountSelectControl from '.~/components/ads-account-select-control';
+import AdsAccountSelectControl from './ads-account-select-control';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
 import ContentButtonLayout from '.~/components/content-button-layout';
