@@ -48,7 +48,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	 * @return void
 	 */
 	public function activate(): void {
-		$this->maybe_register_services();
 
 		// Delay activation if a required plugin is missing or an incompatible plugin is active.
 		if ( ! PluginValidator::validate() ) {
@@ -57,6 +56,8 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			update_option( 'gla_' . OptionsInterface::DELAYED_ACTIVATE, true );
 			return;
 		}
+
+		$this->maybe_register_services();
 
 		foreach ( $this->registered_services as $service ) {
 			if ( $service instanceof Activateable ) {
