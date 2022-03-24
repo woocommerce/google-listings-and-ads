@@ -27,7 +27,7 @@ class PluginValidator {
 	 * @var bool $is_validated
 	 * Holds the validation status of the plugin.
 	 */
-	public static $is_validated = null;
+	protected static $is_validated = null;
 
 	/**
 	 * Validate all required and incompatible plugins.

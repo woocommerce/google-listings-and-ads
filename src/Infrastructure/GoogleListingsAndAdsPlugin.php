@@ -50,9 +50,8 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 	public function activate(): void {
 		$this->maybe_register_services();
 
-		// Do not run activate if service registration failed.
-		if ( ! PluginValidator::$is_validated ) {
-			// If the plugin is not validated, do not activate but set a flag to allow activate() to be run again.
+		// Delay activation if a required plugin is missing or an incompatible plugin is active.
+		if ( ! PluginValidator::validate() ) {
 			// Using update_option because we cannot access the option service
 			// when the services have not been registered.
 			update_option( 'gla_' . OptionsInterface::DELAYED_ACTIVATE, true );
