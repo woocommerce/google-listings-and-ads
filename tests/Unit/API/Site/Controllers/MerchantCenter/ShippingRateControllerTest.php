@@ -42,9 +42,6 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 											  'currency' => 'USD',
 											  'rate'     => '5.00',
 											  'method'   => 'flat_rate',
-											  'options'  => [
-												  'free_shipping_threshold' => '100',
-											  ],
 										  ],
 									  ]
 								  );
@@ -60,7 +57,6 @@ class ShippingRateControllerTest extends RESTControllerUnitTest {
 		$this->assertEquals( 'USD', $data[0]['currency'] );
 		$this->assertEquals( '5.00', $data[0]['rate'] );
 		$this->assertEquals( 'flat_rate', $data[0]['method'] );
-		$this->assertEquals( 100, $data[0]['options']['free_shipping_threshold'] );
 	}
 
 	public function test_empty_options_array_is_returned_as_object() {
