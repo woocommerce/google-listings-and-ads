@@ -148,7 +148,7 @@ class ProductRepository implements Service {
 	public function find_sync_ready_products( array $args = [], int $limit = - 1, int $offset = 0 ): FilteredProductList {
 		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->product_filter->filter_sync_ready_products( $results, false );
+		return $this->product_filter->filter_sync_ready_products( $results );
 	}
 
 	/**
@@ -164,7 +164,7 @@ class ProductRepository implements Service {
 	 */
 	public function find_delete_product_ids( array $ids, int $limit = - 1, int $offset = 0 ): array {
 		$results = $this->find_by_ids( $ids, $limit, $offset );
-		return $this->product_filter->filter_products_for_delete( $results, true );
+		return $this->product_filter->filter_products_for_delete( $results )->get_product_ids();
 	}
 
 	/**
@@ -179,7 +179,7 @@ class ProductRepository implements Service {
 	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): FilteredProductList {
 		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->product_filter->filter_sync_ready_products( $results, true );
+		return $this->product_filter->filter_sync_ready_products( $results )->get_product_ids();
 	}
 
 	/**
