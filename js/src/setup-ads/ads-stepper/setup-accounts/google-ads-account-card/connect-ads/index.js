@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button, CardDivider } from '@wordpress/components';
 
@@ -19,6 +19,7 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import './index.scss';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 
 const ConnectAds = ( props ) => {
 	const { accounts, onCreateNew = () => {} } = props;
@@ -68,6 +69,25 @@ const ConnectAds = ( props ) => {
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
+				{ accounts.length > 1 && (
+					<Subsection.Body>
+						{ createInterpolateElement(
+							__(
+								'If you manage multiple sub-accounts in Google Ads, please connect the relevant sub-account, not a manager account. <link>Learn more</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<AppDocumentationLink
+										context="setup-ads-connect-account"
+										linkId="connect-sub-account"
+										href="https://support.google.com/google-ads/answer/6139186"
+									/>
+								),
+							}
+						) }
+					</Subsection.Body>
+				) }
 				<ContentButtonLayout>
 					<AdsAccountSelectControl
 						accounts={ accounts }
