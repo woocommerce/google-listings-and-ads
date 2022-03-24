@@ -44,11 +44,13 @@ class ProductFilter implements Service {
 		 * @param WC_Product[] $products Sync-ready WooCommerce products
 		 */
 		$products = apply_filters( 'woocommerce_gla_get_sync_ready_products_pre_filter', $products );
-		$results  = array_filter(
-			$products,
-			function ( $product ) {
-				return $this->product_helper->is_sync_ready( $product ) && ! $this->product_helper->is_sync_failed_recently( $product );
-			}
+		$results  = array_values(
+			array_filter(
+				$products,
+				function ( $product ) {
+					return $this->product_helper->is_sync_ready( $product ) && ! $this->product_helper->is_sync_failed_recently( $product );
+				}
+			)
 		);
 		/**
 		 * Filters the list of products ready to be synced (after applying filters to check failures and sync-ready status).
@@ -70,11 +72,13 @@ class ProductFilter implements Service {
 	 * @return FilteredProductList
 	 */
 	public function filter_products_for_delete( array $products ): FilteredProductList {
-		$results = array_filter(
-			$products,
-			function ( $product ) {
-				return ! $this->product_helper->is_delete_failed_threshold_reached( $product );
-			}
+		$results = array_values(
+			array_filter(
+				$products,
+				function ( $product ) {
+					return ! $this->product_helper->is_delete_failed_threshold_reached( $product );
+				}
+			)
 		);
 
 		return new FilteredProductList( $results, count( $products ) );

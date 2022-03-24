@@ -174,12 +174,12 @@ class ProductRepository implements Service {
 	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.
 	 * @param int   $offset Amount to offset product results.
 	 *
-	 * @return FilteredProductList List of WooCommerce product IDs after filtering.
+	 * @return FilteredProductList List of WooCommerce products after filtering.
 	 */
 	public function find_sync_ready_product_ids( array $args = [], int $limit = - 1, int $offset = 0 ): FilteredProductList {
 		$results = $this->find( $this->get_sync_ready_products_query_args( $args ), $limit, $offset );
 
-		return $this->product_filter->filter_sync_ready_products( $results )->get_product_ids();
+		return $this->product_filter->filter_sync_ready_products( $results );
 	}
 
 	/**
