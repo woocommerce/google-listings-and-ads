@@ -4,7 +4,7 @@
 import useAppSelectDispatch from './useAppSelectDispatch';
 
 /**
- * Get the supported countries from API. Returns `{ hasFinishedResolution, data, invalidateResolution }`.
+ * Get MC supported countries from API. Returns `{ hasFinishedResolution, data, invalidateResolution }`.
  *
  * `data` is an object of country mapping. e.g.:
  *
@@ -17,8 +17,8 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  * }
  * ```
  */
-const useGetCountries = () => {
+const useMCCountries = () => {
 	return useAppSelectDispatch( 'getCountries' );
 };
 
-export default useGetCountries;
+export default useMCCountries;
