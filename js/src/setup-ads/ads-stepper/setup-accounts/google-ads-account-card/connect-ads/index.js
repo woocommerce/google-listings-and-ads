@@ -21,7 +21,7 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import './index.scss';
 
 const ConnectAds = ( props ) => {
-	const { onCreateNew = () => {} } = props;
+	const { accounts, onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
 	const [ fetchConnectAdsAccount ] = useApiFetchCallback( {
@@ -70,6 +70,7 @@ const ConnectAds = ( props ) => {
 				</Subsection.Title>
 				<ContentButtonLayout>
 					<AdsAccountSelectControl
+						accounts={ accounts }
 						value={ value }
 						onChange={ setValue }
 					/>
