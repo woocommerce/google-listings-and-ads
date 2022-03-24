@@ -87,13 +87,12 @@ class ShippingZone implements Service {
 	public function get_shipping_rates_for_country( string $country_code ): array {
 		$this->parse_shipping_zones();
 
-		$location_rates = $this->location_rates[ $country_code ];
-		if ( empty( $location_rates ) ) {
+		if ( empty( $this->location_rates[ $country_code ] ) ) {
 			return [];
 		}
 
 		// Process the rates for each country subdivision separately.
-		$location_rates = array_map( [ $this->rates_processor, 'process' ], $location_rates );
+		$location_rates = array_map( [ $this->rates_processor, 'process' ], $this->location_rates[ $country_code ] );
 
 		// Convert the string array keys to integers.
 		$country_rates = array_values( $location_rates );
@@ -117,13 +116,12 @@ class ShippingZone implements Service {
 	public function get_shipping_rates_grouped_by_country( string $country_code ): array {
 		$this->parse_shipping_zones();
 
-		$location_rates = $this->location_rates[ $country_code ];
-		if ( empty( $location_rates ) ) {
+		if ( empty( $this->location_rates[ $country_code ] ) ) {
 			return [];
 		}
 
 		// Convert the string array keys to integers.
-		$country_rates = array_values( $location_rates );
+		$country_rates = array_values( $this->location_rates[ $country_code ] );
 
 		// Flatten and merge the country shipping rates.
 		$country_rates = array_merge( [], ...$country_rates );

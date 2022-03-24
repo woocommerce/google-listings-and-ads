@@ -75,6 +75,10 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEquals( 'CA', $location_rates[0]->get_location()->get_country() );
 		$this->assertEquals( 'BC', $location_rates[0]->get_location()->get_state() );
 		$this->assertEqualSets( [ '12345', '67890' ], $location_rates[0]->get_location()->get_postcodes() );
+
+		// Test non-existent country.
+		$location_rates = $this->shipping_zone->get_shipping_rates_for_country( 'XX' );
+		$this->assertEmpty( $location_rates );
 	}
 
 	public function test_returns_shipping_rates_grouped_by_country() {
