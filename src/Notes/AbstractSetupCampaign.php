@@ -109,7 +109,7 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	 * @since 1.11.0
 	 * @return bool
 	 */
-	protected function has_account_issues(): bool {
+	public function has_account_issues(): bool {
 		$issues = $this->merchant_statuses->get_issues( MerchantStatuses::TYPE_ACCOUNT );
 
 		return isset( $issues['issues'] ) && count( $issues['issues'] ) >= 1;
@@ -121,7 +121,7 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	 * @since 1.11.0
 	 * @return bool
 	 */
-	protected function has_at_least_one_synced_product(): bool {
+	public function has_at_least_one_synced_product(): bool {
 		$statuses = $this->merchant_statuses->get_product_statistics();
 
 		return $statuses['statistics']['active'] >= 1;
