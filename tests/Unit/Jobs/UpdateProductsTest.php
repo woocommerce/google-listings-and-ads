@@ -11,6 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductRepository;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
+use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\JobTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\ProductTrait;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -29,11 +30,10 @@ use PHPUnit\Framework\MockObject\MockObject;
 class UpdateProductsTest extends UnitTest {
 
 	use ProductTrait;
+	use JobTrait;
 
 	protected const JOB_NAME          = 'update_products';
-	protected const CREATE_BATCH_HOOK = 'gla/jobs/' . self::JOB_NAME . '/create_batch';
 	protected const PROCESS_ITEM_HOOK = 'gla/jobs/' . self::JOB_NAME . '/process_item';
-	protected const BATCH_SIZE        = 100;
 
 	/**
 	 * Runs before each test is executed.
@@ -53,8 +53,6 @@ class UpdateProductsTest extends UnitTest {
 			$this->product_repository,
 			$this->merchant_center
 		);
-
-		$this->job->init();
 	}
 
 	public function test_job_name() {
@@ -69,7 +67,6 @@ class UpdateProductsTest extends UnitTest {
 
 	public function test_schedule_schedules_single_job() {
 		$ids = [ 1, 2 ];
-
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_single' )
 			->with(
@@ -77,29 +74,25 @@ class UpdateProductsTest extends UnitTest {
 				self::PROCESS_ITEM_HOOK,
 				[ $ids ]
 			);
-
-		do_action( 'woocommerce_gla_batch_retry_update_products', [] );
-
-		$this->job->schedule( [ $ids ] );
+		$this->add_start_hook();
+		do_action( 'woocommerce_gla_batch_retry_update_products', $ids );
 	}
 
 	public function test_schedule_schedules_immediate_job() {
 		$ids = [ 1, 2 ];
-
 		$this->action_scheduler
 			->method( 'has_scheduled_action' )
 			->willReturn( false );
-
 		$this->merchant_center
 			->method( 'is_connected' )
 			->willReturn( true );
-
 		$this->action_scheduler->expects( $this->once() )
 			->method( 'schedule_immediate' )
 			->with(
 				self::PROCESS_ITEM_HOOK,
 				[ $ids ]
 			);
+		$this->add_start_hook();
 		$this->job->schedule( [ $ids ] );
 	}
 }
