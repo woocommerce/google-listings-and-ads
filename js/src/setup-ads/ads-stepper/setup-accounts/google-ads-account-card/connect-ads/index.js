@@ -64,7 +64,7 @@ const ConnectAds = ( props ) => {
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
-						'Connect your Google Ads account',
+						'Select an existing account',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
