@@ -51,7 +51,11 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 		$this->maybe_register_services();
 
 		// Do not run activate if service registration failed.
-		if ( empty( $this->registered_services ) ) {
+		if ( ! PluginValidator::$is_validated ) {
+			// If the plugin is not validated, do not activate but set a flag to allow activate() to be run again.
+			// Using update_option because we cannot access the option service
+			// when the services have not been registered.
+			update_option( 'gla_' . OptionsInterface::DELAYED_ACTIVATE, true );
 			return;
 		}
 
@@ -61,8 +65,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			}
 		}
 
-		// Update the plugin activated flag.
-		$this->container->get( OptionsInterface::class )->update( OptionsInterface::PLUGIN_ACTIVATED, true );
 		flush_rewrite_rules();
 
 	}
@@ -81,8 +83,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			}
 		}
 
-		// Update the plugin activated flag.
-		$this->container->get( OptionsInterface::class )->update( OptionsInterface::PLUGIN_ACTIVATED, false );
 		flush_rewrite_rules();
 	}
 
@@ -96,7 +96,6 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 			self::SERVICE_REGISTRATION_HOOK,
 			function() {
 				$this->maybe_register_services();
-
 			},
 			20
 		);
@@ -111,12 +110,12 @@ final class GoogleListingsAndAdsPlugin implements Plugin {
 					$this->container->get( JobInitializer::class )->register();
 				}
 
-				// Check if plugin requirements are valid and run activation.
-				if ( PluginValidator::validate()
-					&& ! $this->container->get( OptionsInterface::class )->get( OptionsInterface::PLUGIN_ACTIVATED ) ) {
+				// Check if activation is still pending.
+				if ( $this->container->get( OptionsInterface::class )->get( OptionsInterface::DELAYED_ACTIVATE ) ) {
 					$this->activate();
+					// Remove the DELAYED_ACTIVATE flag.
+					$this->container->get( OptionsInterface::class )->delete( OptionsInterface::DELAYED_ACTIVATE );
 				}
-
 			}
 		);
 

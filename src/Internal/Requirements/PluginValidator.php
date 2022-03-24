@@ -24,20 +24,24 @@ class PluginValidator {
 	];
 
 	/**
+	 * @var bool $is_validated
+	 * Holds the validation status of the plugin.
+	 */
+	public static $is_validated = true;
+
+	/**
 	 * Validate all required and incompatible plugins.
 	 *
 	 * @return bool
 	 */
 	public static function validate(): bool {
-		$validated = true;
-
 		/** @var RequirementValidator $plugin */
 		foreach ( self::PLUGINS as $plugin ) {
 			if ( ! $plugin::instance()->validate() ) {
-				$validated = false;
+				self::$is_validated = false;
 			}
 		}
-		return $validated;
+		return self::$is_validated;
 	}
 
 }

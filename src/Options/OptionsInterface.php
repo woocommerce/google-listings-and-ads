@@ -19,6 +19,7 @@ interface OptionsInterface {
 	public const ADS_CONVERSION_ACTION  = 'ads_conversion_action';
 	public const ADS_SETUP_COMPLETED_AT = 'ads_setup_completed_at';
 	public const CONTACT_INFO_SETUP     = 'contact_info_setup';
+	public const DELAYED_ACTIVATE       = 'delayed_activate';
 	public const DB_VERSION             = 'db_version';
 	public const FILE_VERSION           = 'file_version';
 	public const GOOGLE_CONNECTED       = 'google_connected';
@@ -27,7 +28,6 @@ interface OptionsInterface {
 	public const MERCHANT_ACCOUNT_STATE = 'merchant_account_state';
 	public const MERCHANT_CENTER        = 'merchant_center';
 	public const MERCHANT_ID            = 'merchant_id';
-	public const PLUGIN_ACTIVATED       = 'plugin_activated';
 	public const REDIRECT_TO_ONBOARDING = 'redirect_to_onboarding';
 	public const SHIPPING_RATES         = 'shipping_rates';
 	public const SHIPPING_TIMES         = 'shipping_times';
@@ -51,7 +51,7 @@ interface OptionsInterface {
 		self::MERCHANT_ACCOUNT_STATE => true,
 		self::MERCHANT_CENTER        => true,
 		self::MERCHANT_ID            => true,
-		self::PLUGIN_ACTIVATED       => true,
+		self::DELAYED_ACTIVATE       => true,
 		self::SHIPPING_RATES         => true,
 		self::SHIPPING_TIMES         => true,
 		self::REDIRECT_TO_ONBOARDING => true,
