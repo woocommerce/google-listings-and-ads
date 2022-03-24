@@ -1,7 +1,7 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
-Requires at least: 5.5
+Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
 Stable tag: 1.11.1
@@ -53,7 +53,7 @@ Create a new Google Ads account through Google Listings & Ads and a promotional 
 
 = Minimum Requirements =
 
-* WordPress 5.6 or greater
+* WordPress 5.7 or greater
 * WooCommerce 5.8 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
