@@ -18,7 +18,11 @@ import useAppSelectDispatch from './useAppSelectDispatch';
  * ```
  */
 const useMCCountries = () => {
-	return useAppSelectDispatch( 'getCountries' );
+	const payload = useAppSelectDispatch( 'getMCCountriesAndContinents' );
+	return {
+		...payload,
+		data: payload.data.countries,
+	};
 };
 
 export default useMCCountries;
