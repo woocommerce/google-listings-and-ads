@@ -638,7 +638,6 @@ describe( 'reducer', () => {
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_BILLING_STATUS, 'billingStatus', 'mc.accounts.ads_billing_status' ],
 			[ TYPES.RECEIVE_ACCOUNTS_GOOGLE_ADS_EXISTING, 'accounts', 'mc.accounts.existing_ads' ],
 			[ TYPES.RECEIVE_MC_CONTACT_INFORMATION, 'data', 'mc.contact' ],
-			[ TYPES.RECEIVE_COUNTRIES, 'countries', 'mc.countries' ],
 			[ TYPES.RECEIVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.SAVE_TARGET_AUDIENCE, 'target_audience', 'mc.target_audience' ],
 			[ TYPES.RECEIVE_MC_SETUP, 'mcSetup', 'mc_setup' ],

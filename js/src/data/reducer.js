@@ -247,10 +247,6 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 			return setIn( state, 'mc.contact', action.data );
 		}
 
-		case TYPES.RECEIVE_COUNTRIES: {
-			return setIn( state, 'mc.countries', action.countries );
-		}
-
 		case TYPES.RECEIVE_MC_COUNTRIES_AND_CONTINENTS: {
 			const { data } = action;
 			return chainState( state, 'mc' )

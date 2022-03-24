@@ -88,10 +88,6 @@ export const getGoogleMCPhoneNumber = createRegistrySelector(
 	}
 );
 
-export const getCountries = ( state ) => {
-	return state.mc.countries;
-};
-
 export const getMCCountriesAndContinents = createSelector(
 	( state ) => {
 		const { countries, continents } = state.mc;
