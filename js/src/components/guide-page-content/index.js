@@ -9,9 +9,6 @@ import classnames from 'classnames';
 import TrackableLink from '.~/components/trackable-link';
 import './index.scss';
 
-// TODO: These components are planned to be reused when implementing the Successful Campaign Creation Modal.
-//       Ref: https://github.com/woocommerce/google-listings-and-ads/issues/180
-
 /**
  * Renders header title and content within a [Guide modal](https://wordpress.github.io/gutenberg/?path=/docs/components-guide--default).
  *
