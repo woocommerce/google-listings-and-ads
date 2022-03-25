@@ -70,18 +70,4 @@ class AdsCampaignBudgetTest extends UnitTest {
 			$budget->getResourceName()
 		);
 	}
-
-	public function test_delete_operation() {
-		$this->generate_ads_campaign_budget_query_mock( self::TEST_BUDGET_ID );
-
-		$operation = $this->budget->delete_operation(
-			self::TEST_CAMPAIGN_ID
-		)->getCampaignBudgetOperation();
-		$this->assertTrue( $operation->hasRemove() );
-
-		$this->assertEquals(
-			$this->generate_campaign_budget_resource_name( self::TEST_BUDGET_ID ),
-			$operation->getRemove()
-		);
-	}
 }
