@@ -96,9 +96,9 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 			'offers_free_shipping'            => ! empty( $mc_settings['offers_free_shipping'] ) ? 'yes' : 'no',
 			'free_shipping_threshold'         => $mc_settings['free_shipping_threshold'] ?? '',
 			'tax_rate'                        => $mc_settings['tax_rate'] ?? '',
-			'has_account_issue'               => $campaign_setup->has_account_issues(),
-			'has_at_least_one_synced_product' => $campaign_setup->has_at_least_one_synced_product(),
-			'is_ads_setup_started'            => $ads_service->is_setup_started(),
+			'has_account_issue'               => $campaign_setup->has_account_issues() ? 'yes' : 'no',
+			'has_at_least_one_synced_product' => $campaign_setup->has_at_least_one_synced_product() ? 'yes' : 'no',
+			'is_ads_setup_started'            => $ads_service->is_setup_started() ? 'yes' : 'no',
 		];
 	}
 
