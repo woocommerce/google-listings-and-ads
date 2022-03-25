@@ -37,11 +37,11 @@ const FreeAdCredit = () => {
 				<div className="gla-free-ad-credit__description">
 					{ createInterpolateElement(
 						__(
-							'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days. Check how much credit you can receive in your country <checklink>here</checklink>.',
+							'New to Google Ads? Get $500 in ad credit when you spend $500 within your first 60 days. Check how much credit you can receive in your country <checkLink>here</checkLink>. <termLink>Terms and conditions apply</termLink>.',
 							'google-listings-and-ads'
 						),
 						{
-							checklink: (
+							checkLink: (
 								<TrackableLink
 									eventName="gla_free_ad_credit_country_click"
 									eventProps={ {
@@ -52,19 +52,15 @@ const FreeAdCredit = () => {
 									onClick={ handleClick }
 								/>
 							),
+							termLink: (
+								<AppDocumentationLink
+									context="setup-ads"
+									linkId="free-ad-credit-terms"
+									href="https://www.google.com/ads/coupons/terms/"
+								/>
+							),
 						}
 					) }
-					<br />
-					<AppDocumentationLink
-						context="setup-ads"
-						linkId="free-ad-credit-terms"
-						href="https://www.google.com/ads/coupons/terms/"
-					>
-						{ __(
-							'Terms and conditions apply.',
-							'google-listings-and-ads'
-						) }
-					</AppDocumentationLink>
 				</div>
 				{ showModal && (
 					<CountryModal onRequestClose={ handleRequestClose } />

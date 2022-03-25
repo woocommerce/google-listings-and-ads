@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
+use Google\Ads\GoogleAds\V9\Common\LocationInfo;
 use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Resources\AdGroup;
 use Google\Ads\GoogleAds\V9\Resources\AdGroupAd;
@@ -14,6 +15,7 @@ use Google\Ads\GoogleAds\V9\Resources\AdGroupCriterion;
 use Google\Ads\GoogleAds\V9\Resources\BillingSetup;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
+use Google\Ads\GoogleAds\V9\Resources\CampaignCriterion;
 use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
 use Google\Ads\GoogleAds\V9\Resources\Customer;
 use Google\Ads\GoogleAds\V9\Resources\CustomerUserAccess;
@@ -131,12 +133,19 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Generates a mocked AdsCampaignQuery response.
 	 *
-	 * @param array $responses Set of campaign data to convert.
+	 * @param array $campaigns_responses Set of campaign data to convert.
+	 * @param array $campaign_criterion_responses Set of campaign criterion data to convert.
 	 */
-	protected function generate_ads_campaign_query_mock( array $responses ) {
-		$this->generate_ads_query_mock(
-			array_map( [ $this, 'generate_campaign_row_mock' ], $responses )
+	protected function generate_ads_campaign_query_mock( array $campaigns_responses, $campaign_criterion_responses ) {
+		$campaigns_row_mock          = array_map( [ $this, 'generate_campaign_row_mock' ], $campaigns_responses );
+		$campaign_criterion_row_mock = array_map( [ $this, 'generate_campaign_criterion_row_mock' ], $campaign_criterion_responses );
+
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->method( 'iterateAllElements' )->willReturnOnConsecutiveCalls(
+			$campaigns_row_mock,
+			$campaign_criterion_row_mock
 		);
+		$this->service_client->method( 'search' )->willReturn( $list_response );
 	}
 
 	/**
@@ -255,6 +264,28 @@ trait GoogleAdsClientTrait {
 		return ( new GoogleAdsRow )
 			->setCampaign( $campaign )
 			->setCampaignBudget( $budget );
+	}
+
+	/**
+	 * Converts campaign criterion data to a mocked GoogleAdsRow.
+	 *
+	 * @param array $data Campaign criterion data to convert.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	protected function generate_campaign_criterion_row_mock( array $data ): GoogleAdsRow {
+		$campaign = $this->createMock( Campaign::class );
+		$campaign->method( 'getId' )->willReturn( $data['campaign_id'] );
+
+		$location_info = $this->createMock( LocationInfo::class );
+		$location_info->method( 'getGeoTargetConstant' )->willReturn( $data['geo_target_constant'] );
+
+		$campaign_criterion = $this->createMock( CampaignCriterion::class );
+		$campaign_criterion->method( 'getLocation' )->willReturn( $location_info );
+
+		return ( new GoogleAdsRow )
+			->setCampaign( $campaign )
+			->setCampaignCriterion( $campaign_criterion );
 	}
 
 	/**

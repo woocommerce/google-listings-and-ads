@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -26,7 +27,7 @@ export function handleFetchError( error, message ) {
 /**
  * CountryCode
  *
- * @typedef {string} CountryCode
+ * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
  */
 
 /**
@@ -36,6 +37,26 @@ export function handleFetchError( error, message ) {
  * @property {CountryCode} countryCode Destination country code.
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
+ */
+
+/**
+ * Campaign data.
+ *
+ * @typedef {Object} Campaign
+ * @property {number} id Campaign ID.
+ * @property {string} name Campaign name.
+ * @property {'enabled'|'paused'} status Campaign is currently running or has been paused.
+ * @property {number} amount Amount of daily budget for running ads.
+ * @property {CountryCode} country The sales country of this campain.
+ *   Please note that this is a targeting country for advertising,
+ *   but it is NOT set up via the location-based method.
+ * @property {Array<CountryCode>} targeted_locations The location-based targeting countries associated with this campaign for advertising.
+ *   Please note that only multi-country campaigns will have at least one country in this array.
+ *   For single-country campaigns, it will an empty array.
+ * @property {boolean} allowMultiple Indicate whether this campaign allows multi-country targeting.
+ *   This can be used to distinguish this campaign is multi-country or single-country targeting.
+ * @property {Array<CountryCode>} displayCountries Campaign's targeting countries used to present on the UI without making merchants feel ambiguous.
+ *   Please refer to the descriptions of `country`, `targeted_locations` and `allowMultiple` for more context about this property.
  */
 
 /**
@@ -742,11 +763,14 @@ export function* saveTargetAudience( targetAudience ) {
 
 export function* fetchAdsCampaigns() {
 	try {
-		const response = yield apiFetch( {
+		const campaigns = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns`,
 		} );
 
-		return receiveAdsCampaigns( response );
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+			adsCampaigns: campaigns.map( adaptAdsCampaign ),
+		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
@@ -758,35 +782,28 @@ export function* fetchAdsCampaigns() {
 	}
 }
 
-export function receiveAdsCampaigns( adsCampaigns ) {
-	return {
-		type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-		adsCampaigns,
-	};
-}
-
 /**
  * Create a new ads campaign.
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
- * @param {string} country Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
-export function* createAdsCampaign( amount, country ) {
+export function* createAdsCampaign( amount, countryCodes ) {
 	try {
 		const createdCampaign = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns`,
 			method: 'POST',
 			data: {
 				amount,
-				country,
+				targeted_locations: countryCodes,
 			},
 		} );
 
 		return {
 			type: TYPES.CREATE_ADS_CAMPAIGN,
-			createdCampaign,
+			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
 		yield handleFetchError(

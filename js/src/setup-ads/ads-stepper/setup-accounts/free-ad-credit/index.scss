@@ -4,6 +4,7 @@
 	align-items: center;
 	gap: calc(var(--main-gap) / 3 * 2);
 	padding: calc(var(--main-gap) / 3 * 2);
+	color: $black;
 
 	svg {
 		flex: 0 0 auto;
