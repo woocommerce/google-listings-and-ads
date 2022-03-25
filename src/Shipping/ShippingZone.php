@@ -110,7 +110,7 @@ class ShippingZone implements Service {
 		if ( 1 === count( $methods ) && self::METHOD_FREE === $methods[0]['id'] ) {
 			$rate = [
 				'country'  => $country_code,
-				'method'   => $methods[0]['id'],
+				'method'   => self::METHOD_FLAT_RATE,
 				'currency' => $methods[0]['currency'],
 				'rate'     => 0,
 				'options'  => [],

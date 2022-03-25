@@ -967,7 +967,7 @@ class ShippingZoneTest extends UnitTest {
 		$this->assertEquals( 0, $rates[0]['rate'] );
 	}
 
-	public function test_returns_shipping_rate_with_zero_cost_if_only_free_shipping_enabled() {
+	public function test_returns_flat_shipping_rate_with_zero_cost_if_only_free_shipping_enabled() {
 		$this->wc->expects( $this->any() )
 				 ->method( 'get_shipping_zones' )
 				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
@@ -1003,9 +1003,10 @@ class ShippingZoneTest extends UnitTest {
 
 		$this->assertCount( 1, $rates );
 		$this->assertEquals( 0, $rates[0]['rate'] );
+		$this->assertEquals( 'flat_rate', $rates[0]['method'] );
 	}
 
-	public function test_returns_shipping_rate_with_zero_cost_if_only_free_shipping_exists() {
+	public function test_returns_flat_shipping_rate_with_zero_cost_if_only_free_shipping_exists() {
 		$this->wc->expects( $this->any() )
 				 ->method( 'get_shipping_zones' )
 				 ->willReturn( [ [ 'zone_id' => 1 ] ] );
@@ -1027,6 +1028,7 @@ class ShippingZoneTest extends UnitTest {
 
 		$this->assertCount( 1, $rates );
 		$this->assertEquals( 0, $rates[0]['rate'] );
+		$this->assertEquals( 'flat_rate', $rates[0]['method'] );
 	}
 
 	public function test_returns_class_shipping_rates() {
