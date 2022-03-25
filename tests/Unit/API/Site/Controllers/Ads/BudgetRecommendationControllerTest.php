@@ -2,7 +2,7 @@
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy as Middleware;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads\BudgetRecommendationController;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\BudgetRecommendationQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\RESTControllerUnitTest;
@@ -15,6 +15,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Site\Controllers\Ads
  *
+ * @property Ads|MockObject                       $ads
  * @property BudgetRecommendationQuery|MockObject $budget_recommendation_query
  * @property ISO3166DataProvider|MockObject       $iso_provider;
  * @property BudgetRecommendationController       $controller
@@ -31,9 +32,9 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			->willReturn( $this->budget_recommendation_query );
 
 		$this->iso_provider = $this->createMock( ISO3166DataProvider::class );
-		$this->middleware = $this->createMock( Middleware::class );
+		$this->ads          = $this->createMock( Ads::class );
 
-		$this->controller = new BudgetRecommendationController( $this->server, $this->budget_recommendation_query, $this->middleware );
+		$this->controller = new BudgetRecommendationController( $this->server, $this->budget_recommendation_query, $this->ads );
 		$this->controller->register();
 		$this->controller->set_iso3166_provider( $this->iso_provider );
 	}
@@ -92,7 +93,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			],
 		];
 
-		$this->middleware->expects( $this->once() )
+		$this->ads->expects( $this->once() )
 			->method( 'get_ads_currency' )
 			->willReturn( 'TWD' );
 
@@ -155,7 +156,7 @@ class BudgetRecommendationControllerTest extends RESTControllerUnitTest {
 			'country_codes' => ['JP', 'TW', 'GB', 'US'],
 		];
 
-		$this->middleware->expects( $this->once() )
+		$this->ads->expects( $this->once() )
 			->method( 'get_ads_currency' )
 			->willReturn( 'TWD' );
 

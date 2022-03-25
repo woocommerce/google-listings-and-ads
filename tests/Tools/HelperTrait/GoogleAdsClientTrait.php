@@ -8,15 +8,24 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\LocationInfo;
+use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Resources\AdGroup;
 use Google\Ads\GoogleAds\V9\Resources\AdGroupAd;
 use Google\Ads\GoogleAds\V9\Resources\AdGroupCriterion;
+use Google\Ads\GoogleAds\V9\Resources\BillingSetup;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V9\Resources\CampaignCriterion;
 use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
+use Google\Ads\GoogleAds\V9\Resources\Customer;
+use Google\Ads\GoogleAds\V9\Resources\CustomerUserAccess;
+use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsServiceClient;
+use Google\Ads\GoogleAds\V9\Services\ListAccessibleCustomersResponse;
+use Google\Ads\GoogleAds\V9\Services\ListMerchantCenterLinksResponse;
+use Google\Ads\GoogleAds\V9\Services\MerchantCenterLinkServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V9\Services\MutateCampaignResult;
 use Google\Ads\GoogleAds\V9\Services\MutateOperationResponse;
@@ -27,6 +36,7 @@ use Google\ApiCore\PagedListResponse;
  * Trait GoogleAdsClient
  *
  * @property int                               $ads_id
+ * @property MockObject|CustomerServiceClient  $customer_service
  * @property MockObject|GoogleAdsClient        $client
  * @property MockObject|GoogleAdsServiceClient $service_client
  *
@@ -48,6 +58,9 @@ trait GoogleAdsClientTrait {
 		$this->service_client = $this->createMock( GoogleAdsServiceClient::class );
 		$this->client         = $this->createMock( GoogleAdsClient::class );
 		$this->client->method( 'getGoogleAdsServiceClient' )->willReturn( $this->service_client );
+
+		$this->customer_service = $this->createMock( CustomerServiceClient::class );
+		$this->client->method( 'getCustomerServiceClient' )->willReturn( $this->customer_service );
 	}
 
 	/**
@@ -195,6 +208,40 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
+	 * Generates a mocked AdsBillingStatusQuery response.
+	 *
+	 * @param int $status
+	 */
+	protected function generate_ads_billing_status_query_mock( int $status ) {
+		$billing_setup = $this->createMock( BillingSetup::class );
+		$billing_setup->method( 'getStatus' )->willReturn( $status );
+
+		$this->generate_ads_query_mock(
+			[
+				( new GoogleAdsRow )->setBillingSetup( $billing_setup ),
+			]
+		);
+	}
+
+	/**
+	 * Generates a mocked AdsAccountQuery response.
+	 *
+	 * @param bool $has_access
+	 */
+	protected function generate_ads_access_query_mock( bool $has_access ) {
+		$access = $this->createMock( CustomerUserAccess::class );
+		$access->method( 'getAccessRole' )->willReturn(
+			$has_access ? AccessRole::ADMIN : AccessRole::UNKNOWN
+		);
+
+		$this->generate_ads_query_mock(
+			[
+				( new GoogleAdsRow )->setCustomerUserAccess( $access ),
+			]
+		);
+	}
+
+	/**
 	 * Converts campaign data to a mocked GoogleAdsRow.
 	 *
 	 * @param array $data Campaign data to convert.
@@ -285,5 +332,83 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_listing_group_resource_name( int $ad_group_id, int $listing_group_id ) {
 		return ResourceNames::forAdGroupCriterion( $this->ads_id, $ad_group_id, $listing_group_id );
+	}
+
+	/**
+	 * Generates a mocked customer.
+	 *
+	 * @param string $currency
+	 */
+	protected function generate_customer_mock( string $currency ) {
+		$customer = $this->createMock( Customer::class );
+		$customer->method( 'getCurrencyCode' )->willReturn( $currency );
+
+		$this->customer_service->method( 'getCustomer' )->willReturn( $customer );
+	}
+
+	/**
+	 * Generates a mocked exception when a customer is requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_customer_mock_exception( ApiException $exception ) {
+		$this->customer_service->method( 'getCustomer' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a list of mocked customers resource names.
+	 *
+	 * @param array $list
+	 */
+	protected function generate_customer_list_mock( array $list ) {
+		$customers = $this->createMock( ListAccessibleCustomersResponse::class );
+		$customers->method( 'getResourceNames' )->willReturn( $list );
+
+		$this->customer_service->method( 'listAccessibleCustomers' )->willReturn( $customers );
+	}
+
+	/**
+	 * Generates a mocked exception when a list of customers is requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_customer_list_mock_exception( ApiException $exception ) {
+		$this->customer_service->method( 'listAccessibleCustomers' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates a mocked Merchant Center link.
+	 *
+	 * @param array $links
+	 */
+	protected function generate_mc_link_mock( array $links ) {
+		$mc_link_service = $this->createMock( MerchantCenterLinkServiceClient::class );
+		$this->client->method( 'getMerchantCenterLinkServiceClient' )->willReturn( $mc_link_service );
+
+		$links = array_map(
+			function( $link ) {
+				return new MerchantCenterLink( $link );
+			},
+			$links
+		);
+
+		$list = $this->createMock( ListMerchantCenterLinksResponse::class );
+		$list->method( 'getMerchantCenterLinks' )->willReturn( $links );
+
+		$mc_link_service->method( 'listMerchantCenterLinks' )->willReturn( $list );
+
+		return $mc_link_service;
+	}
+
+	/**
+	 * Generates a mocked exception when a Merchant Center link is requested.
+	 *
+	 * @param ApiException $exception
+	 */
+	protected function generate_mc_link_mock_exception( ApiException $exception ) {
+		$mc_link_service = $this->createMock( MerchantCenterLinkServiceClient::class );
+		$this->client->method( 'getMerchantCenterLinkServiceClient' )->willReturn( $mc_link_service );
+
+		$mc_link_service->method( 'listMerchantCenterLinks' )->willThrowException( $exception );
 	}
 }

@@ -5,11 +5,14 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsAccountQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsBillingStatusQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Exception;
 use Google\Ads\GoogleAds\Util\FieldMasks;
+use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
@@ -46,6 +49,43 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
+	 * Get Ads IDs associated with the connected Google account.
+	 *
+	 * @return int[]
+	 * @throws ExceptionWithResponseData When an ApiException is caught.
+	 */
+	public function get_ads_account_ids(): array {
+		try {
+			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers();
+			$ids       = [];
+
+			foreach ( $customers->getResourceNames() as $name ) {
+				/** @var string $name */
+				$ids[] = $this->parse_ads_id( $name );
+			}
+
+			return $ids;
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+
+			$errors = $this->get_api_exception_errors( $e );
+
+			// Return an empty list if the user has not signed up to ads yet.
+			if ( isset( $errors['NOT_ADS_USER'] ) ) {
+				return [];
+			}
+
+			throw new ExceptionWithResponseData(
+				/* translators: %s Error message */
+				sprintf( __( 'Error retrieving accounts: %s', 'google-listings-and-ads' ), reset( $errors ) ),
+				$this->map_grpc_code_to_http_status_code( $e ),
+				null,
+				[ 'errors' => $errors ]
+			);
+		}
+	}
+
+	/**
 	 * Get billing status.
 	 *
 	 * @return string
@@ -67,14 +107,11 @@ class Ads implements OptionsAwareInterface {
 				$status        = BillingSetupStatus::label( $billing_setup->getStatus() );
 				return apply_filters( 'woocommerce_gla_ads_billing_setup_status', $status, $ads_id );
 			}
-		} catch ( ApiException $e ) {
+		} catch ( ApiException | ValidationException $e ) {
 			// Do not act upon error as we might not have permission to access this account yet.
 			if ( 'PERMISSION_DENIED' !== $e->getStatus() ) {
 				do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			}
-		} catch ( ValidationException $e ) {
-			// If no billing setups are found, just return UNKNOWN
-			return BillingSetupStatus::UNKNOWN;
 		}
 
 		return apply_filters( 'woocommerce_gla_ads_billing_setup_status', BillingSetupStatus::UNKNOWN, $ads_id );
@@ -132,6 +169,86 @@ class Ads implements OptionsAwareInterface {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the ads account currency.
+	 *
+	 * @since 1.4.1
+	 *
+	 * @return string
+	 */
+	public function get_ads_currency(): string {
+		// Retrieve account currency from the API if we haven't done so previously.
+		if ( $this->options->get_ads_id() && ! $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ) {
+			$this->request_ads_currency();
+		}
+
+		return strtoupper( $this->options->get( OptionsInterface::ADS_ACCOUNT_CURRENCY ) ?? get_woocommerce_currency() );
+	}
+
+	/**
+	 * Request the Ads Account currency, and cache it as an option.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return boolean
+	 */
+	public function request_ads_currency(): bool {
+		try {
+			$resource = ResourceNames::forCustomer( $this->options->get_ads_id() );
+			$customer = $this->client->getCustomerServiceClient()->getCustomer( $resource );
+			$currency = $customer->getCurrencyCode();
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+			$currency = null;
+		}
+
+		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, $currency );
+	}
+
+	/**
+	 * Save the Ads account currency to the same value as the Store currency.
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return boolean
+	 */
+	public function use_store_currency(): bool {
+		return $this->options->update( OptionsInterface::ADS_ACCOUNT_CURRENCY, get_woocommerce_currency() );
+	}
+
+	/**
+	 * Convert ads ID from a resource name to an int.
+	 *
+	 * @param string $name Resource name containing ID number.
+	 *
+	 * @return int
+	 */
+	public function parse_ads_id( string $name ): int {
+		return absint( str_replace( 'customers/', '', $name ) );
+	}
+
+	/**
+	 * Update the Ads ID to use for requests.
+	 *
+	 * @param int $id Ads ID number.
+	 *
+	 * @return bool
+	 */
+	public function update_ads_id( int $id ): bool {
+		return $this->options->update( OptionsInterface::ADS_ID, $id );
+	}
+
+	/**
+	 * Update the billing flow URL so we can retrieve it again later.
+	 *
+	 * @param string $url Billing flow URL.
+	 *
+	 * @return bool
+	 */
+	public function update_billing_url( string $url ): bool {
+		return $this->options->update( OptionsInterface::ADS_BILLING_URL, $url );
 	}
 
 	/**
