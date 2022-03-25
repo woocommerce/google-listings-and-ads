@@ -93,6 +93,15 @@ const webpackConfig = {
 		...defaultConfig.plugins.filter( ( plugin ) => {
 			const filteredPlugins = [
 				'DependencyExtractionWebpackPlugin',
+				/**
+				 * We don't use block.json to build the client files.
+				 * And CopyPlugin will cause any changes to files in the '<rootDir>/src' folder
+				 * to trigger an unwanted webpack rebuild.
+				 *
+				 * Ref:
+				 * - https://github.com/WordPress/gutenberg/tree/%40wordpress/scripts%4022.1.0/packages/scripts#default-webpack-config
+				 * - https://github.com/WordPress/gutenberg/blob/%40wordpress/scripts%4022.1.0/packages/scripts/config/webpack.config.js#L232-L240
+				 */
 				'CopyPlugin',
 			];
 			return ! filteredPlugins.includes( plugin.constructor.name );
