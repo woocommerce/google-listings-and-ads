@@ -38,6 +38,7 @@ class ProductFilter implements Service {
 	 * @return FilteredProductList
 	 */
 	public function filter_sync_ready_products( array $products ): FilteredProductList {
+		$unfiltered_count = count( $products );
 		/**
 		 * Filters the list of products ready to be synced (before applying filters to check failures and sync-ready status).
 		 *
@@ -59,7 +60,7 @@ class ProductFilter implements Service {
 		 */
 		$results = apply_filters( 'woocommerce_gla_get_sync_ready_products_filter', $results );
 
-		return new FilteredProductList( $results, count( $products ) );
+		return new FilteredProductList( $results, $unfiltered_count );
 	}
 
 	/**
