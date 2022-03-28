@@ -25,14 +25,7 @@ import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
 import Options from './options';
 import './index.scss';
-import {
-	ARROW_DOWN,
-	ARROW_UP,
-	BACKSPACE,
-	ENTER,
-	ESCAPE,
-	ROOT_VALUE,
-} from '.~/components/tree-select-control/constants';
+import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
 
 /**
  * Example of Options data structure:
@@ -435,12 +428,6 @@ const TreeSelectControl = ( {
 		if ( ARROW_DOWN === event.key ) {
 			if ( ! filteredOptions.length ) return;
 			setFocused( getNextOption( focused ) );
-			event.preventDefault();
-		}
-
-		if ( BACKSPACE === event.key ) {
-			if ( inputControlValue ) return;
-			onChange( value.slice( 0, -1 ) );
 			event.preventDefault();
 		}
 	};

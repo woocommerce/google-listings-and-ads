@@ -8,6 +8,7 @@ import { useRef } from '@wordpress/element';
  * Internal dependencies
  */
 import Tags from './tags';
+import { BACKSPACE } from './constants';
 
 /**
  * The Control Component renders a search input and also the Tags.
@@ -39,6 +40,15 @@ const Control = ( {
 	const hasTags = tags.length > 0;
 	const showPlaceholder = ! hasTags && ! isExpanded;
 	const inputRef = useRef();
+
+	const handleKeydown = ( event ) => {
+		if ( BACKSPACE === event.key ) {
+			if ( inputRef.current.value ) return;
+			onTagsChange( tags.slice( 0, -1 ) );
+			event.preventDefault();
+		}
+	};
+
 	return (
 		/**
 		 * ESLint Disable reason
@@ -81,6 +91,7 @@ const Control = ( {
 					disabled={ disabled }
 					onFocus={ onFocus }
 					onChange={ onInputChange }
+					onKeyDown={ handleKeydown }
 				/>
 			</div>
 		</div>
