@@ -443,6 +443,10 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 * @return array
 	 */
 	protected function combine_campaigns_and_campaign_criterion_results( array $campaigns ): array {
+		if ( empty( $campaigns ) ) {
+			return [];
+		}
+
 		$campaign_criterion_results = ( new AdsCampaignCriterionQuery() )->set_client( $this->client, $this->options->get_ads_id() )
 			->where( 'campaign.id', array_keys( $campaigns ), 'IN' )
 			// negative: Whether to target (false) or exclude (true) the criterion.

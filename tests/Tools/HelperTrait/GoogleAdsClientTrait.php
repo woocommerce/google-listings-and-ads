@@ -131,7 +131,7 @@ trait GoogleAdsClientTrait {
 	}
 
 	/**
-	 * Generates a mocked AdsCampaignQuery response.
+	 * Generates mocked AdsCampaignQuery and AdsCampaignCriterionQuery responses.
 	 *
 	 * @param array $campaigns_responses Set of campaign data to convert.
 	 * @param array $campaign_criterion_responses Set of campaign criterion data to convert.
@@ -145,7 +145,23 @@ trait GoogleAdsClientTrait {
 			$campaigns_row_mock,
 			$campaign_criterion_row_mock
 		);
-		$this->service_client->method( 'search' )->willReturn( $list_response );
+
+		$this->service_client->expects( $this->exactly( 2 ) )
+			->method( 'search' )->willReturn( $list_response );
+	}
+
+	/**
+	 * Generates a mocked empty campaigns response.
+	 */
+	protected function generate_ads_campaign_query_mock_with_no_campaigns() {
+		$list_response = $this->createMock( PagedListResponse::class );
+		$list_response->method( 'iterateAllElements' )->willReturn( [] );
+
+		// Method search() will only being called once by AdsCampaignQuery
+		// since there were no campaigns returned by AdsCampaignQuery, it
+		// won't be calling AdsCampaignCriterionQuery then.
+		$this->service_client->expects( $this->once() )
+			->method( 'search' )->willReturn( $list_response );
 	}
 
 	/**
