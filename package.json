@@ -18,6 +18,7 @@
 		"check-engines": "wp-scripts check-engines",
 		"check-licenses": "wp-scripts check-licenses",
 		"dev": "NODE_ENV=development wp-scripts build",
+		"doc:tracking": "jsdoc ./js/src -c .jsdocrc.json -t ./woo-tracking-jsdoc",
 		"docker:up": "npx wc-e2e docker:up",
 		"docker:down": "npx wc-e2e docker:down",
 		"format:js": "wp-scripts format",
@@ -60,6 +61,10 @@
 		"eslint-plugin-import": "^2.25.4",
 		"file-loader": "^6.2.0",
 		"h2o2": "^8.2.0",
+		"jsdoc": "^3.6.10",
+		"jsdoc-advanced-types-plugin": "0.0.1-3",
+		"jsdoc-plugin-intersection": "^1.0.4",
+		"jsdoc-plugin-typescript": "^2.0.6",
 		"postcss": "^8.4.4",
 		"prettier": "npm:wp-prettier@^2.0.5"
 	},
