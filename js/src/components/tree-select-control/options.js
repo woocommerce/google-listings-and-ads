@@ -98,7 +98,6 @@ const Options = ( {
 	 * Alters the node with some keys for accessibility
 	 * ArrowRight - Expands the node
 	 * ArrowLeft - Collapses the node
-	 * Space - Checks/Unchecks the node
 	 *
 	 * @param {Event} event The KeyDown event
 	 * @param {Option} option The option where the event happened
