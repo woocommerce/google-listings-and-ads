@@ -85,42 +85,4 @@ class AdsGroupTest extends UnitTest {
 			$listing_group->getListingGroup()->getType()
 		);
 	}
-
-	public function test_delete_operations() {
-		$campaign_resource_name      = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
-		$ad_group_resource_name      = $this->generate_ad_group_resource_name( self::TEST_AD_GROUP_ID );
-		$ad_group_ad_resource_name   = $this->generate_ad_group_ad_resource_name( self::TEST_AD_GROUP_ID, self::TEST_AD_GROUP_AD_ID );
-		$listing_group_resource_name = $this->generate_listing_group_resource_name( self::TEST_AD_GROUP_ID, self::TEST_LISTING_GROUP_ID );
-
-		$this->generate_ads_group_query_mock(
-			$ad_group_resource_name,
-			$ad_group_ad_resource_name,
-			$listing_group_resource_name
-		);
-
-		$operations = $this->ad_group->delete_operations(
-			$campaign_resource_name
-		);
-
-		$operation_listing_group = $operations[0]->getAdGroupCriterionOperation();
-		$this->assertTrue( $operation_listing_group->hasRemove() );
-		$this->assertEquals(
-			$listing_group_resource_name,
-			$operation_listing_group->getRemove()
-		);
-
-		$operation_ad_group_ad = $operations[1]->getAdGroupAdOperation();
-		$this->assertTrue( $operation_ad_group_ad->hasRemove() );
-		$this->assertEquals(
-			$ad_group_ad_resource_name,
-			$operation_ad_group_ad->getRemove()
-		);
-
-		$operation_ad_group = $operations[2]->getAdGroupOperation();
-		$this->assertTrue( $operation_ad_group->hasRemove() );
-		$this->assertEquals(
-			$ad_group_resource_name,
-			$operation_ad_group->getRemove()
-		);
-	}
 }

@@ -301,12 +301,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		try {
 			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 
-			// Budget must be removed after the campaign.
-			$operations = array_merge(
-				$this->container->get( AdsGroup::class )->delete_operations( $campaign_resource_name ),
-				[ $this->delete_operation( $campaign_resource_name ) ],
-				[ $this->budget->delete_operation( $campaign_id ) ]
-			);
+			$operations = [
+				$this->delete_operation( $campaign_resource_name ),
+			];
 
 			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
