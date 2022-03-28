@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -37,21 +37,21 @@ class ProductHelper implements Service {
 	protected $wc;
 
 	/**
-	 * @var MerchantCenterService
+	 * @var TargetAudience
 	 */
-	protected $merchant_center;
+	protected $target_audience;
 
 	/**
 	 * ProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler    $meta_handler
-	 * @param WC                    $wc
-	 * @param MerchantCenterService $merchant_center
+	 * @param ProductMetaHandler $meta_handler
+	 * @param WC                 $wc
+	 * @param TargetAudience     $target_audience
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc, MerchantCenterService $merchant_center ) {
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience ) {
 		$this->meta_handler    = $meta_handler;
 		$this->wc              = $wc;
-		$this->merchant_center = $merchant_center;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
@@ -78,7 +78,7 @@ class ProductHelper implements Service {
 
 		// check if product is synced completely and remove any previous errors if it is
 		$synced_countries = array_keys( $google_ids );
-		$target_countries = $this->merchant_center->get_target_countries();
+		$target_countries = $this->target_audience->get_target_countries();
 		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );

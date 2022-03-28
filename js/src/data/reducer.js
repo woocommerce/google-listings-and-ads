@@ -126,32 +126,32 @@ const reducer = ( state = DEFAULT_STATE, action ) => {
 		}
 
 		case TYPES.UPSERT_SHIPPING_RATES: {
-			const { countryCodes, currency, rate } = action.shippingRate;
-			const rates = [ ...state.mc.shipping.rates ];
+			const { shippingRates: upsertedShippingRates } = action;
+			const shippingRates = [ ...state.mc.shipping.rates ];
 
-			countryCodes.forEach( ( countryCode ) => {
-				const shippingRate = { countryCode, currency, rate };
-				const idx = rates.findIndex(
-					( el ) => el.countryCode === countryCode
+			upsertedShippingRates.forEach( ( upsertedShippingRate ) => {
+				const idx = shippingRates.findIndex(
+					( shippingRate ) =>
+						shippingRate.id === upsertedShippingRate.id
 				);
 
 				if ( idx >= 0 ) {
-					rates[ idx ] = shippingRate;
+					shippingRates[ idx ] = upsertedShippingRate;
 				} else {
-					rates.push( shippingRate );
+					shippingRates.push( upsertedShippingRate );
 				}
 			} );
 
-			return setIn( state, 'mc.shipping.rates', rates );
+			return setIn( state, 'mc.shipping.rates', shippingRates );
 		}
 
 		case TYPES.DELETE_SHIPPING_RATES: {
-			const countryCodeSet = new Set( action.countryCodes );
-			const rates = state.mc.shipping.rates.filter(
-				( el ) => ! countryCodeSet.has( el.countryCode )
+			const { ids } = action;
+			const shippingRates = state.mc.shipping.rates.filter(
+				( el ) => ! ids.includes( el.id )
 			);
 
-			return setIn( state, 'mc.shipping.rates', rates );
+			return setIn( state, 'mc.shipping.rates', shippingRates );
 		}
 
 		case TYPES.RECEIVE_SHIPPING_TIMES: {
