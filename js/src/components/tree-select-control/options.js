@@ -8,7 +8,7 @@ import classnames from 'classnames';
 /**
  * Internal dependencies
  */
-import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE, SPACE } from './constants';
+import { ARROW_LEFT, ARROW_RIGHT, ROOT_VALUE } from './constants';
 import Checkbox from '.~/components/tree-select-control/checkbox';
 
 /**
@@ -95,24 +95,9 @@ const Options = ( {
 	};
 
 	/**
-	 * Expands the option
-	 *
-	 * @param {Option} option The option to expand
-	 */
-	const expand = ( option ) => {
-		if (
-			! option.children?.length ||
-			nodesExpanded.includes( option.value )
-		)
-			return;
-		onNodesExpandedChange( [ ...nodesExpanded, option.value ] );
-	};
-
-	/**
 	 * Alters the node with some keys for accessibility
 	 * ArrowRight - Expands the node
 	 * ArrowLeft - Collapses the node
-	 * Space - Checks/Unchecks the node
 	 *
 	 * @param {Event} event The KeyDown event
 	 * @param {Option} option The option where the event happened
@@ -123,8 +108,6 @@ const Options = ( {
 			toggleExpanded( option );
 		} else if ( event.key === ARROW_LEFT && isExpanded ) {
 			toggleExpanded( option );
-		} else if ( event.key === SPACE ) {
-			onChange( event.target.checked, option );
 		}
 	};
 
@@ -178,9 +161,6 @@ const Options = ( {
 						onChange={ ( e ) => {
 							onOptionFocused( option );
 							onChange( e.target.checked, option );
-							if ( e.target.checked ) {
-								expand( option );
-							}
 						} }
 						onKeyDown={ ( e ) => {
 							handleKeyDown( e, option, isExpanded );

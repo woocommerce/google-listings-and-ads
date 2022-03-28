@@ -25,14 +25,7 @@ import useIsEqualRefValue from '.~/hooks/useIsEqualRefValue';
 import Control from './control';
 import Options from './options';
 import './index.scss';
-import {
-	ARROW_DOWN,
-	ARROW_UP,
-	BACKSPACE,
-	ENTER,
-	ESCAPE,
-	ROOT_VALUE,
-} from '.~/components/tree-select-control/constants';
+import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
 
 /**
  * Example of Options data structure:
@@ -159,6 +152,22 @@ const TreeSelectControl = ( {
 	}, [ treeOptions ] );
 
 	/**
+	 * Check if an Option is expanded
+	 * An option is expanded if the Option value is in the nodesExpanded list or is the ROOT
+	 * or has children and there is a search filter
+	 *
+	 * @param {Option} option The option to check if it's expanded
+	 * @return {boolean} True if it's expanded, false otherwise
+	 */
+	const isOptionExpanded = ( option ) => {
+		return (
+			nodesExpanded.includes( option.value ) ||
+			option.value === ROOT_VALUE ||
+			( hasChildren( option ) && !! filter )
+		);
+	};
+
+	/**
 	 * Get the option parent
 	 *
 	 * @param {Option} option The option to get the parent
@@ -170,13 +179,26 @@ const TreeSelectControl = ( {
 	};
 
 	/**
-	 * Get the option index
+	 * Get the option index based on the Option ref
 	 *
 	 * @param {RepositoryOption} option The option to get the index
 	 * @return {number} The index
 	 */
-	const getOptionIndex = ( option ) => {
+	const getOptionIndexFromRef = ( option ) => {
 		return Number( option.ref.current.dataset.index );
+	};
+
+	/**
+	 * Get the option index based on its position relative to its parent
+	 *
+	 * @param {Option} option The option to check the position
+	 * @param {Option} parent The parent option
+	 * @return {number} The index of the option or -1 if not found
+	 */
+	const getOptionIndexFromParent = ( option, parent ) => {
+		return parent.children.findIndex(
+			( el ) => el.key === option.key && el.value === option.value
+		);
 	};
 
 	/**
@@ -186,10 +208,23 @@ const TreeSelectControl = ( {
 	 * @return {Option} The last child in the option
 	 */
 	const getLastChild = ( option ) => {
-		return nodesExpanded.includes( option.value ) ||
-			option.value === ROOT_VALUE
-			? getLastChild( option.children[ option.children.length - 1 ] )
-			: getOptionFromRepository( option );
+		if ( isOptionExpanded( option ) ) {
+			for (
+				let index = option.children.length - 1;
+				index >= 0;
+				index--
+			) {
+				const nextEl = getOptionFromRepository(
+					option.children[ index ]
+				);
+
+				if ( nextEl.ref.current ) {
+					return getLastChild( nextEl );
+				}
+			}
+		}
+
+		return getOptionFromRepository( option );
 	};
 
 	/**
@@ -199,27 +234,41 @@ const TreeSelectControl = ( {
 	 * @return {Object} The previous option
 	 */
 	const getPreviousOption = ( option ) => {
+		// if no option is provided means we are focused in the search control.
+		// Hence the element to focus is the last
 		if ( ! option ) {
 			return getLastChild(
 				filteredOptions[ filteredOptions.length - 1 ]
 			);
 		}
 
-		const index = getOptionIndex( option );
 		const parent = getOptionParent( option );
 
-		// if the option has parent and is the first option in the group, then the previous option is the parent
-		if ( parent && index === 0 ) {
+		if ( parent ) {
+			let index = getOptionIndexFromParent( option, parent );
+
+			// iterate over the elements until get the last one visible
+			while ( index ) {
+				const nextEl = getOptionFromRepository(
+					parent.children[ index - 1 ]
+				);
+
+				if ( ! nextEl.ref.current ) {
+					index--;
+				} else {
+					return getLastChild( nextEl );
+				}
+			}
+
 			return getOptionFromRepository( parent );
 		}
 
-		return parent
-			? getLastChild( parent.children[ index - 1 ] )
-			: getLastChild(
-					filteredOptions[
-						index > 0 ? index - 1 : filteredOptions.length - 1
-					]
-			  );
+		const index = getOptionIndexFromRef( option );
+		return getLastChild(
+			filteredOptions[
+				index > 0 ? index - 1 : filteredOptions.length - 1
+			]
+		);
 	};
 
 	/**
@@ -229,32 +278,64 @@ const TreeSelectControl = ( {
 	 * if there is no more options, it tries to get the next option on the upper level.
 	 *
 	 * @param {Option} option The reference option to get the next element
+	 * @param {number} offset The starting index position
+	 * @param {boolean} checkExpanded If true, we check the children in the provided option
 	 * @return {Object} The next available option in the tree
 	 */
-	const getNextOption = ( option ) => {
+	const getNextOption = ( option, offset = 0, checkExpanded = true ) => {
+		// if no option is provided means we are focused in the search control.
+		// Hence the element to focus is the first
 		if ( ! option ) {
 			return getOptionFromRepository( filteredOptions[ 0 ] );
 		}
 
-		if (
-			nodesExpanded.includes( focused.value ) ||
-			focused.value === ROOT_VALUE
-		) {
-			return getOptionFromRepository( focused.children[ 0 ] );
+		// if the option is expanded and we are checking children...
+		if ( checkExpanded && isOptionExpanded( option ) ) {
+			// if there are still elements to check in the children
+			if ( offset < option.children.length ) {
+				const nextEl = getOptionFromRepository(
+					option.children[ offset ]
+				);
+
+				// if element is not visible, continue checking the next child
+				if ( ! nextEl.ref.current ) {
+					return getNextOption( option, offset + 1 );
+				}
+
+				return nextEl;
+			}
 		}
 
-		const index = getOptionIndex( option );
 		const parent = getOptionParent( option );
 
-		const nextSibling = parent
-			? parent.children[ index + 1 ]
-			: filteredOptions[ ( index + 1 ) % filteredOptions.length ];
+		if ( parent ) {
+			// get the element position in the parent
+			const index = getOptionIndexFromParent( option, parent );
 
-		if ( nextSibling ) {
-			return getOptionFromRepository( nextSibling );
+			const nextEl = getOptionFromRepository(
+				parent.children[ index + offset + 1 ]
+			);
+
+			// if there are no more children, iterate over the next parent
+			if ( ! nextEl ) {
+				return getNextOption( parent, 0, false );
+			}
+
+			// if element is not visible, continue checking the next element
+			if ( ! nextEl.ref.current ) {
+				return getNextOption( option, offset + 1, checkExpanded );
+			}
+
+			return nextEl;
 		}
 
-		return getNextOption( parent );
+		// if we are at root level, go to next element
+		return getOptionFromRepository(
+			filteredOptions[
+				( getOptionIndexFromRef( option ) + offset + 1 ) %
+					filteredOptions.length
+			]
+		);
 	};
 
 	/**
@@ -338,20 +419,15 @@ const TreeSelectControl = ( {
 			event.preventDefault();
 		}
 
-		if ( inputControlValue ) return;
-
 		if ( ARROW_UP === event.key ) {
+			if ( ! filteredOptions.length ) return;
 			setFocused( getPreviousOption( focused ) );
 			event.preventDefault();
 		}
 
 		if ( ARROW_DOWN === event.key ) {
+			if ( ! filteredOptions.length ) return;
 			setFocused( getNextOption( focused ) );
-			event.preventDefault();
-		}
-
-		if ( BACKSPACE === event.key ) {
-			onChange( value.slice( 0, -1 ) );
 			event.preventDefault();
 		}
 	};
@@ -415,6 +491,10 @@ const TreeSelectControl = ( {
 	 */
 	const handleParentChange = ( checked, option ) => {
 		const newValue = [ ...value ];
+
+		if ( checked && ! nodesExpanded.includes( option.value ) ) {
+			setNodesExpanded( [ ...nodesExpanded, option.value ] );
+		}
 
 		function loadChildren( parent ) {
 			if ( ! parent.children ) {

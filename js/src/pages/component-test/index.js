@@ -70,12 +70,11 @@ const ComponentTest = () => {
 						{ value: 'GE', label: 'Georgia' },
 					],
 				},
-				{ value: 'CA', label: 'Canada' },
+				{
+					value: 'CA',
+					label: 'Canada',
+				},
 			],
-		},
-		{
-			value: '',
-			label: 'I dont know yet',
 		},
 	];
 
