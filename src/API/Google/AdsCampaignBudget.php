@@ -100,21 +100,6 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Returns a campaign delete operation.
-	 *
-	 * @param int $campaign_id
-	 *
-	 * @return MutateOperation
-	 */
-	public function delete_operation( int $campaign_id ): MutateOperation {
-		$budget_id            = $this->get_budget_from_campaign( $campaign_id );
-		$budget_resource_name = ResourceNames::forCampaignBudget( $this->options->get_ads_id(), $budget_id );
-
-		$operation = ( new CampaignBudgetOperation() )->setRemove( $budget_resource_name );
-		return ( new MutateOperation() )->setCampaignBudgetOperation( $operation );
-	}
-
-	/**
 	 * Return a temporary resource name for the campaign budget.
 	 *
 	 * @return string

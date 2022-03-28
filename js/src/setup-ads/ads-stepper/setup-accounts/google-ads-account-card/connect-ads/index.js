@@ -1,16 +1,16 @@
 /**
  * External dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, createInterpolateElement } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Button, CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import AdsAccountSelectControl from '.~/components/ads-account-select-control';
 import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppButton from '.~/components/app-button';
+import AppDocumentationLink from '.~/components/app-documentation-link';
 import ContentButtonLayout from '.~/components/content-button-layout';
 import LoadingLabel from '.~/components/loading-label';
 import Section from '.~/wcdl/section';
@@ -18,10 +18,11 @@ import Subsection from '.~/wcdl/subsection';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
+import AdsAccountSelectControl from './ads-account-select-control';
 import './index.scss';
 
 const ConnectAds = ( props ) => {
-	const { onCreateNew = () => {} } = props;
+	const { accounts, onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
 	const [ isLoading, setLoading ] = useState( false );
 	const [ fetchConnectAdsAccount ] = useApiFetchCallback( {
@@ -31,6 +32,14 @@ const ConnectAds = ( props ) => {
 	} );
 	const { refetchGoogleAdsAccount } = useGoogleAdsAccount();
 	const { createNotice } = useDispatchCoreNotices();
+
+	/**
+	 * Boolean to display blurb message to advise users
+	 * to connect Google Ads sub-account and not manager account.
+	 *
+	 * The message is displayed when there are more than one Google Ads account.
+	 */
+	const displayMessage = accounts.length > 1;
 
 	const handleConnectClick = async () => {
 		if ( ! value ) {
@@ -64,12 +73,32 @@ const ConnectAds = ( props ) => {
 			<Section.Card.Body>
 				<Subsection.Title>
 					{ __(
-						'Connect your Google Ads account',
+						'Select an existing account',
 						'google-listings-and-ads'
 					) }
 				</Subsection.Title>
+				{ displayMessage && (
+					<Subsection.Body>
+						{ createInterpolateElement(
+							__(
+								'If you manage multiple sub-accounts in Google Ads, please connect the relevant sub-account, not a manager account. <link>Learn more</link>',
+								'google-listings-and-ads'
+							),
+							{
+								link: (
+									<AppDocumentationLink
+										context="setup-ads-connect-account"
+										linkId="connect-sub-account"
+										href="https://support.google.com/google-ads/answer/6139186"
+									/>
+								),
+							}
+						) }
+					</Subsection.Body>
+				) }
 				<ContentButtonLayout>
 					<AdsAccountSelectControl
+						accounts={ accounts }
 						value={ value }
 						onChange={ setValue }
 					/>

@@ -13,8 +13,10 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import GoogleAdsAccountCard from './google-ads-account-card';
+import FreeAdCredit from './free-ad-credit';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
+import useFreeAdCredit from '.~/hooks/useFreeAdCredit';
 import AppSpinner from '.~/components/app-spinner';
 import Section from '.~/wcdl/section';
 
@@ -22,6 +24,7 @@ const SetupAccounts = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { google } = useGoogleAccount();
 	const { googleAdsAccount } = useGoogleAdsAccount();
+	const hasFreeAdCredit = useFreeAdCredit();
 
 	if ( ! google || ( google.active === 'yes' && ! googleAdsAccount ) ) {
 		return <AppSpinner />;
@@ -58,6 +61,7 @@ const SetupAccounts = ( props ) => {
 						) }
 					/>
 					<GoogleAdsAccountCard />
+					{ hasFreeAdCredit && <FreeAdCredit /> }
 				</VerticalGapLayout>
 			</Section>
 			<StepContentFooter>

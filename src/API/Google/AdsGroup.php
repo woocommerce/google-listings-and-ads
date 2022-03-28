@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsGroupQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsGroupAdQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsGroupQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsListingGroupQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
@@ -13,7 +13,6 @@ use Google\Ads\GoogleAds\V9\Resources\Ad;
 use Google\Ads\GoogleAds\V9\Services\AdGroupAdOperation;
 use Google\Ads\GoogleAds\V9\Services\AdGroupCriterionOperation;
 use Google\Ads\GoogleAds\V9\Services\AdGroupOperation;
-use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V9\Services\MutateOperation;
 
 /**

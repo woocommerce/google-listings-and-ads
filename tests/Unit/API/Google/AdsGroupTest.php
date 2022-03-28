@@ -7,11 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Framework\UnitTest;
 use Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait\GoogleAdsClientTrait;
-use Google\Ads\GoogleAds\V9\Common\ShoppingSmartAdInfo;
-use Google\Ads\GoogleAds\V9\Enums\AdGroupAdStatusEnum\AdGroupAdStatus;
-use Google\Ads\GoogleAds\V9\Enums\AdGroupStatusEnum\AdGroupStatus;
-use Google\Ads\GoogleAds\V9\Enums\AdGroupTypeEnum\AdGroupType;
-use Google\Ads\GoogleAds\V9\Enums\ListingGroupTypeEnum\ListingGroupType;
 use PHPUnit\Framework\MockObject\MockObject;
 
 defined( 'ABSPATH' ) || exit;
