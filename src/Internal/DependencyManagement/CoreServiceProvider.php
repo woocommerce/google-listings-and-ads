@@ -59,6 +59,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterSer
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\PhoneVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\CompleteSetup as CompleteSetupNote;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ContactInformation as ContactInformationNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\NoteInitializer;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReviewAfterClicks as ReviewAfterClicksNote;
@@ -168,6 +169,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		PhoneVerification::class      => true,
 		ContactInformation::class     => true,
 		MerchantCenterService::class  => true,
+		TargetAudience::class         => true,
 		MerchantAccountState::class   => true,
 		AdsAccountState::class        => true,
 		DBInstaller::class            => true,
@@ -210,6 +212,9 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->getLeagueContainer()
 			 ->inflector( GoogleHelperAwareInterface::class )
 			 ->invokeMethod( 'set_google_helper_object', [ GoogleHelper::class ] );
+
+		// Set up the TargetAudience service.
+		$this->share_with_tags( TargetAudience::class, WC::class, OptionsInterface::class, GoogleHelper::class );
 
 		// Set up MerchantCenter service, and inflect classes that need it.
 		$this->share_with_tags( MerchantCenterService::class );
@@ -290,7 +295,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 		$this->share_with_tags( PhoneVerification::class, Merchant::class, WP::class, ISOUtility::class );
 		$this->share_with_tags( ContactInformation::class, Merchant::class, GoogleSettings::class );
 		$this->share_with_tags( ProductMetaHandler::class );
-		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, MerchantCenterService::class );
+		$this->share( ProductHelper::class, ProductMetaHandler::class, WC::class, TargetAudience::class );
 		$this->share_with_tags( ProductFilter::class, ProductHelper::class );
 		$this->share_with_tags( ProductRepository::class, ProductMetaHandler::class, ProductFilter::class );
 		$this->share_with_tags( ProductFactory::class, AttributeManager::class, WC::class );
@@ -300,7 +305,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			ProductHelper::class,
 			ValidatorInterface::class,
 			ProductFactory::class,
-			MerchantCenterService::class
+			TargetAudience::class
 		);
 		$this->share_with_tags(
 			ProductSyncer::class,
@@ -325,6 +330,7 @@ class CoreServiceProvider extends AbstractServiceProvider {
 			CouponHelper::class,
 			ValidatorInterface::class,
 			MerchantCenterService::class,
+			TargetAudience::class,
 			WC::class
 		);
 
@@ -335,11 +341,11 @@ class CoreServiceProvider extends AbstractServiceProvider {
 
 		// Share admin meta boxes
 		$this->conditionally_share_with_tags( ChannelVisibilityMetaBox::class, Admin::class, ProductMetaHandler::class, ProductHelper::class, MerchantCenterService::class );
-		$this->conditionally_share_with_tags( CouponChannelVisibilityMetaBox::class, Admin::class, CouponMetaHandler::class, CouponHelper::class, MerchantCenterService::class );
+		$this->conditionally_share_with_tags( CouponChannelVisibilityMetaBox::class, Admin::class, CouponMetaHandler::class, CouponHelper::class, MerchantCenterService::class, TargetAudience::class );
 		$this->conditionally_share_with_tags( MetaBoxInitializer::class, Admin::class, MetaBoxInterface::class );
 
 		// Share bulk edit views
-		$this->share_with_tags( CouponBulkEdit::class, CouponMetaHandler::class, MerchantCenterService::class );
+		$this->share_with_tags( CouponBulkEdit::class, CouponMetaHandler::class, MerchantCenterService::class, TargetAudience::class );
 		$this->share_with_tags( BulkEditInitializer::class );
 
 		$this->share_with_tags( PHPViewFactory::class );

@@ -1,5 +1,4 @@
 .wcdl-select-control {
-	&__label,
 	&__input,
 	&__helper-text {
 		&:not(:last-child) {
@@ -8,8 +7,8 @@
 	}
 
 	&__label {
-		font-size: 13px;
-		line-height: 16px;
+		color: $gray-700;
+		padding-bottom: 4px;
 	}
 
 	&__helper-text {
