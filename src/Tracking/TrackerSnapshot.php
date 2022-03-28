@@ -97,7 +97,7 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 			'tax_rate'                        => $mc_settings['tax_rate'] ?? '',
 			'has_account_issue'               => $mc_service->has_account_issues() ? 'yes' : 'no',
 			'has_at_least_one_synced_product' => $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
-			'ads_setup_started'            	  => $ads_service->is_setup_started() ? 'yes' : 'no',
+			'ads_setup_started'               => $ads_service->is_setup_started() ? 'yes' : 'no',
 		];
 	}
 
