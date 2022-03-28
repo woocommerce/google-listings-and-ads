@@ -16,7 +16,7 @@ import AppIconButton from '.~/components/app-icon-button';
  *
  * @param {Object} props Props
  * @param {string} props.eventContext Context to be used in `gla_help_click` track event.
- * @return {import(".~/components/app-icon-button")} The button.
+ * @return {import(".~/components/app-icon-button").default} The button.
  */
 const HelpIconButton = ( props ) => {
 	const { eventContext, ...rest } = props;
