@@ -56,7 +56,7 @@ class AdsAssetGroup implements OptionsAwareInterface {
 	protected $asset_groups;
 
 	/**
-	 * AdsGroup constructor.
+	 * AdsAssetGroup constructor.
 	 *
 	 * @param GoogleAdsClient $client
 	 */
