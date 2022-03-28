@@ -3,13 +3,13 @@
 	flex-direction: column;
 	margin-bottom: var(--large-gap);
 
-	@include break-small() {
+	@include break-small {
 		flex-direction: row;
 		gap: var(--main-gap);
 	}
 
 	header {
-		@include break-small() {
+		@include break-small {
 			width: 33%;
 			padding-top: var(--large-gap);
 		}

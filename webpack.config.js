@@ -1,3 +1,4 @@
+const webpack = require( 'webpack' );
 const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 const DependencyExtractionWebpackPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
 const path = require( 'path' );
@@ -80,17 +81,50 @@ const webpackConfig = {
 		alias: {
 			'.~': path.resolve( process.cwd(), 'js/src/' ),
 		},
+		fallback: {
+			/**
+			 * Automatic polyfills for native node.js modules were removed from webpack v5.
+			 * And `postcss` requires the `path` module, so here needs a polyfill.
+			 */
+			path: require.resolve( 'path-browserify' ),
+		},
 	},
 	plugins: [
-		...defaultConfig.plugins.filter(
-			( plugin ) =>
-				plugin.constructor.name !== 'DependencyExtractionWebpackPlugin'
-		),
+		...defaultConfig.plugins.filter( ( plugin ) => {
+			const filteredPlugins = [
+				'DependencyExtractionWebpackPlugin',
+				/**
+				 * We don't use block.json to build the client files.
+				 * And CopyPlugin will cause any changes to files in the '<rootDir>/src' folder
+				 * to trigger an unwanted webpack rebuild.
+				 *
+				 * Ref:
+				 * - https://github.com/WordPress/gutenberg/tree/%40wordpress/scripts%4022.1.0/packages/scripts#default-webpack-config
+				 * - https://github.com/WordPress/gutenberg/blob/%40wordpress/scripts%4022.1.0/packages/scripts/config/webpack.config.js#L232-L240
+				 */
+				'CopyPlugin',
+			];
+			return ! filteredPlugins.includes( plugin.constructor.name );
+		} ),
 		new DependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			externalizedReport: '../../.externalized.json',
 			requestToExternal,
 			requestToHandle,
+		} ),
+		/**
+		 * Automatic polyfills for native node.js modules were removed from webpack v5.
+		 * And `@wordpress/components` below version 16.x depends on `@wordpress/compose`,
+		 * which directly accesses `process.env`.
+		 * Ref: https://github.com/WordPress/gutenberg/blob/%40wordpress/components%4012.0.8/packages/compose/src/hooks/use-reduced-motion/index.js#L21
+		 *
+		 * So the fallback is required here.
+		 * It may be possible to remove this fallback
+		 * when `@wordpress/components` is upgraded above 17.0.0+,
+		 * or when it is removed from the `requestToExternal` function above.
+		 */
+		new webpack.ProvidePlugin( {
+			process: 'process/browser',
 		} ),
 	],
 	entry: {
@@ -124,6 +158,7 @@ const updatedSassOptions = {
 		includePaths: [ 'js/src/css/abstracts' ],
 	},
 	additionalData:
+		'@use "sass:color";' +
 		'@import "_colors"; ' +
 		'@import "_variables"; ' +
 		'@import "_mixins"; ' +
