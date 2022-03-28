@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
@@ -76,26 +76,25 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 	 * @return array
 	 */
 	protected function get_settings(): array {
-		/** @var MerchantCenterService $mc_service */
-		$mc_service  = $this->container->get( MerchantCenterService::class );
-		$mc_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER );
+		/** @var TargetAudience $target_audience */
+		$target_audience = $this->container->get( TargetAudience::class );
+		$mc_settings     = $this->options->get( OptionsInterface::MERCHANT_CENTER );
 		/** @var AdsService $ads_service */
 		$ads_service = $this->container->get( AdsService::class );
 		/** @var SetupCampaignNote $campaign_setup */
 		$campaign_setup = $this->container->get( SetupCampaignNote::class );
+
 		return [
-			'version'                         => $this->get_version(),
-			'db_version'                      => $this->options->get( OptionsInterface::DB_VERSION ),
-			'tos_accepted'                    => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
-			'google_connected'                => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
-			'mc_setup'                        => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
-			'ads_setup'                       => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
-			'target_audience'                 => $mc_service->get_target_countries(),
-			'shipping_rate'                   => $mc_settings['shipping_rate'] ?? '',
-			'shipping_time'                   => $mc_settings['shipping_time'] ?? '',
-			'offers_free_shipping'            => ! empty( $mc_settings['offers_free_shipping'] ) ? 'yes' : 'no',
-			'free_shipping_threshold'         => $mc_settings['free_shipping_threshold'] ?? '',
-			'tax_rate'                        => $mc_settings['tax_rate'] ?? '',
+			'version'          => $this->get_version(),
+			'db_version'       => $this->options->get( OptionsInterface::DB_VERSION ),
+			'tos_accepted'     => $this->get_boolean_value( OptionsInterface::WP_TOS_ACCEPTED ),
+			'google_connected' => $this->get_boolean_value( OptionsInterface::GOOGLE_CONNECTED ),
+			'mc_setup'         => $this->get_boolean_value( OptionsInterface::MC_SETUP_COMPLETED_AT ),
+			'ads_setup'        => $this->get_boolean_value( OptionsInterface::ADS_SETUP_COMPLETED_AT ),
+			'target_audience'  => $target_audience->get_target_countries(),
+			'shipping_rate'    => $mc_settings['shipping_rate'] ?? '',
+			'shipping_time'    => $mc_settings['shipping_time'] ?? '',
+			'tax_rate'         => $mc_settings['tax_rate'] ?? '',
 			'has_account_issue'               => $campaign_setup->has_account_issues() ? 'yes' : 'no',
 			'has_at_least_one_synced_product' => $campaign_setup->has_at_least_one_synced_product() ? 'yes' : 'no',
 			'is_ads_setup_started'            => $ads_service->is_setup_started() ? 'yes' : 'no',

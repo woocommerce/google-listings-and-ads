@@ -6,12 +6,6 @@ exports[`checkErrors For tax rate, if selected country codes include 'US' When t
 
 exports[`checkErrors For tax rate, if selected country codes include 'US' When the tax rate option is an invalid value or missing, should not pass 3`] = `"Please specify tax rate option."`;
 
-exports[`checkErrors Shipping rates For flat type When the free shipping threshold is an invalid value or missing, should not pass 1`] = `"Please specify a valid minimum order price for free shipping"`;
-
-exports[`checkErrors Shipping rates For flat type When the free shipping threshold is an invalid value or missing, should not pass 2`] = `"Please specify a valid minimum order price for free shipping"`;
-
-exports[`checkErrors Shipping rates For flat type When the free shipping threshold is an invalid value or missing, should not pass 3`] = `"Please specify a valid minimum order price for free shipping"`;
-
 exports[`checkErrors Shipping rates For flat type When there are any selected countries with shipping rates not set, should not pass 1`] = `"Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0."`;
 
 exports[`checkErrors Shipping rates For flat type When there are any shipping rates is < 0, should not pass 1`] = `"Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0."`;

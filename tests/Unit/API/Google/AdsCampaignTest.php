@@ -69,7 +69,7 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_get_campaigns_empty_list() {
-		$this->generate_ads_campaign_query_mock( [], [] );
+		$this->generate_ads_campaign_query_mock_with_no_campaigns();
 		$this->assertEquals( [], $this->campaign->get_campaigns() );
 	}
 

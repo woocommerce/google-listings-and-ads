@@ -235,7 +235,7 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `failure`:
         -   `details` property is `independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA
         -   `details` property is `google_proxy`: claim failed using the user creds (in the `Merchant` class)
-        -   `details` property is `google_manager`: claimed failed using MCA creds (paradoxically in the `Proxy` class)
+        -   `details` property is `google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)
 
 -   `site_verify_failure` - When a site verification with Google fails
 
