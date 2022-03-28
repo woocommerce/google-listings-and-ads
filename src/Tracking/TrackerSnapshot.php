@@ -9,8 +9,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
-use Automattic\WooCommerce\GoogleListingsAndAds\Notes\SetupCampaign as SetupCampaignNote;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -81,8 +81,8 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 		$mc_settings     = $this->options->get( OptionsInterface::MERCHANT_CENTER );
 		/** @var AdsService $ads_service */
 		$ads_service = $this->container->get( AdsService::class );
-		/** @var SetupCampaignNote $campaign_setup */
-		$campaign_setup = $this->container->get( SetupCampaignNote::class );
+		/** @var MerchantCenterService $mc_service */
+		$mc_service = $this->container->get( MerchantCenterService::class );
 
 		return [
 			'version'                         => $this->get_version(),
@@ -95,8 +95,8 @@ class TrackerSnapshot implements Conditional, ContainerAwareInterface, OptionsAw
 			'shipping_rate'                   => $mc_settings['shipping_rate'] ?? '',
 			'shipping_time'                   => $mc_settings['shipping_time'] ?? '',
 			'tax_rate'                        => $mc_settings['tax_rate'] ?? '',
-			'has_account_issue'               => $campaign_setup->has_account_issues() ? 'yes' : 'no',
-			'has_at_least_one_synced_product' => $campaign_setup->has_at_least_one_synced_product() ? 'yes' : 'no',
+			'has_account_issue'               => $mc_service->has_account_issues() ? 'yes' : 'no',
+			'has_at_least_one_synced_product' => $mc_service->has_at_least_one_synced_product() ? 'yes' : 'no',
 			'is_ads_setup_started'            => $ads_service->is_setup_started() ? 'yes' : 'no',
 		];
 	}
