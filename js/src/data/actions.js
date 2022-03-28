@@ -675,27 +675,6 @@ export function* verifyPhoneNumber( verificationId, code, method ) {
 	}
 }
 
-export function* fetchCountries() {
-	try {
-		const response = yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/countries`,
-		} );
-
-		return {
-			type: TYPES.RECEIVE_COUNTRIES,
-			countries: response,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error loading supported country details.',
-				'google-listings-and-ads'
-			)
-		);
-	}
-}
-
 export function* fetchTargetAudience() {
 	try {
 		const response = yield apiFetch( {

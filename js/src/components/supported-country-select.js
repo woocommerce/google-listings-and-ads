@@ -2,10 +2,10 @@
  * Internal dependencies
  */
 import AppCountrySelect from '.~/components/app-country-select';
-import useGetCountries from '.~/hooks/useGetCountries';
+import useMCCountries from '.~/hooks/useMCCountries';
 
 const SupportedCountrySelect = ( props ) => {
-	const { data } = useGetCountries();
+	const { data } = useMCCountries();
 
 	const options = data ? Object.keys( data ) : [];
 
