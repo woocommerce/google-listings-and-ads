@@ -3,21 +3,22 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const validShippingSet = new Set( [ 'flat', 'manual' ] );
+/**
+ * Internal dependencies
+ */
+import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
+
+const validShippingRateSet = new Set( [ 'automatic', 'flat', 'manual' ] );
+const validShippingTimeSet = new Set( [ 'flat', 'manual' ] );
 const validTaxRateSet = new Set( [ 'destination', 'manual' ] );
 
-const checkErrors = (
-	values,
-	shippingRates,
-	shippingTimes,
-	finalCountryCodes
-) => {
+const checkErrors = ( values, shippingTimes, finalCountryCodes ) => {
 	const errors = {};
 
 	/**
 	 * Check shipping rates.
 	 */
-	if ( ! validShippingSet.has( values.shipping_rate ) ) {
+	if ( ! validShippingRateSet.has( values.shipping_rate ) ) {
 		errors.shipping_rate = __(
 			'Please select a shipping rate option.',
 			'google-listings-and-ads'
@@ -26,8 +27,8 @@ const checkErrors = (
 
 	if (
 		values.shipping_rate === 'flat' &&
-		( shippingRates.length < finalCountryCodes.length ||
-			shippingRates.some( ( el ) => el.rate < 0 ) )
+		( values.shipping_country_rates.length < finalCountryCodes.length ||
+			values.shipping_country_rates.some( ( el ) => el.rate < 0 ) )
 	) {
 		errors.shipping_rate = __(
 			'Please specify shipping rates for all the countries. And the estimated shipping rate cannot be less than 0.',
@@ -35,23 +36,38 @@ const checkErrors = (
 		);
 	}
 
-	// When set up from scratch, the initial value of `free_shipping_threshold` is null.
-	const threshold = values.free_shipping_threshold;
-	if (
-		values.shipping_rate === 'flat' &&
-		values.offers_free_shipping &&
-		( ! Number.isFinite( threshold ) || threshold < 0 )
-	) {
-		errors.free_shipping_threshold = __(
-			'Please specify a valid minimum order price for free shipping',
-			'google-listings-and-ads'
-		);
+	/**
+	 * Check offer free shipping, only when shipping_rate is 'flat'.
+	 */
+	if ( values.shipping_rate === 'flat' ) {
+		if (
+			values.offer_free_shipping === undefined &&
+			values.shipping_country_rates.some( isNonFreeFlatShippingRate )
+		) {
+			errors.offer_free_shipping = __(
+				'Please select an option for whether to offer free shipping.',
+				'google-listings-and-ads'
+			);
+		}
+
+		if (
+			values.offer_free_shipping === true &&
+			values.shipping_country_rates.every(
+				( shippingRate ) =>
+					shippingRate.options.free_shipping_threshold === undefined
+			)
+		) {
+			errors.offer_free_shipping = __(
+				'Please enter minimum order for free shipping.',
+				'google-listings-and-ads'
+			);
+		}
 	}
 
 	/**
 	 * Check shipping times.
 	 */
-	if ( ! validShippingSet.has( values.shipping_time ) ) {
+	if ( ! validShippingTimeSet.has( values.shipping_time ) ) {
 		errors.shipping_time = __(
 			'Please select a shipping time option.',
 			'google-listings-and-ads'

@@ -36,6 +36,7 @@ defined( 'ABSPATH' ) || exit;
  * - Settings
  * - WC
  * - WP
+ * - TargetAudience
  * - GoogleHelper
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter
@@ -144,44 +145,6 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 		}
 
 		return false;
-	}
-
-	/**
-	 * @return string[] List of target countries specified in options. Defaults to WooCommerce store base country.
-	 */
-	public function get_target_countries(): array {
-		$target_countries = [ $this->container->get( WC::class )->get_base_country() ];
-
-		$target_audience = $this->options->get( OptionsInterface::TARGET_AUDIENCE );
-		if ( empty( $target_audience['location'] ) && empty( $target_audience['countries'] ) ) {
-			return $target_countries;
-		}
-
-		$location = strtolower( $target_audience['location'] );
-		if ( 'all' === $location ) {
-			/** @var GoogleHelper $google_helper */
-			$google_helper    = $this->container->get( GoogleHelper::class );
-			$target_countries = $google_helper->get_mc_supported_countries();
-		} elseif ( 'selected' === $location && ! empty( $target_audience['countries'] ) ) {
-			$target_countries = $target_audience['countries'];
-		}
-
-		return $target_countries;
-	}
-
-	/**
-	 * Return the main target country (default Store country).
-	 * If the store country is not included then use the first target country.
-	 *
-	 * @since 1.1.0
-	 *
-	 * @return string
-	 */
-	public function get_main_target_country(): string {
-		$target_countries = $this->get_target_countries();
-		$shop_country     = $this->container->get( WC::class )->get_base_country();
-
-		return in_array( $shop_country, $target_countries, true ) ? $shop_country : $target_countries[0];
 	}
 
 	/**
@@ -338,31 +301,48 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 	 */
 	protected function saved_shipping_and_tax_options(): bool {
 		$merchant_center_settings = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
-		$target_countries         = $this->get_target_countries();
+		$target_countries         = $this->container->get( TargetAudience::class )->get_target_countries();
 
 		// Tax options saved if: not US (no taxes) or tax_rate has been set
 		if ( in_array( 'US', $target_countries, true ) && empty( $merchant_center_settings['tax_rate'] ) ) {
 			return false;
 		}
 
-		// Free shipping saved if: not offered, OR offered and threshold not null
-		if ( ! empty( $merchant_center_settings['offers_free_shipping'] ) && ! isset( $merchant_center_settings['free_shipping_threshold'] ) ) {
-			return false;
-		}
-
-		// Shipping options saved if: 'manual' OR records for all countries
+		// Shipping time saved if: 'manual' OR records for all countries
 		if ( isset( $merchant_center_settings['shipping_time'] ) && 'manual' === $merchant_center_settings['shipping_time'] ) {
 			$saved_shipping_time = true;
 		} else {
-			$shipping_time_rows  = $this->container->get( ShippingTimeQuery::class )->get_count();
-			$saved_shipping_time = $shipping_time_rows === count( $target_countries );
+			$shipping_time_rows = $this->container->get( ShippingTimeQuery::class )->get_results();
+
+			// Get the name of countries that have saved shipping times.
+			$saved_time_countries = array_column( $shipping_time_rows, 'country' );
+
+			// Check if all target countries have a shipping time.
+			$saved_shipping_time = count( $shipping_time_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_time_countries ) );
 		}
 
-		if ( isset( $merchant_center_settings['shipping_rate'] ) && 'manual' === $merchant_center_settings['shipping_rate'] ) {
+		// Shipping rates saved if: 'manual', 'automatic', OR there are records for all countries
+		if (
+			isset( $merchant_center_settings['shipping_rate'] ) &&
+			in_array( $merchant_center_settings['shipping_rate'], [ 'manual', 'automatic' ], true )
+		) {
 			$saved_shipping_rate = true;
 		} else {
-			$shipping_rate_rows  = $this->container->get( ShippingRateQuery::class )->get_count();
-			$saved_shipping_rate = $shipping_rate_rows === count( $target_countries );
+			// Get the list of saved shipping rates grouped by country.
+			/**
+			 * @var ShippingRateQuery $shipping_rate_query
+			 */
+			$shipping_rate_query = $this->container->get( ShippingRateQuery::class );
+			$shipping_rate_query->group_by( 'country' );
+			$shipping_rate_rows = $shipping_rate_query->get_results();
+
+			// Get the name of countries that have saved shipping rates.
+			$saved_rates_countries = array_column( $shipping_rate_rows, 'country' );
+
+			// Check if all target countries have a shipping rate.
+			$saved_shipping_rate = count( $shipping_rate_rows ) === count( $target_countries ) &&
+								   empty( array_diff( $target_countries, $saved_rates_countries ) );
 		}
 
 		return $saved_shipping_rate && $saved_shipping_time;

@@ -31,6 +31,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCen
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SettingsSyncController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateController;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingRateSuggestionsController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeBatchController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\ShippingTimeController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter\SupportedCountriesController;
@@ -97,8 +98,9 @@ class RESTServiceProvider extends AbstractServiceProvider {
 		$this->share( PhoneVerificationController::class, PhoneVerification::class );
 		$this->share( MerchantCenterAccountController::class, MerchantAccountService::class );
 		$this->share_with_container( MerchantCenterReportsController::class );
-		$this->share( ShippingRateBatchController::class, ShippingRateQuery::class, ShippingZone::class );
-		$this->share( ShippingRateController::class, ShippingRateQuery::class, ShippingZone::class );
+		$this->share( ShippingRateBatchController::class, ShippingRateQuery::class );
+		$this->share( ShippingRateController::class, ShippingRateQuery::class );
+		$this->share( ShippingRateSuggestionsController::class, ShippingZone::class );
 		$this->share_with_container( ShippingTimeBatchController::class );
 		$this->share_with_container( ShippingTimeController::class );
 		$this->share( TargetAudienceController::class, WP::class, WC::class, ShippingZone::class, GoogleHelper::class );

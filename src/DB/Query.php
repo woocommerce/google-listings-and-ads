@@ -25,6 +25,9 @@ abstract class Query implements QueryInterface {
 	/** @var array */
 	protected $orderby = [];
 
+	/** @var array */
+	protected $groupby = [];
+
 	/**
 	 * The result of the query.
 	 *
@@ -38,6 +41,13 @@ abstract class Query implements QueryInterface {
 	 * @var int
 	 */
 	protected $count = null;
+
+	/**
+	 * The last inserted ID (updated after a call to insert).
+	 *
+	 * @var int
+	 */
+	protected $last_insert_id = null;
 
 	/** @var TableInterface */
 	protected $table;
@@ -87,6 +97,22 @@ abstract class Query implements QueryInterface {
 			'value'   => $value,
 			'compare' => $compare,
 		];
+
+		return $this;
+	}
+
+	/**
+	 * Add a group by clause to the query.
+	 *
+	 * @param string $column  The column name.
+	 *
+	 * @return $this
+	 *
+	 * @since x.x.x
+	 */
+	public function group_by( string $column ): QueryInterface {
+		$this->validate_column( $column );
+		$this->groupby[] = "`{$column}`";
 
 		return $this;
 	}
@@ -287,8 +313,14 @@ abstract class Query implements QueryInterface {
 
 		$pieces = array_merge( $pieces, $this->generate_where_pieces() );
 
+		if ( ! empty( $this->groupby ) ) {
+			$pieces[] = 'GROUP BY ' . implode( ', ', $this->groupby );
+		}
+
 		if ( ! $get_count ) {
-			$pieces[] = "GROUP BY `{$this->table->get_name()}`.`{$this->table->get_primary_column()}`";
+			if ( empty( $this->groupby ) ) {
+				$pieces[] = "GROUP BY `{$this->table->get_name()}`.`{$this->table->get_primary_column()}`";
+			}
 
 			if ( $this->orderby ) {
 				$pieces[] = 'ORDER BY ' . implode( ', ', $this->orderby );
@@ -368,7 +400,21 @@ abstract class Query implements QueryInterface {
 			throw InvalidQuery::from_insert( $this->wpdb->last_error ?: 'Error inserting data.' );
 		}
 
+		// Save a local copy of the last inserted ID.
+		$this->last_insert_id = $this->wpdb->insert_id;
+
 		return $result;
+	}
+
+	/**
+	 * Returns the last inserted ID. Must be called after insert.
+	 *
+	 * @since x.x.x
+	 *
+	 * @return int|null
+	 */
+	public function last_insert_id(): ?int {
+		return $this->last_insert_id;
 	}
 
 	/**
