@@ -69,12 +69,7 @@ class AdsCampaignTest extends UnitTest {
 	}
 
 	public function test_get_campaigns_empty_list() {
-		$this->generate_ads_campaign_query_mock( [], [] );
-
-		// Method search() only being called by AdsCampaignQuery
-		$this->service_client->expects( $this->once() )
-			->method( 'search' );
-
+		$this->generate_ads_campaign_query_mock_with_no_campaigns();
 		$this->assertEquals( [], $this->campaign->get_campaigns() );
 	}
 
@@ -114,10 +109,6 @@ class AdsCampaignTest extends UnitTest {
 		];
 
 		$this->generate_ads_campaign_query_mock( $campaigns_data, $campaign_criterion_data );
-
-		$this->service_client->expects( $this->exactly( 2 ) )
-			->method( 'search' );
-
 		$this->assertEquals( $campaigns_data, $this->campaign->get_campaigns() );
 	}
 
