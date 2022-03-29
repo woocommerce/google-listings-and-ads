@@ -263,26 +263,6 @@ class BatchProductHelper implements Service {
 	}
 
 	/**
-	 * Filters the list of invalid product entries and returns an array of WooCommerce product IDs with internal errors
-	 *
-	 * @param BatchInvalidProductEntry[] $invalid_products
-	 *
-	 * @return int[] An array of WooCommerce product ids.
-	 */
-	public function get_internal_error_products( array $invalid_products ): array {
-		$internal_error_ids = [];
-		foreach ( $invalid_products as $invalid_product ) {
-			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
-				$product_id = $invalid_product->get_wc_product_id();
-
-				$internal_error_ids[ $product_id ] = $product_id;
-			}
-		}
-
-		return $internal_error_ids;
-	}
-
-	/**
 	 * Filters and returns an array of request entries for Google products that should no longer be submitted for the selected target audience.
 	 *
 	 * @param WC_Product[] $products
