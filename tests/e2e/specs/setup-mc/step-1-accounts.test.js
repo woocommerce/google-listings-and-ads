@@ -134,13 +134,13 @@ describe( 'At setup page', () => {
 			await page.waitForXPath( "//*[text()='Set up your accounts']" );
 		} );
 
-		it( 'should see their WPORG email, "Connect your Google account" text & connect button', async () => {
+		it( 'should see their WPORG email, "Google" title & connect button', async () => {
 			await expect(
 				page.waitForXPath( "//*[text()='mail@example.com']" )
 			).resolves.toBeTruthy();
 
 			await expect(
-				page.waitForXPath( "//*[text()='Google account']" )
+				page.waitForXPath( "//*[text()='Google']" )
 			).resolves.toBeTruthy();
 
 			await expect(
