@@ -14,7 +14,7 @@ export default {
 	 * to learn how to generate automatic titles
 	 */
 	title: 'Tree Select Control',
-	component: TreeSelectControl
+	component: TreeSelectControl,
 };
 
 const treeSelectControlOptions = [
