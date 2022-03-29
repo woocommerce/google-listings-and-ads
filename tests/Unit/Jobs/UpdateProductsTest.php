@@ -54,6 +54,7 @@ class UpdateProductsTest extends UnitTest {
 			$this->merchant_center
 		);
 
+		$this->job->init();
 		$this->add_job_start_hook();
 	}
 
