@@ -36,7 +36,12 @@ const NonConnected = () => {
 		setIgnoreExisting( true );
 	};
 
-	return <ConnectAds onCreateNew={ handleCreateNew } />;
+	return (
+		<ConnectAds
+			accounts={ existingAccounts }
+			onCreateNew={ handleCreateNew }
+		/>
+	);
 };
 
 export default NonConnected;

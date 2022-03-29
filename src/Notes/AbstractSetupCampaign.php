@@ -7,7 +7,7 @@ use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Ads\AdsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\HelperTraits\Utilities;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantStatuses;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Exception;
 use stdClass;
@@ -27,17 +27,17 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 	use Utilities;
 
 	/**
-	 * @var MerchantStatuses
+	 * @var MerchantCenterService
 	 */
-	protected $merchant_statuses;
+	protected $merchant_center_service;
 
 	/**
 	 * AbstractSetupCampaign constructor.
 	 *
-	 * @param MerchantStatuses $merchant_statuses
+	 * @param MerchantCenterService $merchant_center_service
 	 */
-	public function __construct( MerchantStatuses $merchant_statuses ) {
-		$this->merchant_statuses = $merchant_statuses;
+	public function __construct( MerchantCenterService $merchant_center_service ) {
+		$this->merchant_center_service = $merchant_center_service;
 	}
 
 	/**
@@ -89,11 +89,11 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 
 		// We don't need to process exceptions here, as we're just determining whether to add a note.
 		try {
-			if ( $this->has_account_issues() ) {
+			if ( $this->merchant_center_service->has_account_issues() ) {
 				return false;
 			}
 
-			if ( ! $this->has_at_least_one_synced_product() ) {
+			if ( ! $this->merchant_center_service->has_at_least_one_synced_product() ) {
 				return false;
 			}
 		} catch ( Exception $e ) {
@@ -101,30 +101,6 @@ abstract class AbstractSetupCampaign extends AbstractNote implements AdsAwareInt
 		}
 
 		return true;
-	}
-
-	/**
-	 * Determine whether there are any account-level issues.
-	 *
-	 * @since 1.11.0
-	 * @return bool
-	 */
-	protected function has_account_issues(): bool {
-		$issues = $this->merchant_statuses->get_issues( MerchantStatuses::TYPE_ACCOUNT );
-
-		return isset( $issues['issues'] ) && count( $issues['issues'] ) >= 1;
-	}
-
-	/**
-	 * Determine whether there is at least one synced product.
-	 *
-	 * @since 1.11.0
-	 * @return bool
-	 */
-	protected function has_at_least_one_synced_product(): bool {
-		$statuses = $this->merchant_statuses->get_product_statistics();
-
-		return $statuses['statistics']['active'] >= 1;
 	}
 
 	/**

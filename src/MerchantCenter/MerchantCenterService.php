@@ -347,4 +347,28 @@ class MerchantCenterService implements ContainerAwareInterface, OptionsAwareInte
 
 		return $saved_shipping_rate && $saved_shipping_time;
 	}
+
+	/**
+	 * Determine whether there are any account-level issues.
+	 *
+	 * @since 1.11.0
+	 * @return bool
+	 */
+	public function has_account_issues(): bool {
+		$issues = $this->container->get( MerchantStatuses::class )->get_issues( MerchantStatuses::TYPE_ACCOUNT );
+
+		return isset( $issues['issues'] ) && count( $issues['issues'] ) >= 1;
+	}
+
+	/**
+	 * Determine whether there is at least one synced product.
+	 *
+	 * @since 1.11.0
+	 * @return bool
+	 */
+	public function has_at_least_one_synced_product(): bool {
+		$statuses = $this->container->get( MerchantStatuses::class )->get_product_statistics();
+
+		return $statuses['statistics']['active'] >= 1;
+	}
 }

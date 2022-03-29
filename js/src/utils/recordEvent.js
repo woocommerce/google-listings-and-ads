@@ -102,11 +102,11 @@ export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
  * Records `gla_launch_paid_campaign_button_click` tracking event.
  *
  * @param {number} budget Daily average cost of the paid campaign.
- * @param {CountryCode} audience Country code of the paid campaign audience country.
+ * @param {Array<CountryCode>} audiences Country code array of the paid campaign audience country.
  */
-export const recordLaunchPaidCampaignClickEvent = ( budget, audience ) => {
+export const recordLaunchPaidCampaignClickEvent = ( budget, audiences ) => {
 	recordEvent( 'gla_launch_paid_campaign_button_click', {
-		audience,
+		audiences: audiences.join( ',' ),
 		budget,
 	} );
 };

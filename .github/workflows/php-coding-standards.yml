@@ -5,7 +5,15 @@ on:
     branches:
       - trunk
       - develop
+    paths:
+      - "**.php"
+      - ./.github/workflows/php-coding-standards.yml
+      - ./.github/actions/prepare-php/action.yml
   pull_request:
+    paths:
+      - "**.php"
+      - ./.github/workflows/php-coding-standards.yml
+      - ./.github/actions/prepare-php/action.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,4 +36,4 @@ jobs:
         run: vendor/bin/phpcs -i
 
       - name: Run PHPCS on all files
-        run: vendor/bin/phpcs ./src -q -n --report=checkstyle | cs2pr
+        run: vendor/bin/phpcs ./* -q --report=checkstyle | cs2pr

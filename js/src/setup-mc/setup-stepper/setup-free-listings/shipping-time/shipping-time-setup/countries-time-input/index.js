@@ -2,17 +2,16 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import AppSpinner from '.~/components/app-spinner';
+import ShippingTimeInputControlLabelText from '.~/components/shipping-time-input-control-label-text';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
-import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 
 const CountriesTimeInput = ( props ) => {
 	const { value, onBlur } = props;
@@ -28,24 +27,9 @@ const CountriesTimeInput = ( props ) => {
 			<AppInputNumberControl
 				label={
 					<div className="label">
-						<div>
-							{ createInterpolateElement(
-								__(
-									`Shipping time for <countries />`,
-									'google-listings-and-ads'
-								),
-								{
-									countries: (
-										<CountryNames
-											countries={ countries }
-											total={
-												selectedCountryCodes.length
-											}
-										/>
-									),
-								}
-							) }
-						</div>
+						<ShippingTimeInputControlLabelText
+							countries={ countries }
+						/>
 						<EditTimeButton time={ value } />
 					</div>
 				}

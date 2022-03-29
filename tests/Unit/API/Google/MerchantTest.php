@@ -424,4 +424,12 @@ class MerchantTest extends UnitTest {
 		);
 	}
 
+	public function test_update_merchant_id() {
+		$this->options->expects( $this->once() )
+			->method( 'update' )
+			->with( OptionsInterface::MERCHANT_ID, $this->merchant_id )
+			->willReturn( true );
+		$this->assertTrue( $this->merchant->update_merchant_id( $this->merchant_id ) );
+	}
+
 }

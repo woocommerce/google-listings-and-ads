@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
 
@@ -13,9 +14,14 @@ import useSettings from '.~/components/free-listings/configure-product-listings/
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
 import FormContent from './form-content';
 import AppButton from '.~/components/app-button';
-import useShippingRates from '.~/hooks/useShippingRates';
+import useIsMounted from '.~/hooks/useIsMounted';
+import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
+import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
+import useShippingRatesWithSavedSuggestions from './useShippingRatesWithSavedSuggestions';
+import { useAppDispatch } from '.~/data';
+import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 
 /**
  * Setup step to configure free listings.
@@ -28,15 +34,23 @@ import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalC
 const SetupFreeListings = ( props ) => {
 	const { onContinue = () => {} } = props;
 	const { settings } = useSettings();
-	const { data: shippingRatesData } = useShippingRates();
+	const {
+		loading: loadingShippingRates,
+		data: dataShippingRates,
+	} = useShippingRatesWithSavedSuggestions();
 	const { data: shippingTimesData } = useShippingTimes();
 	const {
 		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();
+	const { saveSettings } = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
+	const [ saving, setSaving ] = useState( false );
+	const { createNotice } = useDispatchCoreNotices();
+	const isMounted = useIsMounted();
 
 	if (
 		! settings ||
-		! shippingRatesData ||
+		loadingShippingRates ||
 		! shippingTimesData ||
 		! finalCountryCodesData
 	) {
@@ -59,8 +73,40 @@ const SetupFreeListings = ( props ) => {
 		return {};
 	};
 
-	const handleSubmitCallback = () => {
-		onContinue();
+	const handleSubmitCallback = async ( values ) => {
+		/**
+		 * Even though we already have auto-save effects in the FormContent,
+		 * we are saving the form values here again to be sure,
+		 * because the auto-save may not be fired
+		 * when users were having focus on the text input fields
+		 * and then immediately click on the Continue button.
+		 */
+		const {
+			shipping_country_rates: shippingRatesValue,
+			...settingsValue
+		} = values;
+
+		setSaving( true );
+
+		try {
+			await Promise.all( [
+				saveSettings( settingsValue ),
+				saveShippingRates( shippingRatesValue ),
+			] );
+			onContinue();
+		} catch ( error ) {
+			if ( isMounted() ) {
+				setSaving( false );
+			}
+
+			createNotice(
+				'error',
+				__(
+					'There is a problem in saving your settings and shipping rates. Please try again later.',
+					'google-listings-and-ads'
+				)
+			);
+		}
 	};
 
 	return (
@@ -69,10 +115,12 @@ const SetupFreeListings = ( props ) => {
 			<Form
 				initialValues={ {
 					shipping_rate: settings.shipping_rate || 'automatic',
-					offers_free_shipping: settings.offers_free_shipping,
-					free_shipping_threshold: settings.free_shipping_threshold,
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
+					shipping_country_rates: dataShippingRates,
+					offer_free_shipping: getOfferFreeShippingInitialValue(
+						dataShippingRates
+					),
 				} }
 				validate={ handleValidate }
 				onSubmit={ handleSubmitCallback }
@@ -82,7 +130,6 @@ const SetupFreeListings = ( props ) => {
 
 					const errors = checkErrors(
 						values,
-						shippingRatesData,
 						shippingTimesData,
 						finalCountryCodesData
 					);
@@ -97,6 +144,7 @@ const SetupFreeListings = ( props ) => {
 								<AppButton
 									isPrimary
 									disabled={ isContinueDisabled }
+									loading={ saving }
 									onClick={ handleSubmit }
 								>
 									{ __(
