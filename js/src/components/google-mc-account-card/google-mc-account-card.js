@@ -7,7 +7,7 @@ import ConnectedCard from './connected-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
 
-const SectionContent = () => {
+const GoogleMCAccountCard = () => {
 	const { hasFinishedResolution, googleMCAccount } = useGoogleMCAccount();
 
 	if ( ! hasFinishedResolution ) {
@@ -30,4 +30,4 @@ const SectionContent = () => {
 	return <ConnectedCard googleMCAccount={ googleMCAccount } />;
 };
 
-export default SectionContent;
+export default GoogleMCAccountCard;
