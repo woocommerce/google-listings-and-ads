@@ -5,150 +5,150 @@
   "version": "1.11.1",
   "description": "google-listings-and-ads",
   "repository": {
-    "type": "git",
-    "url": "git@github.com:woocommerce/google-listings-and-ads.git"
+	"type": "git",
+	"url": "git@github.com:woocommerce/google-listings-and-ads.git"
   },
   "scripts": {
-    "prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
-    "archive": "composer archive --file=$npm_package_name --format=zip",
-    "postarchive": "rm -rf $npm_package_name && unzip $npm_package_name.zip -d $npm_package_name && rm $npm_package_name.zip && zip -r $npm_package_name.zip $npm_package_name && rm -rf $npm_package_name",
-    "prebuild": "composer install",
-    "build": "NODE_ENV=production wp-scripts build && npm run i18n",
-    "postbuild": "npm run archive",
-    "check-engines": "wp-scripts check-engines",
-    "check-licenses": "wp-scripts check-licenses",
-    "dev": "NODE_ENV=development wp-scripts build",
-    "docker:up": "npx wc-e2e docker:up",
-    "docker:down": "npx wc-e2e docker:down",
-    "format:js": "wp-scripts format",
-    "i18n": "WP_CLI_PHP_ARGS='-d memory_limit=2048M' ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
-    "lint": "npm run lint:php && npm run lint:js && npm run lint:css",
-    "lint:css": "wp-scripts lint-style",
-    "lint:js": "wp-scripts lint-js",
-    "lint:md:docs": "wp-scripts lint-md-docs",
-    "lint:md:js": "wp-scripts lint-md-js",
-    "lint:php": "vendor/bin/phpcs",
-    "lint:pkg-json": "wp-scripts lint-pkg-json",
-    "outdated:dewp": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true",
-    "outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
-    "packages-update": "wp-scripts packages-update",
-    "start": "wp-scripts start",
-    "storybook": "start-storybook  -c ./.storybook -p 6006 --ci",
-    "storybook:build": "BABEL_ENV=development build-storybook  -c ./.storybook -o ./.storybook/dist",
-    "storybook:deploy": "npm run storybook:build && gh-pages -d ./.storybook/dist",
-    "test:e2e": "npx wc-e2e test:e2e",
-    "test:e2e-dev": "npx wc-e2e test:e2e-dev",
-    "test:js": "wp-scripts test-unit-js --coverage",
-    "test:js:watch": "npm run test:js -- --watch",
-    "test-proxy": "node ./tests/proxy"
+	"prearchive": "rm -rf vendor && composer install --no-dev && composer dump-autoload -o",
+	"archive": "composer archive --file=$npm_package_name --format=zip",
+	"postarchive": "rm -rf $npm_package_name && unzip $npm_package_name.zip -d $npm_package_name && rm $npm_package_name.zip && zip -r $npm_package_name.zip $npm_package_name && rm -rf $npm_package_name",
+	"prebuild": "composer install",
+	"build": "NODE_ENV=production wp-scripts build && npm run i18n",
+	"postbuild": "npm run archive",
+	"check-engines": "wp-scripts check-engines",
+	"check-licenses": "wp-scripts check-licenses",
+	"dev": "NODE_ENV=development wp-scripts build",
+	"docker:up": "npx wc-e2e docker:up",
+	"docker:down": "npx wc-e2e docker:down",
+	"format:js": "wp-scripts format",
+	"i18n": "WP_CLI_PHP_ARGS='-d memory_limit=2048M' ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
+	"lint": "npm run lint:php && npm run lint:js && npm run lint:css",
+	"lint:css": "wp-scripts lint-style",
+	"lint:js": "wp-scripts lint-js",
+	"lint:md:docs": "wp-scripts lint-md-docs",
+	"lint:md:js": "wp-scripts lint-md-js",
+	"lint:php": "vendor/bin/phpcs",
+	"lint:pkg-json": "wp-scripts lint-pkg-json",
+	"outdated:dewp": "npm outdated `cat .externalized.json | sed 's/[][\",]/ /g'` || true",
+	"outdated:nondewp": "npm outdated --color=always | grep --color=never --invert -E \"^(.\\[31m|.\\[33m)?(`cat .externalized.json | sed 's/[][\"]//g'| sed 's/,/|/g'`)\"",
+	"packages-update": "wp-scripts packages-update",
+	"start": "wp-scripts start",
+	"storybook": "start-storybook  -c ./.storybook -p 6006 --ci",
+	"storybook:build": "BABEL_ENV=development build-storybook  -c ./.storybook -o ./.storybook/dist",
+	"storybook:deploy": "npm run storybook:build && gh-pages -d ./.storybook/dist",
+	"test:e2e": "npx wc-e2e test:e2e",
+	"test:e2e-dev": "npx wc-e2e test:e2e-dev",
+	"test:js": "wp-scripts test-unit-js --coverage",
+	"test:js:watch": "npm run test:js -- --watch",
+	"test-proxy": "node ./tests/proxy"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.8",
-    "@hapi/hapi": "^20.1.3",
-    "@storybook/addon-actions": "^6.4.19",
-    "@storybook/addon-essentials": "^6.4.19",
-    "@storybook/addon-interactions": "^6.4.19",
-    "@storybook/addon-links": "^6.4.19",
-    "@storybook/react": "^6.4.19",
-    "@storybook/testing-library": "0.0.9",
-    "@testing-library/jest-dom": "^5.16.1",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/react-hooks": "^5.1.1",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.4.0",
-    "@types/puppeteer": "^5.4.4",
-    "@woocommerce/api": "^0.2.0",
-    "@woocommerce/e2e-environment": "^0.2.3",
-    "@woocommerce/e2e-utils": "^0.1.6",
-    "@woocommerce/eslint-plugin": "^1.2.0",
-    "@wordpress/dependency-extraction-webpack-plugin": "^3.2.3-next.33ec3857e2.0",
-    "@wordpress/prettier-config": "^1.0.5",
-    "@wordpress/scripts": "^17.1.0",
-    "@wordpress/stylelint-config": "^19.0.5",
-    "babel-loader": "^8.2.4",
-    "bundlewatch": "^0.3.2",
-    "eslint": "^7.17.0",
-    "eslint-import-resolver-webpack": "^0.13.1",
-    "eslint-plugin-import": "^2.25.4",
-    "file-loader": "^6.2.0",
-    "gh-pages": "^3.2.3",
-    "h2o2": "^8.2.0",
-    "postcss": "^8.4.4",
-    "prettier": "npm:wp-prettier@^2.0.5",
-    "stylelint": "^13.8.0"
+	"@babel/core": "^7.17.8",
+	"@hapi/hapi": "^20.1.3",
+	"@storybook/addon-actions": "^6.4.19",
+	"@storybook/addon-essentials": "^6.4.19",
+	"@storybook/addon-interactions": "^6.4.19",
+	"@storybook/addon-links": "^6.4.19",
+	"@storybook/react": "^6.4.19",
+	"@storybook/testing-library": "0.0.9",
+	"@testing-library/jest-dom": "^5.16.1",
+	"@testing-library/react": "^11.1.0",
+	"@testing-library/react-hooks": "^5.1.1",
+	"@testing-library/user-event": "^13.5.0",
+	"@types/jest": "^27.4.0",
+	"@types/puppeteer": "^5.4.4",
+	"@woocommerce/api": "^0.2.0",
+	"@woocommerce/e2e-environment": "^0.2.3",
+	"@woocommerce/e2e-utils": "^0.1.6",
+	"@woocommerce/eslint-plugin": "^1.2.0",
+	"@wordpress/dependency-extraction-webpack-plugin": "^3.2.3-next.33ec3857e2.0",
+	"@wordpress/prettier-config": "^1.0.5",
+	"@wordpress/scripts": "^17.1.0",
+	"@wordpress/stylelint-config": "^19.0.5",
+	"babel-loader": "^8.2.4",
+	"bundlewatch": "^0.3.2",
+	"eslint": "^7.17.0",
+	"eslint-import-resolver-webpack": "^0.13.1",
+	"eslint-plugin-import": "^2.25.4",
+	"file-loader": "^6.2.0",
+	"gh-pages": "^3.2.3",
+	"h2o2": "^8.2.0",
+	"postcss": "^8.4.4",
+	"prettier": "npm:wp-prettier@^2.0.5",
+	"stylelint": "^13.8.0"
   },
   "dependencies": {
-    "@woocommerce/components": "8.1.0",
-    "@woocommerce/currency": "^3.2.1",
-    "@woocommerce/customer-effort-score": "^1.1.0",
-    "@woocommerce/data": "1.4.0",
-    "@woocommerce/date": "^3.1.0",
-    "@woocommerce/navigation": "6.1.0",
-    "@woocommerce/number": "^2.1.0",
-    "@woocommerce/tracks": "^1.0.0",
-    "@wordpress/api-fetch": "^5.1.1",
-    "@wordpress/base-styles": "^3.2.0",
-    "@wordpress/components": "^12.0.8",
-    "@wordpress/core-data": "^3.1.2",
-    "@wordpress/data": "^4.26.1",
-    "@wordpress/data-controls": "^1.20.1",
-    "@wordpress/date": "^3.9.0",
-    "@wordpress/dom": "^3.1.1",
-    "@wordpress/element": "^2.18.0",
-    "@wordpress/hooks": "^3.1.1",
-    "@wordpress/html-entities": "^3.2.1",
-    "@wordpress/i18n": "^4.1.1",
-    "@wordpress/icons": ">=2.9.1 <3.0.0",
-    "@wordpress/primitives": ">=1.12.3 <2.0.0",
-    "@wordpress/url": "^2.22.2",
-    "classnames": "^2.3.1",
-    "gridicons": "^3.3.1",
-    "libphonenumber-js": "^1.9.22",
-    "lodash": "^4.17.20",
-    "md5": "^2.3.0",
-    "prop-types": "^15.7.2",
-    "rememo": "^3.0.0",
-    "use-debounce": "^5.2.0"
+	"@woocommerce/components": "8.1.0",
+	"@woocommerce/currency": "^3.2.1",
+	"@woocommerce/customer-effort-score": "^1.1.0",
+	"@woocommerce/data": "1.4.0",
+	"@woocommerce/date": "^3.1.0",
+	"@woocommerce/navigation": "6.1.0",
+	"@woocommerce/number": "^2.1.0",
+	"@woocommerce/tracks": "^1.0.0",
+	"@wordpress/api-fetch": "^5.1.1",
+	"@wordpress/base-styles": "^3.2.0",
+	"@wordpress/components": "^12.0.8",
+	"@wordpress/core-data": "^3.1.2",
+	"@wordpress/data": "^4.26.1",
+	"@wordpress/data-controls": "^1.20.1",
+	"@wordpress/date": "^3.9.0",
+	"@wordpress/dom": "^3.1.1",
+	"@wordpress/element": "^2.18.0",
+	"@wordpress/hooks": "^3.1.1",
+	"@wordpress/html-entities": "^3.2.1",
+	"@wordpress/i18n": "^4.1.1",
+	"@wordpress/icons": ">=2.9.1 <3.0.0",
+	"@wordpress/primitives": ">=1.12.3 <2.0.0",
+	"@wordpress/url": "^2.22.2",
+	"classnames": "^2.3.1",
+	"gridicons": "^3.3.1",
+	"libphonenumber-js": "^1.9.22",
+	"lodash": "^4.17.20",
+	"md5": "^2.3.0",
+	"prop-types": "^15.7.2",
+	"rememo": "^3.0.0",
+	"use-debounce": "^5.2.0"
   },
   "config": {
-    "wp_org_slug": "google-listings-and-ads",
-    "version_replace_paths": [
-      "src",
-      "views",
-      "bin",
-      "uninstall.php",
-      "google-listings-and-ads.php"
-    ]
+	"wp_org_slug": "google-listings-and-ads",
+	"version_replace_paths": [
+	  "src",
+	  "views",
+	  "bin",
+	  "uninstall.php",
+	  "google-listings-and-ads.php"
+	]
   },
   "bundlewatch": {
-    "files": [
-      {
-        "path": "./js/build/*.js",
-        "maxSize": "1.74 kB"
-      },
-      {
-        "path": "./js/build/index.js",
-        "maxSize": "248 kB"
-      },
-      {
-        "path": "./js/build/*.css",
-        "maxSize": "364 B"
-      },
-      {
-        "path": "./js/build/index.css",
-        "maxSize": "8 kB"
-      },
-      {
-        "path": "./google-listings-and-ads.zip",
-        "maxSize": "11.8 mB",
-        "compression": "none"
-      }
-    ],
-    "ci": {
-      "trackBranches": [
-        "trunk",
-        "develop"
-      ]
-    }
+	"files": [
+	  {
+		"path": "./js/build/*.js",
+		"maxSize": "1.74 kB"
+	  },
+	  {
+		"path": "./js/build/index.js",
+		"maxSize": "248 kB"
+	  },
+	  {
+		"path": "./js/build/*.css",
+		"maxSize": "364 B"
+	  },
+	  {
+		"path": "./js/build/index.css",
+		"maxSize": "8 kB"
+	  },
+	  {
+		"path": "./google-listings-and-ads.zip",
+		"maxSize": "11.8 mB",
+		"compression": "none"
+	  }
+	],
+	"ci": {
+	  "trackBranches": [
+		"trunk",
+		"develop"
+	  ]
+	}
   }
 }
