@@ -59,6 +59,26 @@ class ProductFilterTest extends ContainerAwareUnitTest {
 		$this->assertEquals( 3, $filtered_products->get_unfiltered_count() );
 	}
 
+	public function test_filter_sync_ready_products_with_no_filters_but_failed_sync() {
+
+		[ $product_a, $product_b, $product_c ] = $this->products;
+
+		$this->product_helper->expects( $this->exactly( 3 ) )
+			->method( 'is_sync_ready' )
+			->withConsecutive( [ $product_a ], [ $product_b ], [ $product_c ] )
+			->willReturnOnConsecutiveCalls( false, true, false );
+
+		$this->product_helper->expects( $this->once() )
+			->method( 'is_sync_failed_recently' )
+			->with( $product_b )
+			->willReturn( true );
+
+		$filtered_products = $this->product_filter->filter_sync_ready_products( $this->products );
+
+		$this->assertEmpty( $filtered_products->get() );
+		$this->assertEquals( 3, $filtered_products->get_unfiltered_count() );
+	}
+
 	public function test_filter_sync_ready_products_with_pre_filter() {
 
 		add_filter(
