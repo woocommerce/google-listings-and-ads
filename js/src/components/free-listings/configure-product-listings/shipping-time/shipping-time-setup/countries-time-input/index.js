@@ -2,16 +2,15 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import AppInputNumberControl from '.~/components/app-input-number-control';
 import AppSpinner from '.~/components/app-spinner';
+import ShippingTimeInputControlLabelText from '.~/components/shipping-time-input-control-label-text';
 import EditTimeButton from './edit-time-button';
 import './index.scss';
-import CountryNames from '.~/components/free-listings/configure-product-listings/country-names';
 
 /**
  * Input control to edit a shipping time.
@@ -21,14 +20,12 @@ import CountryNames from '.~/components/free-listings/configure-product-listings
  * @param {Object} props
  * @param {AggregatedShippingTime} props.value Aggregate, rat: Array object to be used as the initial value.
  * @param {Array<CountryCode>} props.audienceCountries List of all audience countries.
- * @param {number} props.totalCountyCount Number of all anticipated countries.
  * @param {(newTime: AggregatedShippingTime, deletedCountries: Array<CountryCode>|undefined) => void} props.onChange Called when time changes.
  * @param {(deletedCountries: Array<CountryCode>) => void} props.onDelete Called with list of countries once Delete was requested.
  */
 const CountriesTimeInput = ( {
 	value,
 	audienceCountries,
-	totalCountyCount,
 	onChange,
 	onDelete,
 } ) => {
@@ -54,22 +51,9 @@ const CountriesTimeInput = ( {
 			<AppInputNumberControl
 				label={
 					<div className="label">
-						<div>
-							{ createInterpolateElement(
-								__(
-									`Shipping time for <countries />`,
-									'google-listings-and-ads'
-								),
-								{
-									countries: (
-										<CountryNames
-											countries={ countries }
-											total={ totalCountyCount }
-										/>
-									),
-								}
-							) }
-						</div>
+						<ShippingTimeInputControlLabelText
+							countries={ countries }
+						/>
 						<EditTimeButton
 							audienceCountries={ audienceCountries }
 							onChange={ onChange }

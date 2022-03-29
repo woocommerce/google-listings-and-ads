@@ -5,10 +5,17 @@ export { default as ProgramsReport } from './programs';
 export { default as ProductsReport } from './products';
 
 /**
- * @typedef {Object} Metric Metric item structure for disaplying label and its currency type.
+ * @typedef {Object} MetricSchema Basic metric item structure for disaplying label and its currency type.
  * @property {string} key Metric key.
  * @property {string} label Metric label to display.
- * @property {boolean} [isCurrency] Metric is a currency if true.
+ * @property {boolean} [isCurrency] Metric is a currency if true. Needed to adjust Chart's valueType => y-axis labels.
+ */
+
+/**
+ * @typedef {Object} MetricFormatter Metric formatter structure.
+ * @property {(value: number) => string} formatFn Function to format given value to the displayed text.
+ *
+ * @typedef {MetricSchema & MetricFormatter} Metric
  */
 
 /**

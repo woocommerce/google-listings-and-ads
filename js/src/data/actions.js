@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
  */
 import TYPES from './action-types';
 import { API_NAMESPACE } from './constants';
+import { adaptAdsCampaign } from './adapters';
 
 export function handleFetchError( error, message ) {
 	const { createNotice } = dispatch( 'core/notices' );
@@ -26,16 +27,39 @@ export function handleFetchError( error, message ) {
 /**
  * CountryCode
  *
- * @typedef {string} CountryCode
+ * @typedef {string} CountryCode Two-letter country code in ISO 3166-1 alpha-2 format. Example: 'US'.
  */
 
 /**
  * Individual shipping rate.
  *
  * @typedef {Object} ShippingRate
- * @property {CountryCode} countryCode Destination country code.
+ * @property {string} id id.
+ * @property {CountryCode} country Destination country code.
+ * @property {string} method Shipping method, e.g. "flat_rate".
  * @property {string} currency Currency of the price.
  * @property {number} rate Shipping price.
+ * @property {Object} options options depending on the shipping method.
+ */
+
+/**
+ * Campaign data.
+ *
+ * @typedef {Object} Campaign
+ * @property {number} id Campaign ID.
+ * @property {string} name Campaign name.
+ * @property {'enabled'|'paused'} status Campaign is currently running or has been paused.
+ * @property {number} amount Amount of daily budget for running ads.
+ * @property {CountryCode} country The sales country of this campain.
+ *   Please note that this is a targeting country for advertising,
+ *   but it is NOT set up via the location-based method.
+ * @property {Array<CountryCode>} targeted_locations The location-based targeting countries associated with this campaign for advertising.
+ *   Please note that only multi-country campaigns will have at least one country in this array.
+ *   For single-country campaigns, it will an empty array.
+ * @property {boolean} allowMultiple Indicate whether this campaign allows multi-country targeting.
+ *   This can be used to distinguish this campaign is multi-country or single-country targeting.
+ * @property {Array<CountryCode>} displayCountries Campaign's targeting countries used to present on the UI without making merchants feel ambiguous.
+ *   Please refer to the descriptions of `country`, `targeted_locations` and `allowMultiple` for more context about this property.
  */
 
 /**
@@ -44,14 +68,13 @@ export function handleFetchError( error, message ) {
  */
 export function* fetchShippingRates() {
 	try {
-		const response = yield apiFetch( {
+		const data = yield apiFetch( {
 			path: `${ API_NAMESPACE }/mc/shipping/rates`,
 		} );
 
-		const shippingRates = Object.values( response ).map( ( el ) => {
+		const shippingRates = data.map( ( el ) => {
 			return {
-				countryCode: el.country_code,
-				currency: el.currency,
+				...el,
 				rate: Number( el.rate ),
 			};
 		} );
@@ -72,77 +95,54 @@ export function* fetchShippingRates() {
 }
 
 /**
- * Aggregated shipping rate.
+ * Upsert shipping rates.
  *
- * @typedef {Object} AggregatedShippingRate
- * @property {Array<CountryCode>} countries Array of destination country codes.
- * @property {string} currency Currency of the price.
- * @property {number} rate Shipping price.
+ * @param {Array<ShippingRate>} shippingRates Shipping rates to be upserted.
+ * @return {Object} Action object to update shipping rates.
  */
+export function* upsertShippingRates( shippingRates ) {
+	const data = yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'POST',
+		data: {
+			rates: shippingRates,
+		},
+	} );
 
-/**
- * Updates or inserts given aggregated shipping rate.
- *
- * @param {AggregatedShippingRate} shippingRate
- */
-export function* upsertShippingRates( shippingRate ) {
-	const { countryCodes, currency, rate } = shippingRate;
-
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'POST',
-			data: {
-				country_codes: countryCodes,
-				currency,
-				rate,
-			},
-		} );
-
+	const successShippingRates = data.success.map( ( el ) => {
 		return {
-			type: TYPES.UPSERT_SHIPPING_RATES,
-			shippingRate,
+			...el.rate,
+			rate: Number( el.rate.rate ),
 		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to add / update shipping rates. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	} );
+
+	return {
+		type: TYPES.UPSERT_SHIPPING_RATES,
+		shippingRates: successShippingRates,
+	};
 }
 
 /**
- * Deletes shipping rates associated with given country codes.
+ * Delete shipping rates.
  *
- * @param {Array<CountryCode>} countryCodes
+ * @param {Array<string>} ids IDs of shiping rates to be deleted.
+ * @return {Object} Action object to delete shipping rates.
  */
-export function* deleteShippingRates( countryCodes ) {
-	try {
-		yield apiFetch( {
-			path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
-			method: 'DELETE',
-			data: {
-				country_codes: countryCodes,
-			},
-		} );
+export function* deleteShippingRates( ids ) {
+	yield apiFetch( {
+		path: `${ API_NAMESPACE }/mc/shipping/rates/batch`,
+		method: 'DELETE',
+		data: {
+			ids,
+		},
+	} );
 
-		return {
-			type: TYPES.DELETE_SHIPPING_RATES,
-			countryCodes,
-		};
-	} catch ( error ) {
-		yield handleFetchError(
-			error,
-			__(
-				'There was an error trying to delete shipping rates. Please try again later.',
-				'google-listings-and-ads'
-			)
-		);
-	}
+	return {
+		type: TYPES.DELETE_SHIPPING_RATES,
+		ids,
+	};
 }
+
 /**
  * Individual shipping time.
  *
@@ -742,11 +742,14 @@ export function* saveTargetAudience( targetAudience ) {
 
 export function* fetchAdsCampaigns() {
 	try {
-		const response = yield apiFetch( {
+		const campaigns = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns`,
 		} );
 
-		return receiveAdsCampaigns( response );
+		return {
+			type: TYPES.RECEIVE_ADS_CAMPAIGNS,
+			adsCampaigns: campaigns.map( adaptAdsCampaign ),
+		};
 	} catch ( error ) {
 		yield handleFetchError(
 			error,
@@ -758,48 +761,28 @@ export function* fetchAdsCampaigns() {
 	}
 }
 
-export function receiveAdsCampaigns( adsCampaigns ) {
-	return {
-		type: TYPES.RECEIVE_ADS_CAMPAIGNS,
-		adsCampaigns,
-	};
-}
-
 /**
  * Create a new ads campaign.
  *
  * @param {number} amount Daily average cost of the paid ads campaign.
- * @param {string} country Country code of the paid ads campaign audience country. Example: 'US'.
+ * @param {Array<CountryCode>} countryCodes Country code of the paid ads campaign audience country. Example: 'US'.
  *
  * @throws { { message: string } } Will throw an error if the campaign creation fails.
  */
-export function* createAdsCampaign( amount, country ) {
+export function* createAdsCampaign( amount, countryCodes ) {
 	try {
 		const createdCampaign = yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns`,
 			method: 'POST',
 			data: {
 				amount,
-				country,
+				targeted_locations: countryCodes,
 			},
 		} );
 
-		{
-			/**
-			 * If the campaign creation fails, the API still responds a HTTP status code 200 response
-			 * with `message` property only. So here check the fails by data structure.
-			 *
-			 * TODO: Remove this code block after the API responds the fails in a more specific way.
-			 */
-			const keys = Object.keys( createdCampaign );
-			if ( keys.length === 1 && keys.pop() === 'message' ) {
-				throw createdCampaign;
-			}
-		}
-
 		return {
 			type: TYPES.CREATE_ADS_CAMPAIGN,
-			createdCampaign,
+			createdCampaign: adaptAdsCampaign( createdCampaign ),
 		};
 	} catch ( error ) {
 		yield handleFetchError(
@@ -825,24 +808,11 @@ export function* createAdsCampaign( amount, country ) {
  */
 export function* updateAdsCampaign( id, data ) {
 	try {
-		const updatedCampaign = yield apiFetch( {
+		yield apiFetch( {
 			path: `${ API_NAMESPACE }/ads/campaigns/${ id }`,
 			method: 'PATCH',
 			data,
 		} );
-
-		{
-			/**
-			 * If the campaign update fails, the API still responds a HTTP status code 200 response
-			 * with `message` property only. So here check the fails by data structure.
-			 *
-			 * TODO: Remove this code block after the API responds the fails in a more specific way.
-			 */
-			const keys = Object.keys( updatedCampaign );
-			if ( keys.length === 1 && keys.pop() === 'message' ) {
-				throw updatedCampaign;
-			}
-		}
 
 		return {
 			type: TYPES.UPDATE_ADS_CAMPAIGN,

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\GoogleListingsAndAdsException;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ValidateInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchInvalidProductEntry;
@@ -11,7 +12,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Google\Service\ShoppingContent\Product as GoogleProduct;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WC_Product;
@@ -51,31 +52,31 @@ class BatchProductHelper implements Service {
 	protected $product_factory;
 
 	/**
-	 * @var MerchantCenterService
+	 * @var TargetAudience
 	 */
-	protected $merchant_center;
+	protected $target_audience;
 
 	/**
 	 * BatchProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler    $meta_handler
-	 * @param ProductHelper         $product_helper
-	 * @param ValidatorInterface    $validator
-	 * @param ProductFactory        $product_factory
-	 * @param MerchantCenterService $merchant_center
+	 * @param ProductMetaHandler $meta_handler
+	 * @param ProductHelper      $product_helper
+	 * @param ValidatorInterface $validator
+	 * @param ProductFactory     $product_factory
+	 * @param TargetAudience     $target_audience
 	 */
 	public function __construct(
 		ProductMetaHandler $meta_handler,
 		ProductHelper $product_helper,
 		ValidatorInterface $validator,
 		ProductFactory $product_factory,
-		MerchantCenterService $merchant_center
+		TargetAudience $target_audience
 	) {
 		$this->meta_handler    = $meta_handler;
 		$this->product_helper  = $product_helper;
 		$this->validator       = $validator;
 		$this->product_factory = $product_factory;
-		$this->merchant_center = $merchant_center;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
@@ -108,6 +109,26 @@ class BatchProductHelper implements Service {
 		$wc_product = $this->product_helper->get_wc_product( $product_entry->get_wc_product_id() );
 
 		$this->product_helper->mark_as_unsynced( $wc_product );
+	}
+
+	/**
+	 * Mark a batch of WooCommerce product IDs as unsynced.
+	 * Invalid products will be skipped.
+	 *
+	 * @since 1.12.0
+	 *
+	 * @param array $product_ids
+	 */
+	public function mark_batch_as_unsynced( array $product_ids ) {
+		foreach ( $product_ids as $product_id ) {
+			try {
+				$product = $this->product_helper->get_wc_product( $product_id );
+			} catch ( InvalidValue $exception ) {
+				continue;
+			}
+
+			$this->product_helper->mark_as_unsynced( $product );
+		}
 	}
 
 	/**
@@ -184,8 +205,8 @@ class BatchProductHelper implements Service {
 					continue;
 				}
 
-				$target_countries    = $this->merchant_center->get_target_countries();
-				$main_target_country = $this->merchant_center->get_main_target_country();
+				$target_countries    = $this->target_audience->get_target_countries();
+				$main_target_country = $this->target_audience->get_main_target_country();
 
 				// validate the product
 				$adapted_product   = $this->product_factory->create( $product, $main_target_country );
@@ -269,7 +290,7 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_products_request_entries( array $products ): array {
-		$target_audience = $this->merchant_center->get_target_countries();
+		$target_audience = $this->target_audience->get_target_countries();
 		$request_entries = [];
 		foreach ( $products as $product ) {
 			$google_ids = $this->meta_handler->get_google_ids( $product ) ?: [];
@@ -296,7 +317,7 @@ class BatchProductHelper implements Service {
 	 * @return BatchProductIDRequestEntry[]
 	 */
 	public function generate_stale_countries_request_entries( array $products ): array {
-		$main_target_country = $this->merchant_center->get_main_target_country();
+		$main_target_country = $this->target_audience->get_main_target_country();
 
 		$request_entries = [];
 		foreach ( $products as $product ) {

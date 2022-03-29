@@ -12,6 +12,8 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Deactivateable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Registerable;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\InstallableInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -19,13 +21,17 @@ defined( 'ABSPATH' ) || exit;
 /**
  * NoteInitializer class.
  *
+ * ContainerAware used to access:
+ * - Note
+ *
  * @since 1.7.0
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-class NoteInitializer implements Activateable, Deactivateable, InstallableInterface, Service, Registerable {
+class NoteInitializer implements Activateable, Deactivateable, InstallableInterface, Service, Registerable, ContainerAwareInterface {
 
 	use ValidateInterface;
+	use ContainerAwareTrait;
 
 	/**
 	 * Hook name for daily cron.
@@ -38,25 +44,12 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 	protected $action_scheduler;
 
 	/**
-	 * Array of notes to initialize.
-	 *
-	 * @var Note[]
-	 */
-	protected $notes;
-
-	/**
 	 * Cron constructor.
 	 *
 	 * @param ActionSchedulerInterface $action_scheduler
-	 * @param Note[]                   $notes
 	 */
-	public function __construct( ActionSchedulerInterface $action_scheduler, array $notes ) {
-		foreach ( $notes as $note ) {
-			$this->validate_instanceof( $note, Note::class );
-		}
-
+	public function __construct( ActionSchedulerInterface $action_scheduler ) {
 		$this->action_scheduler = $action_scheduler;
-		$this->notes            = $notes;
 	}
 
 	/**
@@ -70,7 +63,9 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 	 * Loop through all notes to add any that should be added.
 	 */
 	public function add_notes(): void {
-		foreach ( $this->notes as $note ) {
+		$notes = $this->container->get( Note::class );
+
+		foreach ( $notes as $note ) {
 			try {
 				if ( $note->should_be_added() ) {
 					$note->get_entry()->save();
@@ -124,7 +119,8 @@ class NoteInitializer implements Activateable, Deactivateable, InstallableInterf
 		// Ensure all note names are deleted
 		if ( class_exists( Notes::class ) ) {
 			$note_names = [];
-			foreach ( $this->notes as $note ) {
+			$notes      = $this->container->get( Note::class );
+			foreach ( $notes as $note ) {
 				$note_names[] = $note->get_name();
 			}
 

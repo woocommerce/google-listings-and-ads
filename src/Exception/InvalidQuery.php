@@ -137,4 +137,15 @@ class InvalidQuery extends InvalidArgumentException implements GoogleListingsAnd
 	public static function resource_name(): InvalidQuery {
 		return new static( 'The resource name can only include alphanumeric and underscore characters.' );
 	}
+
+	/**
+	 * Create a new instance of the exception when an invalid value is used for a column.
+	 *
+	 * @param string $name The column name.
+	 *
+	 * @return InvalidQuery
+	 */
+	public static function invalid_value( string $name ): InvalidQuery {
+		return new static( sprintf( 'The value for column "%s" is not valid.', $name ) );
+	}
 }

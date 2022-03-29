@@ -16,15 +16,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<div class="inline-edit-group">
 			<label class="alignleft">
-				<span class="title"><?php _e( 'Google visibility', 'google-listings-and-ads' ); ?></span>
+				<span class="title"><?php esc_html_e( 'Google visibility', 'google-listings-and-ads' ); ?></span>
 				<span class="input-text-wrap">
 					<select class="change_channel_visibility change_to" name="change_channel_visibility">
 						<?php
-						$options = array(
-							''                                    => __( '— No change —', 'google-listings-and-ads' ),
-						    ChannelVisibility::SYNC_AND_SHOW      => __( 'Show coupon', 'google-listings-and-ads' ),
-						    ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t show coupon', 'google-listings-and-ads' ),
-						);
+						$options = [
+							'' => __( '— No change —', 'google-listings-and-ads' ),
+							ChannelVisibility::SYNC_AND_SHOW => __( 'Show coupon', 'google-listings-and-ads' ),
+							ChannelVisibility::DONT_SYNC_AND_SHOW => __( 'Don\'t show coupon', 'google-listings-and-ads' ),
+						];
 						foreach ( $options as $key => $value ) {
 							echo '<option value="' . esc_attr( $key ) . '">' . esc_html( $value ) . '</option>';
 						}
@@ -33,8 +33,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</span>
 			</label>
 		</div>
-			
+
 		<input type="hidden" name="woocommerce_gla_bulk_edit" value="1" />
-		<input type="hidden" name="woocommerce_gla_bulk_edit_nonce" value="<?php echo wp_create_nonce( 'woocommerce_gla_bulk_edit_nonce' ); ?>" />
+		<input type="hidden" name="woocommerce_gla_bulk_edit_nonce" value="<?php echo esc_attr( wp_create_nonce( 'woocommerce_gla_bulk_edit_nonce' ) ); ?>" />
 	</div>
 </fieldset>

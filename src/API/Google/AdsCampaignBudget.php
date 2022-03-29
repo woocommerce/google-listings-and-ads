@@ -13,13 +13,14 @@ use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
 use Google\Ads\GoogleAds\V9\Services\CampaignBudgetOperation;
 use Google\Ads\GoogleAds\V9\Services\CampaignBudgetServiceClient;
-use Google\Ads\GoogleAds\V9\Services\MutateCampaignBudgetResult;
-use Google\ApiCore\ApiException;
+use Google\Ads\GoogleAds\V9\Services\MutateOperation;
 use Google\ApiCore\ValidationException;
 use Exception;
 
 /**
  * Class AdsCampaignBudget
+ *
+ * @since 1.12.0 Refactored to use batch requests when operating on campaigns.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
@@ -27,6 +28,14 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 
 	use MicroTrait;
 	use OptionsAwareTrait;
+
+	/**
+	 * Temporary ID to use within a batch job.
+	 * A negative number which is unique for all the created resources.
+	 *
+	 * @var int
+	 */
+	protected const TEMPORARY_ID = -2;
 
 	/**
 	 * The Google Ads Client.
@@ -45,26 +54,25 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Creates a new campaign budget.
+	 * Returns a new campaign budget create operation.
 	 *
-	 * @param float $amount Budget amount in the local currency.
+	 * @param string $campaign_name New campaign name.
+	 * @param float  $amount        Budget amount in the local currency.
 	 *
-	 * @return string Resource name of the newly created budget.
-	 * @throws ApiException If the campaign budget can't be created.
+	 * @return MutateOperation
 	 */
-	public function create_campaign_budget( float $amount ): string {
+	public function create_operation( string $campaign_name, float $amount ): MutateOperation {
 		$budget = new CampaignBudget(
 			[
+				'resource_name'     => $this->temporary_resource_name(),
+				'name'              => $campaign_name . ' Budget',
 				'amount_micros'     => $this->to_micro( $amount ),
 				'explicitly_shared' => false,
 			]
 		);
 
-		$operation = new CampaignBudgetOperation();
-		$operation->setCreate( $budget );
-		$created_budget = $this->mutate_budget( $operation );
-
-		return $created_budget->getResourceName();
+		$operation = ( new CampaignBudgetOperation() )->setCreate( $budget );
+		return ( new MutateOperation() )->setCampaignBudgetOperation( $operation );
 	}
 
 	/**
@@ -74,10 +82,9 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 	 * @param float $amount Budget amount in the local currency.
 	 *
 	 * @return string Resource name of the updated budget.
-	 * @throws ApiException If the campaign budget can't be mutated.
 	 * @throws Exception If no linked budget has been found.
 	 */
-	public function edit_campaign_budget( int $campaign_id, float $amount ): string {
+	public function edit_operation( int $campaign_id, float $amount ): MutateOperation {
 		$budget_id = $this->get_budget_from_campaign( $campaign_id );
 		$budget    = new CampaignBudget(
 			[
@@ -89,26 +96,16 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 		$operation = new CampaignBudgetOperation();
 		$operation->setUpdate( $budget );
 		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $budget ) );
-		$edited_budget = $this->mutate_budget( $operation );
-
-		return $edited_budget->getResourceName();
+		return ( new MutateOperation() )->setCampaignBudgetOperation( $operation );
 	}
 
 	/**
-	 * @param int $campaign_id
+	 * Return a temporary resource name for the campaign budget.
 	 *
-	 * @return array resource names of deleted budgets.
-	 * @throws ApiException If the budget isn't deleted.
-	 * @throws Exception If no linked budget has been found.
+	 * @return string
 	 */
-	public function delete_campaign_budget( int $campaign_id ): array {
-		$budget_id            = $this->get_budget_from_campaign( $campaign_id );
-		$budget_resource_name = ResourceNames::forCampaignBudget( $this->options->get_ads_id(), $budget_id );
-
-		$operation = new CampaignBudgetOperation();
-		$operation->setRemove( $budget_resource_name );
-		$deleted_budget = $this->mutate_budget( $operation );
-		return [ $deleted_budget->getResourceName() ];
+	public function temporary_resource_name() {
+		return ResourceNames::forCampaignBudget( $this->options->get_ads_id(), self::TEMPORARY_ID );
 	}
 
 	/**
@@ -132,23 +129,6 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 
 		/* translators: %d Campaign ID */
 		throw new Exception( sprintf( __( 'No budget found for campaign %d', 'google-listings-and-ads' ), $campaign_id ) );
-	}
-
-	/**
-	 * Run a single mutate campaign budget operation.
-	 *
-	 * @param CampaignBudgetOperation $operation Operation we would like to run.
-	 *
-	 * @return MutateCampaignBudgetResult
-	 * @throws ApiException If the remote call to mutate the campaign budget fails.
-	 */
-	protected function mutate_budget( CampaignBudgetOperation $operation ): MutateCampaignBudgetResult {
-		$response = $this->client->getCampaignBudgetServiceClient()->mutateCampaignBudgets(
-			$this->options->get_ads_id(),
-			[ $operation ]
-		);
-
-		return $response->getResults()[0];
 	}
 
 	/**

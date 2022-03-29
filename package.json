@@ -2,7 +2,7 @@
 	"name": "google-listings-and-ads",
 	"title": "Google Listings and Ads",
 	"license": "GPL-3.0-or-later",
-	"version": "1.11.1",
+	"version": "1.12.0",
 	"description": "google-listings-and-ads",
 	"repository": {
 		"type": "git",
@@ -21,7 +21,7 @@
 		"docker:up": "npx wc-e2e docker:up",
 		"docker:down": "npx wc-e2e docker:down",
 		"format:js": "wp-scripts format",
-		"i18n": "php -d memory_limit=2048M ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
+		"i18n": "WP_CLI_PHP_ARGS='-d memory_limit=2048M' ./vendor/bin/wp i18n make-pot ./ languages/$npm_package_name.pot --slug=$npm_package_name --domain=$npm_package_name --exclude=bin,data,js/src,node_modules,tests,vendor",
 		"lint": "npm run lint:php && npm run lint:js && npm run lint:css",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
@@ -56,16 +56,18 @@
 		"@wordpress/scripts": "^17.1.0",
 		"@wordpress/stylelint-config": "^19.0.5",
 		"bundlewatch": "^0.3.2",
+		"eslint": "^7.17.0",
 		"eslint-import-resolver-webpack": "^0.13.1",
 		"eslint-plugin-import": "^2.25.4",
 		"file-loader": "^6.2.0",
 		"h2o2": "^8.2.0",
 		"postcss": "^8.4.4",
-		"prettier": "npm:wp-prettier@^2.0.5"
+		"prettier": "npm:wp-prettier@^2.0.5",
+		"stylelint": "^13.8.0"
 	},
 	"dependencies": {
 		"@woocommerce/components": "8.1.0",
-		"@woocommerce/currency": "^3.1.0",
+		"@woocommerce/currency": "^3.2.1",
 		"@woocommerce/customer-effort-score": "^1.1.0",
 		"@woocommerce/data": "1.4.0",
 		"@woocommerce/date": "^3.1.0",

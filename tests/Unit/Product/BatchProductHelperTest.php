@@ -9,7 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductIDRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\BatchProductRequestEntry;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\BatchProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductFactory;
 use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
@@ -34,13 +34,13 @@ use WC_Product_Variation;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\Product
  *
- * @property WC                               $wc
- * @property ProductMetaHandler               $product_meta
- * @property ProductHelper                    $product_helper
- * @property MockObject|ValidatorInterface    $validator
- * @property ProductFactory                   $product_factory
- * @property MockObject|MerchantCenterService $merchant_center
- * @property BatchProductHelper               $batch_product_helper
+ * @property WC                            $wc
+ * @property ProductMetaHandler            $product_meta
+ * @property ProductHelper                 $product_helper
+ * @property MockObject|ValidatorInterface $validator
+ * @property ProductFactory                $product_factory
+ * @property MockObject|TargetAudience     $target_audience
+ * @property BatchProductHelper            $batch_product_helper
  */
 class BatchProductHelperTest extends ContainerAwareUnitTest {
 
@@ -84,6 +84,18 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 
 		$product = $this->wc->get_product( $synced_product->get_id() );
 		$this->assertFalse( $this->product_helper->is_product_synced( $product ) );
+	}
+
+	public function test_mark_batch_as_unsynced() {
+		$products    = $this->create_simple_product_set( 2 );
+		$product_ids = array_keys( $products );
+
+		$this->batch_product_helper->mark_batch_as_unsynced( $product_ids );
+
+		foreach ( $product_ids as $product_id ) {
+			$product = $this->wc->get_product( $product_id );
+			$this->assertFalse( $this->product_helper->is_product_synced( $product ) );
+		}
 	}
 
 	public function test_mark_as_invalid() {
@@ -160,7 +172,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	public function test_validate_and_generate_update_request_entries() {
 		$products = $this->create_and_return_supported_test_products();
 
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_main_target_country' )
 							  ->willReturn( 'US' );
 		$this->validator->expects( $this->any() )
@@ -216,7 +228,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 							}
 						);
 
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_main_target_country' )
 							  ->willReturn( 'US' );
 
@@ -243,7 +255,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 			$this->product_meta->update_visibility( $skipped_product, ChannelVisibility::DONT_SYNC_AND_SHOW );
 		}
 
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_main_target_country' )
 							  ->willReturn( 'US' );
 		$this->validator->expects( $this->any() )
@@ -298,10 +310,10 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
-		$this->merchant_center->expects( $this->once() )
+		$this->target_audience->expects( $this->once() )
 							  ->method( 'get_target_countries' )
 							  ->willReturn( [ 'US' ] );
-		$this->merchant_center->expects( $this->any() )
+		$this->target_audience->expects( $this->any() )
 							  ->method( 'get_main_target_country' )
 							  ->willReturn( 'US' );
 
@@ -329,7 +341,7 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 		$stale_product    = $products[0];
 		$stale_product_id = $stale_product->get_id();
 
-		$this->merchant_center->expects( $this->once() )
+		$this->target_audience->expects( $this->once() )
 							  ->method( 'get_main_target_country' )
 							  ->willReturn( 'US' );
 
@@ -368,12 +380,12 @@ class BatchProductHelperTest extends ContainerAwareUnitTest {
 	 */
 	public function setUp() {
 		parent::setUp();
-		$this->merchant_center      = $this->createMock( MerchantCenterService::class );
+		$this->target_audience      = $this->createMock( TargetAudience::class );
 		$this->validator            = $this->createMock( ValidatorInterface::class );
 		$this->product_meta         = $this->container->get( ProductMetaHandler::class );
 		$this->product_factory      = $this->container->get( ProductFactory::class );
 		$this->wc                   = $this->container->get( WC::class );
-		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->merchant_center );
-		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->merchant_center );
+		$this->product_helper       = new ProductHelper( $this->product_meta, $this->wc, $this->target_audience );
+		$this->batch_product_helper = new BatchProductHelper( $this->product_meta, $this->product_helper, $this->validator, $this->product_factory, $this->target_audience );
 	}
 }

@@ -4,6 +4,7 @@
 [![JavaScript Unit Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-unit-tests.yml)
 [![PHP Coding Standards](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/php-coding-standards.yml)
 [![JavaScript and CSS Linting](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/js-css-linting.yml)
+[![E2E Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml)
 [![Bundle Size](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml)
 
 A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
@@ -27,7 +28,7 @@ If you have a WooCommerce.com account, you can [start a chat or open a ticket on
 
 We aim to support the latest two minor versions of WordPress, WooCommerce, and PHP. (L-2 policy)
 
--   WordPress 5.6+
+-   WordPress 5.7+
 -   WooCommerce 5.8+
 -   PHP 7.3+
 
