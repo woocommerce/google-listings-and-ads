@@ -19,13 +19,10 @@ import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import SpinnerCard from '.~/components/spinner-card';
 import Section from '.~/wcdl/section';
-import AccountSubsection from './account-subsection';
-import DisconnectModal, {
-	ALL_ACCOUNTS,
-	ADS_ACCOUNT,
-} from '../disconnect-modal';
+import AccountSubsection from './disconnect-accounts/account-subsection';
+import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 
-export default function DisconnectAccounts() {
+export default function LinkedAccounts() {
 	const adminUrl = useAdminUrl();
 	const { jetpack } = useJetpackAccount();
 	const { google } = useGoogleAccount();
