@@ -73,29 +73,4 @@ class AdsAssetGroupTest extends UnitTest {
 		$this->assertEquals( ListingGroupFilterVertical::SHOPPING, $listing_group->getVertical() );
 	}
 
-	public function test_delete_operations() {
-		$campaign_resource_name      = $this->generate_campaign_resource_name( self::TEST_CAMPAIGN_ID );
-		$asset_group_resource_name   = $this->generate_asset_group_resource_name( self::TEST_ASSET_GROUP_ID );
-		$listing_group_resource_name = $this->generate_listing_group_resource_name( self::TEST_ASSET_GROUP_ID, self::TEST_LISTING_GROUP_ID );
-
-		$this->generate_ads_asset_group_query_mock( $asset_group_resource_name, $listing_group_resource_name );
-
-		$operations = $this->asset_group->delete_operations(
-			$campaign_resource_name
-		);
-
-		$operation_listing_group = $operations[0]->getAssetGroupListingGroupFilterOperation();
-		$this->assertTrue( $operation_listing_group->hasRemove() );
-		$this->assertEquals(
-			$listing_group_resource_name,
-			$operation_listing_group->getRemove()
-		);
-
-		$operation_asset_group = $operations[1]->getAssetGroupOperation();
-		$this->assertTrue( $operation_asset_group->hasRemove() );
-		$this->assertEquals(
-			$asset_group_resource_name,
-			$operation_asset_group->getRemove()
-		);
-	}
 }

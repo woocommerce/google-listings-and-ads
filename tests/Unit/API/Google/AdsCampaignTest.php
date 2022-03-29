@@ -7,7 +7,6 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -26,7 +25,6 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
- * @property MockObject|AdsGroup             $ad_group
  * @property MockObject|AdsAssetGroup        $asset_group
  * @property MockObject|AdsCampaignBudget    $budget
  * @property MockObject|AdsCampaignCriterion $criterion
@@ -51,7 +49,6 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->ad_group    = $this->createMock( AdsGroup::class );
 		$this->asset_group = $this->createMock( AdsAssetGroup::class );
 		$this->budget      = $this->createMock( AdsCampaignBudget::class );
 		$this->criterion   = new AdsCampaignCriterion();
@@ -61,7 +58,6 @@ class AdsCampaignTest extends UnitTest {
 		$this->google_helper = new GoogleHelper( $this->wc );
 
 		$this->container = new Container();
-		$this->container->share( AdsGroup::class, $this->ad_group );
 		$this->container->share( AdsAssetGroup::class, $this->asset_group );
 		$this->container->share( WC::class, $this->wc );
 

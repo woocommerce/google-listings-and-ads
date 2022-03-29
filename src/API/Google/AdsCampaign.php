@@ -35,7 +35,6 @@ use Exception;
  *
  * ContainerAware used for:
  * - AdsAssetGroup
- * - AdsGroup
  * - WC
  *
  * @since x.x.x Refactored to support PMax and (legacy) SSC.
@@ -302,19 +301,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		try {
 			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 
-			$asset_group_operations = $this->container->get( AdsAssetGroup::class )->delete_operations( $campaign_resource_name );
-
-			// Retrieve legacy SSC ad group if we haven't gotten any asset group.
-			$ad_group_operations = empty( $asset_group_operations ) ?
-				$this->container->get( AdsGroup::class )->delete_operations( $campaign_resource_name ) :
-				[];
-
-			// Include operations for AdsGroup (legacy SSC)
-			$operations = array_merge(
-				$asset_group_operations,
-				$ad_group_operations,
-				[ $this->delete_operation( $campaign_resource_name ) ],
-			);
+			$operations = [
+				$this->delete_operation( $campaign_resource_name ),
+			];
 
 			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
