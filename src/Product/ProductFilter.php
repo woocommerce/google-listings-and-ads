@@ -71,7 +71,7 @@ class ProductFilter implements Service {
 	/**
 	 * Filter and return a list of products that can be deleted.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @param WC_Product[] $products
 	 * @param boolean      $return_ids
