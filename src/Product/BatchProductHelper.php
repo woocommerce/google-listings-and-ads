@@ -115,7 +115,7 @@ class BatchProductHelper implements Service {
 	 * Mark a batch of WooCommerce product IDs as unsynced.
 	 * Invalid products will be skipped.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @param array $product_ids
 	 */

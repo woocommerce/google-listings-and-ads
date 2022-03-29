@@ -154,7 +154,7 @@ class ProductRepository implements Service {
 	/**
 	 * Find and return an array of WooCommerce product ID's ready to be deleted from the Google Merchant Center.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @param int[] $ids    Array of WooCommerce product IDs
 	 * @param int   $limit  Maximum number of results to retrieve or -1 for unlimited.

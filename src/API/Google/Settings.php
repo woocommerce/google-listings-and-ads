@@ -68,7 +68,7 @@ class Settings {
 	 *
 	 * @see ShippingZone::get_shipping_rates_for_country() for the format of the $rates array.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 */
 	public function update_shipping_rates( array $rates ) {
 		$settings = new ShippingSettings();
@@ -128,7 +128,7 @@ class Settings {
 	 *
 	 * @return bool
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 */
 	protected function should_get_shipping_rates_from_woocommerce(): bool {
 		return 'automatic' === $this->get_settings()['shipping_rate'];
