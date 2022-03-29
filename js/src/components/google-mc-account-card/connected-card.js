@@ -18,8 +18,15 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import { useAppDispatch } from '.~/data';
 
-const ConnectedCard = ( props ) => {
-	const { googleMCAccount } = props;
+/**
+ * Renders a Google Merchant Center account card UI with connected account information.
+ * It also provides a switch button that lets user connect with another account.
+ *
+ * @param {Object} props React props.
+ * @param {{ id: number }} props.googleMCAccount A data payload object contains user's Google Merchant Center account ID.
+ * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
+ */
+const ConnectedCard = ( { googleMCAccount, hideAccountSwitch = false } ) => {
 	const { createNotice, removeNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 
@@ -81,18 +88,20 @@ const ConnectedCard = ( props ) => {
 			) }
 			indicator={ <ConnectedIconLabel /> }
 		>
-			<Section.Card.Footer>
-				<AppButton
-					isLink
-					disabled={ loadingGoogleMCDisconnect }
-					text={ __(
-						'Or, connect to a different Google Merchant Center account',
-						'google-listings-and-ads'
-					) }
-					eventName="gla_mc_account_connect_different_account_button_click"
-					onClick={ handleSwitch }
-				/>
-			</Section.Card.Footer>
+			{ ! hideAccountSwitch && (
+				<Section.Card.Footer>
+					<AppButton
+						isLink
+						disabled={ loadingGoogleMCDisconnect }
+						text={ __(
+							'Or, connect to a different Google Merchant Center account',
+							'google-listings-and-ads'
+						) }
+						eventName="gla_mc_account_connect_different_account_button_click"
+						onClick={ handleSwitch }
+					/>
+				</Section.Card.Footer>
+			) }
 		</AccountCard>
 	);
 };

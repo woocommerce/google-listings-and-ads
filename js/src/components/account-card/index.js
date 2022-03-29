@@ -57,7 +57,7 @@ const appearanceDict = {
 	},
 	[ APPEARANCE.GOOGLE ]: {
 		icon: googleLogo,
-		title: __( 'Google account', 'google-listings-and-ads' ),
+		title: __( 'Google', 'google-listings-and-ads' ),
 	},
 	[ APPEARANCE.GOOGLE_MERCHANT_CENTER ]: {
 		icon: googleLogo,
