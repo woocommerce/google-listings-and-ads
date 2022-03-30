@@ -15,7 +15,7 @@ import * as selectors from './selectors';
 import * as resolvers from './resolvers';
 import reducer from './reducer';
 import { createErrorResponseCatcher } from './api-fetch-middlewares';
-import { getReconnectAccountsUrl } from '.~/utils/urls';
+import { getReconnectGoogleAccountUrl } from '.~/utils/urls';
 
 registerStore( STORE_KEY, {
 	actions,
@@ -28,7 +28,7 @@ registerStore( STORE_KEY, {
 apiFetch.use(
 	createErrorResponseCatcher( ( response ) => {
 		if ( response.status === 401 ) {
-			getHistory().replace( getReconnectAccountsUrl() );
+			getHistory().replace( getReconnectGoogleAccountUrl() );
 
 			// Inject the status code to let the subsequent handlers can identify the 401 response error.
 			return ( response.json || response.text )

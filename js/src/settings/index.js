@@ -9,7 +9,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
  */
 import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
-import { subpaths, getReconnectAccountsUrl } from '.~/utils/urls';
+import { subpaths, getReconnectGoogleAccountUrl } from '.~/utils/urls';
 import NavigationClassic from '.~/components/navigation-classic';
 import { ContactInformationPreview } from '.~/components/contact-information';
 import LinkedAccounts from './linked-accounts';
@@ -24,19 +24,19 @@ const Settings = () => {
 	useLegacyMenuEffect();
 
 	const { google } = useGoogleAccount();
-	const isReconnectAccountsPage = subpath === subpaths.reconnectAccounts;
+	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
 
 	// This page wouldn't get any 401 response when losing Google account access,
 	// so we still need to detect it here.
 	useEffect( () => {
-		if ( ! isReconnectAccountsPage && google?.active === 'no' ) {
-			getHistory().replace( getReconnectAccountsUrl() );
+		if ( ! isReconnectGooglePage && google?.active === 'no' ) {
+			getHistory().replace( getReconnectGoogleAccountUrl() );
 		}
-	}, [ isReconnectAccountsPage, google ] );
+	}, [ isReconnectGooglePage, google ] );
 
 	// Navigate to subpath is any.
 	switch ( subpath ) {
-		case subpaths.reconnectAccounts:
+		case subpaths.reconnectGoogleAccount:
 			return <ReconnectGoogleAccount />;
 		case subpaths.editPhoneNumber:
 			return <EditPhoneNumber />;

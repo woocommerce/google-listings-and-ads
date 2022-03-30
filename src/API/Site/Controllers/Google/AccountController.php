@@ -34,7 +34,7 @@ class AccountController extends BaseController {
 	private const NEXT_PATH_MAPPING = [
 		'setup-mc'  => '/google/setup-mc',
 		'setup-ads' => '/google/setup-ads',
-		'reconnect' => '/google/settings&subpath=/reconnect-accounts',
+		'reconnect' => '/google/settings&subpath=/reconnect-google-account',
 	];
 
 	/**

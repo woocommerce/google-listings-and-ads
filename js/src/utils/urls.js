@@ -13,7 +13,7 @@ export const subpaths = {
 	createCampaign: '/campaigns/create',
 	editPhoneNumber: '/edit-phone-number',
 	editStoreAddress: '/edit-store-address',
-	reconnectAccounts: '/reconnect-accounts',
+	reconnectGoogleAccount: '/reconnect-google-account',
 };
 
 export const getEditFreeListingsUrl = () => {
@@ -58,9 +58,9 @@ export const getEditStoreAddressUrl = () => {
 	);
 };
 
-export const getReconnectAccountsUrl = () => {
+export const getReconnectGoogleAccountUrl = () => {
 	return getNewPath(
-		{ subpath: subpaths.reconnectAccounts },
+		{ subpath: subpaths.reconnectGoogleAccount },
 		settingsPath,
 		null
 	);
