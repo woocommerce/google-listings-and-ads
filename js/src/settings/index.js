@@ -13,7 +13,7 @@ import { subpaths, getReconnectAccountsUrl } from '.~/utils/urls';
 import NavigationClassic from '.~/components/navigation-classic';
 import { ContactInformationPreview } from '.~/components/contact-information';
 import LinkedAccounts from './linked-accounts';
-import ReconnectAccounts from './reconnect-accounts';
+import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
 import './index.scss';
@@ -37,7 +37,7 @@ const Settings = () => {
 	// Navigate to subpath is any.
 	switch ( subpath ) {
 		case subpaths.reconnectAccounts:
-			return <ReconnectAccounts />;
+			return <ReconnectGoogleAccount />;
 		case subpaths.editPhoneNumber:
 			return <EditPhoneNumber />;
 		case subpaths.editStoreAddress:
