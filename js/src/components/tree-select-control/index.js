@@ -72,16 +72,16 @@ import { ARROW_DOWN, ARROW_UP, ENTER, ESCAPE, ROOT_VALUE } from './constants';
  * Renders a component with a searchable control, tags and a tree selector.
  *
  * @param {Object} props Component props.
- * @param {string} props.id Component id
- * @param {string} props.label Label for the component
- * @param {string | false} props.selectAllLabel Label for the Select All root element. False for disable.
- * @param {string} props.placeholder Placeholder for the search control input
- * @param {string} props.className The class name for this component
- * @param {boolean} props.disabled Disables the component
- * @param {Option[]} props.options Options to show in the component
- * @param {string[]} props.value Selected values
- * @param {number} props.maxVisibleTags The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
- * @param {Function} props.onChange Callback when the selector changes
+ * @param {string} [props.id] Component id
+ * @param {string} [props.label] Label for the component
+ * @param {string | false} [props.selectAllLabel] Label for the Select All root element. False for disable.
+ * @param {string} [props.placeholder] Placeholder for the search control input
+ * @param {string} [props.className] The class name for this component
+ * @param {boolean} [props.disabled] Disables the component
+ * @param {Option[]} [props.options] Options to show in the component
+ * @param {string[]} [props.value] Selected values
+ * @param {number} [props.maxVisibleTags] The maximum number of tags to show. Undefined, 0 or less than 0 evaluates to "Show All".
+ * @param {Function} [props.onChange] Callback when the selector changes
  * @return {JSX.Element} The component
  */
 const TreeSelectControl = ( {

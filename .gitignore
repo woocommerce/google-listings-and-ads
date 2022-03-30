@@ -29,3 +29,6 @@ phpunit.xml
 
 # Do not include backup PHP files
 *.php.bak
+
+#StoryBook
+./storybook/dist

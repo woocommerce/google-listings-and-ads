@@ -17,7 +17,6 @@ import SetupMC from './setup-mc';
 import SetupAds from './setup-ads';
 import Dashboard from './dashboard';
 import Reports from './pages/reports';
-import ComponentTest from './pages/component-test';
 import ProductFeed from './product-feed';
 import Settings from './settings';
 import './data';
@@ -125,18 +124,6 @@ addFilter(
 				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
 				navArgs: {
 					id: 'google-settings',
-				},
-			},
-			{
-				breadcrumbs: [
-					...initialBreadcrumbs,
-					__( 'Component test', 'google-listings-and-ads' ),
-				],
-				container: ComponentTest,
-				path: '/google/component-test',
-				wpOpenMenu: 'toplevel_page_woocommerce-marketing',
-				navArgs: {
-					id: 'google-components-test',
 				},
 			},
 		];
