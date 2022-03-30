@@ -13,7 +13,6 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads;
 
 use Google\Ads\GoogleAds\Constants;
 use Google\Ads\GoogleAds\Lib\ConfigurationTrait;
-use Google\Ads\GoogleAds\V9\Services\AccountBudgetProposalServiceClient;
 use Google\Ads\GoogleAds\V9\Services\AccountBudgetServiceClient;
 use Google\Ads\GoogleAds\V9\Services\AccountLinkServiceClient;
 use Google\Ads\GoogleAds\V9\Services\AdGroupAdLabelServiceClient;
@@ -21,10 +20,16 @@ use Google\Ads\GoogleAds\V9\Services\AdGroupAdServiceClient;
 use Google\Ads\GoogleAds\V9\Services\AdGroupCriterionServiceClient;
 use Google\Ads\GoogleAds\V9\Services\AdGroupServiceClient;
 use Google\Ads\GoogleAds\V9\Services\AdServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetGroupListingGroupFilterServiceClient;
+use Google\Ads\GoogleAds\V9\Services\AssetGroupServiceClient;
 use Google\Ads\GoogleAds\V9\Services\BillingSetupServiceClient;
 use Google\Ads\GoogleAds\V9\Services\CampaignBudgetServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignCriterionServiceClient;
 use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
 use Google\Ads\GoogleAds\V9\Services\ConversionActionServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CustomerUserAccessServiceClient;
+use Google\Ads\GoogleAds\V9\Services\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MerchantCenterLinkServiceClient;
 
@@ -69,13 +74,6 @@ trait ServiceClientFactoryTrait {
 		}
 
 		return $clientOptions;
-	}
-
-	/**
-	 * @return AccountBudgetProposalServiceClient
-	 */
-	public function getAccountBudgetProposalServiceClient(): AccountBudgetProposalServiceClient {
-		return new AccountBudgetProposalServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
@@ -128,6 +126,20 @@ trait ServiceClientFactoryTrait {
 	}
 
 	/**
+	 * @return AssetGroupListingGroupFilterServiceClient
+	 */
+	public function getAssetGroupListingGroupFilterServiceClient(): AssetGroupListingGroupFilterServiceClient {
+		return new AssetGroupListingGroupFilterServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return AssetGroupServiceClient
+	 */
+	public function getAssetGroupServiceClient(): AssetGroupServiceClient {
+		return new AssetGroupServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
 	 * @return BillingSetupServiceClient
 	 */
 	public function getBillingSetupServiceClient(): BillingSetupServiceClient {
@@ -141,6 +153,12 @@ trait ServiceClientFactoryTrait {
 		return new CampaignBudgetServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
+	/**
+	 * @return CampaignCriterionServiceClient
+	 */
+	public function getCampaignCriterionServiceClient(): CampaignCriterionServiceClient {
+		return new CampaignCriterionServiceClient( $this->getGoogleAdsClientOptions() );
+	}
 
 	/**
 	 * @return CampaignServiceClient
@@ -154,6 +172,27 @@ trait ServiceClientFactoryTrait {
 	 */
 	public function getConversionActionServiceClient(): ConversionActionServiceClient {
 		return new ConversionActionServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomerServiceClient
+	 */
+	public function getCustomerServiceClient(): CustomerServiceClient {
+		return new CustomerServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return CustomerUserAccessServiceClient
+	 */
+	public function getCustomerUserAccessServiceClient(): CustomerUserAccessServiceClient {
+		return new CustomerUserAccessServiceClient( $this->getGoogleAdsClientOptions() );
+	}
+
+	/**
+	 * @return GeoTargetConstantServiceClient
+	 */
+	public function getGeoTargetConstantServiceClient(): GeoTargetConstantServiceClient {
+		return new GeoTargetConstantServiceClient( $this->getGoogleAdsClientOptions() );
 	}
 
 	/**
