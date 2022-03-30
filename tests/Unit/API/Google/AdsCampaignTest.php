@@ -44,7 +44,7 @@ class AdsCampaignTest extends UnitTest {
 	/**
 	 * Runs before each test is executed.
 	 */
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		$this->ads_client_setup();

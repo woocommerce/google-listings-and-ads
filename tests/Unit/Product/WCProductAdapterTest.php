@@ -1541,7 +1541,7 @@ DESCRIPTION;
 		];
 	}
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 
 		update_option( 'woocommerce_dimension_unit', 'cm' );
@@ -1549,7 +1549,7 @@ DESCRIPTION;
 		update_option( 'woocommerce_currency', 'USD' );
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		parent::tearDown();
 
 		// remove any added filter
