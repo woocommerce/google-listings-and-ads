@@ -109,6 +109,7 @@ const alignStyleName = {
  * @param {'center'|'top'} [props.alignIcon='center'] Specify the vertical alignment of leading icon.
  * @param {'center'|'top'} [props.alignIndicator='center'] Specify the vertical alignment of `indicator`.
  * @param {Array<JSX.Element>} [props.children] Children to be rendered if needs more content within the card.
+ * @param {Object} [props.restProps] Props to be forwarded to Section.Card.
  */
 export default function AccountCard( {
 	className,
@@ -122,6 +123,7 @@ export default function AccountCard( {
 	indicator,
 	alignIndicator = 'center',
 	children,
+	...restProps
 } ) {
 	const cardClassName = classnames(
 		'gla-account-card',
@@ -140,7 +142,7 @@ export default function AccountCard( {
 	);
 
 	return (
-		<Section.Card className={ cardClassName }>
+		<Section.Card className={ cardClassName } { ...restProps }>
 			<Section.Card.Body>
 				<Flex gap={ 4 }>
 					{ icon && (
