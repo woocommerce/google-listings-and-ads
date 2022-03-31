@@ -107,6 +107,9 @@ const TreeSelectControl = ( {
 
 	// We will save in a REF previous search filter queries to avoid re-query the tree and save performance
 	const filteredOptionsCache = useRef( {} );
+
+	const showTree = ! disabled && treeVisible;
+
 	const root =
 		selectAllLabel !== false
 			? {
@@ -410,6 +413,8 @@ const TreeSelectControl = ( {
 	}, [ treeOptions, filter, getOptionFromRepository ] );
 
 	const onKeyDown = ( event ) => {
+		if ( disabled ) return;
+
 		if ( ESCAPE === event.key ) {
 			setTreeVisible( false );
 		}
@@ -552,6 +557,7 @@ const TreeSelectControl = ( {
 			{ ...focusOutside }
 			onKeyDown={ onKeyDown }
 			onClick={ () => {
+				if ( disabled ) return;
 				setTreeVisible( true );
 			} }
 			className={ classnames(
@@ -571,7 +577,7 @@ const TreeSelectControl = ( {
 			<Control
 				disabled={ disabled }
 				tags={ getTags() }
-				isExpanded={ treeVisible }
+				isExpanded={ showTree }
 				onFocus={ () => {
 					setFocused( null );
 					setTreeVisible( true );
@@ -583,7 +589,7 @@ const TreeSelectControl = ( {
 				onTagsChange={ handleTagsChange }
 				onInputChange={ handleOnInputChange }
 			/>
-			{ treeVisible && (
+			{ showTree && (
 				<div
 					className="woocommerce-tree-select-control__tree"
 					role="tree"
