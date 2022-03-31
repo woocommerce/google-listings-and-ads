@@ -13,7 +13,10 @@ import ConnectedIconLabel from '.~/components/connected-icon-label';
  * @param {JSX.Element} [props.children] Helper content below the Google account email.
  * @param {Object} props.restProps Props to be forwarded to AccountCard.
  */
-const Connected = ( { googleAdsAccount, ...restProps } ) => {
+export default function ConnectedGoogleAdsAccountCard( {
+	googleAdsAccount,
+	...restProps
+} ) {
 	return (
 		<AccountCard
 			appearance={ APPEARANCE.GOOGLE_ADS }
@@ -22,6 +25,4 @@ const Connected = ( { googleAdsAccount, ...restProps } ) => {
 			{ ...restProps }
 		/>
 	);
-};
-
-export default Connected;
+}

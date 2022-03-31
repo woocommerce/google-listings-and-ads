@@ -3,7 +3,7 @@
  */
 import SpinnerCard from '.~/components/spinner-card';
 import useGoogleMCAccount from '.~/hooks/useGoogleMCAccount';
-import ConnectedCard from './connected-card';
+import ConnectedGoogleMCAccountCard from './connected-google-mc-account-card';
 import DisabledCard from './disabled-card';
 import NonConnected from './non-connected';
 
@@ -27,7 +27,7 @@ const GoogleMCAccountCard = () => {
 		return <NonConnected />;
 	}
 
-	return <ConnectedCard googleMCAccount={ googleMCAccount } />;
+	return <ConnectedGoogleMCAccountCard googleMCAccount={ googleMCAccount } />;
 };
 
 export default GoogleMCAccountCard;
