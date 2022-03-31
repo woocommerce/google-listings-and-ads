@@ -99,7 +99,7 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(
-									'My shipping settings are complex. I will enter my shipping rates manually in Google Merchant Center.',
+									'My shipping settings are complex. I will enter my shipping rates and times manually in Google Merchant Center.',
 									'google-listings-and-ads'
 								) }
 								value="manual"
