@@ -71,8 +71,7 @@ jobs:
 
       -name: PHP8 & PHPUnit9 with WordPress greater than v5.8
         run: |
-          if [ "${{ matrix.php }}" >= "8.0" ] && [ "${{ matrix.wp-version }}" == "latest" ] || [ "${{ matrix.wp-version }}" > "5.8" ]; then
-            rm -rf ./vendor/phpunit/
+          if [ ${{ matrix.php }} >= 8.0 ] && [ "${{ matrix.wp-version }}" == "latest" ] || [ ${{ matrix.wp-version }} > 5.8 ]; then
             composer require phpunit/phpunit "^9.5" --dev --update-with-all-dependencies
           fi
 
