@@ -40,10 +40,15 @@ class AccountServiceTest extends UnitTest {
 	protected const TEST_MERCHANT_ID       = 78123456;
 	protected const TEST_BILLING_URL       = 'https://domain.test/billing/setup/';
 	protected const TEST_CURRENCY          = 'EUR';
-	protected const TEST_ACCOUNT_IDS       = [
-		self::TEST_ACCOUNT_ID,
-		self::TEST_OLD_ACCOUNT_ID,
-		3456789012,
+	protected const TEST_ACCOUNTS          = [
+		[
+			'id'   => self::TEST_ACCOUNT_ID,
+			'name' => 'Ads Account',
+		],
+		[
+			'id'   => self::TEST_OLD_ACCOUNT_ID,
+			'name' => 'Other Account',
+		],
 	];
 	protected const TEST_STEP_DATA         = [
 		'sub_account'       => true,
@@ -98,20 +103,20 @@ class AccountServiceTest extends UnitTest {
 
 	public function test_get_accounts() {
 		$this->ads->expects( $this->once() )
-			->method( 'get_ads_account_ids' )
-			->willReturn( self::TEST_ACCOUNT_IDS );
+			->method( 'get_ads_accounts' )
+			->willReturn( self::TEST_ACCOUNTS );
 
-		$this->assertEquals( self::TEST_ACCOUNT_IDS, $this->account->get_account_ids() );
+		$this->assertEquals( self::TEST_ACCOUNTS, $this->account->get_accounts() );
 	}
 
 	public function test_get_accounts_with_api_exception() {
 		$this->ads->expects( $this->once() )
-			->method( 'get_ads_account_ids' )
+			->method( 'get_ads_accounts' )
 			->willThrowException( new Exception( 'error' ) );
 
 		$this->expectException( Exception::class );
 		$this->expectExceptionMessage( 'error' );
-		$this->account->get_account_ids();
+		$this->account->get_accounts();
 	}
 
 	public function test_get_connected_account() {

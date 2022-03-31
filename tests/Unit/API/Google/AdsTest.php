@@ -31,6 +31,7 @@ class AdsTest extends UnitTest {
 
 	protected const TEST_ADS_ID      = 1234567890;
 	protected const TEST_MERCHANT_ID = 2345678901;
+	protected const TEST_ADS_NAME    = 'Ads Account';
 	protected const TEST_EMAIL       = 'john@doe.email';
 	protected const TEST_CURRENCY    = 'EUR';
 	protected const TEST_BILLING_URL = 'https://domain.test/billing/setup/';
@@ -49,12 +50,12 @@ class AdsTest extends UnitTest {
 		$this->ads->set_options_object( $this->options );
 	}
 
-	public function test_get_ads_account_ids_empty_list() {
+	public function test_get_ads_accounts_empty_list() {
 		$this->generate_customer_list_mock( [] );
-		$this->assertEquals( [], $this->ads->get_ads_account_ids() );
+		$this->assertEquals( [], $this->ads->get_ads_accounts() );
 	}
 
-	public function test_get_ads_account_ids() {
+	public function test_get_ads_accounts() {
 		$this->generate_customer_list_mock(
 			[
 				'customers/' . self::TEST_ADS_ID,
@@ -63,17 +64,38 @@ class AdsTest extends UnitTest {
 			]
 		);
 
+		$this->generate_customers_mock(
+			[
+				[
+					'id'   => self::TEST_ADS_ID,
+					'name' => self::TEST_ADS_NAME,
+				],
+				[
+					'id'      => 2345,
+					'name'    => 'Manager Account',
+					'manager' => true,
+				],
+				[
+					'id'           => 4567,
+					'name'         => 'Test Account',
+					'test_account' => true,
+				],
+			]
+		);
+
+
 		$this->assertEquals(
 			[
-				self::TEST_ADS_ID,
-				2345,
-				3456,
+				[
+					'id'   => self::TEST_ADS_ID,
+					'name' => self::TEST_ADS_NAME,
+				],
 			],
-			$this->ads->get_ads_account_ids()
+			$this->ads->get_ads_accounts()
 		);
 	}
 
-	public function test_get_ads_account_ids_not_signed_up() {
+	public function test_get_ads_accounts_not_signed_up() {
 		$errors = [
 			'errors' => [
 				[
@@ -89,16 +111,16 @@ class AdsTest extends UnitTest {
 			new ApiException( 'denied', 7, 'PERMISSION_DENIED', [ 'metadata' => [ $errors ] ] )
 		);
 
-		$this->assertEquals( [], $this->ads->get_ads_account_ids() );
+		$this->assertEquals( [], $this->ads->get_ads_accounts() );
 	}
 
-	public function test_get_ads_account_ids_exception() {
+	public function test_get_ads_accounts_exception() {
 		$this->generate_customer_list_mock_exception(
 			new ApiException( 'unavailable', 14, 'UNAVAILABLE' )
 		);
 
 		try {
-			$this->ads->get_ads_account_ids();
+			$this->ads->get_ads_accounts();
 		} catch ( ExceptionWithResponseData $e ) {
 			$this->assertEquals(
 				[
@@ -196,7 +218,11 @@ class AdsTest extends UnitTest {
 
 	public function test_request_ads_currency() {
 		$this->options->method( 'get_ads_id' )->willReturn( self::TEST_ADS_ID );
-		$this->generate_customer_mock( self::TEST_CURRENCY );
+		$this->generate_customers_mock(
+			[
+				[ 'currency' => self::TEST_CURRENCY ],
+			]
+		);
 
 		$this->options->expects( $this->once() )
 			->method( 'update' )

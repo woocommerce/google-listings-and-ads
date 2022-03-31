@@ -317,13 +317,30 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Generates a mocked customer.
 	 *
-	 * @param string $currency
+	 * @param array $customers List of customer data to mock.
 	 */
-	protected function generate_customer_mock( string $currency ) {
-		$customer = $this->createMock( Customer::class );
-		$customer->method( 'getCurrencyCode' )->willReturn( $currency );
+	protected function generate_customers_mock( array $customers ) {
+		foreach ( $customers as $key => $data ) {
+			$customer = $this->createMock( Customer::class );
+			if ( isset( $data['id'] ) ) {
+				$customer->method( 'getId' )->willReturn( $data['id'] );
+			}
+			if ( isset( $data['name'] ) ) {
+				$customer->method( 'getDescriptiveName' )->willReturn( $data['name'] );
+			}
+			if ( isset( $data['manager'] ) ) {
+				$customer->method( 'getManager' )->willReturn( $data['manager'] );
+			}
+			if ( isset( $data['test_account'] ) ) {
+				$customer->method( 'getTestAccount' )->willReturn( $data['test_account'] );
+			}
+			if ( isset( $data['currency'] ) ) {
+				$customer->method( 'getCurrencyCode' )->willReturn( $data['currency'] );
+			}
+			$customers[ $key ] = $customer;
+		}
 
-		$this->customer_service->method( 'getCustomer' )->willReturn( $customer );
+		$this->customer_service->method( 'getCustomer' )->willReturnOnConsecutiveCalls( ...$customers );
 	}
 
 	/**

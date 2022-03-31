@@ -26,12 +26,17 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	protected const TEST_ACCOUNT_ID          = 1234567890;
 	protected const TEST_BILLING_URL         = 'https://domain.test/billing/setup/';
 	protected const TEST_BILLING_STATUS      = 'pending';
-	protected const TEST_ACCOUNT_IDS         = [
-		self::TEST_ACCOUNT_ID,
-		2345678901,
-		3456789012,
+	protected const TEST_ACCOUNTS            = [
+		[
+			'id'   => self::TEST_ACCOUNT_ID,
+			'name' => 'Ads Account',
+		],
+		[
+			'id'   => 2345678901,
+			'name' => 'Other Account',
+		],
 	];
-	protected const TEST_ACCOUNT_NO_IDS      = [];
+	protected const TEST_NO_ACCOUNTS         = [];
 	protected const TEST_ACCOUNT_CREATE_DATA = [
 		'id'          => SELF::TEST_ACCOUNT_ID,
 		'billing_url' => SELF::TEST_BILLING_URL,
@@ -68,29 +73,29 @@ class AccountControllerTest extends RESTControllerUnitTest {
 
 	public function test_get_accounts() {
 		$this->account->expects( $this->once() )
-			->method( 'get_account_ids' )
-			->willReturn( self::TEST_ACCOUNT_IDS );
+			->method( 'get_accounts' )
+			->willReturn( self::TEST_ACCOUNTS );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'GET' );
 
-		$this->assertEquals( self::TEST_ACCOUNT_IDS, $response->get_data() );
+		$this->assertEquals( self::TEST_ACCOUNTS, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_get_accounts_with_no_ids() {
 		$this->account->expects( $this->once() )
-			->method( 'get_account_ids' )
-			->willReturn( self::TEST_ACCOUNT_NO_IDS );
+			->method( 'get_accounts' )
+			->willReturn( self::TEST_NO_ACCOUNTS );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'GET' );
 
-		$this->assertEquals( self::TEST_ACCOUNT_NO_IDS, $response->get_data() );
+		$this->assertEquals( self::TEST_NO_ACCOUNTS, $response->get_data() );
 		$this->assertEquals( 200, $response->get_status() );
 	}
 
 	public function test_get_accounts_with_api_exception() {
 		$this->account->expects( $this->once() )
-			->method( 'get_account_ids' )
+			->method( 'get_accounts' )
 			->willThrowException( new Exception( 'error', 401 ) );
 
 		$response = $this->do_request( self::ROUTE_ACCOUNTS, 'GET' );
