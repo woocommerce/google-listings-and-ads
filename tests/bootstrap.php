@@ -53,7 +53,7 @@ $wc_tests_dir = $wc_dir . '/tests';
 if ( file_exists( $wc_dir . '/tests/legacy/bootstrap.php' ) ) {
 	$wc_tests_dir .= '/legacy';
 }
-require_once $wc_tests_dir . '/includes/wp-http-testcase.php';
+
 require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-product.php';
 require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-shipping.php';
 require_once $wc_tests_dir . '/framework/helpers/class-wc-helper-customer.php';
