@@ -907,12 +907,12 @@ class ConnectionTest implements Service, Registerable {
 
 		if ( 'wcs-ads-customers-lib' === $_GET['action'] && check_admin_referer( 'wcs-ads-customers-lib' ) ) {
 			try {
-				$accounts = $this->container->get( Ads::class )->get_ads_account_ids();
+				$accounts = $this->container->get( Ads::class )->get_ads_accounts();
 
 				$this->response .= 'Total accounts: ' . count( $accounts ) . "\n";
-				foreach ( $accounts as $id ) {
-					$this->response     .= sprintf( "Ads ID: %d\n", $id );
-					$_GET['customer_id'] = $id;
+				foreach ( $accounts as $account ) {
+					$this->response     .= sprintf( "%d : %s\n", $account['id'], $account['name'] );
+					$_GET['customer_id'] = $account['id'];
 				}
 			} catch ( \Exception $e ) {
 				$this->response .= 'Error: ' . $e->getMessage();
