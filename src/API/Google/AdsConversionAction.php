@@ -94,6 +94,8 @@ class AdsConversionAction implements OptionsAwareInterface {
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			$message = $e->getMessage();
+			$code    = $e->getCode();
+
 			if ( $e instanceof ApiException ) {
 
 				if ( $this->has_api_exception_error( $e, 'DUPLICATE_NAME' ) ) {
@@ -101,12 +103,13 @@ class AdsConversionAction implements OptionsAwareInterface {
 				} else {
 					$message = $e->getBasicMessage();
 				}
+				$code = $this->map_grpc_code_to_http_status_code( $e );
 			}
 
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error creating conversion action: %s', 'google-listings-and-ads' ), $message ),
-				$e->getCode()
+				$code
 			);
 		}
 	}
@@ -133,14 +136,17 @@ class AdsConversionAction implements OptionsAwareInterface {
 		} catch ( Exception $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 			$message = $e->getMessage();
+			$code    = $e->getCode();
+
 			if ( $e instanceof ApiException ) {
 				$message = $e->getBasicMessage();
+				$code    = $this->map_grpc_code_to_http_status_code( $e );
 			}
 
 			throw new Exception(
 				/* translators: %s Error message */
 				sprintf( __( 'Error retrieving conversion action: %s', 'google-listings-and-ads' ), $message ),
-				$e->getCode()
+				$code
 			);
 		}
 	}
