@@ -16,6 +16,7 @@ use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Enums\MerchantCenterLinkStatusEnum\MerchantCenterLinkStatus;
 use Google\Ads\GoogleAds\V9\Resources\MerchantCenterLink;
+use Google\Ads\GoogleAds\V9\Services\CustomerServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MerchantCenterLinkOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
@@ -40,6 +41,13 @@ class Ads implements OptionsAwareInterface {
 	protected $client;
 
 	/**
+	 * Client for fetching accounts details.
+	 *
+	 * @var CustomerServiceClient
+	 */
+	protected $customer_service;
+
+	/**
 	 * Ads constructor.
 	 *
 	 * @param GoogleAdsClient $client
@@ -49,22 +57,25 @@ class Ads implements OptionsAwareInterface {
 	}
 
 	/**
-	 * Get Ads IDs associated with the connected Google account.
+	 * Get Ads accounts associated with the connected Google account.
 	 *
-	 * @return int[]
+	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
-	public function get_ads_account_ids(): array {
+	public function get_ads_accounts(): array {
 		try {
-			$customers = $this->client->getCustomerServiceClient()->listAccessibleCustomers();
-			$ids       = [];
+			$customers = $this->get_customer_service()->listAccessibleCustomers();
+			$return    = [];
 
 			foreach ( $customers->getResourceNames() as $name ) {
-				/** @var string $name */
-				$ids[] = $this->parse_ads_id( $name );
+				$account = $this->get_account_details( $name );
+
+				if ( $account ) {
+					$return[] = $account;
+				}
 			}
 
-			return $ids;
+			return $return;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -249,6 +260,44 @@ class Ads implements OptionsAwareInterface {
 	 */
 	public function update_billing_url( string $url ): bool {
 		return $this->options->update( OptionsInterface::ADS_BILLING_URL, $url );
+	}
+
+	/**
+	 * Returns the customer service client.
+	 *
+	 * @return CustomerServiceClient
+	 */
+	private function get_customer_service(): CustomerServiceClient {
+		if ( null === $this->customer_service ) {
+			$this->customer_service = $this->client->getCustomerServiceClient();
+		}
+		return $this->customer_service;
+	}
+
+	/**
+	 * Fetch the account details.
+	 * Returns null for any account that fails or is not the right type.
+	 *
+	 * @param string $account Customer resource name.
+	 * @return null|array
+	 */
+	private function get_account_details( string $account ): ?array {
+		try {
+			$customer = $this->get_customer_service()->getCustomer( $account );
+
+			if ( $customer->getManager() || $customer->getTestAccount() ) {
+				return null;
+			}
+
+			return [
+				'id'   => $customer->getId(),
+				'name' => $customer->getDescriptiveName(),
+			];
+		} catch ( ApiException $e ) {
+			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
+		}
+
+		return null;
 	}
 
 	/**
