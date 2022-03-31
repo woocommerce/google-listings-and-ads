@@ -22,6 +22,7 @@ import { ConnectedGoogleAccountCard } from '.~/components/google-account-card';
 import { ConnectedGoogleMCAccountCard } from '.~/components/google-mc-account-card';
 import { ConnectedGoogleAdsAccountCard } from '.~/components/google-ads-account-card';
 import Section from '.~/wcdl/section';
+import LinkedAccountsSectionWrapper from './linked-accounts-section-wrapper';
 import DisconnectModal, { ALL_ACCOUNTS, ADS_ACCOUNT } from './disconnect-modal';
 
 export default function LinkedAccounts() {
@@ -66,13 +67,7 @@ export default function LinkedAccounts() {
 	};
 
 	return (
-		<Section
-			title={ __( 'Linked accounts', 'google-listings-and-ads' ) }
-			description={ __(
-				'A WordPress.com account, Google account, and Google Merchant Center account are required to use this extension in WooCommerce.',
-				'google-listings-and-ads'
-			) }
-		>
+		<LinkedAccountsSectionWrapper>
 			{ openedModal && (
 				<DisconnectModal
 					onRequestClose={ dismissModal }
@@ -125,6 +120,6 @@ export default function LinkedAccounts() {
 					</Flex>
 				</VerticalGapLayout>
 			) }
-		</Section>
+		</LinkedAccountsSectionWrapper>
 	);
 }

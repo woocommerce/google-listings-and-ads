@@ -13,6 +13,7 @@ export const subpaths = {
 	createCampaign: '/campaigns/create',
 	editPhoneNumber: '/edit-phone-number',
 	editStoreAddress: '/edit-store-address',
+	reconnectWPComAccount: '/reconnect-wpcom-account',
 	reconnectGoogleAccount: '/reconnect-google-account',
 };
 
@@ -53,6 +54,14 @@ export const getEditPhoneNumberUrl = () => {
 export const getEditStoreAddressUrl = () => {
 	return getNewPath(
 		{ subpath: subpaths.editStoreAddress },
+		settingsPath,
+		null
+	);
+};
+
+export const getReconnectWPComAccountUrl = () => {
+	return getNewPath(
+		{ subpath: subpaths.reconnectWPComAccount },
 		settingsPath,
 		null
 	);

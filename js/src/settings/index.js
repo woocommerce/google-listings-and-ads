@@ -13,6 +13,7 @@ import { subpaths, getReconnectGoogleAccountUrl } from '.~/utils/urls';
 import NavigationClassic from '.~/components/navigation-classic';
 import { ContactInformationPreview } from '.~/components/contact-information';
 import LinkedAccounts from './linked-accounts';
+import ReconnectWPComAccount from './reconnect-wpcom-account';
 import ReconnectGoogleAccount from './reconnect-google-account';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
@@ -24,6 +25,7 @@ const Settings = () => {
 	useLegacyMenuEffect();
 
 	const { google } = useGoogleAccount();
+	const isReconnectWPComPage = subpath === subpaths.reconnectWPComAccount;
 	const isReconnectGooglePage = subpath === subpaths.reconnectGoogleAccount;
 
 	// This page wouldn't get any 401 response when losing Google account access,
@@ -48,8 +50,14 @@ const Settings = () => {
 	return (
 		<div className="gla-settings">
 			<NavigationClassic />
-			<ContactInformationPreview />
-			<LinkedAccounts />
+			{ isReconnectWPComPage ? (
+				<ReconnectWPComAccount />
+			) : (
+				<>
+					<ContactInformationPreview />
+					<LinkedAccounts />
+				</>
+			) }
 		</div>
 	);
 };

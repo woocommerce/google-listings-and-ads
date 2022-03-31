@@ -9,13 +9,17 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { glaData } from '.~/constants';
 import { STORE_KEY } from './constants';
 import * as actions from './actions';
 import * as selectors from './selectors';
 import * as resolvers from './resolvers';
 import reducer from './reducer';
 import { createErrorResponseCatcher } from './api-fetch-middlewares';
-import { getReconnectGoogleAccountUrl } from '.~/utils/urls';
+import {
+	getReconnectWPComAccountUrl,
+	getReconnectGoogleAccountUrl,
+} from '.~/utils/urls';
 
 registerStore( STORE_KEY, {
 	actions,
@@ -27,10 +31,7 @@ registerStore( STORE_KEY, {
 
 apiFetch.use(
 	createErrorResponseCatcher( ( response ) => {
-		if ( response.status === 401 ) {
-			getHistory().replace( getReconnectGoogleAccountUrl() );
-
-			// Inject the status code to let the subsequent handlers can identify the 401 response error.
+		if ( glaData.mcSetupComplete && response.status === 401 ) {
 			return ( response.json || response.text )
 				.call( response )
 				.then( ( errorInfo ) => {
@@ -40,6 +41,18 @@ apiFetch.use(
 					return errorInfo;
 				} )
 				.then( ( errorInfo ) => {
+					const { code } = errorInfo;
+
+					if ( code === 'JETPACK_DISCONNECTED' ) {
+						getHistory().replace( getReconnectWPComAccountUrl() );
+					} else if ( code === 'GOOGLE_DISCONNECTED' ) {
+						getHistory().replace( getReconnectGoogleAccountUrl() );
+					}
+
+					return errorInfo;
+				} )
+				.then( ( errorInfo ) => {
+					// Inject the status code to let the subsequent handlers can identify the 401 response error.
 					return Promise.reject( {
 						...errorInfo,
 						statusCode: response.status,
