@@ -7,7 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Exception;
-use Google\Ads\GoogleAds\V9\Resources\ConversionAction as ConversionAction;
+use Google\Ads\GoogleAds\V9\Resources\ConversionAction;
 use Google\Ads\GoogleAds\V9\Common\TagSnippet;
 use Google\Ads\GoogleAds\V9\Enums\ConversionActionCategoryEnum\ConversionActionCategory;
 use Google\Ads\GoogleAds\V9\Enums\ConversionActionStatusEnum\ConversionActionStatus;
