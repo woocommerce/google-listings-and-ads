@@ -9,6 +9,10 @@
 		}
 	}
 
+	&__icon {
+		line-height: 0;
+	}
+
 	&__title {
 		margin-bottom: 4px;
 		color: $black;
@@ -30,6 +34,18 @@
 		font-style: italic;
 		font-size: 12px;
 		color: $gray-700;
+	}
+
+	.components-card__footer {
+		padding: calc(var(--main-gap) / 3 * 2) var(--main-gap);
+
+		// The buttons in card footer usually use the link style in GLA,
+		// but the default link style has a smaller size that doesn't meet
+		// the visual design needs. So we override its size here.
+		> .components-button.is-link {
+			min-height: 36px;
+			padding: 6px 12px;
+		}
 	}
 
 	.components-notice.is-error {

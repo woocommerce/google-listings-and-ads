@@ -4,7 +4,7 @@
 import ConnectedWPComAccountCard from './connected-wpcom-account-card';
 import ConnectWPComAccountCard from './connect-wpcom-account-card';
 
-const WordPressDotComAccount = ( { jetpack } ) => {
+const WPComAccountCard = ( { jetpack } ) => {
 	if ( jetpack.active === 'yes' ) {
 		return <ConnectedWPComAccountCard jetpack={ jetpack } />;
 	}
@@ -12,4 +12,4 @@ const WordPressDotComAccount = ( { jetpack } ) => {
 	return <ConnectWPComAccountCard />;
 };
 
-export default WordPressDotComAccount;
+export default WPComAccountCard;

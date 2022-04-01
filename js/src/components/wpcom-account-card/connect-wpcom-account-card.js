@@ -7,9 +7,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import AppButton from '.~/components/app-button';
+import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
-import WPComAccountCard from './wpcom-account-card';
 
 const ConnectWPComAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
@@ -33,7 +33,8 @@ const ConnectWPComAccountCard = () => {
 	};
 
 	return (
-		<WPComAccountCard
+		<AccountCard
+			appearance={ APPEARANCE.WPCOM }
 			description={ __(
 				'Required to connect with Google',
 				'google-listings-and-ads'

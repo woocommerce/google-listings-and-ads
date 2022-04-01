@@ -9,7 +9,6 @@ import { __ } from '@wordpress/i18n';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import { useAppDispatch } from '.~/data';
-import './index.scss';
 
 const useConnectMCAccount = ( value ) => {
 	const { createNotice } = useDispatchCoreNotices();

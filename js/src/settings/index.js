@@ -12,7 +12,7 @@ import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountsUrl } from '.~/utils/urls';
 import NavigationClassic from '.~/components/navigation-classic';
 import { ContactInformationPreview } from '.~/components/contact-information';
-import DisconnectAccounts from './disconnect-accounts';
+import LinkedAccounts from './linked-accounts';
 import ReconnectAccounts from './reconnect-accounts';
 import EditStoreAddress from './edit-store-address';
 import EditPhoneNumber from './edit-phone-number';
@@ -48,8 +48,8 @@ const Settings = () => {
 	return (
 		<div className="gla-settings">
 			<NavigationClassic />
-			<DisconnectAccounts />
 			<ContactInformationPreview />
+			<LinkedAccounts />
 		</div>
 	);
 };

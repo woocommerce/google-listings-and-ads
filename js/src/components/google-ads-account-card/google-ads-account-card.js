@@ -4,7 +4,7 @@
 import SpinnerCard from '.~/components/spinner-card';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
-import Connected from './connected';
+import ConnectedGoogleAdsAccountCard from './connected-google-ads-account-card';
 import NonConnected from './non-connected';
 import AuthorizeAds from './authorize-ads';
 
@@ -24,5 +24,7 @@ export default function GoogleAdsAccountCard() {
 		return <NonConnected />;
 	}
 
-	return <Connected googleAdsAccount={ googleAdsAccount } />;
+	return (
+		<ConnectedGoogleAdsAccountCard googleAdsAccount={ googleAdsAccount } />
+	);
 }
