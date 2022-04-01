@@ -23,7 +23,7 @@ import { useAppDispatch } from '.~/data';
  * It also provides a switch button that lets user connect with another account.
  *
  * @param {Object} props React props.
- * @param {{ id: number }} props.googleMCAccount A data payload object contains user's Google Merchant Center account ID.
+ * @param {{ id: number }} props.googleMCAccount A data payload object containing the user's Google Merchant Center account ID.
  * @param {boolean} [props.hideAccountSwitch=false] Indicate whether hide the account switch block at the card footer.
  */
 export default function ConnectedGoogleMCAccountCard( {

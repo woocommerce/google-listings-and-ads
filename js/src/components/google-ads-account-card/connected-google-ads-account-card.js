@@ -9,7 +9,7 @@ import ConnectedIconLabel from '.~/components/connected-icon-label';
  * Renders a Google Ads account card UI with connected account information.
  *
  * @param {Object} props React props.
- * @param {{ id: number }} props.googleAdsAccount A data payload object contains user's Google Ads account ID.
+ * @param {{ id: number }} props.googleAdsAccount A data payload object containing the user's Google Ads account ID.
  * @param {JSX.Element} [props.children] Helper content below the Google account email.
  * @param {Object} props.restProps Props to be forwarded to AccountCard.
  */
