@@ -26,8 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `google_account_connect_different_account_button_click` - Clicking on the "connect to a different Google account" button.
-
 -   `google_ads_account_link_click` - Clicking on a Google Ads account text link.
 
     -   `context`: indicate which page / module the link is in
@@ -420,6 +418,11 @@ Clicking on the button to connect Google account.
 - [`exports`](js/src/components/google-account-card/connect-google-account-card.js#L21) with `{ action: 'authorization', context: 'reconnect' | 'setup-mc' }`
 - [`exports`](js/src/components/google-account-card/request-full-access-google-account-card.js#L24) with `{ action: 'scope', context: 'reconnect' | 'setup-mc' }`
 - [`exports`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/authorize-ads.js#L21) with `{ action: 'scope', context: 'setup-ads' }`
+
+### [`gla_google_account_connect_different_account_button_click`](js/src/components/google-account-card/connected-google-account-card.js#L15)
+Clicking on the "connect to a different Google account" button.
+#### Emitters
+- [`exports`](js/src/components/google-account-card/connected-google-account-card.js#L32)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
