@@ -41,6 +41,7 @@ const getProgramsFilter = createProgramsFilterConfig();
  * @param {string} props.trackEventId Report ID used in tracking events.
  *
  * @fires gla_datepicker_update
+ * @fires gla_filter
  */
 const ProgramsReportFilters = ( props ) => {
 	const { query, trackEventId } = props;

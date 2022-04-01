@@ -70,6 +70,16 @@ export const recordTablePageEvent = ( context, page, direction ) => {
 export const recordDatepickerUpdateEvent = ( data ) => {
 	recordEvent( 'gla_datepicker_update', data );
 };
+
+/**
+ * Triggered when changing products & variations filter.
+ *
+ * @event gla_filter
+ * @property {string} report name of the report (e.g. `"reports-products"`)
+ * @property {string} filter value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
+ * @property {string | undefined} variationFilter value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
+ */
+
 /**
  * Records `gla_filter` tracking event, with data that comes from
  * `FilterPicker`'s `onFilterSelect` callback.
@@ -78,6 +88,8 @@ export const recordDatepickerUpdateEvent = ( data ) => {
  * @param {string} data.report Name of the report.
  * @param {string} data.filter Picked value.
  * @param {string} [data.filterVariation] Picked variation value if applicable.
+ *
+ * @fires gla_filter
  */
 export const recordFilterEvent = ( data ) => {
 	recordEvent( 'gla_filter', data );

@@ -39,6 +39,7 @@ const siteLocale = getSetting( 'locale' ).siteLocale;
  * @param {string} props.trackEventId Report ID used in tracking events.
  *
  * @fires gla_datepicker_update
+ * @fires gla_filter
  */
 const ProductsReportFilters = ( props ) => {
 	const { hasPaidSource, query, trackEventId } = props;

@@ -26,12 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `filter` - Triggered when changing products & variations filter
-
-    -   `report`: name of the report (e.g. `"reports-products"`)
-    -   `filter`: value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
-    -   `variationFilter`: value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
-
 -   `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
 
     -   `context`: indicate which page the link is in.
@@ -316,8 +310,8 @@ Triggered when datepicker (date ranger picker) is updated,
 `after` | `string` | Value selected in datepicker.
 #### Emitters
 - [`AppDateRangeFilterPicker`](js/src/dashboard/app-date-range-filter-picker/index.js#L27)
-- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L43)
-- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L45)
+- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
+- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
 - [`recordDatepickerUpdateEvent`](js/src/utils/recordEvent.js#L70)
 
 ### [`gla_disconnected_accounts`](js/src/settings/disconnect-accounts/index.js#L28)
@@ -389,6 +383,19 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 `subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
 - [`exports`](js/src/components/contact-information/store-address-card.js#L40) Whenever "Edit in WooCommerce Settings" button is clicked.
+
+### [`gla_filter`](js/src/utils/recordEvent.js#L74)
+Triggered when changing products & variations filter.
+#### Properties
+|   |   |   |
+|---|---|---|
+`report` | `string` | name of the report (e.g. `"reports-products"`)
+`filter` | `string` | value of the filter (e.g. `"all" \| "single-product" \| "compare-products"`)
+`variationFilter` | `string \| undefined` | value of the variation filter (e.g. `undefined \| "single-variation" \| "compare-variations"`)
+#### Emitters
+- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
+- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
+- [`recordFilterEvent`](js/src/utils/recordEvent.js#L94)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
