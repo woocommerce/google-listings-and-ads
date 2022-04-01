@@ -138,3 +138,13 @@ export const recordLaunchPaidCampaignClickEvent = ( budget, audiences ) => {
 };
 
 export default recordEvent;
+
+/**
+ * Clicking on the button to connect Google account.
+ *
+ * @event gla_google_account_connect_button_click
+ * @property {string} context (`setup-mc`|`setup-ads`|`reconnect`) - indicate the button is clicked from which page.
+ * @property {string} action (`authorization`|`scope`)
+ *	- `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.
+ *  - `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
+ */

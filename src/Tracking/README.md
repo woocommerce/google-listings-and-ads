@@ -26,13 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `google_account_connect_button_click` - Clicking on the button to connect Google account.
-
-    -   `context`: (`setup-mc`|`setup-ads`|`reconnect`) - indicate the button is clicked from which page.
-    -   `action`: (`authorization`|`scope`)
-        -   `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.
-        -   `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
-
 -   `google_account_connect_different_account_button_click` - Clicking on the "connect to a different Google account" button.
 
 -   `google_ads_account_link_click` - Clicking on a Google Ads account text link.
@@ -415,6 +408,18 @@ Clicking on a text link within the notice on the Get Started page.
 #### Emitters
 - [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{	context: "get-started", link_id: "supported-languages" }`
 - [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{	context: "get-started", link_id: "supported-countries" }`
+
+### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L142)
+Clicking on the button to connect Google account.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | (`setup-mc`\|`setup-ads`\|`reconnect`) - indicate the button is clicked from which page.
+`action` | `string` | (`authorization`\|`scope`) 	- `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.   - `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
+#### Emitters
+- [`exports`](js/src/components/google-account-card/connect-google-account-card.js#L21) with `{ action: 'authorization', context: 'reconnect' | 'setup-mc' }`
+- [`exports`](js/src/components/google-account-card/request-full-access-google-account-card.js#L24) with `{ action: 'scope', context: 'reconnect' | 'setup-mc' }`
+- [`exports`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/authorize-ads.js#L21) with `{ action: 'scope', context: 'setup-ads' }`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
