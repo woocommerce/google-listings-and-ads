@@ -26,11 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `google_mc_link_click` - Clicking on a Google Merchant Center link.
-
-    -   `context`: indicate which page / module the link is in
-    -   `href`: link's URL
-
 -   `help_click` - "Help" button is clicked.
 
     -   `context`: indicate the place where the button is located, e.g. `setup-ads`.
@@ -429,6 +424,17 @@ Clicking on a Google Ads account text link.
 `link_id` | `string` | a unique ID for the link within the page / module
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
+
+### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L152)
+Clicking on a Google Merchant Center link.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate which page / module the link is in
+`href` | `string` | link's URL
+#### Emitters
+- [`FreePerformanceCard`](js/src/dashboard/summary-section/index.js#L22) with `{ context: 'dashboard' }`
+- [`MetricNumber`](js/src/reports/metric-number.js#L42) with `{ context: 'reports' }`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

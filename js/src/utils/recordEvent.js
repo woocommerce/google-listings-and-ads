@@ -148,3 +148,11 @@ export default recordEvent;
  *	- `authorization` is used when the plugin has not been authorized yet and requests Google account access and permission scopes from users.
  *  - `scope` is used when requesting required permission scopes from users in order to proceed with more plugin functions. Added with the Partial OAuth feature (aka Incremental Authorization).
  */
+
+/**
+ * Clicking on a Google Merchant Center link.
+ *
+ * @event gla_google_mc_link_click
+ * @property {string} context indicate which page / module the link is in
+ * @property {string} href link's URL
+ */
