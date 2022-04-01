@@ -94,7 +94,7 @@ interface QueryInterface {
 	/**
 	 * Returns the last inserted ID. Must be called after insert.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @return int|null
 	 */

@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers
  *
- * @since x.x.x
+ * @since 1.12.0
  */
 trait ShippingRateSchemaTrait {
 

@@ -11,7 +11,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds
  *
- * @since x.x.x
+ * @since 1.12.0
  */
 class GoogleHelper implements Service {
 

@@ -25,7 +25,7 @@ use Google\Ads\GoogleAds\V9\Services\MutateOperation;
 /**
  * Class AdsGroup
  *
- * @since x.x.x Refactored to use batch requests when operating on campaigns.
+ * @since 1.12.0 Refactored to use batch requests when operating on campaigns.
  *
  * Used for Smart Shopping Campaigns (SSC)
  * https://developers.google.com/google-ads/api/docs/samples/add-shopping-smart-ad

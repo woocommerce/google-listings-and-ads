@@ -38,7 +38,7 @@ use Exception;
  * - AdsGroup
  * - WC
  *
- * @since x.x.x Refactored to use batch requests when operating on campaigns.
+ * @since 1.12.0 Refactored to use batch requests when operating on campaigns.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
