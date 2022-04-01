@@ -26,10 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `help_click` - "Help" button is clicked.
-
-    -   `context`: indicate the place where the button is located, e.g. `setup-ads`.
-
 -   `launch_paid_campaign_button_click` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
 
     -   `audience`: country code of the paid campaign audience country. e.g. `'US`. This means the campaign is created with the "sales country" targeting only, and it is inapplicable when created with the multi-country targeting feature.
@@ -435,6 +431,15 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`FreePerformanceCard`](js/src/dashboard/summary-section/index.js#L22) with `{ context: 'dashboard' }`
 - [`MetricNumber`](js/src/reports/metric-number.js#L42) with `{ context: 'reports' }`
+
+### [`gla_help_click`](js/src/components/help-icon-button.js#L12)
+"Help" button is clicked.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate the place where the button is located, e.g. `setup-ads`.
+#### Emitters
+- [`HelpIconButton`](js/src/components/help-icon-button.js#L30)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
