@@ -26,12 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `get_started_notice_link_click` - Clicking on a text link within the notice on the Get Started page
-
-    -   `link_id`: link identifier
-    -   `context`: indicate which link is clicked
-    -   `href`: link's URL
-
 -   `google_account_connect_button_click` - Clicking on the button to connect Google account.
 
     -   `context`: (`setup-mc`|`setup-ads`|`reconnect`) - indicate the button is clicked from which page.
@@ -409,6 +403,18 @@ Clicking on getting started page faq item to collapse or expand it.
 `action` | `string` | (`expand`\|`collapse`)
 #### Emitters
 - [`Faqs`](js/src/get-started-page/faqs.js#L230)
+
+### [`gla_get_started_notice_link_click`](js/src/get-started-page/unsupported-notices/index.js#L26)
+Clicking on a text link within the notice on the Get Started page.
+#### Properties
+|   |   |   |
+|---|---|---|
+`link_id` | `string` | link identifier
+`context` | `string` | indicate which link is clicked
+`href` | `string` | link's URL
+#### Emitters
+- [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{	context: "get-started", link_id: "supported-languages" }`
+- [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{	context: "get-started", link_id: "supported-countries" }`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
