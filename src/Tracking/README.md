@@ -26,10 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `disconnected_accounts` - Accounts are disconnected from the Setting page
-
-    -   `context`: (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
-
 -   `documentation_link_click` - When a documentation link is clicked.
 
     -   `link_id`: link identifier
@@ -344,6 +340,13 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L43)
 - [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L45)
 - [`recordDatepickerUpdateEvent`](js/src/utils/recordEvent.js#L70)
+
+### [`gla_disconnected_accounts`](js/src/settings/disconnect-accounts/index.js#L28)
+Accounts are disconnected from the Setting page
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
 
 ### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
 Trigger when store address edit button is clicked.
