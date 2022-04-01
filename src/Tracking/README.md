@@ -26,11 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `google_ads_account_link_click` - Clicking on a Google Ads account text link.
-
-    -   `context`: indicate which page / module the link is in
-    -   `link_id`: a unique ID for the link within the page / module
-
 -   `google_mc_link_click` - Clicking on a Google Merchant Center link.
 
     -   `context`: indicate which page / module the link is in
@@ -423,6 +418,17 @@ Clicking on the button to connect Google account.
 Clicking on the "connect to a different Google account" button.
 #### Emitters
 - [`exports`](js/src/components/google-account-card/connected-google-account-card.js#L32)
+
+### [`gla_google_ads_account_link_click`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L19)
+Clicking on a Google Ads account text link.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate which page / module the link is in
+`href` | `string` | where the user is redirected
+`link_id` | `string` | a unique ID for the link within the page / module
+#### Emitters
+- [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

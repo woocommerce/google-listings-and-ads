@@ -16,6 +16,18 @@ import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import Section from '.~/wcdl/section';
 import './index.scss';
 
+/**
+ * Clicking on a Google Ads account text link.
+ *
+ * @event gla_google_ads_account_link_click
+ * @property {string} context indicate which page / module the link is in
+ * @property {string} href where the user is redirected
+ * @property {string} link_id a unique ID for the link within the page / module
+ */
+
+/**
+ * @fires gla_google_ads_account_link_click with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
+ */
 const BillingSavedCard = () => {
 	const { googleAdsAccount } = useGoogleAdsAccount();
 
