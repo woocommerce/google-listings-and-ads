@@ -30,8 +30,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
     -   `checked`: indicate whether the checkbox is checked or unchecked.
 
--   `mc_account_reclaim_url_button_click` - Clicking on the button to reclaim URL for a Google Merchant Center account.
-
 -   `mc_account_switch_account_button_click` - Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
 
     -   `context`: (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
@@ -455,6 +453,11 @@ Clicking on the "connect to a different Google Merchant Center account" button.
 Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 #### Emitters
 - [`TermsModal`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/terms-modal/index.js#L28)
+
+### [`gla_mc_account_reclaim_url_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L26)
+Clicking on the button to reclaim URL for a Google Merchant Center account.
+#### Emitters
+- [`ReclaimUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L39)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

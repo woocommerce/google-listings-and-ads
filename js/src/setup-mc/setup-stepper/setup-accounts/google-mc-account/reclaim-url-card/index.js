@@ -23,8 +23,20 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import './index.scss';
 import AppInputLinkControl from '.~/components/app-input-link-control';
 
-const ReclaimUrlCard = ( props ) => {
-	const { id, websiteUrl, onSwitchAccount = noop } = props;
+/**
+ * Clicking on the button to reclaim URL for a Google Merchant Center account.
+ *
+ * @event gla_mc_account_reclaim_url_button_click
+ */
+
+/**
+ * @param {Object} props React props
+ * @param {string} props.id
+ * @param {string} props.websiteUrl
+ * @param {Function} [props.onSwitchAccount]
+ * @fires gla_mc_account_reclaim_url_button_click
+ */
+const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 	const { invalidateResolution } = useAppDispatch();
 	const [
 		fetchClaimOverwrite,
