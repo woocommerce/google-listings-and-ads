@@ -26,8 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `contact_information_save_button_click` - Triggered when the save button in contact information page is clicked.
-
 -   `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
 
     -   `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
@@ -263,10 +261,10 @@ Do not edit it manually!
 #### Emitters
 - [`AddPaidCampaignButton`](js/src/components/paid-ads/add-paid-campaign-button.js#L46) with given props, when clicked.
 
-### [`gla_ads_account_connect_button_click`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L23)
+### [`gla_ads_account_connect_button_click`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L24)
 Clicking on the button to connect an existing Google Ads account.
 #### Emitters
-- [`ConnectAds`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L34) when "Connect" button is clicked.
+- [`ConnectAds`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L35) when "Connect" button is clicked.
 
 ### [`gla_ads_account_create_button_click`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/terms-modal/index.js#L16)
 Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
@@ -324,6 +322,11 @@ Triggered when a chart tab is clicked
 `context` | `string` | metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend"`).
 #### Emitters
 - [`exports`](js/src/reports/summary-section.js#L39)
+
+### [`gla_contact_information_save_button_click`](js/src/settings/edit-store-address.js#L28)
+Triggered when the save button in contact information page is clicked.
+#### Emitters
+- [`exports`](js/src/settings/edit-store-address.js#L40)
 
 ### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
 Trigger when store address edit button is clicked.
