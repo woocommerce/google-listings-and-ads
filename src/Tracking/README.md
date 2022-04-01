@@ -26,8 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `free_campaign_edited` - Saving changes to the free campaign.
-
 -   `get_started_faq` - Clicking on getting started page faq item to collapse or expand it
 
     -   `id`: (faq identifier)
@@ -401,6 +399,11 @@ Clicking on the link to view free ad credit value by country.
 `context` | `string` | indicate which page the link is in.
 #### Emitters
 - [`FreeAdCredit`](js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L26)
+
+### [`gla_free_campaign_edited`](js/src/edit-free-campaign/index.js#L79)
+Saving changes to the free campaign.
+#### Emitters
+- [`exports`](js/src/edit-free-campaign/index.js#L95)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

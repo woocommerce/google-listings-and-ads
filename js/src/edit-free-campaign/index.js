@@ -77,12 +77,20 @@ function saveShippingData( batchUpsertAction, newData, getGroupKey ) {
 }
 
 /**
+ * Saving changes to the free campaign.
+ *
+ * @event gla_free_campaign_edited
+ */
+
+/**
  * Page Component to edit free campaigns.
  * Provides two steps:
  *  - Choose your audience
  *  - Configure your free listings
  * Given the user is editing an existing campaign, both steps should be available.
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
+ *
+ * @fires gla_free_campaign_edited
  */
 export default function EditFreeCampaign() {
 	useLayout( 'full-content' );
