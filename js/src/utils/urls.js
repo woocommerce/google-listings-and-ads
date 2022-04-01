@@ -3,6 +3,11 @@
  */
 import { getNewPath } from '@woocommerce/navigation';
 
+/**
+ * Internal dependencies
+ */
+import { API_RESPONSE_CODES } from '.~/constants';
+
 const getStartedUrl = '/google/start';
 const dashboardPath = '/google/dashboard';
 const settingsPath = '/google/settings';
@@ -13,7 +18,8 @@ export const subpaths = {
 	createCampaign: '/campaigns/create',
 	editPhoneNumber: '/edit-phone-number',
 	editStoreAddress: '/edit-store-address',
-	reconnectAccounts: '/reconnect-accounts',
+	reconnectWPComAccount: '/reconnect-wpcom-account',
+	reconnectGoogleAccount: '/reconnect-google-account',
 };
 
 export const getEditFreeListingsUrl = () => {
@@ -58,10 +64,26 @@ export const getEditStoreAddressUrl = () => {
 	);
 };
 
-export const getReconnectAccountsUrl = () => {
-	return getNewPath(
-		{ subpath: subpaths.reconnectAccounts },
-		settingsPath,
-		null
-	);
+/**
+ * Returns the URL of the account re-connecting page.
+ *
+ * @param {string} code The `code` property of API response.
+ * @return {string|undefined} The URL of the account re-connecting page. It returns undefined if the `code` doesn't match any available URLs.
+ */
+export const getReconnectAccountUrl = ( code ) => {
+	let subpath;
+
+	switch ( code ) {
+		case API_RESPONSE_CODES.WPCOM_DISCONNECTED:
+			subpath = subpaths.reconnectWPComAccount;
+			break;
+		case API_RESPONSE_CODES.GOOGLE_DISCONNECTED:
+			subpath = subpaths.reconnectGoogleAccount;
+			break;
+
+		default:
+			return;
+	}
+
+	return getNewPath( { subpath }, settingsPath, null );
 };

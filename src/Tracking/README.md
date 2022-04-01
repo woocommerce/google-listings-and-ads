@@ -269,6 +269,7 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `id`: (tooltip identifier)
 
 -   `wordpress_account_connect_button_click` - Clicking on the button to connect WordPress.com account.
+    -   `context`: (`setup-mc`|`reconnect`) - indicates from which page the button was clicked.
 
 <!-- -- >
 ## Developer Info

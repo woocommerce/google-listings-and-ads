@@ -34,7 +34,7 @@ class AccountController extends BaseController {
 	private const NEXT_PATH_MAPPING = [
 		'setup-mc'  => '/google/setup-mc',
 		'setup-ads' => '/google/setup-ads',
-		'reconnect' => '/google/settings&subpath=/reconnect-accounts',
+		'reconnect' => '/google/settings&subpath=/reconnect-google-account',
 	];
 
 	/**
@@ -99,7 +99,7 @@ class AccountController extends BaseController {
 	protected function get_connect_callback(): callable {
 		return function( Request $request ) {
 			try {
-				$next       = $request->get_param( 'next' );
+				$next       = $request->get_param( 'next_page_name' );
 				$login_hint = $request->get_param( 'login_hint' ) ?: '';
 				$path       = self::NEXT_PATH_MAPPING[ $next ];
 				return [
@@ -121,15 +121,15 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connect_params(): array {
 		return [
-			'context'    => $this->get_context_param( [ 'default' => 'view' ] ),
-			'next'       => [
-				'description'       => __( 'Indicate the next page name to map the redirect URI when back from Google authorization.', 'google-listings-and-ads' ),
+			'context'        => $this->get_context_param( [ 'default' => 'view' ] ),
+			'next_page_name' => [
+				'description'       => __( 'Indicates the next page name mapped to the redirect URL when back from Google authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => array_key_first( self::NEXT_PATH_MAPPING ),
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'login_hint' => [
+			'login_hint'     => [
 				'description'       => __( 'Indicate the Google account to suggest for authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'is_email',

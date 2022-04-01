@@ -9,8 +9,8 @@ import { Card as WPCard } from '@wordpress/components';
 import Body from './body';
 import Footer from './footer';
 
-const Card = ( props ) => {
-	return <WPCard { ...props } size="none" />;
+const Card = ( { size = '', ...props } ) => {
+	return <WPCard { ...props } size={ size } />;
 };
 
 Card.Body = Body;
