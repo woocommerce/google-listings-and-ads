@@ -26,11 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `edit_product_issue_click` - Trigger when edit links are clicked from Issues to resolve table
-
-    -   `code`: issue code returned from Google
-    -   `issue`: issue description returned from Google
-
 -   `filter` - Triggered when changing products & variations filter
 
     -   `report`: name of the report (e.g. `"reports-products"`)
@@ -373,6 +368,16 @@ Triggered when edit links are clicked from product feed table.
 `visibility` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
 - [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L63)
+
+### [`gla_edit_product_issue_click`](js/src/product-feed/issues-table-card/index.js#L83)
+Triggered when edit links are clicked from Issues to resolve table.
+#### Properties
+|   |   |   |
+|---|---|---|
+`code` | `string` | issue code returned from Google
+`issue` | `string` | issue description returned from Google
+#### Emitters
+- [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L94)
 
 ### [`gla_edit_wc_store_address`](js/src/components/contact-information/store-address-card.js#L23)
 Triggered when store address "Edit in WooCommerce Settings" button is clicked.
