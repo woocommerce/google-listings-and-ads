@@ -26,12 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
-
--   `edit_product_click` - Trigger when edit links are clicked from product feed table
-
-    -   `status`: `("approved" | "partially_approved" | "expiring" | "pending" | "disapproved" | "not_synced")`
-    -   `visibility`: `("sync_and_show" | "dont_sync_and_show")`
-
 -   `edit_product_issue_click` - Trigger when edit links are clicked from Issues to resolve table
 
     -   `code`: issue code returned from Google
@@ -267,7 +261,7 @@ Triggered when the product feed "bulk edit" functionality is being used
 `number_of_items` | `number` | edit how many items
 `visibility_to` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L54) with `context: product-feed`
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L63) with `context: product-feed`
 
 ### [`gla_ces_feedback`](js/src/components/customer-effort-score-prompt/index.js#L29)
 CES feedback recorded
@@ -369,6 +363,16 @@ Trigger when store address edit button is clicked.
 `subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
 - [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L146) Whenever "Edit" is clicked.
+
+### [`gla_edit_product_click`](js/src/product-feed/product-feed-table-card/index.js#L49)
+Triggered when edit links are clicked from product feed table.
+#### Properties
+|   |   |   |
+|---|---|---|
+`status` | `string` | `("approved" \| "partially_approved" \| "expiring" \| "pending" \| "disapproved" \| "not_synced")`
+`visibility` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
+#### Emitters
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L63)
 
 ### [`gla_edit_wc_store_address`](js/src/components/contact-information/store-address-card.js#L23)
 Triggered when store address "Edit in WooCommerce Settings" button is clicked.

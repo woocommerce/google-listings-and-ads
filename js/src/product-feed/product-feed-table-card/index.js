@@ -47,9 +47,18 @@ const toVisibilityEventProp = ( visible ) =>
  */
 
 /**
+ * Triggered when edit links are clicked from product feed table.
+ *
+ * @event gla_edit_product_click
+ * @property {string} status `("approved" | "partially_approved" | "expiring" | "pending" | "disapproved" | "not_synced")`
+ * @property {string} visibility `("sync_and_show" | "dont_sync_and_show")`
+ */
+
+/**
  * Product Feed table.
  *
  * @fires gla_bulk_edit_click with `context: product-feed`
+ * @fires gla_edit_product_click
  */
 const ProductFeedTableCard = () => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );
