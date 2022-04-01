@@ -26,11 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `dashboard_edit_program_click` - Triggered when "continue" to edit program button is clicked
-
-    -   `programId`: program id
-    -   `url`: url (free or paid)
-
 -   `disconnected_accounts` - Accounts are disconnected from the Setting page
 
     -   `context`: (`all-accounts`|`ads-account`) - indicate which accounts have been disconnected.
@@ -322,6 +317,16 @@ Triggered when a chart tab is clicked
 Triggered when the save button in contact information page is clicked.
 #### Emitters
 - [`exports`](js/src/settings/edit-store-address.js#L40)
+
+### [`gla_dashboard_edit_program_click`](js/src/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal/index.js#L17)
+Triggered when "continue" to edit program button is clicked.
+#### Properties
+|   |   |   |
+|---|---|---|
+`programId` | `string` | program id
+`url` | `string` | url (free or paid)
+#### Emitters
+- [`EditProgramPromptModal`](js/src/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal/index.js#L32) when "Continue to edit" is clicked.
 
 ### [`gla_datepicker_update`](js/src/utils/recordEvent.js#L45)
 Triggered when datepicker (date ranger picker) is updated,
