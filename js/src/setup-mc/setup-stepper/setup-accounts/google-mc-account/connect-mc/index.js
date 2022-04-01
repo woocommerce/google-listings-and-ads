@@ -22,6 +22,15 @@ import useCreateMCAccount from '../useCreateMCAccount';
 import CreatingCard from '../creating-card';
 import './index.scss';
 
+/**
+ * Clicking on the button to connect an existing Google Merchant Center account.
+ *
+ * @event gla_mc_account_connect_button_click
+ */
+
+/**
+ * @fires gla_mc_account_connect_button_click
+ */
 const ConnectMC = () => {
 	const [ value, setValue ] = useState();
 	const [ handleConnectMC, resultConnectMC ] = useConnectMCAccount( value );
