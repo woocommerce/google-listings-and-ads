@@ -26,11 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `get_started_faq` - Clicking on getting started page faq item to collapse or expand it
-
-    -   `id`: (faq identifier)
-    -   `action`: (`expand`|`collapse`)
-
 -   `get_started_notice_link_click` - Clicking on a text link within the notice on the Get Started page
 
     -   `link_id`: link identifier
@@ -404,6 +399,16 @@ Clicking on the link to view free ad credit value by country.
 Saving changes to the free campaign.
 #### Emitters
 - [`exports`](js/src/edit-free-campaign/index.js#L95)
+
+### [`gla_get_started_faq`](js/src/get-started-page/faqs.js#L219)
+Clicking on getting started page faq item to collapse or expand it.
+#### Properties
+|   |   |   |
+|---|---|---|
+`id` | `string` | (faq identifier)
+`action` | `string` | (`expand`\|`collapse`)
+#### Emitters
+- [`Faqs`](js/src/get-started-page/faqs.js#L230)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
