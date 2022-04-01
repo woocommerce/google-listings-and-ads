@@ -26,12 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `documentation_link_click` - When a documentation link is clicked.
-
-    -   `link_id`: link identifier
-    -   `context`: indicate which link is clicked
-    -   `href`: link's URL
-
 -   `edit_mc_phone_number` - Trigger when phone number edit button is clicked.
 
     -   `path`: The path used in the page, e.g. `"/google/settings"`.
@@ -347,6 +341,17 @@ Accounts are disconnected from the Setting page
 |   |   |   |
 |---|---|---|
 `context` | `string` | (`all-accounts`\|`ads-account`) - indicate which accounts have been disconnected.
+
+### [`gla_documentation_link_click`](js/src/components/app-documentation-link/index.js#L6)
+When a documentation link is clicked.
+#### Properties
+|   |   |   |
+|---|---|---|
+`link_id` | `string` | link identifier
+`context` | `string` | indicate which link is clicked
+`href` | `string` | link's URL
+#### Emitters
+- [`AppDocumentationLink`](js/src/components/app-documentation-link/index.js#L29)
 
 ### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
 Trigger when store address edit button is clicked.

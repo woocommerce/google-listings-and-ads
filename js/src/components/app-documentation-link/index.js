@@ -4,15 +4,20 @@
 import TrackableLink from '../trackable-link';
 
 /**
+ * When a documentation link is clicked.
+ *
+ * @event gla_documentation_link_click
+ * @property {string} link_id link identifier
+ * @property {string} context indicate which link is clicked
+ * @property {string} href link's URL
+ */
+
+/**
  * Renders a trackable link to external documentation.
  *
  * Uses a `TrackableLink` that will open the link in new tab and
- * call `recordEvent` with `gla_documentation_link_click` event name.
  *
- * - `eventName="gla_documentation_link_click"`
- * - `eventProps={ { context, link_id: linkId, href } }`
- * - `type="external"` by default.
- * - `target="_blank"` by default.
+ * @fires gla_documentation_link_click
  *
  * @param {Object} props Props to be forwarded to {@link TrackableLink}.
  * @param {string} props.context The screen or page of this AppDocumentationLink. This will be sent as part of track event properties.
