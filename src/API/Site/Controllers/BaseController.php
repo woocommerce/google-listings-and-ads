@@ -142,7 +142,14 @@ abstract class BaseController extends WC_REST_Controller implements Registerable
 		$context  = $request['context'] ?? 'view';
 		$schema   = $this->get_schema_properties();
 		foreach ( $schema as $key => $property ) {
-			$prepared[ $key ] = $item[ $key ] ?? $property['default'] ?? null;
+			$item_value = $item[ $key ] ?? $property['default'] ?? null;
+
+			// Cast empty arrays to empty objects if property is supposed to be an object.
+			if ( is_array( $item_value ) && empty( $item_value ) && isset( $property['type'] ) && 'object' === $property['type'] ) {
+				$item_value = (object) [];
+			}
+
+			$prepared[ $key ] = $item_value;
 		}
 
 		$prepared = $this->add_additional_fields_to_object( $prepared, $request );

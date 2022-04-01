@@ -8,6 +8,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\BaseController;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\CountryCodeTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\TransportMethods;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelperAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ISO3166AwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\RESTServer;
 use DateTime;
@@ -22,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\Ads
  */
-class CampaignController extends BaseController implements ISO3166AwareInterface {
+class CampaignController extends BaseController implements GoogleHelperAwareInterface, ISO3166AwareInterface {
 
 	use CountryCodeTrait;
 
@@ -251,40 +252,51 @@ class CampaignController extends BaseController implements ISO3166AwareInterface
 	 */
 	protected function get_schema_properties(): array {
 		return [
-			'id'      => [
+			'id'                 => [
 				'type'        => 'integer',
 				'description' => __( 'ID number.', 'google-listings-and-ads' ),
 				'context'     => [ 'view' ],
 				'readonly'    => true,
 			],
-			'name'    => [
+			'name'               => [
 				'type'              => 'string',
 				'description'       => __( 'Descriptive campaign name.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => false,
 			],
-			'status'  => [
+			'status'             => [
 				'type'              => 'string',
 				'enum'              => CampaignStatus::labels(),
 				'description'       => __( 'Campaign status.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'amount'  => [
+			'amount'             => [
 				'type'              => 'number',
 				'description'       => __( 'Daily budget amount in the local currency.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'validate_callback' => 'rest_validate_request_arg',
 				'required'          => true,
 			],
-			'country' => [
+			'country'            => [
 				'type'              => 'string',
-				'description'       => __( 'Country code in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+				'description'       => __( 'Country code of sale country in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
 				'context'           => [ 'view', 'edit' ],
 				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
-				'validate_callback' => $this->get_country_code_validate_callback(),
+				'validate_callback' => $this->get_supported_country_code_validate_callback(),
+				'readonly'          => true,
+			],
+			'targeted_locations' => [
+				'type'              => 'array',
+				'description'       => __( 'The locations that an Ads campaign is targeting in ISO 3166-1 alpha-2 format.', 'google-listings-and-ads' ),
+				'context'           => [ 'view', 'edit' ],
+				'sanitize_callback' => $this->get_country_code_sanitize_callback(),
+				'validate_callback' => $this->get_supported_country_code_validate_callback(),
 				'required'          => true,
+				'items'             => [
+					'type' => 'string',
+				],
 			],
 		];
 	}

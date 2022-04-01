@@ -7,6 +7,7 @@ use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
@@ -14,13 +15,14 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantMetrics;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\MerchantReport;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Proxy;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Middleware;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Settings;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\SiteVerification;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\AccountReconnect;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPError;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\WPErrorTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GooglePromotionService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Notes\ReconnectWordPress;
@@ -68,7 +70,7 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		ShoppingContent::class        => true,
 		GoogleAdsClient::class        => true,
 		GuzzleClient::class           => true,
-		Proxy::class                  => true,
+		Middleware::class             => true,
 		Merchant::class               => true,
 		MerchantMetrics::class        => true,
 		Ads::class                    => true,
@@ -96,13 +98,14 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->register_guzzle();
 		$this->register_ads_client();
 		$this->register_google_classes();
-		$this->add( Proxy::class, ContainerInterface::class );
+		$this->share( Middleware::class, ContainerInterface::class );
 		$this->add( Connection::class );
 		$this->add( Settings::class, ContainerInterface::class );
 
 		$this->share( Ads::class, GoogleAdsClient::class );
-		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class );
+		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class, AdsCampaignCriterion::class, GoogleHelper::class );
 		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class );
+		$this->share( AdsCampaignCriterion::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
 		$this->share( AdsGroup::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );

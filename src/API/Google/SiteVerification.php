@@ -45,7 +45,7 @@ class SiteVerification implements ContainerAwareInterface, OptionsAwareInterface
 	 * 2. Enables the meta tag in the head of the store (handled by SiteVerificationMeta).
 	 * 3. Instructs the Site Verification API to verify the meta tag.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @param string $site_url Site URL to verify.
 	 *
