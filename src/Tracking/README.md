@@ -26,8 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `mc_account_connect_different_account_button_click` - Clicking on the "connect to a different Google Merchant Center account" button.
-
 -   `mc_account_create_button_click` - Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
 
 -   `mc_account_reclaim_url_agreement_check` - Clicking on the checkbox to agree with the implications of reclaiming URL.
@@ -449,6 +447,11 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 Clicking on the button to connect an existing Google Merchant Center account.
 #### Emitters
 - [`ConnectMC`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L34)
+
+### [`gla_mc_account_connect_different_account_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connected-card.js#L21)
+Clicking on the "connect to a different Google Merchant Center account" button.
+#### Emitters
+- [`ConnectedCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connected-card.js#L32)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
