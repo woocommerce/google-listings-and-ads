@@ -109,6 +109,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.1 - 2022-04-01 =
+* Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
+* Fix - Do not sync shipping rates if the shipping time setting is set to complex.
+
 = 1.12.0 - 2022-03-29 =
 * Add - Additional data points for tracker snapshot.
 * Add - Enables merchants to select multiple countries as their audience when creating a Google Ads campaign (Smart Shopping Campaign).
