@@ -134,7 +134,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				function ( $gtag_snippet ) use ( $ads_conversion_id ) {
 					return preg_replace(
 						'~(\s)</script>~',
-						"\tgtag('config', '" . $ads_conversion_id . "');\n$1</script>",
+						"\tgtag('config', '" . $ads_conversion_id . "', { 'groups': 'GLA' });\n$1</script>",
 						$gtag_snippet
 					);
 				}
@@ -161,7 +161,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	gtag('js', new Date());
 	gtag('set', 'developer_id.<?php echo esc_js( self::DEVELOPER_ID ); ?>', true);
 
-	gtag('config','<?php echo esc_js( $ads_conversion_id ); ?>');
+	gtag('config','<?php echo esc_js( $ads_conversion_id ); ?>', { 'groups': 'GLA' });
 </script>
 		<?php
 // phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
