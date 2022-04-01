@@ -17,8 +17,9 @@ import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 const ConnectWPComAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
 
-	const next = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
-	const path = addQueryArgs( `${ API_NAMESPACE }/jetpack/connect`, { next } );
+	const nextPageName = glaData.mcSetupComplete ? 'reconnect' : 'setup-mc';
+	const query = { next_page_name: nextPageName };
+	const path = addQueryArgs( `${ API_NAMESPACE }/jetpack/connect`, query );
 	const [ fetchJetpackConnect, { loading, data } ] = useApiFetchCallback( {
 		path,
 	} );
@@ -50,7 +51,7 @@ const ConnectWPComAccountCard = () => {
 					isSecondary
 					loading={ loading || data }
 					eventName="gla_wordpress_account_connect_button_click"
-					eventProps={ { context: next } }
+					eventProps={ { context: nextPageName } }
 					onClick={ handleConnectClick }
 				>
 					{ __( 'Connect', 'google-listings-and-ads' ) }

@@ -116,7 +116,7 @@ class AccountController extends BaseOptionsController {
 			}
 
 			// Get an authorization URL which will redirect back to our page.
-			$next     = $request->get_param( 'next' );
+			$next     = $request->get_param( 'next_page_name' );
 			$path     = self::NEXT_PATH_MAPPING[ $next ];
 			$redirect = admin_url( "admin.php?page=wc-admin&path={$path}" );
 			$auth_url = $this->manager->get_authorization_url( null, $redirect );
@@ -138,8 +138,8 @@ class AccountController extends BaseOptionsController {
 	protected function get_connect_params(): array {
 		return [
 			'context' => $this->get_context_param( [ 'default' => 'view' ] ),
-			'next'    => [
-				'description'       => __( 'Indicate the next page name to map the redirect URI when back from Jetpack authorization.', 'google-listings-and-ads' ),
+			'next_page_name' => [
+				'description'       => __( 'Indicates the next page name mapped to the redirect URL when back from Jetpack authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => array_key_first( self::NEXT_PATH_MAPPING ),
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),

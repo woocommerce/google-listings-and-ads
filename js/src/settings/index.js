@@ -9,7 +9,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
  */
 import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
-import { subpaths, getReconnectGoogleAccountUrl } from '.~/utils/urls';
+import { subpaths, getReconnectAccountUrl } from '.~/utils/urls';
 import NavigationClassic from '.~/components/navigation-classic';
 import { ContactInformationPreview } from '.~/components/contact-information';
 import LinkedAccounts from './linked-accounts';
