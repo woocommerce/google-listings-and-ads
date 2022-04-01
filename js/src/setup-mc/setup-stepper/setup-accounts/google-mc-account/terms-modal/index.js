@@ -13,8 +13,22 @@ import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import './index.scss';
 
-const TermsModal = ( props ) => {
-	const { onCreateAccount = () => {}, onRequestClose = () => {} } = props;
+/**
+ * Clicking on the button to create a new Google Merchant Center account, after agreeing to the terms and conditions.
+ *
+ * @event gla_mc_account_create_button_click
+ */
+
+/**
+ * @param {Object} props React props
+ * @param {Function} [props.onCreateAccount]
+ * @param {Function} [props.onRequestClose]
+ * @fires gla_mc_account_create_button_click
+ */
+const TermsModal = ( {
+	onCreateAccount = () => {},
+	onRequestClose = () => {},
+} ) => {
 	const [ agree, setAgree ] = useState( false );
 
 	const handleCreateAccountClick = () => {
