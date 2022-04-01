@@ -26,12 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `launch_paid_campaign_button_click` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
-
-    -   `audience`: country code of the paid campaign audience country. e.g. `'US`. This means the campaign is created with the "sales country" targeting only, and it is inapplicable when created with the multi-country targeting feature.
-    -   `audiences`: country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
-    -   `budget`: daily average cost of the paid campaign
-
 -   `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
 
 -   `mc_account_connect_different_account_button_click` - Clicking on the "connect to a different Google Merchant Center account" button.
@@ -393,7 +387,7 @@ Clicking on a text link within the notice on the Get Started page.
 - [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{	context: "get-started", link_id: "supported-languages" }`
 - [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{	context: "get-started", link_id: "supported-countries" }`
 
-### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L142)
+### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L152)
 Clicking on the button to connect Google account.
 #### Properties
 |   |   |   |
@@ -421,7 +415,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L152)
+### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L162)
 Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
@@ -440,6 +434,18 @@ Clicking on a Google Merchant Center link.
 `context` | `string` | indicate the place where the button is located, e.g. `setup-ads`.
 #### Emitters
 - [`HelpIconButton`](js/src/components/help-icon-button.js#L30)
+
+### [`gla_launch_paid_campaign_button_click`](js/src/utils/recordEvent.js#L127)
+Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
+#### Properties
+|   |   |   |
+|---|---|---|
+`audiences` | `string` | country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
+`budget` | `string` | daily average cost of the paid campaign
+#### Emitters
+- [`CreatePaidAdsCampaignForm`](js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L28) on submit
+- [`SetupAdsForm`](js/src/setup-ads/setup-ads-form.js#L24) on submit
+- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L143)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

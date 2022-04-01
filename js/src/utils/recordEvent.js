@@ -125,7 +125,17 @@ export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
 };
 
 /**
+ * Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
+ *
+ * @event gla_launch_paid_campaign_button_click
+ * @property {string} audiences country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
+ * @property {string} budget daily average cost of the paid campaign
+ */
+
+/**
  * Records `gla_launch_paid_campaign_button_click` tracking event.
+ *
+ * @fires gla_launch_paid_campaign_button_click
  *
  * @param {number} budget Daily average cost of the paid campaign.
  * @param {Array<CountryCode>} audiences Country code array of the paid campaign audience country.
