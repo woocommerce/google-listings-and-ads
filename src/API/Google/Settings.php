@@ -5,6 +5,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingRateQuery as RateQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\DB\Query\ShippingTimeQuery as TimeQuery;
+use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
@@ -58,19 +59,24 @@ class Settings {
 			$rates = $this->get_shipping_rates_from_database();
 		}
 
-		$this->update_shipping_rates( $rates );
+		$times = $this->get_times();
+
+		$this->update_shipping_rates( $rates, $times );
 	}
 
 	/**
 	 * Submit the given shipping rates to Google.
 	 *
 	 * @param array $rates A multidimensional array of shipping rates and their properties.
+	 * @param array $times An array of estimated shipping times (in days) set for shipping countries.
 	 *
 	 * @see ShippingZone::get_shipping_rates_for_country() for the format of the $rates array.
 	 *
+	 * @throws InvalidValue If no shipping time is found for a country.
+	 *
 	 * @since 1.12.0
 	 */
-	public function update_shipping_rates( array $rates ) {
+	public function update_shipping_rates( array $rates, array $times ) {
 		$settings = new ShippingSettings();
 		$settings->setAccountId( $this->get_account_id() );
 
@@ -81,14 +87,20 @@ class Settings {
 				continue;
 			}
 
-			$service = $this->create_shipping_service( $country, $method, $currency, (float) $rate, $options );
+			if ( ! array_key_exists( $country, $times ) ) {
+				throw new InvalidValue( 'No estimated shipping time found for country: ' . $country );
+			}
+
+			$delivery_days = intval( $times[ $country ] );
+
+			$service = $this->create_shipping_service( $country, $method, $currency, (float) $rate, $delivery_days, $options );
 
 			if ( isset( $options['free_shipping_threshold'] ) ) {
 				$minimum_order_value = (float) $options['free_shipping_threshold'];
 
 				if ( 0 !== $rate ) {
 					// Add a conditional free-shipping service if the current rate is not free.
-					$services[] = $this->create_conditional_free_shipping_service( $country, $currency, $minimum_order_value );
+					$services[] = $this->create_conditional_free_shipping_service( $country, $currency, $minimum_order_value, $delivery_days );
 				} else {
 					// Set the minimum order value if the current rate is free.
 					$service->setMinimumOrderValue(
@@ -120,7 +132,7 @@ class Settings {
 	 * @return bool
 	 */
 	protected function should_sync_shipping(): bool {
-		return in_array( $this->get_settings()['shipping_rate'], [ 'flat', 'automatic' ], true );
+		return in_array( $this->get_settings()['shipping_rate'], [ 'flat', 'automatic' ], true ) && 'flat' === $this->get_settings()['shipping_time'];
 	}
 
 	/**
@@ -305,11 +317,12 @@ class Settings {
 	 * @param string     $method
 	 * @param string     $currency
 	 * @param float      $rate
+	 * @param int        $delivery_days
 	 * @param array|null $options
 	 *
 	 * @return Service
 	 */
-	protected function create_shipping_service( string $country, string $method, string $currency, float $rate, ?array $options = [] ): Service {
+	protected function create_shipping_service( string $country, string $method, string $currency, float $rate, int $delivery_days, ?array $options = [] ): Service {
 		$unique  = sprintf( '%04x', mt_rand( 0, 0xffff ) );
 		$service = new Service();
 		$service->setActive( true );
@@ -342,10 +355,7 @@ class Settings {
 		$rate_groups[] = $this->create_rate_group_object( $currency, $rate, $method );
 		$service->setRateGroups( $rate_groups );
 
-		$times = $this->get_times();
-		if ( array_key_exists( $country, $times ) ) {
-			$service->setDeliveryTime( $this->create_time_object( intval( $times[ $country ] ) ) );
-		}
+		$service->setDeliveryTime( $this->create_time_object( $delivery_days ) );
 
 		return $service;
 	}
@@ -356,11 +366,12 @@ class Settings {
 	 * @param string $country
 	 * @param string $currency
 	 * @param float  $minimum_order_value
+	 * @param int    $delivery_days
 	 *
 	 * @return Service
 	 */
-	protected function create_conditional_free_shipping_service( string $country, string $currency, float $minimum_order_value ): Service {
-		$service = $this->create_shipping_service( $country, ShippingZone::METHOD_FREE, $currency, 0 );
+	protected function create_conditional_free_shipping_service( string $country, string $currency, float $minimum_order_value, int $delivery_days ): Service {
+		$service = $this->create_shipping_service( $country, ShippingZone::METHOD_FREE, $currency, 0, $delivery_days );
 
 		// Set the minimum order value to be eligible for free shipping.
 		$service->setMinimumOrderValue(
