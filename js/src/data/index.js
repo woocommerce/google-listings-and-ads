@@ -16,10 +16,7 @@ import * as selectors from './selectors';
 import * as resolvers from './resolvers';
 import reducer from './reducer';
 import { createErrorResponseCatcher } from './api-fetch-middlewares';
-import {
-	getReconnectWPComAccountUrl,
-	getReconnectGoogleAccountUrl,
-} from '.~/utils/urls';
+import { getReconnectAccountUrl } from '.~/utils/urls';
 
 registerStore( STORE_KEY, {
 	actions,
@@ -41,12 +38,10 @@ apiFetch.use(
 					return errorInfo;
 				} )
 				.then( ( errorInfo ) => {
-					const { code } = errorInfo;
+					const url = getReconnectAccountUrl( errorInfo.code );
 
-					if ( code === 'JETPACK_DISCONNECTED' ) {
-						getHistory().replace( getReconnectWPComAccountUrl() );
-					} else if ( code === 'GOOGLE_DISCONNECTED' ) {
-						getHistory().replace( getReconnectGoogleAccountUrl() );
+					if ( url ) {
+						getHistory().replace( url );
 					}
 
 					return errorInfo;

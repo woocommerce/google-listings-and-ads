@@ -7,6 +7,7 @@ import { getQuery, getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
+import { API_RESPONSE_CODES } from '.~/constants';
 import useLegacyMenuEffect from '.~/hooks/useLegacyMenuEffect';
 import useGoogleAccount from '.~/hooks/useGoogleAccount';
 import { subpaths, getReconnectAccountUrl } from '.~/utils/urls';
@@ -32,7 +33,9 @@ const Settings = () => {
 	// so we still need to detect it here.
 	useEffect( () => {
 		if ( ! isReconnectGooglePage && google?.active === 'no' ) {
-			getHistory().replace( getReconnectGoogleAccountUrl() );
+			getHistory().replace(
+				getReconnectAccountUrl( API_RESPONSE_CODES.GOOGLE_DISCONNECTED )
+			);
 		}
 	}, [ isReconnectGooglePage, google ] );
 
