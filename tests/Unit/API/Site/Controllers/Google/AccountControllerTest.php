@@ -54,7 +54,7 @@ class AccountControllerTest extends RESTControllerUnitTest {
 	}
 
 	public function test_connect_invalid_parameter() {
-		$response = $this->do_request( self::ROUTE_CONNECT, 'GET', [ 'next' => 'invalid' ] );
+		$response = $this->do_request( self::ROUTE_CONNECT, 'GET', [ 'next_page_name' => 'invalid' ] );
 
 		$this->assertEquals( 'rest_invalid_param', $response->get_data()['code'] );
 		$this->assertEquals( 400, $response->get_status() );
