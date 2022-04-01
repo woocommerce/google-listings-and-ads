@@ -36,10 +36,9 @@ const FormContent = ( {
 	saving = false,
 	submitLabel = __( 'Complete setup', 'google-listings-and-ads' ),
 } ) => {
-	const { isValidForm, handleSubmit } = formProps;
-
+	const { values, isValidForm, handleSubmit } = formProps;
 	const shouldDisplayTaxRate = useDisplayTaxRate( countries );
-
+	const shouldDisplayShippingTime = values.shipping_time === 'flat';
 	const isCompleteSetupDisabled =
 		shouldDisplayTaxRate === null || ! isValidForm;
 
@@ -49,10 +48,12 @@ const FormContent = ( {
 				formProps={ formProps }
 				audienceCountries={ countries }
 			/>
-			<ShippingTimeSection
-				formProps={ formProps }
-				countries={ countries }
-			/>
+			{ shouldDisplayShippingTime && (
+				<ShippingTimeSection
+					formProps={ formProps }
+					countries={ countries }
+				/>
+			) }
 			<ConditionalSection show={ shouldDisplayTaxRate }>
 				<TaxRate formProps={ formProps } />
 			</ConditionalSection>

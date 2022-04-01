@@ -4,7 +4,7 @@ Tags: woocommerce, google, listings, ads
 Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.12.0
+Stable tag: 1.12.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -109,6 +109,10 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.1 - 2022-04-01 =
+* Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
+* Fix - Do not sync shipping rates if the shipping time setting is set to complex.
+
 = 1.12.0 - 2022-03-29 =
 * Add - Additional data points for tracker snapshot.
 * Add - Enables merchants to select multiple countries as their audience when creating a Google Ads campaign (Smart Shopping Campaign).
@@ -134,36 +138,5 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 = 1.11.1 - 2022-02-10 =
 * Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
-
-= 1.11.0 - 2022-02-02 =
-* Add - Unit tests for the Ads AccountController and AccountService.
-* Fix - Failure handling was not correctly displayed when the ads campaign creation and editing failed.
-* Fix - Fix the incorrect text color of the disabled "Disconnect account" buttons on the Settings page.
-* Fix - Makes country dropdown list always below the input box.
-* Fix - Prevent page flickering when loading admin pages of this extension.
-* Tweak - Change the importing way of lodash package to reduce the bundle size by 4 KB.
-* Tweak - Clean up outdated workarounds for WooCommerce 5.7.
-* Update - Google Ads API to V9.
-* Update - Google Content API library to 2.12.1.
-* Update - Inbox notifications have update promotion information from Google.
-* Update - Update Google Ads credit incentive in WordPress.org plugin landing page.
-* Update - Update Google Ads credit incentive info in plugin UI.
-
-= 1.10.0 - 2022-01-13 =
-* Add - Bulk update channel visibility for coupons.
-* Add - CES prompts for initial setup and campaign creation.
-* Add - Pre-fill shipping rates during free listing configuration wizard.
-* Add - Pre-fill shipping rates in Setup Merchant Center flow based on store's shipping settings.
-* Add - Sync products' shipping label/class to Merchant Center.
-* Fix - Drop WC 5.7 support.
-* Fix - Fatal error when creating Ads account without Site Title.
-* Fix - Fix/1078 shipping values flash during onboarding setup.
-* Fix - Fixing coupon test issue.
-* Fix - Group shipping rate by price and currency, and display the right currency in shipping rate input.
-* Fix - MC address validation.
-* Fix - Remove WC's `is_ajax` (deprecated in 6.1) in favor of proxied WP `wp_doing_ajax`.
-* Fix - Removed state/region address validation .
-* Fix - Replace `cloneDeep` within `.~/data/reducer.js` with functions that would not mutate other references of the state tree.
-* Tweak - WC 6.1 compatibility.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
