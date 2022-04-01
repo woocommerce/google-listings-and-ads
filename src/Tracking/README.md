@@ -26,10 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `free_ad_credit_country_click` - Clicking on the link to view free ad credit value by country.
-
-    -   `context`: indicate which page the link is in.
-
 -   `free_campaign_edited` - Saving changes to the free campaign.
 
 -   `get_started_faq` - Clicking on getting started page faq item to collapse or expand it
@@ -396,6 +392,15 @@ Triggered when changing products & variations filter.
 - [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
 - [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
 - [`recordFilterEvent`](js/src/utils/recordEvent.js#L94)
+
+### [`gla_free_ad_credit_country_click`](js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L16)
+Clicking on the link to view free ad credit value by country.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate which page the link is in.
+#### Emitters
+- [`FreeAdCredit`](js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L26)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
