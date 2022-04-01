@@ -26,10 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `edit_mc_phone_number` - Trigger when phone number edit button is clicked.
-
-    -   `path`: The path used in the page, e.g. `"/google/settings"`.
-    -   `subpath`: The subpath used in the page, or `undefined` when there is no subpath.
 
 -   `edit_product_click` - Trigger when edit links are clicked from product feed table
 
@@ -352,6 +348,16 @@ When a documentation link is clicked.
 `href` | `string` | link's URL
 #### Emitters
 - [`AppDocumentationLink`](js/src/components/app-documentation-link/index.js#L29)
+
+### [`gla_edit_mc_phone_number`](js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L13)
+Triggered when phone number edit button is clicked.
+#### Properties
+|   |   |   |
+|---|---|---|
+`path` | `string` | The path used in the page, e.g. `"/google/settings"`.
+`subpath` | `string` | The subpath used in the page, or `undefined` when there is no subpath.
+#### Emitters
+- [`PhoneNumberCardPreview`](js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L32) Whenever "Edit" is clicked.
 
 ### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
 Trigger when store address edit button is clicked.
