@@ -137,7 +137,7 @@ class AccountController extends BaseOptionsController {
 	 */
 	protected function get_connect_params(): array {
 		return [
-			'context' => $this->get_context_param( [ 'default' => 'view' ] ),
+			'context'        => $this->get_context_param( [ 'default' => 'view' ] ),
 			'next_page_name' => [
 				'description'       => __( 'Indicates the next page name mapped to the redirect URL when back from Jetpack authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',

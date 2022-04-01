@@ -121,15 +121,15 @@ class AccountController extends BaseController {
 	 */
 	protected function get_connect_params(): array {
 		return [
-			'context'    => $this->get_context_param( [ 'default' => 'view' ] ),
-			'next_page_name'      => [
+			'context'        => $this->get_context_param( [ 'default' => 'view' ] ),
+			'next_page_name' => [
 				'description'       => __( 'Indicates the next page name mapped to the redirect URL when back from Google authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'default'           => array_key_first( self::NEXT_PATH_MAPPING ),
 				'enum'              => array_keys( self::NEXT_PATH_MAPPING ),
 				'validate_callback' => 'rest_validate_request_arg',
 			],
-			'login_hint' => [
+			'login_hint'     => [
 				'description'       => __( 'Indicate the Google account to suggest for authorization.', 'google-listings-and-ads' ),
 				'type'              => 'string',
 				'validate_callback' => 'is_email',
