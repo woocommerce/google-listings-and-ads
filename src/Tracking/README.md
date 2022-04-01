@@ -26,11 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
-
-    -   `report`: name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
-    -   `compare, period, before, after`: Values selected in [datepicker](https://woocommerce.github.io/woocommerce-admin/#/components/packages/date-range-filter-picker/README?id=props)
-
 -   `dashboard_edit_program_click` - Triggered when "continue" to edit program button is clicked
 
     -   `programId`: program id
@@ -327,6 +322,23 @@ Triggered when a chart tab is clicked
 Triggered when the save button in contact information page is clicked.
 #### Emitters
 - [`exports`](js/src/settings/edit-store-address.js#L40)
+
+### [`gla_datepicker_update`](js/src/utils/recordEvent.js#L45)
+Triggered when datepicker (date ranger picker) is updated,
+ with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
+#### Properties
+|   |   |   |
+|---|---|---|
+`report` | `string` | name of the report (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`compare` | `string` | Value selected in datepicker.
+`period` | `string` | Value selected in datepicker.
+`before` | `string` | Value selected in datepicker.
+`after` | `string` | Value selected in datepicker.
+#### Emitters
+- [`AppDateRangeFilterPicker`](js/src/dashboard/app-date-range-filter-picker/index.js#L27)
+- [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L43)
+- [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L45)
+- [`recordDatepickerUpdateEvent`](js/src/utils/recordEvent.js#L70)
 
 ### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
 Trigger when store address edit button is clicked.

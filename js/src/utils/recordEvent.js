@@ -43,6 +43,18 @@ export const recordTablePageEvent = ( context, page, direction ) => {
 };
 
 /**
+ * Triggered when datepicker (date ranger picker) is updated,
+ * with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
+ *
+ * @event gla_datepicker_update
+ * @property {string} report name of the report (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
+ * @property {string} compare Value selected in datepicker.
+ * @property {string} period Value selected in datepicker.
+ * @property {string} before Value selected in datepicker.
+ * @property {string} after Value selected in datepicker.
+ */
+
+/**
  * Records `gla_datepicker_update` tracking event, with data that comes from
  * `DateRangeFilterPicker`'s `onRangeSelect` callback.
  *
@@ -52,6 +64,8 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @param {string} data.period
  * @param {string} data.after
  * @param {string} data.before
+ *
+ * @fires gla_datepicker_update
  */
 export const recordDatepickerUpdateEvent = ( data ) => {
 	recordEvent( 'gla_datepicker_update', data );

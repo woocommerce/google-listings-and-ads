@@ -37,6 +37,8 @@ const siteLocale = getSetting( 'locale' ).siteLocale;
  * @param {boolean} props.hasPaidSource Indicate whether display report data source selector.
  * @param {Object} props.query Search query object, to fetch filter values from.
  * @param {string} props.trackEventId Report ID used in tracking events.
+ *
+ * @fires gla_datepicker_update
  */
 const ProductsReportFilters = ( props ) => {
 	const { hasPaidSource, query, trackEventId } = props;
