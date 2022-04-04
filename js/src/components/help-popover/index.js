@@ -11,8 +11,13 @@ import GridiconHelpOutline from 'gridicons/dist/help-outline';
 import recordTooltipViewedEvent from './recordTooltipViewedEvent';
 import './index.scss';
 
-const HelpPopover = ( props ) => {
-	const { id, children } = props;
+/**
+ * @param {Object} props React props
+ * @param {string} props.id
+ * @param {Array<JSX.Element>} props.children
+ * @fires gla_tooltip_viewed with the given `id`.
+ */
+const HelpPopover = ( { id, children } ) => {
 	const [ showPopover, setShowPopover ] = useState( false );
 
 	const handleButtonClick = () => {

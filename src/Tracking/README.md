@@ -50,10 +50,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `site_verify_success` - When a site is successfully verified with Google
 
--   `tooltip_viewed` - Viewing tooltip
-
-    -   `id`: (tooltip identifier)
-
 -   `wordpress_account_connect_button_click` - Clicking on the button to connect WordPress.com account.
 
 <!-- -- >
@@ -541,6 +537,16 @@ Sorting table
 #### Emitters
 - [`AppTableCard`](js/src/components/app-table-card/index.js#L28) upon sorting table by column
 - [`recordTableSortEvent`](js/src/utils/recordEvent.js#L50) with given props.
+
+### [`gla_tooltip_viewed`](js/src/components/help-popover/recordTooltipViewedEvent.js#L6)
+Viewing tooltip
+#### Properties
+|   |   |   |
+|---|---|---|
+`id` | `string` | (tooltip identifier)
+#### Emitters
+- [`HelpPopover`](js/src/components/help-popover/index.js#L20) with the given `id`.
+- [`recordTooltipViewedEvent`](js/src/components/help-popover/recordTooltipViewedEvent.js#L16) with the given `id`.
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
