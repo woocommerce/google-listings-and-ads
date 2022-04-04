@@ -31,6 +31,22 @@ export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 	} );
 };
 
+/**
+ * Sorting table
+ *
+ * @event gla_table_sort
+ * @property {string} report name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
+ * @property {string} column name of the column
+ * @property {string} direction (`asc`|`desc`)
+ */
+
+/**
+ *
+ * @param {string} report
+ * @param {string} column
+ * @param {string} direction
+ * @fires gla_table_sort with given props.
+ */
 export const recordTableSortEvent = ( report, column, direction ) => {
 	recordEvent( 'gla_table_sort', { report, column, direction } );
 };
