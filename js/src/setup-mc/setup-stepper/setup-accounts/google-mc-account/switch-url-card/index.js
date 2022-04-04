@@ -23,12 +23,19 @@ import AppInputLinkControl from '.~/components/app-input-link-control';
 import './index.scss';
 
 /**
+ * Clicking on the button to switch URL for a Google Merchant Center account.
+ *
+ * @event gla_mc_account_switch_url_button_click
+ */
+
+/**
  * @param {Object} props React props.
  * @param {string} props.id
  * @param {string} props.claimedUrl
  * @param {string} props.newUrl
  * @param {Function} [props.onSelectAnotherAccount]
  * @fires gla_mc_account_switch_account_button_click with `context: 'switch-url'`
+ * @fires gla_mc_account_switch_url_button_click
  */
 const SwitchUrlCard = ( {
 	id,
