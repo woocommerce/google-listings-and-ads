@@ -30,10 +30,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
     -   `checked`: indicate whether the checkbox is checked or unchecked.
 
--   `mc_phone_number_edit_button_click` - Clicking on the Merchant Center phone number edit button.
-
-    -   `view`: which view the edit button is in. Possible values: `setup-mc`, `settings`.
-
 -   `mc_url_switch`
 
     -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
@@ -475,6 +471,15 @@ Check for whether the phone number for Merchant Center exists or not.
 `isValid` | `string` | whether the phone number is valid or not.
 #### Emitters
 - [`usePhoneNumberCheckTrackEventEffect`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L25)
+
+### [`gla_mc_phone_number_edit_button_click`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L88)
+Clicking on the Merchant Center phone number edit button.
+#### Properties
+|   |   |   |
+|---|---|---|
+`view` | `string` | which view the edit button is in. Possible values: `setup-mc`, `settings`.
+#### Emitters
+- [`exports`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
