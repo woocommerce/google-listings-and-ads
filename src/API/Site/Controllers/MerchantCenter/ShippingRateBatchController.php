@@ -78,7 +78,7 @@ class ShippingRateBatchController extends ShippingRateController {
 	 *
 	 * @return callable
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 */
 	protected function get_batch_delete_shipping_callback(): callable {
 		return function ( Request $request ) {
@@ -112,7 +112,7 @@ class ShippingRateBatchController extends ShippingRateController {
 	 *
 	 * @return array
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 */
 	protected function get_batch_create_args_schema(): array {
 		return [
@@ -136,7 +136,7 @@ class ShippingRateBatchController extends ShippingRateController {
 	 *
 	 * @return array
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 */
 	protected function get_batch_delete_args_schema(): array {
 		return [

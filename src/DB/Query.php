@@ -108,7 +108,7 @@ abstract class Query implements QueryInterface {
 	 *
 	 * @return $this
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 */
 	public function group_by( string $column ): QueryInterface {
 		$this->validate_column( $column );
@@ -409,7 +409,7 @@ abstract class Query implements QueryInterface {
 	/**
 	 * Returns the last inserted ID. Must be called after insert.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @return int|null
 	 */

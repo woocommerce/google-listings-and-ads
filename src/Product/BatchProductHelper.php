@@ -115,7 +115,7 @@ class BatchProductHelper implements Service {
 	 * Mark a batch of WooCommerce product IDs as unsynced.
 	 * Invalid products will be skipped.
 	 *
-	 * @since x.x.x
+	 * @since 1.12.0
 	 *
 	 * @param array $product_ids
 	 */
@@ -260,26 +260,6 @@ class BatchProductHelper implements Service {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Filters the list of invalid product entries and returns an array of WooCommerce product IDs with internal errors
-	 *
-	 * @param BatchInvalidProductEntry[] $invalid_products
-	 *
-	 * @return int[] An array of WooCommerce product ids.
-	 */
-	public function get_internal_error_products( array $invalid_products ): array {
-		$internal_error_ids = [];
-		foreach ( $invalid_products as $invalid_product ) {
-			if ( $invalid_product->has_error( GoogleProductService::INTERNAL_ERROR_REASON ) ) {
-				$product_id = $invalid_product->get_wc_product_id();
-
-				$internal_error_ids[ $product_id ] = $product_id;
-			}
-		}
-
-		return $internal_error_ids;
 	}
 
 	/**

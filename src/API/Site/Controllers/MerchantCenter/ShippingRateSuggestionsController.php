@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Site\Controllers\MerchantCenter
  *
- * @since x.x.x
+ * @since 1.12.0
  */
 class ShippingRateSuggestionsController extends BaseController implements ISO3166AwareInterface {
 

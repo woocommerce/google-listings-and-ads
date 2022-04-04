@@ -15,8 +15,23 @@ import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import FlatShippingRatesInputCards from './flat-shipping-rates-input-cards';
 
 const ShippingRateSection = ( { formProps, audienceCountries } ) => {
-	const { getInputProps, values } = formProps;
+	const { getInputProps, values, setValue } = formProps;
 	const inputProps = getInputProps( 'shipping_rate' );
+
+	const getShippingRateOptionChangeHandler = ( onChange ) => ( value ) => {
+		switch ( value ) {
+			case 'automatic':
+			case 'flat':
+				setValue( 'shipping_time', 'flat' );
+				break;
+
+			case 'manual':
+				setValue( 'shipping_time', 'manual' );
+				break;
+		}
+
+		onChange( value );
+	};
 
 	return (
 		<Section
@@ -58,6 +73,9 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 								) }
 								value="automatic"
 								collapsible
+								onChange={ getShippingRateOptionChangeHandler(
+									inputProps.onChange
+								) }
 							>
 								<RadioHelperText>
 									{ __(
@@ -74,15 +92,21 @@ const ShippingRateSection = ( { formProps, audienceCountries } ) => {
 								) }
 								value="flat"
 								collapsible
+								onChange={ getShippingRateOptionChangeHandler(
+									inputProps.onChange
+								) }
 							/>
 							<AppRadioContentControl
 								{ ...inputProps }
 								label={ __(
-									'My shipping settings are complex. I will enter my shipping rates manually in Google Merchant Center.',
+									'My shipping settings are complex. I will enter my shipping rates and times manually in Google Merchant Center.',
 									'google-listings-and-ads'
 								) }
 								value="manual"
 								collapsible
+								onChange={ getShippingRateOptionChangeHandler(
+									inputProps.onChange
+								) }
 							>
 								<RadioHelperText>
 									{ createInterpolateElement(
