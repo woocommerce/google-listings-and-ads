@@ -35,11 +35,6 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
     -   `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
 
--   `setup_ads_faq` - Clicking on faq items to collapse or expand it in the Setup Ads page
-
-    -   `id`: (faq identifier)
-    -   `action`: (`expand`|`collapse`)
-
 -   `setup_mc` - Setup Merchant Center
 
     -   `target`: button ID
@@ -496,6 +491,16 @@ Triggered on events during ads setup and editing
 #### Emitters
 - [`SetupAdsTopBar`](js/src/setup-ads/top-bar/index.js#L17) with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
 - [`recordSetupAdsEvent`](js/src/utils/recordEvent.js#L133) with given `{ target, trigger }`.
+
+### [`gla_setup_ads_faq`](js/src/components/paid-ads/faqs-section.js#L13)
+Clicking on faq items to collapse or expand it in the Setup Ads page
+#### Properties
+|   |   |   |
+|---|---|---|
+`id` | `string` | (faq identifier)
+`action` | `string` | (`expand`\|`collapse`)
+#### Emitters
+- [`FaqsSection`](js/src/components/paid-ads/faqs-section.js#L24)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
