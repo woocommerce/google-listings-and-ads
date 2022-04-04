@@ -35,11 +35,6 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
     -   `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
 
--   `modal_content_link_click` - Clicking on a text link within the modal content
-
-    -   `context`: indicate which link is clicked
-    -   `href`: link's URL
-
 -   `modal_open` - A modal is opend
 
     -   `context`: indicate which modal is opened
@@ -482,6 +477,16 @@ A modal is closed.
 #### Emitters
 - [`Dashboard`](js/src/dashboard/index.js#L33) when CES modal is closed.
 - [`exports`](js/src/product-feed/submission-success-guide/index.js#L152) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
+
+### [`gla_modal_content_link_click`](js/src/components/guide-page-content/index.js#L28)
+Clicking on a text link within the modal content
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate which link is clicked
+`href` | `string` | link's URL
+#### Emitters
+- [`ContentLink`](js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
