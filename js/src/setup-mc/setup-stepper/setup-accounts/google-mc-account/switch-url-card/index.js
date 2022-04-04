@@ -22,8 +22,20 @@ import AccountCard, { APPEARANCE } from '.~/components/account-card';
 import AppInputLinkControl from '.~/components/app-input-link-control';
 import './index.scss';
 
-const SwitchUrlCard = ( props ) => {
-	const { id, claimedUrl, newUrl, onSelectAnotherAccount = () => {} } = props;
+/**
+ * @param {Object} props React props.
+ * @param {string} props.id
+ * @param {string} props.claimedUrl
+ * @param {string} props.newUrl
+ * @param {Function} [props.onSelectAnotherAccount]
+ * @fires gla_mc_account_switch_account_button_click with `context: 'switch-url'`
+ */
+const SwitchUrlCard = ( {
+	id,
+	claimedUrl,
+	newUrl,
+	onSelectAnotherAccount = () => {},
+} ) => {
 	const { createNotice } = useDispatchCoreNotices();
 	const { invalidateResolution } = useAppDispatch();
 	const [

@@ -35,6 +35,7 @@ import AppInputLinkControl from '.~/components/app-input-link-control';
  * @param {string} props.websiteUrl
  * @param {Function} [props.onSwitchAccount]
  * @fires gla_mc_account_reclaim_url_button_click
+ * @fires gla_mc_account_switch_account_button_click with `context: 'reclaim-url'`
  */
 const ReclaimUrlCard = ( { id, websiteUrl, onSwitchAccount = noop } ) => {
 	const { invalidateResolution } = useAppDispatch();

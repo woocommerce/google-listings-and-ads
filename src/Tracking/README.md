@@ -30,10 +30,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
     -   `checked`: indicate whether the checkbox is checked or unchecked.
 
--   `mc_account_switch_account_button_click` - Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
-
-    -   `context`: (`switch-url`|`reclaim-url`) - indicate the button is clicked from which step.
-
 -   `mc_account_switch_url_button_click` - Clicking on the button to switch URL for a Google Merchant Center account.
 
 -   `mc_account_warning_modal_confirm_button_click` - Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
@@ -442,7 +438,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 ### [`gla_mc_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L25)
 Clicking on the button to connect an existing Google Merchant Center account.
 #### Emitters
-- [`ConnectMC`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L34)
+- [`ConnectMC`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L41)
 
 ### [`gla_mc_account_connect_different_account_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connected-card.js#L21)
 Clicking on the "connect to a different Google Merchant Center account" button.
@@ -457,7 +453,17 @@ Clicking on the button to create a new Google Merchant Center account, after agr
 ### [`gla_mc_account_reclaim_url_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L26)
 Clicking on the button to reclaim URL for a Google Merchant Center account.
 #### Emitters
-- [`ReclaimUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L39)
+- [`ReclaimUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L40)
+
+### [`gla_mc_account_switch_account_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L31)
+Clicking on the "Switch account" button to select a different Google Merchant Center account to connect.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | (`switch-url`\|`reclaim-url`) - indicate the button is clicked from which step.
+#### Emitters
+- [`ReclaimUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/reclaim-url-card/index.js#L40) with `context: 'reclaim-url'`
+- [`SwitchUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/switch-url-card/index.js#L33) with `context: 'switch-url'`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
