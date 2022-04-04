@@ -117,6 +117,19 @@ export const recordPreLaunchChecklistCompleteEvent = () => {
 	recordEvent( 'gla_pre_launch_checklist_complete' );
 };
 
+/**
+ * Triggered on events during ads setup and editing
+ *
+ * @event gla_setup_ads
+ * @property {string} target button ID
+ * @property {string} trigger action (e.g. `click`)
+ */
+
+/**
+ * @param {string} target
+ * @param {string} trigger
+ * @fires gla_setup_ads with given `{ target, trigger }`.
+ */
 export const recordSetupAdsEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_ads', {
 		target,

@@ -35,13 +35,6 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
     -   `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
 
--   `pre_launch_checklist_complete` - Triggered when all checklist items are complete / checked.
-
--   `setup_ads` - Triggered on events during ads setup and editing
-
-    -   `target`: button ID
-    -   `trigger`: action (e.g. `click`)
-
 -   `setup_ads_faq` - Clicking on faq items to collapse or expand it in the Setup Ads page
 
     -   `id`: (faq identifier)
@@ -343,7 +336,7 @@ Clicking on a text link within the notice on the Get Started page.
 - [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{	context: "get-started", link_id: "supported-languages" }`
 - [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{	context: "get-started", link_id: "supported-countries" }`
 
-### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L152)
+### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L165)
 Clicking on the button to connect Google account.
 #### Properties
 |   |   |   |
@@ -371,7 +364,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L162)
+### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L175)
 Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
@@ -391,7 +384,7 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`HelpIconButton`](js/src/components/help-icon-button.js#L30)
 
-### [`gla_launch_paid_campaign_button_click`](js/src/utils/recordEvent.js#L127)
+### [`gla_launch_paid_campaign_button_click`](js/src/utils/recordEvent.js#L140)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
 #### Properties
 |   |   |   |
@@ -401,7 +394,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`CreatePaidAdsCampaignForm`](js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L28) on submit
 - [`SetupAdsForm`](js/src/setup-ads/setup-ads-form.js#L24) on submit
-- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L143)
+- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L156)
 
 ### [`gla_mc_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L25)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -463,7 +456,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`exports`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
 
-### [`gla_modal_closed`](js/src/utils/recordEvent.js#L170)
+### [`gla_modal_closed`](js/src/utils/recordEvent.js#L183)
 A modal is closed.
 #### Properties
 |   |   |   |
@@ -492,6 +485,17 @@ A modal is opend
 `context` | `string` | indicate which modal is opened
 #### Emitters
 - [`exports`](js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
+
+### [`gla_setup_ads`](js/src/utils/recordEvent.js#L120)
+Triggered on events during ads setup and editing
+#### Properties
+|   |   |   |
+|---|---|---|
+`target` | `string` | button ID
+`trigger` | `string` | action (e.g. `click`)
+#### Emitters
+- [`SetupAdsTopBar`](js/src/setup-ads/top-bar/index.js#L17) with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
+- [`recordSetupAdsEvent`](js/src/utils/recordEvent.js#L133) with given `{ target, trigger }`.
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
