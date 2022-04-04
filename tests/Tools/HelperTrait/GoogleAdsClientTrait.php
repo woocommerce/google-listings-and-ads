@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
@@ -12,6 +13,8 @@ use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
 use Google\Ads\GoogleAds\V9\Resources\AdGroup;
 use Google\Ads\GoogleAds\V9\Resources\AdGroupAd;
 use Google\Ads\GoogleAds\V9\Resources\AdGroupCriterion;
+use Google\Ads\GoogleAds\V9\Resources\AssetGroup;
+use Google\Ads\GoogleAds\V9\Resources\AssetGroupListingGroupFilter;
 use Google\Ads\GoogleAds\V9\Resources\BillingSetup;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\CampaignBudget;
@@ -231,6 +234,7 @@ trait GoogleAdsClientTrait {
 		$campaign->method( 'getId' )->willReturn( $data['id'] );
 		$campaign->method( 'getName' )->willReturn( $data['name'] );
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
+		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
 
 		$budget = $this->createMock( CampaignBudget::class );
@@ -367,4 +371,14 @@ trait GoogleAdsClientTrait {
 
 		$mc_link_service->method( 'listMerchantCenterLinks' )->willThrowException( $exception );
 	}
+
+	/**
+	 * Generates an asset group resource name.
+	 *
+	 * @param int $asset_group_id
+	 */
+	protected function generate_asset_group_resource_name( int $asset_group_id ) {
+		return ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id );
+	}
+
 }
