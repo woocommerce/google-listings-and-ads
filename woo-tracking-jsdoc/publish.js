@@ -94,7 +94,7 @@ exports.publish = function ( data ) {
 			// TaffyDB#has is buggy https://github.com/typicaljoe/taffydb/issues/19, so let's filter it manually.
 			data( { fires: { isArray: true } } ).each( ( emitter ) => {
 				const firesCurrent = emitter.fires.filter( ( fires ) =>
-					fires.name.startsWith( 'event:' + symbol.name )
+					fires.name ===  'event:' + symbol.name
 				);
 				if ( firesCurrent.length ) {
 					emitters.set( emitter, firesCurrent );
