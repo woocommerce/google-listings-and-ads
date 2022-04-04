@@ -17,38 +17,46 @@ As in WooCommerce core, only non-sensitive data about how a store is set up and 
 
 ### Tracking events
 
-All event names are prefixed by `wcadmin_gla_`.
+All event names are prefixed by `wcadmin_`.
 
-- `activated_from_source` - Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
-    - 	`utm_source`
-    - 	`utm_medium`
-    - 	`utm_campaign`
-    - 	`utm_term`
-    - 	`utm_content` 
+### `gla_activated_from_source`
+Plugin is activated from the "Add Plugins" page in the admin, and has `utm` query parameters indicating deep linking. Parameters currently tracked (and sent as properties):
+ - `utm_source`
+ - `utm_medium`
+ - `utm_campaign`
+ - `utm_term`
+ - `utm_content` 
 
--   `mc_account_reclaim_url_agreement_check` - Clicking on the checkbox to agree with the implications of reclaiming URL.
+### `gla_mc_account_reclaim_url_agreement_check`
+Clicking on the checkbox to agree with the implications of reclaiming URL. 
+#### Properties
+|   |   |   |
+|---|---|---|
+`checked` |  | indicate whether the checkbox is checked or unchecked.
 
-    -   `checked`: indicate whether the checkbox is checked or unchecked.
+### `gla_mc_url_switch`
+Clicking on the checkbox to agree with the implications of reclaiming URL. 
+#### Properties
+|   |   |   |
+|---|---|---|
+`action` | `string` | <ul><li>`required`: the Merchant Center account has a different, claimed URL and needs to be changed. <li>`success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.</ul>
 
--   `mc_url_switch`
+### `gla_site_claim`
+#### Properties
+|   |   |   |
+|---|---|---|
+`action` | `string` | <ul><li>`overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required <li>`success`: URL has been successfully set or overwritten.<li>`failure`</ul>
+`details` | `string` | Used for `failure` action. <ul><li>`independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA <li>`google_proxy`: claim failed using the user creds (in the `Merchant` class) <li>`google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)</ul>
 
-    -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
-    -   `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
+### `gla_site_verify_failure`
+When a site verification with Google fails
+#### Properties
+|   |   |   |
+|---|---|---|
+`step` | `string` | the step of the process that failed (token, meta-tag, unknown)
 
--   `gla_site_claim` event
-
-    -   `action` property is `overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required
-    -   `action` property is `success`: URL has been successfully set or overwritten.
-    -   `action` property is `failure`:
-        -   `details` property is `independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA
-        -   `details` property is `google_proxy`: claim failed using the user creds (in the `Merchant` class)
-        -   `details` property is `google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)
-
--   `site_verify_failure` - When a site verification with Google fails
-
-    -   `step` : the step of the process that failed (token, meta-tag, unknown)
-
--   `site_verify_success` - When a site is successfully verified with Google
+### `gla_site_verify_success`
+When a site is successfully verified with Google
 
 <!-- -- >
 ## Developer Info
