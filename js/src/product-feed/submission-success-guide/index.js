@@ -146,6 +146,8 @@ const handleGuideFinish = ( e ) => {
  *
  * Show this guide modal by visiting the path with a specific query `guide=submission-success`.
  * For example: `/wp-admin/admin.php?page=wc-admin&path=%2Fgoogle%2Fproduct-feed&guide=submission-success`.
+ *
+ * @fires gla_modal_closed with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
  */
 export default function SubmissionSuccessGuide() {
 	useEffect( () => {

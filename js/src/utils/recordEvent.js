@@ -166,3 +166,15 @@ export default recordEvent;
  * @property {string} context indicate which page / module the link is in
  * @property {string} href link's URL
  */
+
+/**
+ * A modal is closed.
+ *
+ * @event gla_modal_closed
+ * @property {string} context indicate which modal is closed
+ * @property {string} action indicate the modal is closed by what action (e.g. `maybe-later`|`dismiss` | `create-another-campaign`)
+ *   - `maybe-later` is used when the "Maybe later" button on the modal is clicked
+ *   - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
+ *   - `create-another-campaign` is used when the button "Create another campaign" is clicked
+ *   - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
+ */

@@ -35,15 +35,6 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
     -   `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
 
--   `modal_closed` - A modal is closed
-
-    -   `context`: indicate which modal is closed
-    -   `action`: indicate the modal is closed by what action (e.g. `maybe-later`|`dismiss` | `create-another-campaign`)
-        -   `maybe-later` is used when the "Maybe later" button on the modal is clicked
-        -   `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC
-        -   `create-another-campaign` is used when the button "Create another campaign" is clicked
-        -   `create-paid-campaign` is used when the button "Create paid campaign" is clicked
-
 -   `modal_content_link_click` - Clicking on a text link within the modal content
 
     -   `context`: indicate which link is clicked
@@ -480,6 +471,17 @@ Clicking on the Merchant Center phone number edit button.
 `view` | `string` | which view the edit button is in. Possible values: `setup-mc`, `settings`.
 #### Emitters
 - [`exports`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
+
+### [`gla_modal_closed`](js/src/utils/recordEvent.js#L170)
+A modal is closed.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate which modal is closed
+`action` | `string` | indicate the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
+#### Emitters
+- [`Dashboard`](js/src/dashboard/index.js#L33) when CES modal is closed.
+- [`exports`](js/src/product-feed/submission-success-guide/index.js#L152) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
