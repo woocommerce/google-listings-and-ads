@@ -13,6 +13,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
+use Automattic\WooCommerce\GoogleListingsAndAds\Product\ProductHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\GoogleGtagJs;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WP;
 
@@ -41,14 +42,20 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	protected $wp;
 
 	/**
+	 * @var ProductHelper
+	 */
+	protected $product_helper;
+
+	/**
 	 * Global Site Tag constructor.
 	 *
 	 * @param GoogleGtagJs $gtag_js
 	 * @param WP           $wp
 	 */
-	public function __construct( GoogleGtagJs $gtag_js, WP $wp ) {
+	public function __construct( GoogleGtagJs $gtag_js, WP $wp, ProductHelper $product_helper ) {
 		$this->gtag_js = $gtag_js;
 		$this->wp      = $wp;
+		$this->product_helper  = $product_helper;
 	}
 
 	/**
@@ -89,25 +96,23 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 
 		add_action(
-			'wp_body_open',
+			'woocommerce_after_single_product',
 			function () {
 				$this->display_view_item_event_snippet();
-			},
-			1000002
+			}
 		);
+
 		add_action(
 			'wp_body_open',
 			function () {
 				$this->display_cart_page_snippet();
-			},
-			1000004
+			}
 		);
 		add_action(
 			'wp_body_open',
 			function () {
 				$this->display_purchase_page_snippet();
-			},
-			1000005
+			}
 		);
 
 		add_filter(
@@ -238,7 +243,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			esc_js( $product->get_id() ),
 			esc_js( (string) $product->get_price() ),
 			esc_js( $product->get_name() ),
-			esc_js( join( '& ', $product->get_categories() ) ),
+			esc_js( join( '& ', $this->product_helper->get_categories($product) ) ),
 		);
 	}
 
@@ -417,7 +422,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					esc_js( $product->get_id() ),
 					esc_js( (string) $product->get_price() ),
 					esc_js( $product->get_name() ),
-					esc_js( join( '& ', $product->get_categories() ) ),
+					esc_js( join( '& ', $this->product_helper->get_categories($product) ) ),
 				);
 			},
 			1000005

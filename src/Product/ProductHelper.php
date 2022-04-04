@@ -502,4 +502,16 @@ class ProductHelper implements Service {
 
 		return $errors;
 	}
+
+	/**
+	 * Get categories list for a specific product.
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return array
+	 */
+	public function get_categories( WC_Product $product): array {
+		$terms = get_the_terms( $product->get_id(), 'product_cat' );
+		return ( empty( $terms ) || is_wp_error( $terms ))? [] : wp_list_pluck($terms, 'categories');
+	}
 }
