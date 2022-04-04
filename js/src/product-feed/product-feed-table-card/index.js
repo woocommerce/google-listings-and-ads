@@ -60,6 +60,7 @@ const toVisibilityEventProp = ( visible ) =>
  * @fires gla_bulk_edit_click with `context: 'product-feed'`
  * @fires gla_edit_product_click
  * @fires gla_table_go_to_page with `context: 'product-feed'`
+ * @fires gla_table_page_click with `context: 'product-feed'`
  */
 const ProductFeedTableCard = () => {
 	const [ selectedRows, setSelectedRows ] = useState( new Set() );

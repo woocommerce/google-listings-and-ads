@@ -91,6 +91,7 @@ const actions = (
 /**
  * @fires gla_edit_product_issue_click
  * @fires gla_table_go_to_page with `context: 'issues-to-resolve'`
+ * @fires gla_table_page_click with `context: 'issues-to-resolve'`
  */
 const IssuesTableCard = () => {
 	const [ page, setPage ] = useState( 1 );

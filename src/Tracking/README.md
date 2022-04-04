@@ -50,11 +50,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `site_verify_success` - When a site is successfully verified with Google
 
--   `table_page_click` - When table pagination is clicked
-
-    -   `context`: name of the table
-    -   `direction`: direction of page to be changed. `("next" | "previous")`
-
 -   `table_sort` - Sorting table
 
     -   `report`: name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
@@ -127,7 +122,7 @@ Triggered when the product feed "bulk edit" functionality is being used
 `number_of_items` | `number` | edit how many items
 `visibility_to` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L64) with `context: 'product-feed'`
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
 
 ### [`gla_ces_feedback`](js/src/components/customer-effort-score-prompt/index.js#L29)
 CES feedback recorded
@@ -174,7 +169,7 @@ Triggered when "continue" to edit program button is clicked.
 #### Emitters
 - [`EditProgramPromptModal`](js/src/dashboard/all-programs-table-card/edit-program-button/edit-program-prompt-modal/index.js#L32) when "Continue to edit" is clicked.
 
-### [`gla_datepicker_update`](js/src/utils/recordEvent.js#L71)
+### [`gla_datepicker_update`](js/src/utils/recordEvent.js#L80)
 Triggered when datepicker (date ranger picker) is updated,
  with report name and data that comes from `DateRangeFilterPicker`'s `onRangeSelect` callback
 #### Properties
@@ -189,7 +184,7 @@ Triggered when datepicker (date ranger picker) is updated,
 - [`AppDateRangeFilterPicker`](js/src/dashboard/app-date-range-filter-picker/index.js#L27)
 - [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
 - [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
-- [`recordDatepickerUpdateEvent`](js/src/utils/recordEvent.js#L96)
+- [`recordDatepickerUpdateEvent`](js/src/utils/recordEvent.js#L105)
 
 ### [`gla_disconnected_accounts`](js/src/settings/disconnect-accounts/index.js#L28)
 Accounts are disconnected from the Setting page
@@ -238,7 +233,7 @@ Triggered when edit links are clicked from product feed table.
 `status` | `string` | `("approved" \| "partially_approved" \| "expiring" \| "pending" \| "disapproved" \| "not_synced")`
 `visibility` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L64)
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65)
 
 ### [`gla_edit_product_issue_click`](js/src/product-feed/issues-table-card/index.js#L83)
 Triggered when edit links are clicked from Issues to resolve table.
@@ -248,7 +243,7 @@ Triggered when edit links are clicked from Issues to resolve table.
 `code` | `string` | issue code returned from Google
 `issue` | `string` | issue description returned from Google
 #### Emitters
-- [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L95)
+- [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96)
 
 ### [`gla_edit_wc_store_address`](js/src/components/contact-information/store-address-card.js#L23)
 Triggered when store address "Edit in WooCommerce Settings" button is clicked.
@@ -261,7 +256,7 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 #### Emitters
 - [`exports`](js/src/components/contact-information/store-address-card.js#L40) Whenever "Edit in WooCommerce Settings" button is clicked.
 
-### [`gla_filter`](js/src/utils/recordEvent.js#L100)
+### [`gla_filter`](js/src/utils/recordEvent.js#L109)
 Triggered when changing products & variations filter.
 #### Properties
 |   |   |   |
@@ -272,7 +267,7 @@ Triggered when changing products & variations filter.
 #### Emitters
 - [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
 - [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
-- [`recordFilterEvent`](js/src/utils/recordEvent.js#L120)
+- [`recordFilterEvent`](js/src/utils/recordEvent.js#L129)
 
 ### [`gla_free_ad_credit_country_click`](js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L16)
 Clicking on the link to view free ad credit value by country.
@@ -310,7 +305,7 @@ Clicking on a text link within the notice on the Get Started page.
 - [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{	context: "get-started", link_id: "supported-languages" }`
 - [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{	context: "get-started", link_id: "supported-countries" }`
 
-### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L204)
+### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L213)
 Clicking on the button to connect Google account.
 #### Properties
 |   |   |   |
@@ -338,7 +333,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L214)
+### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L223)
 Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
@@ -358,7 +353,7 @@ Clicking on a Google Merchant Center link.
 #### Emitters
 - [`HelpIconButton`](js/src/components/help-icon-button.js#L30)
 
-### [`gla_launch_paid_campaign_button_click`](js/src/utils/recordEvent.js#L179)
+### [`gla_launch_paid_campaign_button_click`](js/src/utils/recordEvent.js#L188)
 Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
 #### Properties
 |   |   |   |
@@ -368,7 +363,7 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`CreatePaidAdsCampaignForm`](js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L28) on submit
 - [`SetupAdsForm`](js/src/setup-ads/setup-ads-form.js#L24) on submit
-- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L195)
+- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L204)
 
 ### [`gla_mc_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L25)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -430,7 +425,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`exports`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
 
-### [`gla_modal_closed`](js/src/utils/recordEvent.js#L222)
+### [`gla_modal_closed`](js/src/utils/recordEvent.js#L231)
 A modal is closed.
 #### Properties
 |   |   |   |
@@ -460,7 +455,7 @@ A modal is opend
 #### Emitters
 - [`exports`](js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
-### [`gla_setup_ads`](js/src/utils/recordEvent.js#L159)
+### [`gla_setup_ads`](js/src/utils/recordEvent.js#L168)
 Triggered on events during ads setup and editing
 #### Properties
 |   |   |   |
@@ -469,7 +464,7 @@ Triggered on events during ads setup and editing
 `trigger` | `string` | action (e.g. `click`)
 #### Emitters
 - [`SetupAdsTopBar`](js/src/setup-ads/top-bar/index.js#L17) with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
-- [`recordSetupAdsEvent`](js/src/utils/recordEvent.js#L172) with given `{ target, trigger }`.
+- [`recordSetupAdsEvent`](js/src/utils/recordEvent.js#L181) with given `{ target, trigger }`.
 
 ### [`gla_setup_ads_faq`](js/src/components/paid-ads/faqs-section.js#L13)
 Clicking on faq items to collapse or expand it in the Setup Ads page
@@ -481,7 +476,7 @@ Clicking on faq items to collapse or expand it in the Setup Ads page
 #### Emitters
 - [`FaqsSection`](js/src/components/paid-ads/faqs-section.js#L24)
 
-### [`gla_setup_mc`](js/src/utils/recordEvent.js#L135)
+### [`gla_setup_mc`](js/src/utils/recordEvent.js#L144)
 Setup Merchant Center
 #### Properties
 |   |   |   |
@@ -492,7 +487,7 @@ Setup Merchant Center
 - [`GetStartedCard`](js/src/get-started-page/get-started-card/index.js#L27) with `{ target: 'set_up_free_listings', trigger: 'click' }`.
 - [`SavedSetupStepper`](js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L25) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
 - [`SetupMCTopBar`](js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
-- [`recordSetupMCEvent`](js/src/utils/recordEvent.js#L148) with the given `{ target trigger }`.
+- [`recordSetupMCEvent`](js/src/utils/recordEvent.js#L157) with the given `{ target trigger }`.
 
 ### [`gla_setup_mc_faq`](js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L62)
 Clicking on faq items to collapse or expand it in the Setup Merchant Center page
@@ -512,9 +507,9 @@ When table pagination is changed by entering page via "Go to page" input.
 `context` | `string` | name of the table
 `page` | `string` | page number (starting at 1)
 #### Emitters
-- [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L95) with `context: 'issues-to-resolve'`
-- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L64) with `context: 'product-feed'`
-- [`recordTablePageEvent`](js/src/utils/recordEvent.js#L57) with the given `{ context, page }`.
+- [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96) with `context: 'issues-to-resolve'`
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`recordTablePageEvent`](js/src/utils/recordEvent.js#L66) with the given `{ context, page }`.
 
 ### [`gla_table_header_toggle`](js/src/utils/recordEvent.js#L10)
 Toggling display of table columns
@@ -528,6 +523,18 @@ Toggling display of table columns
 - [`AppTableCard`](js/src/components/app-table-card/index.js#L28) upon toggling column visibility
 - [`recordColumnToggleEvent`](js/src/components/app-table-card/recordColumnToggleEvent.js#L12) with given `report: trackEventReportId, column: toggled`
 - [`recordTableHeaderToggleEvent`](js/src/utils/recordEvent.js#L26)
+
+### [`gla_table_page_click`](js/src/utils/recordEvent.js#L46)
+When table pagination is clicked
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | name of the table
+`direction` | `string` | direction of page to be changed. `("next" \| "previous")`
+#### Emitters
+- [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96) with `context: 'issues-to-resolve'`
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
+- [`recordTablePageEvent`](js/src/utils/recordEvent.js#L66) with the given `{ context, direction }`.
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

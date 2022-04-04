@@ -44,6 +44,14 @@ export const recordTableSortEvent = ( report, column, direction ) => {
  */
 
 /**
+ * When table pagination is clicked
+ *
+ * @event gla_table_page_click
+ * @property {string} context name of the table
+ * @property {string} direction direction of page to be changed. `("next" | "previous")`
+ */
+
+/**
  * Records table's page tracking event.
  * When the `direction` is 'goto', then the event name would be 'gla_table_go_to_page'.
  * Otherwise, the event name would be 'gla_table_page_click'.
@@ -53,6 +61,7 @@ export const recordTableSortEvent = ( report, column, direction ) => {
  * @param {string} direction Direction of page to be changed. 'next', 'previous', or 'goto'.
  *
  * @fires gla_table_go_to_page with the given `{ context, page }`.
+ * @fires gla_table_page_click with the given `{ context, direction }`.
  */
 export const recordTablePageEvent = ( context, page, direction ) => {
 	const properties = { context };
