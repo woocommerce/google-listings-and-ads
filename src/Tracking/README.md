@@ -50,8 +50,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `site_verify_success` - When a site is successfully verified with Google
 
--   `wordpress_account_connect_button_click` - Clicking on the button to connect WordPress.com account.
-
 <!-- -- >
 ## Developer Info
 All new tracking info should be updated in this readme.
@@ -547,6 +545,11 @@ Viewing tooltip
 #### Emitters
 - [`HelpPopover`](js/src/components/help-popover/index.js#L20) with the given `id`.
 - [`recordTooltipViewedEvent`](js/src/components/help-popover/recordTooltipViewedEvent.js#L16) with the given `id`.
+
+### [`gla_wordpress_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/wordpressdotcom-account/connect-wpcom-account-card.js#L14)
+Clicking on the button to connect WordPress.com account.
+#### Emitters
+- [`ConnectWPComAccountCard`](js/src/setup-mc/setup-stepper/setup-accounts/wordpressdotcom-account/connect-wpcom-account-card.js#L23)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

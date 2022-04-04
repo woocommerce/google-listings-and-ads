@@ -11,6 +11,15 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import WPComAccountCard from './wpcom-account-card';
 
+/**
+ * Clicking on the button to connect WordPress.com account.
+ *
+ * @event gla_wordpress_account_connect_button_click
+ */
+
+/**
+ * @fires gla_wordpress_account_connect_button_click
+ */
 const ConnectWPComAccountCard = () => {
 	const { createNotice } = useDispatchCoreNotices();
 	const [ fetchJetpackConnect, { loading, data } ] = useApiFetchCallback( {
