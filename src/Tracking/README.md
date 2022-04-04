@@ -30,12 +30,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
     -   `checked`: indicate whether the checkbox is checked or unchecked.
 
--   `mc_phone_number_check` - Check for whether the phone number for Merchant Center exists or not.
-
-    -   `path`: the path where the check is in.
-    -   `exist`: whether the phone number exists or not.
-    -   `isValid`: whether the phone number is valid or not.
-
 -   `mc_phone_number_edit_button_click` - Clicking on the Merchant Center phone number edit button.
 
     -   `view`: which view the edit button is in. Possible values: `setup-mc`, `settings`.
@@ -470,6 +464,17 @@ Clicking on the button to switch URL for a Google Merchant Center account.
 Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
 #### Emitters
 - [`WarningModal`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/warning-modal/index.js#L29)
+
+### [`gla_mc_phone_number_check`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L12)
+Check for whether the phone number for Merchant Center exists or not.
+#### Properties
+|   |   |   |
+|---|---|---|
+`path` | `string` | the path where the check is in.
+`exist` | `string` | whether the phone number exists or not.
+`isValid` | `string` | whether the phone number is valid or not.
+#### Emitters
+- [`usePhoneNumberCheckTrackEventEffect`](js/src/components/contact-information/usePhoneNumberCheckTrackEventEffect.js#L25)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
