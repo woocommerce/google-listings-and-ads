@@ -35,11 +35,6 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
     -   `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
 
--   `setup_mc_faq` - Clicking on faq items to collapse or expand it in the Setup Merchant Center page
-
-    -   `id`: (faq identifier)
-    -   `action`: (`expand`|`collapse`)
-
 -   `gla_site_claim` event
 
     -   `action` property is `overwrite_required`: the site URL is claimed by another Merchant Center account and overwrite confirmation is required
@@ -509,6 +504,16 @@ Setup Merchant Center
 - [`SavedSetupStepper`](js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L25) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
 - [`SetupMCTopBar`](js/src/setup-mc/top-bar/index.js#L17) with `{ target: 'back', trigger: 'click' }`.
 - [`recordSetupMCEvent`](js/src/utils/recordEvent.js#L122) with the given `{ target trigger }`.
+
+### [`gla_setup_mc_faq`](js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L62)
+Clicking on faq items to collapse or expand it in the Setup Merchant Center page
+#### Properties
+|   |   |   |
+|---|---|---|
+`id` | `string` | (faq identifier)
+`action` | `string` | (`expand`\|`collapse`)
+#### Emitters
+- [`exports`](js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L73)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
