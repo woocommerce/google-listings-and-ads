@@ -88,14 +88,6 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		);
 
 		add_action(
-			'wp_body_open',
-			function () {
-				$this->display_page_view_event_snippet();
-			},
-			1000001
-		);
-
-		add_action(
 			'woocommerce_after_single_product',
 			function () {
 				$this->display_view_item_event_snippet();
@@ -105,12 +97,8 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 		add_action(
 			'wp_body_open',
 			function () {
+				$this->display_page_view_event_snippet();
 				$this->display_cart_page_snippet();
-			}
-		);
-		add_action(
-			'wp_body_open',
-			function () {
 				$this->display_purchase_page_snippet();
 			}
 		);
@@ -155,7 +143,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $ads_conversion_id Google Ads account conversion ID.
 	 */
 	protected function display_global_site_tag( string $ads_conversion_id ) {
-        // phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 		?>
 
 <!-- Global site tag (gtag.js) - Google Ads: <?php echo esc_js( $ads_conversion_id ); ?> - Google Listings & Ads -->
@@ -169,7 +157,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	gtag('config','<?php echo esc_js( $ads_conversion_id ); ?>', { 'groups': 'GLA' });
 </script>
 		<?php
-// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
+		// phpcs:enable WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	}
 
 	/**
@@ -217,7 +205,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Display the JavaScript code to track the product view page.
 	 */
-	public function display_view_item_event_snippet(): void {
+	private function display_view_item_event_snippet(): void {
 		// Only display on the product view page.
 		if ( ! is_product() ) {
 			return;
@@ -250,7 +238,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Display the JavaScript code to track all pages.
 	 */
-	public function display_page_view_event_snippet(): void {
+	private function display_page_view_event_snippet(): void {
 		printf(
 			'<script>
                 gtag(
@@ -265,7 +253,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	/**
 	 * Display the JavaScript code to track the cart page.
 	 */
-	public function display_cart_page_snippet(): void {
+	private function display_cart_page_snippet(): void {
 		// Only display on the cart page.
 		if ( ! is_cart() ) {
 			return;
@@ -299,21 +287,21 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 			);
 		}
 		$value = WC()->cart->total;
-		printf(
-			'<script>
-            gtag("event", "page_view",
+		$page_view_gtag = sprintf(
+			'gtag("event", "page_view",
 				{"send_to": "GLA",
 				"ecomm_pagetype": "cart",
 				"value": "%s",
-				 items: [' . esc_html( $item_info ) . ']}); </script>',
+				 items: [' . $item_info . ']});',
 			esc_js( $value ),
 		);
+		wp_print_inline_script_tag(page_view_gtag);
 	}
 
 	/**
 	 * Display the JavaScript code to track the purchase page.
 	 */
-	public function display_purchase_page_snippet(): void {
+	private function display_purchase_page_snippet(): void {
 		// Only display on the order confirmation page.
 		if ( ! is_order_received_page() ) {
 			return;
@@ -346,13 +334,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 
 		}
 
-		$is_new_customer = false;
-		if ( $order->get_user_id() ) {
-			$total_orders = wc_get_customer_order_count( $order->get_user_id() );
-		} else {
-			$total_orders = WC_Order_Export_Data_Extractor::get_customer_order_count_by_email( $order->get_billing_email() );
-		}
-		$is_new_customer = ( $total_orders === 1 ) ? 'true' : 'false';
+		$is_new_customer = is_first_time_customer($order->get_billing_email());
 		$language        = $this->wp->get_locale();
 		if ( 'en_US' === $language ) {
 			$language = 'English';
@@ -364,17 +346,17 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
                     "developer_id.%s": "true",
                     "ecomm_pagetype": "purchase",
                     "send_to": "GLA",
-                    transaction_id": "%s",
+                    "transaction_id": "%s",
                     "currency": "%s",
                     "country": "%s",
                     "value": "%s",
                     "new_customer": "%s",
                     "tax": "%s",
                     "shipping": "%s",
-                    "delivery_posatal_code": "%s",
+                    "delivery_postal_code": "%s",
                     "aw_feed_country": "%s",   
                     "aw_feed_language": "%s",                 
-                    items: [' . esc_html( $item_info ) . ']}); </script>',
+                    items: [' .  $item_info . ']}); </script>',
 			esc_js( self::DEVELOPER_ID ),
 			esc_js( $order->get_id() ),
 			esc_js( $order->get_currency() ),
@@ -395,12 +377,12 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 * @param string $message Add to cart messages.
 	 * @param array  $products Product ID list.
 	 */
-	public function custom_action_add_to_cart( $message, $products ) {
+	private function custom_action_add_to_cart( $message, $products ) {
 		// Only display this tag info after click the add to cart button .
 		$product = wc_get_product( array_key_first( $products ) );
 
 		add_action(
-			'wp_body_open',
+			'wp_footer',
 			function () use ( $product ) {
 				printf(
 					'<script>
@@ -424,12 +406,11 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 					esc_js( $product->get_name() ),
 					esc_js( join( '& ', $this->product_helper->get_categories($product) ) ),
 				);
-			},
-			1000005
+			}
 		);
 
 		do_action(
-			'wp_body_open'
+			'wp_footer'
 		);
 
 		return $message;
@@ -442,5 +423,20 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 	 */
 	public static function is_needed(): bool {
 		return true;
+	}
+
+	/**
+	 * Check if it is the new customer order.
+	 * @param string $customer_email Customer email address.
+	 * @return bool True if this is new customer order.
+	 */
+	private static function is_first_time_customer($customer_email): bool {
+		$query = new WC_Order_Query( array(
+			'return' => 'ids',
+		)
+	);
+		$query->set( 'customer', $customer_email );
+		$orders = $query->get_orders();
+		return var_dump(count($orders)) === 1;
 	}
 }
