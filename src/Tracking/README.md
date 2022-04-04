@@ -35,10 +35,6 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `required`: the Merchant Center account has a different, claimed URL and needs to be changed
     -   `action` property is `success`: the Merchant Center account has been changed from blank, updated from a different, unclaimed URL, or after user confirmation of a required change.
 
--   `modal_open` - A modal is opend
-
-    -   `context`: indicate which modal is opened
-
 -   `pre_launch_checklist_complete` - Triggered when all checklist items are complete / checked.
 
 -   `setup_ads` - Triggered on events during ads setup and editing
@@ -476,7 +472,7 @@ A modal is closed.
 `action` | `string` | indicate the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
 #### Emitters
 - [`Dashboard`](js/src/dashboard/index.js#L33) when CES modal is closed.
-- [`exports`](js/src/product-feed/submission-success-guide/index.js#L152) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
+- [`exports`](js/src/product-feed/submission-success-guide/index.js#L160) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
 
 ### [`gla_modal_content_link_click`](js/src/components/guide-page-content/index.js#L28)
 Clicking on a text link within the modal content
@@ -487,6 +483,15 @@ Clicking on a text link within the modal content
 `href` | `string` | link's URL
 #### Emitters
 - [`ContentLink`](js/src/components/guide-page-content/index.js#L46) with given `context, href`
+
+### [`gla_modal_open`](js/src/product-feed/submission-success-guide/index.js#L144)
+A modal is opend
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate which modal is opened
+#### Emitters
+- [`exports`](js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
