@@ -278,7 +278,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				"price": %s,
 				"google_business_vertical": "retail",
 				"name":"%s",
-				"quanitity":"%s",
+				"quantity":"%s",
 				}',
 				esc_js( $id ),
 				esc_js( $price ),
@@ -295,7 +295,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
 				 items: [' . $item_info . ']});',
 			esc_js( $value ),
 		);
-		wp_print_inline_script_tag(page_view_gtag);
+		wp_print_inline_script_tag($page_view_gtag);
 	}
 
 	/**
@@ -324,7 +324,7 @@ class GlobalSiteTag implements Service, Registerable, Conditional, OptionsAwareI
                     "price": %s,
                     "google_business_vertical": "retail",
                     "name":"%s",
-                    "quanitity":"%s",
+                    "quantity":"%s",
                 }',
 				esc_js( $product_id ),
 				esc_js( $price ),
