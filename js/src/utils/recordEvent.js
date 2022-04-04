@@ -7,6 +7,22 @@ import { recordEvent } from '@woocommerce/tracks';
  * @typedef { import(".~/data/actions").CountryCode } CountryCode
  */
 
+/**
+ * Toggling display of table columns
+ *
+ * @event gla_table_header_toggle
+ * @property {string} report name of the report table (e.g. `"dashboard" | "reports-programs" | "reports-products" | "product-feed"`)
+ * @property {string} column name of the column
+ * @property {string} status (`on`|`off`)
+ */
+
+/**
+ *
+ * @param {string} report
+ * @param {string} column
+ * @param {string} status
+ * @fires gla_table_header_toggle
+ */
 export const recordTableHeaderToggleEvent = ( report, column, status ) => {
 	recordEvent( 'gla_table_header_toggle', {
 		report,
