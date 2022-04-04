@@ -106,6 +106,19 @@ export const recordChartTabClickEvent = ( data ) => {
 	recordEvent( 'gla_chart_tab_click', data );
 };
 
+/**
+ * Setup Merchant Center
+ *
+ * @event gla_setup_mc
+ * @property {string} target button ID
+ * @property {string} trigger action (e.g. `click`)
+ */
+
+/**
+ * @param {string} target
+ * @param {string} [trigger='click']
+ * @fires gla_setup_mc with the given `{ target trigger }`.
+ */
 export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
 	recordEvent( 'gla_setup_mc', {
 		target,

@@ -16,8 +16,13 @@ import StoreRequirements from './store-requirements';
 import './index.scss';
 import stepNameKeyMap from './stepNameKeyMap';
 
-const SavedSetupStepper = ( props ) => {
-	const { savedStep, onRefetchSavedStep = () => {} } = props;
+/**
+ * @param {Object} props
+ * @param {string} [props.savedStep]
+ * @param {Function} [props.onRefetchSavedStep]
+ * @fires gla_setup_mc with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
+ */
+const SavedSetupStepper = ( { savedStep, onRefetchSavedStep = () => {} } ) => {
 	const [ step, setStep ] = useState( savedStep );
 
 	const handleSetupAccountsContinue = () => {
