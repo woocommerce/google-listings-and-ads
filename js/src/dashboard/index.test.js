@@ -31,7 +31,7 @@ jest.mock( '@woocommerce/navigation', () => {
 jest.mock( '.~/utils/isWCTracksEnabled', () => jest.fn() );
 
 const CAMPAIGN_CREATION_SUCCESS_GUIDE_TEXT =
-	"You've set up a paid Smart Shopping Campaign!";
+	"You've set up a paid Performance Max Campaign!";
 const CES_PROMPT_TEXT = 'How easy was it to create a Google Ad campaign?';
 
 jest.mock( '.~/components/customer-effort-score-prompt', () => () => (
