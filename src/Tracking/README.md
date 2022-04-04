@@ -30,8 +30,6 @@ All event names are prefixed by `wcadmin_gla_`.
 
     -   `checked`: indicate whether the checkbox is checked or unchecked.
 
--   `mc_account_warning_modal_confirm_button_click` - Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
-
 -   `mc_phone_number_check` - Check for whether the phone number for Merchant Center exists or not.
 
     -   `path`: the path where the check is in.
@@ -467,6 +465,11 @@ Clicking on the "Switch account" button to select a different Google Merchant Ce
 Clicking on the button to switch URL for a Google Merchant Center account.
 #### Emitters
 - [`SwitchUrlCard`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/switch-url-card/index.js#L40)
+
+### [`gla_mc_account_warning_modal_confirm_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/warning-modal/index.js#L15)
+Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
+#### Emitters
+- [`WarningModal`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/warning-modal/index.js#L29)
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.

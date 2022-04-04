@@ -12,13 +12,25 @@ import AppButton from '.~/components/app-button';
 import WarningIcon from '.~/components/warning-icon';
 import './index.scss';
 
-const WarningModal = ( props ) => {
-	const {
-		existingAccount,
-		onContinue = () => {},
-		onRequestClose = () => {},
-	} = props;
+/**
+ * Clicking on the "Yes, I want a new account" button in the warning modal for creating a new Google Merchant Center account.
+ *
+ * @event gla_mc_account_warning_modal_confirm_button_click
+ */
 
+/**
+ * @param {Object} props React props.
+ * @param { { name: string, domain:string } } props.existingAccount
+ * @param {Function} [props.onContinue]
+ * @param {Function} [props.onRequestClose]
+ *
+ * @fires gla_mc_account_warning_modal_confirm_button_click
+ */
+const WarningModal = ( {
+	existingAccount,
+	onContinue = () => {},
+	onRequestClose = () => {},
+} ) => {
 	const handleCreateAccountClick = () => {
 		onContinue();
 	};
