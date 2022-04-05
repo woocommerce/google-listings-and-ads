@@ -26,12 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `ads_set_up_billing_click` - "Set up billing" button for Google Ads account is clicked.
-
-    -   `context`: indicate the place where the button is located, e.g. `setup-ads`.
-    -   `link_id`: a unique ID for the button within the context, e.g. `set-up-billing`.
-    -   `href`: indicate the destination where the users is directed to.
-
 -   `bulk_edit_click` - Triggered when the product feed "bulk edit" functionality is being used
 
     -   `context`: name of the table
@@ -288,6 +282,17 @@ Clicking on the button to connect an existing Google Ads account.
 Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
 #### Emitters
 - [`TermsModal`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/terms-modal/index.js#L30) When agreed by clicking "Create account".
+
+### [`gla_ads_set_up_billing_click`](js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L18)
+"Set up billing" button for Google Ads account is clicked.
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | indicate the place where the button is located, e.g. `setup-ads`.
+`link_id` | `string` | a unique ID for the button within the context, e.g. `set-up-billing`.
+`href` | `string` | indicate the destination where the users is directed to.
+#### Emitters
+- [`SetupCard`](js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L34) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
 
 ### [`gla_ces_feedback`](js/src/components/customer-effort-score-prompt/index.js#L29)
 CES feedback recorded
