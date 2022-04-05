@@ -108,7 +108,6 @@ const webpackConfig = {
 			return ! filteredPlugins.includes( plugin.constructor.name );
 		} ),
 		new DependencyExtractionWebpackPlugin( {
-			injectPolyfill: true,
 			externalizedReport:
 				! hasReactFastRefresh && '../../.externalized.json',
 			requestToExternal,
