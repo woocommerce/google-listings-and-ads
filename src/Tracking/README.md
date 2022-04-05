@@ -74,18 +74,6 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `context`: indicate which link is clicked
     -   `href`: link's URL
 
--   `edit_wc_store_address` - Trigger when store address "Edit in WooCommerce Settings" button is clicked.
-    Before `1.5.0` it was called `edit_mc_store_address`.
-
-    -   `path`: The path used in the page, e.g. `"/google/settings"`.
-    -   `subpath`: The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
-
--   `edit_mc_store_address` - Trigger when store address edit button is clicked.
-    Before `1.5.0` this name was used for tracking clicking "Edit in settings" to edit the WC address. As of `>1.5.0`, that event is now tracked as `edit_wc_store_address`.
-
-    -   `path`: The path used in the page, e.g. `"/google/settings"`.
-    -   `subpath`: The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
-
 -   `edit_mc_phone_number` - Trigger when phone number edit button is clicked.
 
     -   `path`: The path used in the page, e.g. `"/google/settings"`.
@@ -310,25 +298,27 @@ CES prompt snackbar open
 #### Emitters
 - [`CustomerEffortScorePrompt`](js/src/components/customer-effort-score-prompt/index.js#L49) whenever the CES snackbar (notice) is open
 
-### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L124)
-"Edit MC store address" Tracking event
+### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
+Trigger when store address edit button is clicked.
+ Before `1.5.0` this name was used for tracking clicking "Edit in settings" to edit the WC address. As of `>1.5.0`, that event is now tracked as `edit_wc_store_address`.
 #### Properties
 |   |   |   |
 |---|---|---|
-`path` | `string` | A page from which the link was clicked.
-`subpath` | `string\|undefined` | A subpage from which the link was clicked.
+`path` | `string` | The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
+`subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
-- [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L144) Whenever "Edit" is clicked.
+- [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L146) Whenever "Edit" is clicked.
 
 ### [`gla_edit_wc_store_address`](js/src/components/contact-information/store-address-card.js#L23)
-"Edit WC store address" Tracking event
+Triggered when store address "Edit in WooCommerce Settings" button is clicked.
+ Before `1.5.0` it was called `edit_mc_store_address`.
 #### Properties
 |   |   |   |
 |---|---|---|
-`path` | `string` | A page from which the link was clicked.
-`subpath` | `string\|undefined` | A subpage from which the link was clicked.
+`path` | `string` | The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
+`subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
-- [`exports`](js/src/components/contact-information/store-address-card.js#L39) Whenever "Edit in WooCommerce Settings" button is clicked.
+- [`exports`](js/src/components/contact-information/store-address-card.js#L40) Whenever "Edit in WooCommerce Settings" button is clicked.
 
 <!---
 End of `woo-tracking-jsdoc`-generated content.
