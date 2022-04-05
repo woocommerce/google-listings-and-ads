@@ -173,7 +173,7 @@ if ( hasReactFastRefresh ) {
 
 const sassTest = /\.(sc|sa)ss$/;
 const updatedSassOptions = {
-	sourceMap: process.env.NODE_ENV === 'production',
+	sourceMap: ! isProduction,
 	sassOptions: {
 		includePaths: [ 'js/src/css/abstracts' ],
 	},
