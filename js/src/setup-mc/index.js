@@ -1,16 +1,18 @@
 /**
  * Internal dependencies
  */
-import FullScreen from '.~/components/full-screen';
+import useLayout from '.~/hooks/useLayout';
 import SetupMCTopBar from './top-bar';
 import SetupStepper from './setup-stepper';
 
 const SetupMC = () => {
+	useLayout( 'full-page' );
+
 	return (
-		<FullScreen>
+		<>
 			<SetupMCTopBar />
 			<SetupStepper />
-		</FullScreen>
+		</>
 	);
 };
 

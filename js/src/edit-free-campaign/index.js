@@ -6,24 +6,26 @@ import { Stepper } from '@woocommerce/components';
 import { getQuery, getNewPath, getHistory } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 import { recordEvent } from '@woocommerce/tracks';
-import isEqual from 'lodash/isEqual';
+import { isEqual } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import { useAppDispatch } from '.~/data';
-import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import ChooseAudience from '.~/components/free-listings/choose-audience';
 import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import useSettings from '.~/components/free-listings/configure-product-listings/useSettings';
 import useApiFetchCallback from '.~/hooks/useApiFetchCallback';
 import SetupFreeListings from './setup-free-listings';
+import useLayout from '.~/hooks/useLayout';
 import useNavigateAwayPromptEffect from '.~/hooks/useNavigateAwayPromptEffect';
 import useShippingRates from '.~/hooks/useShippingRates';
 import useShippingTimes from '.~/hooks/useShippingTimes';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import HelpIconButton from '.~/components/help-icon-button';
+import hasUnsavedShippingRates from './hasUnsavedShippingRates';
+import useSaveShippingRates from '.~/hooks/useSaveShippingRates';
 
 /**
  * Function use to allow the user to navigate between form steps without the prompt.
@@ -83,6 +85,8 @@ function saveShippingData( batchUpsertAction, newData, getGroupKey ) {
  * The displayed step is driven by `pageStep` URL parameter, to make it easier to permalink and navigate back and forth.
  */
 export default function EditFreeCampaign() {
+	useLayout( 'full-content' );
+
 	const {
 		targetAudience: savedTargetAudience,
 		getFinalCountries,
@@ -92,9 +96,9 @@ export default function EditFreeCampaign() {
 	const {
 		saveTargetAudience,
 		saveSettings,
-		upsertShippingRates,
 		upsertShippingTimes,
 	} = useAppDispatch();
+	const { saveShippingRates } = useSaveShippingRates();
 
 	const [ targetAudience, updateTargetAudience ] = useState(
 		savedTargetAudience
@@ -145,7 +149,11 @@ export default function EditFreeCampaign() {
 	// Check what've changed to show prompt, and send requests only to save changed things.
 	const didAudienceChanged = ! isEqual( targetAudience, savedTargetAudience );
 	const didSettingsChanged = ! isEqual( settings, savedSettings );
-	const didRatesChanged = ! isEqual( shippingRates, savedShippingRates );
+	const didRatesChanged = hasUnsavedShippingRates(
+		shippingRates,
+		savedShippingRates
+	);
+
 	const didTimesChanged = ! isEqual( shippingTimes, savedShippingTimes );
 	const didAnythingChanged =
 		didAudienceChanged ||
@@ -176,27 +184,23 @@ export default function EditFreeCampaign() {
 
 	const handleSetupFreeListingsContinue = async () => {
 		// TODO: Disable the form so the user won't be able to input any changes, which could be disregarded.
-		//       Put Submit button in pending state.
 		try {
 			await Promise.allSettled( [
 				saveTargetAudience( targetAudience ),
 				saveSettings( settings ),
-				...saveShippingData(
-					upsertShippingRates,
-					shippingRates,
-					( item ) => `${ item.currency }:${ item.rate }`
-				),
+				saveShippingRates( shippingRates ),
 				...saveShippingData(
 					upsertShippingTimes,
 					shippingTimes,
 					( item ) => item.time
 				),
 			] );
+
 			// Sync data once our changes are saved, even partially succesfully.
 			await fetchSettingsSync();
 
 			createNotice(
-				'error',
+				'success',
 				__(
 					'Your changes to your Free Listings have been saved and will be synced to your Google Merchant Center account.',
 					'google-listings-and-ads'
@@ -212,15 +216,14 @@ export default function EditFreeCampaign() {
 				)
 			);
 		}
-		// TODO: Enable the submit button.
 	};
 
 	const handleStepClick = ( key ) => {
 		getHistory().push( getNewPath( { pageStep: key } ) );
 	};
-	// TODO: Wse ChooseAudience and SetupFreeListings customized for this page.
+
 	return (
-		<FullContainer>
+		<>
 			<TopBar
 				title={ __( 'Edit free listings', 'google-listings-and-ads' ) }
 				helpButton={
@@ -279,6 +282,6 @@ export default function EditFreeCampaign() {
 					},
 				] }
 			/>
-		</FullContainer>
+		</>
 	);
 }

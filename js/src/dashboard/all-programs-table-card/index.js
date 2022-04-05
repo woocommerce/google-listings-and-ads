@@ -20,7 +20,6 @@ import { FREE_LISTINGS_PROGRAM_ID } from '.~/constants';
 import AddPaidCampaignButton from '.~/components/paid-ads/add-paid-campaign-button';
 import ProgramToggle from './program-toggle';
 import FreeListingsDisabledToggle from './free-listings-disabled-toggle';
-import formatAmountWithCode from './format-amount-with-code';
 
 const headers = [
 	{
@@ -45,6 +44,21 @@ const headers = [
 	{ key: 'actions', label: '', required: true },
 ];
 
+function CountryColumn( { countryCodes, countryNameMap } ) {
+	const [ first ] = countryCodes;
+	return (
+		<span>
+			{ countryNameMap[ first ] }
+			{ countryCodes.length >= 2 &&
+				sprintf(
+					// translators: %d: number of countries, with minimum value of 1.
+					__( ' + %d more', 'google-listings-and-ads' ),
+					countryCodes.length - 1
+				) }
+		</span>
+	);
+}
+
 /**
  * All programs table.
  *
@@ -56,16 +70,12 @@ const AllProgramsTableCard = ( props ) => {
 	const query = getQuery();
 	// Budget is given in the currency that is used by Google Ads, which may differ from the current store's currency.
 	// We will still use the store's currency **formatting** settings.
-	const {
-		currency: { getCurrencyConfig },
-	} = useAdsCurrency();
+	const { formatAmount } = useAdsCurrency();
 	const {
 		data: finalCountryCodesData,
 	} = useTargetAudienceFinalCountryCodes();
 	const { data: adsCampaignsData } = useAdsCampaigns();
 	const map = useCountryKeyNameMap();
-
-	const adsCurrency = getCurrencyConfig();
 
 	if ( ! finalCountryCodesData || ! adsCampaignsData ) {
 		return <AppSpinner />;
@@ -77,15 +87,10 @@ const AllProgramsTableCard = ( props ) => {
 			title: __( 'Free listings', 'google-listings-and-ads' ),
 			dailyBudget: __( 'Free', 'google-listings-and-ads' ),
 			country: (
-				<span>
-					{ map[ finalCountryCodesData[ 0 ] ] }
-					{ finalCountryCodesData.length >= 2 &&
-						sprintf(
-							// translators: %s: number of campaigns, with minimum value of 1.
-							__( ' + %s more', 'google-listings-and-ads' ),
-							finalCountryCodesData.length - 1
-						) }
-				</span>
+				<CountryColumn
+					countryCodes={ finalCountryCodesData }
+					countryNameMap={ map }
+				/>
 			),
 			active: true,
 		},
@@ -93,8 +98,13 @@ const AllProgramsTableCard = ( props ) => {
 			return {
 				id: el.id,
 				title: el.name,
-				dailyBudget: formatAmountWithCode( adsCurrency, el.amount ),
-				country: map[ el.country ],
+				dailyBudget: formatAmount( el.amount, true ),
+				country: (
+					<CountryColumn
+						countryCodes={ el.displayCountries }
+						countryNameMap={ map }
+					/>
+				),
 				active: el.status === 'enabled',
 			};
 		} ),

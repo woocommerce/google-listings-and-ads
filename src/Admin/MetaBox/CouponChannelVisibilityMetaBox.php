@@ -9,6 +9,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponMetaHandler;
 use Automattic\WooCommerce\GoogleListingsAndAds\Coupon\CouponSyncer;
 use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
 use WC_Coupon;
 use WP_Post;
@@ -38,17 +39,24 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected $merchant_center;
 
 	/**
+	 * @var TargetAudience
+	 */
+	protected $target_audience;
+
+	/**
 	 * CouponChannelVisibilityMetaBox constructor.
 	 *
 	 * @param Admin                 $admin
 	 * @param CouponMetaHandler     $meta_handler
 	 * @param CouponHelper          $coupon_helper
 	 * @param MerchantCenterService $merchant_center
+	 * @param TargetAudience        $target_audience
 	 */
-	public function __construct( Admin $admin, CouponMetaHandler $meta_handler, CouponHelper $coupon_helper, MerchantCenterService $merchant_center ) {
+	public function __construct( Admin $admin, CouponMetaHandler $meta_handler, CouponHelper $coupon_helper, MerchantCenterService $merchant_center, TargetAudience $target_audience ) {
 		$this->meta_handler    = $meta_handler;
 		$this->coupon_helper   = $coupon_helper;
 		$this->merchant_center = $merchant_center;
+		$this->target_audience = $target_audience;
 		parent::__construct( $admin );
 	}
 
@@ -128,7 +136,7 @@ class CouponChannelVisibilityMetaBox extends SubmittableMetaBox {
 	protected function get_view_context( WP_Post $post, array $args ): array {
 		$coupon_id      = absint( $post->ID );
 		$coupon         = $this->coupon_helper->get_wc_coupon( $coupon_id );
-		$target_country = $this->merchant_center->get_main_target_country();
+		$target_country = $this->target_audience->get_main_target_country();
 
 		return [
 			'field_id'             => $this->get_visibility_field_id(),

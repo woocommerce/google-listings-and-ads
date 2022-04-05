@@ -14,7 +14,7 @@ import './index.scss';
  * Form control to edit shipping rate settings.
  *
  * @param {Object} props React props.
- * @param {Object} props.formProps Form props forwarded from `Form` component, containing `offers_free_shipping` property.
+ * @param {Object} props.formProps Form props forwarded from `Form` component.
  * @param {Array<CountryCode>} props.selectedCountryCodes Array of country codes of all audience countries.
  */
 const ShippingTimeSetup = ( { formProps, selectedCountryCodes } ) => {

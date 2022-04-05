@@ -20,3 +20,7 @@ export const LOCAL_STORAGE_KEYS = {
 	CAN_ONBOARDING_SETUP_CES_PROMPT_OPEN:
 		'gla-can-onboarding-setup-ces-prompt-open',
 };
+
+export const SHIPPING_RATE_METHOD = {
+	FLAT_RATE: 'flat_rate',
+};

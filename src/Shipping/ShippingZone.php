@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Shipping;
 
-use Automattic\WooCommerce\GoogleListingsAndAds\GoogleHelper;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use WC_Shipping_Method;
@@ -21,10 +21,7 @@ defined( 'ABSPATH' ) || exit;
 class ShippingZone implements Service {
 
 	public const METHOD_FLAT_RATE = 'flat_rate';
-	public const METHOD_PICKUP    = 'local_pickup';
 	public const METHOD_FREE      = 'free_shipping';
-
-	use GoogleHelper;
 
 	/**
 	 * @var WC
@@ -37,12 +34,19 @@ class ShippingZone implements Service {
 	protected $methods_countries = null;
 
 	/**
+	 * @var GoogleHelper
+	 */
+	protected $google_helper;
+
+	/**
 	 * ShippingZone constructor.
 	 *
-	 * @param WC $wc
+	 * @param WC           $wc
+	 * @param GoogleHelper $google_helper
 	 */
-	public function __construct( WC $wc ) {
-		$this->wc = $wc;
+	public function __construct( WC $wc, GoogleHelper $google_helper ) {
+		$this->wc            = $wc;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
@@ -58,13 +62,13 @@ class ShippingZone implements Service {
 		$countries = array_keys( $this->methods_countries ?: [] );
 
 		// Match the list of shipping countries with the list of Merchant Center supported countries.
-		$countries = array_intersect( $countries, $this->get_mc_supported_countries() );
+		$countries = array_intersect( $countries, $this->google_helper->get_mc_supported_countries() );
 
 		return array_values( $countries );
 	}
 
 	/**
-	 * Gets the shipping methods for the given country.
+	 * Returns the available shipping methods for a country.
 	 *
 	 * @param string $country_code
 	 *
@@ -79,7 +83,90 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Parses the WooCommerce shipping zones and maps them into the self::$methods_countries array.
+	 * Returns the available shipping rates for a country.
+	 *
+	 * @param string $country_code
+	 *
+	 * @return array[] A multidimensional array of shipping rates for the given country. {
+	 *     Array of shipping method arguments.
+	 *
+	 *     @type string $country  The shipping method country.
+	 *     @type string $method   The shipping method ID.
+	 *     @type string $currency The currency which the shipping rate is in. Defaults to the store currency.
+	 *     @type float  $rate     The cost of the shipping method. Only if the method is flat-rate.
+	 *     @type array  $options  Array of options for the shipping method (varies based on the method type). {
+	 *         Array of options for the shipping method.
+	 *
+	 *         @type array[] $shipping_class_rates An array containing the shipping class names and their rates. Only if the method is flat-rate.
+	 *         @type float   $free_shipping_threshold The minimum order amount required to use the shipping method. Only if the method is free shipping.
+	 *
+	 *     }
+	 * }
+	 */
+	public function get_shipping_rates_for_country( string $country_code ): array {
+		$methods = $this->get_shipping_methods_for_country( $country_code );
+
+		// If the only shipping method is the free shipping method, return it as the only rate.
+		if ( 1 === count( $methods ) && self::METHOD_FREE === $methods[0]['id'] ) {
+			$rate = [
+				'country'  => $country_code,
+				'method'   => $methods[0]['id'],
+				'currency' => $methods[0]['currency'],
+				'rate'     => 0,
+				'options'  => [],
+			];
+			if ( isset( $methods[0]['options']['min_amount'] ) ) {
+				$rate['options']['free_shipping_threshold'] = $methods[0]['options']['min_amount'];
+			}
+
+			return [ $rate ];
+		}
+
+		$free_shipping = self::find_available_free_shipping_method( $methods );
+		$rates         = [];
+		foreach ( $methods as $method ) {
+			// We process the free shipping method separately.
+			if ( self::METHOD_FREE === $method['id'] ) {
+				continue;
+			}
+
+			$rate = [
+				'country'  => $country_code,
+				'method'   => $method['id'],
+				'currency' => $method['currency'],
+				'rate'     => $method['options']['cost'] ?? 0,
+				'options'  => [],
+			];
+
+			if ( null !== $free_shipping ) {
+				if ( isset( $free_shipping['options']['min_amount'] ) ) {
+					// If there is a free shipping method, and it has a minimum order amount, we set it as an option for all rates.
+					$rate['options']['free_shipping_threshold'] = $free_shipping['options']['min_amount'];
+				} else {
+					// If there is a free shipping method without a minimum order amount, we set the rate to 0 to mark it as free.
+					$rate['rate'] = 0;
+				}
+			}
+
+			if ( ! empty( $method['options']['class_costs'] ) ) {
+				// If there are shipping classes, we set the cost of each class as an option.
+				$rate['options']['shipping_class_rates'] = [];
+				foreach ( $method['options']['class_costs'] as $class_id => $cost ) {
+					$rate['options']['shipping_class_rates'][] = [
+						'class' => $class_id,
+						'rate'  => $cost,
+					];
+				}
+			}
+
+			$rates[] = $rate;
+		}
+
+		return $rates;
+	}
+
+	/**
+	 * Parses the WooCommerce shipping zones and maps the ones that are supported and enabled into the self::$methods_countries array.
 	 */
 	protected function parse_shipping_zones(): void {
 		// Don't parse if already parsed.
@@ -101,10 +188,14 @@ class ShippingZone implements Service {
 			}
 
 			foreach ( $methods as $method ) {
-				// Check if the method is supported and return its properties.
+				// Skip if the method is unsupported or disabled.
+				if ( ! $method->is_enabled() || ! self::is_shipping_method_supported( $method->id ) ) {
+					continue;
+				}
+
 				$method = $this->parse_method( $method );
 
-				// Skip if method is not supported.
+				// Skip if method cannot be parsed.
 				if ( null === $method ) {
 					continue;
 				}
@@ -139,7 +230,7 @@ class ShippingZone implements Service {
 		}
 
 		if (
-			// If a flat-rate/local-pickup method already exists, we replace it with the one with the higher cost.
+			// If a flat-rate method already exists, we replace it with the one with the higher cost.
 			self::does_method_have_higher_cost( $method, $existing_method ) ||
 			// If a free-shipping method already exists, we replace it with the one with the higher required minimum order amount.
 			self::does_method_have_higher_min_amount( $method, $existing_method )
@@ -163,7 +254,7 @@ class ShippingZone implements Service {
 			return false;
 		}
 
-		return in_array( $method['id'], [ self::METHOD_FLAT_RATE, self::METHOD_PICKUP ], true ) && $method['options']['cost'] > $existing_method['options']['cost'];
+		return self::METHOD_FLAT_RATE === $method['id'] && $method['options']['cost'] > $existing_method['options']['cost'];
 	}
 
 	/**
@@ -224,30 +315,36 @@ class ShippingZone implements Service {
 	 * @return array|null Returns an array with the parsed shipping method or null if the shipping method is not supported. {
 	 *     Array of shipping method arguments.
 	 *
-	 *     @type string $id      The shipping method ID.
-	 *     @type string $title   The user-defined title of the shipping method.
-	 *     @type bool   $enabled A boolean indicating whether the shipping method is enabled or not.
-	 *     @type array  $options Array of options for the shipping method (varies based on the method type).
+	 *     @type string $id       The shipping method ID.
+	 *     @type string $title    The user-defined title of the shipping method.
+	 *     @type string $currency The currency which the shipping rate is in. Defaults to the store currency.
+	 *     @type array  $options  Array of options for the shipping method (varies based on the method type). {
+	 *         Array of options for the shipping method.
+	 *
+	 *         @type float   $cost The cost of the shipping method. Only if the method is flat-rate.
+	 *         @type float[] $class_costs An array of costs for each shipping class (with class names used as array keys). Only if the method is flat-rate.
+	 *         @type float   $min_amount The minimum order amount required to use the shipping method. Only if the method is free shipping.
+	 *
+	 *     }
 	 * }
 	 */
 	protected function parse_method( object $method ): ?array {
 		$parsed_method = [
 			'id'       => $method->id,
 			'title'    => $method->title,
-			'enabled'  => $method->is_enabled(),
 			'currency' => $this->wc->get_woocommerce_currency(),
 			'options'  => [],
 		];
 
 		switch ( $method->id ) {
 			case self::METHOD_FLAT_RATE:
-			case self::METHOD_PICKUP:
-				$cost = $method->get_option( 'cost' );
-				// Check if the cost is a numeric value (and not null or a math expression).
-				if ( ! is_numeric( $cost ) ) {
+				$parsed_method['options'] = $this->get_flat_rate_method_options( $method );
+
+				// If the flat-rate method has no cost AND no shipping classes, we don't return it.
+				if ( ! isset( $parsed_method['options']['cost'] ) && ! isset( $parsed_method['options']['class_costs'] ) ) {
 					return null;
 				}
-				$parsed_method['options']['cost'] = (float) $cost;
+
 				break;
 			case self::METHOD_FREE:
 				// Check if free shipping requires a minimum order amount.
@@ -265,6 +362,48 @@ class ShippingZone implements Service {
 		}
 
 		return $parsed_method;
+	}
+
+	/**
+	 * Get the array of options of the flat-rate shipping method.
+	 *
+	 * @param object $method
+	 *
+	 * @return array
+	 */
+	protected function get_flat_rate_method_options( object $method ): array {
+		$options = [
+			'cost' => null,
+		];
+
+		$flat_cost = 0;
+		$cost      = $method->get_option( 'cost' );
+		// Check if the cost is a numeric value (and not null or a math expression).
+		if ( is_numeric( $cost ) ) {
+			$flat_cost       = (float) $cost;
+			$options['cost'] = $flat_cost;
+		}
+
+		// Add the no class cost.
+		$no_class_cost = $method->get_option( 'no_class_cost' );
+		if ( is_numeric( $no_class_cost ) ) {
+			$options['cost'] = $flat_cost + (float) $no_class_cost;
+		}
+
+		// Add shipping class costs.
+		$shipping_classes = $this->wc->get_shipping_classes();
+		foreach ( $shipping_classes as $shipping_class ) {
+			// Initialize the array if it doesn't exist.
+			$options['class_costs'] = $options['class_costs'] ?? [];
+
+			$shipping_class_cost = $method->get_option( 'class_cost_' . $shipping_class->term_id );
+			if ( is_numeric( $shipping_class_cost ) ) {
+				// Add the flat rate cost to the shipping class cost.
+				$options['class_costs'][ $shipping_class->slug ] = $flat_cost + (float) $shipping_class_cost;
+			}
+		}
+
+		return $options;
 	}
 
 	/**
@@ -301,21 +440,42 @@ class ShippingZone implements Service {
 	}
 
 	/**
-	 * Checks whether the given shipping method is valid.
+	 * Checks whether the given shipping method is supported.
 	 *
 	 * @param string $method
 	 *
 	 * @return bool
 	 */
-	public static function is_shipping_method_valid( string $method ): bool {
+	public static function is_shipping_method_supported( string $method ): bool {
 		return in_array(
 			$method,
 			[
 				self::METHOD_FLAT_RATE,
 				self::METHOD_FREE,
-				self::METHOD_PICKUP,
 			],
 			true
 		);
+	}
+
+	/**
+	 * Finds and returns the free shipping method if it exists in the list of suggested shipping methods.
+	 *
+	 * @param array $methods
+	 *
+	 * @return array|null Array containing the free shipping method properties, or null if it does not exist.
+	 */
+	protected static function find_available_free_shipping_method( array $methods ): ?array {
+		$free_shipping_method = array_filter(
+			$methods,
+			function ( $method ) {
+				return self::METHOD_FREE === $method['id'];
+			}
+		);
+
+		if ( empty( $free_shipping_method ) ) {
+			return null;
+		}
+
+		return array_values( $free_shipping_method )[0];
 	}
 }

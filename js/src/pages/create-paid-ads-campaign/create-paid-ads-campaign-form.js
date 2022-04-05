@@ -4,7 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { Form } from '@woocommerce/components';
-import { getNewPath, getHistory } from '@woocommerce/navigation';
+import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -15,16 +15,18 @@ import StepContentFooter from '.~/components/stepper/step-content-footer';
 import AppDocumentationLink from '.~/components/app-documentation-link';
 import AppButton from '.~/components/app-button';
 import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
+import useTargetAudienceFinalCountryCodes from '.~/hooks/useTargetAudienceFinalCountryCodes';
 import { useAppDispatch } from '.~/data';
 import CreateCampaignFormContent from '.~/components/paid-ads/create-campaign-form-content';
-import createCampaign from '.~/apis/createCampaign';
 import validateForm from '.~/utils/paid-ads/validateForm';
+import { getDashboardUrl } from '.~/utils/urls';
 import { recordLaunchPaidCampaignClickEvent } from '.~/utils/recordEvent';
 
 const CreatePaidAdsCampaignForm = () => {
 	const [ loading, setLoading ] = useState( false );
-	const { fetchAdsCampaigns } = useAppDispatch();
+	const { createAdsCampaign } = useAppDispatch();
 	const { createNotice } = useDispatchCoreNotices();
+	const { data: targetAudience } = useTargetAudienceFinalCountryCodes();
 
 	const handleValidate = ( values ) => {
 		return validateForm( values );
@@ -34,12 +36,11 @@ const CreatePaidAdsCampaignForm = () => {
 		setLoading( true );
 
 		try {
-			const { amount, country: countryArr } = values;
-			const country = countryArr && countryArr[ 0 ];
+			const { amount, countryCodes } = values;
 
-			recordLaunchPaidCampaignClickEvent( amount, country );
+			recordLaunchPaidCampaignClickEvent( amount, countryCodes );
 
-			await createCampaign( amount, country );
+			await createAdsCampaign( amount, countryCodes );
 
 			createNotice(
 				'success',
@@ -49,31 +50,24 @@ const CreatePaidAdsCampaignForm = () => {
 				)
 			);
 		} catch ( e ) {
-			createNotice(
-				'error',
-				__(
-					'Unable to launch your ads campaign. Please try again later.',
-					'google-listings-and-ads'
-				)
-			);
 			setLoading( false );
 			return;
 		}
 
-		await fetchAdsCampaigns();
-		getHistory().push( getNewPath( {}, '/google/dashboard', {} ) );
-
-		setLoading( false );
+		getHistory().push( getDashboardUrl() );
 	};
+
+	if ( ! targetAudience ) {
+		return null;
+	}
 
 	return (
 		<Form
 			initialValues={ {
 				amount: 0,
-				country: [],
+				countryCodes: targetAudience,
 			} }
 			validate={ handleValidate }
-			onSubmitCallback={ handleSubmit }
 			onSubmit={ handleSubmit }
 		>
 			{ ( formProps ) => {

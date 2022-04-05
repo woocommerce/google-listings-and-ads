@@ -3,13 +3,15 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tracking\Events;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Activateable;
+
 /**
  * This class adds actions to track when the extension is activated.
  * *
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tracking
  */
-class ActivatedEvents extends BaseEvent {
+class ActivatedEvents extends BaseEvent implements Activateable {
 
 	/**
 	 * The page where activation with a source can occur.
@@ -74,5 +76,16 @@ class ActivatedEvents extends BaseEvent {
 		}
 
 		$this->record_event( 'activated_from_source', $available_source_params );
+
 	}
+
+	/**
+	 * Activate the service.
+	 *
+	 * @return void
+	 */
+	public function activate(): void {
+		$this->maybe_track_activation_source();
+	}
+
 }

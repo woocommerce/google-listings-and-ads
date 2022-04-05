@@ -2,12 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { useMemo } from '@wordpress/element';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import useProgramsReport, { usePerformanceReport } from './useProgramsReport';
+import useMetricsWithFormatter from '../useMetricsWithFormatter';
 import DifferentCurrencyNotice from '.~/components/different-currency-notice';
 import NavigationClassic from '.~/components/navigation-classic';
 import ProgramsReportFilters from './programs-report-filters';
@@ -19,7 +21,7 @@ import ReportsNavigation from '../reports-navigation';
 /**
  * Available metrics and their human-readable labels.
  *
- * @type {Array<import('../index.js').Metric>}
+ * @type {Array<import('../index.js').MetricSchema>}
  */
 const commonMetrics = [
 	{
@@ -67,18 +69,30 @@ const ProgramsReport = () => {
 		reportQuery: { fields, orderby, order },
 	} = useProgramsReport();
 
-	const hasFieldInResults = loaded && Object.keys( totals ).length > 0;
-	// Until ~Q4 2021, free listings, may not have all metrics.
-	// Anticipate all requested fields to come, show available once loaded.
-	const availableMetrics = hasFieldInResults
-		? performanceMetrics.filter( ( { key } ) =>
-				totals.hasOwnProperty( key )
-		  )
-		: performanceMetrics.filter( ( { key } ) => fields.includes( key ) );
+	const metricsGroup = useMemo( () => {
+		const hasFieldInResults = loaded && Object.keys( totals ).length > 0;
+		// Until ~Q4 2021, free listings, may not have all metrics.
+		// Anticipate all requested fields to come, show available once loaded.
+		const available = hasFieldInResults
+			? performanceMetrics.filter( ( { key } ) =>
+					totals.hasOwnProperty( key )
+			  )
+			: performanceMetrics.filter( ( { key } ) =>
+					fields.includes( key )
+			  );
 
-	const expectedTableMetrics = hasFieldInResults
-		? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
-		: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
+		const expected = hasFieldInResults
+			? tableMetrics.filter( ( { key } ) => totals.hasOwnProperty( key ) )
+			: tableMetrics.filter( ( { key } ) => fields.includes( key ) );
+
+		return {
+			available,
+			expected,
+		};
+	}, [ loaded, totals, fields ] );
+
+	const availableMetrics = useMetricsWithFormatter( metricsGroup.available );
+	const expectedMetrics = useMetricsWithFormatter( metricsGroup.expected );
 
 	const {
 		loaded: performanceLoaded,
@@ -113,7 +127,7 @@ const ProgramsReport = () => {
 				isLoading={ ! loaded }
 				orderby={ orderby }
 				order={ order }
-				metrics={ expectedTableMetrics }
+				metrics={ expectedMetrics }
 				freeListings={ freeListings }
 				campaigns={ campaigns }
 			/>

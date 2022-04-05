@@ -7,9 +7,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getSettingsUrl } from '.~/utils/urls';
-import FullContainer from '.~/components/full-container';
 import TopBar from '.~/components/stepper/top-bar';
 import HelpIconButton from '.~/components/help-icon-button';
+import useLayout from '.~/hooks/useLayout';
 import useGoogleMCPhoneNumber from '.~/hooks/useGoogleMCPhoneNumber';
 import Section from '.~/wcdl/section';
 import AppDocumentationLink from '.~/components/app-documentation-link';
@@ -29,9 +29,10 @@ export default function EditPhoneNumber() {
 	const phone = useGoogleMCPhoneNumber();
 
 	usePhoneNumberCheckTrackEventEffect( phone );
+	useLayout( 'full-content' );
 
 	return (
-		<FullContainer>
+		<>
 			<TopBar
 				title={ __( 'Edit phone number', 'google-listings-and-ads' ) }
 				helpButton={
@@ -72,6 +73,6 @@ export default function EditPhoneNumber() {
 					/>
 				</Section>
 			</div>
-		</FullContainer>
+		</>
 	);
 }

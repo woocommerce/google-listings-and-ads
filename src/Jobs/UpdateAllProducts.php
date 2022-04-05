@@ -52,7 +52,7 @@ class UpdateAllProducts extends AbstractProductSyncerBatchedJob {
 	 * @return FilteredProductList
 	 */
 	protected function get_filtered_batch( int $batch_number ): FilteredProductList {
-		return $this->product_repository->find_sync_ready_product_ids( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
+		return $this->product_repository->find_sync_ready_product( [], $this->get_batch_size(), $this->get_query_offset( $batch_number ) );
 	}
 
 	/**

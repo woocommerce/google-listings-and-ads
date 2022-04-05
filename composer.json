@@ -9,9 +9,9 @@
 		"automattic/jetpack-autoloader": "^2.4",
 		"automattic/jetpack-config": "^1.4",
 		"automattic/jetpack-connection": "^1.20",
-		"google/apiclient": "^2.10",
-		"google/apiclient-services": "~0.216",
-		"googleads/google-ads-php": "^10.0",
+		"google/apiclient": "^2.12",
+		"google/apiclient-services": "~0.230",
+		"googleads/google-ads-php": "^12.0",
 		"league/container": "^3.3",
 		"league/iso3166": "^3.0",
 		"phpseclib/bcmath_compat": "^2.0",
@@ -36,8 +36,7 @@
 		},
 		"files": [
 			"vendor/guzzlehttp/guzzle/src/functions_include.php",
-			"vendor/guzzlehttp/promises/src/functions_include.php",
-			"vendor/guzzlehttp/psr7/src/functions_include.php"
+			"vendor/guzzlehttp/promises/src/functions_include.php"
 		]
 	},
 	"autoload-dev": {
@@ -49,13 +48,17 @@
 		"platform": {
 			"php": "7.3.27"
 		},
-		"sort-packages": true
+		"sort-packages": true,
+		"allow-plugins": {
+			"automattic/jetpack-autoloader": true,
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	},
 	"scripts": {
 		"install-scripts": [
 			"Google\\Task\\Composer::cleanup",
 			"php ./bin/prefix-vendor-namespace.php",
-			"composer run-script remove-google-ads-api-version-support -- 6 7",
+			"composer run-script remove-google-ads-api-version-support -- 6 7 8",
 			"bash ./bin/cleanup-vendor-files.sh",
 			"composer dump-autoload"
 		],
