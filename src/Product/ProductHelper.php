@@ -6,7 +6,7 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Product;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\InvalidValue;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleProductService;
 use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
-use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\MerchantCenterService;
+use Automattic\WooCommerce\GoogleListingsAndAds\MerchantCenter\TargetAudience;
 use Automattic\WooCommerce\GoogleListingsAndAds\PluginHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Automattic\WooCommerce\GoogleListingsAndAds\Value\ChannelVisibility;
@@ -37,28 +37,35 @@ class ProductHelper implements Service {
 	protected $wc;
 
 	/**
-	 * @var MerchantCenterService
+	 * @var TargetAudience
 	 */
-	protected $merchant_center;
+	protected $target_audience;
 
 	/**
 	 * ProductHelper constructor.
 	 *
-	 * @param ProductMetaHandler    $meta_handler
-	 * @param WC                    $wc
-	 * @param MerchantCenterService $merchant_center
+	 * @param ProductMetaHandler $meta_handler
+	 * @param WC                 $wc
+	 * @param TargetAudience     $target_audience
 	 */
-	public function __construct( ProductMetaHandler $meta_handler, WC $wc, MerchantCenterService $merchant_center ) {
+	public function __construct( ProductMetaHandler $meta_handler, WC $wc, TargetAudience $target_audience ) {
 		$this->meta_handler    = $meta_handler;
 		$this->wc              = $wc;
-		$this->merchant_center = $merchant_center;
+		$this->target_audience = $target_audience;
 	}
 
 	/**
+	 * Mark a product as synced in the local database.
+	 * This function also handles the following cleanup tasks:
+	 * - Remove any failed delete attempts
+	 * - Update the visibility (if it was previously empty)
+	 * - Remove any previous product errors (if it was synced for all target countries)
+	 *
 	 * @param WC_Product    $product
 	 * @param GoogleProduct $google_product
 	 */
 	public function mark_as_synced( WC_Product $product, GoogleProduct $google_product ) {
+		$this->meta_handler->delete_failed_delete_attempts( $product );
 		$this->meta_handler->update_synced_at( $product, time() );
 		$this->meta_handler->update_sync_status( $product, SyncStatus::SYNCED );
 		$this->update_empty_visibility( $product );
@@ -71,7 +78,7 @@ class ProductHelper implements Service {
 
 		// check if product is synced completely and remove any previous errors if it is
 		$synced_countries = array_keys( $google_ids );
-		$target_countries = $this->merchant_center->get_target_countries();
+		$target_countries = $this->target_audience->get_target_countries();
 		if ( count( $synced_countries ) === count( $target_countries ) && empty( array_diff( $synced_countries, $target_countries ) ) ) {
 			$this->meta_handler->delete_errors( $product );
 			$this->meta_handler->delete_failed_sync_attempts( $product );
@@ -352,6 +359,58 @@ class ProductHelper implements Service {
 		// if it has failed more times than the specified threshold AND if syncing it has failed within the specified window
 		return $failed_attempts > ProductSyncer::FAILURE_THRESHOLD &&
 			   $failed_at > strtotime( sprintf( '-%s', ProductSyncer::FAILURE_THRESHOLD_WINDOW ) );
+	}
+
+	/**
+	 * Increment failed delete attempts.
+	 *
+	 * @since 1.12.0
+	 *
+	 * @param WC_Product $product
+	 */
+	public function increment_failed_delete_attempt( WC_Product $product ) {
+		$failed_attempts = $this->meta_handler->get_failed_delete_attempts( $product ) ?? 0;
+		$this->meta_handler->update_failed_delete_attempts( $product, $failed_attempts + 1 );
+	}
+
+	/**
+	 * Whether deleting has failed more times than the specified threshold.
+	 *
+	 * @since 1.12.0
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return boolean
+	 */
+	public function is_delete_failed_threshold_reached( WC_Product $product ): bool {
+		$failed_attempts = $this->meta_handler->get_failed_delete_attempts( $product ) ?? 0;
+		return $failed_attempts >= ProductSyncer::FAILURE_THRESHOLD;
+	}
+
+	/**
+	 * Increment failed delete attempts.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 */
+	public function increment_failed_update_attempt( WC_Product $product ) {
+		$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product ) ?? 0;
+		$this->meta_handler->update_failed_sync_attempts( $product, $failed_attempts + 1 );
+	}
+
+	/**
+	 * Whether deleting has failed more times than the specified threshold.
+	 *
+	 * @since x.x.x
+	 *
+	 * @param WC_Product $product
+	 *
+	 * @return boolean
+	 */
+	public function is_update_failed_threshold_reached( WC_Product $product ): bool {
+		$failed_attempts = $this->meta_handler->get_failed_sync_attempts( $product ) ?? 0;
+		return $failed_attempts >= ProductSyncer::FAILURE_THRESHOLD;
 	}
 
 	/**

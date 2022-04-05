@@ -372,19 +372,40 @@ class MerchantStatuses implements Service, ContainerAwareInterface {
 		$account_issues = [];
 		$created_at     = $this->cache_created_time->format( 'Y-m-d H:i:s' );
 		foreach ( $merchant->get_accountstatus()->getAccountLevelIssues() as $issue ) {
-			$account_issues[] = [
-				'product_id' => 0,
-				'product'    => __( 'All products', 'google-listings-and-ads' ),
-				'code'       => $issue->getId(),
-				'issue'      => $issue->getTitle(),
-				'action'     => __( 'Read more about this account issue', 'google-listings-and-ads' ),
-				'action_url' => $issue->getDocumentation(),
-				'created_at' => $created_at,
-				'type'       => self::TYPE_ACCOUNT,
-				'severity'   => $issue->getSeverity(),
-				'source'     => 'mc',
-			];
+			$key = md5( $issue->getTitle() );
+
+			if ( isset( $account_issues[ $key ] ) ) {
+				$account_issues[ $key ]['applicable_countries'][] = $issue->getCountry();
+			} else {
+				$account_issues[ $key ] = [
+					'product_id'           => 0,
+					'product'              => __( 'All products', 'google-listings-and-ads' ),
+					'code'                 => $issue->getId(),
+					'issue'                => $issue->getTitle(),
+					'action'               => __( 'Read more about this account issue', 'google-listings-and-ads' ),
+					'action_url'           => $issue->getDocumentation(),
+					'created_at'           => $created_at,
+					'type'                 => self::TYPE_ACCOUNT,
+					'severity'             => $issue->getSeverity(),
+					'source'               => 'mc',
+					'applicable_countries' => [ $issue->getCountry() ],
+				];
+			}
 		}
+
+		// Sort and encode countries
+		$account_issues = array_map(
+			function ( $issue ) {
+				sort( $issue['applicable_countries'] );
+				$issue['applicable_countries'] = json_encode(
+					array_unique(
+						$issue['applicable_countries']
+					)
+				);
+				return $issue;
+			},
+			$account_issues
+		);
 
 		/** @var MerchantIssueQuery $issue_query */
 		$issue_query = $this->container->get( MerchantIssueQuery::class );

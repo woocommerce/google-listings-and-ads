@@ -1,4 +1,5 @@
 !.eslintrc.js
+!.github
 build
 build-module
 coverage

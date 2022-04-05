@@ -17,6 +17,24 @@ Or, if you want to use a local connect server:
 WOOCOMMERCE_CONNECT_SERVER=http://localhost:5000 npm run test-proxy
 ```
 
+### Run the proxy in a specific mode
+The mode will determine what kind of responses will be returned, this is used to mock specific responses which can't be reproduced through regular requests.
+
+Modes:
+- `delete_error` will return an internal error when deleting products
+- `update_error` will return an internal error when updating products
+
+```
+PROXY_MODE=<delete_error|update_error> npm run test-proxy
+```
+
+### Log responses when running the proxy
+This option will allow us to view the responses which are returned from the API, this is useful for generating mocked responses to return.
+
+```
+PROXY_LOG_RESPONSES=true npm run test-proxy
+```
+
 ## Connect test site to proxy
 
 On your test site you will need to run a PHP snippet to use the proxy to handle any requests:

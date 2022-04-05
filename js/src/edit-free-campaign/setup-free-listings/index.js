@@ -3,6 +3,7 @@
  */
 import { Form } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
+import { pick } from 'lodash';
 
 /**
  * Internal dependencies
@@ -10,6 +11,7 @@ import { useState } from '@wordpress/element';
 import AppSpinner from '.~/components/app-spinner';
 import Hero from '.~/components/free-listings/configure-product-listings/hero';
 import checkErrors from '.~/components/free-listings/configure-product-listings/checkErrors';
+import getOfferFreeShippingInitialValue from '.~/utils/getOfferFreeShippingInitialValue';
 import FormContent from './form-content';
 
 /**
@@ -17,6 +19,41 @@ import FormContent from './form-content';
  * @typedef {import('.~/data/actions').ShippingTime} ShippingTime
  * @typedef {import('.~/data/actions').CountryCode} CountryCode
  */
+
+/**
+ * Field names for settings.
+ *
+ * If we are adding a new settings field, it should be added into this array.
+ */
+const settingsFieldNames = [
+	'shipping_rate',
+	'shipping_time',
+	'tax_rate',
+	'website_live',
+	'checkout_process_secure',
+	'payment_methods_visible',
+	'refund_tos_visible',
+	'contact_info_visible',
+];
+
+/**
+ * Get settings object from Form values.
+ *
+ * This method is used to pick out form fields that are specific to settings.
+ * If we are adding a new settings field that will be saved via the settings API,
+ * it should be added into `settingsFieldNames`.
+ *
+ * If a new field is added into the form that is not related to settings (e.g. `offer_free_shipping`)
+ * and will NOT be saved via settings API,
+ * we do not need to add the field into `settingsFieldNames`,
+ * and things should continue to work as expected (e.g. the navigate away prompt).
+ *
+ * @param {Object} values Form values.
+ * @return {Object} Settings object.
+ */
+const getSettings = ( values ) => {
+	return pick( values, settingsFieldNames );
+};
 
 /**
  * Setup step to configure free listings.
@@ -27,11 +64,11 @@ import FormContent from './form-content';
  * @param {Object} props
  * @param {Array<CountryCode>} props.countries List of available countries to be forwarded to FormContent.
  * @param {Object} props.settings Settings data, if not given AppSpinner will be rendered.
- * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
+ * @param {(change: {name, value}, values: Object) => void} props.onSettingsChange Callback called with new data once form data is changed. Forwarded from and {@link Form.Props.onChange}.
  * @param {Array<ShippingRateFromServerSide>} props.shippingRates Shipping rates data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} props.onShippingRatesChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
+ * @param {(newValue: Object) => void} props.onShippingRatesChange Callback called with new data once shipping rates are changed. Forwarded from {@link Form.Props.onChange}.
  * @param {Array<ShippingTime>} props.shippingTimes Shipping times data, if not given AppSpinner will be rendered.
- * @param {(newValue: Object) => void} props.onShippingTimesChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChangeCallback} and {@link Form.Props.onChange}
+ * @param {(newValue: Object) => void} props.onShippingTimesChange Callback called with new data once shipping times are changed. Forwarded from {@link Form.Props.onChange}.
  * @param {function(Object)} props.onContinue Callback called with form data once continue button is clicked. Could be async. While it's being resolved the form would turn into a saving state.
  * @param {string} [props.submitLabel] Submit button label, to be forwarded to `FormContent`.
  */
@@ -53,17 +90,9 @@ const SetupFreeListings = ( {
 	}
 
 	const handleValidate = ( values ) => {
-		const {
-			shipping_country_rates: shippingRatesData,
-			shipping_country_times: shippingTimesData,
-		} = values;
+		const { shipping_country_times: shippingTimesData } = values;
 
-		return checkErrors(
-			values,
-			shippingRatesData,
-			shippingTimesData,
-			countries
-		);
+		return checkErrors( values, shippingTimesData, countries );
 	};
 
 	const handleSubmit = async () => {
@@ -72,23 +101,13 @@ const SetupFreeListings = ( {
 		setSaving( false );
 	};
 
-	const handleChange = ( change, newVals ) => {
-		// Un-glue form data.
-		const {
-			shipping_country_rates: newShippingRates,
-			shipping_country_times: newShippingTimes,
-			...newSettings
-		} = newVals;
-
-		switch ( change.name ) {
-			case 'shipping_country_rates':
-				onShippingRatesChange( newShippingRates );
-				break;
-			case 'shipping_country_times':
-				onShippingTimesChange( newShippingTimes );
-				break;
-			default:
-				onSettingsChange( change, newSettings );
+	const handleChange = ( change, values ) => {
+		if ( change.name === 'shipping_country_rates' ) {
+			onShippingRatesChange( values.shipping_country_rates );
+		} else if ( change.name === 'shipping_country_times' ) {
+			onShippingTimesChange( values.shipping_country_times );
+		} else if ( settingsFieldNames.includes( change.name ) ) {
+			onSettingsChange( change, getSettings( values ) );
 		}
 	};
 
@@ -97,9 +116,8 @@ const SetupFreeListings = ( {
 			<Hero />
 			<Form
 				initialValues={ {
+					// These are the fields for settings.
 					shipping_rate: settings.shipping_rate,
-					offers_free_shipping: settings.offers_free_shipping,
-					free_shipping_threshold: settings.free_shipping_threshold,
 					shipping_time: settings.shipping_time,
 					tax_rate: settings.tax_rate,
 					website_live: settings.website_live,
@@ -107,14 +125,16 @@ const SetupFreeListings = ( {
 					payment_methods_visible: settings.payment_methods_visible,
 					refund_tos_visible: settings.refund_tos_visible,
 					contact_info_visible: settings.contact_info_visible,
+					// This is used in UI only, not used in API.
+					offer_free_shipping: getOfferFreeShippingInitialValue(
+						shippingRates
+					),
 					// Glue shipping rates and times together, as the Form does not support nested structures.
 					shipping_country_rates: shippingRates,
 					shipping_country_times: shippingTimes,
 				} }
-				onChangeCallback={ handleChange }
 				onChange={ handleChange }
 				validate={ handleValidate }
-				onSubmitCallback={ handleSubmit }
 				onSubmit={ handleSubmit }
 			>
 				{ ( formProps ) => {

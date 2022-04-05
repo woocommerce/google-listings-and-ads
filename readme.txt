@@ -1,10 +1,10 @@
 === Google Listings & Ads ===
 Contributors: automattic, google, woocommerce
 Tags: woocommerce, google, listings, ads
-Requires at least: 5.5
+Requires at least: 5.7
 Tested up to: 5.9
 Requires PHP: 7.3
-Stable tag: 1.9.0
+Stable tag: 1.12.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -45,24 +45,15 @@ Connect your Google Ads account, choose a budget, and launch your campaign strai
 
 *Learn more about supported countries and currencies for Smart Shopping campaigns [here](https://support.google.com/merchants/answer/160637#countrytable).*
 
-= Get started with up to $150 in ad credit when you create a Google Ads account =
+= Get $500 in Google Ads credit when you spend your first $500! =
 
-Get up to  $150\* in ad credit to help you get started on Smart Shopping Campaigns. The promotional code will be applied when you start spending and serve your first ad impression, and whatever you spend over the next 30 days, up to $150, will be added back to your account.
-
-*\*Ad credit amounts vary by country and region.*
-
-= The eligibility criteria: =
-- The account has no other promotions applied.
-- The account is billed to a country where Google Partners promotions are offered.
-- The account served its first ad impression within the last 14 days.
-
-*Review the static terms [here](http://www.google.com/ads/coupons/terms.html).*
+Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit. See full terms and conditions [here](https://www.google.com/ads/coupons/terms/).
 
 == Installation ==
 
 = Minimum Requirements =
 
-* WordPress 5.6 or greater
+* WordPress 5.7 or greater
 * WooCommerce 5.8 or greater
 * PHP version 7.3 or greater (PHP 7.4 or greater is recommended)
 * MySQL version 5.6 or greater
@@ -118,32 +109,34 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
-= 1.9.0 - 2021-12-15 =
-* Add - Pre-fill target audience countries during onboarding using WooCommerce shipping zones. #1131
-* Add - Pre-fill target audience countries with suggestions based on WooCommerce settings. #1145
-* Fix -  Fatal error on plugin deactivation. #1142
-* Fix - Fix UI loading flicker in Setup MC Step 2 "Choose your audience" page. #1146
-* Fix - Fix e2e test after copy update. #1134
-* Tweak - Display help cursor for tooltip. #1130
-* Tweak - Update product channel visibility's styling to match that of coupons channel visibility. #1135
-* Tweak - Updated `@wordpress/scripts@17.1.0`. #1132
-* Tweak - WC 6.0 compatibility.
-* Tweak - WP 5.9 compatibility.
-* Update - min. WC version to 5.7. #1110
+= 1.12.1 - 2022-04-01 =
+* Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
+* Fix - Do not sync shipping rates if the shipping time setting is set to complex.
 
-= 1.8.0 - 2021-11-30 =
-* Update - UX improvements on account connections in Setup Merchant Center flow.
+= 1.12.0 - 2022-03-29 =
+* Add - Additional data points for tracker snapshot.
+* Add - Enables merchants to select multiple countries as their audience when creating a Google Ads campaign (Smart Shopping Campaign).
+* Add - Google Listings And Ads product attributes icon.
+* Add - Integration with WooCommerce Shipping Zone to automatically sync shipping settings to Merchant Center.
+* FIx - Show right link and message in Paid Campaigns report when there is no data available.
+* Fix - Cleanup synced products locally when disconnecting Merchant Center account.
+* Fix - Combine duplicate account issues per country.
+* Fix - Fatal error when the plugin is activated before WooCommerce.
+* Fix - Fix incorrect HTTP status code when campaign creation and edit APIs call fails.
+* Fix - Limit failed delete retries to 5 and schedule again after one minute.
+* Fix - Performance issue related with NoteInitializer class.
+* Tweak - Add message to advise users to only connect Google Ads child account, not manager account.
+* Tweak - Catch errors related to invalid top-level domains specifically, and throw an error when the site's URL ends with an invalid top-level domain.
+* Tweak - Improve Ads error messages returned by the API.
+* Tweak - Simplify the format processing of number and amount values for all report metrics.
+* Update - Budget recommendation API supports for multiple countries.
+* Update - Campaigns APIs support for multiple countries.
+* Update - Change Campaign operations to batch requests.
+* Update - Refactor the Middleware class.
+* Update - Remove delete operations for campaign budget and ads group.
+* Update - WP-CLI dev dependencies.
 
-= 1.7.0 - 2021-11-24 =
-* Add - The partial authorization feature of Google account to the onboarding setup, Google Ads setup and reconnection pages.
-* Add - Accept login_hint when generating OAuth URL.
-* Add - Review request inbox notification after 10 conversions and 100 free listing clicks
-* Update – Add support for retrieving the name and domain from the Google API
-* Fix - Add support for Norwegian language, nb and nn
-* Fix - Report tabs lose active state when changing chart.
-* Tweak - Update `in_stock` and `out_of_stock` availability enums
-* Tweak - Retry async jobs on timeout
-* Tweak - Reduce the bundle size of the index.js file.
-* Tweak - refactored legacy WC menu highlighting effect.
+= 1.11.1 - 2022-02-10 =
+* Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
 
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).

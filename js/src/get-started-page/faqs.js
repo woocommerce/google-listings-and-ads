@@ -183,42 +183,21 @@ const faqItems = [
 	{
 		trackId: 'how-can-i-get-the-ad-credit-offer',
 		question: __(
-			'How can I get the $150 ad credit offer?',
+			'How can I get the $500 ad credit offer?',
 			'google-listings-and-ads'
 		),
 		answer: (
 			<>
 				<p>
 					{ __(
-						'Ad credit amounts vary by country and region.',
-						'google-listings-and-ads'
-					) }
-				</p>
-				<p>
-					{ __(
-						'The eligibility criteria:',
-						'google-listings-and-ads'
-					) }
-					<br />
-					{ __(
-						'The account has no other promotions applied.',
-						'google-listings-and-ads'
-					) }
-					<br />
-					{ __(
-						'The account is billed to a country where Google Partners promotions are offered.',
-						'google-listings-and-ads'
-					) }
-					<br />
-					{ __(
-						'The account served its first ad impression within the last 14 days.',
+						'Create a new Google Ads account through Google Listings & Ads and a promotional code will be automatically applied to your account. You’ll have 60 days to spend $500 to qualify for the $500 ads credit.',
 						'google-listings-and-ads'
 					) }
 				</p>
 				<p>
 					{ createInterpolateElement(
 						__(
-							'Review the static terms <link>here</link>.',
+							'Ad credit amounts vary by country and region. Full terms and conditions can be found <link>here</link>.',
 							'google-listings-and-ads'
 						),
 						{
@@ -226,7 +205,7 @@ const faqItems = [
 								<AppDocumentationLink
 									context="faqs"
 									linkId="terms-and-conditions-of-google-ads-coupons"
-									href="http://www.google.com/ads/coupons/terms.html"
+									href="https://www.google.com/ads/coupons/terms/"
 								/>
 							),
 						}

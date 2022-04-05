@@ -111,7 +111,8 @@ All event names are prefixed by `wcadmin_gla_`.
 
 -   `launch_paid_campaign_button_click` - Triggered when the "Launch paid campaign" button is clicked to add a new paid campaign
 
-    -   `audience`: country code of the paid campaign audience country
+    -   `audience`: country code of the paid campaign audience country. e.g. `'US`. This means the campaign is created with the "sales country" targeting only, and it is inapplicable when created with the multi-country targeting feature.
+    -   `audiences`: country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
     -   `budget`: daily average cost of the paid campaign
 
 -   `mc_account_connect_button_click` - Clicking on the button to connect an existing Google Merchant Center account.
@@ -196,7 +197,7 @@ All event names are prefixed by `wcadmin_gla_`.
     -   `action` property is `failure`:
         -   `details` property is `independent_account`: unable to execute site claim because the provided Merchant Center account is not a sub-account of our MCA
         -   `details` property is `google_proxy`: claim failed using the user creds (in the `Merchant` class)
-        -   `details` property is `google_manager`: claimed failed using MCA creds (paradoxically in the `Proxy` class)
+        -   `details` property is `google_manager`: claimed failed using MCA creds (paradoxically in the `Middleware` class)
 
 -   `site_verify_failure` - When a site verification with Google fails
 

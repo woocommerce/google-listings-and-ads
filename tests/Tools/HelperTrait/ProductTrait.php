@@ -174,15 +174,25 @@ trait ProductTrait {
 	public function create_multiple_simple_product_sets( ...$product_count ): array {
 		$results = [];
 		foreach ( $product_count as $count ) {
-			$set = [];
-			for ( $i = 1; $i <= $count; $i ++ ) {
-				$product                   = WC_Helper_Product::create_simple_product();
-				$set[ $product->get_id() ] = $product;
-			}
-			$results[] = $set;
+			$results[] = $this->create_simple_product_set( $count );
 		}
 
 		return $results;
+	}
+
+	/**
+	 * @param integer $product_count Amount of products to generate.
+	 *
+	 * @return array Multiple simple products indexed by product ID.
+	 */
+	public function create_simple_product_set( int $product_count ): array {
+		$products = [];
+		for ( $i = 1; $i <= $product_count; $i ++ ) {
+			$product                        = WC_Helper_Product::create_simple_product();
+			$products[ $product->get_id() ] = $product;
+		}
+
+		return $products;
 	}
 
 	/**
