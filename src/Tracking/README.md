@@ -26,11 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `chart_tab_click` - Triggered when a chart tab is clicked
-
-    -   `report`: name of the report (e.g. `"reports-programs" | "reports-products"`)
-    -   `context`: metric key of the clicked tab (e.g. `"sales" | "conversions" | "clicks" | "impressions" | "spend"`).
-
 -   `contact_information_save_button_click` - Triggered when the save button in contact information page is clicked.
 
 -   `datepicker_update` - Triggered when datepicker (date ranger picker) is updated
@@ -318,6 +313,16 @@ CES prompt snackbar closed
 CES prompt snackbar open
 #### Emitters
 - [`CustomerEffortScorePrompt`](js/src/components/customer-effort-score-prompt/index.js#L49) whenever the CES snackbar (notice) is open
+
+### [`gla_chart_tab_click`](js/src/reports/summary-section.js#L20)
+Triggered when a chart tab is clicked
+#### Properties
+|   |   |   |
+|---|---|---|
+`report` | `string` | name of the report (e.g. `"reports-programs" \| "reports-products"`)
+`context` | `string` | metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend"`).
+#### Emitters
+- [`exports`](js/src/reports/summary-section.js#L39)
 
 ### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
 Trigger when store address edit button is clicked.
