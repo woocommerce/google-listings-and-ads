@@ -109,6 +109,9 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.3 - 2022-04-05 =
+* Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
+
 = 1.12.2 - 2022-04-05 =
 * Add - Unit test for AdsConversionAction.
 * Add - Unit test for AdsReport.
