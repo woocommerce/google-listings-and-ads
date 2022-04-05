@@ -95,7 +95,7 @@ class AdsConversionActionTest extends UnitTest {
 		$this->conversion_action->create_conversion_action();
 	}
 
-	public function test_create_conversion_action_exception() {
+	public function test_create_conversion_action_api_exception() {
 		$this->generate_conversion_action_mutate_exception(
 			new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' )
 		);
@@ -103,6 +103,18 @@ class AdsConversionActionTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 400 );
 		$this->expectExceptionMessage( 'Error creating conversion action: invalid' );
+
+		$this->conversion_action->create_conversion_action();
+	}
+
+	public function test_create_conversion_action_exception() {
+		$this->generate_conversion_action_mutate_exception(
+			new Exception( 'unauthorized', 401 )
+		);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 401 );
+		$this->expectExceptionMessage( 'Error creating conversion action: unauthorized' );
 
 		$this->conversion_action->create_conversion_action();
 	}
@@ -129,7 +141,7 @@ class AdsConversionActionTest extends UnitTest {
 		);
 	}
 
-	public function test_get_conversion_action_exception() {
+	public function test_get_conversion_action_api_exception() {
 		$this->generate_conversion_action_exception(
 			new ApiException( 'invalid', 3, 'INVALID_ARGUMENT' )
 		);
@@ -137,6 +149,18 @@ class AdsConversionActionTest extends UnitTest {
 		$this->expectException( Exception::class );
 		$this->expectExceptionCode( 400 );
 		$this->expectExceptionMessage( 'Error retrieving conversion action: invalid' );
+
+		$this->conversion_action->get_conversion_action( self::TEST_CONVERSION_ACTION_ID );
+	}
+
+	public function test_get_conversion_action_exception() {
+		$this->generate_conversion_action_exception(
+			new Exception( 'unauthorized', 401 )
+		);
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionCode( 401 );
+		$this->expectExceptionMessage( 'Error retrieving conversion action: unauthorized' );
 
 		$this->conversion_action->get_conversion_action( self::TEST_CONVERSION_ACTION_ID );
 	}

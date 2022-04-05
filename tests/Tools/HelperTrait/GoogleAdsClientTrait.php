@@ -7,6 +7,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
+use Exception;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\LocationInfo;
 use Google\Ads\GoogleAds\V9\Common\Metrics;
@@ -449,18 +450,18 @@ trait GoogleAdsClientTrait {
 	/**
 	 * Generates a mocked exception when a ConversionAction is mutated.
 	 *
-	 * @param ApiException $exception
+	 * @param Exception $exception
 	 */
-	protected function generate_conversion_action_mutate_exception( ApiException $exception ) {
+	protected function generate_conversion_action_mutate_exception( Exception $exception ) {
 		$this->conversion_action_service->method( 'mutateConversionActions' )->willThrowException( $exception );
 	}
 
 	/**
 	 * Generates a mocked exception when a ConversionAction is requested.
 	 *
-	 * @param ApiException $exception
+	 * @param Exception $exception
 	 */
-	protected function generate_conversion_action_exception( ApiException $exception ) {
+	protected function generate_conversion_action_exception( Exception $exception ) {
 		$this->conversion_action_service->method( 'getConversionAction' )->willThrowException( $exception );
 	}
 
