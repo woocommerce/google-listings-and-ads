@@ -26,12 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `bulk_edit_click` - Triggered when the product feed "bulk edit" functionality is being used
-
-    -   `context`: name of the table
-    -   `number_of_items`: edit how many items
-    -   `visibility_to`: `("sync_and_show" | "dont_sync_and_show")`
-
 -   `chart_tab_click` - Triggered when a chart tab is clicked
 
     -   `report`: name of the report (e.g. `"reports-programs" | "reports-products"`)
@@ -293,6 +287,17 @@ Clicking on the button to create a new Google Ads account, after agreeing to the
 `href` | `string` | indicate the destination where the users is directed to.
 #### Emitters
 - [`SetupCard`](js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L34) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
+
+### [`gla_bulk_edit_click`](js/src/product-feed/product-feed-table-card/index.js#L40)
+Triggered when the product feed "bulk edit" functionality is being used
+#### Properties
+|   |   |   |
+|---|---|---|
+`context` | `string` | name of the table
+`number_of_items` | `number` | edit how many items
+`visibility_to` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
+#### Emitters
+- [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L54) with `context: product-feed`
 
 ### [`gla_ces_feedback`](js/src/components/customer-effort-score-prompt/index.js#L29)
 CES feedback recorded
