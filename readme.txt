@@ -109,6 +109,13 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 
 == Changelog ==
 
+= 1.12.2 - 2022-04-05 =
+* Add - Unit test for AdsConversionAction.
+* Add - Unit test for AdsReport.
+* Fix - Prevent uncaught exception when Merchant account is not connected and we send a tracker snapshot.
+* Tweak - DB migration for shipping rates.
+* Update - Create all new campaigns as PMax campaigns.
+
 = 1.12.1 - 2022-04-01 =
 * Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
 * Fix - Do not sync shipping rates if the shipping time setting is set to complex.
