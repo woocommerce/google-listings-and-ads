@@ -136,7 +136,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Update - Remove delete operations for campaign budget and ads group.
 * Update - WP-CLI dev dependencies.
 
-= 1.11.1 - 2022-02-10 =
-* Fix - Prevent a fatal error in case an existing Merchant Center account has an invalid domain.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
