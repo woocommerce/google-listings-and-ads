@@ -20,7 +20,7 @@ use Exception;
 /**
  * Class AdsCampaignBudget
  *
- * @since x.x.x Refactored to support PMax and (legacy) SSC.
+ * @since 1.12.2 Refactored to support PMax and (legacy) SSC.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */

@@ -10,7 +10,7 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Internal\StatusMapping;
  * Mapping between Google and internal CampaignTypes
  * https://developers.google.com/google-ads/api/reference/rpc/v9/AdvertisingChannelTypeEnum.AdvertisingChannelType
  *
- * @since x.x.x
+ * @since 1.12.2
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
