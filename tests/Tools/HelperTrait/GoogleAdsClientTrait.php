@@ -4,12 +4,16 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Tools\HelperTrait;
 
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignStatus;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\CampaignType;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\LocationInfo;
+use Google\Ads\GoogleAds\V9\Common\Metrics;
+use Google\Ads\GoogleAds\V9\Common\Segments;
 use Google\Ads\GoogleAds\V9\Common\TagSnippet;
 use Google\Ads\GoogleAds\V9\Enums\AccessRoleEnum\AccessRole;
+use Google\Ads\GoogleAds\V9\Enums\CampaignStatusEnum\CampaignStatus as AdsCampaignStatus;
 use Google\Ads\GoogleAds\V9\Enums\TrackingCodePageFormatEnum\TrackingCodePageFormat;
 use Google\Ads\GoogleAds\V9\Enums\TrackingCodeTypeEnum\TrackingCodeType;
 use Google\Ads\GoogleAds\V9\Resources\BillingSetup;
@@ -34,6 +38,7 @@ use Google\Ads\GoogleAds\V9\Services\MutateConversionActionsResponse;
 use Google\Ads\GoogleAds\V9\Services\MutateGoogleAdsResponse;
 use Google\Ads\GoogleAds\V9\Services\MutateOperationResponse;
 use Google\ApiCore\ApiException;
+use Google\ApiCore\Page;
 use Google\ApiCore\PagedListResponse;
 
 /**
@@ -239,6 +244,7 @@ trait GoogleAdsClientTrait {
 		$campaign->method( 'getId' )->willReturn( $data['id'] );
 		$campaign->method( 'getName' )->willReturn( $data['name'] );
 		$campaign->method( 'getStatus' )->willReturn( CampaignStatus::number( $data['status'] ) );
+		$campaign->method( 'getAdvertisingChannelType' )->willReturn( CampaignType::number( $data['type'] ) );
 		$campaign->method( 'getShoppingSetting' )->willReturn( $setting );
 
 		$budget = $this->createMock( CampaignBudget::class );
@@ -296,6 +302,15 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_ad_group_resource_name( int $ad_group_id ) {
 		return ResourceNames::forAdGroup( $this->ads_id, $ad_group_id );
+	}
+
+	/**
+	 * Generates an asset group resource name.
+	 *
+	 * @param int $asset_group_id
+	 */
+	protected function generate_asset_group_resource_name( int $asset_group_id ) {
+		return ResourceNames::forAssetGroup( $this->ads_id, $asset_group_id );
 	}
 
 	/**
@@ -447,6 +462,127 @@ trait GoogleAdsClientTrait {
 	 */
 	protected function generate_conversion_action_exception( ApiException $exception ) {
 		$this->conversion_action_service->method( 'getConversionAction' )->willThrowException( $exception );
+	}
+
+	/**
+	 * Generates mocked report data.
+	 *
+	 * @param array $data      Report rows.
+	 * @param array $args      Report arguments.
+	 * @param array $next_page Token for the next page.
+	 */
+	protected function generate_ads_report_query_mock( array $data, array $args = [], string $next_page = '' ) {
+		$page = $this->createMock( Page::class );
+		$page->method( 'hasNextPage' )->willReturn( ! empty( $next_page ) );
+		$page->method( 'getNextPageToken' )->willReturn( $next_page );
+		$page->method( 'getIterator' )->willReturn(
+			array_map(
+				function( $row ) use ( $args ) {
+					return $this->generate_report_row_mock( $row, $args );
+				},
+				$data
+			)
+		);
+
+		$report = $this->createMock( PagedListResponse::class );
+		$report->method( 'getPage' )->willReturn( $page );
+
+		$this->service_client->method( 'search' )->willReturn( $report );
+	}
+
+	/**
+	 * Converts report data to a mocked GoogleAdsRow.
+	 *
+	 * @param array $row  Report row to convert.
+	 * @param array $args Report arguments.
+	 *
+	 * @return GoogleAdsRow
+	 */
+	protected function generate_report_row_mock( array $row, array $args ): GoogleAdsRow {
+		$ads_row = new GoogleAdsRow();
+
+		if ( ! empty( $row['campaign'] ) ) {
+			$campaign = $this->createMock( Campaign::class );
+			$campaign->method( 'getId' )->willReturn( $row['campaign']['id'] );
+			$campaign->method( 'getName' )->willReturn( $row['campaign']['name'] );
+			$campaign->method( 'getStatus' )->willReturn( AdsCampaignStatus::value( $row['campaign']['status'] ) );
+			$ads_row->setCampaign( $campaign );
+		}
+
+		if ( ! empty( $row['metrics'] ) && ! empty( $args['fields'] ) ) {
+			$ads_row->setMetrics(
+				$this->generate_report_metrics_mock( $row['metrics'], $args['fields'] )
+			);
+		}
+
+		if ( ! empty( $row['segments'] ) ) {
+			$segments = $this->createMock( Segments::class );
+
+			if ( ! empty( $row['segments']['productItemId'] ) ) {
+				$segments->method( 'getProductItemId' )->willReturn( $row['segments']['productItemId'] );
+			}
+
+			if ( ! empty( $row['segments']['productTitle'] ) ) {
+				$segments->method( 'getProductTitle' )->willReturn( $row['segments']['productTitle'] );
+			}
+
+			if ( ! empty( $args['interval'] ) ) {
+				switch ( $args['interval'] ) {
+					case 'day':
+						$segments->method( 'getDate' )->willReturn( $row['segments']['date'] );
+						break;
+					case 'week':
+						$segments->method( 'getWeek' )->willReturn( $row['segments']['week'] );
+						break;
+					case 'month':
+						$segments->method( 'getMonth' )->willReturn( $row['segments']['month'] );
+						break;
+					case 'quarter':
+						$segments->method( 'getQuarter' )->willReturn( $row['segments']['quarter'] );
+						break;
+					case 'year':
+						$segments->method( 'getYear' )->willReturn( $row['segments']['year'] );
+						break;
+				}
+			}
+
+			$ads_row->setSegments( $segments );
+		}
+
+		return $ads_row;
+	}
+
+	/**
+	 * Return a mocked segment to include in the report row.
+	 *
+	 * @param array $data
+	 * @param array $fields
+	 * @return Segments
+	 */
+	protected function generate_report_metrics_mock( array $data, array $fields ): Metrics {
+		$metrics = $this->createMock( Metrics::class );
+
+		foreach ( $fields as $field ) {
+			switch ( $field ) {
+				case 'clicks':
+					$metrics->method( 'getClicks' )->willReturn( $data['clicks'] );
+					break;
+				case 'impressions':
+					$metrics->method( 'getImpressions' )->willReturn( $data['impressions'] );
+					break;
+				case 'spend':
+					$metrics->method( 'getCostMicros' )->willReturn( $data['costMicros'] );
+					break;
+				case 'sales':
+					$metrics->method( 'getConversionsValue' )->willReturn( $data['conversionsValue'] );
+					break;
+				case 'conversions':
+					$metrics->method( 'getConversions' )->willReturn( $data['conversions'] );
+					break;
+			}
+		}
+
+		return $metrics;
 	}
 
 }
