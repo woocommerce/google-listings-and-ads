@@ -26,8 +26,6 @@ All event names are prefixed by `wcadmin_gla_`.
     - 	`utm_term`
     - 	`utm_content` 
 
--   `ads_account_connect_button_click` - Clicking on the button to connect an existing Google Ads account.
-
 -   `ads_account_create_button_click` - Clicking on the button to create a new Google Ads account, after agreeing to the terms and conditions.
 
 -   `ads_set_up_billing_click` - "Set up billing" button for Google Ads account is clicked.
@@ -282,6 +280,11 @@ Do not edit it manually!
 `href` | `string` | Indicate the destination where the users is directed to, e.g. `'/google/setup-ads'`.
 #### Emitters
 - [`AddPaidCampaignButton`](js/src/components/paid-ads/add-paid-campaign-button.js#L46) with given props, when clicked.
+
+### [`gla_ads_account_connect_button_click`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L23)
+Clicking on the button to connect an existing Google Ads account.
+#### Emitters
+- [`ConnectAds`](js/src/setup-ads/ads-stepper/setup-accounts/google-ads-account-card/connect-ads/index.js#L34) when "Connect" button is clicked.
 
 ### [`gla_ces_feedback`](js/src/components/customer-effort-score-prompt/index.js#L29)
 CES feedback recorded

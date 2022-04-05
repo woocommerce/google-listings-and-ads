@@ -20,6 +20,17 @@ import useDispatchCoreNotices from '.~/hooks/useDispatchCoreNotices';
 import useGoogleAdsAccount from '.~/hooks/useGoogleAdsAccount';
 import './index.scss';
 
+/**
+ * Clicking on the button to connect an existing Google Ads account.
+ *
+ * @event gla_ads_account_connect_button_click
+ */
+
+/**
+ * @fires gla_ads_account_connect_button_click when "Connect" button is clicked.
+ * @param {Object} props React props
+ * @return {JSX.Element} {@link AccountCard} filled with content.
+ */
 const ConnectAds = ( props ) => {
 	const { onCreateNew = () => {} } = props;
 	const [ value, setValue ] = useState();
