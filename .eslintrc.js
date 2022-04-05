@@ -31,6 +31,8 @@ module.exports = {
 		},
 		'import/core-modules': [
 			'webpack',
+			'stylelint',
+			'@wordpress/stylelint-config',
 			'@pmmmwh/react-refresh-webpack-plugin',
 		],
 		'import/resolver': { webpack: webpackResolver },

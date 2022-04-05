@@ -68,7 +68,6 @@
 		"@wordpress/dependency-extraction-webpack-plugin": "^3.3.2",
 		"@wordpress/prettier-config": "^1.1.2",
 		"@wordpress/scripts": "~22.1.0",
-		"@wordpress/stylelint-config": "^20.0.1",
 		"babel-loader": "^8.2.4",
 		"bundlewatch": "^0.3.2",
 		"eslint": "^7.17.0",
@@ -83,7 +82,6 @@
 		"jsdoc-plugin-typescript": "^2.0.6",
 		"path-browserify": "^1.0.1",
 		"prettier": "npm:wp-prettier@2.2.1-beta-1",
-		"stylelint": "^14.2.0",
 		"stylelint-config-standard-scss": "^3.0.0"
 	},
 	"dependencies": {
