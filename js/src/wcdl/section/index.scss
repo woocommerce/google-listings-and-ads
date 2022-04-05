@@ -3,6 +3,10 @@
 	flex-direction: column;
 	margin-bottom: var(--large-gap);
 
+	&--is-disabled {
+		opacity: 0.5;
+	}
+
 	@include break-small {
 		flex-direction: row;
 		gap: var(--main-gap);
@@ -11,7 +15,7 @@
 	header {
 		@include break-small {
 			width: 33%;
-			padding-top: var(--large-gap);
+			padding-top: var(--main-gap);
 		}
 
 		h1 {
@@ -20,6 +24,11 @@
 			font-weight: 600;
 			margin-bottom: 8px;
 			padding: 0;
+		}
+
+		> p {
+			margin: 0 0 1em;
+			line-height: 16px;
 		}
 	}
 

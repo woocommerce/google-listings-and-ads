@@ -69,7 +69,7 @@ const RemoveProgramModal = ( props ) => {
 		>
 			<p>
 				{ __(
-					'Results typically improve with time with Google’s Smart Shopping campaigns. Removing a Smart Shopping campaign will result in the loss of any optimisations learned from those campaigns.',
+					'Results typically improve with time with Google’s paid ad campaigns. Removing a paid ad campaign will result in the loss of any optimisations learned from those campaigns.',
 					'google-listings-and-ads'
 				) }
 			</p>

@@ -41,6 +41,32 @@ class ShippingRateQuery extends Query {
 			throw InvalidQuery::cant_set_id( ShippingRateTable::class );
 		}
 
+		if ( 'options' === $column ) {
+			if ( ! is_array( $value ) ) {
+				throw InvalidQuery::invalid_value( $column );
+			}
+
+			$value = json_encode( $value );
+		}
+
 		return $value;
 	}
+
+	/**
+	 * Perform the query and save it to the results.
+	 */
+	protected function query_results() {
+		parent::query_results();
+
+		$this->results = array_map(
+			function ( $row ) {
+				$row['options'] = ! empty( $row['options'] ) ? json_decode( $row['options'], true ) : $row['options'];
+
+				return $row;
+			},
+			$this->results
+		);
+	}
+
+
 }

@@ -88,20 +88,20 @@ export default function CampaignCreationSuccessGuide( {
 			</div>
 			<GuidePageContent
 				title={ __(
-					`You've set up a paid Smart Shopping Campaign!`,
+					`You've set up a paid Performance Max Campaign!`,
 					'google-listings-and-ads'
 				) }
 			>
 				{ createInterpolateElement(
 					__(
-						'You can pause or edit your campaign at any time. For best results, we recommend allowing your campaign to run for at least 14 days without pausing or editing. <link>Learn more about Smart Shopping technology.</link>',
+						'You can pause or edit your campaign at any time. For best results, we recommend allowing your campaign to run for at least 14 days without pausing or editing. <link>Learn more about Performance Max technology.</link>',
 						'google-listings-and-ads'
 					),
 					{
 						link: (
 							<ContentLink
-								href="https://support.google.com/google-ads/answer/7674739"
-								context="campaign-creation-smart-shopping"
+								href="https://support.google.com/google-ads/answer/10724817"
+								context="campaign-creation-performance-max"
 							/>
 						),
 					}

@@ -22,6 +22,7 @@ class AdsCampaignQuery extends AdsQuery {
 				'campaign.id',
 				'campaign.name',
 				'campaign.status',
+				'campaign.advertising_channel_type',
 				'campaign.shopping_setting.sales_country',
 				'campaign_budget.amount_micros',
 			]

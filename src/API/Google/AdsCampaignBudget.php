@@ -20,7 +20,7 @@ use Exception;
 /**
  * Class AdsCampaignBudget
  *
- * @since x.x.x Refactored to use batch requests when operating on campaigns.
+ * @since x.x.x Refactored to support PMax and (legacy) SSC.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
@@ -96,21 +96,6 @@ class AdsCampaignBudget implements OptionsAwareInterface {
 		$operation = new CampaignBudgetOperation();
 		$operation->setUpdate( $budget );
 		$operation->setUpdateMask( FieldMasks::allSetFieldsOf( $budget ) );
-		return ( new MutateOperation() )->setCampaignBudgetOperation( $operation );
-	}
-
-	/**
-	 * Returns a campaign delete operation.
-	 *
-	 * @param int $campaign_id
-	 *
-	 * @return MutateOperation
-	 */
-	public function delete_operation( int $campaign_id ): MutateOperation {
-		$budget_id            = $this->get_budget_from_campaign( $campaign_id );
-		$budget_resource_name = ResourceNames::forCampaignBudget( $this->options->get_ads_id(), $budget_id );
-
-		$operation = ( new CampaignBudgetOperation() )->setRemove( $budget_resource_name );
 		return ( new MutateOperation() )->setCampaignBudgetOperation( $operation );
 	}
 

@@ -6,4 +6,8 @@
 	.helper-text {
 		margin-bottom: calc(var(--main-gap) / 3 * 2);
 	}
+
+	.cannot-find-country {
+		font-style: italic;
+	}
 }

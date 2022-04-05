@@ -3,37 +3,41 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignCriterionQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Query\AdsCampaignQuery;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\MicroTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
+use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\ContainerAwareTrait;
 use Automattic\WooCommerce\GoogleListingsAndAds\Internal\Interfaces\ContainerAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\Ads\GoogleAdsClient;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareInterface;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsAwareTrait;
+use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V9\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
 use Google\Ads\GoogleAds\V9\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V9\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
+use Google\Ads\GoogleAds\V9\Services\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MutateOperation;
 use Google\ApiCore\ApiException;
 use Google\ApiCore\ValidationException;
 use Exception;
 
 /**
- * Class AdsCampaign (Smart Shopping Campaign)
- * https://developers.google.com/google-ads/api/docs/smart-campaigns/overview
+ * Class AdsCampaign (Performance Max Campaign)
+ * https://developers.google.com/google-ads/api/docs/performance-max/overview
  *
  * ContainerAware used for:
- * - AdsGroup
+ * - AdsAssetGroup
+ * - WC
  *
- * @since x.x.x Refactored to use batch requests when operating on campaigns.
+ * @since x.x.x Refactored to support PMax and (legacy) SSC.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
@@ -65,35 +69,51 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected $budget;
 
 	/**
+	 * @var AdsCampaignCriterion $criterion
+	 */
+	protected $criterion;
+
+	/**
+	 * @var GoogleHelper $google_helper
+	 */
+	protected $google_helper;
+
+	/**
 	 * AdsCampaign constructor.
 	 *
-	 * @param GoogleAdsClient   $client
-	 * @param AdsCampaignBudget $budget
+	 * @param GoogleAdsClient      $client
+	 * @param AdsCampaignBudget    $budget
+	 * @param AdsCampaignCriterion $criterion
+	 * @param GoogleHelper         $google_helper
 	 */
-	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget ) {
-		$this->client = $client;
-		$this->budget = $budget;
+	public function __construct( GoogleAdsClient $client, AdsCampaignBudget $budget, AdsCampaignCriterion $criterion, GoogleHelper $google_helper ) {
+		$this->client        = $client;
+		$this->budget        = $budget;
+		$this->criterion     = $criterion;
+		$this->google_helper = $google_helper;
 	}
 
 	/**
-	 * Returns a list of campaigns
+	 * Returns a list of campaigns with targeted locations retrieved from campaign criterion.
 	 *
 	 * @return array
 	 * @throws ExceptionWithResponseData When an ApiException is caught.
 	 */
 	public function get_campaigns(): array {
 		try {
-			$return  = [];
-			$results = ( new AdsCampaignQuery() )
-				->set_client( $this->client, $this->options->get_ads_id() )
+			$campaign_results = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() )
 				->where( 'campaign.status', 'REMOVED', '!=' )
 				->get_results();
 
-			foreach ( $results->iterateAllElements() as $row ) {
-				$return[] = $this->convert_campaign( $row );
+			$converted_campaigns = [];
+
+			foreach ( $campaign_results->iterateAllElements() as $row ) {
+				$campaign                               = $this->convert_campaign( $row );
+				$converted_campaigns[ $campaign['id'] ] = $campaign;
 			}
 
-			return $return;
+			$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+			return array_values( $combined_results );
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
 
@@ -109,7 +129,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	}
 
 	/**
-	 * Retrieve a single campaign.
+	 * Retrieve a single campaign with targeted locations retrieved from campaign criterion.
 	 *
 	 * @param int $id Campaign ID.
 	 *
@@ -118,13 +138,22 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function get_campaign( int $id ): array {
 		try {
-			$results = ( new AdsCampaignQuery() )
-				->set_client( $this->client, $this->options->get_ads_id() )
-				->where( 'campaign.id', $id )
+			$campaign_results = ( new AdsCampaignQuery() )->set_client( $this->client, $this->options->get_ads_id() )
+				->where( 'campaign.id', $id, '=' )
 				->get_results();
 
-			foreach ( $results->iterateAllElements() as $row ) {
-				return $this->convert_campaign( $row );
+			$converted_campaigns = [];
+
+			// Get only the first element from campaign results
+			foreach ( $campaign_results->iterateAllElements() as $row ) {
+				$campaign                               = $this->convert_campaign( $row );
+				$converted_campaigns[ $campaign['id'] ] = $campaign;
+				break;
+			}
+
+			if ( ! empty( $converted_campaigns ) ) {
+				$combined_results = $this->combine_campaigns_and_campaign_criterion_results( $converted_campaigns );
+				return reset( $combined_results );
 			}
 
 			return [];
@@ -155,21 +184,38 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	 */
 	public function create_campaign( array $params ): array {
 		try {
+			$base_country = $this->container->get( WC::class )->get_base_country();
+
+			$location_ids = array_map(
+				function ( $country_code ) {
+					return $this->google_helper->find_country_id_by_code( $country_code );
+				},
+				$params['targeted_locations']
+			);
+
+			$location_ids = array_filter( $location_ids );
+
 			// Operations must be in a specific order to match the temporary ID's.
 			$operations = array_merge(
 				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
-				[ $this->create_operation( $params['name'], $params['country'] ) ],
-				$this->container->get( AdsGroup::class )->create_operations(
+				[ $this->create_operation( $params['name'], $base_country ) ],
+				$this->container->get( AdsAssetGroup::class )->create_operations(
 					$this->temporary_resource_name(),
 					$params['name']
+				),
+				$this->criterion->create_operations(
+					$this->temporary_resource_name(),
+					$location_ids
 				)
 			);
 
 			$campaign_id = $this->mutate( $operations );
 
 			return [
-				'id'     => $campaign_id,
-				'status' => CampaignStatus::ENABLED,
+				'id'      => $campaign_id,
+				'status'  => CampaignStatus::ENABLED,
+				'type'    => CampaignType::PERFORMANCE_MAX,
+				'country' => $base_country,
 			] + $params;
 		} catch ( ApiException $e ) {
 			do_action( 'woocommerce_gla_ads_client_exception', $e, __METHOD__ );
@@ -255,12 +301,9 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		try {
 			$campaign_resource_name = ResourceNames::forCampaign( $this->options->get_ads_id(), $campaign_id );
 
-			// Budget must be removed after the campaign.
-			$operations = array_merge(
-				$this->container->get( AdsGroup::class )->delete_operations( $campaign_resource_name ),
-				[ $this->delete_operation( $campaign_resource_name ) ],
-				[ $this->budget->delete_operation( $campaign_id ) ]
-			);
+			$operations = [
+				$this->delete_operation( $campaign_resource_name ),
+			];
 
 			return $this->mutate( $operations );
 		} catch ( ApiException $e ) {
@@ -306,14 +349,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected function create_operation( string $campaign_name, string $country ): MutateOperation {
 		$campaign = new Campaign(
 			[
-				'resource_name'                => $this->temporary_resource_name(),
-				'name'                         => $campaign_name,
-				'advertising_channel_type'     => AdvertisingChannelType::SHOPPING,
-				'advertising_channel_sub_type' => AdvertisingChannelSubType::SHOPPING_SMART_ADS,
-				'status'                       => CampaignStatus::number( 'enabled' ),
-				'campaign_budget'              => $this->budget->temporary_resource_name(),
-				'maximize_conversion_value'    => new MaximizeConversionValue(),
-				'shopping_setting'             => new ShoppingSetting(
+				'resource_name'             => $this->temporary_resource_name(),
+				'name'                      => $campaign_name,
+				'advertising_channel_type'  => AdvertisingChannelType::PERFORMANCE_MAX,
+				'status'                    => CampaignStatus::number( 'enabled' ),
+				'campaign_budget'           => $this->budget->temporary_resource_name(),
+				'maximize_conversion_value' => new MaximizeConversionValue(),
+				'url_expansion_opt_out'     => true,
+				'shopping_setting'          => new ShoppingSetting(
 					[
 						'merchant_id'   => $this->options->get_merchant_id(),
 						'sales_country' => $country,
@@ -366,9 +409,11 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected function convert_campaign( GoogleAdsRow $row ): array {
 		$campaign = $row->getCampaign();
 		$data     = [
-			'id'     => $campaign->getId(),
-			'name'   => $campaign->getName(),
-			'status' => CampaignStatus::label( $campaign->getStatus() ),
+			'id'                 => $campaign->getId(),
+			'name'               => $campaign->getName(),
+			'status'             => CampaignStatus::label( $campaign->getStatus() ),
+			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
+			'targeted_locations' => [],
 		];
 
 		$budget = $row->getCampaignBudget();
@@ -386,6 +431,49 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Combine converted campaigns data with campaign criterion results data
+	 *
+	 * @param array $campaigns Campaigns data returned from a query request and converted by convert_campaign function.
+	 *
+	 * @return array
+	 */
+	protected function combine_campaigns_and_campaign_criterion_results( array $campaigns ): array {
+		if ( empty( $campaigns ) ) {
+			return [];
+		}
+
+		$campaign_criterion_results = ( new AdsCampaignCriterionQuery() )->set_client( $this->client, $this->options->get_ads_id() )
+			->where( 'campaign.id', array_keys( $campaigns ), 'IN' )
+			// negative: Whether to target (false) or exclude (true) the criterion.
+			->where( 'campaign_criterion.negative', 'false', '=' )
+			->where( 'campaign_criterion.status', 'REMOVED', '!=' )
+			->where( 'campaign_criterion.location.geo_target_constant', '', 'IS NOT NULL' )
+			->get_results();
+
+		/** @var GoogleAdsRow $row */
+		foreach ( $campaign_criterion_results->iterateAllElements() as $row ) {
+			$campaign    = $row->getCampaign();
+			$campaign_id = $campaign->getId();
+
+			if ( ! isset( $campaigns[ $campaign_id ] ) ) {
+				continue;
+			}
+
+			$campaign_criterion  = $row->getCampaignCriterion();
+			$location            = $campaign_criterion->getLocation();
+			$geo_target_constant = $location->getGeoTargetConstant();
+			$location_id         = $this->parse_geo_target_location_id( $geo_target_constant );
+			$country_code        = $this->google_helper->find_country_code_by_id( $location_id );
+
+			if ( $country_code ) {
+				$campaigns[ $campaign_id ]['targeted_locations'][] = $country_code;
+			}
+		}
+
+		return $campaigns;
 	}
 
 	/**
@@ -427,6 +515,23 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			return absint( $parts['campaign_id'] );
 		} catch ( ValidationException $e ) {
 			throw new Exception( __( 'Invalid campaign ID', 'google-listings-and-ads' ) );
+		}
+	}
+
+	/**
+	 * Convert location ID from a geo target constant resource name to an int.
+	 *
+	 * @param string $geo_target_constant Resource name containing ID number.
+	 *
+	 * @return int
+	 * @throws Exception When unable to parse resource ID.
+	 */
+	protected function parse_geo_target_location_id( string $geo_target_constant ): int {
+		try {
+			$parts = GeoTargetConstantServiceClient::parseName( $geo_target_constant );
+			return absint( $parts['criterion_id'] );
+		} catch ( ValidationException $e ) {
+			throw new Exception( __( 'Invalid geo target location ID', 'google-listings-and-ads' ) );
 		}
 	}
 }
