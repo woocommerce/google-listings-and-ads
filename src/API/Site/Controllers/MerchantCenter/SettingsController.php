@@ -66,6 +66,10 @@ class SettingsController extends BaseOptionsController {
 		return function( Request $request ) {
 			$schema  = $this->get_schema_properties();
 			$options = $this->options->get( OptionsInterface::MERCHANT_CENTER, [] );
+			if ( ! is_array( $options ) ) {
+				$options = [];
+			}
+
 			foreach ( $schema as $key => $property ) {
 				$options[ $key ] = $request->get_param( $key ) ?? $options[ $key ] ?? $property['default'] ?? null;
 			}
