@@ -14,7 +14,7 @@ import AppInputPriceControl from '.~/components/app-input-price-control/index.js
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
-const AddMinimumOrderModal = ( props ) => {
+const AddMinimumOrderFormModal = ( props ) => {
 	const { countryOptions, value, onChange = noop, onRequestClose } = props;
 
 	const handleValidate = ( values ) => {
@@ -119,4 +119,4 @@ const AddMinimumOrderModal = ( props ) => {
 	);
 };
 
-export default AddMinimumOrderModal;
+export default AddMinimumOrderFormModal;

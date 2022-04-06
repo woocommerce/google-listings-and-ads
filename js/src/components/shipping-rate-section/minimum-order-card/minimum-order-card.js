@@ -14,7 +14,7 @@ import AppButtonModalTrigger from '.~/components/app-button-modal-trigger';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import isNonFreeFlatShippingRate from '.~/utils/isNonFreeFlatShippingRate';
 import MinimumOrderInputControl from './minimum-order-input-control';
-import AddMinimumOrderModal from './add-minimum-order-modal';
+import AddMinimumOrderFormModal from './add-minimum-order-form-modal';
 import groupShippingRatesByMethodFreeShippingThreshold from './groupShippingRatesByMethodFreeShippingThreshold';
 import './minimum-order-card.scss';
 
@@ -141,7 +141,7 @@ const MinimumOrderCard = ( props ) => {
 								</AppButton>
 							}
 							modal={
-								<AddMinimumOrderModal
+								<AddMinimumOrderFormModal
 									countryOptions={
 										emptyThresholdGroup.countries
 									}
