@@ -170,7 +170,7 @@ class Settings {
 			return false;
 		}
 
-		return 'destination' === ( $this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER )['tax_rate'] ?? 'destination' );
+		return 'destination' === ( $this->get_settings()['tax_rate'] ?? 'destination' );
 	}
 
 	/**
@@ -553,6 +553,7 @@ class Settings {
 	 * @return array
 	 */
 	protected function get_settings(): array {
-		return $this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER );
+		$settings = $this->get_options_object()->get( OptionsInterface::MERCHANT_CENTER );
+		return is_array( $settings ) ? $settings : [];
 	}
 }
