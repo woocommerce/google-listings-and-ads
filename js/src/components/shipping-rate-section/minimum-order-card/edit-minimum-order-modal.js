@@ -13,12 +13,20 @@ import AppInputPriceControl from '.~/components/app-input-price-control';
 import VerticalGapLayout from '.~/components/vertical-gap-layout';
 import AppCountrySelect from '.~/components/app-country-select';
 
+/**
+ * @param {Object} props Props.
+ * @param {Array<string>} props.countryOptions Array of country codes options, to be used as options in AppCountrySelect.
+ * @param {Object} props.initialValues Initial values for the form.
+ * @param {Array<string>} props.initialValues.countries Array of selected country codes.
+ * @param {string} props.initialValues.currency Selected currency.
+ * @param {number} props.initialValues.threshold Threshold value.
+ */
 const EditMinimumOrderModal = ( props ) => {
-	const { countryOptions, value, onChange, onRequestClose } = props;
+	const { countryOptions, initialValues, onSubmit, onRequestClose } = props;
 
 	const handleDeleteClick = () => {
 		onRequestClose();
-		onChange( {
+		onSubmit( {
 			countries: [],
 			currency: undefined,
 			threshold: undefined,
@@ -47,16 +55,12 @@ const EditMinimumOrderModal = ( props ) => {
 
 	const handleSubmitCallback = ( newValue ) => {
 		onRequestClose();
-		onChange( newValue );
+		onSubmit( newValue );
 	};
 
 	return (
 		<Form
-			initialValues={ {
-				countries: value.countries,
-				currency: value.currency,
-				threshold: value.threshold,
-			} }
+			initialValues={ initialValues }
 			validate={ handleValidate }
 			onSubmit={ handleSubmitCallback }
 		>

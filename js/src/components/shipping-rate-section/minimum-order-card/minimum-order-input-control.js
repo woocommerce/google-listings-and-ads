@@ -29,10 +29,6 @@ const MinimumOrderInputControl = ( props ) => {
 		} );
 	};
 
-	const handleEditChange = ( newValue ) => {
-		onChange( newValue );
-	};
-
 	return (
 		<AppInputPriceControl
 			className="gla-minimum-order-input-control"
@@ -53,8 +49,8 @@ const MinimumOrderInputControl = ( props ) => {
 						modal={
 							<EditMinimumOrderModal
 								countryOptions={ countryOptions }
-								value={ value }
-								onChange={ handleEditChange }
+								initialValues={ value }
+								onSubmit={ onChange }
 							/>
 						}
 					/>
