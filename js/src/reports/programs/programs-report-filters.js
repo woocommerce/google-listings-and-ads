@@ -19,7 +19,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
-import { recordFilterEvent } from '.~/utils/recordEvent';
 import { createProgramsFilterConfig } from './filter-config';
 import useAdsCampaigns from '.~/hooks/useAdsCampaigns';
 import useStoreCurrency from '.~/hooks/useStoreCurrency';
@@ -79,7 +78,7 @@ const ProgramsReportFilters = ( props ) => {
 	 * @param {Object} data Data to be forwarded from ReportFilters.
 	 */
 	const onFilterSelect = ( data ) =>
-		recordFilterEvent( {
+		recordEvent( 'gla_filter', {
 			report: trackEventId,
 			filter: data.filter || 'all',
 		} );

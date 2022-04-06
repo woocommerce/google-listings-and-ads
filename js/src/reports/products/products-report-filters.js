@@ -19,7 +19,6 @@ import { getSetting } from '@woocommerce/settings'; // eslint-disable-line impor
 /**
  * Internal dependencies
  */
-import { recordFilterEvent } from '.~/utils/recordEvent';
 import { productsFilter, advancedFilters } from './filter-config';
 
 const currency = getSetting( 'currency' );
@@ -74,7 +73,7 @@ const ProductsReportFilters = ( props ) => {
 	 * @param {Object} data Data to be forwarded from ReportFilters.
 	 */
 	const onFilterSelect = ( data ) =>
-		recordFilterEvent( {
+		recordEvent( 'gla_filter', {
 			report: trackEventId,
 			filter: data.filter || 'all',
 			// wc-admin does not send it

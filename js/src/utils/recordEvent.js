@@ -106,28 +106,15 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
- * Triggered when changing products & variations filter.
+ * Triggered when changing products & variations filter,
+ * with data that comes from
+ * `FilterPicker`'s `onFilterSelect` callback.
  *
  * @event gla_filter
  * @property {string} report Name of the report (e.g. `"reports-products"`)
  * @property {string} filter Value of the filter (e.g. `"all" | "single-product" | "compare-products"`)
  * @property {string | undefined} variationFilter Value of the variation filter (e.g. `undefined | "single-variation" | "compare-variations"`)
  */
-
-/**
- * Records `gla_filter` tracking event, with data that comes from
- * `FilterPicker`'s `onFilterSelect` callback.
- *
- * @param {Object} data
- * @param {string} data.report Name of the report.
- * @param {string} data.filter Picked value.
- * @param {string} [data.filterVariation] Picked variation value if applicable.
- *
- * @fires gla_filter
- */
-export const recordFilterEvent = ( data ) => {
-	recordEvent( 'gla_filter', data );
-};
 
 /**
  * Records `gla_chart_tab_click` tracking event.
