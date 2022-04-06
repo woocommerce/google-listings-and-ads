@@ -117,17 +117,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  */
 
 /**
- * Records `gla_chart_tab_click` tracking event.
- *
- * @param {Object} data
- * @param {string} data.report Name of the report.
- * @param {string} data.context Metric key of the clicked tab.
- */
-export const recordChartTabClickEvent = ( data ) => {
-	recordEvent( 'gla_chart_tab_click', data );
-};
-
-/**
  * Setup Merchant Center
  *
  * @event gla_setup_mc
