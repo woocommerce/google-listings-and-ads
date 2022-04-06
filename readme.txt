@@ -119,8 +119,4 @@ Yes, you can run both at the same time, and we recommend it! In the US, advertis
 * Tweak - DB migration for shipping rates.
 * Update - Create all new campaigns as PMax campaigns.
 
-= 1.12.1 - 2022-04-01 =
-* Fix - Change shipping time options based on shipping rate options, to address missing shipping times data when shipping rates option is set to automatic or simple flat option, and shipping times option is set to complex manual option.
-* Fix - Do not sync shipping rates if the shipping time setting is set to complex.
-
 [See changelog for all versions](https://raw.githubusercontent.com/woocommerce/google-listings-and-ads/trunk/changelog.txt).
