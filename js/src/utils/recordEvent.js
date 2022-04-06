@@ -132,8 +132,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {string} budget Daily average cost of the paid campaign
  */
 
-export default recordEvent;
-
 /**
  * Clicking on the button to connect Google account.
  *
