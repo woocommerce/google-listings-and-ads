@@ -178,6 +178,36 @@ export default function EditFreeCampaign() {
 		'/google/dashboard'
 	);
 
+	const handleChooseAudienceChange = ( change, newTargetAudience ) => {
+		updateTargetAudience( newTargetAudience );
+
+		/**
+		 * If users removed a target audience country,
+		 * we remove the country from shipping rates and shipping times.
+		 */
+		if (
+			newTargetAudience.countries.length < targetAudience.countries.length
+		) {
+			const newShippingRates = loadedShippingRates.filter(
+				( shippingRate ) => {
+					return newTargetAudience.countries.includes(
+						shippingRate.country
+					);
+				}
+			);
+			updateShippingRates( newShippingRates );
+
+			const newShippingTimes = loadedShippingTimes.filter(
+				( shippingTime ) => {
+					return newTargetAudience.countries.includes(
+						shippingTime.countryCode
+					);
+				}
+			);
+			updateShippingTimes( newShippingTimes );
+		}
+	};
+
 	const handleChooseAudienceContinue = () => {
 		getHistory().push( getNewPath( { pageStep: '2' } ) );
 	};
@@ -244,9 +274,7 @@ export default function EditFreeCampaign() {
 						content: (
 							<ChooseAudience
 								initialData={ targetAudience }
-								onChange={ ( change, newTargetAudience ) =>
-									updateTargetAudience( newTargetAudience )
-								}
+								onChange={ handleChooseAudienceChange }
 								onContinue={ handleChooseAudienceContinue }
 							/>
 						),
