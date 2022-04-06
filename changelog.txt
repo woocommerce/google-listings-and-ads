@@ -1,5 +1,8 @@
 *** WooCommerce Google Listings and Ads Changelog ***
 
+= 1.12.4 - 2022-04-06 =
+* Fix - Prevent fatal errors when migrating or syncing merchant settings.
+
 = 1.12.3 - 2022-04-05 =
 * Fix - Shipping times section not showing up and unable to proceed through the Setup Merchant Center flow.
 
