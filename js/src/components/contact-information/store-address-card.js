@@ -25,7 +25,6 @@ import './store-address-card.scss';
  * Before `1.5.0` it was called `edit_mc_store_address`.
  *
  * @event gla_edit_wc_store_address
- * @type {Object} TrackingEvent
  * @property {string} path The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
  * @property {string|undefined} [subpath] The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
  */
@@ -127,7 +126,6 @@ export default function StoreAddressCard() {
  * Before `1.5.0` this name was used for tracking clicking "Edit in settings" to edit the WC address. As of `>1.5.0`, that event is now tracked as `edit_wc_store_address`.
  *
  * @event gla_edit_mc_store_address
- * @type {Object} TrackingEvent
  * @property {string} path The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
  * @property {string|undefined} [subpath] The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
  */

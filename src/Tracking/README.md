@@ -103,9 +103,9 @@ Clicking on the button to create a new Google Ads account, after agreeing to the
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate the place where the button is located, e.g. `setup-ads`.
-`link_id` | `string` | a unique ID for the button within the context, e.g. `set-up-billing`.
-`href` | `string` | indicate the destination where the users is directed to.
+`context` | `string` | Indicates the place where the button is located, e.g. `setup-ads`.
+`link_id` | `string` | A unique ID for the button within the context, e.g. `set-up-billing`.
+`href` | `string` | Indicates the destination where the users is directed to.
 #### Emitters
 - [`SetupCard`](js/src/setup-ads/ads-stepper/setup-billing/setup-card/index.js#L34) with `{ context: 'setup-ads', link_id: 'set-up-billing',	href: billingUrl }`
 
@@ -114,8 +114,8 @@ Triggered when the product feed "bulk edit" functionality is being used
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | name of the table
-`number_of_items` | `number` | edit how many items
+`context` | `string` | Name of the table
+`number_of_items` | `number` | Edit how many items
 `visibility_to` | `string` | `("sync_and_show" \| "dont_sync_and_show")`
 #### Emitters
 - [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
@@ -145,8 +145,8 @@ Triggered when a chart tab is clicked
 #### Properties
 |   |   |   |
 |---|---|---|
-`report` | `string` | name of the report (e.g. `"reports-programs" \| "reports-products"`)
-`context` | `string` | metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend"`).
+`report` | `string` | Name of the report (e.g. `"reports-programs" \| "reports-products"`)
+`context` | `string` | Metric key of the clicked tab (e.g. `"sales" \| "conversions" \| "clicks" \| "impressions" \| "spend"`).
 #### Emitters
 - [`exports`](js/src/reports/summary-section.js#L39)
 
@@ -171,7 +171,7 @@ Triggered when datepicker (date ranger picker) is updated,
 #### Properties
 |   |   |   |
 |---|---|---|
-`report` | `string` | name of the report (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`report` | `string` | Name of the report (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
 `compare` | `string` | Value selected in datepicker.
 `period` | `string` | Value selected in datepicker.
 `before` | `string` | Value selected in datepicker.
@@ -210,7 +210,7 @@ Triggered when phone number edit button is clicked.
 #### Emitters
 - [`PhoneNumberCardPreview`](js/src/components/contact-information/phone-number-card/phone-number-card-preview.js#L32) Whenever "Edit" is clicked.
 
-### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L125)
+### [`gla_edit_mc_store_address`](js/src/components/contact-information/store-address-card.js#L124)
 Trigger when store address edit button is clicked.
  Before `1.5.0` this name was used for tracking clicking "Edit in settings" to edit the WC address. As of `>1.5.0`, that event is now tracked as `edit_wc_store_address`.
 #### Properties
@@ -219,7 +219,7 @@ Trigger when store address edit button is clicked.
 `path` | `string` | The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
 `subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
-- [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L146) Whenever "Edit" is clicked.
+- [`StoreAddressCardPreview`](js/src/components/contact-information/store-address-card.js#L144) Whenever "Edit" is clicked.
 
 ### [`gla_edit_product_click`](js/src/product-feed/product-feed-table-card/index.js#L49)
 Triggered when edit links are clicked from product feed table.
@@ -236,8 +236,8 @@ Triggered when edit links are clicked from Issues to resolve table.
 #### Properties
 |   |   |   |
 |---|---|---|
-`code` | `string` | issue code returned from Google
-`issue` | `string` | issue description returned from Google
+`code` | `string` | Issue code returned from Google
+`issue` | `string` | Issue description returned from Google
 #### Emitters
 - [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96)
 
@@ -250,16 +250,16 @@ Triggered when store address "Edit in WooCommerce Settings" button is clicked.
 `path` | `string` | The path used in the page from which the link was clicked, e.g. `"/google/settings"`.
 `subpath` | `string\|undefined` | The subpath used in the page, e.g. `"/edit-store-address"` or `undefined` when there is no subpath.
 #### Emitters
-- [`exports`](js/src/components/contact-information/store-address-card.js#L40) Whenever "Edit in WooCommerce Settings" button is clicked.
+- [`exports`](js/src/components/contact-information/store-address-card.js#L39) Whenever "Edit in WooCommerce Settings" button is clicked.
 
 ### [`gla_filter`](js/src/utils/recordEvent.js#L125)
 Triggered when changing products & variations filter.
 #### Properties
 |   |   |   |
 |---|---|---|
-`report` | `string` | name of the report (e.g. `"reports-products"`)
-`filter` | `string` | value of the filter (e.g. `"all" \| "single-product" \| "compare-products"`)
-`variationFilter` | `string \| undefined` | value of the variation filter (e.g. `undefined \| "single-variation" \| "compare-variations"`)
+`report` | `string` | Name of the report (e.g. `"reports-products"`)
+`filter` | `string` | Value of the filter (e.g. `"all" \| "single-product" \| "compare-products"`)
+`variationFilter` | `string \| undefined` | Value of the variation filter (e.g. `undefined \| "single-variation" \| "compare-variations"`)
 #### Emitters
 - [`ProductsReportFilters`](js/src/reports/products/products-report-filters.js#L44)
 - [`ProgramsReportFilters`](js/src/reports/programs/programs-report-filters.js#L46)
@@ -270,7 +270,7 @@ Clicking on the link to view free ad credit value by country.
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate which page the link is in.
+`context` | `string` | Indicates which page the link is in.
 #### Emitters
 - [`FreeAdCredit`](js/src/setup-ads/ads-stepper/setup-accounts/free-ad-credit/index.js#L26)
 
@@ -294,12 +294,12 @@ Clicking on a text link within the notice on the Get Started page.
 #### Properties
 |   |   |   |
 |---|---|---|
-`link_id` | `string` | link identifier
-`context` | `string` | indicate which link is clicked
-`href` | `string` | link's URL
+`link_id` | `string` | Link identifier
+`context` | `string` | Indicates which link is clicked
+`href` | `string` | Link's URL
 #### Emitters
-- [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{	context: "get-started", link_id: "supported-languages" }`
-- [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{	context: "get-started", link_id: "supported-countries" }`
+- [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{ context: "get-started", link_id: "supported-languages" }`
+- [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{ context: "get-started", link_id: "supported-countries" }`
 
 ### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L229)
 Clicking on the button to connect Google account.
@@ -323,9 +323,9 @@ Clicking on a Google Ads account text link.
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate which page / module the link is in
-`href` | `string` | where the user is redirected
-`link_id` | `string` | a unique ID for the link within the page / module
+`context` | `string` | Indicates which page / module the link is in
+`href` | `string` | Where the user is redirected
+`link_id` | `string` | A unique ID for the link within the page / module
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
@@ -334,8 +334,8 @@ Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate which page / module the link is in
-`href` | `string` | link's URL
+`context` | `string` | Indicates which page / module the link is in
+`href` | `string` | Link's URL
 #### Emitters
 - [`FreePerformanceCard`](js/src/dashboard/summary-section/index.js#L22) with `{ context: 'dashboard' }`
 - [`MetricNumber`](js/src/reports/metric-number.js#L42) with `{ context: 'reports' }`
@@ -345,7 +345,7 @@ Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate the place where the button is located, e.g. `setup-ads`.
+`context` | `string` | Indicates the place where the button is located, e.g. `setup-ads`.
 #### Emitters
 - [`HelpIconButton`](js/src/components/help-icon-button.js#L30)
 
@@ -354,8 +354,8 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Properties
 |   |   |   |
 |---|---|---|
-`audiences` | `string` | country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
-`budget` | `string` | daily average cost of the paid campaign
+`audiences` | `string` | Country codes of the paid campaign audience countries, e.g. `'US,JP,AU'`. This means the campaign is created with the multi-country targeting feature. Before this feature support, it was implemented as 'audience'.
+`budget` | `string` | Daily average cost of the paid campaign
 #### Emitters
 - [`CreatePaidAdsCampaignForm`](js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L28) on submit
 - [`SetupAdsForm`](js/src/setup-ads/setup-ads-form.js#L24) on submit
@@ -426,8 +426,8 @@ A modal is closed.
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate which modal is closed
-`action` | `string` | indicate the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
+`context` | `string` | Indicates which modal is closed
+`action` | `string` | Indicates the modal is closed by what action (e.g. `maybe-later`\|`dismiss` \| `create-another-campaign`)    - `maybe-later` is used when the "Maybe later" button on the modal is clicked    - `dismiss` is used when the modal is dismissed by clicking on "X" icon, overlay, or pressing ESC    - `create-another-campaign` is used when the button "Create another campaign" is clicked    - `create-paid-campaign` is used when the button "Create paid campaign" is clicked
 #### Emitters
 - [`Dashboard`](js/src/dashboard/index.js#L33) when CES modal is closed.
 - [`exports`](js/src/product-feed/submission-success-guide/index.js#L160) with `action: 'create-paid-campaign' | 'maybe-later' | 'dismiss'`
@@ -437,8 +437,8 @@ Clicking on a text link within the modal content
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate which link is clicked
-`href` | `string` | link's URL
+`context` | `string` | Indicates which link is clicked
+`href` | `string` | Link's URL
 #### Emitters
 - [`ContentLink`](js/src/components/guide-page-content/index.js#L46) with given `context, href`
 
@@ -447,7 +447,7 @@ A modal is opend
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | indicate which modal is opened
+`context` | `string` | Indicates which modal is opened
 #### Emitters
 - [`exports`](js/src/product-feed/submission-success-guide/index.js#L160) with `context: GUIDE_NAMES.SUBMISSION_SUCCESS`
 
@@ -456,8 +456,8 @@ Triggered on events during ads setup and editing
 #### Properties
 |   |   |   |
 |---|---|---|
-`target` | `string` | button ID
-`trigger` | `string` | action (e.g. `click`)
+`target` | `string` | Button ID
+`trigger` | `string` | Action (e.g. `click`)
 #### Emitters
 - [`SetupAdsTopBar`](js/src/setup-ads/top-bar/index.js#L17) with given `{ target: 'back', trigger: 'click' }` when back button is clicked.
 - [`recordSetupAdsEvent`](js/src/utils/recordEvent.js#L197) with given `{ target, trigger }`.
@@ -477,8 +477,8 @@ Setup Merchant Center
 #### Properties
 |   |   |   |
 |---|---|---|
-`target` | `string` | button ID
-`trigger` | `string` | action (e.g. `click`)
+`target` | `string` | Button ID
+`trigger` | `string` | Action (e.g. `click`)
 #### Emitters
 - [`GetStartedCard`](js/src/get-started-page/get-started-card/index.js#L27) with `{ target: 'set_up_free_listings', trigger: 'click' }`.
 - [`SavedSetupStepper`](js/src/setup-mc/setup-stepper/saved-setup-stepper.js#L25) with `{ target: 'step1_continue' | 'step2_continue' | 'step3_continue', trigger: 'click' }`.
@@ -500,8 +500,8 @@ When table pagination is changed by entering page via "Go to page" input.
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | name of the table
-`page` | `string` | page number (starting at 1)
+`context` | `string` | Name of the table
+`page` | `string` | Page number (starting at 1)
 #### Emitters
 - [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96) with `context: 'issues-to-resolve'`
 - [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
@@ -512,8 +512,8 @@ Toggling display of table columns
 #### Properties
 |   |   |   |
 |---|---|---|
-`report` | `string` | name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
-`column` | `string` | name of the column
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`column` | `string` | Name of the column
 `status` | `string` | (`on`\|`off`)
 #### Emitters
 - [`AppTableCard`](js/src/components/app-table-card/index.js#L28) upon toggling column visibility
@@ -525,8 +525,8 @@ When table pagination is clicked
 #### Properties
 |   |   |   |
 |---|---|---|
-`context` | `string` | name of the table
-`direction` | `string` | direction of page to be changed. `("next" \| "previous")`
+`context` | `string` | Name of the table
+`direction` | `string` | Direction of page to be changed. `("next" \| "previous")`
 #### Emitters
 - [`IssuesTableCard`](js/src/product-feed/issues-table-card/index.js#L96) with `context: 'issues-to-resolve'`
 - [`ProductFeedTableCard`](js/src/product-feed/product-feed-table-card/index.js#L65) with `context: 'product-feed'`
@@ -537,8 +537,8 @@ Sorting table
 #### Properties
 |   |   |   |
 |---|---|---|
-`report` | `string` | name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
-`column` | `string` | name of the column
+`report` | `string` | Name of the report table (e.g. `"dashboard" \| "reports-programs" \| "reports-products" \| "product-feed"`)
+`column` | `string` | Name of the column
 `direction` | `string` | (`asc`\|`desc`)
 #### Emitters
 - [`AppTableCard`](js/src/components/app-table-card/index.js#L28) upon sorting table by column
