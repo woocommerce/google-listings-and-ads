@@ -4,6 +4,7 @@
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { Form } from '@woocommerce/components';
+import { noop } from 'lodash';
 
 /**
  * Internal dependencies
@@ -22,7 +23,12 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {number} props.initialValues.threshold Threshold value.
  */
 const EditMinimumOrderFormModal = ( props ) => {
-	const { countryOptions, initialValues, onSubmit, onRequestClose } = props;
+	const {
+		countryOptions,
+		initialValues,
+		onSubmit = noop,
+		onRequestClose = noop,
+	} = props;
 
 	const handleDeleteClick = () => {
 		onRequestClose();
