@@ -301,7 +301,7 @@ Clicking on a text link within the notice on the Get Started page.
 - [`UnsupportedLanguage`](js/src/get-started-page/unsupported-notices/index.js#L38) with `{ context: "get-started", link_id: "supported-languages" }`
 - [`UnsupportedCountry`](js/src/get-started-page/unsupported-notices/index.js#L84) with `{ context: "get-started", link_id: "supported-countries" }`
 
-### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L152)
+### [`gla_google_account_connect_button_click`](js/src/utils/recordEvent.js#L137)
 Clicking on the button to connect Google account.
 #### Properties
 |   |   |   |
@@ -329,7 +329,7 @@ Clicking on a Google Ads account text link.
 #### Emitters
 - [`BillingSavedCard`](js/src/setup-ads/ads-stepper/setup-billing/billing-saved-card/index.js#L31) with `{ context: 'setup-ads', link_id: 'google-ads-account' }`
 
-### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L162)
+### [`gla_google_mc_link_click`](js/src/utils/recordEvent.js#L147)
 Clicking on a Google Merchant Center link.
 #### Properties
 |   |   |   |
@@ -359,7 +359,6 @@ Triggered when the "Launch paid campaign" button is clicked to add a new paid ca
 #### Emitters
 - [`CreatePaidAdsCampaignForm`](js/src/pages/create-paid-ads-campaign/create-paid-ads-campaign-form.js#L28) on submit
 - [`SetupAdsForm`](js/src/setup-ads/setup-ads-form.js#L24) on submit
-- [`recordLaunchPaidCampaignClickEvent`](js/src/utils/recordEvent.js#L143)
 
 ### [`gla_mc_account_connect_button_click`](js/src/setup-mc/setup-stepper/setup-accounts/google-mc-account/connect-mc/index.js#L25)
 Clicking on the button to connect an existing Google Merchant Center account.
@@ -421,7 +420,7 @@ Clicking on the Merchant Center phone number edit button.
 #### Emitters
 - [`exports`](js/src/components/contact-information/phone-number-card/phone-number-card.js#L111)
 
-### [`gla_modal_closed`](js/src/utils/recordEvent.js#L170)
+### [`gla_modal_closed`](js/src/utils/recordEvent.js#L155)
 A modal is closed.
 #### Properties
 |   |   |   |

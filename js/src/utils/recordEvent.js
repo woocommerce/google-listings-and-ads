@@ -132,21 +132,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {string} budget Daily average cost of the paid campaign
  */
 
-/**
- * Records `gla_launch_paid_campaign_button_click` tracking event.
- *
- * @fires gla_launch_paid_campaign_button_click
- *
- * @param {number} budget Daily average cost of the paid campaign.
- * @param {Array<CountryCode>} audiences Country code array of the paid campaign audience country.
- */
-export const recordLaunchPaidCampaignClickEvent = ( budget, audiences ) => {
-	recordEvent( 'gla_launch_paid_campaign_button_click', {
-		audiences: audiences.join( ',' ),
-		budget,
-	} );
-};
-
 export default recordEvent;
 
 /**
