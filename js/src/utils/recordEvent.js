@@ -124,18 +124,6 @@ export const recordTablePageEvent = ( context, page, direction ) => {
  * @property {string} trigger Action (e.g. `click`)
  */
 
-/**
- * @param {string} target Target button ID
- * @param {string} [trigger='click'] The trigger action
- * @fires gla_setup_mc with the given `{ target trigger }`.
- */
-export const recordSetupMCEvent = ( target, trigger = 'click' ) => {
-	recordEvent( 'gla_setup_mc', {
-		target,
-		trigger,
-	} );
-};
-
 export const recordPreLaunchChecklistCompleteEvent = () => {
 	recordEvent( 'gla_pre_launch_checklist_complete' );
 };
