@@ -50,6 +50,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'id'                 => self::TEST_CAMPAIGN_ID,
 				'name'               => 'Campaign One',
 				'status'             => 'paused',
+				'type'               => 'shopping',
 				'amount'             => 10,
 				'country'            => 'US',
 				'targeted_locations' => [],
@@ -58,6 +59,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 				'id'                 => 5678901234,
 				'name'               => 'Campaign Two',
 				'status'             => 'enabled',
+				'type'               => 'performance_max',
 				'amount'             => 20,
 				'country'            => 'UK',
 				'targeted_locations' => [],
@@ -95,6 +97,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 		$expected = [
 			'id'      => self::TEST_CAMPAIGN_ID,
 			'status'  => 'enabled',
+			'type'    => 'performance_max',
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
@@ -119,6 +122,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'name'    => 'Campaign 2022-02-22 02:22:02',
 			'id'      => self::TEST_CAMPAIGN_ID,
 			'status'  => 'enabled',
+			'type'    => 'performance_max',
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
@@ -223,6 +227,7 @@ class CampaignControllerTest extends RESTControllerUnitTest {
 			'id'                 => self::TEST_CAMPAIGN_ID,
 			'name'               => 'Campaign Name',
 			'status'             => 'enabled',
+			'type'               => 'performance_max',
 			'amount'             => 10,
 			'country'            => 'US',
 			'targeted_locations' => [],

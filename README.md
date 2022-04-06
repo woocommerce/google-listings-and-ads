@@ -7,7 +7,7 @@
 [![E2E Tests](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/e2e-tests.yml)
 [![Bundle Size](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml/badge.svg)](https://github.com/woocommerce/google-listings-and-ads/actions/workflows/bundle-size.yml)
 
-A native integration with Google offering free listings and Smart Shopping ads to WooCommerce merchants.
+A native integration with Google offering free listings and Performance Max ads to WooCommerce merchants.
 
 -   [WooCommerce.com product page](https://woocommerce.com/products/google-listings-and-ads/)
 -   [WordPress.org plugin page](https://wordpress.org/plugins/google-listings-and-ads/)

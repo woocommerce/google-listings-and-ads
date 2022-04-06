@@ -17,12 +17,11 @@ use Automattic\WooCommerce\GoogleListingsAndAds\Proxies\WC;
 use Google\Ads\GoogleAds\Util\FieldMasks;
 use Google\Ads\GoogleAds\Util\V9\ResourceNames;
 use Google\Ads\GoogleAds\V9\Common\MaximizeConversionValue;
-use Google\Ads\GoogleAds\V9\Enums\AdvertisingChannelSubTypeEnum\AdvertisingChannelSubType;
 use Google\Ads\GoogleAds\V9\Enums\AdvertisingChannelTypeEnum\AdvertisingChannelType;
 use Google\Ads\GoogleAds\V9\Resources\Campaign;
 use Google\Ads\GoogleAds\V9\Resources\Campaign\ShoppingSetting;
-use Google\Ads\GoogleAds\V9\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V9\Services\CampaignServiceClient;
+use Google\Ads\GoogleAds\V9\Services\CampaignOperation;
 use Google\Ads\GoogleAds\V9\Services\GoogleAdsRow;
 use Google\Ads\GoogleAds\V9\Services\GeoTargetConstantServiceClient;
 use Google\Ads\GoogleAds\V9\Services\MutateOperation;
@@ -31,14 +30,14 @@ use Google\ApiCore\ValidationException;
 use Exception;
 
 /**
- * Class AdsCampaign (Smart Shopping Campaign)
- * https://developers.google.com/google-ads/api/docs/smart-campaigns/overview
+ * Class AdsCampaign (Performance Max Campaign)
+ * https://developers.google.com/google-ads/api/docs/performance-max/overview
  *
  * ContainerAware used for:
- * - AdsGroup
+ * - AdsAssetGroup
  * - WC
  *
- * @since 1.12.0 Refactored to use batch requests when operating on campaigns.
+ * @since 1.12.2 Refactored to support PMax and (legacy) SSC.
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\API\Google
  */
@@ -200,7 +199,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			$operations = array_merge(
 				[ $this->budget->create_operation( $params['name'], $params['amount'] ) ],
 				[ $this->create_operation( $params['name'], $base_country ) ],
-				$this->container->get( AdsGroup::class )->create_operations(
+				$this->container->get( AdsAssetGroup::class )->create_operations(
 					$this->temporary_resource_name(),
 					$params['name']
 				),
@@ -215,6 +214,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			return [
 				'id'      => $campaign_id,
 				'status'  => CampaignStatus::ENABLED,
+				'type'    => CampaignType::PERFORMANCE_MAX,
 				'country' => $base_country,
 			] + $params;
 		} catch ( ApiException $e ) {
@@ -349,14 +349,14 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 	protected function create_operation( string $campaign_name, string $country ): MutateOperation {
 		$campaign = new Campaign(
 			[
-				'resource_name'                => $this->temporary_resource_name(),
-				'name'                         => $campaign_name,
-				'advertising_channel_type'     => AdvertisingChannelType::SHOPPING,
-				'advertising_channel_sub_type' => AdvertisingChannelSubType::SHOPPING_SMART_ADS,
-				'status'                       => CampaignStatus::number( 'enabled' ),
-				'campaign_budget'              => $this->budget->temporary_resource_name(),
-				'maximize_conversion_value'    => new MaximizeConversionValue(),
-				'shopping_setting'             => new ShoppingSetting(
+				'resource_name'             => $this->temporary_resource_name(),
+				'name'                      => $campaign_name,
+				'advertising_channel_type'  => AdvertisingChannelType::PERFORMANCE_MAX,
+				'status'                    => CampaignStatus::number( 'enabled' ),
+				'campaign_budget'           => $this->budget->temporary_resource_name(),
+				'maximize_conversion_value' => new MaximizeConversionValue(),
+				'url_expansion_opt_out'     => true,
+				'shopping_setting'          => new ShoppingSetting(
 					[
 						'merchant_id'   => $this->options->get_merchant_id(),
 						'sales_country' => $country,
@@ -412,6 +412,7 @@ class AdsCampaign implements ContainerAwareInterface, OptionsAwareInterface {
 			'id'                 => $campaign->getId(),
 			'name'               => $campaign->getName(),
 			'status'             => CampaignStatus::label( $campaign->getStatus() ),
+			'type'               => CampaignType::label( $campaign->getAdvertisingChannelType() ),
 			'targeted_locations' => [],
 		];
 

@@ -3,10 +3,10 @@ declare( strict_types=1 );
 
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google;
 
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\Google\GoogleHelper;
 use Automattic\WooCommerce\GoogleListingsAndAds\Exception\ExceptionWithResponseData;
 use Automattic\WooCommerce\GoogleListingsAndAds\Options\OptionsInterface;
@@ -25,7 +25,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Tests\Unit\API\Google
  *
- * @property MockObject|AdsGroup             $ad_group
+ * @property MockObject|AdsAssetGroup        $asset_group
  * @property MockObject|AdsCampaignBudget    $budget
  * @property MockObject|AdsCampaignCriterion $criterion
  * @property MockObject|OptionsInterface     $options
@@ -49,16 +49,16 @@ class AdsCampaignTest extends UnitTest {
 
 		$this->ads_client_setup();
 
-		$this->ad_group  = $this->createMock( AdsGroup::class );
-		$this->budget    = $this->createMock( AdsCampaignBudget::class );
-		$this->criterion = new AdsCampaignCriterion();
-		$this->options   = $this->createMock( OptionsInterface::class );
+		$this->asset_group = $this->createMock( AdsAssetGroup::class );
+		$this->budget      = $this->createMock( AdsCampaignBudget::class );
+		$this->criterion   = new AdsCampaignCriterion();
+		$this->options     = $this->createMock( OptionsInterface::class );
 
 		$this->wc            = $this->createMock( WC::class );
 		$this->google_helper = new GoogleHelper( $this->wc );
 
 		$this->container = new Container();
-		$this->container->share( AdsGroup::class, $this->ad_group );
+		$this->container->share( AdsAssetGroup::class, $this->asset_group );
 		$this->container->share( WC::class, $this->wc );
 
 		$this->campaign = new AdsCampaign( $this->client, $this->budget, $this->criterion, $this->google_helper );
@@ -94,6 +94,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Campaign One',
 				'status'  => 'paused',
+				'type'    => 'shopping',
 				'amount'  => 10,
 				'country' => 'US',
 				'targeted_locations' => ['TW'],
@@ -102,6 +103,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => 5678901234,
 				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
+				'type'    => 'performance_max',
 				'amount'  => 20,
 				'country' => 'UK',
 				'targeted_locations' => ['HK', 'GB'],
@@ -133,6 +135,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Campaign One',
 				'status'  => 'paused',
+				'type'    => 'shopping',
 				'amount'  => 10,
 				'country' => 'US',
 				'targeted_locations' => [],
@@ -141,6 +144,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => 5678901234,
 				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
+				'type'    => 'performance_max',
 				'amount'  => 20,
 				'country' => 'UK',
 				'targeted_locations' => [],
@@ -172,6 +176,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => self::TEST_CAMPAIGN_ID,
 				'name'    => 'Campaign One',
 				'status'  => 'paused',
+				'type'    => 'shopping',
 				'amount'  => 10,
 				'country' => 'US',
 				'targeted_locations' => [],
@@ -180,6 +185,7 @@ class AdsCampaignTest extends UnitTest {
 				'id'      => 5678901234,
 				'name'    => 'Campaign Two',
 				'status'  => 'enabled',
+				'type'    => 'performance_max',
 				'amount'  => 20,
 				'country' => 'UK',
 				'targeted_locations' => [],
@@ -221,6 +227,7 @@ class AdsCampaignTest extends UnitTest {
 			'id'      => self::TEST_CAMPAIGN_ID,
 			'name'    => 'Single Campaign',
 			'status'  => 'enabled',
+			'type'    => 'performance_max',
 			'amount'  => 10,
 			'country' => 'US',
 			'targeted_locations' => ['TW'],
@@ -262,8 +269,9 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'     => self::TEST_CAMPAIGN_ID,
-			'status' => 'enabled',
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'type'    => 'performance_max',
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
@@ -287,8 +295,9 @@ class AdsCampaignTest extends UnitTest {
 		$this->generate_campaign_mutate_mock( 'create', self::TEST_CAMPAIGN_ID );
 
 		$expected = [
-			'id'     => self::TEST_CAMPAIGN_ID,
-			'status' => 'enabled',
+			'id'      => self::TEST_CAMPAIGN_ID,
+			'status'  => 'enabled',
+			'type'    => 'performance_max',
 			'country' => self::BASE_COUNTRY,
 		] + $campaign_data;
 
@@ -454,4 +463,5 @@ class AdsCampaignTest extends UnitTest {
 			$this->assertEquals( 400, $e->getCode() );
 		}
 	}
+
 }

@@ -5,11 +5,11 @@ namespace Automattic\WooCommerce\GoogleListingsAndAds\Internal\DependencyManagem
 
 use Automattic\Jetpack\Connection\Manager;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Ads;
+use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsAssetGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaign;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignBudget;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsCampaignCriterion;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsConversionAction;
-use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsGroup;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\AdsReport;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Connection;
 use Automattic\WooCommerce\GoogleListingsAndAds\API\Google\Merchant;
@@ -73,10 +73,10 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		Merchant::class               => true,
 		MerchantMetrics::class        => true,
 		Ads::class                    => true,
+		AdsAssetGroup::class          => true,
 		AdsCampaign::class            => true,
 		AdsCampaignBudget::class      => true,
 		AdsConversionAction::class    => true,
-		AdsGroup::class               => true,
 		AdsReport::class              => true,
 		'connect_server_root'         => true,
 		Connection::class             => true,
@@ -102,11 +102,11 @@ class GoogleServiceProvider extends AbstractServiceProvider {
 		$this->add( Settings::class, ContainerInterface::class );
 
 		$this->share( Ads::class, GoogleAdsClient::class );
+		$this->share( AdsAssetGroup::class, GoogleAdsClient::class );
 		$this->share( AdsCampaign::class, GoogleAdsClient::class, AdsCampaignBudget::class, AdsCampaignCriterion::class, GoogleHelper::class );
 		$this->share( AdsCampaignBudget::class, GoogleAdsClient::class );
 		$this->share( AdsCampaignCriterion::class );
 		$this->share( AdsConversionAction::class, GoogleAdsClient::class );
-		$this->share( AdsGroup::class, GoogleAdsClient::class );
 		$this->share( AdsReport::class, GoogleAdsClient::class );
 
 		$this->share( Merchant::class, ShoppingContent::class );

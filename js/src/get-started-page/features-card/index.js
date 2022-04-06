@@ -103,7 +103,7 @@ const FeaturesCard = () => {
 						variant="body"
 					>
 						{ __(
-							'Create a Smart Shopping campaign to promote products across Google Search, Shopping, Gmail, YouTube, and the Display Network.',
+							'Create a Performance Max campaign to promote products across Google Search, Shopping, Gmail, YouTube, and the Display Network.',
 							'google-listings-and-ads'
 						) }
 					</Text>
