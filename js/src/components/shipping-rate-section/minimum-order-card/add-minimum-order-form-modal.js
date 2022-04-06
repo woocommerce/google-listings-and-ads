@@ -27,8 +27,8 @@ import AppCountrySelect from '.~/components/app-country-select';
  * @param {Array<string>} props.initialValues.countries Array of selected country codes.
  * @param {string} props.initialValues.currency Selected currency.
  * @param {number} props.initialValues.threshold Threshold value.
- * @param {number} props.onRequestClose Callback to close the modal.
- * @param {number} props.onSubmit Callback when the form is submitted.
+ * @param {function()} props.onRequestClose Callback to close the modal.
+ * @param {function(Object)} props.onSubmit Callback when the form is submitted, with the form value.
  */
 const AddMinimumOrderFormModal = ( props ) => {
 	const {
