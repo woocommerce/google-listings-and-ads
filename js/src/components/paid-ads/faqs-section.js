@@ -14,7 +14,7 @@ import Section from '.~/wcdl/section';
  * Clicking on faq items to collapse or expand it in the Setup Ads page
  *
  * @event gla_setup_ads_faq
- * @property {string} id (faq identifier)
+ * @property {string} id FAQ identifier
  * @property {string} action (`expand`|`collapse`)
  */
 

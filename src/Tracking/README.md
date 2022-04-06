@@ -284,7 +284,7 @@ Clicking on getting started page faq item to collapse or expand it.
 #### Properties
 |   |   |   |
 |---|---|---|
-`id` | `string` | (faq identifier)
+`id` | `string` | FAQ identifier
 `action` | `string` | (`expand`\|`collapse`)
 #### Emitters
 - [`Faqs`](js/src/get-started-page/faqs.js#L230)
@@ -467,7 +467,7 @@ Clicking on faq items to collapse or expand it in the Setup Ads page
 #### Properties
 |   |   |   |
 |---|---|---|
-`id` | `string` | (faq identifier)
+`id` | `string` | FAQ identifier
 `action` | `string` | (`expand`\|`collapse`)
 #### Emitters
 - [`FaqsSection`](js/src/components/paid-ads/faqs-section.js#L24)
@@ -490,7 +490,7 @@ Clicking on faq items to collapse or expand it in the Setup Merchant Center page
 #### Properties
 |   |   |   |
 |---|---|---|
-`id` | `string` | (faq identifier)
+`id` | `string` | FAQ identifier
 `action` | `string` | (`expand`\|`collapse`)
 #### Emitters
 - [`exports`](js/src/setup-mc/setup-stepper/setup-accounts/faqs.js#L73)

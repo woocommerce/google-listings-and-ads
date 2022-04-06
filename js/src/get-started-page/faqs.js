@@ -220,7 +220,7 @@ const faqItems = [
  * Clicking on getting started page faq item to collapse or expand it.
  *
  * @event gla_get_started_faq
- * @property {string} id (faq identifier)
+ * @property {string} id FAQ identifier
  * @property {string} action (`expand`|`collapse`)
  */
 
